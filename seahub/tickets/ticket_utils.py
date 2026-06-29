@@ -676,33 +676,35 @@ def _build_ticket_comment_notice(content):
     }
 
 
-def _get_first_ticket_comment_by_id(seadb_api, project_uuid, ticket_id):
-    first_comment_sql = (
+def get_tickets_comments_by_ids(seadb_api, project_uuid, ticket_ids):
+    if not ticket_ids:
+        return {}
+
+    ticket_ids_str = ', '.join(str(ticket_id) for ticket_id in ticket_ids)
+    ticket_comments_sql = (
         f"SELECT `_pk`, `ticket_id`, `creator`, `content`, `created_time` FROM `{TABLE_TICKET_COMMENTS}` "
-        f"WHERE `ticket_id` = {ticket_id} AND (`deleted` = False or `deleted` IS NULL) "
-        f"ORDER BY `_pk` ASC LIMIT 1"
+        f"WHERE `ticket_id` in ({ticket_ids_str}) AND (`deleted` = False or `deleted` IS NULL) "
+        f"ORDER BY `ticket_id` ASC, `_pk` ASC"
     )
-    first_comments = seadb_api.query_rows(project_uuid, first_comment_sql).get('results', [])
-    return first_comments[0] if first_comments else None
+    ticket_comments_data = seadb_api.query_rows(project_uuid, ticket_comments_sql).get('results', [])
+    result = {}
+    for comment in ticket_comments_data:
+        ticket_id = comment['ticket_id']
+        if ticket_id not in result:
+            result[ticket_id] = [comment]
+        else:
+            result[ticket_id].append(comment)
+    return result
 
 
-def _get_latest_ticket_comments_by_id(seadb_api, project_uuid, ticket_id, limit_for_each_id):
-    latest_comments_sql = (
-        f"SELECT `_pk`, `ticket_id`, `creator`, `content`, `created_time` FROM `{TABLE_TICKET_COMMENTS}` "
-        f"WHERE `ticket_id` = {ticket_id} AND (`deleted` = False or `deleted` IS NULL) "
-        f"ORDER BY `_pk` DESC LIMIT {limit_for_each_id}"
-    )
-    return seadb_api.query_rows(project_uuid, latest_comments_sql).get('results', [])
-
-
-def _get_selected_ticket_comments_for_attachment(seadb_api, project_uuid, ticket_id, body_content_length, limit_for_each_id):
+def _get_selected_ticket_comments_for_attachment(ticket_comments, body_content_length, limit_for_each_id):
     if body_content_length >= ATTACHMENT_CONTENT_MAX_SIZE:
         return [_build_ticket_comment_notice(_COMMENTS_OMITTED_NOTICE)]
 
-    first_comment = _get_first_ticket_comment_by_id(seadb_api, project_uuid, ticket_id)
-    if not first_comment:
+    if not ticket_comments:
         return []
 
+    first_comment = ticket_comments[0]
     remaining_size = ATTACHMENT_CONTENT_MAX_SIZE - body_content_length
     first_content = first_comment.get('content', '') or ''
     if len(first_content) > remaining_size:
@@ -716,7 +718,7 @@ def _get_selected_ticket_comments_for_attachment(seadb_api, project_uuid, ticket
         selected_comments.append(_build_ticket_comment_notice(_MORE_COMMENTS_OMITTED_NOTICE))
         return selected_comments
 
-    latest_comments = _get_latest_ticket_comments_by_id(seadb_api, project_uuid, ticket_id, limit_for_each_id)
+    latest_comments = ticket_comments[-limit_for_each_id:] if limit_for_each_id > 0 else []
     comments_by_pk = {
         comment['_pk']: comment
         for comment in latest_comments
@@ -814,11 +816,11 @@ def get_whole_tickets_data(seadb_api, project_uuid, ticket_ids):
 
     tickets = get_tickets_by_ids(seadb_api, project_uuid, ticket_ids)
     all_comments_users = set()
-    ticket_ids_comments_map = {}
+    ticket_ids_comments_map = get_tickets_comments_by_ids(seadb_api, project_uuid, ticket_ids)
     for ticket in tickets:
         full_content = ticket.get('content', '') or ''
         ticket_comments = _get_selected_ticket_comments_for_attachment(
-            seadb_api, project_uuid, ticket['_pk'], len(full_content), ATTACHMENT_ISSUE_MAX_COMMENTS,
+            ticket_ids_comments_map.get(ticket['_pk'], []), len(full_content), ATTACHMENT_ISSUE_MAX_COMMENTS,
         )
         ticket_ids_comments_map[ticket['_pk']] = ticket_comments
         for comment in ticket_comments:

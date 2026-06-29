@@ -71,22 +71,28 @@ class DiscourseSeaDBAPI:
         response = self.seadb_api.query_rows(self.base_id, sql)
         return response.get('results', [])
 
-    def _get_first_topic_reply_by_id(self, connection_id, topic_id):
-        table_name = SchemaTables.DISCOURSE_REPLIES.table_name(connection_id)
-        first_reply_sql = f"SELECT `topic_id`, `post_number`, `content`, `author`, `modified_time`, `accepted_answer` FROM `{table_name}` WHERE `topic_id` = {topic_id} ORDER BY `post_number` ASC LIMIT 1"
-        first_replies = self.seadb_api.query_rows(self.base_id, first_reply_sql).get('results', [])
-        return first_replies[0] if first_replies else None
+    def get_replies_by_topic_ids(self, connection_id, topic_ids):
+        if not topic_ids:
+            return {}
 
-    def _get_latest_topic_replies_by_id(self, connection_id, topic_id, limit_for_each_id):
         table_name = SchemaTables.DISCOURSE_REPLIES.table_name(connection_id)
-        latest_replies_sql = f"SELECT `topic_id`, `post_number`, `content`, `author`, `modified_time`, `accepted_answer` FROM `{table_name}` WHERE `topic_id` = {topic_id} ORDER BY `post_number` DESC LIMIT {limit_for_each_id}"
-        return self.seadb_api.query_rows(self.base_id, latest_replies_sql).get('results', [])
+        topic_ids_str = ', '.join(str(topic_id) for topic_id in topic_ids)
+        sql = f"SELECT `topic_id`, `post_number`, `content`, `author`, `modified_time`, `accepted_answer` FROM `{table_name}` WHERE `topic_id` in ({topic_ids_str}) ORDER BY `topic_id` ASC, `post_number` ASC"
+        replies = self.seadb_api.query_rows(self.base_id, sql).get('results', [])
+        result = {}
+        for reply in replies:
+            topic_id = reply['topic_id']
+            if topic_id not in result:
+                result[topic_id] = [reply]
+            else:
+                result[topic_id].append(reply)
+        return result
 
-    def _get_selected_topic_replies_for_attachment(self, connection_id, topic_id, limit_for_each_id):
-        first_reply = self._get_first_topic_reply_by_id(connection_id, topic_id)
-        if not first_reply:
+    def _get_selected_topic_replies_for_attachment(self, topic_replies, limit_for_each_id):
+        if not topic_replies:
             return []
 
+        first_reply = topic_replies[0]
         first_content = first_reply.get('content', '') or ''
         if len(first_content) > ATTACHMENT_CONTENT_MAX_SIZE:
             selected_replies = []
@@ -99,7 +105,7 @@ class DiscourseSeaDBAPI:
             selected_replies.append(_build_reply_notice(_MORE_REPLIES_OMITTED_NOTICE))
             return selected_replies
 
-        latest_replies = self._get_latest_topic_replies_by_id(connection_id, topic_id, limit_for_each_id)
+        latest_replies = topic_replies[-limit_for_each_id:] if limit_for_each_id > 0 else []
         replies_by_post_number = {
             reply['post_number']: reply
             for reply in latest_replies
@@ -172,6 +178,9 @@ class DiscourseSeaDBAPI:
         result = []
         for connection_id, _pks in connection_ids_pks_map.items():
             topics = self.get_topics_by_pks(connection_id, _pks)
+            topics_replies_map = self.get_replies_by_topic_ids(
+                connection_id, [topic['topic_id'] for topic in topics]
+            )
 
             for topic_data in topics:
                 whole_topic_data = {
@@ -186,7 +195,7 @@ class DiscourseSeaDBAPI:
                 }
 
                 replies = self._get_selected_topic_replies_for_attachment(
-                    connection_id, topic_data['topic_id'], ATTACHMENT_ISSUE_MAX_COMMENTS,
+                    topics_replies_map.get(topic_data['topic_id'], []), ATTACHMENT_ISSUE_MAX_COMMENTS,
                 )
                 for reply in replies:
                     whole_topic_data['replies'].append({
