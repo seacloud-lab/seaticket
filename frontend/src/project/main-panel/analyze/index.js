@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { gettext, mediaUrl } from '@/constants';
 import { IconButton, CenteredLoading, CenteredError, EmptyTip } from '@/components';
 import TopBar from '../top-bar';
@@ -6,6 +6,7 @@ import SettingsPanel from './components/settings-panel';
 import EmbeddingView from './components/embedding-view';
 import FilterPanel from '../analyze/components/filter-panel';
 import { useAnalyzeTask } from './hooks/analyze-task';
+import { useConnections } from '../connections/hooks';
 
 import './index.css';
 
@@ -22,6 +23,7 @@ const getStoredSettings = () => {
 
 const Analyze = ({ title }) => {
   const { isLoading, records, lastLoadRecordsTime, error, startAnalysis } = useAnalyzeTask();
+  const { isLoading: isConnectionsLoading, connections } = useConnections();
 
   // settings
   const [isSettingsOpen, setIsSettingsOpen] = useState(true);
@@ -31,19 +33,26 @@ const Analyze = ({ title }) => {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [filters, setFilters] = useState([]);
+  const hasInitializedConnectionsRef = useRef(false);
 
   const handleColorByChange = useCallback((newColorBy) => {
     setColorBy(newColorBy);
   }, []);
 
   useEffect(() => {
+    if (isConnectionsLoading || hasInitializedConnectionsRef.current) {
+      return;
+    }
     const storedSettings = getStoredSettings();
-    setSelectedConnections(storedSettings.connections || []);
+    const storedConnections = storedSettings.connections || [];
+    const validConnections = storedConnections.map(stored => connections.find(connection => connection.id === stored.id)).filter(Boolean);
+    setSelectedConnections(validConnections);
     setColorBy(storedSettings.colorBy || '--');
     setDisplayMode(storedSettings.displayMode || 'points');
     setStartDate(storedSettings.startDate || null);
     setEndDate(storedSettings.endDate || null);
-  }, []);
+    hasInitializedConnectionsRef.current = true;
+  }, [connections, isConnectionsLoading]);
 
   useEffect(() => {
     try {
