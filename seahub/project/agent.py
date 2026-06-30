@@ -24,7 +24,12 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.models import Projects, ProjectConnections, decrypt_config
 from seahub.project.github_issues_api import GitHubAPI, GitHubAppNotInstalled
 from seahub.project.discourse_api import DiscourseForumAPI, DiscourseForumAPIException
-from seahub.tickets.ticket_utils import get_ticket
+from seahub.tickets.ticket_utils import (
+    get_ticket,
+    close_linked_github_issues,
+    build_ticket_close_payloads_from_client,
+    record_ticket_activities,
+)
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
@@ -333,6 +338,12 @@ class AgentActionConfirmView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         username = request.user.username
+        linked_github_issues_to_close = request.data.get('linked_github_issues_to_close') or []
+        if isinstance(linked_github_issues_to_close, str):
+            try:
+                linked_github_issues_to_close = json.loads(linked_github_issues_to_close)
+            except Exception:
+                linked_github_issues_to_close = []
         try:
             seadb_api = SeaDBAPI()
 
@@ -364,7 +375,8 @@ class AgentActionConfirmView(APIView):
             try:
                 if source_type == 'ticket':
                     execution = self._execute_ticket_action(
-                        seadb_api, project, project_uuid, source_id, tool_name, suggestion_content, username
+                        seadb_api, project, project_uuid, source_id, tool_name, suggestion_content, username,
+                        linked_github_issues_to_close=linked_github_issues_to_close,
                     )
                 elif source_type == ConnectionType.GITHUB_ISSUE.value:
                     execution = self._execute_github_issue_action(
@@ -459,7 +471,18 @@ class AgentActionConfirmView(APIView):
             return self._successful_execution(execution)
         return self._successful_execution('Success')
 
-    def _execute_ticket_action(self, seadb_api, project, project_uuid, source_id, tool_name, suggestion_content, username):
+    def _execute_ticket_action(
+        self,
+        seadb_api,
+        project,
+        project_uuid,
+        source_id,
+        tool_name,
+        suggestion_content,
+        username,
+        *,
+        linked_github_issues_to_close=None,
+    ):
         """Dispatch ticket-source actions to the appropriate handler."""
         try:
             ticket_id = int(source_id)
@@ -469,6 +492,14 @@ class AgentActionConfirmView(APIView):
 
         if tool_name == 'suggest_notify_assignee':
             return self._execute_notify_assignee(seadb_api, project, project_uuid, ticket_id, suggestion_content, username)
+        elif tool_name == 'suggest_close_ticket':
+            return self._execute_close_ticket(
+                seadb_api,
+                project_uuid,
+                ticket_id,
+                username,
+                linked_github_issues_to_close=linked_github_issues_to_close,
+            )
         else:
             logger.warning(f'Unknown ticket tool_name: {tool_name!r}')
             return self._failed_execution(f'Unknown tool_name: {tool_name}')
@@ -545,8 +576,8 @@ class AgentActionConfirmView(APIView):
             result = discourse_api.create_post(topic_id, reply_content)
             post_number = result.get('post_number', 0)
         except DiscourseForumAPIException as e:
-            logger.error(f'Failed to create Discourse reply for topic #{topic_id}: {e}')
-            return self._failed_execution(f'Failed to post reply to Discourse: {e}')
+            logger.error(f'Failed to create Discourse reply for topic #{topic_pk}: {e}')
+            return self._failed_execution(f'Failed to post reply to Discourse #{topic_pk}: {e}')
 
         discourse_seadb_api = DiscourseSeaDBAPI(project_uuid, seadb_api=seadb_api)
         reply_data = {
@@ -558,9 +589,9 @@ class AgentActionConfirmView(APIView):
         try:
             discourse_seadb_api.add_reply(project_uuid, connection_id, topic_id, reply_data)
         except Exception as e:
-            logger.error(f'Failed to save Discourse reply to SeaDB for topic #{topic_id}: {e}')
+            logger.error(f'Failed to save Discourse reply to SeaDB for topic #{topic_pk}: {e}')
 
-        return self._successful_execution(f'Reply #{post_number} posted to Discourse topic #{topic_id}.')
+        return self._successful_execution(f'Reply #{post_number} posted to Discourse topic #{topic_pk}.')
 
     def _get_github_issue_context(self, seadb_api, project_uuid, source_id):
         try:
@@ -1478,6 +1509,65 @@ class AgentActionConfirmView(APIView):
 
         logger.info(f'Agent notified assignees for ticket #{ticket_id}')
         return self._successful_execution(f'Notification sent to {len(assignees)} assignee(s).')
+
+    def _execute_close_ticket(
+        self,
+        seadb_api,
+        project_uuid,
+        ticket_id,
+        operator,
+        *,
+        linked_github_issues_to_close=None,
+    ):
+        ticket, _ = get_ticket(seadb_api, project_uuid, ticket_id)
+        if not ticket:
+            return self._failed_execution(f'Ticket #{ticket_id} not found')
+
+        state_name = (ticket.get(SchemaTables.TICKETS.column.state.name) or '').lower()
+        if state_name == 'closed':
+            return self._failed_execution(f'Ticket #{ticket_id} is already closed')
+
+        substate = ticket.get(SchemaTables.TICKETS.column.substate.name)
+        close_candidates = [{'ticket_id': int(ticket_id), 'substate': substate}]
+        try:
+            ticket_close_payloads = build_ticket_close_payloads_from_client(
+                seadb_api,
+                project_uuid,
+                close_candidates,
+                linked_github_issues_to_close or [],
+            )
+            close_linked_github_issues(seadb_api, project_uuid, ticket_close_payloads)
+        except Exception as e:
+            logger.exception('Failed to close linked GitHub issues for ticket #%s: %s', ticket_id, e)
+            return self._failed_execution(f'Failed to close linked GitHub issues: {e}')
+
+        now = timezone.now().isoformat()
+        participants = ticket.get(SchemaTables.TICKETS.column.participants.name) or []
+        if operator not in participants:
+            participants.append(operator)
+        update_row = {
+            SchemaTables.TICKETS.column.state.name: 'closed',
+            SchemaTables.TICKETS.column.closed_time.name: now,
+            SchemaTables.TICKETS.column.modified_time.name: now,
+            SchemaTables.TICKETS.column.participants.name: participants,
+        }
+        seadb_api.update_rows(
+            project_uuid,
+            SchemaTables.TICKETS.table_name(),
+            [{
+                'pk': ticket_id,
+                'row': update_row,
+            }],
+        )
+        changes = [('state_changed', 'state', ticket.get(SchemaTables.TICKETS.column.state.name), 'closed')]
+        record_ticket_activities(
+            seadb_api,
+            project_uuid,
+            ticket_id,
+            operator,
+            changes,
+        )
+        return self._successful_execution(f'Ticket #{ticket_id} closed.')
 
 
 class AgentActionUpdateView(APIView):

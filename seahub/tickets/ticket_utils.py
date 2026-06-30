@@ -24,10 +24,6 @@ class TicketLinkValidationError(Exception):
     pass
 
 
-class TicketCloseValidationError(Exception):
-    pass
-
-
 @dataclass
 class TicketLinkSyncPlan:
     """Ticket link sync plan"""
@@ -42,8 +38,6 @@ TABLE_TICKETS = SchemaTables.TICKETS.table_name()
 TABLE_TICKET_COMMENTS = SchemaTables.TICKET_COMMENTS.table_name()
 
 logger = logging.getLogger(__name__)
-TICKET_CLOSE_CONFIRM_FIELD = 'confirm_close_linked_github_issues'
-TICKET_CLOSE_WARNING_TYPE = 'open_linked_github_issues'
 
 _COMMENTS_OMITTED_NOTICE = '[comments omitted due to content limit]'
 _MORE_COMMENTS_OMITTED_NOTICE = '[more comments omitted due to content limit]'
@@ -194,6 +188,74 @@ def build_linked_records_info_for_keys(seadb_api, project_uuid, lcr_keys):
     return linked_records_info
 
 
+def build_linked_github_issue_state_map(seadb_api, project_uuid, tickets, columns):
+    if not tickets or not columns:
+        return {}
+
+    lcr_column = None
+    for c in (columns or []):
+        if not isinstance(c, dict):
+            continue
+        if c.get('name') == 'linked_connection_records':
+            lcr_column = c
+            break
+    lcr_key = (lcr_column or {}).get('key') or 'linked_connection_records'
+
+    all_keys = []
+    for ticket in (tickets or []):
+        lcrs = ticket.get(lcr_key) or []
+        if not isinstance(lcrs, list):
+            continue
+        all_keys.extend(lcrs)
+
+    return build_linked_github_issue_state_map_for_keys(seadb_api, project_uuid, all_keys)
+
+
+def build_linked_github_issue_state_map_for_keys(seadb_api, project_uuid, lcr_keys):
+    linked_github_issue_state_map = {}
+    keys = lcr_keys or []
+    if not isinstance(keys, list) or not keys:
+        return linked_github_issue_state_map
+
+    conn_id_to_record_ids = {}
+    for linked_key in keys:
+        if not isinstance(linked_key, str):
+            continue
+        try:
+            connection_id_str, record_id_str = linked_key.split('_', 1)
+        except ValueError:
+            continue
+        if connection_id_str == 'portal':
+            continue
+        try:
+            connection_id = int(connection_id_str)
+            record_id = int(record_id_str)
+        except (TypeError, ValueError):
+            continue
+        conn_id_to_record_ids.setdefault(connection_id, set()).add(record_id)
+
+    connections = ProjectConnections.objects.filter(
+        id__in=conn_id_to_record_ids.keys(),
+        deleted=False,
+    )
+    connection_map = {connection.id: connection for connection in connections}
+
+    for connection_id, record_ids_set in conn_id_to_record_ids.items():
+        connection = connection_map.get(connection_id)
+        if not connection or connection.type != ConnectionType.GITHUB_ISSUE.value:
+            continue
+        records = get_connection_records_by_pks(
+            seadb_api, project_uuid, connection_id, connection.type, list(record_ids_set)
+        )
+        for record in (records or []):
+            record_pk = record.get('_pk')
+            if record_pk is None:
+                continue
+            linked_github_issue_state_map[f'{connection_id}_{record_pk}'] = record.get('state')
+
+    return linked_github_issue_state_map
+
+
 def _parse_linked_connection_record_keys(linked_connection_records):
     """Parse ``linked_connection_records`` keys into connection/record id groups.
 
@@ -286,21 +348,6 @@ def collect_open_linked_github_issues_for_tickets(seadb_api, project_uuid, ticke
     return grouped_open_issues
 
 
-def build_ticket_close_warning_response(grouped_open_issues):
-    """Build the 409 response body when closing tickets with open linked GitHub issues.
-
-    The client should show a confirmation dialog and retry with
-    ``confirm_close_linked_github_issues`` set to true.
-    """
-    response = {
-        'error_msg': 'Some linked GitHub issues are still open.',
-        'warning_type': TICKET_CLOSE_WARNING_TYPE,
-        'confirm_field': TICKET_CLOSE_CONFIRM_FIELD,
-        'tickets': grouped_open_issues or [],
-    }
-    return response
-
-
 def get_ticket_table_columns(seadb_api, project_uuid):
     """Return column definitions for the project tickets table."""
     base_metadata = seadb_api.get_base_metadata(project_uuid)
@@ -333,8 +380,7 @@ def normalize_substate_name(substate, ticket_columns):
 def map_ticket_substate_to_github_state_reason(substate, ticket_columns):
     """Map ticket substate to GitHub ``state_reason`` when closing an issue.
 
-    Raises:
-        TicketCloseValidationError: If the substate cannot be mapped.
+    Falls back to ``completed`` when substate cannot be mapped.
     """
     substate_name = normalize_substate_name(substate, ticket_columns)
     normalized_substate_name = substate_name.strip().lower()
@@ -343,7 +389,92 @@ def map_ticket_substate_to_github_state_reason(substate, ticket_columns):
     state_reason = TICKET_SUBSTATE_TO_GITHUB_STATE_REASON.get(normalized_substate_name)
     if state_reason:
         return state_reason
-    raise TicketCloseValidationError('substate cannot map to github state_reason.')
+    return 'completed'
+
+
+def build_ticket_close_payloads_from_client(
+    seadb_api,
+    project_uuid,
+    ticket_close_candidates,
+    linked_github_issues_to_close,
+):
+    """Build payloads for :func:`close_linked_github_issues` from client input.
+    Used when closing tickets: the client sends the user-confirmed list of
+    open GitHub issues to close. This function validates that input, keeps
+    only issues for tickets being closed, and maps each ticket substate to a
+    GitHub ``state_reason``.
+    """
+    if not isinstance(linked_github_issues_to_close, list):
+        return []
+
+    ticket_substate_map = {}
+    for candidate in (ticket_close_candidates or []):
+        ticket_id = candidate.get('ticket_id')
+        if ticket_id is None:
+            continue
+        try:
+            ticket_substate_map[int(ticket_id)] = candidate.get('substate')
+        except (TypeError, ValueError):
+            continue
+
+    if not ticket_substate_map:
+        return []
+
+    ticket_issue_map = {}
+    for item in linked_github_issues_to_close:
+        if not isinstance(item, dict):
+            continue
+        ticket_id = item.get('ticket_id')
+        if ticket_id is None:
+            continue
+        try:
+            normalized_ticket_id = int(ticket_id)
+        except (TypeError, ValueError):
+            continue
+        if normalized_ticket_id not in ticket_substate_map:
+            continue
+
+        raw_issues = item.get('open_github_issues') or []
+        if not isinstance(raw_issues, list):
+            continue
+
+        normalized_issues = []
+        for issue in raw_issues:
+            if not isinstance(issue, dict):
+                continue
+            connection_id = issue.get('connection_id')
+            record_pk = issue.get('record_pk')
+            try:
+                connection_id = int(connection_id)
+                record_pk = int(record_pk)
+            except (TypeError, ValueError):
+                continue
+            normalized_issues.append({
+                'connection_id': connection_id,
+                'record_pk': record_pk,
+                'title': issue.get('title') or '',
+                'state': issue.get('state'),
+            })
+        if normalized_issues:
+            ticket_issue_map[normalized_ticket_id] = normalized_issues
+
+    if not ticket_issue_map:
+        return []
+
+    ticket_columns = get_ticket_table_columns(seadb_api, project_uuid)
+    ticket_close_payloads = []
+    for ticket_id, issues in ticket_issue_map.items():
+        state_reason = map_ticket_substate_to_github_state_reason(
+            ticket_substate_map.get(ticket_id),
+            ticket_columns,
+        )
+        ticket_close_payloads.append({
+            'ticket_id': ticket_id,
+            'state_reason': state_reason,
+            'open_github_issues': issues,
+        })
+
+    return ticket_close_payloads
 
 
 def close_linked_github_issues(seadb_api, project_uuid, ticket_close_payloads):

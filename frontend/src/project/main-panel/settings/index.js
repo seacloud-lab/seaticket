@@ -31,13 +31,28 @@ const Settings = ({
         onChange={(value, callback) => modifySettings({ agent: Object.assign({}, settings.agent, { enabled: value }) }, callback)}
       />
       {settings.agent?.enabled && (
-        <GitHubIssueTypeMappingSettings
-          className="mb-4"
-          value={settings?.agent?.github_issue_type_mapping || {}}
-          onChange={(value, callback) => modifySettings({
-            agent: Object.assign({}, settings.agent, { github_issue_type_mapping: value }),
-          }, callback)}
-        />
+        <>
+          <GitHubIssueTypeMappingSettings
+            className="mb-4"
+            value={settings?.agent?.github_issue_type_mapping || {}}
+            onChange={(value, callback) => modifySettings({
+              agent: Object.assign({}, settings.agent, { github_issue_type_mapping: value }),
+            }, callback)}
+          />
+          <PromptSettings
+            value={settings?.agent?.ticket_rules || ''}
+            onChange={(value, callback) => modifySettings({
+              agent: Object.assign({}, settings.agent, { ticket_rules: value }),
+            }, callback)}
+            className='mb-4 ticket-agent-rules-settings'
+            title={gettext('Ticket processing rules')}
+            tip={gettext('Define natural-language rules for ticket reminders and ticket-closing suggestions. These rules only apply to tickets.')}
+            dialogTitle={gettext('Edit Ticket Processing Rules')}
+            placeholder={gettext('Example:\n1) If due soon and substate is Waiting on user, do not send reminder.\n2) If over due and substate is Waiting on user, suggest closing the ticket.')}
+            maxLength={4000}
+            validationMessage={gettext('Ticket processing rules cannot contain tag-like content such as <system-reminder>.')}
+          />
+        </>
       )}
       <SwitchSettingsItem
         title={gettext('Support portal')}

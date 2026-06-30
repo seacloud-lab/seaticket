@@ -24,7 +24,7 @@ import { useCollaborators } from '@/sea-metadata';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE as GLOBAL_EVENT_BUS_TYPE } from '@/project/constants';
 import {
-  isOpenLinkedGithubIssuesWarning, convertSubstateToGitHubStateReason,
+  convertSubstateToGitHubStateReason,
   generatorLinkedRecordsForClosedGitHubIssues,
 } from '../../utils';
 import { useCloseLinkedIssues } from '../../hooks';
@@ -87,7 +87,7 @@ const TicketInDialog = ({
     }
   }, [getTableByName, modifyLocalRow, propsColumns, typesData, tagsData]);
 
-  const modifyTicket = useCallback((currentTicketID, data, { confirmCloseLinkedGithubIssues = false } = {}) => {
+  const modifyTicket = useCallback((currentTicketID, data, { linkedGithubIssuesToClose = null } = {}) => {
     let serverData = {};
     const typeColumnName = ticketType === TICKET_TYPE ? PREDEFINED_TICKET_COLUMN_NAME.TYPE : PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.TYPE;
     const stateColumnName = ticketType === TICKET_TYPE ? PREDEFINED_TICKET_COLUMN_NAME.STATE : PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.STATE;
@@ -105,8 +105,8 @@ const TicketInDialog = ({
       }
       serverData[columnName] = value;
     });
-    if (confirmCloseLinkedGithubIssues) {
-      serverData.confirm_close_linked_github_issues = true;
+    if (linkedGithubIssuesToClose) {
+      serverData.linked_github_issues_to_close = linkedGithubIssuesToClose;
     }
 
     const modifyPromise = ticketType === TICKET_TYPE ? ticketsAPI.modifyProjectTicket(projectUuid, currentTicketID, serverData) : portalAPI.modifyPortalIssue(projectUuid, currentTicketID, serverData);
@@ -147,27 +147,52 @@ const TicketInDialog = ({
   }, [ticket, modifyTicket, handleModifyError]);
 
   const onStateChange = useCallback((state = '', substate = '') => {
-    modifyTicket(ticket.id, { state, substate }).catch(error => {
-      if (isOpenLinkedGithubIssuesWarning(error) && ticketType === TICKET_TYPE) {
-        const data = error?.response?.data || {};
-        const tickets = data.tickets || [];
-        openCloseLinkedGitHubIssuesWarningDialog({
-          tickets,
-          stateReason: convertSubstateToGitHubStateReason(getRowById(substatesData, substate)?.origin_name),
-          callback: () => {
-            return modifyTicket(ticket.id, { state, substate }, { confirmCloseLinkedGithubIssues: true }).then(res => {
+    if (ticketType !== TICKET_TYPE) {
+      modifyTicket(ticket.id, { state, substate }).catch(handleModifyError);
+      return;
+    }
 
-              // update linkedRecords
-              const issues = tickets.map(ticket => ticket.open_github_issues).flat();
-              setLinkedRecords(pre => generatorLinkedRecordsForClosedGitHubIssues(pre, issues));
-            });
-          },
-        });
-        return;
-      }
-      handleModifyError(error);
-    });
-  }, [ticket, ticketType, substatesData, modifyTicket, handleModifyError, openCloseLinkedGitHubIssuesWarningDialog]);
+    const nextStateName = (getRowById(statesData, state)?.origin_name || '').toLowerCase();
+    const isClosing = nextStateName === 'closed';
+    const openGithubIssues = Object.entries(linkedRecords || {}).reduce((issues, [key, record]) => {
+      if (!record || record.connection_type !== 'github_issue') return issues;
+      const issueState = (record.state || '').toString().toLowerCase();
+      if (issueState === 'closed' || issueState === '0002') return issues;
+      const [connectionId, recordPk] = key.split('_', 2);
+      const parsedConnectionId = Number(connectionId);
+      const parsedRecordPk = Number(recordPk);
+      if (!Number.isInteger(parsedConnectionId) || !Number.isInteger(parsedRecordPk)) return issues;
+      issues.push({
+        connection_id: parsedConnectionId,
+        record_pk: parsedRecordPk,
+        title: record.title || '',
+        state: record.state,
+      });
+      return issues;
+    }, []);
+
+    if (isClosing && openGithubIssues.length > 0) {
+      const tickets = [{
+        ticket_id: Number(ticket.id),
+        ticket_title: ticket.title || '',
+        open_github_issues: openGithubIssues,
+      }];
+      openCloseLinkedGitHubIssuesWarningDialog({
+        tickets,
+        stateReason: convertSubstateToGitHubStateReason(getRowById(substatesData, substate)?.origin_name),
+        callback: () => {
+          return modifyTicket(ticket.id, { state, substate }, {
+            linkedGithubIssuesToClose: tickets,
+          }).then(() => {
+            setLinkedRecords(pre => generatorLinkedRecordsForClosedGitHubIssues(pre, openGithubIssues));
+          });
+        },
+      });
+      return;
+    }
+
+    modifyTicket(ticket.id, { state, substate }).catch(handleModifyError);
+  }, [ticket, ticketType, statesData, substatesData, linkedRecords, modifyTicket, handleModifyError, openCloseLinkedGitHubIssuesWarningDialog]);
 
   const onSubstateChange = useCallback((substate) => {
     modifyTicket(ticket.id, { substate }).catch(error => {

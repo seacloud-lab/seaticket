@@ -14,11 +14,11 @@ import { CenteredLoading } from '@/components';
 import context from '@/sea-metadata/context';
 import toaster from '@/components/toaster';
 import {
-  generatorTicketsRowsTools, isOpenLinkedGithubIssuesWarning,
+  generatorTicketsRowsTools,
   cascadeUpdate, generatorTicketsContextMenuOptions,
   convertTicketToTask, convertTicketToKb,
 } from '../utils';
-import { convertRowToNameValue, convertRowsToNameValue } from '@/sea-metadata/utils/row';
+import { convertRowToNameValue, convertRowsToNameValue, getRowById as getTableRowById } from '@/sea-metadata/utils/row';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import RelatedIssuesDialog from './related-issues-dialog';
 import CreateKBRecordDialog from './create-kb-record-dialog';
@@ -64,6 +64,50 @@ const Tickets = ({
 
   const metadataRef = useRef(null);
   const allColumns = useRef([]);
+  const linkedGithubStateRef = useRef({});
+
+  const isGithubIssueClosed = useCallback((issueState) => {
+    const state = (issueState || '').toString().trim().toLowerCase();
+    return state === 'closed' || state === '0002';
+  }, []);
+
+  const buildOpenGithubIssuesPayload = useCallback((rowId, rowUpdate, rowData, data) => {
+    const stateName = (rowData?.[PREDEFINED_TICKET_COLUMN_NAME.STATE] || '').toLowerCase();
+    if (stateName !== 'closed') return null;
+
+    const linkedRecordsColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.LINKED_CONNECTION_RECORDS);
+    const titleColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.TITLE);
+    if (!linkedRecordsColumn) return null;
+
+    const tableRow = getTableRowById(data, rowId) || {};
+    const linkedConnectionRecords = rowUpdate?.[linkedRecordsColumn.key] ?? tableRow?.[linkedRecordsColumn.key] ?? [];
+    if (!Array.isArray(linkedConnectionRecords) || linkedConnectionRecords.length === 0) return null;
+
+    const linkedRecordTitles = data?.linked_records || {};
+    const openGithubIssues = linkedConnectionRecords.reduce((issues, linkedKey) => {
+      if (typeof linkedKey !== 'string') return issues;
+      const issueState = linkedGithubStateRef.current[linkedKey];
+      if (issueState === undefined || isGithubIssueClosed(issueState)) return issues;
+      const [connectionId, recordPk] = linkedKey.split('_', 2);
+      const parsedConnectionId = Number(connectionId);
+      const parsedRecordPk = Number(recordPk);
+      if (!Number.isInteger(parsedConnectionId) || !Number.isInteger(parsedRecordPk)) return issues;
+      issues.push({
+        connection_id: parsedConnectionId,
+        record_pk: parsedRecordPk,
+        title: linkedRecordTitles[linkedKey] || '',
+        state: issueState,
+      });
+      return issues;
+    }, []);
+    if (openGithubIssues.length === 0) return null;
+
+    return [{
+      ticket_id: Number(rowId),
+      ticket_title: (titleColumn ? (tableRow?.[titleColumn.key] || '') : ''),
+      open_github_issues: openGithubIssues,
+    }];
+  }, [isGithubIssueClosed]);
 
   const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
   const [currentTicket, setCurrentTicket] = useState(null);
@@ -92,6 +136,7 @@ const Tickets = ({
         }), isBuiltInView).then(res => {
           const rows = Array.isArray(res.data.tickets) ? res.data.tickets : [];
           const linked_records = res?.data?.linked_records || {};
+          linkedGithubStateRef.current = res?.data?.linked_github_issue_state_map || {};
           let columns = res?.data?.columns || [];
           const othersConfig = {
             [PREDEFINED_TICKET_COLUMN_NAME.TITLE]: { click: (row) => togglePageSlugId(row._id) },
@@ -163,50 +208,69 @@ const Tickets = ({
         if (row_update[AUTO_UPDATE_PARTICIPANTS_KEY]) {
           delete rowData[PREDEFINED_TICKET_COLUMN_NAME.PARTICIPANTS];
         }
-        return modifyRow(TICKET_TABLE_NAME, row_id, row_update, () => api.modifyRow(row_id, rowData, isCopyPaste), { typesData }).catch(error => {
-          if (isOpenLinkedGithubIssuesWarning(error)) {
-            const data = error?.response?.data || {};
-            const tickets = data.tickets || [];
-            openCloseLinkedGitHubIssuesWarningDialog({
-              tickets,
-              stateReason: '',
-              callback: () => {
-                return modifyRow(TICKET_TABLE_NAME, row_id, row_update, () => api.modifyRow(row_id, { ...rowData, confirm_close_linked_github_issues: true }, isCopyPaste), { typesData }).then(res => {
-                  const eventBus = context.eventBus;
-                  eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, row_id, row_update);
-                });
-              },
-            });
-          }
-          throw error;
-        });
+        const closePayload = buildOpenGithubIssuesPayload(row_id, row_update, rowData, data);
+        if (closePayload) {
+          openCloseLinkedGitHubIssuesWarningDialog({
+            tickets: closePayload,
+            stateReason: '',
+            callback: () => {
+              return modifyRow(
+                TICKET_TABLE_NAME,
+                row_id,
+                row_update,
+                () => api.modifyRow(row_id, { ...rowData, linked_github_issues_to_close: closePayload }, isCopyPaste),
+                { typesData }
+              ).then(() => {
+                const eventBus = context.eventBus;
+                eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, row_id, row_update);
+              });
+            },
+          });
+          // Reject with 409 so SeaMetadata restores the optimistic row update until confirmed.
+          return Promise.reject({ response: { status: 409 } });
+        }
+        return modifyRow(TICKET_TABLE_NAME, row_id, row_update, () => api.modifyRow(row_id, rowData, isCopyPaste), { typesData });
       };
     }
     if (isFunction(api.modifyRows)) {
       _api.modifyRows = (rowsUpdate, isCopyPaste, { data, typesData, tagsData } = {}) => {
         const rowsData = convertRowsToNameValue(rowsUpdate, { data, typesData, tagsData });
-        return modifyRows(TICKET_TABLE_NAME, rowsUpdate, () => api.modifyRows(rowsData, isCopyPaste)).catch(error => {
-          if (isOpenLinkedGithubIssuesWarning(error)) {
-            const data = error?.response?.data || {};
-            const tickets = data.tickets || [];
-            openCloseLinkedGitHubIssuesWarningDialog({
-              tickets,
-              stateReason: '',
-              callback: () => {
-                return modifyRows(TICKET_TABLE_NAME, rowsUpdate, () => api.modifyRows(rowsData, isCopyPaste, { confirm_close_linked_github_issues: true })).then(res => {
-                  const eventBus = context.eventBus;
-                  let idRowsUpdate = {};
-                  rowsUpdate.forEach(rowUpdate => {
-                    const { row_id, row } = rowUpdate;
-                    idRowsUpdate[row_id] = row;
-                  });
-                  eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROWS_CHANGED, idRowsUpdate);
-                });
-              },
-            });
+        const closePayload = [];
+        rowsUpdate.forEach((rowUpdate, index) => {
+          const item = buildOpenGithubIssuesPayload(
+            rowUpdate.row_id,
+            rowUpdate.row,
+            rowsData[index]?.row || {},
+            data,
+          );
+          if (item) {
+            closePayload.push(...item);
           }
-          throw error;
         });
+        if (closePayload.length > 0) {
+          openCloseLinkedGitHubIssuesWarningDialog({
+            tickets: closePayload,
+            stateReason: '',
+            callback: () => {
+              return modifyRows(
+                TICKET_TABLE_NAME,
+                rowsUpdate,
+                () => api.modifyRows(rowsData, isCopyPaste, { linked_github_issues_to_close: closePayload })
+              ).then(() => {
+                const eventBus = context.eventBus;
+                let idRowsUpdate = {};
+                rowsUpdate.forEach(rowUpdate => {
+                  const { row_id, row } = rowUpdate;
+                  idRowsUpdate[row_id] = row;
+                });
+                eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROWS_CHANGED, idRowsUpdate);
+              });
+            },
+          });
+          // Reject with 409 so SeaMetadata restores the optimistic row updates until confirmed.
+          return Promise.reject({ response: { status: 409 } });
+        }
+        return modifyRows(TICKET_TABLE_NAME, rowsUpdate, () => api.modifyRows(rowsData, isCopyPaste));
       };
     }
     if (isFunction(api.deleteRow)) {
@@ -221,7 +285,7 @@ const Tickets = ({
 
     return _api;
   }, [projectUuid, isBuiltInView, api, getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
-    getMetadata, modifyRow, modifyRows, deleteRow, deleteRows, openCloseLinkedGitHubIssuesWarningDialog]);
+    getMetadata, modifyRow, modifyRows, deleteRow, deleteRows, openCloseLinkedGitHubIssuesWarningDialog, buildOpenGithubIssuesPayload]);
 
   const localStorageName = useMemo(() => customizeLocalStorageNamePrefix || `seaqa-${projectUuid}-tickets`, [projectUuid, customizeLocalStorageNamePrefix]);
 
