@@ -38,7 +38,7 @@ from seahub.tickets.ticket_utils import check_ticket_creation_interval, get_colu
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.utils.decorators import require_org_context
 from seahub.utils.timeutils import datetime_to_isoformat_timestr
-from seahub.portal.permissions import PortalKnowledgeBasePermission, PortalIssuePermission
+from seahub.portal.permissions import PortalKnowledgeBasePermission, PortalIssuePermission, PortalAnonymousAccessPermission
 from seahub.portal.models import ProjectExternalUser
 from seahub.portal.utils import PORTAL_EXTERNAL_LOGIN_CODE_TTL, PORTAL_EXTERNAL_LOGIN_SEND_COOLDOWN, PORTAL_EXTERNAL_LOGIN_VERIFY_FAIL_LIMIT, \
     PORTAL_EXTERNAL_LOGIN_VERIFY_LOCK_TTL, clear_portal_external_login_code, clear_portal_external_login_state, get_portal_external_login_code_key, \
@@ -868,7 +868,7 @@ class PortalIssueView(APIView):
 
 class PortalIssueCommentsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (PortalIssuePermission | PortalKnowledgeBasePermission,)
+    permission_classes = (PortalAnonymousAccessPermission, )
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request, project_uuid, issue_id):
@@ -993,7 +993,7 @@ class PortalIssueCommentsView(APIView):
 
 class PortalIssueCommentView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (PortalIssuePermission | PortalKnowledgeBasePermission,)
+    permission_classes = (PortalAnonymousAccessPermission,)
     throttle_classes = (UserRateThrottle,)
 
     def put(self, request, project_uuid, issue_id, comment_id):
@@ -1153,7 +1153,7 @@ class PortalIssueCommentView(APIView):
 
 class PortalTagsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (PortalIssuePermission | PortalKnowledgeBasePermission,)
+    permission_classes = (PortalAnonymousAccessPermission,)
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request, project_uuid):
@@ -1299,7 +1299,7 @@ class PortalKnowledgeBaseRecordView(APIView):
 
 class PortalUserListView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (PortalIssuePermission | PortalKnowledgeBasePermission,)
+    permission_classes = (PortalAnonymousAccessPermission,)
     throttle_classes = (UserRateThrottle,)
 
     def post(self, request, project_uuid):
@@ -1332,7 +1332,7 @@ class PortalUserListView(APIView):
 
 class PortalIssueMetadataView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (PortalIssuePermission | PortalKnowledgeBasePermission,)
+    permission_classes = (PortalAnonymousAccessPermission,)
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request, project_uuid):
@@ -1501,6 +1501,9 @@ class PortalExternalInvitationsView(APIView):
         if not project:
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        
+        if not check_project_admin_permission(request.user.username, project.workspace.owner):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         try:
             invites = PortalExternalInvitation.objects.list_invites_by_project_uuid(project_uuid)

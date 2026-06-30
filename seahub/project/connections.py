@@ -212,9 +212,17 @@ class ProjectConnectionsView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         records = ProjectConnections.objects.filter(project_uuid=project_uuid, deleted=False)[start:end]
-        records = [record.to_dict() for record in records]
+        is_project_admin = check_project_admin_permission(username, workspace.owner)
 
-        return Response({'records': records}, status=status.HTTP_200_OK)
+        new_records = []
+        for record in records:
+            record_info = record.to_dict()
+            if not is_project_admin:
+                record_info.pop('config')
+            new_records.append(record_info)
+            
+
+        return Response({'records': new_records}, status=status.HTTP_200_OK)
 
     @require_org_context
     def post(self, request, project_uuid):
