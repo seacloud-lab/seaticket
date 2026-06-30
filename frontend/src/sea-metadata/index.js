@@ -6,7 +6,7 @@ import {
   DataCacheProvider, useDataCache,
 } from './hooks';
 import ViewToolBar from './components/view-toolbar';
-import { CellType, VIEW_TOOL } from './constants';
+import { CellType, VIEW_TOOL, EVENT_BUS_TYPE } from './constants';
 import context from './context';
 import SeaMetadata from './render';
 
@@ -21,5 +21,5 @@ export {
   DataCacheProvider, useDataCache,
   ViewToolBar, View,
   CellType, context,
-  VIEW_TOOL,
+  VIEW_TOOL, EVENT_BUS_TYPE,
 };
