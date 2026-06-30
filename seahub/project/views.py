@@ -278,10 +278,17 @@ def confluence_oauth(request):
     request.session['confluence_oauth_project_uuid'] = project_uuid
     request.session['confluence_oauth_return_to'] = return_to
 
+    confluence_scopes = [
+        'offline_access',
+        'search:confluence',
+        'read:space:confluence',
+        'read:confluence-user',
+    ]
+
     params = {
         'audience': 'api.atlassian.com',
         'client_id': client_id,
-        'scope': 'offline_access read:page:confluence read:space:confluence read:confluence-user',
+        'scope': ' '.join(confluence_scopes),
         'redirect_uri': redirect_url,
         'state': state,
         'response_type': 'code',

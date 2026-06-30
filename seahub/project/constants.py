@@ -470,7 +470,7 @@ CONNECTION_MUST_RETURN_COLUMNS = {
     ConnectionType.DISCOURSE_FORUM.value: ['slug', 'topic_id', 'resolved'],
     ConnectionType.NOTION.value: ['page_id'],
     ConnectionType.LINEAR.value: ['identifier'],
-    ConnectionType.CONFLUENCE.value: ['page_id', 'url'],
+    ConnectionType.CONFLUENCE.value: ['page_id'],
 }
 
 LLM_INPUT_CHARACTERS_LIMIT = 4000

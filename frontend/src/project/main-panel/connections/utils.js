@@ -144,6 +144,14 @@ const getNotionOriginalPageUrl = (row, columns) => {
   return `https://www.notion.so/${normalizedPageId}`;
 };
 
+const getConfluenceOriginalPageUrl = (connection, row, columns) => {
+  const pageIdColumn = getColumnByName(columns, 'page_id');
+  const pageId = getCellValueByColumn(row, pageIdColumn);
+  const workspaceUrl = connection?.config?.workspace_url || '';
+  if (!pageId || !workspaceUrl) return '';
+  return `${workspaceUrl}/wiki/pages/viewpage.action?pageId=${pageId}`;
+};
+
 const getLinearOriginalPageUrl = (connection, row, columns) => {
   const identifierColumn = getColumnByName(columns, 'identifier');
   const workspaceName = connection?.config?.workspace_name;
@@ -161,9 +169,11 @@ export const getOriginalPageUrl = (connection, row, columns) => {
     case CONNECTION_TYPE.DISCOURSE_FORUM: {
       return getDiscourseOriginalPageUrl(connection, row, columns);
     }
+    case CONNECTION_TYPE.CONFLUENCE: {
+      return getConfluenceOriginalPageUrl(connection, row, columns);
+    }
     case CONNECTION_TYPE.SITE:
     case CONNECTION_TYPE.GITHUB_ISSUE:
-    case CONNECTION_TYPE.CONFLUENCE:
     case CONNECTION_TYPE.GENERAL_TASK: {
       const urlColumn = getColumnByName(columns, 'url');
       const url = getCellValueByColumn(row, urlColumn) || '';
