@@ -4,9 +4,9 @@ import PropTypes from 'prop-types';
 import copy from 'copy-to-clipboard';
 import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Row } from 'reactstrap';
 import { gettext } from '@/constants';
-import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, STEP, STEPS, EMAIL_SERVER_PROVIDER, getAvailableConnectionTypes } from '../../constants';
+import { CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, CONNECTION_SUB_TYPE_MAP, STEP, STEPS, EMAIL_SERVER_PROVIDER, getAvailableConnectionTypes } from '../../constants';
 import { getVisibleEmailFields, getEmailProvider, populateEmailOAuthDefaults, sanitizeEmailConfigByProvider, getConnectionIcon, isOAuthEmailProvider, getEmailOAuthCallbackUrl } from '../../utils';
-import { ModalHeader, Loading, SecondaryBtn, toaster, Icon } from '@/components';
+import { ModalHeader, Loading, SecondaryBtn, toaster, IconButton, Icon } from '@/components';
 import ConnectionConfigEditor from '../connection-config-editor';
 import { connectionsAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
@@ -41,14 +41,15 @@ const initializeConfig = (newType) => {
 const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const availableConnectionTypes = useMemo(() => getAvailableConnectionTypes(enableGeneralTask), [enableGeneralTask]);
   const [stepIndex, setStepIndex] = useState(0);
-  const [type, setType] = useState(availableConnectionTypes[0]?.type || CONNECTION_TYPES[0].type);
+  const [type, setType] = useState(CONNECTION_TYPE.GITHUB_ISSUE);
   const [name, setName] = useState('');
-  const [config, setConfig] = useState(initializeConfig(availableConnectionTypes[0]?.type || CONNECTION_TYPES[0].type));
+  const [config, setConfig] = useState(initializeConfig(CONNECTION_TYPE.GITHUB_ISSUE));
   const [isSubmitting, setSubmitting] = useState(false);
   const [githubRepositories, setGithubRepositories] = useState([]);
   const [isLoadingRepositories, setIsLoadingRepositories] = useState(false);
   const [showEmailAdvancedOptions, setShowEmailAdvancedOptions] = useState(false);
   const [isWaitingEmailOAuth, setWaitingEmailOAuth] = useState(false);
+  const [collapsedSections, setCollapsedSections] = useState([]);
   const { updateUrlParams } = useConnections();
   const prevStepIndexRef = useRef(stepIndex);
   const emailOAuthIntervalRef = useRef(null);
@@ -270,6 +271,38 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   }, []);
 
   const typeOption = availableConnectionTypes.find(i => i.type === type) || availableConnectionTypes[0];
+  const connectionSections = useMemo(() => {
+    const sectionOrder = ['issues', 'tasks', 'documents'];
+
+    return sectionOrder
+      .map(subTypeKey => {
+        const subType = CONNECTION_SUB_TYPE_MAP[subTypeKey];
+        if (!subType) return null;
+
+        const items = availableConnectionTypes.filter(connection => {
+          const connectionSubType = connection.sub_types || connection.subTypes;
+          const connectionSubTypeName = connectionSubType?.name;
+          return connectionSubTypeName === subType.name || connectionSubTypeName === subTypeKey;
+        });
+
+        return items.length > 0 ? { key: subTypeKey, title: subType.text, items } : null;
+      })
+      .filter(Boolean);
+  }, [availableConnectionTypes]);
+
+  useEffect(() => {
+    setCollapsedSections(prev => prev.filter(sectionKey => connectionSections.some(section => section.key === sectionKey)));
+  }, [connectionSections]);
+
+  const toggleConnectionSection = useCallback((sectionKey) => {
+    setCollapsedSections(prev => {
+      if (prev.includes(sectionKey)) {
+        return prev.filter(key => key !== sectionKey);
+      }
+      return [...prev, sectionKey];
+    });
+  }, []);
+
   const listLinearTeams = useCallback(() => {
     return connectionsAPI.listLinearTeams(projectUuid).then(res => {
       const teams = res?.data?.teams || [];
@@ -410,7 +443,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
                     src={getConnectionIcon(typeOption.type)}
                     alt={typeOption.name}
                     className="seaqa-project-new-connection-icon"
-                    style={{ width: 20, height: 20 }}
                   />
                   <span className="seaqa-project-new-connection-name">{typeOption.name}</span>
                 </div>
@@ -422,17 +454,47 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
           }
         </div>
         {step.key === STEP.TYPE && (
-          <div className="seaqa-project-new-connection-types">
-            {availableConnectionTypes.map(connection => {
-              const { type: key, name } = connection;
-              const isActive = key === type;
-              return (
-                <div className={classnames('seaqa-project-new-connection-type', { 'selected': isActive })} key={key} onClick={() => onTypeChange(key)}>
-                  <img src={getConnectionIcon(key)} alt={name} className="seaqa-project-new-connection-icon" />
-                  <span className="seaqa-project-new-connection-name">{name}</span>
+          <div className="seaqa-project-new-connection-type-sections">
+            {connectionSections.map(section => (
+              <div key={section.key} className="seaqa-project-new-connection-section">
+                <div className="seaqa-project-new-connection-section-header">
+                  <div className="seaqa-project-new-connection-section-title">{section.title}</div>
+                  <button
+                    type="button"
+                    className="seaqa-project-new-connection-section-toggle"
+                    onClick={() => toggleConnectionSection(section.key)}
+                    aria-expanded={!collapsedSections.includes(section.key)}
+                    aria-label={collapsedSections.includes(section.key) ? gettext('Expand section') : gettext('Collapse section')}
+                  >
+                    <IconButton
+                      icon="arrow-down-b"
+                      className={classnames('seaqa-project-new-connection-section-toggle-icon', { 'rotate-icon-90': collapsedSections.includes(section.key) })}
+                    />
+                  </button>
                 </div>
-              );
-            })}
+                {!collapsedSections.includes(section.key) && (
+                  <div className="seaqa-project-new-connection-grid">
+                    {section.items.map(connection => {
+                      const { type: key, name } = connection;
+                      const isActive = key === type;
+                      return (
+                        <button
+                          type="button"
+                          key={key}
+                          onClick={() => onTypeChange(key)}
+                          className={classnames('seaqa-project-new-connection-card', { selected: isActive })}
+                        >
+                          <span className="seaqa-project-new-connection-card-icon-wrap">
+                            <img src={getConnectionIcon(key)} alt={name} className="seaqa-project-new-connection-card-icon" />
+                          </span>
+                          <span className="seaqa-project-new-connection-card-name">{name}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         )}
         {step.key === STEP.CONFIG && !isGithub && (
@@ -529,9 +591,21 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         )}
       </ModalBody>
       {stepIndex === 0 && (
-        <ModalFooter>
-          <Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>
-          <Button color="primary" onClick={() => setStepIndex(1)}>{gettext('Next')}</Button>
+        <ModalFooter className="seaqa-project-new-connection-footer">
+          <Button
+            type="button"
+            color="secondary"
+            onClick={onToggle}
+          >
+            {gettext('Cancel')}
+          </Button>
+          <Button
+            type="button"
+            color="primary"
+            onClick={() => setStepIndex(1)}
+          >
+            {gettext('Next')}
+          </Button>
         </ModalFooter>
       )}
       {stepIndex === 1 && (
