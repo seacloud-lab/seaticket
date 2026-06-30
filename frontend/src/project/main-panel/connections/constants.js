@@ -420,7 +420,7 @@ export const CONNECTION_FIELDS = {
       is_display: true,
       is_custom: true,
     }, {
-      key: 'space_ids',
+      key: 'space_keys',
       name: gettext('Spaces'),
       type: CONNECTION_FIELD_TYPE.EMPTY,
       is_required: false,

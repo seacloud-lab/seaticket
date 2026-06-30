@@ -56,7 +56,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const [confluenceOauthError, setConfluenceOauthError] = useState('');
   const [confluenceSpaces, setConfluenceSpaces] = useState([]);
   const [isLoadingConfluenceSpaces, setLoadingConfluenceSpaces] = useState(false);
-  const [selectedSpaceIds, setSelectedSpaceIds] = useState([]);
+  const [selectedSpaceKeys, setSelectedSpaceKeys] = useState([]);
   const { updateUrlParams } = useConnections();
   const prevStepIndexRef = useRef(stepIndex);
   const emailOAuthIntervalRef = useRef(null);
@@ -254,7 +254,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         _config['workspace_name'] = workspace.workspace.name;
         _config['workspace_url'] = workspace.workspace.url;
       }
-      _config['space_ids'] = selectedSpaceIds;
+      _config['space_keys'] = selectedSpaceKeys;
     }
     if (type === CONNECTION_TYPE.EMAIL && isOAuthEmailProvider(_config.server_provider)) {
       connectionsAPI.startEmailOAuth(projectUuid, { name: name.trim(), config: _config }).then((res) => {
@@ -303,7 +303,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       setSubmitting(false);
     });
     return;
-  }, [name, type, config, onSubmit, stopEmailOAuthPolling, isConfluence, isGithub, selectedSpaceIds]);
+  }, [name, type, config, onSubmit, stopEmailOAuthPolling, isConfluence, isGithub, selectedSpaceKeys]);
 
   const onCopyCallbackUrl = useCallback(() => {
     copy(callbackUrl);
@@ -361,16 +361,16 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   // Reload spaces when workspace changes
   useEffect(() => {
     if (!isConfluence) return;
-    setSelectedSpaceIds([]);
+    setSelectedSpaceKeys([]);
     fetchConfluenceSpaces();
   }, [config.workspace_id, isConfluence, fetchConfluenceSpaces]);
 
-  const toggleSpaceSelection = useCallback((spaceId) => {
-    setSelectedSpaceIds(prev => {
-      if (prev.includes(spaceId)) {
-        return prev.filter(id => id !== spaceId);
+  const toggleSpaceSelection = useCallback((spaceKey) => {
+    setSelectedSpaceKeys(prev => {
+      if (prev.includes(spaceKey)) {
+        return prev.filter(key => key !== spaceKey);
       }
-      return [...prev, spaceId];
+      return [...prev, spaceKey];
     });
   }, []);
 
@@ -731,15 +731,15 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
                   <div className="seaqa-confluence-spaces-list" style={{ maxHeight: 200, overflowY: 'auto', border: '1px solid #dee2e6', borderRadius: 4, padding: '4px 0' }}>
                     {confluenceSpaces.map(space => (
                       <div
-                        key={space.id}
+                        key={space.key || space.id}
                         className="seaqa-confluence-space-item d-flex align-items-center"
                         style={{ padding: '6px 12px', cursor: 'pointer' }}
-                        onClick={() => toggleSpaceSelection(space.id)}
+                        onClick={() => toggleSpaceSelection(space.key)}
                       >
                         <input
                           type="checkbox"
-                          checked={selectedSpaceIds.includes(space.id)}
-                          onChange={() => toggleSpaceSelection(space.id)}
+                          checked={selectedSpaceKeys.includes(space.key)}
+                          onChange={() => toggleSpaceSelection(space.key)}
                           style={{ marginRight: 8 }}
                         />
                         <div className="d-flex flex-column">
