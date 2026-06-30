@@ -8,6 +8,28 @@ from seahub.seadb_models.models import SchemaTables
 
 logger = logging.getLogger(__name__)
 
+_MORE_REPLIES_OMITTED_NOTICE = '[more replies omitted due to content limit]'
+
+
+def _truncate_content_with_ellipsis(content, max_length):
+    content = content or ''
+    if max_length <= 0:
+        return ''
+    if len(content) <= max_length:
+        return content
+    if max_length <= 3:
+        return '.' * max_length
+    return content[:max_length - 3] + '...'
+
+
+def _build_reply_notice(content):
+    return {
+        'author': None,
+        'content': content,
+        'post_number': None,
+        'modified_time': None,
+    }
+
 class DiscourseSeaDBAPI:
     def __init__(self, base_id, timeout=30, seadb_api=None):
         self.base_id = base_id
@@ -49,19 +71,70 @@ class DiscourseSeaDBAPI:
         response = self.seadb_api.query_rows(self.base_id, sql)
         return response.get('results', [])
 
-    def get_replies_by_topic_ids(self, connection_id, topic_ids, limit_for_each_id):
+    def get_replies_by_topic_ids(self, connection_id, topic_ids):
+        if not topic_ids:
+            return {}
+
         table_name = SchemaTables.DISCOURSE_REPLIES.table_name(connection_id)
-        sql = f"SELECT `topic_id`, `post_number`, `content`, `author`, `modified_time`, `accepted_answer` FROM `{table_name}` WHERE `topic_id` in ({', '.join(topic_ids)}) ORDER BY `post_number` ASC LIMIT 0, {len(topic_ids) * limit_for_each_id}"
-        response = self.seadb_api.query_rows(self.base_id, sql)
-        replies = response.get('results', [])
+        topic_ids_str = ', '.join(str(topic_id) for topic_id in topic_ids)
+        sql = f"SELECT `topic_id`, `post_number`, `content`, `author`, `modified_time`, `accepted_answer` FROM `{table_name}` WHERE `topic_id` in ({topic_ids_str}) ORDER BY `topic_id` ASC, `post_number` ASC"
+        replies = self.seadb_api.query_rows(self.base_id, sql).get('results', [])
         result = {}
         for reply in replies:
             topic_id = reply['topic_id']
             if topic_id not in result:
                 result[topic_id] = [reply]
-            elif len(result[topic_id]) < limit_for_each_id:
+            else:
                 result[topic_id].append(reply)
         return result
+
+    def _get_selected_topic_replies_for_attachment(self, topic_replies, limit_for_each_id):
+        if not topic_replies:
+            return []
+
+        first_reply = topic_replies[0]
+        first_content = first_reply.get('content', '') or ''
+        if len(first_content) > ATTACHMENT_CONTENT_MAX_SIZE:
+            selected_replies = []
+            truncated_content = _truncate_content_with_ellipsis(first_content, ATTACHMENT_CONTENT_MAX_SIZE)
+            if truncated_content:
+                selected_replies.append({
+                    **first_reply,
+                    'content': truncated_content,
+                })
+            selected_replies.append(_build_reply_notice(_MORE_REPLIES_OMITTED_NOTICE))
+            return selected_replies
+
+        latest_replies = topic_replies[-limit_for_each_id:] if limit_for_each_id > 0 else []
+        replies_by_post_number = {
+            reply['post_number']: reply
+            for reply in latest_replies
+        }
+        replies_by_post_number[first_reply['post_number']] = first_reply
+        replies = [replies_by_post_number[post_number] for post_number in sorted(replies_by_post_number)]
+
+        selected_replies = []
+        total_content_size = 0
+        for reply in replies:
+            content = reply.get('content', '') or ''
+            remaining_size = ATTACHMENT_CONTENT_MAX_SIZE - total_content_size
+            if remaining_size <= 0:
+                break
+
+            if len(content) > remaining_size:
+                truncated_content = _truncate_content_with_ellipsis(content, remaining_size)
+                if truncated_content:
+                    selected_replies.append({
+                        **reply,
+                        'content': truncated_content,
+                    })
+                selected_replies.append(_build_reply_notice(_MORE_REPLIES_OMITTED_NOTICE))
+                break
+
+            selected_replies.append(reply)
+            total_content_size += len(content)
+
+        return selected_replies
 
     def get_whole_discourse_data(self, connection_ids_pks):
         """
@@ -105,9 +178,9 @@ class DiscourseSeaDBAPI:
         result = []
         for connection_id, _pks in connection_ids_pks_map.items():
             topics = self.get_topics_by_pks(connection_id, _pks)
-
-            topic_ids_str = [str(topic['topic_id']) for topic in topics]
-            topics_replies_map = self.get_replies_by_topic_ids(connection_id, topic_ids_str, ATTACHMENT_ISSUE_MAX_COMMENTS)
+            topics_replies_map = self.get_replies_by_topic_ids(
+                connection_id, [topic['topic_id'] for topic in topics]
+            )
 
             for topic_data in topics:
                 whole_topic_data = {
@@ -121,18 +194,13 @@ class DiscourseSeaDBAPI:
                     'replies': []
                 }
 
-                total_content_size = 0
-                for reply in topics_replies_map.get(topic_data['topic_id'], []):
-                    content = reply.get('content', '')
-                    total_content_size += len(content)
-
-                    # break if exceed maximum content size
-                    if total_content_size > ATTACHMENT_CONTENT_MAX_SIZE:
-                        break
-
+                replies = self._get_selected_topic_replies_for_attachment(
+                    topics_replies_map.get(topic_data['topic_id'], []), ATTACHMENT_ISSUE_MAX_COMMENTS,
+                )
+                for reply in replies:
                     whole_topic_data['replies'].append({
                         'author': reply.get('author'),
-                        'content': content,
+                        'content': reply.get('content', ''),
                         'post_number': reply.get('post_number'),
                         'modified_time': reply.get('modified_time')
                     })

@@ -10,6 +10,29 @@ from seahub.seadb_models.models import SchemaTables
 
 logger = logging.getLogger(__name__)
 
+_MORE_EMAILS_OMITTED_NOTICE = '[more emails omitted due to content limit]'
+
+
+def _truncate_content_with_ellipsis(content, max_length):
+    content = content or ''
+    if max_length <= 0:
+        return ''
+    if len(content) <= max_length:
+        return content
+    if max_length <= 3:
+        return '.' * max_length
+    return content[:max_length - 3] + '...'
+
+
+def _build_email_notice(content):
+    return {
+        'email_from': None,
+        'email_to': None,
+        'cc': None,
+        'content': content,
+        'modified_time': None,
+    }
+
 
 class EmailSeaDBAPI:
     def __init__(self, base_id, timeout=30, seadb_api=None):
@@ -54,24 +77,87 @@ class EmailSeaDBAPI:
         response = self.seadb_api.query_rows(self.base_id, sql)
         return response.get('results', [])
 
-    def get_emails_by_thread_ids(self, connection_id, thread_ids, limit_for_each_id):
-        thread_ids_str = ', '.join([
-            str(thread_id)
-            for thread_id in thread_ids
-        ])
+    def get_emails_by_thread_ids(self, connection_id, thread_ids):
+        if not thread_ids:
+            return {}
+
         table_name = SchemaTables.EMAIL.table_name(connection_id)
-        sql = "SELECT `thread_id`, `email_from`, `email_to`, `content`, `modified_time` " \
-            f"FROM `{table_name}` WHERE `thread_id` in ({thread_ids_str}) ORDER BY `modified_time` ASC LIMIT 0, {len(thread_ids) * limit_for_each_id}"
-        response = self.seadb_api.query_rows(self.base_id, sql)
-        emails = response.get('results', [])
+        thread_ids_str = ', '.join(str(thread_id) for thread_id in thread_ids)
+        sql = "SELECT `message_id`, `thread_id`, `email_from`, `email_to`, `cc`, `content`, `modified_time` " \
+            f"FROM `{table_name}` WHERE `thread_id` in ({thread_ids_str}) ORDER BY `thread_id` ASC, `modified_time` ASC"
+        emails = self.seadb_api.query_rows(self.base_id, sql).get('results', [])
         result = {}
         for email in emails:
             thread_id = email['thread_id']
             if thread_id not in result:
                 result[thread_id] = [email]
-            elif len(result[thread_id]) < limit_for_each_id:
+            else:
                 result[thread_id].append(email)
         return result
+
+    def _get_selected_thread_emails_for_attachment(self, thread_emails, limit_for_each_id):
+        if not thread_emails:
+            return []
+
+        first_email = thread_emails[0]
+        first_content = first_email.get('content', '') or ''
+        if len(first_content) > ATTACHMENT_CONTENT_MAX_SIZE:
+            selected_emails = []
+            truncated_content = _truncate_content_with_ellipsis(first_content, ATTACHMENT_CONTENT_MAX_SIZE)
+            if truncated_content:
+                selected_emails.append({
+                    **first_email,
+                    'content': truncated_content,
+                })
+            selected_emails.append(_build_email_notice(_MORE_EMAILS_OMITTED_NOTICE))
+            return selected_emails
+
+        latest_emails = thread_emails[-limit_for_each_id:] if limit_for_each_id > 0 else []
+        emails_by_key = {}
+        for email in latest_emails:
+            key = (
+                email.get('message_id') or '',
+                email.get('modified_time') or '',
+                email.get('email_from') or '',
+                email.get('email_to') or '',
+                email.get('content') or '',
+            )
+            emails_by_key[key] = email
+        first_key = (
+            first_email.get('message_id') or '',
+            first_email.get('modified_time') or '',
+            first_email.get('email_from') or '',
+            first_email.get('email_to') or '',
+            first_email.get('content') or '',
+        )
+        emails_by_key[first_key] = first_email
+        emails = sorted(
+            emails_by_key.values(),
+            key=lambda email: (email.get('modified_time') or '', email.get('message_id') or ''),
+        )
+
+        selected_emails = []
+        total_content_size = 0
+        for email in emails:
+            content = email.get('content', '') or ''
+            remaining_size = ATTACHMENT_CONTENT_MAX_SIZE - total_content_size
+            if remaining_size <= 0:
+                break
+
+            if len(content) > remaining_size:
+                truncated_content = _truncate_content_with_ellipsis(content, remaining_size)
+                if truncated_content:
+                    selected_emails.append({
+                        **email,
+                        'content': truncated_content,
+                    })
+                selected_emails.append(_build_email_notice(_MORE_EMAILS_OMITTED_NOTICE))
+                break
+
+            selected_emails.append(email)
+            total_content_size += len(content)
+
+        return selected_emails
 
     def get_whole_email_data(self, connection_ids_pks):
         """
@@ -113,8 +199,7 @@ class EmailSeaDBAPI:
         result = []
         for connection_id, _pks in connection_ids_pks_map.items():
             threads = self.get_threads_by_pks(connection_id, _pks)
-            threads_emails_map = self.get_emails_by_thread_ids(connection_id, _pks, ATTACHMENT_ISSUE_MAX_COMMENTS)
-
+            threads_emails_map = self.get_emails_by_thread_ids(connection_id, _pks)
             for thread_data in threads:
                 whole_thread_data = {
                     'type': ConnectionType.EMAIL.value,
@@ -125,19 +210,14 @@ class EmailSeaDBAPI:
                     'emails': []
                 }
 
-                total_content_size = 0
-                for email in threads_emails_map.get(thread_data['_pk'], []):
-                    content = email.get('content', '') or ''
-                    total_content_size += len(content)
-
-                    # break if exceed maximum content size
-                    if total_content_size > ATTACHMENT_CONTENT_MAX_SIZE:
-                        break
-
+                emails = self._get_selected_thread_emails_for_attachment(
+                    threads_emails_map.get(thread_data['_pk'], []), ATTACHMENT_ISSUE_MAX_COMMENTS,
+                )
+                for email in emails:
                     whole_thread_data['emails'].append({
                         'from': email.get('email_from'),
                         'to': email.get('email_to'),
-                        'content': content,
+                        'content': email.get('content', '') or '',
                         'modified_time': email.get('modified_time')
                     })
                 result.append(whole_thread_data)

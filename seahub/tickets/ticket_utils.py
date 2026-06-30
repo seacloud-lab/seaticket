@@ -45,6 +45,9 @@ logger = logging.getLogger(__name__)
 TICKET_CLOSE_CONFIRM_FIELD = 'confirm_close_linked_github_issues'
 TICKET_CLOSE_WARNING_TYPE = 'open_linked_github_issues'
 
+_COMMENTS_OMITTED_NOTICE = '[comments omitted due to content limit]'
+_MORE_COMMENTS_OMITTED_NOTICE = '[more comments omitted due to content limit]'
+
 TICKET_SUBSTATE_TO_GITHUB_STATE_REASON = {
     'completed': 'completed',
     'not planned': 'not_planned',
@@ -654,20 +657,97 @@ def get_tickets_by_ids(seadb_api, project_uuid, ticket_ids):
     rows = seadb_api.query_rows(project_uuid, sql).get('results')
     return rows
 
-def get_tickets_comments_by_ids(seadb_api, project_uuid, ticket_ids, max_records_for_each_id):
-    ticket_ids_str = ', '.join([
-        str(ticket_id)
-        for ticket_id in ticket_ids
-    ])
-    ticket_comments_sql = f"SELECT `ticket_id`, `creator`, `content`, `created_time` FROM `{TABLE_TICKET_COMMENTS}` WHERE `ticket_id` in ({ticket_ids_str}) AND (`deleted` = False or `deleted` IS NULL) ORDER BY `_pk` ASC LIMIT 0, {len(ticket_ids) * max_records_for_each_id}"
-    ticket_comments_data = seadb_api.query_rows(project_uuid, ticket_comments_sql).get('results')
+def _truncate_content_with_ellipsis(content, max_length):
+    content = content or ''
+    if max_length <= 0:
+        return ''
+    if len(content) <= max_length:
+        return content
+    if max_length <= 3:
+        return '.' * max_length
+    return content[:max_length - 3] + '...'
+
+
+def _build_ticket_comment_notice(content):
+    return {
+        'creator': None,
+        'content': content,
+        'created_time': None,
+    }
+
+
+def get_tickets_comments_by_ids(seadb_api, project_uuid, ticket_ids):
+    if not ticket_ids:
+        return {}
+
+    ticket_ids_str = ', '.join(str(ticket_id) for ticket_id in ticket_ids)
+    ticket_comments_sql = (
+        f"SELECT `_pk`, `ticket_id`, `creator`, `content`, `created_time` FROM `{TABLE_TICKET_COMMENTS}` "
+        f"WHERE `ticket_id` in ({ticket_ids_str}) AND (`deleted` = False or `deleted` IS NULL) "
+        f"ORDER BY `ticket_id` ASC, `_pk` ASC"
+    )
+    ticket_comments_data = seadb_api.query_rows(project_uuid, ticket_comments_sql).get('results', [])
     result = {}
     for comment in ticket_comments_data:
-        if comment['ticket_id'] not in result:
-            result[comment['ticket_id']] = [comment]
-        elif len(result[comment['ticket_id']]) < max_records_for_each_id:
-            result[comment['ticket_id']].append(comment)
+        ticket_id = comment['ticket_id']
+        if ticket_id not in result:
+            result[ticket_id] = [comment]
+        else:
+            result[ticket_id].append(comment)
     return result
+
+
+def _get_selected_ticket_comments_for_attachment(ticket_comments, body_content_length, limit_for_each_id):
+    if body_content_length >= ATTACHMENT_CONTENT_MAX_SIZE:
+        return [_build_ticket_comment_notice(_COMMENTS_OMITTED_NOTICE)]
+
+    if not ticket_comments:
+        return []
+
+    first_comment = ticket_comments[0]
+    remaining_size = ATTACHMENT_CONTENT_MAX_SIZE - body_content_length
+    first_content = first_comment.get('content', '') or ''
+    if len(first_content) > remaining_size:
+        truncated_content = _truncate_content_with_ellipsis(first_content, remaining_size)
+        selected_comments = []
+        if truncated_content:
+            selected_comments.append({
+                **first_comment,
+                'content': truncated_content,
+            })
+        selected_comments.append(_build_ticket_comment_notice(_MORE_COMMENTS_OMITTED_NOTICE))
+        return selected_comments
+
+    latest_comments = ticket_comments[-limit_for_each_id:] if limit_for_each_id > 0 else []
+    comments_by_pk = {
+        comment['_pk']: comment
+        for comment in latest_comments
+    }
+    comments_by_pk[first_comment['_pk']] = first_comment
+    comments = [comments_by_pk[pk] for pk in sorted(comments_by_pk)]
+
+    selected_comments = []
+    total_content_size = body_content_length
+    for comment in comments:
+        content = comment.get('content', '') or ''
+        remaining_size = ATTACHMENT_CONTENT_MAX_SIZE - total_content_size
+        if remaining_size <= 0:
+            break
+
+        if len(content) > remaining_size:
+            truncated_content = _truncate_content_with_ellipsis(content, remaining_size)
+            if truncated_content:
+                selected_comments.append({
+                    **comment,
+                    'content': truncated_content,
+                })
+            selected_comments.append(_build_ticket_comment_notice(_MORE_COMMENTS_OMITTED_NOTICE))
+            break
+
+        selected_comments.append(comment)
+        total_content_size += len(content)
+
+    return selected_comments
 
 def get_deleted_tickets(seadb_api, project_uuid):
     sql = f"SELECT _pk, `linked_connection_records` FROM `{TABLE_TICKETS}` WHERE `deleted` = True"
@@ -735,12 +815,18 @@ def get_whole_tickets_data(seadb_api, project_uuid, ticket_ids):
     """
 
     tickets = get_tickets_by_ids(seadb_api, project_uuid, ticket_ids)
-    ticket_ids_comments_map = get_tickets_comments_by_ids(seadb_api, project_uuid, ticket_ids, ATTACHMENT_ISSUE_MAX_COMMENTS)
-    all_comments_users = []
-    for ticket_comments in ticket_ids_comments_map.values():
+    all_comments_users = set()
+    ticket_ids_comments_map = get_tickets_comments_by_ids(seadb_api, project_uuid, ticket_ids)
+    for ticket in tickets:
+        full_content = ticket.get('content', '') or ''
+        ticket_comments = _get_selected_ticket_comments_for_attachment(
+            ticket_ids_comments_map.get(ticket['_pk'], []), len(full_content), ATTACHMENT_ISSUE_MAX_COMMENTS,
+        )
+        ticket_ids_comments_map[ticket['_pk']] = ticket_comments
         for comment in ticket_comments:
-            all_comments_users.append(comment.get('creator'))
-    all_comments_users = set(all_comments_users)
+            creator = comment.get('creator')
+            if creator:
+                all_comments_users.add(creator)
 
     all_comments_users_profile = Profile.objects.filter(user__in=all_comments_users)
 
@@ -752,27 +838,22 @@ def get_whole_tickets_data(seadb_api, project_uuid, ticket_ids):
     for ticket in tickets:
         created_time = ticket.get('created_time')
         created_time = time_str_to_utc_time(created_time).isoformat()
+        full_content = ticket.get('content', '') or ''
         whole_ticket_data = {
             'type': ExtraSourceType.TICKET.value,
             'record_id': int(ticket['_pk']),
             'state': ticket.get('state'),
             'title': ticket.get('title'),
-            'content': ticket.get('content', '')[:ATTACHMENT_CONTENT_MAX_SIZE],
+            'content': full_content[:ATTACHMENT_CONTENT_MAX_SIZE],
             'created_time': created_time,
             'comments': []
         }
-        total_content_size = len(whole_ticket_data['content'])
-        for comment in ticket_ids_comments_map.get(ticket['_pk'], []):
+        comments = ticket_ids_comments_map.get(ticket['_pk'], [])
+        for comment in comments:
             content = comment.get('content', '')
-            total_content_size += len(content)
-
-            # break if exceed maximum content size
-            if total_content_size > ATTACHMENT_CONTENT_MAX_SIZE:
-                break
-
             nickname = nickname_map.get(comment.get('creator'))
             commented_at = comment.get('created_time')
-            commented_at = time_str_to_utc_time(commented_at).isoformat()
+            commented_at = time_str_to_utc_time(commented_at).isoformat() if commented_at else None
             whole_ticket_data['comments'].append({
                 'nickname': nickname,
                 'content': content,
