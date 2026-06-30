@@ -6,55 +6,114 @@
 
 .seaqa-project-connection-dialog .modal-content {
   height: 100%;
+  min-height: 400px;
   overflow: hidden;
-}
-
-.seaqa-project-connection-dialog .seaqa-project-new-connection-types {
-  width: 100%;
-  height: fit-content;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  padding-bottom: 16px;
-}
-
-.seaqa-project-connection-dialog .seaqa-project-new-connection-type {
-  height: 52px;
-  width: calc((100% - 10px) / 2);
-  display: inline-flex;
-  align-items: center;
-  overflow: hidden;
-  border: 1px solid #e9e9e9;
-  border-radius: 3px;
-  cursor: pointer;
-  padding: 14px;
-}
-
-.seaqa-project-connection-dialog .seaqa-project-new-connection-type.selected {
-  border-color: #ff8000;
-}
-
-.seaqa-project-connection-dialog .seaqa-project-new-connection-type:not(.selected):hover {
-  border-color: #bdbdbd;
-}
-
-.seaqa-project-connection-dialog .seaqa-project-new-connection-type .seaqa-project-new-connection-icon {
-  height: 24px;
-  width: 24px;
-  overflow: hidden;
-  flex-shrink: 0;
-  margin-right: 8px;
-}
-
-.seaqa-project-connection-dialog .seaqa-project-new-connection-type .seaqa-project-new-connection-name {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .seaqa-project-connection-dialog .seaqa-project-connection-body {
   overflow-y: auto;
+}
+
+.seaqa-project-connection-dialog .seaqa-project-new-connection-type-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.seaqa-project-connection-dialog .seaqa-project-new-connection-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.seaqa-project-connection-dialog .seaqa-project-new-connection-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.seaqa-project-connection-dialog .seaqa-project-new-connection-section-title {
+  color: #666;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.seaqa-project-connection-dialog .seaqa-project-new-connection-section-toggle {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.seaqa-project-connection-dialog .seaqa-project-new-connection-section-toggle:hover {
+  background: transparent;
+}
+
+.seaqa-project-connection-dialog .seaqa-project-new-connection-section-toggle-icon {
+  width: 20px;
+  height: 20px;
+  transition: transform 0.15s ease;
+}
+
+.seaqa-project-connection-dialog .seaqa-project-new-connection-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 12px;
+  row-gap: 8px;
+}
+
+.seaqa-project-connection-dialog .seaqa-project-new-connection-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  width: 100%;
+  padding: 0 16px;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.seaqa-project-connection-dialog .seaqa-project-new-connection-card:hover {
+  background: #f7f7f5;
+}
+
+.seaqa-project-connection-dialog .seaqa-project-new-connection-card.selected {
+  border-color: #ff8000;
+}
+
+.seaqa-project-connection-dialog .seaqa-project-new-connection-card-icon-wrap {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.seaqa-project-connection-dialog .seaqa-project-new-connection-card-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.seaqa-project-connection-dialog .seaqa-project-new-connection-card-name {
+  min-width: 0;
+  flex: 1;
+  font-size: 14px;
+  line-height: 22px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.seaqa-project-connection-dialog .seaqa-project-new-connection-footer {
+  margin-top: 40px;
+  justify-content: flex-end;
 }
 
 .seaqa-project-connection-dialog .seaqa-project-selected-connection {
@@ -66,20 +125,17 @@
   flex-direction: column;
 }
 
-.seaqa-project-connection-dialog .seaqa-project-selected-connection .seaqa-project-selected-no-type {
-  font-weight: 400;
-  font-size: 16px;
-  line-height: 28px;
-  color: #666666;
-}
-
 .seaqa-project-connection-dialog .seaqa-project-selected-connection .seaqa-project-new-connection-type {
   width: 100%;
+  display: inline-flex;
+  align-items: center;
+  overflow: hidden;
+  padding: 14px;
   background: #f7f7f5;
   border: none;
-  height: 48px;
-  cursor: default;
   border-radius: 8px;
+  cursor: default;
+  height: 48px;
   justify-content: space-between;
   margin-bottom: 20px;
 }
@@ -91,6 +147,14 @@
   font-size: 12px;
   line-height: 22px;
   vertical-align: middle;
+}
+
+.seaqa-project-connection-dialog .seaqa-project-new-connection-type .seaqa-project-new-connection-icon {
+  flex-shrink: 0;
+  margin-right: 8px;
+  overflow: hidden;
+  width: 20px;
+  height: 20px;
 }
 
 .seaqa-project-connection-github-tip {
