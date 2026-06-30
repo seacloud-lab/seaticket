@@ -4,6 +4,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from seahub.project.apis import ProjectRelatedUsersView, ProjectItemsSearchView, ProjectConfluenceWorkspaces
+from seahub.project.confluence_api import ConfluenceAPI
 from seahub.project.constants import ITEMS_SEARCH_QUERY_TYPES_SUPPORT
 from seahub.project.models import ProjectConfluenceOauth
 
@@ -123,17 +124,14 @@ class TestProjectConfluenceWorkspaces:
         request = factory.get(f'/api/v1/project/{project.uuid}/confluence/workspaces/')
         request.user = project_creator
 
-        self_response = Mock()
-        self_response.status_code = 200
-        self_response.json.return_value = [
+        mock_resources = [
             {'id': 'jira-1', 'name': 'Jira Site', 'url': 'https://jira.example.com', 'scopes': ['read:jira-work']},
             {'id': 'cf-2', 'name': 'Zulu Workspace', 'url': 'https://zulu.example.com', 'scopes': ['read:confluence-content.summary']},
             {'id': 'cf-1', 'name': 'Alpha Workspace', 'url': 'https://alpha.example.com', 'scopes': ['write:Confluence-content', 'read:me']},
             {'id': 'cf-3', 'name': 'Broken Workspace', 'scopes': ['read:confluence-content.summary']},
         ]
-        self_response.raise_for_status.return_value = None
 
-        with patch('seahub.project.apis.requests.get', return_value=self_response):
+        with patch.object(ConfluenceAPI, 'list_accessible_resources', return_value=mock_resources):
             resp = ProjectConfluenceWorkspaces.as_view()(request, project_uuid=project.uuid)
 
         assert resp.status_code == 200
@@ -144,29 +142,29 @@ class TestProjectConfluenceWorkspaces:
 
     def test_get_refreshes_expired_token(self, factory, project_creator, real_project):
         project = real_project
-        expired_oauth = ProjectConfluenceOauth.objects.create(
+        ProjectConfluenceOauth.objects.create(
             project_uuid=project.uuid,
             access_token='expired-token',
             refresh_token='refresh-token',
             expires_at=datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(minutes=1),
         )
-        refreshed_oauth = ProjectConfluenceOauth(
-            project_uuid=project.uuid,
-            access_token='fresh-token',
-            refresh_token='refresh-token',
-            expires_at=datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1),
-        )
         request = factory.get(f'/api/v1/project/{project.uuid}/confluence/workspaces/')
         request.user = project_creator
 
-        self_response = Mock()
-        self_response.status_code = 200
-        self_response.json.return_value = []
-        self_response.raise_for_status.return_value = None
+        new_expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)
 
-        with patch('seahub.project.apis._refresh_confluence_access_token', return_value=refreshed_oauth) as refresh_mock, \
-                patch('seahub.project.apis.requests.get', return_value=self_response):
+        def mock_accessible_resources(self):
+            # Token refresh happens inside _request before the API call
+            if self.access_token == 'expired-token':
+                self.access_token = 'fresh-token'
+                self.expires_at = new_expires_at
+            return []
+
+        with patch.object(ConfluenceAPI, 'list_accessible_resources', mock_accessible_resources):
             resp = ProjectConfluenceWorkspaces.as_view()(request, project_uuid=project.uuid)
 
         assert resp.status_code == 200
-        refresh_mock.assert_called_once_with(expired_oauth)
+        # Verify the token was persisted after being refreshed
+        updated_oauth = ProjectConfluenceOauth.objects.get_by_project_uuid(project.uuid)
+        assert updated_oauth.access_token == 'fresh-token'
+        assert updated_oauth.expires_at == new_expires_at
