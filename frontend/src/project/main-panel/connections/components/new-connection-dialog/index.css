@@ -42,23 +42,17 @@
 .seaqa-project-connection-dialog .seaqa-project-new-connection-section-toggle {
   width: 24px;
   height: 24px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: #666;
   cursor: pointer;
 }
 
 .seaqa-project-connection-dialog .seaqa-project-new-connection-section-toggle:hover {
-  color: #ff8000;
+  background: transparent;
 }
 
 .seaqa-project-connection-dialog .seaqa-project-new-connection-section-toggle-icon {
   width: 20px;
   height: 20px;
+  transition: transform 0.15s ease;
 }
 
 .seaqa-project-connection-dialog .seaqa-project-new-connection-grid {

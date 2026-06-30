@@ -16,8 +16,7 @@ import Switch from '@/components/switch';
 
 import './index.css';
 
-const { server, projectUuid, workspaceID, projectName } = window.app.pageOptions;
-const { enableGeneralTask } = window.app.pageOptions;
+const { server, projectUuid, workspaceID, projectName, enableGeneralTask } = window.app.pageOptions;
 
 const initializeConfig = (newType) => {
   const fields = CONNECTION_FIELDS[newType] || [];
@@ -459,18 +458,24 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
               <div key={section.key} className="seaqa-project-new-connection-section">
                 <div className="seaqa-project-new-connection-section-header">
                   <div className="seaqa-project-new-connection-section-title">{section.title}</div>
-                  <button
-                    type="button"
-                    className="seaqa-project-new-connection-section-toggle"
-                    onClick={() => toggleConnectionSection(section.key)}
+                  <IconButton
+                    icon="arrow-down-b"
+                    className={classnames('seaqa-project-new-connection-section-toggle', {
+                      'rotate-icon-90': collapsedSections.includes(section.key),
+                    })}
+                    iconClassName="seaqa-project-new-connection-section-toggle-icon"
+                    role="button"
+                    tabIndex={0}
                     aria-expanded={!collapsedSections.includes(section.key)}
                     aria-label={collapsedSections.includes(section.key) ? gettext('Expand section') : gettext('Collapse section')}
-                  >
-                    <IconButton
-                      icon="arrow-down-b"
-                      className={classnames('seaqa-project-new-connection-section-toggle-icon', { 'rotate-icon-90': collapsedSections.includes(section.key) })}
-                    />
-                  </button>
+                    onClick={() => toggleConnectionSection(section.key)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        toggleConnectionSection(section.key);
+                      }
+                    }}
+                  />
                 </div>
                 {!collapsedSections.includes(section.key) && (
                   <div className="seaqa-project-new-connection-grid">
