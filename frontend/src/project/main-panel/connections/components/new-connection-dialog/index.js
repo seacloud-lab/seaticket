@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import copy from 'copy-to-clipboard';
 import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Row } from 'reactstrap';
 import { gettext } from '@/constants';
-import { CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, CONNECTION_SUB_TYPE_MAP, STEP, STEPS, EMAIL_SERVER_PROVIDER, getAvailableConnectionTypes } from '../../constants';
+import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, CONNECTION_SUB_TYPE_MAP, STEP, STEPS, EMAIL_SERVER_PROVIDER, getAvailableConnectionTypes } from '../../constants';
 import { getVisibleEmailFields, getEmailProvider, populateEmailOAuthDefaults, sanitizeEmailConfigByProvider, getConnectionIcon, isOAuthEmailProvider, getEmailOAuthCallbackUrl } from '../../utils';
 import { ModalHeader, Loading, SecondaryBtn, toaster, IconButton, Icon } from '@/components';
 import ConnectionConfigEditor from '../connection-config-editor';
@@ -40,9 +40,9 @@ const initializeConfig = (newType) => {
 const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const availableConnectionTypes = useMemo(() => getAvailableConnectionTypes(enableGeneralTask), [enableGeneralTask]);
   const [stepIndex, setStepIndex] = useState(0);
-  const [type, setType] = useState(CONNECTION_TYPE.GITHUB_ISSUE);
+  const [type, setType] = useState(availableConnectionTypes[0]?.type || CONNECTION_TYPES[0].type);
   const [name, setName] = useState('');
-  const [config, setConfig] = useState(initializeConfig(CONNECTION_TYPE.GITHUB_ISSUE));
+  const [config, setConfig] = useState(initializeConfig(availableConnectionTypes[0]?.type || CONNECTION_TYPES[0].type));
   const [isSubmitting, setSubmitting] = useState(false);
   const [githubRepositories, setGithubRepositories] = useState([]);
   const [isLoadingRepositories, setIsLoadingRepositories] = useState(false);
@@ -271,19 +271,16 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
 
   const typeOption = availableConnectionTypes.find(i => i.type === type) || availableConnectionTypes[0];
   const connectionSections = useMemo(() => {
-    const sectionOrder = ['issues', 'tasks', 'documents'];
-
+    const sectionOrder = ['issues', 'documents', 'tasks'];
     return sectionOrder
       .map(subTypeKey => {
         const subType = CONNECTION_SUB_TYPE_MAP[subTypeKey];
         if (!subType) return null;
-
         const items = availableConnectionTypes.filter(connection => {
           const connectionSubType = connection.sub_types || connection.subTypes;
           const connectionSubTypeName = connectionSubType?.name;
           return connectionSubTypeName === subType.name || connectionSubTypeName === subTypeKey;
         });
-
         return items.length > 0 ? { key: subTypeKey, title: subType.text, items } : null;
       })
       .filter(Boolean);
@@ -427,31 +424,27 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     >
       <ModalHeader toggle={onToggle}>{gettext('New connection')}</ModalHeader>
       <ModalBody className="seaqa-project-connection-body">
-        <div className="seaqa-project-selected-connection">
-          {stepIndex === 0 ?
-            <div className="seaqa-project-selected-no-type">{gettext('Select connection type')}</div>
-            :
-            <>
-              <div className='seaqa-project-connection-help'>
-                {typeOption.help_text}
-                <a className="ml-1" href={typeOption.help_link} target="_blank" rel="noopener noreferrer">{gettext('Help Docs')}</a>
+        {stepIndex > 0 &&
+          <div className="seaqa-project-selected-connection">
+            <div className='seaqa-project-connection-help'>
+              {typeOption.help_text}
+              <a className="ml-1" href={typeOption.help_link} target="_blank" rel="noopener noreferrer">{gettext('Help Docs')}</a>
+            </div>
+            <div className='seaqa-project-new-connection-type'>
+              <div className="d-flex align-items-center">
+                <img
+                  src={getConnectionIcon(typeOption.type)}
+                  alt={typeOption.name}
+                  className="seaqa-project-new-connection-icon"
+                />
+                <span className="seaqa-project-new-connection-name">{typeOption.name}</span>
               </div>
-              <div className='seaqa-project-new-connection-type'>
-                <div className="d-flex align-items-center">
-                  <img
-                    src={getConnectionIcon(typeOption.type)}
-                    alt={typeOption.name}
-                    className="seaqa-project-new-connection-icon"
-                  />
-                  <span className="seaqa-project-new-connection-name">{typeOption.name}</span>
-                </div>
-                {(typeOption.type === CONNECTION_TYPE.GITHUB_ISSUE && githubRepositories.length > 0) && (
-                  <SecondaryBtn text={gettext('Manage GitHub app')} onClick={() => window.open(installGitHubAppURL, '_blank')} />
-                )}
-              </div>
-            </>
-          }
-        </div>
+              {(typeOption.type === CONNECTION_TYPE.GITHUB_ISSUE && githubRepositories.length > 0) && (
+                <SecondaryBtn text={gettext('Manage GitHub app')} onClick={() => window.open(installGitHubAppURL, '_blank')} />
+              )}
+            </div>
+          </div>
+        }
         {step.key === STEP.TYPE && (
           <div className="seaqa-project-new-connection-type-sections">
             {connectionSections.map(section => (
