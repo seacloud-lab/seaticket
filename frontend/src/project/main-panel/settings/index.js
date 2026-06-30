@@ -5,7 +5,6 @@ import LanguageSettings from './language-settings';
 import { gettext } from '@/constants';
 import PromptSettings from './prompt-settings';
 import GitHubIssueTypeMappingSettings from './github-issue-type-mapping';
-import TicketAgentRulesSettings from './ticket-agent-rules-settings';
 
 const Settings = ({
   title,
@@ -40,14 +39,19 @@ const Settings = ({
               agent: Object.assign({}, settings.agent, { github_issue_type_mapping: value }),
             }, callback)}
           />
-          <TicketAgentRulesSettings
-            className="mb-4"
+          <PromptSettings
             value={settings?.agent?.ticket_rules || ''}
             onChange={(value, callback) => modifySettings({
               agent: Object.assign({}, settings.agent, { ticket_rules: value }),
             }, callback)}
+            className='mb-4 ticket-agent-rules-settings'
+            title={gettext('Ticket processing rules')}
+            tip={gettext('Define natural-language rules for ticket reminders and ticket-closing suggestions. These rules only apply to tickets.')}
+            dialogTitle={gettext('Edit Ticket Processing Rules')}
+            placeholder={gettext('Example:\n1) If due soon and substate is Waiting on user, do not send reminder.\n2) If over due and substate is Waiting on user, suggest closing the ticket.')}
+            maxLength={4000}
+            validationMessage={gettext('Ticket processing rules cannot contain tag-like content such as <system-reminder>.')}
           />
-
         </>
       )}
       <SwitchSettingsItem
