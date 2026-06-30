@@ -130,7 +130,7 @@ def update_github_issue_record(
         raise GitHubIssueUpdateError('GitHub auth config missing.', status.HTTP_400_BAD_REQUEST)
 
     seadb_api = seadb_api or SeaDBAPI()
-    issue_record, _ = get_issue_record_by_pk(seadb_api, project_uuid, connection_id, record_pk)
+    issue_record, _, _ = get_issue_record_by_pk(seadb_api, project_uuid, connection_id, record_pk)
     issue_number = issue_record.get('issue_number')
     if not issue_number:
         raise GitHubIssueUpdateError('GitHub issue not found.', status.HTTP_404_NOT_FOUND)

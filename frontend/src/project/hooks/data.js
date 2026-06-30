@@ -277,12 +277,14 @@ export const DataProvider = ({
       const records = res.data[recordsName];
       const rows = Array.isArray(records) ? records : [];
       const linkedRecords = res?.data?.linked_records || {};
+      const linkedRecordsGithubState = res?.data?.linked_github_issue_state_map || {};
       const relatedUsers = res?.data?.related_users || [];
       const columns = res?.data?.columns || [];
       let rowIds = is_reload ? [] : [...(view?.rows || [])];
       let id_row_map = { ...table.id_row_map };
       let key_column_map = { ...table.key_column_map };
       let linked_records = { ...table.linked_records, ...linkedRecords };
+      let linked_github_issue_state_map = { ...(table.linked_github_issue_state_map || {}), ...linkedRecordsGithubState };
       let view_map = { ...table[viewMapName] };
       rows.forEach(r => {
         const rowId = String(r._pk);
@@ -304,7 +306,15 @@ export const DataProvider = ({
       setData(data => {
         const newData = deepcopy(data);
         let _table = newData[tableName] || deepcopy(EMPTY_TABLE);
-        newData[tableName] = { ..._table, id_row_map, key_column_map, [viewMapName]: view_map, linked_records, related_users: relatedUsers };
+        newData[tableName] = {
+          ..._table,
+          id_row_map,
+          key_column_map,
+          [viewMapName]: view_map,
+          linked_records,
+          linked_github_issue_state_map,
+          related_users: relatedUsers,
+        };
 
         if (tableName !== TICKET_TABLE_NAME && tableName !== KB_TABLE_NAME && data[TICKET_TABLE_NAME]) {
           const ticketTable = newData[TICKET_TABLE_NAME];
@@ -343,6 +353,7 @@ export const DataProvider = ({
             [recordsName]: view.rows.map(rId => table.id_row_map[rId]).filter(Boolean),
             columns: view.columns.map(cKey => table.key_column_map[cKey]).filter(Boolean),
             linked_records: table.linked_records,
+            linked_github_issue_state_map: table.linked_github_issue_state_map || {},
             has_more: view.has_more,
             related_users: table?.related_users || [],
           }

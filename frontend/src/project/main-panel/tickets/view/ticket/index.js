@@ -11,7 +11,7 @@ import {
 } from '../../constants';
 import { BAR_TYPE } from '@/project/constants';
 import {
-  convertTicketToKb, generatorTicketsContextMenuOptions, isOpenLinkedGithubIssuesWarning,
+  convertTicketToKb, generatorTicketsContextMenuOptions,
   convertSubstateToGitHubStateReason, generatorLinkedRecordsForClosedGitHubIssues,
 } from '../../utils';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
@@ -117,7 +117,7 @@ const Ticket = ({
   }, [typesData, tagsData, getTableByName, modifyLocalRow]);
 
   // api
-  const modifyTicket = useCallback((ticketID, data, { confirmCloseLinkedGithubIssues = false } = {}) => {
+  const modifyTicket = useCallback((ticketID, data, { linkedGithubIssuesToClose = null } = {}) => {
     let serverData = {};
     const dataKeys = Object.keys(data);
     const isAutoUpdateParticipants = !dataKeys.includes(AUTO_UPDATE_PARTICIPANTS_KEY);
@@ -134,8 +134,8 @@ const Ticket = ({
       }
       serverData[columnName] = value;
     });
-    if (confirmCloseLinkedGithubIssues) {
-      serverData.confirm_close_linked_github_issues = true;
+    if (linkedGithubIssuesToClose) {
+      serverData.linked_github_issues_to_close = linkedGithubIssuesToClose;
     }
 
     return ticketsAPI.modifyProjectTicket(projectUuid, ticketID, serverData).then(res => {
@@ -323,29 +323,50 @@ const Ticket = ({
   }, [ticket, modifyTicket]);
 
   const onStateChange = useCallback((state = '', substate = '') => {
-    modifyTicket(ticket.id, { state, substate }).then(res => {
-      // todo
-    }).catch(error => {
-      if (isOpenLinkedGithubIssuesWarning(error)) {
-        const data = error?.response?.data || {};
-        const tickets = data.tickets || [];
-        openCloseLinkedGitHubIssuesWarningDialog({
-          tickets,
-          stateReason: convertSubstateToGitHubStateReason(getRowById(substatesData, substate)?.origin_name),
-          callback: () => {
-            return modifyTicket(ticket.id, { state, substate }, { confirmCloseLinkedGithubIssues: true }).then(res => {
-              // update linkedRecords
-              const issues = tickets.map(ticket => ticket.open_github_issues).flat();
-              setLinkedRecords(pre => generatorLinkedRecordsForClosedGitHubIssues(pre, issues));
-            });
-          },
-        });
-        return;
-      }
+    const nextStateName = (getRowById(statesData, state)?.origin_name || '').toLowerCase();
+    const isClosing = nextStateName === 'closed';
+    const openGithubIssues = Object.entries(linkedRecords || {}).reduce((issues, [key, record]) => {
+      if (!record || record.connection_type !== 'github_issue') return issues;
+      const issueState = (record.state || '').toString().toLowerCase();
+      if (issueState === 'closed' || issueState === '0002') return issues;
+      const [connectionId, recordPk] = key.split('_', 2);
+      const parsedConnectionId = Number(connectionId);
+      const parsedRecordPk = Number(recordPk);
+      if (!Number.isInteger(parsedConnectionId) || !Number.isInteger(parsedRecordPk)) return issues;
+      issues.push({
+        connection_id: parsedConnectionId,
+        record_pk: parsedRecordPk,
+        title: record.title || '',
+        state: record.state,
+      });
+      return issues;
+    }, []);
+
+    if (isClosing && openGithubIssues.length > 0) {
+      const tickets = [{
+        ticket_id: Number(ticket.id),
+        ticket_title: ticket.title || '',
+        open_github_issues: openGithubIssues,
+      }];
+      openCloseLinkedGitHubIssuesWarningDialog({
+        tickets,
+        stateReason: convertSubstateToGitHubStateReason(getRowById(substatesData, substate)?.origin_name),
+        callback: () => {
+          return modifyTicket(ticket.id, { state, substate }, {
+            linkedGithubIssuesToClose: tickets,
+          }).then(() => {
+            setLinkedRecords(pre => generatorLinkedRecordsForClosedGitHubIssues(pre, openGithubIssues));
+          });
+        },
+      });
+      return;
+    }
+
+    modifyTicket(ticket.id, { state, substate }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
     });
-  }, [ticket, substatesData, modifyTicket, openCloseLinkedGitHubIssuesWarningDialog]);
+  }, [ticket, statesData, substatesData, linkedRecords, modifyTicket, openCloseLinkedGitHubIssuesWarningDialog]);
 
   const onSubstateChange = useCallback((substate) => {
     modifyTicket(ticket.id, { substate }).then(res => {

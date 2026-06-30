@@ -4,11 +4,10 @@ import RunLogs from './run-logs';
 import SuggestionDetailPanel from './run-logs/suggestion-detail-panel';
 import RefreshBtn from '@/project/components/refresh-btn';
 import { useAgentRunLogs } from './hooks/useAgentRunLogs';
-import { agentAPI } from '@/project/api';
+import { agentAPI, ticketsAPI } from '@/project/api';
 import { toaster } from '@/components';
 import { gettext } from '@/constants';
 import AgentType2GithubTypeMappingDialog from './components/agent-type-to-github-type-mapping-dialog';
-import { isOpenLinkedGithubIssuesWarning } from '@/project/main-panel/tickets/utils';
 import { useCloseLinkedIssues } from '@/project/main-panel/tickets/hooks';
 
 import './index.css';
@@ -32,64 +31,83 @@ const Agent = ({ title, settings, modifySettings }) => {
 
   const enabledAgent = useMemo(() => settings?.agent.enabled, [settings?.agent]);
 
-  const getRunIdByActionId = useCallback((actionId) => {
+  const findActionContext = useCallback((actionId) => {
     for (const run of runLogs) {
       const items = run.items || [];
       for (const item of items) {
         const actions = item.actions || [];
         const action = actions.find(a => a.id === actionId);
-        if (action) return run.id;
+        if (action) return { runId: run.id, item, action };
       }
       const directActions = run.actions || [];
       const directAction = directActions.find(a => a.id === actionId);
-      if (directAction) return run.id;
+      if (directAction) return { runId: run.id, item: null, action: directAction };
     }
     return null;
   }, [runLogs]);
 
   const handleConfirmAction = useCallback((actionId) => {
-    const runId = getRunIdByActionId(actionId);
-    if (!runId) return '';
+    const actionContext = findActionContext(actionId);
+    if (!actionContext?.runId) return '';
+    const { runId, item, action } = actionContext;
 
-    return agentAPI.confirmAgentAction(projectUuid, runId, actionId).then(() => {
-      updateRunLog(runId);
-    }).catch((err) => {
-      const payload = err?.response?.data;
-      if (payload?.error_code === 'mapping_required') {
-        setPendingMapping({
-          runId,
-          actionId,
-          agentType: payload.agent_type,
-          githubIssueTypes: payload.github_issue_types || [],
-        });
-        return;
-      }
-      if (isOpenLinkedGithubIssuesWarning(err)) {
-        const tickets = payload?.tickets || [];
+    const executeConfirm = (options = null) => {
+      return agentAPI.confirmAgentAction(projectUuid, runId, actionId, options || {}).then(() => {
+        updateRunLog(runId);
+      }).catch((err) => {
+        const payload = err?.response?.data;
+        if (payload?.error_code === 'mapping_required') {
+          setPendingMapping({
+            runId,
+            actionId,
+            agentType: payload.agent_type,
+            githubIssueTypes: payload.github_issue_types || [],
+          });
+          return;
+        }
+        if (payload?.detail) {
+          toaster.danger(payload.detail);
+          return;
+        }
+        toaster.danger(gettext('Failed to confirm action'));
+      });
+    };
+
+    if (action?.tool_name !== 'suggest_close_ticket') {
+      return executeConfirm();
+    }
+
+    const sourceType = item?.source_type;
+    const sourceId = item?.source_id;
+    if (sourceType !== 'ticket' || !sourceId) {
+      return executeConfirm();
+    }
+
+    const ticketId = Number(sourceId);
+    if (!Number.isInteger(ticketId)) {
+      return executeConfirm();
+    }
+
+    return ticketsAPI.checkLinkedGithubIssues(projectUuid, [ticketId]).then((res) => {
+      const tickets = res?.data?.tickets || [];
+      if (tickets.length > 0) {
         openCloseLinkedGitHubIssuesWarningDialog({
           tickets,
           stateReason: '',
           callback: () => {
-            return agentAPI.confirmAgentAction(
-              projectUuid,
-              runId,
-              actionId,
-              { confirm_close_linked_github_issues: true }
-            ).then(() => {
-              updateRunLog(runId);
+            return executeConfirm({ linked_github_issues_to_close: tickets }).then(() => {
               toaster.success(gettext('Action confirmed'));
             });
           },
         });
         return;
       }
-      if (payload?.detail) {
-        toaster.danger(payload.detail);
-        return;
-      }
-      toaster.danger(gettext('Failed to confirm action'));
+      return executeConfirm();
+    }).catch((err) => {
+      const payload = err?.response?.data || {};
+      toaster.danger(payload?.detail || gettext('Failed to check linked GitHub issues'));
     });
-  }, [getRunIdByActionId, openCloseLinkedGitHubIssuesWarningDialog, updateRunLog]);
+  }, [findActionContext, openCloseLinkedGitHubIssuesWarningDialog, updateRunLog]);
 
   const handleUpdateContent = useCallback((runId, actionId, suggestionContent) => {
     return agentAPI.updateAgentAction(projectUuid, runId, actionId, { suggestion_content: suggestionContent }).then(() => {

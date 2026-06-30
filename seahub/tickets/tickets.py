@@ -43,9 +43,9 @@ from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     check_ticket_link_changes, sync_links_in_connection, TicketLinkValidationError, \
     get_column_from_columns_by_name, get_option_id_by_name, send_data_update_msg, \
     build_tag_id_to_name_map, validate_linked_connection_records, \
-    collect_open_linked_github_issues_for_tickets, build_ticket_close_warning_response, \
-    TICKET_CLOSE_CONFIRM_FIELD, close_linked_github_issues, get_ticket_table_columns, \
-    map_ticket_substate_to_github_state_reason
+    build_linked_github_issue_state_map, \
+    collect_open_linked_github_issues_for_tickets, close_linked_github_issues, \
+    build_ticket_close_payloads_from_client
 from seahub.notifications.signal_handler import MSG_TYPE_TICKET_COMMENTED, MSG_TYPE_TICKET_ASSIGNEE_ADDED
 from seahub.tickets.signals import ticket_assignees_added, ticket_commented
 from seahub.utils.decorators import require_org_context
@@ -195,10 +195,14 @@ class TicketsAPIView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         linked_record_titles = build_linked_record_titles_map(seadb_api, project_uuid, tickets, columns)
+        linked_github_issue_state_map = build_linked_github_issue_state_map(
+            seadb_api, project_uuid, tickets, columns
+        )
         return Response({
             'tickets': tickets,
             'columns': columns,
             'linked_record_titles': linked_record_titles,
+            'linked_github_issue_state_map': linked_github_issue_state_map,
         })
 
     @require_org_context
@@ -456,8 +460,12 @@ class TicketsAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         seadb_api = SeaDBAPI()
-        confirm_close_linked_github_issues = request.data.get(TICKET_CLOSE_CONFIRM_FIELD)
-        confirm_close_linked_github_issues = bool(confirm_close_linked_github_issues)
+        linked_github_issues_to_close = request.data.get('linked_github_issues_to_close') or []
+        if isinstance(linked_github_issues_to_close, str):
+            try:
+                linked_github_issues_to_close = json.loads(linked_github_issues_to_close)
+            except Exception:
+                linked_github_issues_to_close = []
 
         ticket_id_to_row = {}
         for ticket_data in tickets_data:
@@ -603,41 +611,20 @@ class TicketsAPIView(APIView):
                 ticket_events[ticket_id] = ticket_event
 
         if ticket_close_candidates:
-            grouped_open_issues = collect_open_linked_github_issues_for_tickets(
-                seadb_api, project_uuid, ticket_close_candidates
-            )
-            if grouped_open_issues:
-                if not confirm_close_linked_github_issues:
-                    warning_payload = build_ticket_close_warning_response(grouped_open_issues)
-                    return Response(warning_payload, status=status.HTTP_409_CONFLICT)
-                try:
-                    ticket_columns = get_ticket_table_columns(seadb_api, project_uuid)
-                    ticket_open_issue_map = {
-                        int(item.get('ticket_id')): item.get('open_github_issues') or []
-                        for item in grouped_open_issues
-                    }
-                    ticket_close_payloads = []
-                    for candidate in ticket_close_candidates:
-                        ticket_id = int(candidate.get('ticket_id'))
-                        open_github_issues = ticket_open_issue_map.get(ticket_id) or []
-                        if not open_github_issues:
-                            continue
-                        state_reason = map_ticket_substate_to_github_state_reason(
-                            candidate.get('substate'),
-                            ticket_columns,
-                        )
-                        ticket_close_payloads.append({
-                            'ticket_id': ticket_id,
-                            'state_reason': state_reason,
-                            'open_github_issues': open_github_issues,
-                        })
-                    close_linked_github_issues(seadb_api, project_uuid, ticket_close_payloads)
-                except Exception as e:
-                    github_error_response = get_github_issue_update_error_response(e)
-                    if github_error_response:
-                        return github_error_response
-                    logger.exception(e)
-                    return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+            try:
+                ticket_close_payloads = build_ticket_close_payloads_from_client(
+                    seadb_api,
+                    project_uuid,
+                    ticket_close_candidates,
+                    linked_github_issues_to_close,
+                )
+                close_linked_github_issues(seadb_api, project_uuid, ticket_close_payloads)
+            except Exception as e:
+                github_error_response = get_github_issue_update_error_response(e)
+                if github_error_response:
+                    return github_error_response
+                logger.exception(e)
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
         if ticket_link_diff:
             try:
@@ -767,6 +754,58 @@ class TicketsAPIView(APIView):
         })
 
 
+class TicketsLinkedGithubIssuesCheckAPIView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    @require_org_context
+    def post(self, request, project_uuid):
+        ticket_ids = request.data.get('ticket_ids') or []
+        if not isinstance(ticket_ids, list) or not ticket_ids:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'ticket_ids is required.')
+
+        normalized_ticket_ids = []
+        for ticket_id in ticket_ids:
+            try:
+                normalized_ticket_ids.append(int(ticket_id))
+            except (TypeError, ValueError):
+                return api_error(status.HTTP_400_BAD_REQUEST, 'ticket_ids invalid.')
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
+
+        username = request.user.username
+        if not check_project_permission(username, project.workspace.owner):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        seadb_api = SeaDBAPI()
+        ticket_ids_str = ','.join(str(ticket_id) for ticket_id in sorted(set(normalized_ticket_ids)))
+        try:
+            sql = (
+                f"SELECT `_pk`, `title`, `linked_connection_records` FROM `{TABLE_TICKETS}` "
+                f"WHERE `_pk` IN ({ticket_ids_str}) AND (`deleted` = False OR `deleted` IS NULL)"
+            )
+            rows = seadb_api.query_rows(project_uuid, sql).get('results') or []
+        except Exception as e:
+            logger.exception(e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        ticket_payloads = []
+        for row in rows:
+            ticket_payloads.append({
+                'ticket_id': int(row.get('_pk')),
+                'ticket_title': row.get('title') or '',
+                'linked_connection_records': row.get('linked_connection_records') or [],
+            })
+
+        grouped_open_issues = collect_open_linked_github_issues_for_tickets(
+            seadb_api, project_uuid, ticket_payloads
+        )
+        return Response({'tickets': grouped_open_issues}, status=status.HTTP_200_OK)
+
+
 class TicketAPIView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
@@ -871,8 +910,12 @@ class TicketAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         ticket_state_name = request.data.get('state')
-        confirm_close_linked_github_issues = request.data.get(TICKET_CLOSE_CONFIRM_FIELD)
-        confirm_close_linked_github_issues = bool(confirm_close_linked_github_issues)
+        linked_github_issues_to_close = request.data.get('linked_github_issues_to_close') or []
+        if isinstance(linked_github_issues_to_close, str):
+            try:
+                linked_github_issues_to_close = json.loads(linked_github_issues_to_close)
+            except Exception:
+                linked_github_issues_to_close = []
 
         is_update_type = 'type' in request.data
         type_name = request.data.get('type') or None
@@ -1034,43 +1077,28 @@ class TicketAPIView(APIView):
             old_state = (ticket.get(SchemaTables.TICKETS.column.state.name) or '').lower()
             new_state = update_row.get(SchemaTables.TICKETS.column.state.name) or old_state
             if new_state == 'closed' and old_state != 'closed':
-                linked_connection_records = update_row.get(SchemaTables.TICKETS.column.linked_connection_records.name)
-                if linked_connection_records is None:
-                    linked_connection_records = ticket.get(SchemaTables.TICKETS.column.linked_connection_records.name) or []
                 close_candidates = [{
                     'ticket_id': int(ticket.get('_pk')),
-                    'ticket_title': update_row.get(SchemaTables.TICKETS.column.title.name) or ticket.get(SchemaTables.TICKETS.column.title.name) or '',
-                    'linked_connection_records': linked_connection_records,
                     'substate': update_row.get(SchemaTables.TICKETS.column.substate.name) or ticket.get(SchemaTables.TICKETS.column.substate.name),
                 }]
-                grouped_open_issues = collect_open_linked_github_issues_for_tickets(
-                    seadb_api, project_uuid, close_candidates
-                )
-                if grouped_open_issues:
-                    if not confirm_close_linked_github_issues:
-                        warning_payload = build_ticket_close_warning_response(grouped_open_issues)
-                        return Response(warning_payload, status=status.HTTP_409_CONFLICT)
-                    try:
-                        ticket_columns = get_ticket_table_columns(seadb_api, project_uuid)
-                        state_reason = map_ticket_substate_to_github_state_reason(
-                            close_candidates[0].get('substate'),
-                            ticket_columns,
-                        )
-                        close_linked_github_issues(
-                            seadb_api,
-                            project_uuid,
-                            [{
-                                'ticket_id': int(ticket.get('_pk')),
-                                'state_reason': state_reason,
-                                'open_github_issues': grouped_open_issues[0].get('open_github_issues') or [],
-                            }],
-                        )
-                    except Exception as e:
-                        github_error_response = get_github_issue_update_error_response(e)
-                        if github_error_response:
-                            return github_error_response
-                        logger.exception(e)
-                        return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+                try:
+                    ticket_close_payloads = build_ticket_close_payloads_from_client(
+                        seadb_api,
+                        project_uuid,
+                        close_candidates,
+                        linked_github_issues_to_close,
+                    )
+                    close_linked_github_issues(
+                        seadb_api,
+                        project_uuid,
+                        ticket_close_payloads,
+                    )
+                except Exception as e:
+                    github_error_response = get_github_issue_update_error_response(e)
+                    if github_error_response:
+                        return github_error_response
+                    logger.exception(e)
+                    return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
             update_row[SchemaTables.TICKETS.column.participants.name] = participants
             update_row[SchemaTables.TICKETS.column.modified_time.name] = now_datetime
@@ -1912,10 +1940,14 @@ class MyTicketAPIView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
         linked_record_titles = build_linked_record_titles_map(seadb_api, project_uuid, tickets, columns)
+        linked_github_issue_state_map = build_linked_github_issue_state_map(
+            seadb_api, project_uuid, tickets, columns
+        )
         return Response({
             'tickets': tickets,
             'columns': columns,
             'linked_record_titles': linked_record_titles,
+            'linked_github_issue_state_map': linked_github_issue_state_map,
         })
 
 
@@ -2007,7 +2039,15 @@ class TicketTrashAPIView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
         linked_record_titles = build_linked_record_titles_map(seadb_api, project_uuid, tickets, columns)
-        return Response({'tickets': tickets, 'columns': columns, 'linked_record_titles': linked_record_titles})
+        linked_github_issue_state_map = build_linked_github_issue_state_map(
+            seadb_api, project_uuid, tickets, columns
+        )
+        return Response({
+            'tickets': tickets,
+            'columns': columns,
+            'linked_record_titles': linked_record_titles,
+            'linked_github_issue_state_map': linked_github_issue_state_map,
+        })
 
     @require_org_context
     def put(self, request, project_uuid):

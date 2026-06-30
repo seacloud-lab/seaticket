@@ -5,7 +5,8 @@ from seahub.project.views import project_view
 from .ticket_types import TicketTypesAPIView, TicketTypeAPIView
 from .ticket_substates import TicketSubstatesAPIView, TicketSubstateAPIView
 from .tickets import TicketsAPIView, TicketAPIView, TicketCommentsAPIView, TicketCommentAPIView, \
-    TicketsSearchAPIView, MyTicketAPIView, TicketMetadataAPIView, TicketTrashAPIView, TicketActivitiesAPIView
+    TicketsSearchAPIView, MyTicketAPIView, TicketMetadataAPIView, TicketTrashAPIView, \
+    TicketActivitiesAPIView, TicketsLinkedGithubIssuesCheckAPIView
 from .ticket_views import TicketFolders, TicketViewsAPI, TicketViewView, \
     TicketViewsMoveView, TicketViewsDuplicateView
 
@@ -22,6 +23,7 @@ urlpatterns = [
 
     # ticket
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/tickets/$', TicketsAPIView.as_view(), name='api-v1-project-tickets'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/tickets/linked-github-issues/check/$', TicketsLinkedGithubIssuesCheckAPIView.as_view(), name='api-v1-project-tickets-linked-github-issues-check'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/tickets/(?P<ticket_id>\d+)/$', TicketAPIView.as_view(), name='api-v1-project-ticket'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/tickets/(?P<ticket_id>\d+)/comments/$', TicketCommentsAPIView.as_view(), name='api-v1-project-ticket-comments'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/tickets/(?P<ticket_id>\d+)/comments/(?P<comment_id>\d+)/$', TicketCommentAPIView.as_view(), name='api-v1-project-ticket-comment'),

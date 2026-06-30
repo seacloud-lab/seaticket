@@ -77,6 +77,11 @@ class TicketsAPI {
     return this.req.get(url, { params: params });
   }
 
+  checkLinkedGithubIssues(projectUuid, ticketIds = []) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/tickets/linked-github-issues/check/';
+    return this.req.post(url, { ticket_ids: ticketIds });
+  }
+
   createProjectTicket(projectUuid, update) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/tickets/';
     let form = new FormData();
@@ -109,8 +114,8 @@ class TicketsAPI {
   modifyProjectTickets(projectUuid, tickets, isCopyPaste, options = {}) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/tickets/';
     const data = { 'tickets_data': tickets, 'is_copy_paste': isCopyPaste };
-    if (options.confirm_close_linked_github_issues) {
-      data.confirm_close_linked_github_issues = true;
+    if (options.linked_github_issues_to_close) {
+      data.linked_github_issues_to_close = options.linked_github_issues_to_close;
     }
     return this.req.put(url, data);
   }
