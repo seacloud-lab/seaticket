@@ -12,7 +12,7 @@ const EditPromptDialog = ({
   value: initialValue = '',
   onConfirm,
   onToggle,
-  title = gettext('Edit Prompt'),
+  title = gettext('Edit prompt'),
   placeholder = gettext('Provide the project background information for the AI to understand the project accurately. Enter your custom project prompt here...'),
   maxLength = 4000,
   validationMessage = gettext('Project prompt cannot contain tag-like content such as <system-reminder>.'),

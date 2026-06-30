@@ -11,7 +11,7 @@ const PromptSettings = ({
   className,
   title = gettext('Project prompt'),
   tip = gettext('Set the AI system prompt for this project. This prompt will be applied to all AI conversations within this project.'),
-  dialogTitle = gettext('Edit Prompt'),
+  dialogTitle = gettext('Edit prompt'),
   placeholder = gettext('Provide the project background information for the AI to understand the project accurately. Enter your custom project prompt here...'),
   maxLength = 4000,
   validationMessage = gettext('Project prompt cannot contain tag-like content such as <system-reminder>.'),
