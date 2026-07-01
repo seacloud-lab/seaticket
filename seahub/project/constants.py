@@ -1,3 +1,4 @@
+import copy
 from enum import Enum
 
 from django.utils.translation import gettext as _
@@ -36,6 +37,42 @@ MICROSOFT_EMAIL_PROVIDER = 'Microsoft'
 GMAIL_EMAIL_PROVIDER = 'Gmail'
 
 OAUTH_EMAIL_PROVIDERS = [MICROSOFT_EMAIL_PROVIDER, GMAIL_EMAIL_PROVIDER]
+
+DEFAULT_AGENT_AUTO_CONFIRM = {
+    'suggest_notify_assignee': True,
+    'suggest_create_ticket': False,
+}
+
+DEFAULT_PROJECT_SETTINGS = {
+    'agent': {
+        'enabled': True,
+        'model': 'gemini-3-flash',
+        'notify_before_due_hours': 48,
+        'github_issue_type_mapping': {
+            'Bug': 'Bug',
+            'Feature': 'Feature',
+        },
+        'auto_confirm': DEFAULT_AGENT_AUTO_CONFIRM,
+    },
+}
+
+
+def merge_project_settings_defaults(settings):
+    if not isinstance(settings, dict):
+        settings = {}
+
+    result = copy.deepcopy(DEFAULT_PROJECT_SETTINGS)
+    _deep_update(result, settings)
+    return result
+
+
+def _deep_update(target, source):
+    for key, value in source.items():
+        if isinstance(value, dict) and isinstance(target.get(key), dict):
+            _deep_update(target[key], value)
+        else:
+            target[key] = value
+    return target
 
 # connection types
 class ConnectionType(Enum):

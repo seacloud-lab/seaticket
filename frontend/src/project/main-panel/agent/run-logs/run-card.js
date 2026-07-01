@@ -345,7 +345,9 @@ const RunCard = ({
   }
   else if (run.status === RUN_STATUS.COMPLETED) {
     const allActions = collectRunActions(run);
-    const hasPending = allActions.some(action => action?.status === ACTION_STATUS.PENDING);
+    const hasPending = allActions.some(action =>
+      [ACTION_STATUS.PENDING, ACTION_STATUS.EXECUTING].includes(action?.status)
+    );
     const hasFailed = allActions.some(action => action?.status === ACTION_STATUS.FAILED);
     const hasSuggestion = runHasSuggestionAction(run);
     const noPending = !hasPending;

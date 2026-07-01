@@ -208,6 +208,7 @@ const ActionItem = React.memo(({
   const renderContent = () => {
     const isCompletedStatus = [ACTION_STATUS.COMPLETED, ACTION_STATUS.EXECUTED].includes(status);
     const isFailedStatus = status === ACTION_STATUS.FAILED;
+    const isExecutingStatus = status === ACTION_STATUS.EXECUTING;
 
     switch (type) {
       case ACTION_TYPE.EVENT:
@@ -326,6 +327,11 @@ const ActionItem = React.memo(({
                   </Button>
                 </div>
               )}
+              {isExecutingStatus && (
+                <div className="suggestion-result-resolved d-flex align-items-center">
+                  <span className="result-text">{gettext('Executing...')}</span>
+                </div>
+              )}
               {isCompletedStatus && (
                 <div className="suggestion-result-resolved d-flex align-items-center">
                   <span className="status-completed">
@@ -399,6 +405,7 @@ const ActionItem = React.memo(({
       className={classnames('agent-action-item', `action-type-${type}`, {
         'action-expanded': isExpanded,
         'action-pending': status === ACTION_STATUS.PENDING,
+        'action-executing': status === ACTION_STATUS.EXECUTING,
         'action-completed': status === ACTION_STATUS.COMPLETED,
         'action-failed': status === ACTION_STATUS.FAILED,
         'action-cancelled': status === ACTION_STATUS.CANCELLED,

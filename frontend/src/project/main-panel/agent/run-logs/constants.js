@@ -6,6 +6,7 @@ const RUN_STATUS = {
 
 const ACTION_STATUS = {
   PENDING: 'pending',
+  EXECUTING: 'executing',
   COMPLETED: 'completed',
   CANCELLED: 'cancelled',
   EXECUTED: 'executed',
