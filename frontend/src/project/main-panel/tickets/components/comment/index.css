@@ -21,7 +21,7 @@
   background-color: var(--bs-border-secondary-color);
 }
 
-.seaqa-project-ticket-comment.small:not(.d-none-after)::after {
+.seaqa-project-ticket-comment.s:not(.d-none-after)::after {
   left: 28px;
   top: calc(100% + 4px);
 }
@@ -81,12 +81,12 @@
 }
 
 /* small */
-.seaqa-project-ticket-comment.small .seaqa-project-ticket-comment-op-log {
+.seaqa-project-ticket-comment.s .seaqa-project-ticket-comment-op-log {
   display: inline-flex;
   align-items: center;
 }
 
-.seaqa-project-ticket-comment.small .seaqa-project-ticket-comment-user-avatar {
+.seaqa-project-ticket-comment.s .seaqa-project-ticket-comment-user-avatar {
   display: inline-flex;
   height: 24px;
   width: 24px;
@@ -94,7 +94,7 @@
   margin-right: 8px;
 }
 
-.seaqa-project-ticket-comment.small .seaqa-project-ticket-comment-user-avatar img {
+.seaqa-project-ticket-comment.s .seaqa-project-ticket-comment-user-avatar img {
   height: 24px;
   width: 24px;
 }

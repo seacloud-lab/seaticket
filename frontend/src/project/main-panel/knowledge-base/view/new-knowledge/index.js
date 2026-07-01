@@ -130,7 +130,7 @@ const NewKnowledge = ({ editorAPI, projectUuid }) => {
   const isSmallScreen = containerWidth < 892;
 
   return (
-    <div className={classnames('seaqa-project-new-knowledge', { 'small': isSmallScreen })} ref={knowledgeRef}>
+    <div className={classnames('seaqa-project-new-knowledge', { 's': isSmallScreen })} ref={knowledgeRef}>
       {!isSmallScreen && (
         <div className="seaqa-project-knowledge-user">
           <img src={user.avatar_url} alt={user.name} />

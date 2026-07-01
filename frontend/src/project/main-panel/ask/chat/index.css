@@ -46,11 +46,11 @@
   margin: 0 auto;
 }
 
-.seaqa-ai-ask-wrapper.small-page .seaqa-ai-ask-chats {
+.seaqa-ai-ask-wrapper.s .seaqa-ai-ask-chats {
   width: calc(100% - 80px);
 }
 
-.seaqa-ai-ask-wrapper.small-page .seaqa-ai-ask-chats-footer {
+.seaqa-ai-ask-wrapper.s .seaqa-ai-ask-chats-footer {
   padding-left: 40px;
   padding-right: 40px;
 }

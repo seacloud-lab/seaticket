@@ -552,7 +552,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
   const isNewChat = sessionId === ASK_PAGE_SLUG_ID.NEW;
 
   return (
-    <div className={classnames('seaqa-ai-ask-wrapper', { 'empty': isEmpty && isNewChat, 'small-page': isSmall, 'has-header': !isNewChat })} ref={wrapperRef}>
+    <div className={classnames('seaqa-ai-ask-wrapper', { 'empty': isEmpty && isNewChat, 's': isSmall, 'has-header': !isNewChat })} ref={wrapperRef}>
       {operationContent && (
         <div className="chat-header-operation-wrapper">{operationContent}</div>
       )}

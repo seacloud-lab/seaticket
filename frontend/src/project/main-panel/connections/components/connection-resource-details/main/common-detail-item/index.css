@@ -4,6 +4,10 @@
   border-bottom: 1px solid #eee;
 }
 
+.seaqa-resource-detail-item:first-child {
+  margin-top: 0;
+}
+
 .seaqa-resource-detail-item .author-info-wrapper {
   display: flex;
   justify-content: space-between;
