@@ -75,14 +75,15 @@ def normalize_portal_custom_domain(domain, check_reserved=True):
 
 
 def normalize_portal_subdomain_prefix(prefix):
-    prefix = (prefix or '').strip().lower()
+    prefix = prefix.strip().lower()
     if not prefix:
         return ''
 
     try:
         prefix = prefix.encode('idna').decode('ascii')
     except Exception as error:
-        raise ValueError('Portal subdomain is invalid.') from error
+        logger.error(error)
+        raise ValueError('Portal subdomain is invalid.')
 
     if len(prefix) < PORTAL_SUBDOMAIN_PREFIX_MIN_LENGTH:
         raise ValueError('Portal subdomain is too short.')

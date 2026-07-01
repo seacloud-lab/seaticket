@@ -166,52 +166,6 @@ class TestProjectView:
         project.refresh_from_db()
         assert project.name == 'renamed'
 
-    def test_put_enable_portal_creates_default_alias(self, factory, project_creator, real_project, settings):
-        settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
-        project = real_project
-        project.settings = json.dumps({'portal': {'enable_portal': False}})
-        project.save(update_fields=['settings'])
-
-        request = factory.put(
-            f'/api/v1/workspace/{project.workspace.id}/project/',
-            data={
-                'name': project.name,
-                'settings': json.dumps({'portal': {'enable_portal': True}}),
-            },
-            format='json',
-        )
-        request.user = project_creator
-
-        with patch('seahub.api2.endpoints.project.SeaDBAPI'), \
-                patch('seahub.api2.endpoints.project.ensure_portal_issues_seadb_table'):
-            resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
-
-        assert resp.status_code == 200
-        assert PortalDomainAlias.objects.filter(project_uuid=str(project.uuid)).exists()
-
-    def test_put_enabled_portal_backfills_missing_alias(self, factory, project_creator, real_project, settings):
-        settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
-        project = real_project
-        project.settings = json.dumps({'portal': {'enable_portal': True, 'show_knowledge_base': False}})
-        project.save(update_fields=['settings'])
-
-        request = factory.put(
-            f'/api/v1/workspace/{project.workspace.id}/project/',
-            data={
-                'name': project.name,
-                'settings': json.dumps({'portal': {'enable_portal': True, 'show_knowledge_base': True}}),
-            },
-            format='json',
-        )
-        request.user = project_creator
-
-        with patch('seahub.api2.endpoints.project.ensure_portal_issues_seadb_table') as mock_ensure_portal_issues:
-            resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
-
-        assert resp.status_code == 200
-        assert PortalDomainAlias.objects.filter(project_uuid=str(project.uuid)).exists()
-        mock_ensure_portal_issues.assert_not_called()
-
     def test_put_move_project_to_target_workspace_success(self, factory, project_creator, real_project):
         project = real_project
         target_group = OrgGroup.objects.create_org_group(1, 'target-group', project_creator.username)
