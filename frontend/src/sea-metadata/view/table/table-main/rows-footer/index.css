@@ -82,7 +82,7 @@
 }
 
 .load-all-tip .load-all,
-.sea-metadata-table-footer .load-all {
+.sea-metadata-table-footer .rows-row .load-all {
   height: 16px;
   line-height: 16px;
   color: #666;
@@ -90,12 +90,12 @@
   border-bottom: 1px solid #666;
 }
 
-.sea-metadata-table-footer .load-all {
+.sea-metadata-table-footer .rows-row .load-all {
   margin: auto;
 }
 
 .load-all-tip .load-all:hover,
-.sea-metadata-table-footer .load-all:hover {
+.sea-metadata-table-footer .rows-row .load-all:hover {
   color: var(--bs-body-color);
   border-bottom: 1px solid #212529;
 }
