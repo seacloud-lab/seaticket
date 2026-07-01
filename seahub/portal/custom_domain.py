@@ -5,7 +5,6 @@ from urllib.parse import urlsplit
 
 from django.conf import settings
 
-
 logger = logging.getLogger(__name__)
 
 HOST_LABEL_RE = re.compile(r'^(?!-)[a-z0-9-]{1,63}(?<!-)$')
@@ -13,8 +12,7 @@ CUSTOM_DOMAIN_TXT_RECORD_PREFIX = '_seaqa-portal-challenge'
 CUSTOM_DOMAIN_VERIFICATION_VALUE_PREFIX = 'seaqa-portal-verification='
 PORTAL_SUBDOMAIN_PREFIX_MIN_LENGTH = 3
 PORTAL_SUBDOMAIN_PREFIX_MAX_LENGTH = 63
-PORTAL_RESERVED_SUBDOMAIN_PREFIXES = ('admin', 'api', 'assets', 'auth', 'cdn', 'custom-domains', 'internal', 'mail', 'media',
-    'static', 'status', 'support', 'www')
+PORTAL_RESERVED_SUBDOMAIN_PREFIXES = ('admin', 'api', 'assets', 'auth', 'cdn', 'custom-domains', 'internal', 'mail', 'media', 'static', 'status', 'support', 'www')
 
 
 def normalize_portal_custom_domain(domain, check_reserved=True):
@@ -52,21 +50,20 @@ def normalize_portal_custom_domain(domain, check_reserved=True):
     for label in labels:
         if not HOST_LABEL_RE.match(label):
             raise ValueError('Custom domain is invalid.')
-    reserved_domains = set()
-    service_url = getattr(settings, 'SEAQA_WEB_SERVICE_URL', '')
-    service_host = urlsplit(service_url).hostname
-    if service_host:
-        reserved_domains.add(service_host.lower())
-
-    portal_root_domain = getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
-    if portal_root_domain:
-        try:
-            portal_root_domain = portal_root_domain.encode('idna').decode('ascii')
-        except Exception:
-            portal_root_domain = ''
 
     if check_reserved:
-        if domain in reserved_domains:
+        service_url = getattr(settings, 'SEAQA_WEB_SERVICE_URL', '')
+        service_host = urlsplit(service_url).hostname
+        service_host = service_host.lower() if service_host else ''
+
+        portal_root_domain = getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
+        if portal_root_domain:
+            try:
+                portal_root_domain = portal_root_domain.encode('idna').decode('ascii')
+            except Exception:
+                portal_root_domain = ''
+
+        if service_host and domain == service_host:
             raise ValueError('This domain is reserved.')
         if portal_root_domain and (domain == portal_root_domain or domain.endswith('.%s' % portal_root_domain)):
             raise ValueError('This domain is reserved.')
@@ -96,12 +93,8 @@ def normalize_portal_subdomain_prefix(prefix):
 
     return prefix
 
-
 def get_portal_reserved_subdomain_prefixes():
-    reserved_prefixes = set()
-    for prefix in PORTAL_RESERVED_SUBDOMAIN_PREFIXES:
-        reserved_prefixes.add(prefix)
-
+    reserved_prefixes = set(PORTAL_RESERVED_SUBDOMAIN_PREFIXES)
     dns_target = getattr(settings, 'PORTAL_CUSTOM_DOMAIN_DNS_TARGET', '')
     try:
         target_prefix = get_portal_subdomain_prefix(dns_target)
@@ -112,24 +105,11 @@ def get_portal_reserved_subdomain_prefixes():
 
     return reserved_prefixes
 
-
-def is_portal_subdomain_prefix_reserved(prefix):
-    normalized_prefix = normalize_portal_subdomain_prefix(prefix)
-    return normalized_prefix in get_portal_reserved_subdomain_prefixes()
-
-
 def validate_portal_subdomain_prefix_available(prefix):
     normalized_prefix = normalize_portal_subdomain_prefix(prefix)
     if normalized_prefix in get_portal_reserved_subdomain_prefixes():
         raise ValueError('Portal subdomain is reserved.')
     return normalized_prefix
-
-def build_portal_service_domain(prefix):
-    root_domain = getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
-    if not prefix or not root_domain:
-        return ''
-    return '%s.%s' % (prefix, root_domain)
-
 
 def get_portal_subdomain_prefix(host):
     host = normalize_portal_custom_domain(host, check_reserved=False)
@@ -165,13 +145,6 @@ def query_dns_txt_values(record_name):
         else:
             values.append(answer.to_text())
     return [str(value or '').strip().strip('"') for value in values]
-
-
-def verify_portal_custom_domain_dns(domain, verification_token):
-    record_name = '%s.%s' % (CUSTOM_DOMAIN_TXT_RECORD_PREFIX, domain)
-    expected_value = '%s%s' % (CUSTOM_DOMAIN_VERIFICATION_VALUE_PREFIX, verification_token)
-    return expected_value in query_dns_txt_values(record_name)
-
 
 def is_request_using_portal_domain(request, project_uuid=None):
     portal_domain = getattr(request, 'portal_domain', None)

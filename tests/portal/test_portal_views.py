@@ -288,6 +288,23 @@ def test_custom_domain_external_accept_path_rewrites_to_bound_invitation(factory
 
 
 @pytest.mark.django_db
+def test_custom_domain_portal_chat_image_path_passes_through(factory, real_project):
+    PortalCustomDomain.objects.create(
+        domain='support.local.test',
+        project_uuid=str(real_project.uuid),
+        verified=True,
+    )
+    request = factory.get(f'/file/portal-chat-image/{real_project.uuid}/?token=abc', HTTP_HOST='support.local.test')
+
+    response = process_portal_domain_request(request)
+
+    assert response is None
+    assert request.path_info == f'/file/portal-chat-image/{real_project.uuid}/'
+    assert request.portal_domain.domain_type == PORTAL_DOMAIN_TYPE_CUSTOM
+    assert request.portal_domain.binding.project_uuid == str(real_project.uuid)
+
+
+@pytest.mark.django_db
 def test_service_domain_alias_root_path_rewrites_to_bound_portal(factory, real_project, settings):
     settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
     PortalDomainAlias.objects.create(

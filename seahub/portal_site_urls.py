@@ -11,7 +11,7 @@ from seahub.portal.apis import PortalCustomDomainTLSAskView, PortalExternalLogin
     PortalKnowledgeBaseRecordsView, PortalKnowledgeBaseViewsView, PortalLogoView, PortalMyIssuesView, PortalTagsView, PortalUserListView
 
 from seahub.portal.chat.apis import PortalChatMessagesView, PortalChatSessionTitleView, PortalChatSessionsView, PortalChatSessionView, \
-    PortalChatView
+    PortalChatView, PortalChatImageView
 from seahub.portal.files import GetPortalUploadFileView, PortalFileView, PortalUploadFileView
 from seahub.views import custom_css_view, i18n
 
@@ -53,6 +53,7 @@ urlpatterns = [
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/upload-file/$', PortalUploadFileView.as_view(), name='api-v1-portal-upload-file'),
     re_path(r'^upload-file/portal/(?P<project_uuid>[-0-9a-f]{36})/(?P<file_path>.+)$', GetPortalUploadFileView.as_view(), name='api-v1-get-portal-upload-file'),
     re_path(r'^file/portal/(?P<project_uuid>[-0-9a-f]{36})/(?P<file_path>.*)$', PortalFileView.as_view(), name='api-v1-get-portal-file'),
+    re_path(r'^file/portal-chat-image/(?P<project_uuid>[-0-9a-f]{36})/$', PortalChatImageView.as_view(), name='api-v1-portal-chat-image'),
 
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/issues/$', PortalIssuesView.as_view(), name='api-v1-portal-issues'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/my-issues/$', PortalMyIssuesView.as_view(), name='api-v1-portal-my-issues'),

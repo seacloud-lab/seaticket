@@ -14,8 +14,8 @@ from seahub.portal.models import PortalExternalInvitation, ProjectExternalUser
 from seahub.portal.visitor_session import (
     ensure_visitor_cookie,
 )
-from seahub.portal.utils import get_portal_preview_username, load_portal_preview_token, portal_path, set_portal_preview_session, \
-    get_portal_settings
+from seahub.portal.utils import can_preview_portal, get_portal_preview_username, load_portal_preview_token, portal_path, \
+    set_portal_preview_session, get_portal_settings
 from seahub.portal.custom_domain import is_request_using_portal_domain
 from seahub import settings
 from seahub.project.models import Projects
@@ -167,7 +167,7 @@ def portal_preview_view(request, token):
     project = Projects.objects.get_project_by_uuid(project_uuid)
     if not project:
         return render_error(request, _('This project does not exist'))
-    if not check_project_admin_permission(payload['username'], project.workspace.owner):
+    if not can_preview_portal(payload['username'], project):
         return render_error(request, _('Permission denied'))
 
     set_portal_preview_session(request, project_uuid, payload['username'])

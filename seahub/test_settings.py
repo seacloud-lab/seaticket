@@ -13,7 +13,6 @@ REST_FRAMEWORK = {
         'ping': '90000/minute',
         'anon': '90000/minute',
         'user': '90000/minute',
-        'portal_tls_ask': '90000/minute',
         'app': '90000/minute',
         'export': '90000/minute',
         'import': '90000/minute',

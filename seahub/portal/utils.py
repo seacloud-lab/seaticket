@@ -1,10 +1,8 @@
 import json
 from types import SimpleNamespace
-from urllib.parse import urlsplit
 
 from django.conf import settings
 from django.core.cache import cache
-from django.core.exceptions import DisallowedHost
 from django.core import signing
 from django.core.signing import BadSignature, SignatureExpired
 
@@ -23,7 +21,7 @@ from seahub.portal.visitor_session import (
     set_visitor_cookie,
     touch_visitor_session,
 )
-from seahub.portal.custom_domain import build_portal_service_domain, is_request_using_portal_domain
+from seahub.portal.custom_domain import is_request_using_portal_domain
 from seahub.portal.models import PortalCustomDomain, PortalDomainAlias
 
 
@@ -39,32 +37,7 @@ PORTAL_PREVIEW_TOKEN_TTL = 5 * 60
 PORTAL_PREVIEW_SESSION_USERNAME_KEY = 'portal_preview_username'
 PORTAL_PREVIEW_SESSION_PROJECT_KEY = 'portal_preview_project_uuid'
 
-
-def get_host_without_port(host):
-    try:
-        parsed = urlsplit('//%s' % (host or '').strip())
-    except ValueError:
-        return ''
-    return (parsed.hostname or '').lower().rstrip('.')
-
-
-def get_request_host_without_port(request):
-    try:
-        host = request.get_host()
-    except DisallowedHost:
-        host = request.META.get('HTTP_HOST') or request.META.get('SERVER_NAME') or ''
-    return get_host_without_port(host)
-
-
-def is_portal_service_host(host):
-    root_domain = getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
-    if not root_domain:
-        return False
-    return host == root_domain or host.endswith('.%s' % root_domain)
-
-
 def resolve_portal_domain(host):
-    host = get_host_without_port(host)
     if not host:
         return None
 
@@ -72,19 +45,13 @@ def resolve_portal_domain(host):
     if alias:
         return SimpleNamespace(
             domain_type=PORTAL_DOMAIN_TYPE_SERVICE_ALIAS,
-            domain=build_portal_service_domain(alias.prefix),
             binding=alias,
         )
 
-    if is_portal_service_host(host):
-        return None
-
-    # Non-service hosts may be verified customer-owned domains.
     custom_domain = PortalCustomDomain.objects.get_by_domain(host)
     if custom_domain and custom_domain.verified:
         return SimpleNamespace(
             domain_type=PORTAL_DOMAIN_TYPE_CUSTOM,
-            domain=custom_domain.domain,
             binding=custom_domain,
         )
 
@@ -116,6 +83,16 @@ def set_portal_preview_session(request, project_uuid, username):
     request.session[PORTAL_PREVIEW_SESSION_USERNAME_KEY] = username
 
 
+def can_preview_portal(username, project):
+    if check_project_admin_permission(username, project.workspace.owner):
+        return True
+
+    org_id = getattr(project.workspace, 'org_id', -1)
+    if org_id == -1:
+        return False
+    return OrgUser.objects.org_user_exists(org_id, username)
+
+
 def get_request_session(request):
     session = getattr(request, 'session', None)
     if session is not None:
@@ -140,7 +117,7 @@ def get_portal_preview_username(request, project_uuid):
     project = getattr(request, 'project', None) or Projects.objects.get_project_by_uuid(project_uuid)
     if not project:
         return ''
-    if not check_project_admin_permission(preview_username, project.workspace.owner):
+    if not can_preview_portal(preview_username, project):
         return ''
     return preview_username
 

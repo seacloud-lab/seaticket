@@ -3,34 +3,32 @@ import string
 import random
 import copy
 from types import SimpleNamespace
+from uuid import uuid4
 from secrets import token_hex
+
 from django.db import models
 from django.db import IntegrityError
-from django.conf import settings
 from django.core.cache import cache
 from django.utils import timezone
-from uuid import uuid4
+from django.conf import settings
 from django.urls import reverse
 from copy import deepcopy
 
 from seahub.project.constants import PORTAL_ISSUES_DEFAULT_DETAILS
 from seahub.utils import get_no_duplicate_obj_name, get_service_url, uuid_str_to_32_chars
 from seahub.portal.custom_domain import CUSTOM_DOMAIN_TXT_RECORD_PREFIX, CUSTOM_DOMAIN_VERIFICATION_VALUE_PREFIX, \
-    build_portal_service_domain, get_portal_subdomain_prefix, normalize_portal_custom_domain, \
-    normalize_portal_subdomain_prefix, is_portal_subdomain_prefix_reserved
-import logging
-
+    get_portal_subdomain_prefix, normalize_portal_custom_domain, get_portal_reserved_subdomain_prefixes, \
+    normalize_portal_subdomain_prefix
 from seahub.seadb_models.models import SchemaTables
 
-logger = logging.getLogger(__name__)
 
-PORTAL_CUSTOM_DOMAIN_CACHE_TIMEOUT = 300
+PORTAL_DOMAIN_CACHE_TIMEOUT = 300
 PORTAL_CUSTOM_DOMAIN_CACHE_FIELDS = ('domain', 'project_uuid', 'verified')
+PORTAL_DOMAIN_ALIAS_CACHE_FIELDS = ('prefix', 'project_uuid')
+
 PORTAL_TLS_ASK_CACHE_TIMEOUT = 60
 PORTAL_TLS_ASK_CACHE_PREFIX = 'portal_tls_ask_allowed:'
-PORTAL_DOMAIN_ALIAS_CACHE_TIMEOUT = 300
-PORTAL_DOMAIN_ALIAS_CACHE_FIELDS = ('prefix', 'project_uuid')
-PORTAL_DEFAULT_SUBDOMAIN_PREFIX_LENGTH = 6
+
 PORTAL_DOMAIN_CACHE_MISS_VALUE = '__portal_domain_cache_miss__'
 PORTAL_DOMAIN_CACHE_MISS_TIMEOUT = 60
 
@@ -55,7 +53,6 @@ def generate_views_unique_id(length, folders_views_ids=None):
             break
 
     return id
-
 
 class PortalExternalInvitationManager(models.Manager):
 
@@ -89,25 +86,17 @@ class PortalExternalInvitation(models.Model):
     def is_expired(self):
         return timezone.now() >= self.expire_time
 
-    def get_link(self, request, project=None):
+    def get_link(self, request):
         path = '/external/accept/%s/' % self.token
         custom_domain = PortalCustomDomain.objects.get_verified_by_project_uuid(self.project_uuid)
         if custom_domain:
             return '%s://%s%s' % (request.scheme, custom_domain.domain, path)
 
         alias = PortalDomainAlias.objects.get_by_project_uuid(self.project_uuid)
-        if not alias and project is not None and getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', ''):
-            try:
-                project_settings = json.loads(project.settings) if project.settings else {}
-            except Exception:
-                project_settings = {}
-            portal_settings = project_settings.get('portal', {})
-            if portal_settings.get('enable_portal', False):
-                alias = PortalDomainAlias.objects.ensure_alias(self.project_uuid)
-        if alias:
-            domain = build_portal_service_domain(alias.prefix)
-            if domain:
-                return '%s://%s%s' % (request.scheme, domain, path)
+        root_domain = getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
+        if alias and root_domain:
+            domain = '%s.%s' % (alias.prefix, root_domain)
+            return '%s://%s%s' % (request.scheme, domain, path)
 
         base = get_service_url().rstrip('/')
         fallback_path = reverse('portal_external_invitation_accept_view', args=(self.token, self.project_uuid))
@@ -160,7 +149,7 @@ class PortalDomainAliasManager(models.Manager):
         if not alias:
             cache.set(prefix_cache_key, PORTAL_DOMAIN_CACHE_MISS_VALUE, PORTAL_DOMAIN_CACHE_MISS_TIMEOUT)
             return None
-        cache.set(prefix_cache_key, alias, PORTAL_DOMAIN_ALIAS_CACHE_TIMEOUT)
+        cache.set(prefix_cache_key, alias, PORTAL_DOMAIN_CACHE_TIMEOUT)
         return SimpleNamespace(**alias)
 
     def get_by_project_uuid(self, project_uuid):
@@ -176,7 +165,7 @@ class PortalDomainAliasManager(models.Manager):
         if not alias:
             cache.set(project_cache_key, PORTAL_DOMAIN_CACHE_MISS_VALUE, PORTAL_DOMAIN_CACHE_MISS_TIMEOUT)
             return None
-        cache.set(project_cache_key, alias, PORTAL_DOMAIN_ALIAS_CACHE_TIMEOUT)
+        cache.set(project_cache_key, alias, PORTAL_DOMAIN_CACHE_TIMEOUT)
         return SimpleNamespace(**alias)
 
     def get_by_host(self, host):
@@ -188,10 +177,11 @@ class PortalDomainAliasManager(models.Manager):
             return None
         return self.get_by_prefix(prefix)
 
-    def generate_unique_prefix(self, length=PORTAL_DEFAULT_SUBDOMAIN_PREFIX_LENGTH):
+    def generate_unique_prefix(self, length=6):
+        reserved_prefixes = get_portal_reserved_subdomain_prefixes()
         while True:
             prefix = generate_random_string_lower_digits(length)
-            if is_portal_subdomain_prefix_reserved(prefix):
+            if prefix in reserved_prefixes:
                 continue
             if not super().filter(prefix=prefix).exists():
                 return prefix
@@ -262,11 +252,6 @@ class PortalDomainAlias(models.Model):
         cache.delete(PortalDomainAlias.objects._project_cache_key(project_uuid))
         return result
 
-    @property
-    def domain(self):
-        return build_portal_service_domain(self.prefix)
-
-
 class PortalCustomDomainManager(models.Manager):
 
     def _domain_cache_key(self, domain):
@@ -291,7 +276,7 @@ class PortalCustomDomainManager(models.Manager):
         if not custom_domain:
             cache.set(domain_cache_key, PORTAL_DOMAIN_CACHE_MISS_VALUE, PORTAL_DOMAIN_CACHE_MISS_TIMEOUT)
             return None
-        cache.set(domain_cache_key, custom_domain, PORTAL_CUSTOM_DOMAIN_CACHE_TIMEOUT)
+        cache.set(domain_cache_key, custom_domain, PORTAL_DOMAIN_CACHE_TIMEOUT)
         return SimpleNamespace(**custom_domain)
 
     def get_verified_by_project_uuid(self, project_uuid):
@@ -310,7 +295,7 @@ class PortalCustomDomainManager(models.Manager):
         if not custom_domain:
             cache.set(project_cache_key, PORTAL_DOMAIN_CACHE_MISS_VALUE, PORTAL_DOMAIN_CACHE_MISS_TIMEOUT)
             return None
-        cache.set(project_cache_key, custom_domain, PORTAL_CUSTOM_DOMAIN_CACHE_TIMEOUT)
+        cache.set(project_cache_key, custom_domain, PORTAL_DOMAIN_CACHE_TIMEOUT)
         return SimpleNamespace(**custom_domain)
 
     def delete_by_project_uuid(self, project_uuid):

@@ -18,6 +18,7 @@ def test_portal_mode_resolves_public_portal_routes():
 
     assert resolve(f'/portal/{project_uuid}/', urlconf=PORTAL_URLCONF).url_name == 'portal_view'
     assert resolve(f'/api/v1/portal/{project_uuid}/issues/', urlconf=PORTAL_URLCONF).url_name == 'api-v1-portal-issues'
+    assert resolve(f'/file/portal-chat-image/{project_uuid}/', urlconf=PORTAL_URLCONF).url_name == 'api-v1-portal-chat-image'
     assert resolve('/internal/portal/custom-domain/allow-tls', urlconf=PORTAL_URLCONF).url_name == 'internal-portal-custom-domain-allow-tls'
 
 

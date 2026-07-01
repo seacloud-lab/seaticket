@@ -670,6 +670,15 @@ class TestPortalCustomDomainView:
         assert 'default_public_url' not in resp.data
         assert 'public_url' not in resp.data
 
+    def test_get_permission_denied(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.get(f"/api/v1/portal/{project.uuid}/custom-domain/")
+        request.user = auth_user
+
+        resp = PortalCustomDomainView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 403
+
     def test_post_create_custom_domain(self, factory, project_creator, real_project):
         project = real_project
         request = factory.post(

@@ -1,43 +1,38 @@
+from urllib.parse import urlsplit
+
 from django.conf import settings
 from django.http import Http404, HttpResponseRedirect
 from django.urls import Resolver404, resolve
 from django.utils.deprecation import MiddlewareMixin
 
 from seahub.portal.models import PortalCustomDomain
-from seahub.portal.utils import (
-    PORTAL_DOMAIN_TYPE_SERVICE_ALIAS,
-    get_request_host_without_port,
-    resolve_portal_domain,
-)
+from seahub.portal.utils import PORTAL_DOMAIN_TYPE_SERVICE_ALIAS, resolve_portal_domain
 
 
 # Static and auth resources needed by Portal domain pages.
 PASS_THROUGH_PREFIXES = ('/accounts/', '/captcha/', '/custom-css/', '/i18n/', '/media/', '/portal-preview/', '/static/')
 
 # Existing Portal APIs and file routes handled by normal URLConf.
-PORTAL_PASS_THROUGH_PREFIXES = ('/api/v1/portal/', '/file/portal/', '/upload-file/portal/', '/portal/', '/portal-external/')
+PORTAL_PASS_THROUGH_PREFIXES = ('/api/v1/portal/', '/file/portal/', '/file/portal-chat-image/', '/upload-file/portal/', '/portal/', '/portal-external/')
 PORTAL_ROOT_PAGES = ('submit-issue', 'my-issues', 'knowledge-base', 'chat', 'login', 'anonymous-validate')
 PORTAL_DETAIL_PAGES = ('my-issues', 'knowledge-base')
 
 
 def _get_project_uuid_from_origin_path(normalized_path):
-    paths = [normalized_path]
-    if normalized_path != '/' and not normalized_path.endswith('/'):
-        paths.append('%s/' % normalized_path)
-
-    for path in paths:
+    if normalized_path == '/':
+        return ''
+    try:
+        match = resolve(normalized_path)
+    except Resolver404:
         try:
-            match = resolve(path)
+            match = resolve('%s/' % normalized_path)
         except Resolver404:
-            continue
-        project_uuid = match.kwargs.get('project_uuid')
-        if project_uuid:
-            return project_uuid
-    return ''
+            return ''
+    return match.kwargs.get('project_uuid') or ''
 
 
 def _get_internal_path_for_portal_domain(project_uuid, normalized_path):
-    site_root = getattr(settings, 'SITE_ROOT', '/') or '/'
+    site_root = getattr(settings, 'SITE_ROOT', '/')
     site_root = site_root if site_root.endswith('/') else '%s/' % site_root
     segments = normalized_path.strip('/').split('/') if normalized_path != '/' else []
     if not segments:
@@ -72,12 +67,14 @@ class PortalDomainMiddleware(MiddlewareMixin):
     def process_request(self, request):
         path = request.path_info or '/'
         normalized_path = ('/%s' % path.lstrip('/')).rstrip('/') or '/'
-        request_host = get_request_host_without_port(request)
+        host = request.get_host()
+        parsed = urlsplit('//%s' % (host or '').strip())
+        request_host = (parsed.hostname or '').lower().rstrip('.')
         if not request_host:
             return None
 
-        seaticket_server_hostname = getattr(settings, 'SEATICKET_SERVER_HOSTNAME', '').lower()
-        if seaticket_server_hostname and request_host == seaticket_server_hostname:
+        seaticket_server_hostname = getattr(settings, 'SEATICKET_SERVER_HOSTNAME', '')
+        if request_host == seaticket_server_hostname:
             return None
 
         portal_domain = resolve_portal_domain(request_host)
@@ -86,24 +83,18 @@ class PortalDomainMiddleware(MiddlewareMixin):
 
         request.portal_domain = portal_domain
         project_uuid = portal_domain.binding.project_uuid
+        requested_project_uuid = _get_project_uuid_from_origin_path(normalized_path)
+        if requested_project_uuid and requested_project_uuid != project_uuid:
+            raise Http404
+
         if portal_domain.domain_type == PORTAL_DOMAIN_TYPE_SERVICE_ALIAS:
-            requested_project_uuid = _get_project_uuid_from_origin_path(normalized_path)
-            if requested_project_uuid and str(requested_project_uuid) != str(project_uuid):
-                raise Http404
             custom_domain = PortalCustomDomain.objects.get_verified_by_project_uuid(project_uuid)
             if custom_domain:
-                return HttpResponseRedirect('%s://%s%s' % (
-                    request.scheme,
-                    custom_domain.domain,
-                    request.get_full_path(),
-                ))
+                return HttpResponseRedirect('%s://%s%s' % (request.scheme, custom_domain.domain, request.get_full_path()))
 
         if any(normalized_path == prefix.rstrip('/') or normalized_path.startswith(prefix) for prefix in PASS_THROUGH_PREFIXES):
             return None
 
-        requested_project_uuid = _get_project_uuid_from_origin_path(normalized_path)
-        if requested_project_uuid and str(requested_project_uuid) != str(project_uuid):
-            raise Http404
         if requested_project_uuid and any(
             normalized_path == prefix.rstrip('/') or normalized_path.startswith(prefix)
             for prefix in PORTAL_PASS_THROUGH_PREFIXES

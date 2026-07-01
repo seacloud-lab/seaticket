@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Nav, NavItem, NavLink, TabContent, TabPane, Button } from 'reactstrap';
 import copy from 'copy-to-clipboard';
 import classnames from 'classnames';
@@ -11,7 +11,6 @@ import PortalChatSourceSelector from '../chat-source-selector';
 import { SETTING_TAB, SETTING_TABS, EMPTY_CHAT_ALLOWED_SOURCES } from './constants';
 import { normalizeChatAllowedSources, isConnectionActive } from './utils';
 import CustomizationSettings from './customization-settings';
-import { getDefaultPortalPublicUrl } from '../../path-utils';
 
 import './index.css';
 
@@ -57,56 +56,53 @@ const Settings = () => {
   const [isSavingDomainAlias, setIsSavingDomainAlias] = useState(false);
   const [isOpeningPortalPreview, setIsOpeningPortalPreview] = useState(false);
 
-  const portalUrl = subdomainPublicUrl || getDefaultPortalPublicUrl();
+  const customDomainUrl = savedCustomDomain && customDomainVerified && customDomain === savedCustomDomain
+    ? `${window.location.protocol}//${savedCustomDomain}/`
+    : '';
 
-  const customDomainUrl = useMemo(() => {
-    if (!savedCustomDomain || !customDomainVerified || customDomain !== savedCustomDomain) {
-      return '';
-    }
-    return `${window.location.protocol}//${savedCustomDomain}/`;
-  }, [customDomain, customDomainVerified, savedCustomDomain]);
-
-  const applyLoadedSettings = useCallback((data = {}) => {
+  const applyLoadedSettings = useCallback((data) => {
     setAllowAnonymous(!!data.allow_anonymous);
     setEnablePassword(!!data.enable_password_protection);
     setHasSavedPassword(!!data.enable_password_protection);
     setIsEditingPassword(false);
-    const kbEnabled = data.show_knowledge_base ?? data.show_kb_in_portal;
-    if (typeof kbEnabled !== 'undefined') {
-      setShowKB(!!kbEnabled);
-      window.app.pageOptions.showKBInPortal = !!kbEnabled;
-    }
+    const kbEnabled = !!data.show_knowledge_base;
+    setShowKB(kbEnabled);
+    window.app.pageOptions.showKBInPortal = kbEnabled;
 
-    setServerChatAllowedSources(data.chat_allowed_sources || null);
+    setServerChatAllowedSources(data.chat_allowed_sources);
   }, []);
 
-  const applyLoadedCustomDomain = useCallback((data = {}) => {
-    setCustomDomain(data.custom_domain || '');
-    setSavedCustomDomain(data.custom_domain || '');
+  const applyLoadedCustomDomain = useCallback((data) => {
+    setCustomDomain(data.custom_domain);
+    setSavedCustomDomain(data.custom_domain);
     setCustomDomainVerified(!!data.custom_domain_verified);
-    setCustomDomainTxtRecordName(data.custom_domain_txt_record_name || '');
-    setCustomDomainTxtRecordValue(data.custom_domain_txt_record_value || '');
-    setCustomDomainDnsTarget(data.custom_domain_dns_target || '');
+    setCustomDomainTxtRecordName(data.custom_domain_txt_record_name);
+    setCustomDomainTxtRecordValue(data.custom_domain_txt_record_value);
+    setCustomDomainDnsTarget(data.custom_domain_dns_target);
   }, []);
 
-  const applyLoadedDomainAlias = useCallback((data = {}) => {
-    setDomainAliasRoot(data.portal_service_root_domain || '');
-    setSubdomainPrefix(data.subdomain_prefix || '');
-    setSavedSubdomainPrefix(data.subdomain_prefix || '');
-    setSubdomainPublicUrl(data.public_url || '');
+  const applyLoadedDomainAlias = useCallback((data) => {
+    setDomainAliasRoot(data.portal_service_root_domain);
+    setSubdomainPrefix(data.subdomain_prefix);
+    setSavedSubdomainPrefix(data.subdomain_prefix);
+    setSubdomainPublicUrl(data.public_url);
   }, []);
 
   const loadDomainAlias = useCallback(() => {
     return portalAPI.getDomainAlias(projectUuid).then(res => {
-      applyLoadedDomainAlias(res.data || {});
-    }).catch(() => {
-      applyLoadedDomainAlias({});
+      applyLoadedDomainAlias(res.data);
     });
   }, [applyLoadedDomainAlias]);
 
+  const loadCustomDomain = useCallback(() => {
+    return portalAPI.getCustomDomain(projectUuid).then(res => {
+      applyLoadedCustomDomain(res.data);
+    });
+  }, [applyLoadedCustomDomain]);
+
   useEffect(() => {
     portalAPI.getSettings(projectUuid).then(res => {
-      applyLoadedSettings(res.data || {});
+      applyLoadedSettings(res.data);
       setHasLoadedPortalSettings(true);
     }).catch(() => {
       setServerChatAllowedSources(null);
@@ -115,21 +111,21 @@ const Settings = () => {
   }, [applyLoadedSettings]);
 
   useEffect(() => {
-    portalAPI.getCustomDomain(projectUuid).then(res => {
-      applyLoadedCustomDomain(res.data || {});
-    }).catch(() => {
-      applyLoadedCustomDomain({});
+    loadCustomDomain().catch((error) => {
+      toaster.danger(Utils.getErrorMsg(error));
     });
-  }, [applyLoadedCustomDomain]);
+  }, [loadCustomDomain]);
 
   useEffect(() => {
-    loadDomainAlias();
+    loadDomainAlias().catch((error) => {
+      toaster.danger(Utils.getErrorMsg(error));
+    });
   }, [loadDomainAlias]);
 
   useEffect(() => {
     setIsConnectionsLoading(true);
     connectionsAPI.listConnections(projectUuid, 1, 1000).then((res) => {
-      setConnections((res.data.records || []).filter(isConnectionActive));
+      setConnections(res.data.records.filter(isConnectionActive));
     }).catch((error) => {
       toaster.danger(Utils.getErrorMsg(error));
       setConnections([]);
@@ -179,10 +175,7 @@ const Settings = () => {
     if (isOpeningPortalPreview) return;
     setIsOpeningPortalPreview(true);
     portalAPI.createPreviewToken(projectUuid).then(res => {
-      const previewUrl = res.data && res.data.preview_url;
-      if (previewUrl) {
-        window.open(previewUrl, '_blank', 'noopener,noreferrer');
-      }
+      window.open(res.data.preview_url, '_blank', 'noopener,noreferrer');
     }).catch((error) => {
       toaster.danger(Utils.getErrorMsg(error));
     }).finally(() => {
@@ -229,11 +222,11 @@ const Settings = () => {
   }, []);
 
   const onCustomDomainChange = useCallback((event) => {
-    setCustomDomain(event.target.value.trim().toLowerCase());
+    setCustomDomain(event.target.value);
   }, []);
 
   const onCustomSubdomainPrefixChange = useCallback((event) => {
-    setSubdomainPrefix(event.target.value.trim().toLowerCase());
+    setSubdomainPrefix(event.target.value);
   }, []);
 
   const onVerifyCustomDomain = useCallback(() => {
@@ -243,16 +236,15 @@ const Settings = () => {
 
     setIsVerifyingCustomDomain(true);
     portalAPI.verifyCustomDomain(projectUuid).then(() => {
-      return portalAPI.getCustomDomain(projectUuid);
-    }).then(res => {
-      applyLoadedCustomDomain(res.data || {});
+      return loadCustomDomain();
+    }).then(() => {
       toaster.success(gettext('Verified'), { duration: 2, hasCloseButton: false });
     }).catch((error) => {
       toaster.danger(Utils.getErrorMsg(error));
     }).finally(() => {
       setIsVerifyingCustomDomain(false);
     });
-  }, [savedCustomDomain, customDomain, isVerifyingCustomDomain, applyLoadedCustomDomain]);
+  }, [savedCustomDomain, customDomain, isVerifyingCustomDomain, loadCustomDomain]);
 
   const onSaveCustomDomain = useCallback(() => {
     if (isSavingCustomDomain) return;
@@ -261,16 +253,15 @@ const Settings = () => {
     portalAPI.updateCustomDomain(projectUuid, {
       custom_domain: customDomain,
     }).then(() => {
-      return portalAPI.getCustomDomain(projectUuid);
-    }).then(res => {
-      applyLoadedCustomDomain(res.data || {});
+      return loadCustomDomain();
+    }).then(() => {
       toaster.success(gettext('Saved'), { duration: 2, hasCloseButton: false });
     }).catch((error) => {
       toaster.danger(Utils.getErrorMsg(error));
     }).finally(() => {
       setIsSavingCustomDomain(false);
     });
-  }, [customDomain, isSavingCustomDomain, applyLoadedCustomDomain]);
+  }, [customDomain, isSavingCustomDomain, loadCustomDomain]);
 
   const onSaveDomainAlias = useCallback(() => {
     if (isSavingDomainAlias) return;
@@ -309,15 +300,14 @@ const Settings = () => {
       show_knowledge_base: showKB ? 1 : 0,
     };
     portalAPI.updateSettings(projectUuid, payload).then(() => {
-      portalAPI.getSettings(projectUuid).then(res => {
-        applyLoadedSettings(res.data || {});
-      }).finally(() => {
-        toaster.success(gettext('Saved'), { duration: 2, hasCloseButton: false });
-        if (shouldSendPassword) {
-          setPassword('');
-          setConfirmPassword('');
-        }
-      });
+      return portalAPI.getSettings(projectUuid);
+    }).then(res => {
+      applyLoadedSettings(res.data);
+      toaster.success(gettext('Saved'), { duration: 2, hasCloseButton: false });
+      if (shouldSendPassword) {
+        setPassword('');
+        setConfirmPassword('');
+      }
     }).catch((error) => {
       toaster.danger(Utils.getErrorMsg(error));
     });
@@ -380,10 +370,15 @@ const Settings = () => {
               <input
                 type="text"
                 className="form-control portal-url-input"
-                value={portalUrl}
+                value={subdomainPublicUrl}
                 readOnly
               />
-              <Button color="outline-primary" onClick={() => onCopyUrl(portalUrl)} title={gettext('Copy URL')}>
+              <Button
+                color="outline-primary"
+                onClick={() => onCopyUrl(subdomainPublicUrl)}
+                disabled={!subdomainPublicUrl}
+                title={gettext('Copy URL')}
+              >
                 <Icon symbol="copy" />
               </Button>
               <Button
@@ -470,7 +465,7 @@ const Settings = () => {
         </TabPane>
         <TabPane tabId={SETTING_TAB.CUSTOM_DOMAIN}>
           <div className="portal-settings-content">
-            {(domainAliasRoot || subdomainPublicUrl) && (
+            {domainAliasRoot && (
               <>
                 <label className="portal-settings-label">{gettext('Portal domain')}</label>
                 <div className="portal-url-container">
@@ -480,7 +475,12 @@ const Settings = () => {
                     value={subdomainPublicUrl}
                     readOnly
                   />
-                  <Button color="outline-primary" onClick={() => onCopyUrl(subdomainPublicUrl)} title={gettext('Copy URL')}>
+                  <Button
+                    color="outline-primary"
+                    onClick={() => onCopyUrl(subdomainPublicUrl)}
+                    disabled={!subdomainPublicUrl}
+                    title={gettext('Copy URL')}
+                  >
                     <Icon symbol="copy" />
                   </Button>
                 </div>
@@ -498,7 +498,7 @@ const Settings = () => {
                   <input
                     type="text"
                     className="form-control portal-url-input"
-                    value={domainAliasRoot ? `.${domainAliasRoot}` : ''}
+                    value={`.${domainAliasRoot}`}
                     readOnly
                   />
                 </div>
