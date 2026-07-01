@@ -92,7 +92,7 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
       seaMetadataContext.eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.DELETE_ROWS, [rowId]);
       seaMetadataContext.eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.SELECT_NONE);
       toaster.closeAll();
-      toaster.success(gettext('Email thread has been moved to Trash.'));
+      toaster.success(gettext('Email thread has been moved to trash.'));
       toggleChildrenPageSlugId('');
     }).catch(error => {
       toaster.closeAll();
