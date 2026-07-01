@@ -46,7 +46,7 @@ const Settings = ({
             }, callback)}
             className='mb-4 ticket-agent-rules-settings'
             title={gettext('Ticket processing rules')}
-            tip={gettext('Define natural-language rules for ticket reminders and ticket-closing suggestions. These rules only apply to tickets.')}
+            tip={gettext('Define your own additional rules for ticket processing in natural-language.')}
             dialogTitle={gettext('Edit Ticket Processing Rules')}
             placeholder={gettext('Example:\n1) If due soon and substate is Waiting on user, do not send reminder.\n2) If over due and substate is Waiting on user, suggest closing the ticket.')}
             maxLength={4000}
