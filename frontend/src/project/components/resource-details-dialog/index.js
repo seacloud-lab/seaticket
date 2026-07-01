@@ -1,5 +1,6 @@
 import { useCallback, useState, useMemo, useEffect } from 'react';
 import { Modal, ModalBody, Dropdown, DropdownToggle, DropdownItem } from 'reactstrap';
+import classnames from 'classnames';
 import { CustomizeDropdownMenu, ModalHeader, IconTooltip, IconButton } from '@/components';
 import { gettext } from '@/constants';
 import { Utils } from '@/utils/utils';
@@ -15,6 +16,7 @@ import { KNOWLEDGE_BASE_TYPE } from '@/project/main-panel/knowledge-base/constan
 import { TICKET_TYPE } from '@/project/main-panel/tickets/constants';
 import { PORTAL_ISSUE_TYPE } from '@/project/main-panel/portal-issues/constants';
 import { portalAPI } from '@/portal/api';
+import { getDialogSize } from '@/utils/dialog';
 
 import './index.css';
 
@@ -87,12 +89,7 @@ const ResourceDetailsDialog = ({
     return getInternalNetworkAddress(type, resource._id, { workspaceID, projectName, connectionID: resource.connection_id });
   }, [type, resource]);
 
-  const size = useMemo(() => {
-    if (innerWidth >= 1440) return 'l';
-    if (innerWidth >= 1080) return 'm';
-    if (innerWidth > 768) return 's';
-    return 'xs';
-  }, [innerWidth]);
+  const size = useMemo(() => getDialogSize(innerWidth), [innerWidth]);
 
   const handleSwitchResource = Utils.debounce(useCallback((step) => {
     switchResource(step);
@@ -111,13 +108,13 @@ const ResourceDetailsDialog = ({
   }, []);
 
   useEffect(() => {
-    const resetInnerWidth = () => {
+    const handleResize = () => {
       setInnerWidth(window.innerWidth);
     };
 
-    window.addEventListener('resize', resetInnerWidth);
+    window.addEventListener('resize', handleResize);
     return () => {
-      window.removeEventListener('resize', resetInnerWidth);
+      window.removeEventListener('resize', handleResize);
     };
   }, []);
 
@@ -129,7 +126,7 @@ const ResourceDetailsDialog = ({
 
   return (
     <Modal
-      className={`seaqa-resource-details-dialog ${size}`}
+      className={classnames('seaqa-resource-details-dialog', size)}
       isOpen={true}
       toggle={onToggle}
     >

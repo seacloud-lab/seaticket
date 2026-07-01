@@ -172,7 +172,7 @@ const SubmitIssue = ({ projectUuid, onPageChange }) => {
 
   return (
     <div className="seaqa-portal-new-issue-container" ref={issueRef}>
-      <div className={classnames('seaqa-portal-new-issue', { 'small': isSmallScreen })}>
+      <div className={classnames('seaqa-portal-new-issue', { 's': isSmallScreen })}>
         <div className="seaqa-portal-ticket-settings">
           <div className="seaqa-portal-ticket-settings-container d-flex">
             <div className="seaqa-portal-ticket-content-settings">

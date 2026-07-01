@@ -634,7 +634,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
     <>
       <div
         id={getTicketLogAnchorId(activity.id)}
-        className={classnames('seaqa-log', className, { 'small': isSmallScreen })}
+        className={classnames('seaqa-log', className, { 's': isSmallScreen })}
       >
         <div className="seaqa-log-type-container">
           <IconButton size={{ btn: 24, icon: 14 }} className="seaqa-log-btn no-hover-bg" icon={iconSymbol} />

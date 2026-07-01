@@ -66,17 +66,14 @@
 }
 
 /* small */
-.seaqa-connection-record-details.small .seaqa-connection-record-details-body {
+.seaqa-connection-record-details.s .seaqa-connection-record-details-body {
   flex-direction: column;
   min-height: fit-content;
   gap: 0;
 }
 
-.seaqa-connection-record-details.small .seaqa-connection-record-details-body .seaqa-connection-record-details-container {
-  width: 100%;
-}
-
-.seaqa-connection-record-details.small .seaqa-connection-record-details-body .seaqa-connection-record-details-others {
+.seaqa-connection-record-details.s .seaqa-connection-record-details-body .seaqa-connection-record-details-container,
+.seaqa-connection-record-details.s .seaqa-connection-record-details-body .seaqa-connection-record-details-others {
   width: 100%;
 }
 

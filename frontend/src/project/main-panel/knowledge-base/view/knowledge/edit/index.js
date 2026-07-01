@@ -115,7 +115,7 @@ const EditKnowledge = ({ knowledge, editorAPI, onChange, toggleKBRecordPreview, 
   const isSmallScreen = containerWidth < 892;
 
   return (
-    <div className={classnames('seaqa-project-edit-knowledge', { 'small': isSmallScreen })} ref={knowledgeRef}>
+    <div className={classnames('seaqa-project-edit-knowledge', { 's': isSmallScreen })} ref={knowledgeRef}>
       <div className="seaqa-project-knowledge-settings">
         <div className="seaqa-project-knowledge-settings-container">
           <div className="seaqa-project-knowledge-content-settings">

@@ -8,3 +8,4 @@ export * from './select-option';
 export * from './keyCodes';
 export * from './navigation';
 export * from './file-icon';
+export * from './dialog';

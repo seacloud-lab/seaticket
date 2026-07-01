@@ -17,11 +17,11 @@
   background-color: var(--bs-border-secondary-color);
 }
 
-.seaqa-log.small {
+.seaqa-log.s {
   padding-left: 16px;
 }
 
-.seaqa-log.small:not(.d-none-after)::after {
+.seaqa-log.s:not(.d-none-after)::after {
   left: 28px;
   top: 28px;
 }
@@ -33,7 +33,7 @@
   flex-shrink: 0;
 }
 
-.seaqa-log.small .seaqa-log-type-container {
+.seaqa-log.s .seaqa-log-type-container {
   width: 24px;
   display: flex;
   justify-content: center;
@@ -45,7 +45,7 @@
   border-radius: 50%;
 }
 
-.seaqa-log.small .seaqa-log-icon {
+.seaqa-log.s .seaqa-log-icon {
   display: none;
 }
 

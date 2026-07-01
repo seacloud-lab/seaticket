@@ -59,29 +59,29 @@
   border-color: var(--bs-custom-select-focus-border-color);
 }
 
-.seaqa-project-edit-knowledge.small .seaqa-project-knowledge-settings-container {
+.seaqa-project-edit-knowledge.s .seaqa-project-knowledge-settings-container {
   display: flex;
   flex-direction: column;
 }
 
-.seaqa-project-edit-knowledge.small .seaqa-project-knowledge-content-settings {
+.seaqa-project-edit-knowledge.s .seaqa-project-knowledge-content-settings {
   width: 100%;
 }
 
-.seaqa-project-edit-knowledge.small .seaqa-project-knowledge-other-settings {
+.seaqa-project-edit-knowledge.s .seaqa-project-knowledge-other-settings {
   padding-left: 0;
   width: 100%;
 }
 
-.seaqa-project-edit-knowledge.small .seaqa-project-knowledge-other-settings .seaqa-settings-item:last-child {
+.seaqa-project-edit-knowledge.s .seaqa-project-knowledge-other-settings .seaqa-settings-item:last-child {
   margin-bottom: 0 !important;
 }
 
-.seaqa-project-edit-knowledge.small .seaqa-project-knowledge-footer {
+.seaqa-project-edit-knowledge.s .seaqa-project-knowledge-footer {
   padding-bottom: 16px;
 }
 
-.seaqa-project-edit-knowledge.small .seaqa-project-knowledge-submit-btns {
+.seaqa-project-edit-knowledge.s .seaqa-project-knowledge-submit-btns {
   margin-top: 10px;
   display: flex;
   align-items: center;

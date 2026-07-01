@@ -185,7 +185,7 @@ const Comment = ({
   if (isEditComment) {
     return (
       <>
-        <div className={classnames('seaqa-project-ticket-comment editing', className, { 'small': isSmallScreen })} ref={commentRef}>
+        <div className={classnames('seaqa-project-ticket-comment editing', className, { 's': isSmallScreen })} ref={commentRef}>
           {!isSmallScreen && renderAvatar()}
           <div className="seaqa-project-ticket-comment-container">
             <div className="seaqa-project-ticket-comment-op">
@@ -270,7 +270,7 @@ const Comment = ({
   }
 
   return (
-    <div className={classnames('seaqa-project-ticket-comment', className, { 'small': isSmallScreen })} ref={commentRef}>
+    <div className={classnames('seaqa-project-ticket-comment', className, { 's': isSmallScreen })} ref={commentRef}>
       {!isSmallScreen && renderAvatar()}
       <div className="seaqa-project-ticket-comment-container">
         <div className="seaqa-project-ticket-comment-op">

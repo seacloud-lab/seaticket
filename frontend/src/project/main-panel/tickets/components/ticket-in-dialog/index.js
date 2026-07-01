@@ -28,6 +28,7 @@ import {
   generatorLinkedRecordsForClosedGitHubIssues,
 } from '../../utils';
 import { useCloseLinkedIssues } from '../../hooks';
+import { isSmallContainer } from '@/utils/dialog';
 
 import './index.css';
 
@@ -249,7 +250,7 @@ const TicketInDialog = ({
   if (errorMessage) return (<CenteredError>{errorMessage}</CenteredError>);
   if (!ticket) return (<CenteredError>{ticketType === TICKET_TYPE ? gettext('Ticket not found') : gettext('Issue not found')}</CenteredError>);
 
-  const isSmallSize = containerWidth < 720;
+  const isSmallSize = isSmallContainer(containerWidth);
   const isPortalIssue = ticketType !== TICKET_TYPE;
 
   const { state, comments = [], assignees = [], type, tags, priority, participants = [], substate, due_date } = ticket;

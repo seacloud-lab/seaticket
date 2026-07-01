@@ -302,7 +302,7 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
 
   return (
     <>
-      <div className={classnames('seaqa-connection-record-details', { 'small': isSmallScreen })} ref={recordRef}>
+      <div className={classnames('seaqa-connection-record-details', { 's': isSmallScreen })} ref={recordRef}>
         <div className="seaqa-connection-record-details-header">
           {isRenaming ? (
             <Rename title={title} onToggle={() => setIsRenaming(false)} onSubmit={connection.type === CONNECTION_TYPE.GITHUB_ISSUE ? modifyGitHubRecord : handleOthersChange} />

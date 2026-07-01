@@ -19,6 +19,7 @@ import { Utils } from '@/utils/utils';
 import { formatColumns, generateCreateRelatedTicketOption, generateLinkAnExistingTicketOption, getTableName, } from '../../utils';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { getColumnByName, getColumnOptions, getOption } from '@/sea-metadata/utils/column';
+import { isSmallContainer } from '@/utils/dialog';
 
 // constants
 import { PERMISSION_TYPES } from '@/constants';
@@ -39,6 +40,7 @@ const ConnectionRecordDetailsInDialog = ({ projectUuid, resource, columns, permi
   const { tagsData } = useTags();
 
   const detailsRef = useRef(null);
+  const resizeObserverRef = useRef(null);
 
   const connection = useMemo(() => connections.find(c => c.id === resource?.connection_id), [connections, resource?.connection_id]);
   const connectionTableName = useMemo(() => connection ? getTableName(connection) : '', [connection]);
@@ -182,19 +184,46 @@ const ConnectionRecordDetailsInDialog = ({ projectUuid, resource, columns, permi
 
   useEffect(() => {
     const dom = detailsRef.current;
-    const handleResize = () => {
-      if (!dom) return;
-      setContainerWidth(dom.offsetWidth);
-    };
-    const resizeObserver = new ResizeObserver(handleResize);
-    dom && resizeObserver.observe(dom);
+    if (!dom) return;
 
-    return () => {
-      dom && resizeObserver.unobserve(dom);
-    };
+    try {
+      // Check if ResizeObserver is supported
+      if (typeof ResizeObserver === 'undefined') {
+        console.warn('ResizeObserver is not supported in this browser');
+        // Fallback: set initial width
+        setContainerWidth(dom.offsetWidth);
+        return;
+      }
+
+      const handleResize = () => {
+        if (!dom) return;
+        try {
+          setContainerWidth(dom.offsetWidth);
+        } catch (error) {
+          console.error('Error updating container width:', error);
+        }
+      };
+
+      resizeObserverRef.current = new ResizeObserver(handleResize);
+      resizeObserverRef.current.observe(dom);
+
+      // initial width
+      handleResize();
+
+      return () => {
+        if (resizeObserverRef.current) {
+          resizeObserverRef.current.disconnect();
+          resizeObserverRef.current = null;
+        }
+      };
+    } catch (error) {
+      console.error('Error setting up ResizeObserver:', error);
+      // Fallback: set width directly
+      setContainerWidth(dom.offsetWidth);
+    }
   }, []);
 
-  const isSmallSize = containerWidth < 720;
+  const isSmallSize = isSmallContainer(containerWidth);
 
   return (
     <>

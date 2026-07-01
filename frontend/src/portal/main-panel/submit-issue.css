@@ -16,7 +16,7 @@
   overflow: hidden;
 }
 
-.seaqa-portal-new-issue.small {
+.seaqa-portal-new-issue.s {
   width: calc(100% - 20px);
   padding: 0px 16px;
   min-width: 562px; /* comment min-width(542) + 20 */
