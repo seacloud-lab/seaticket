@@ -99,7 +99,10 @@ class PortalAnonymousAccessPermission(BasePermission):
         enable_portal = portal_settings.get('enable_portal', False)
         if not enable_portal:
             return False
-            
+
+        if _is_portal_preview_user(request, project_uuid):
+            return True
+
         if _is_external_member(request, project_uuid):
             return True
 

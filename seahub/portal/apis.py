@@ -1538,6 +1538,12 @@ class PortalCustomDomainView(APIView):
         if not check_project_admin_permission(request.user.username, project.workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+        
+        portal_settings = get_portal_settings(project)
+        enable_portal = portal_settings.get('enable_portal')
+        if not enable_portal:
+            error_msg = 'Portal is not enabled.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         custom_domain = request.data.get('custom_domain')
         if not custom_domain:
@@ -1590,7 +1596,12 @@ class PortalPreviewTokenView(APIView):
         if not check_project_admin_permission(username, project.workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
+        
+        portal_settings = get_portal_settings(project)
+        enable_portal = portal_settings.get('enable_portal')
+        if not enable_portal:
+            error_msg = 'Portal is not enabled.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         token = signing.dumps({'project_uuid': project_uuid,'username': username}, salt=PORTAL_PREVIEW_TOKEN_SALT)
         token_path = '/portal-preview/%s/' % quote(token, safe='')
         custom_domain = PortalCustomDomain.objects.get_verified_by_project_uuid(project_uuid)
@@ -1599,10 +1610,9 @@ class PortalPreviewTokenView(APIView):
             return Response({'token': token, 'preview_url': preview_url})
         root_domain = getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
         portal_settings = get_portal_settings(project)
-        enable_portal = portal_settings.get('enable_portal')
         alias = None
-        if enable_portal and root_domain:
-            alias = PortalDomainAlias.objects.filter(project_uuid=project_uuid).first()
+        if root_domain:
+            alias = PortalDomainAlias.objects.ensure_alias(project_uuid)
         if alias:
             preview_url = build_absolute_portal_url(request, build_portal_service_domain(alias.prefix), token_path)
             return Response({'token': token, 'preview_url': preview_url})
@@ -1625,19 +1635,20 @@ class PortalDomainAliasView(APIView):
         alias = None
         portal_settings = get_portal_settings(project)
         enable_portal = portal_settings.get('enable_portal')
-        if enable_portal:
-            alias = PortalDomainAlias.objects.filter(project_uuid=project_uuid).first()
-            if not alias and root_domain:
-                alias = PortalDomainAlias.objects.ensure_alias(project_uuid)
+        if not enable_portal:
+            error_msg = 'Portal is not enabled.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        alias = PortalDomainAlias.objects.filter(project_uuid=project_uuid).first()
+        if not alias and root_domain:
+            alias = PortalDomainAlias.objects.ensure_alias(project_uuid)
         prefix = alias.prefix if alias else ''
         domain = build_portal_service_domain(prefix) if root_domain and prefix else ''
         public_url = build_absolute_portal_url(request, domain)
         return Response({
             'portal_service_root_domain': root_domain,
-            'default_subdomain_prefix': prefix,
-            'default_public_url': public_url,
-            'custom_subdomain_prefix': prefix,
-            'custom_public_url': public_url,
+            'subdomain_prefix': prefix,
+            'public_url': public_url,
         })
 
     @require_org_context
@@ -1651,12 +1662,17 @@ class PortalDomainAliasView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
+        portal_settings = get_portal_settings(project)
+        if not portal_settings.get('enable_portal'):
+            error_msg = 'Portal is not enabled.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         root_domain = getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
         if not root_domain:
             error_msg = 'portal service root domain is not configured.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        prefix = request.data.get('custom_subdomain_prefix')
+        prefix = request.data.get('subdomain_prefix')
         if not prefix:
             PortalDomainAlias.objects.reset_alias_prefix(project_uuid)
             return Response({'success': True})
@@ -1666,12 +1682,12 @@ class PortalDomainAliasView(APIView):
             if normalized_prefix in get_portal_reserved_subdomain_prefixes():
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Portal subdomain is reserved.')
         except ValueError as e:
-            error_msg = str(e) or 'custom_subdomain_prefix invalid.'
+            error_msg = str(e) or 'subdomain_prefix invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         existed_alias = PortalDomainAlias.objects.get_by_prefix(normalized_prefix)
         if existed_alias and existed_alias.project_uuid != project_uuid:
-            error_msg = 'custom_subdomain_prefix already in use.'
+            error_msg = 'subdomain_prefix already in use.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         try:
@@ -1685,7 +1701,7 @@ class PortalDomainAliasView(APIView):
                     prefix=normalized_prefix,
                 )
         except IntegrityError:
-            error_msg = 'custom_subdomain_prefix already in use.'
+            error_msg = 'subdomain_prefix already in use.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         return Response({'success': True})
@@ -1706,6 +1722,11 @@ class PortalCustomDomainVerificationView(APIView):
         if not check_project_admin_permission(request.user.username, project.workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        enable_portal = portal_settings.get('enable_portal')
+        if not enable_portal:
+            error_msg = 'Portal is not enabled.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         custom_domain = PortalCustomDomain.objects.filter(project_uuid=str(project_uuid)).first()
         if not custom_domain:

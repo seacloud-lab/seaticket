@@ -23,7 +23,7 @@ import './index.css';
 
 const {
   projectUuid, isEditMode, showKBInPortal, needPassword, csrfToken, projectName,
-  isAnonymous, workspaceID, isExternalUser, portalName, portalLogo,
+  isAnonymous, workspaceID, isExternalUser, isPreviewUser, portalName, portalLogo,
 } = window.app.pageOptions;
 
 const getDefaultPage = (kbEnabled, anonymous) => {
@@ -75,7 +75,7 @@ const Portal = () => {
       }
     }
 
-    if (!isEditMode && (isAnonymous || isExternalUser)) {
+    if (!isEditMode && (isAnonymous || isExternalUser || isPreviewUser)) {
       APIRef.current.listProjectRelatedUsers = (projectUuid) => {
         return new Promise((resolve, reject) => {
           resolve({

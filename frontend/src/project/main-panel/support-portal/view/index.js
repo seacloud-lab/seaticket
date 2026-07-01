@@ -1,7 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import classnames from 'classnames';
 import { gettext, mediaUrl, server, siteRoot } from '@/constants';
 import { CustomizeBtn } from '@/components';
+import { portalAPI } from '@/portal/api';
 
 import './index.css';
 
@@ -9,6 +10,7 @@ const { projectUuid, isProjectAdmin } = window.app.pageOptions;
 
 const View = () => {
   const [height, setHeight] = useState(600);
+  const [isOpeningPortal, setIsOpeningPortal] = useState(false);
 
   const viewRef = useRef(null);
 
@@ -29,6 +31,24 @@ const View = () => {
     };
   }, []);
 
+  const onViewPortal = useCallback(() => {
+    if (!isProjectAdmin) {
+      window.open(viewURL, '_blank', 'noopener,noreferrer');
+      return;
+    }
+
+    if (isOpeningPortal) return;
+    setIsOpeningPortal(true);
+    portalAPI.createPreviewToken(projectUuid).then(res => {
+      const previewUrl = res.data && res.data.preview_url;
+      window.open(previewUrl || viewURL, '_blank', 'noopener,noreferrer');
+    }).catch(() => {
+      window.open(viewURL, '_blank', 'noopener,noreferrer');
+    }).finally(() => {
+      setIsOpeningPortal(false);
+    });
+  }, [isOpeningPortal, viewURL]);
+
   return (
     <div className={classnames('seaqa-support-portal-view', { 'pt-6 pb-4': height <= 424 })} ref={viewRef}>
       <div className="seaqa-support-portal-tip-img">
@@ -46,7 +66,7 @@ const View = () => {
             {gettext('Edit portal')}
           </CustomizeBtn>
         )}
-        <CustomizeBtn color="secondary" icon="open-in-new-tab" onClick={() => window.open(viewURL, '_blank', 'noopener,noreferrer')}>
+        <CustomizeBtn color="secondary" icon="open-in-new-tab" onClick={onViewPortal} disabled={isOpeningPortal}>
           {gettext('View portal')}
         </CustomizeBtn>
       </div>

@@ -119,6 +119,7 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
         'workspace_id': project.workspace_id,
         'is_anonymous': is_anonymous,
         'is_external_user': is_external_user,
+        'is_preview_user': bool(preview_username),
         'username': username,
         'portal': {
             'allow_anonymous': allow_anonymous,

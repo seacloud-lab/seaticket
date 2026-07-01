@@ -12,6 +12,7 @@ from django.test import RequestFactory, override_settings
 
 from seahub.portal.middleware import PortalDomainMiddleware
 from seahub.portal.models import PORTAL_DOMAIN_CACHE_MISS_VALUE, PortalCustomDomain, PortalDomainAlias, ProjectExternalUser
+from seahub.portal.permissions import PortalAnonymousAccessPermission
 from seahub.portal.utils import (
     PORTAL_DOMAIN_TYPE_CUSTOM,
     PORTAL_DOMAIN_TYPE_SERVICE_ALIAS,
@@ -164,6 +165,7 @@ def test_portal_view_allows_preview_session_when_anonymous_disabled(factory, rea
     assert captured['context']['username'] == project_creator.username
     assert captured['context']['is_external_user'] is False
     assert captured['context']['is_anonymous'] is False
+    assert captured['context']['is_preview_user'] is True
 
 
 @pytest.mark.django_db
@@ -202,7 +204,20 @@ def test_portal_view_allows_preview_session_when_password_protected(factory, rea
     assert response.status_code == 200
     assert captured['template'] == 'portal_view_react.html'
     assert captured['context']['username'] == project_creator.username
+    assert captured['context']['is_preview_user'] is True
     assert 'need_password' not in captured['context']
+
+
+@pytest.mark.django_db
+def test_portal_anonymous_permission_allows_preview_session(factory, real_project, project_creator):
+    enable_portal(real_project, allow_anonymous=False)
+    request = factory.get(f'/api/v1/portal/{real_project.uuid}/tags/')
+    request.session = {}
+    request.user = SimpleNamespace(username='', is_authenticated=False)
+    set_portal_preview_session(request, str(real_project.uuid), project_creator.username)
+    view = SimpleNamespace(kwargs={'project_uuid': str(real_project.uuid)})
+
+    assert PortalAnonymousAccessPermission().has_permission(request, view) is True
 
 
 @pytest.mark.django_db

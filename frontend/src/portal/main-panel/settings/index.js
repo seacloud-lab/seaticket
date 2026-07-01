@@ -51,14 +51,13 @@ const Settings = () => {
   const [isVerifyingCustomDomain, setIsVerifyingCustomDomain] = useState(false);
   const [isSavingCustomDomain, setIsSavingCustomDomain] = useState(false);
   const [domainAliasRoot, setDomainAliasRoot] = useState('');
-  const [defaultDomainPublicUrl, setDefaultDomainPublicUrl] = useState('');
-  const [customSubdomainPrefix, setCustomSubdomainPrefix] = useState('');
-  const [savedCustomSubdomainPrefix, setSavedCustomSubdomainPrefix] = useState('');
-  const [customSubdomainPublicUrl, setCustomSubdomainPublicUrl] = useState('');
+  const [subdomainPrefix, setSubdomainPrefix] = useState('');
+  const [savedSubdomainPrefix, setSavedSubdomainPrefix] = useState('');
+  const [subdomainPublicUrl, setSubdomainPublicUrl] = useState('');
   const [isSavingDomainAlias, setIsSavingDomainAlias] = useState(false);
   const [isOpeningPortalPreview, setIsOpeningPortalPreview] = useState(false);
 
-  const portalUrl = customSubdomainPublicUrl || defaultDomainPublicUrl || getDefaultPortalPublicUrl();
+  const portalUrl = subdomainPublicUrl || getDefaultPortalPublicUrl();
 
   const customDomainUrl = useMemo(() => {
     if (!savedCustomDomain || !customDomainVerified || customDomain !== savedCustomDomain) {
@@ -92,10 +91,9 @@ const Settings = () => {
 
   const applyLoadedDomainAlias = useCallback((data = {}) => {
     setDomainAliasRoot(data.portal_service_root_domain || '');
-    setDefaultDomainPublicUrl(data.default_public_url || '');
-    setCustomSubdomainPrefix(data.custom_subdomain_prefix || '');
-    setSavedCustomSubdomainPrefix(data.custom_subdomain_prefix || '');
-    setCustomSubdomainPublicUrl(data.custom_public_url || '');
+    setSubdomainPrefix(data.subdomain_prefix || '');
+    setSavedSubdomainPrefix(data.subdomain_prefix || '');
+    setSubdomainPublicUrl(data.public_url || '');
   }, []);
 
   const loadDomainAlias = useCallback(() => {
@@ -235,7 +233,7 @@ const Settings = () => {
   }, []);
 
   const onCustomSubdomainPrefixChange = useCallback((event) => {
-    setCustomSubdomainPrefix(event.target.value.trim().toLowerCase());
+    setSubdomainPrefix(event.target.value.trim().toLowerCase());
   }, []);
 
   const onVerifyCustomDomain = useCallback(() => {
@@ -279,7 +277,7 @@ const Settings = () => {
 
     setIsSavingDomainAlias(true);
     portalAPI.updateDomainAlias(projectUuid, {
-      custom_subdomain_prefix: customSubdomainPrefix,
+      subdomain_prefix: subdomainPrefix,
     }).then(() => {
       return loadDomainAlias();
     }).then(() => {
@@ -289,7 +287,7 @@ const Settings = () => {
     }).finally(() => {
       setIsSavingDomainAlias(false);
     });
-  }, [customSubdomainPrefix, isSavingDomainAlias, loadDomainAlias]);
+  }, [subdomainPrefix, isSavingDomainAlias, loadDomainAlias]);
 
   const onSaveSettings = useCallback(() => {
     const needPwd = allowAnonymous && enablePassword;
@@ -352,7 +350,7 @@ const Settings = () => {
   const hasUnsavedCustomDomain = customDomain !== savedCustomDomain;
   const canVerifyCustomDomain = !!savedCustomDomain && !hasUnsavedCustomDomain && !customDomainVerified && !isVerifyingCustomDomain;
   const canSaveCustomDomain = hasUnsavedCustomDomain && !isSavingCustomDomain;
-  const hasUnsavedDomainAlias = customSubdomainPrefix !== savedCustomSubdomainPrefix;
+  const hasUnsavedDomainAlias = subdomainPrefix !== savedSubdomainPrefix;
   const canSaveDomainAlias = !!domainAliasRoot && hasUnsavedDomainAlias && !isSavingDomainAlias;
 
   return (
@@ -472,17 +470,17 @@ const Settings = () => {
         </TabPane>
         <TabPane tabId={SETTING_TAB.CUSTOM_DOMAIN}>
           <div className="portal-settings-content">
-            {(domainAliasRoot || defaultDomainPublicUrl) && (
+            {(domainAliasRoot || subdomainPublicUrl) && (
               <>
                 <label className="portal-settings-label">{gettext('Portal domain')}</label>
                 <div className="portal-url-container">
                   <input
                     type="text"
                     className="form-control portal-url-input"
-                    value={defaultDomainPublicUrl}
+                    value={subdomainPublicUrl}
                     readOnly
                   />
-                  <Button color="outline-primary" onClick={() => onCopyUrl(defaultDomainPublicUrl)} title={gettext('Copy URL')}>
+                  <Button color="outline-primary" onClick={() => onCopyUrl(subdomainPublicUrl)} title={gettext('Copy URL')}>
                     <Icon symbol="copy" />
                   </Button>
                 </div>
@@ -491,7 +489,7 @@ const Settings = () => {
                   <input
                     type="text"
                     className="form-control portal-url-input"
-                    value={customSubdomainPrefix}
+                    value={subdomainPrefix}
                     onChange={onCustomSubdomainPrefixChange}
                     placeholder={gettext('my-brand')}
                     spellCheck={false}
@@ -509,22 +507,6 @@ const Settings = () => {
                     {isSavingDomainAlias ? gettext('Saving...') : gettext('Save')}
                   </Button>
                 </div>
-                {customSubdomainPublicUrl && customSubdomainPublicUrl !== defaultDomainPublicUrl && (
-                  <>
-                    <label className="portal-settings-label mt-3">{gettext('Custom subdomain URL')}</label>
-                    <div className="portal-url-container">
-                      <input
-                        type="text"
-                        className="form-control portal-url-input"
-                        value={customSubdomainPublicUrl}
-                        readOnly
-                      />
-                      <Button color="outline-primary" onClick={() => onCopyUrl(customSubdomainPublicUrl)} title={gettext('Copy URL')}>
-                        <Icon symbol="copy" />
-                      </Button>
-                    </div>
-                  </>
-                )}
                 <hr />
               </>
             )}

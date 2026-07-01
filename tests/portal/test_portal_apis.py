@@ -543,6 +543,23 @@ class TestPortalSettingsView:
 
         delete_mock.assert_not_called()
 
+    def test_post_backfills_missing_alias_when_portal_enabled(self, factory, project_creator, real_project, settings):
+        settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
+        project = real_project
+        _set_portal_settings(project, enable_portal=True)
+        request = factory.post(
+            f"/api/v1/portal/{project.uuid}/settings/",
+            data={'show_knowledge_base': 1},
+            format='json'
+        )
+        request.user = project_creator
+
+        with patch.object(PortalDomainAlias.objects, 'generate_unique_prefix', return_value='x765cd'):
+            resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        assert PortalDomainAlias.objects.filter(project_uuid=str(project.uuid), prefix='x765cd').exists()
+
 
 @pytest.mark.django_db
 class TestPortalDomainAliasView:
@@ -561,8 +578,12 @@ class TestPortalDomainAliasView:
 
         assert resp.status_code == 200
         assert resp.data['portal_service_root_domain'] == 'seaticket-portal.test'
-        assert resp.data['default_subdomain_prefix'] == 'x765cd'
-        assert resp.data['default_public_url'] == 'http://x765cd.seaticket-portal.test/'
+        assert resp.data['subdomain_prefix'] == 'x765cd'
+        assert resp.data['public_url'] == 'http://x765cd.seaticket-portal.test/'
+        assert 'default_subdomain_prefix' not in resp.data
+        assert 'default_public_url' not in resp.data
+        assert 'custom_subdomain_prefix' not in resp.data
+        assert 'custom_public_url' not in resp.data
         assert PortalDomainAlias.objects.filter(project_uuid=str(project.uuid)).exists()
 
     def test_get_backfills_missing_default_alias(self, factory, project_creator, real_project, settings):
@@ -575,8 +596,8 @@ class TestPortalDomainAliasView:
             resp = PortalDomainAliasView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
-        assert resp.data['default_subdomain_prefix'] == 'x765cd'
-        assert resp.data['default_public_url'] == 'http://x765cd.seaticket-portal.test/'
+        assert resp.data['subdomain_prefix'] == 'x765cd'
+        assert resp.data['public_url'] == 'http://x765cd.seaticket-portal.test/'
         assert PortalDomainAlias.objects.filter(project_uuid=str(project.uuid), prefix='x765cd').exists()
 
     def test_get_does_not_create_default_alias_when_portal_disabled(self, factory, project_creator, real_project, settings):
@@ -590,8 +611,26 @@ class TestPortalDomainAliasView:
         resp = PortalDomainAliasView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
-        assert resp.data['default_subdomain_prefix'] == ''
-        assert resp.data['default_public_url'] == ''
+        assert resp.data['portal_service_root_domain'] == ''
+        assert resp.data['subdomain_prefix'] == ''
+        assert resp.data['public_url'] == ''
+        assert not PortalDomainAlias.objects.filter(project_uuid=str(project.uuid)).exists()
+
+    def test_post_rejects_alias_when_portal_disabled(self, factory, project_creator, real_project, settings):
+        settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
+        project = real_project
+        project.settings = json.dumps({'portal': {'enable_portal': False}})
+        project.save(update_fields=['settings'])
+        request = factory.post(
+            f"/api/v1/portal/{project.uuid}/domain-alias/",
+            data={'subdomain_prefix': 'my-brand'},
+            format='json'
+        )
+        request.user = project_creator
+
+        resp = PortalDomainAliasView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 400
         assert not PortalDomainAlias.objects.filter(project_uuid=str(project.uuid)).exists()
 
     def test_post_create_custom_alias(self, factory, project_creator, real_project, settings):
@@ -599,7 +638,7 @@ class TestPortalDomainAliasView:
         project = real_project
         request = factory.post(
             f"/api/v1/portal/{project.uuid}/domain-alias/",
-            data={'custom_subdomain_prefix': 'My-Brand'},
+            data={'subdomain_prefix': 'My-Brand'},
             format='json'
         )
         request.user = project_creator
@@ -619,7 +658,7 @@ class TestPortalDomainAliasView:
         )
         request = factory.post(
             f"/api/v1/portal/{project.uuid}/domain-alias/",
-            data={'custom_subdomain_prefix': ''},
+            data={'subdomain_prefix': ''},
             format='json'
         )
         request.user = project_creator
@@ -640,7 +679,7 @@ class TestPortalDomainAliasView:
         )
         request = factory.post(
             f"/api/v1/portal/{project.uuid}/domain-alias/",
-            data={'custom_subdomain_prefix': 'used-brand'},
+            data={'subdomain_prefix': 'used-brand'},
             format='json'
         )
         request.user = project_creator
@@ -654,7 +693,7 @@ class TestPortalDomainAliasView:
         project = real_project
         request = factory.post(
             f"/api/v1/portal/{project.uuid}/domain-alias/",
-            data={'custom_subdomain_prefix': 'my-brand'},
+            data={'subdomain_prefix': 'my-brand'},
             format='json'
         )
         request.user = project_creator
@@ -669,7 +708,7 @@ class TestPortalDomainAliasView:
         project = real_project
         request = factory.post(
             f"/api/v1/portal/{project.uuid}/domain-alias/",
-            data={'custom_subdomain_prefix': ''},
+            data={'subdomain_prefix': ''},
             format='json'
         )
         request.user = project_creator
@@ -679,7 +718,7 @@ class TestPortalDomainAliasView:
         assert resp.status_code == 400
         assert not PortalDomainAlias.objects.filter(project_uuid=str(project.uuid)).exists()
 
-    def test_get_keeps_custom_public_url_empty_when_root_domain_is_not_configured(self, factory, project_creator, real_project, settings):
+    def test_get_keeps_public_url_empty_when_root_domain_is_not_configured(self, factory, project_creator, real_project, settings):
         settings.PORTAL_SERVICE_ROOT_DOMAIN = ''
         project = real_project
         PortalDomainAlias.objects.create(
@@ -692,8 +731,8 @@ class TestPortalDomainAliasView:
         resp = PortalDomainAliasView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
-        assert resp.data['custom_subdomain_prefix'] == 'my-brand'
-        assert resp.data['custom_public_url'] == ''
+        assert resp.data['subdomain_prefix'] == 'my-brand'
+        assert resp.data['public_url'] == ''
 
     def test_get_does_not_backfill_alias_when_root_domain_is_not_configured(self, factory, project_creator, real_project, settings):
         settings.PORTAL_SERVICE_ROOT_DOMAIN = ''
@@ -704,8 +743,8 @@ class TestPortalDomainAliasView:
         resp = PortalDomainAliasView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
-        assert resp.data['default_subdomain_prefix'] == ''
-        assert resp.data['default_public_url'] == ''
+        assert resp.data['subdomain_prefix'] == ''
+        assert resp.data['public_url'] == ''
         assert not PortalDomainAlias.objects.filter(project_uuid=str(project.uuid)).exists()
 
     def test_post_rejects_reserved_alias_prefix(self, factory, project_creator, real_project, settings):
@@ -713,7 +752,7 @@ class TestPortalDomainAliasView:
         project = real_project
         request = factory.post(
             f"/api/v1/portal/{project.uuid}/domain-alias/",
-            data={'custom_subdomain_prefix': 'www'},
+            data={'subdomain_prefix': 'www'},
             format='json'
         )
         request.user = project_creator
@@ -727,7 +766,7 @@ class TestPortalDomainAliasView:
         project = real_project
         request = factory.post(
             f"/api/v1/portal/{project.uuid}/domain-alias/",
-            data={'custom_subdomain_prefix': 'ab'},
+            data={'subdomain_prefix': 'ab'},
             format='json'
         )
         request.user = project_creator
@@ -742,7 +781,7 @@ class TestPortalDomainAliasView:
         project = real_project
         request = factory.post(
             f"/api/v1/portal/{project.uuid}/domain-alias/",
-            data={'custom_subdomain_prefix': 'custom-domains'},
+            data={'subdomain_prefix': 'custom-domains'},
             format='json'
         )
         request.user = project_creator
@@ -804,6 +843,20 @@ class TestPortalPreviewTokenView:
         assert resp.status_code == 200
         assert resp.data['preview_url'].startswith('http://x765cd.seaticket-portal.test/portal-preview/')
         assert PortalDomainAlias.objects.filter(project_uuid=str(project.uuid)).exists()
+
+    def test_post_backfills_missing_alias_when_portal_enabled(self, factory, project_creator, real_project, settings):
+        settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
+        project = real_project
+        _set_portal_settings(project, enable_portal=True)
+        request = factory.post(f"/api/v1/portal/{project.uuid}/preview-token/")
+        request.user = project_creator
+
+        with patch.object(PortalDomainAlias.objects, 'generate_unique_prefix', return_value='x765cd'):
+            resp = PortalPreviewTokenView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        assert resp.data['preview_url'].startswith('http://x765cd.seaticket-portal.test/portal-preview/')
+        assert PortalDomainAlias.objects.filter(project_uuid=str(project.uuid), prefix='x765cd').exists()
 
     def test_post_does_not_create_default_alias_when_portal_disabled(self, factory, project_creator, real_project, settings):
         settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
