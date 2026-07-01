@@ -17,7 +17,7 @@ const {
   projectUuid, projectName, workspaceID, streamingResponse, isEditMode
 } = window.app.pageOptions;
 
-const Main = ({ title, settings }) => {
+const Main = ({ title, settings, isEditMode }) => {
   const { isLoading: isAskPageLoading, pageSlugId, togglePageSlugId } = useAskPage();
   const { isLoading: isSessionsLoading, isShowSessions, toggleIsShowSessions, closeShowSessions, sessions } = useSessions();
 
@@ -110,7 +110,7 @@ const Ask = ({ title = gettext('Chat') }) => {
     <AskPageProvider resetURL={resetURL} getInitialPageSlugId={getInitialPageSlugId} >
       <SessionsProvider projectUuid={projectUuid} api={chatAPI}>
         <DocumentsProvider>
-          <Main title={title} settings={settings} />
+          <Main title={title} settings={settings} isEditMode={isEditMode} />
         </DocumentsProvider>
       </SessionsProvider>
     </AskPageProvider>

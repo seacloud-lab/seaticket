@@ -102,20 +102,18 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID }) => {
   const openIssue = useCallback((issueID) => {
     const { search } = window.location;
     listQueryStringRef.current = new URLSearchParams(search).toString();
-    const basePath = isEditMode ? 'portal-edit' : 'portal';
-    const url = `${origin}/${basePath}/${projectUuid}/${PORTAL_PAGE.MY_ISSUES}/${issueID}/`;
+    const url = buildPortalPath(PORTAL_PAGE.MY_ISSUES, issueID);
     history.replaceState(null, null, url);
     setExpandIssueId(issueID);
   }, []);
 
   const closeIssue = useCallback(() => {
-    const basePath = isEditMode ? 'portal-edit' : 'portal';
     const queryString = listQueryStringRef.current;
-    const url = `${origin}/${basePath}/${projectUuid}/${PORTAL_PAGE.MY_ISSUES}/${queryString ? `?${queryString}` : ''}`;
+    const url = buildPortalPath(PORTAL_PAGE.MY_ISSUES) + (queryString ? `?${queryString}` : '');
     history.replaceState(null, null, url);
     listQueryStringRef.current = '';
     setExpandIssueId(null);
-  }, [isEditMode, projectUuid]);
+  }, []);
 
   useEffect(() => {
     const pathSegments = getPortalPathSegments();

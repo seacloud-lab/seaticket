@@ -16,19 +16,18 @@ export const PortalKnowledgePageProvider = ({ projectName, projectUuid, children
   const listQueryStringRef = useRef('');
 
   const resetURL = useCallback((pageSlugId) => {
-    const { origin } = location;
-    const basePath = isEditMode ? 'portal-edit' : 'portal';
-    const url = `${origin}${siteRoot}${basePath}/${projectUuid}/${BAR_TYPE.KNOWLEDGE}`;
-    let urlPart = pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL || (!pageSlugId && pageSlugId !== 0) ? '/' : `/${pageSlugId}/`;
+    let url = pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL || (!pageSlugId && pageSlugId !== 0)
+      ? buildPortalPath(BAR_TYPE.KNOWLEDGE)
+      : buildPortalPath(BAR_TYPE.KNOWLEDGE, pageSlugId);
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
       const currentUrlParams = new URLSearchParams(window.location.search);
       const currentQueryString = currentUrlParams.toString();
       const queryString = currentQueryString || listQueryStringRef.current;
       listQueryStringRef.current = queryString;
-      urlPart = urlPart + (queryString ? '?' + queryString : '');
+      url = url + (queryString ? '?' + queryString : '');
     }
-    history.replaceState(null, null, url + urlPart);
-  }, [projectUuid, projectName, isEditMode]);
+    history.replaceState(null, null, url);
+  }, []);
 
   const togglePageSlugId = useCallback((newPageSlugId) => {
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
