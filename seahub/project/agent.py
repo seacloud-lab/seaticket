@@ -466,11 +466,11 @@ class AgentActionAutoExecuteView(APIView):
         auto_confirm_map = AgentActionExecutor.get_effective_auto_confirm_map(project)
         if not auto_confirm_map.get(tool_name, False):
             return Response({
-                'success': True,
+                'success': False,
                 'action_id': action_id,
                 'status': 'pending',
                 'result': 'Skipped: tool is not enabled for auto-confirm.',
-            }, status=status.HTTP_200_OK)
+            }, status=status.HTTP_409_CONFLICT)
 
         # 6. Move to executing (concurrency guard)
         _update_action_status(seadb_api, project_uuid, action_id, {'status': 'executing'})
