@@ -207,7 +207,7 @@ def get_portal_settings(project):
 
 def get_request_project_and_portal_settings(request, project_uuid):
     request_project = getattr(request, 'project', None)
-    if request_project and getattr(request_project, 'uuid', '') == project_uuid:
+    if request_project and str(getattr(request_project, 'uuid', '')) == str(project_uuid):
         portal_settings = getattr(request, 'portal_settings', None)
         if portal_settings is None:
             portal_settings = get_portal_settings(request_project)

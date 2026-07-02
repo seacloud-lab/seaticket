@@ -151,6 +151,8 @@ def portal_login_view(request, project_uuid):
     project, portal_settings = get_request_project_and_portal_settings(request, project_uuid)
     if not project:
         return render_error(request, _('This project does not exist'))
+    if not portal_settings.get('enable_portal'):
+        return render_error(request, _('Portal is not enabled'))
     return render(request, 'portal_login.html', _get_portal_login_context(request, project, portal_settings))
 
 
