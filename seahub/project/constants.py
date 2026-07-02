@@ -461,7 +461,7 @@ CONNECTION_DISPLAY_ALL_COLUMNS = {
     ConnectionType.NOTION.value: ['_pk', 'title', 'creator', 'modified_time', 'ai_summary', 'ai_processed_time', 'created_time', 'last_modifier', 'outdated'],
     ConnectionType.GENERAL_TASK.value: ['_pk', 'title', 'url', 'status', 'size', 'priority', 'assignees', 'participants', 'version', 'others', 'due_date', 'modified_time', 'created_time', 'ai_summary', 'ai_processed_time', 'linked_ticket', 'outdated'],
     ConnectionType.LINEAR.value: ['_pk', 'title', 'author', 'state', 'state_reason', 'labels', 'priority', 'due_date', 'created_time', 'modified_time', 'closed_time', 'ai_summary', 'ai_processed_time', 'linked_ticket', 'outdated'],
-    ConnectionType.CONFLUENCE.value: ['_pk', 'title', 'creator', 'modified_time', 'ai_summary', 'ai_processed_time', 'created_time', 'last_modifier', 'outdated', 'state', 'labels'],
+    ConnectionType.CONFLUENCE.value: ['_pk', 'title', 'creator', 'modified_time', 'ai_summary', 'ai_processed_time', 'created_time', 'last_modifier', 'outdated'],
 }
 
 # These columns are must returned to the front end to make some frontend functions work
@@ -470,7 +470,7 @@ CONNECTION_MUST_RETURN_COLUMNS = {
     ConnectionType.DISCOURSE_FORUM.value: ['slug', 'topic_id', 'resolved'],
     ConnectionType.NOTION.value: ['page_id'],
     ConnectionType.LINEAR.value: ['identifier'],
-    ConnectionType.CONFLUENCE.value: ['page_id', 'state', 'labels'],
+    ConnectionType.CONFLUENCE.value: ['page_id'],
 }
 
 LLM_INPUT_CHARACTERS_LIMIT = 4000
