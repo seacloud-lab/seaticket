@@ -372,6 +372,7 @@ const Settings = () => {
                 className="form-control portal-url-input"
                 value={subdomainPublicUrl}
                 readOnly
+                placeholder={!domainAliasRoot ? gettext('Portal service root domain is not configured') : ''}
               />
               <Button
                 color="outline-primary"
@@ -390,6 +391,11 @@ const Settings = () => {
                 <Icon symbol="open-in-new-tab" />
               </Button>
             </div>
+            {!domainAliasRoot && (
+              <p className="portal-settings-help-text mt-2 mb-0">
+                {gettext('Portal service root domain is not configured, so the default portal URL is unavailable.')}
+              </p>
+            )}
             <div className="mt-4">
               <Switch
                 checked={allowAnonymous}

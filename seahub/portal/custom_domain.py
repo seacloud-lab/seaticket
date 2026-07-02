@@ -13,6 +13,7 @@ CUSTOM_DOMAIN_VERIFICATION_VALUE_PREFIX = 'seaqa-portal-verification='
 PORTAL_SUBDOMAIN_PREFIX_MIN_LENGTH = 3
 PORTAL_SUBDOMAIN_PREFIX_MAX_LENGTH = 63
 PORTAL_RESERVED_SUBDOMAIN_PREFIXES = ('admin', 'api', 'assets', 'auth', 'cdn', 'custom-domains', 'internal', 'mail', 'media', 'static', 'status', 'support', 'www')
+PORTAL_CUSTOM_DOMAIN_DNS_RESOLVERS = ('8.8.8.8', '1.1.1.1')
 
 
 def normalize_portal_custom_domain(domain, check_reserved=True):
@@ -126,7 +127,9 @@ def get_portal_subdomain_prefix(host):
 
 def query_dns_txt_values(record_name):
     try:
-        answers = dns.resolver.resolve(record_name, 'TXT', lifetime=5)
+        resolver = dns.resolver.Resolver(configure=False)
+        resolver.nameservers = list(PORTAL_CUSTOM_DOMAIN_DNS_RESOLVERS)
+        answers = resolver.resolve(record_name, 'TXT', lifetime=5)
     except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN) as e:
         logger.error(e)
         return []
