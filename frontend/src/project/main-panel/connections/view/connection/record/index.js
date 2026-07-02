@@ -24,7 +24,7 @@ import { connectionsAPI } from '@/project/api';
 import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
 import { Utils } from '@/utils/utils';
 import Rename from './rename';
-import { CellType } from '@/sea-metadata';
+import { CellType, context as seaMetadataContext, EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata';
 import { convertRowToKeyValue } from '@/sea-metadata/utils/row';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { getColumnByName, getColumnOptions, getOption } from '@/sea-metadata/utils/column';
@@ -45,8 +45,8 @@ const initColumns = [
 ];
 
 const Record = ({ projectUuid, permission, toggleBar }) => {
-  const { isLoading: isConnectionsPageLoading, pageSlugId, childrenPageSlugId } = useConnectionsPage();
-  const { getRow, modifyRow, modifyRowLink, modifyLocalRow, insertRowByLink } = useData();
+  const { isLoading: isConnectionsPageLoading, pageSlugId, childrenPageSlugId, toggleChildrenPageSlugId } = useConnectionsPage();
+  const { getRow, modifyRow, modifyRowLink, modifyLocalRow, insertRowByLink, deleteRows } = useData();
   const { connections } = useConnections();
   const { updateAttachments } = useAIChatTools();
   const { tagsData } = useTags();
@@ -81,6 +81,25 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
       isRw && generateLinkAnExistingTicketOption({ row, columns, connection }, () => setIsShowTicketsDialog(true)),
     ].filter(Boolean);
   }, [record, connection, permission, columns, childrenPageSlugId]);
+
+  const deleteEmailRecord = useCallback(() => {
+    if (!connection || connection.type !== CONNECTION_TYPE.EMAIL || !childrenPageSlugId) return;
+    const rowId = childrenPageSlugId + '';
+    toaster.notify(gettext('It may take some time, please wait.'));
+    deleteRows(connectionTableName, [rowId], () =>
+      connectionsAPI.deleteConnectionEmail(projectUuid, connection.id, { thread_ids: [rowId] })
+    ).then(() => {
+      seaMetadataContext.eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.DELETE_ROWS, [rowId]);
+      seaMetadataContext.eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.SELECT_NONE);
+      toaster.closeAll();
+      toaster.success(gettext('Email thread has been moved to trash.'));
+      toggleChildrenPageSlugId('');
+    }).catch(error => {
+      toaster.closeAll();
+      toaster.danger(Utils.getErrorMsg(error));
+    });
+  }, [connection, childrenPageSlugId, connectionTableName, projectUuid, deleteRows, toggleChildrenPageSlugId]);
+
   const tools = useMemo(() => {
     if (!record) return [];
     const row = { ...record, _id: childrenPageSlugId + '', _pk: childrenPageSlugId };
@@ -98,6 +117,14 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
       generateOpenOriginalPageOption({ row, columns, connection }),
       generateCopyOriginalLinkOption({ row, columns, connection }),
     ];
+    if (isRw && connection?.type === CONNECTION_TYPE.EMAIL) {
+      _tools.push({ key: 'divider' });
+      _tools.push({
+        key: 'delete_email',
+        label: gettext('Delete email'),
+        callback: deleteEmailRecord,
+      });
+    }
     const outdatedOptions = isRw ? generateMarkAsOutdatedOptions({ rows: [row], columns, connection }, (rowIds, idRowUpdates, idOldRowOldData) => {
       const rowId = rowIds[0];
       const rowUpdate = idRowUpdates[rowId];
@@ -135,7 +162,7 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
       return acc;
     }, []);
     return _tools;
-  }, [record, connection, permission, cacheRecord, columns, childrenPageSlugId, linkedTicketTools, updateAttachments, toggleBar]);
+  }, [record, connection, permission, cacheRecord, columns, childrenPageSlugId, linkedTicketTools, updateAttachments, toggleBar, deleteEmailRecord]);
 
   const title = useMemo(() => {
     if (record && record.title) return record.title;

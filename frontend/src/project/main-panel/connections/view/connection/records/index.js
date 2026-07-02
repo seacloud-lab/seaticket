@@ -280,8 +280,8 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
       context.eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.DELETE_ROWS, threadIds);
       context.eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.SELECT_NONE);
       const successMessage = rows.length === 1
-        ? gettext('Email thread has been moved to Trash.')
-        : gettext('Email threads have been moved to Trash.');
+        ? gettext('Email thread has been moved to trash.')
+        : gettext('Email threads have been moved to trash.');
       toaster.closeAll();
       toaster.success(successMessage);
     }).catch(error => {
