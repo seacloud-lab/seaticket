@@ -1773,16 +1773,25 @@ class PortalCustomDomainTLSAskView(APIView):
 
         tls_ask_cache_key = get_portal_tls_ask_cache_key(normalized_domain)
         cached_allowed = cache.get(tls_ask_cache_key)
-        if cached_allowed is not None:
-            return Response(status=status.HTTP_200_OK if cached_allowed else status.HTTP_403_FORBIDDEN)
+        if cached_allowed is False:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
         custom_domain = PortalCustomDomain.objects.get_by_domain(normalized_domain)
-        allowed = bool(custom_domain and custom_domain.verified)
-        cache.set(tls_ask_cache_key, allowed, PORTAL_TLS_ASK_CACHE_TIMEOUT)
-        if allowed:
+        is_portal_enabled = get_portal_settings(project).get('enable_portal', False)
+        allowed = bool(custom_domain and custom_domain.verified and is_portal_enabled)
+        if not allowed:
+            cache.set(tls_ask_cache_key, False, PORTAL_TLS_ASK_CACHE_TIMEOUT)
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        if cached_allowed:
             return Response(status=status.HTTP_200_OK)
 
-        return Response(status=status.HTTP_403_FORBIDDEN)
+        cache.set(tls_ask_cache_key, True, PORTAL_TLS_ASK_CACHE_TIMEOUT)
+        return Response(status=status.HTTP_200_OK)
 
 
 class PortalExternalInvitationsView(APIView):
@@ -1795,6 +1804,10 @@ class PortalExternalInvitationsView(APIView):
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if not get_portal_settings(project).get('enable_portal'):
+            error_msg = 'Portal is not enabled.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         
         if not check_project_admin_permission(request.user.username, project.workspace.owner):
@@ -1831,6 +1844,10 @@ class PortalExternalInvitationsView(APIView):
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if not get_portal_settings(project).get('enable_portal'):
+            error_msg = 'Portal is not enabled.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         username = request.user.username
@@ -1886,6 +1903,10 @@ class PortalExternalInvitationsView(APIView):
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if not get_portal_settings(project).get('enable_portal'):
+            error_msg = 'Portal is not enabled.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         username = request.user.username

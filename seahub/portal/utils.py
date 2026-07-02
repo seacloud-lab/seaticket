@@ -111,10 +111,10 @@ def get_portal_preview_username(request, project_uuid):
     preview_username = session.get(PORTAL_PREVIEW_SESSION_USERNAME_KEY)
     if not preview_project_uuid or not preview_username:
         return ''
-    if str(preview_project_uuid) != str(project_uuid):
+    if preview_project_uuid != project_uuid:
         return ''
 
-    project = getattr(request, 'project', None) or Projects.objects.get_project_by_uuid(project_uuid)
+    project, _portal_settings = get_request_project_and_portal_settings(request, project_uuid)
     if not project:
         return ''
     if not can_preview_portal(preview_username, project):
@@ -203,6 +203,25 @@ def get_portal_settings(project):
         'portal_name': portal_settings.get('portal_name', ''),
         'portal_logo': portal_settings.get('portal_logo', ''),
     }
+
+
+def get_request_project_and_portal_settings(request, project_uuid):
+    request_project = getattr(request, 'project', None)
+    if request_project and getattr(request_project, 'uuid', '') == project_uuid:
+        portal_settings = getattr(request, 'portal_settings', None)
+        if portal_settings is None:
+            portal_settings = get_portal_settings(request_project)
+            request.portal_settings = portal_settings
+        return request_project, portal_settings
+
+    project = Projects.objects.get_project_by_uuid(project_uuid)
+    if not project:
+        return None, None
+
+    portal_settings = get_portal_settings(project)
+    request.project = project
+    request.portal_settings = portal_settings
+    return project, portal_settings
 
 def _build_visitor_session_error():
     response = api_error(status.HTTP_401_UNAUTHORIZED, 'Visitor session expired. Please refresh the page.')

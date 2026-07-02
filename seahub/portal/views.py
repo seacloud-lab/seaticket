@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import logging
-import json
 
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
@@ -15,10 +14,9 @@ from seahub.portal.visitor_session import (
     ensure_visitor_cookie,
 )
 from seahub.portal.utils import can_preview_portal, get_portal_preview_username, load_portal_preview_token, portal_path, \
-    set_portal_preview_session, get_portal_settings
+    set_portal_preview_session, get_request_project_and_portal_settings
 from seahub.portal.custom_domain import is_request_using_portal_domain
 from seahub import settings
-from seahub.project.models import Projects
 from seahub.project.utils import check_project_admin_permission, check_same_org_permission
 from seahub.utils import render_error
 from seahub.auth.decorators import login_required
@@ -62,11 +60,9 @@ def portal_accounts_login_view(request):
 
 
 def portal_view(request, project_uuid, children_id=None, session_uuid=None, issue_id=None):
-    project = Projects.objects.get_project_by_uuid(project_uuid)
+    project, portal_settings = get_request_project_and_portal_settings(request, project_uuid)
     if not project:
         return render_error(request, _('This project does not exist'))
-
-    portal_settings = get_portal_settings(project)
     allow_anonymous = portal_settings['allow_anonymous']
     enable_password_protection = portal_settings['enable_password_protection']
     show_kb_in_portal = portal_settings['show_kb_in_portal']
@@ -151,10 +147,9 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
 
 
 def portal_login_view(request, project_uuid):
-    project = Projects.objects.get_project_by_uuid(project_uuid)
+    project, portal_settings = get_request_project_and_portal_settings(request, project_uuid)
     if not project:
         return render_error(request, _('This project does not exist'))
-    portal_settings = get_portal_settings(project)
     return render(request, 'portal_login.html', _get_portal_login_context(request, project, portal_settings))
 
 
@@ -164,9 +159,11 @@ def portal_preview_view(request, token):
         return render_error(request, _('Preview link is invalid or expired.'))
 
     project_uuid = payload['project_uuid']
-    project = Projects.objects.get_project_by_uuid(project_uuid)
+    project, portal_settings = get_request_project_and_portal_settings(request, project_uuid)
     if not project:
         return render_error(request, _('This project does not exist'))
+    if not portal_settings.get('enable_portal'):
+        return render_error(request, _('Portal is not enabled'))
     if not can_preview_portal(payload['username'], project):
         return render_error(request, _('Permission denied'))
 
@@ -183,19 +180,12 @@ def portal_external_logout_view(request, project_uuid):
     return redirect(portal_path(request, project_uuid))
 
 def portal_anonymous_validate(request, project_uuid):
-    project = Projects.objects.get_project_by_uuid(project_uuid)
+    project, portal_settings = get_request_project_and_portal_settings(request, project_uuid)
     if not project:
         return render_error(request, _('This project does not exist'))
-
-    try:
-        project_settings = json.loads(project.settings) if project.settings else {}
-    except Exception:
-        project_settings = {}
-
-    portal_settings = project_settings.get('portal', {})
-    allow_anonymous = bool(portal_settings.get('allow_anonymous', False))
-    enable_password_protection = bool(portal_settings.get('enable_password_protection', False))
-    enable_portal = bool(portal_settings.get('enable_portal', False))
+    allow_anonymous = portal_settings['allow_anonymous']
+    enable_password_protection = portal_settings['enable_password_protection']
+    enable_portal = portal_settings['enable_portal']
     
     if not enable_portal:
         return render_error(request, _('Portal is not enabled'))
@@ -255,9 +245,11 @@ def portal_external_invitation_accept_view(request, token, project_uuid):
     if invitation.is_expired():
         return render_error(request, _('Invitation link is invalid or expired.'))
 
-    project = Projects.objects.get_project_by_uuid(project_uuid)
+    project, portal_settings = get_request_project_and_portal_settings(request, project_uuid)
     if not project:
         raise Http404
+    if not portal_settings.get('enable_portal'):
+        return render_error(request, _('Portal is not enabled'))
 
     invitation.accepted_at = timezone.now()
     invitation.save(update_fields=['accepted_at'])
@@ -282,7 +274,7 @@ def portal_external_invitation_accept_view(request, token, project_uuid):
 
 @login_required
 def portal_edit_view(request, project_uuid, page=None, children_id=None, session_uuid=None):
-    project = Projects.objects.get_project_by_uuid(project_uuid)
+    project, portal_settings = get_request_project_and_portal_settings(request, project_uuid)
     if not project:
         return render_error(request, _('This project does not exist'))
 
@@ -292,19 +284,11 @@ def portal_edit_view(request, project_uuid, page=None, children_id=None, session
     if not check_project_admin_permission(username, workspace.owner):
         return render_error(request, _('Permission denied'))
 
-    project_settings = {}
-    if project.settings:
-        try:
-            project_settings = json.loads(project.settings)
-        except Exception:
-            project_settings = {}
-    
-    portal_settings = project_settings.get('portal', {})
-    streaming_response = bool(project_settings.get('streaming_response', True))
-    show_kb_in_portal = bool(portal_settings.get('show_knowledge_base', False))
-    allow_anonymous = bool(portal_settings.get('allow_anonymous', False))
-    enable_password_protection = bool(portal_settings.get('enable_password_protection', False))
-    enable_portal = bool(portal_settings.get('enable_portal', False))
+    streaming_response = portal_settings['streaming_response']
+    show_kb_in_portal = portal_settings['show_kb_in_portal']
+    allow_anonymous = portal_settings['allow_anonymous']
+    enable_password_protection = portal_settings['enable_password_protection']
+    enable_portal = portal_settings['enable_portal']
     
     if not enable_portal:
         return render_error(request, _('Portal is not enabled'))

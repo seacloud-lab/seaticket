@@ -506,8 +506,6 @@ class ProjectView(APIView):
                     project_settings[k] = v
                 new_enable_portal = bool((project_settings.get('portal') or {}).get('enable_portal', False))
                 should_init_portal_issues = not old_enable_portal and new_enable_portal
-                root_domain = getattr(django_settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
-                should_ensure_portal_alias = bool(new_enable_portal and root_domain)
                 project.settings = json.dumps(project_settings)
             project.modifier = username
             if should_ensure_portal_alias:
@@ -516,6 +514,9 @@ class ProjectView(APIView):
             if should_init_portal_issues:
                 seadb_api = SeaDBAPI()
                 ensure_portal_issues_seadb_table(seadb_api, project.uuid)
+                root_domain = getattr(django_settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
+                if root_domain:
+                    PortalDomainAlias.objects.ensure_alias(project.uuid)
         except OperationalError:
             error_msg = _('Project name contains illegal characters')
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)

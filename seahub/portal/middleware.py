@@ -6,7 +6,7 @@ from django.urls import Resolver404, resolve
 from django.utils.deprecation import MiddlewareMixin
 
 from seahub.portal.models import PortalCustomDomain
-from seahub.portal.utils import PORTAL_DOMAIN_TYPE_SERVICE_ALIAS, resolve_portal_domain
+from seahub.portal.utils import PORTAL_DOMAIN_TYPE_SERVICE_ALIAS, get_request_project_and_portal_settings, resolve_portal_domain
 
 
 # Static and auth resources needed by Portal domain pages.
@@ -81,8 +81,12 @@ class PortalDomainMiddleware(MiddlewareMixin):
         if not portal_domain:
             return None
 
-        request.portal_domain = portal_domain
         project_uuid = portal_domain.binding.project_uuid
+        project, portal_settings = get_request_project_and_portal_settings(request, project_uuid)
+        if not project or not portal_settings.get('enable_portal'):
+            return None
+
+        request.portal_domain = portal_domain
         requested_project_uuid = _get_project_uuid_from_origin_path(normalized_path)
         if requested_project_uuid and requested_project_uuid != project_uuid:
             raise Http404
