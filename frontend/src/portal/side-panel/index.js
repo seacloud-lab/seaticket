@@ -54,7 +54,7 @@ const SidePanel = ({ isEditMode, activePage, onPageChange, enableKB, isAnonymous
     };
   }, [isMobile]);
 
-  const { isExternalUser } = window.app.pageOptions;
+  const { isExternalUser, isPortalDomain } = window.app.pageOptions;
 
   return (
     <>
@@ -89,8 +89,8 @@ const SidePanel = ({ isEditMode, activePage, onPageChange, enableKB, isAnonymous
                 {gettext('Login')}
               </Button>
             )}
-            {!isAnonymous && isExternalUser && <ExternalUserAccount />}
-            {!isAnonymous && !isExternalUser && <Account />}
+            {!isAnonymous && (isExternalUser || isPortalDomain) && <ExternalUserAccount />}
+            {!isAnonymous && !isExternalUser && !isPortalDomain && <Account />}
           </div>
         </div>
         {isShowMobileMenu && (

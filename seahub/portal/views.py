@@ -14,7 +14,8 @@ from seahub.portal.visitor_session import (
     ensure_visitor_cookie,
 )
 from seahub.portal.utils import can_preview_portal, get_portal_preview_username, load_portal_preview_token, portal_path, \
-    set_portal_preview_session, get_request_project_and_portal_settings
+    set_portal_preview_session, get_request_project_and_portal_settings, PORTAL_PREVIEW_SESSION_PROJECT_KEY, \
+    PORTAL_PREVIEW_SESSION_USERNAME_KEY
 from seahub.portal.custom_domain import is_request_using_portal_domain
 from seahub import settings
 from seahub.project.utils import check_project_admin_permission, check_same_org_permission
@@ -176,6 +177,10 @@ def portal_external_logout_view(request, project_uuid):
     if ext_username and ext_is_valid:
         request.session.pop('portal_external_username', None)
         request.session.pop('portal_external_project_uuid', None)
+
+    if request.session.get(PORTAL_PREVIEW_SESSION_PROJECT_KEY) == project_uuid:
+        request.session.pop(PORTAL_PREVIEW_SESSION_PROJECT_KEY, None)
+        request.session.pop(PORTAL_PREVIEW_SESSION_USERNAME_KEY, None)
 
     return redirect(portal_path(request, project_uuid))
 
