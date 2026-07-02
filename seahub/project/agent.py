@@ -36,9 +36,20 @@ from seahub.project.agent_action_executor import (
 from seahub.project.constants import ConnectionType
 
 from seahub.seadb_models.models import SchemaTables
+from seahub.utils.inner_auth import verify_seaqa_inner_token
+from rest_framework.permissions import AllowAny
 
 
 logger = logging.getLogger(__name__)
+
+
+def _update_action_status(seadb_api, project_uuid, action_id, row):
+    """Update action status in SeaDB - shared helper for agent action views."""
+    update_data = [{
+        'pk': int(action_id),
+        'row': row,
+    }]
+    seadb_api.update_rows(project_uuid, SchemaTables.AGENT_ACTIONS.table_name(), update_data)
 
 
 def _parse_action_sources(raw_sources):
@@ -331,7 +342,7 @@ class AgentActionConfirmView(APIView):
             if action['status'] != 'pending':
                 return api_error(status.HTTP_400_BAD_REQUEST, f'Action is not pending: {action["status"]}')
 
-            self._update_action_status(seadb_api, project_uuid, action_id, {'status': 'executing'})
+            _update_action_status(seadb_api, project_uuid, action_id, {'status': 'executing'})
 
             # 3. Dispatch to the appropriate handler based on source_type and tool_name
             try:
@@ -345,7 +356,7 @@ class AgentActionConfirmView(APIView):
                     request=request,
                 )
             except MappingRequiredError:
-                self._update_action_status(seadb_api, project_uuid, action_id, {'status': 'pending'})
+                _update_action_status(seadb_api, project_uuid, action_id, {'status': 'pending'})
                 raise
             except Exception as e:
                 logger.exception(
@@ -359,7 +370,7 @@ class AgentActionConfirmView(APIView):
 
             # 4. Update action status in SeaDB
             now = timezone.now().isoformat()
-            self._update_action_status(seadb_api, project_uuid, action_id, {
+            _update_action_status(seadb_api, project_uuid, action_id, {
                 'status': execution['status'],
                 'result': execution['result'],
                 'executed_at': now,
@@ -388,12 +399,142 @@ class AgentActionConfirmView(APIView):
             'github_issue_types': issue_types,
         }, status=status.HTTP_400_BAD_REQUEST)
 
-    def _update_action_status(self, seadb_api, project_uuid, action_id, row):
-        update_data = [{
-            'pk': int(action_id),
-            'row': row,
-        }]
-        seadb_api.update_rows(project_uuid, SchemaTables.AGENT_ACTIONS.table_name(), update_data)
+
+class AgentActionAutoExecuteView(APIView):
+    """
+    Auto-execute an agent action triggered by seaqa-ai.
+
+    POST /api/v1/internal/agent/auto-action/execute/
+    
+    This endpoint is for internal service-to-service calls only.
+    It skips session-based authentication and uses JWT token verification.
+    """
+    authentication_classes = ()
+    permission_classes = (AllowAny,)
+
+    def post(self, request):
+        # 1. Verify internal JWT token
+        if not verify_seaqa_inner_token(request):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        project_uuid = request.data.get('project_uuid', '').strip()
+        action_id = request.data.get('action_id')
+        
+        if not project_uuid or not action_id:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'project_uuid and action_id are required.')
+
+        try:
+            action_id = int(action_id)
+        except (ValueError, TypeError):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'action_id must be an integer.')
+
+        # 2. Get project
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
+
+        seadb_api = SeaDBAPI()
+
+        # 3. Get action details
+        sql = (
+            "SELECT `_pk`, `run_id`, `status`, `tool_name`, `source_type`, `source_id`, "
+            "`suggestion_text`, `suggestion_content` "
+            f"FROM `{SchemaTables.AGENT_ACTIONS.table_name()}` WHERE `_pk` = {action_id} LIMIT 1"
+        )
+        result = seadb_api.query_rows(project_uuid, sql)
+        rows = result.get('results', [])
+        
+        if not rows:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Action not found.')
+        
+        action = rows[0]
+
+        # 4. Idempotency check: only process pending actions
+        action_status = (action.get('status') or '').strip()
+        if action_status != 'pending':
+            # Action already processed or being processed
+            return Response({
+                'success': True,
+                'action_id': action_id,
+                'status': action_status,
+                'result': 'Skipped: action is not pending.',
+            }, status=status.HTTP_200_OK)
+
+        tool_name = (action.get('tool_name') or '').strip()
+        
+        # 5. Verify auto_confirm is still enabled for this tool
+        auto_confirm_map = AgentActionExecutor.get_effective_auto_confirm_map(project)
+        if not auto_confirm_map.get(tool_name, False):
+            return Response({
+                'success': True,
+                'action_id': action_id,
+                'status': 'pending',
+                'result': 'Skipped: tool is not enabled for auto-confirm.',
+            }, status=status.HTTP_200_OK)
+
+        # 6. Move to executing (concurrency guard)
+        _update_action_status(seadb_api, project_uuid, action_id, {'status': 'executing'})
+
+        # 7. Resolve operator
+        operator = AgentActionExecutor.resolve_auto_action_operator(project)
+        if not operator:
+            _update_action_status(seadb_api, project_uuid, action_id, {
+                'status': 'failed',
+                'result': 'No valid operator available for auto action execution.',
+                'executed_at': timezone.now().isoformat(),
+            })
+            return Response({
+                'success': False,
+                'action_id': action_id,
+                'status': 'failed',
+                'result': 'No valid operator available.',
+            }, status=status.HTTP_200_OK)
+
+        # 8. Execute action
+        try:
+            execution = AgentActionExecutor().execute_action(
+                seadb_api=seadb_api,
+                project=project,
+                project_uuid=project_uuid,
+                action=action,
+                operator=operator,
+                auto_executed=True,
+                request=None,
+            )
+        except MappingRequiredError as e:
+            # Auto-execution cannot prompt for mapping; mark as failed
+            _update_action_status(seadb_api, project_uuid, action_id, {
+                'status': 'failed',
+                'result': f'Mapping required for agent type: {e.agent_type}',
+                'executed_at': timezone.now().isoformat(),
+            })
+            execution = AgentActionExecutor._failed_execution(
+                f'Mapping required for agent type: {e.agent_type}'
+            )
+        except Exception as e:
+            logger.exception(
+                'Auto action execution failed for action %s project %s: %s',
+                action_id,
+                project_uuid,
+                e,
+            )
+            execution = AgentActionExecutor._failed_execution(str(e) or 'Action execution failed.')
+
+        # 9. Update action status
+        now = timezone.now().isoformat()
+        _update_action_status(seadb_api, project_uuid, action_id, {
+            'status': execution['status'],
+            'result': execution['result'],
+            'executed_at': now,
+        })
+
+        return Response({
+            'success': execution['success'],
+            'action_id': action_id,
+            'status': execution['status'],
+            'result': execution['result'],
+        }, status=status.HTTP_200_OK)
+
 
 class AgentActionUpdateView(APIView):
     """
