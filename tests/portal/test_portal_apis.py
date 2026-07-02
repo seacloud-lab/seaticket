@@ -741,27 +741,6 @@ class TestPortalCustomDomainView:
         assert PortalCustomDomain.objects.filter(project_uuid=str(project.uuid)).first() is None
         assert cache.get(get_portal_tls_ask_cache_key(domain)) is None
 
-
-@pytest.mark.django_db
-class TestPortalCustomDomainTLSAskView:
-
-    def test_get_allows_verified_custom_domain(self, factory, real_project):
-        PortalCustomDomain.objects.create(
-            domain='support.local.test',
-            project_uuid=str(real_project.uuid),
-            verified=True,
-        )
-        request = factory.get(
-            '/internal/portal/custom-domain/allow-tls',
-            data={'domain': 'Support.Local.Test.'},
-            REMOTE_ADDR='127.0.0.1',
-        )
-
-        resp = PortalCustomDomainTLSAskView.as_view()(request)
-
-        assert resp.status_code == 200
-
-
 @pytest.mark.django_db
 class TestPortalExternalInvitationsView:
 

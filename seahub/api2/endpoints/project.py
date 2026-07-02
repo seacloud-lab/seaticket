@@ -474,7 +474,6 @@ class ProjectView(APIView):
 
         try:
             should_init_portal_issues = False
-            should_ensure_portal_alias = False
             if new_project_name:
                 project.name = new_project_name
             if target_workspace_id:
@@ -508,8 +507,6 @@ class ProjectView(APIView):
                 should_init_portal_issues = not old_enable_portal and new_enable_portal
                 project.settings = json.dumps(project_settings)
             project.modifier = username
-            if should_ensure_portal_alias:
-                PortalDomainAlias.objects.ensure_alias(project.uuid)
             project.save()
             if should_init_portal_issues:
                 seadb_api = SeaDBAPI()

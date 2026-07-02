@@ -1648,11 +1648,17 @@ class PortalDomainAliasView(APIView):
 
         root_domain = getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
         alias = PortalDomainAlias.objects.get_by_project_uuid(project_uuid)
-        if not alias and root_domain:
+        if not root_domain:
+            return Response({
+                'portal_service_root_domain': '',
+                'subdomain_prefix': alias.prefix if alias else '',
+                'public_url': '',
+            })
+
+        if not alias:
             alias = PortalDomainAlias.objects.ensure_alias(project_uuid)
         prefix = alias.prefix
-        domain = '%s.%s' % (prefix, root_domain)
-        public_url = build_absolute_portal_url(request, domain)
+        public_url = build_absolute_portal_url(request, '%s.%s' % (prefix, root_domain))
         return Response({
             'portal_service_root_domain': root_domain,
             'subdomain_prefix': prefix,
@@ -1776,13 +1782,13 @@ class PortalCustomDomainTLSAskView(APIView):
         if cached_allowed is False:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
+        custom_domain = PortalCustomDomain.objects.get_by_domain(normalized_domain)
+        if not custom_domain or not custom_domain.verified:
+            cache.set(tls_ask_cache_key, False, PORTAL_TLS_ASK_CACHE_TIMEOUT)
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        custom_domain = PortalCustomDomain.objects.get_by_domain(normalized_domain)
-        is_portal_enabled = get_portal_settings(project).get('enable_portal', False)
-        allowed = bool(custom_domain and custom_domain.verified and is_portal_enabled)
+        project = Projects.objects.get_project_by_uuid(custom_domain.project_uuid)
+        allowed = bool(project and get_portal_settings(project).get('enable_portal', False))
         if not allowed:
             cache.set(tls_ask_cache_key, False, PORTAL_TLS_ASK_CACHE_TIMEOUT)
             return Response(status=status.HTTP_403_FORBIDDEN)
