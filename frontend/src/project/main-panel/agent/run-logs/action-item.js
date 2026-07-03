@@ -169,13 +169,13 @@ const ActionItem = React.memo(({
 
   const renderCompletedTicketMessage = (ticket, message = '') => {
     const normalizedMessage = typeof message === 'string' ? message : String(message || '');
-    const ticketLabel = ticket?.ticket_pk ? `${gettext('Ticket')} #${ticket.ticket_pk}` : '';
-    if (!ticketLabel) return normalizedMessage;
+    const ticketRef = ticket?.ticket_pk ? `#${ticket.ticket_pk}` : '';
+    if (!ticketRef) return normalizedMessage;
 
-    const ticketLink = renderTicketLink(ticket, ticketLabel);
+    const ticketLink = renderTicketLink(ticket, ticketRef);
     if (!ticketLink) return normalizedMessage;
 
-    const ticketIndex = normalizedMessage.indexOf(ticketLabel);
+    const ticketIndex = normalizedMessage.indexOf(ticketRef);
     if (ticketIndex === -1) {
       return (
         <>
@@ -186,7 +186,7 @@ const ActionItem = React.memo(({
     }
 
     const before = normalizedMessage.slice(0, ticketIndex);
-    const after = normalizedMessage.slice(ticketIndex + ticketLabel.length);
+    const after = normalizedMessage.slice(ticketIndex + ticketRef.length);
     return (
       <>
         {before}
