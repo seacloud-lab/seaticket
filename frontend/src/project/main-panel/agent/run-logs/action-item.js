@@ -51,7 +51,17 @@ const ActionItem = React.memo(({
   onCancel,
   onViewContent,
 }) => {
-  const { id, type, status, result, tool_name, sources, suggestion_text, suggestion_content } = action;
+  const {
+    id,
+    type,
+    status,
+    result,
+    tool_name,
+    sources,
+    suggestion_text,
+    suggestion_content,
+    suggestion_reason,
+  } = action;
   const [isExpanded, setIsExpanded] = useState(false);
   const [isThoughtExpanded, setIsThoughtExpanded] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
@@ -221,6 +231,21 @@ const ActionItem = React.memo(({
     }
   };
 
+  const renderSuggestionReasonTooltip = () => {
+    if (!suggestion_reason) return null;
+
+    return (
+      <IconTooltip
+        tip={suggestion_reason}
+        tooltipClassName="action-item-edit-content-tooltip"
+        className="suggestion-reason-tooltip"
+        placement="top"
+        size={{ btn: 16, icon: 14 }}
+        onClick={(e) => e.stopPropagation()}
+      />
+    );
+  };
+
   const renderContent = () => {
     const isCompletedStatus = [ACTION_STATUS.COMPLETED, ACTION_STATUS.EXECUTED].includes(status);
     const isFailedStatus = status === ACTION_STATUS.FAILED;
@@ -269,7 +294,7 @@ const ActionItem = React.memo(({
         const hasEditableContent = SUGGESTION_TOOL_NAME_MAP[tool_name];
         const hasContent = !!suggestion_content;
         const isCancelled = status === ACTION_STATUS.CANCELLED;
-        const canEdit = hasEditableContent && status === ACTION_STATUS.PENDING;
+        const canEdit = hasEditableContent && hasContent && status === ACTION_STATUS.PENDING;
         const showHeaderActions = !isCancelled && (canEdit || hasContent);
         const parsedResult = parseActionResult(result);
         return (
@@ -280,7 +305,10 @@ const ActionItem = React.memo(({
                 <div className="suggestion-cancelled-result d-flex align-items-center">
                   <Icon symbol={renderSuggestionIcon()} className="mr-2" />
                   {suggestion_text && (
-                    <span className="suggestion-cancelled-text">{suggestion_text}</span>
+                    <span className="suggestion-text-with-reason suggestion-text-with-reason-cancelled">
+                      <span className="suggestion-cancelled-text">{suggestion_text}</span>
+                      {renderSuggestionReasonTooltip()}
+                    </span>
                   )}
                   <span className="suggestion-cancelled-by">{parsedResult.message}</span>
                 </div>
@@ -288,7 +316,12 @@ const ActionItem = React.memo(({
               {!isCancelled && (
                 <div className="action-card-header d-flex align-items-center">
                   <Icon symbol={renderSuggestionIcon() } className="mr-2" />
-                  <span>{suggestion_text}</span>
+                  {suggestion_text && (
+                    <span className="suggestion-text-with-reason">
+                      <span>{suggestion_text}</span>
+                      {renderSuggestionReasonTooltip()}
+                    </span>
+                  )}
                   {showHeaderActions && (
                     <div className="suggestion-header-actions ml-auto d-flex align-items-center">
                       {canEdit && (

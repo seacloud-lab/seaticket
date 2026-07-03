@@ -325,7 +325,6 @@
   line-height: 22px;
   color: #999999;
   text-decoration: line-through;
-  margin-right: 8px;
 }
 
 .suggestion-cancelled-by {
@@ -363,6 +362,36 @@
   width: 14px;
   height: 14px;
   fill: #999;
+}
+
+.suggestion-text-with-reason {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.suggestion-text-with-reason-cancelled {
+  margin-right: 8px;
+}
+
+.suggestion-reason-tooltip.seaqa-tooltip-icon-btn {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.suggestion-reason-tooltip.seaqa-tooltip-icon-btn .seaqa-icon-svg {
+  width: 14px;
+  height: 14px;
+  fill: #999;
+  color: #999;
+}
+
+.suggestion-reason-tooltip.seaqa-tooltip-icon-btn:hover .seaqa-icon-svg {
+  fill: #666;
+  color: #666;
 }
 
 /* Suggestion header actions (edit / details) */
