@@ -502,15 +502,18 @@ class AgentActionAutoExecuteView(APIView):
                 request=None,
             )
         except MappingRequiredError as e:
-            # Auto-execution cannot prompt for mapping; mark as failed
+            # Auto-execution cannot prompt for mapping; mark as pending
             _update_action_status(seadb_api, project_uuid, action_id, {
-                'status': 'failed',
+                'status': 'pending',
                 'result': f'Mapping required for agent type: {e.agent_type}',
                 'executed_at': timezone.now().isoformat(),
             })
-            execution = AgentActionExecutor._failed_execution(
-                f'Mapping required for agent type: {e.agent_type}'
-            )
+            return Response({
+                'success': False,
+                'action_id': action_id,
+                'status': 'pending',
+                'result': f'Mapping required for agent type: {e.agent_type}',
+            }, status=status.HTTP_200_OK)
         except Exception as e:
             logger.exception(
                 'Auto action execution failed for action %s project %s: %s',
