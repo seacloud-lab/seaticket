@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import classnames from 'classnames';
 import { connectionsAPI } from '@/project/api';
 import context from '@/sea-metadata/context';
@@ -323,6 +323,7 @@ const runHasSuggestionAction = (run) =>
 
 const RunCard = ({
   run,
+  expansionCommand,
   onConfirmAction,
   onCancelAction,
   onViewContent,
@@ -358,6 +359,11 @@ const RunCard = ({
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showStatisticsDialog, setShowStatisticsDialog] = useState(false);
   const [showThoughtProcessDialog, setShowThoughtProcessDialog] = useState(false);
+
+  useEffect(() => {
+    if (!expansionCommand) return;
+    setIsExpanded(expansionCommand.expanded);
+  }, [expansionCommand]);
 
   const toggleExpand = useCallback(() => {
     setIsExpanded(prev => !prev);
