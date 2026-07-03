@@ -509,7 +509,7 @@ const RunCard = ({
         </div>
       }
       {showStatisticsDialog && (
-        <RunStatisticsDialog run={run} onToggle={handleCloseStatistics} />
+        <RunStatisticsDialog run={run} runId={id} onToggle={handleCloseStatistics} />
       )}
       {showThoughtProcessDialog && (
         <ThoughtProcessDialog runId={id} onToggle={handleCloseThoughtProcess} />
