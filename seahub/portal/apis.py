@@ -1552,6 +1552,10 @@ class PortalCustomDomainView(APIView):
             error_msg = 'Portal is not enabled.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
+        if 'custom_domain' not in request.data:
+            error_msg = 'custom_domain is required.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         try:
             custom_domain = request.data.get('custom_domain')
             normalized_custom_domain = normalize_portal_custom_domain(custom_domain)
