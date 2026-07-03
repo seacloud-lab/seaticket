@@ -70,6 +70,11 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const [linearOauthError, setLinearOauthError] = useState('');
   const confluenceOauthIntervalRef = useRef(null);
   const confluenceOauthWindowRef = useRef(null);
+  const [isDiscordOauthConnected, setDiscordOauthConnected] = useState(false);
+  const [isCheckingDiscordOauth, setCheckingDiscordOauth] = useState(false);
+  const [discordOauthError, setDiscordOauthError] = useState('');
+  const [discordOauthGuildId, setDiscordOauthGuildId] = useState('');
+  const [discordOauthGuildName, setDiscordOauthGuildName] = useState('');
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -110,6 +115,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const isEmail = useMemo(() => type === CONNECTION_TYPE.EMAIL, [type]);
   const isLinear = useMemo(() => type === CONNECTION_TYPE.LINEAR, [type]);
   const isConfluence = useMemo(() => type === CONNECTION_TYPE.CONFLUENCE, [type]);
+  const isDiscord = useMemo(() => type === CONNECTION_TYPE.DISCORD, [type]);
 
   const isMicrosoftEmailProvider = useMemo(() => {
     return isEmail && getEmailProvider(config) === EMAIL_SERVER_PROVIDER.MICROSOFT;
@@ -135,6 +141,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     if (!name.trim()) return false;
     if (isLinear && !isLinearOauthConnected) return false;
     if (isConfluence && !isConfluenceOauthConnected) return false;
+    if (isDiscord && !isDiscordOauthConnected) return false;
     return customColumns.length > 0 ? customColumns.every(c => {
       if (c.type === CONNECTION_FIELD_TYPE.GROUP) {
         return c.children.every(child => {
@@ -145,7 +152,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       if (c.is_required) return Boolean(config[c.key]);
       return true;
     }) : true;
-  }, [name, config, customColumns, isLinear, isLinearOauthConnected, isConfluence, isConfluenceOauthConnected]);
+  }, [name, config, customColumns, isLinear, isLinearOauthConnected, isConfluence, isConfluenceOauthConnected, isDiscord, isDiscordOauthConnected]);
 
   const callbackUrl = useMemo(() => {
     return getEmailOAuthCallbackUrl(projectUuid);
@@ -301,12 +308,20 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         _config['workspace_name'] = team.team.workspace_name;
       }
     }
+    if (isDiscord) {
+      _config['guild_id'] = discordOauthGuildId;
+      _config['guild_name'] = discordOauthGuildName;
+      const channel = _config.channel_id;
+      if (channel && channel.value) {
+        _config['channel_id'] = channel.value;
+      }
+    }
 
     onSubmit({ type, name: name.trim(), config: _config }, () => {
       setSubmitting(false);
     });
     return;
-  }, [name, type, config, isLinear, onSubmit, stopEmailOAuthPolling, isConfluence, isGithub, selectedSpaceKeys]);
+  }, [name, type, config, isLinear, onSubmit, stopEmailOAuthPolling, isConfluence, isGithub, selectedSpaceKeys, isDiscord, discordOauthGuildId, discordOauthGuildName]);
 
   const onCopyCallbackUrl = useCallback(() => {
     copy(callbackUrl);
@@ -399,6 +414,63 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       });
     }, 2000);
   }, [stopConfluenceOAuthPolling]);
+
+  const listDiscordChannels = useCallback(() => {
+    const guildId = discordOauthGuildId;
+    if (!guildId) return Promise.resolve({ data: { channels: [] } });
+    return connectionsAPI.listDiscordChannels(projectUuid, guildId).then(res => {
+      const channels = (res && res.data && res.data.channels) || [];
+      return {
+        data: {
+          options: channels.map(c => ({ value: c.id, label: '#' + c.name, name: c.name })),
+        }
+      };
+    });
+  }, [discordOauthGuildId, projectUuid]);
+
+  const fetchDiscordOauthStatus = useCallback(() => {
+    setCheckingDiscordOauth(true);
+    return connectionsAPI.getDiscordOauthStatus(projectUuid).then(res => {
+      const connected = Boolean(res?.data?.connected);
+      setDiscordOauthConnected(connected);
+      setDiscordOauthGuildId(res?.data?.guild_id || '');
+      setDiscordOauthGuildName(res?.data?.guild_name || '');
+      setDiscordOauthError('');
+    }).catch(() => {
+      setDiscordOauthConnected(false);
+      setDiscordOauthError(gettext('Failed to check Discord authorization status.'));
+    }).finally(() => {
+      setCheckingDiscordOauth(false);
+    });
+  }, [projectUuid]);
+
+  const handleConnectDiscord = useCallback(() => {
+    const next = window.location.href;
+    const oauthUrl = `${server}/discord/oauth/?project_uuid=${projectUuid}&next=${encodeURIComponent(next)}`;
+    oauthWindowRef.current = window.open(oauthUrl, 'discord-oauth', 'width=800,height=700');
+
+    // Start polling for OAuth status
+    clearInterval(pollingIntervalRef.current);
+    pollingIntervalRef.current = setInterval(() => {
+      connectionsAPI.getDiscordOauthStatus(projectUuid).then(res => {
+        if (res?.data?.connected) {
+          setDiscordOauthConnected(true);
+          setDiscordOauthGuildId(res?.data?.guild_id || '');
+          setDiscordOauthGuildName(res?.data?.guild_name || '');
+          setDiscordOauthError('');
+          clearInterval(pollingIntervalRef.current);
+          if (oauthWindowRef.current && !oauthWindowRef.current.closed) {
+            oauthWindowRef.current.close();
+          }
+        }
+      }).catch(() => {});
+    }, 2000);
+  }, [projectUuid]);
+
+  useEffect(() => {
+    if (!isDiscord) return;
+    fetchDiscordOauthStatus();
+  }, [isDiscord, fetchDiscordOauthStatus]);
 
   const typeOption = availableConnectionTypes.find(i => i.type === type) || availableConnectionTypes[0];
   const connectionSections = useMemo(() => {
@@ -537,6 +609,12 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         row[key] = row[key].value || row[key];
       }
     }
+    if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && column.key === 'channel_id' && isDiscord) {
+      api = listDiscordChannels;
+      if (row[key]) {
+        row[key] = row[key].value || row[key];
+      }
+    }
 
     return (
       <ConnectionConfigEditor
@@ -552,6 +630,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   }, [
     config, isSubmitting, isGithub, isConfluence, isConfluenceOauthConnected, isLinear,
     onConfigChange, listGitHubRepositories, listConfluenceWorkspaces, listLinearTeams,
+      isDiscord, listDiscordChannels, isDiscordOauthConnected
   ]);
 
   return (
@@ -713,6 +792,34 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
                     {isLinearOauthConnected ? gettext('Reconnect Linear') : gettext('Connect Linear')}
                   </Button>
                   {linearOauthError && (<div className="text-danger mt-2">{linearOauthError}</div>)}
+                </div>
+              </FormGroup>
+            )}
+            {isDiscord && (
+              <FormGroup>
+                <Label>{gettext('Authorization')}</Label>
+                <div className="seaqa-project-discord-oauth">
+                  <span className={classnames('linear-oauth-status', { connected: isDiscordOauthConnected })}>
+                    <span className="linear-status-icon d-flex">
+                      <Icon symbol={isDiscordOauthConnected ? 'check-circle-filled' : 'close-circle-filled'} />
+                    </span>
+                    <span className="ml-2">
+                      {isDiscordOauthConnected
+                        ? gettext('Connected') + (discordOauthGuildName ? ` (${discordOauthGuildName})` : '')
+                        : gettext('Not connected')
+                      }
+                    </span>
+                    {isCheckingDiscordOauth && <Loading className="ml-4" />}
+                  </span>
+                  <Button
+                    color={isDiscordOauthConnected ? 'secondary' : 'primary'}
+                    className="ml-4"
+                    disabled={isCheckingDiscordOauth}
+                    onClick={handleConnectDiscord}
+                  >
+                    {isDiscordOauthConnected ? gettext('Reconnect Discord') : gettext('Connect Discord')}
+                  </Button>
+                  {discordOauthError && (<div className="text-danger mt-2">{discordOauthError}</div>)}
                 </div>
               </FormGroup>
             )}

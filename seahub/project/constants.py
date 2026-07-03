@@ -23,6 +23,8 @@ GITHUB_ISSUE_ACTIVITY_TYPES = {'github_issue_added', 'github_issue_updated', 'gi
 
 DISCOURSE_TOPIC_ACTIVITY_TYPES = {'discourse_topic_added', 'discourse_topic_updated', 'discourse_topic_comment_added'}
 
+DISCORD_MESSAGE_ACTIVITY_TYPES = {'discord_message_added', 'discord_message_updated'}
+
 EMAIL_ACTIVITY_TYPES = {'email_thread_added', 'email_message_added'}
 
 GENERAL_TASK_ACTIVITY_TYPES = {'general_task_added', 'general_task_updated'}
@@ -85,6 +87,7 @@ class ConnectionType(Enum):
     NOTION = 'notion'
     LINEAR = 'linear'
     CONFLUENCE = 'confluence'
+    DISCORD = 'discord'
 
     @classmethod
     def is_valid(cls, value):
@@ -177,6 +180,11 @@ CONNECTION_FIELDS = {
         ConnectionField('workspace_name', False, False).to_dict(),
         ConnectionField('workspace_url', False, False).to_dict(),
         ConnectionField('space_ids', False, False).to_dict(),
+    ],
+    ConnectionType.DISCORD.value: [
+        ConnectionField('guild_id', True, False).to_dict(),
+        ConnectionField('channel_id', True, False).to_dict(),
+        ConnectionField('guild_name', False, False).to_dict(),
     ]
 }
 
@@ -433,6 +441,25 @@ CONNECTION_DEFAULT_DETAILS = {
             {'_id': '0000', 'type': 'view'},
         ]
     },
+    ConnectionType.DISCORD.value: {
+        'views': [
+            {
+                '_id': '0000',
+                'name': _('All'),
+                'type': 'table',
+                'basic_filters': [],
+                'columns_keys': [],
+                'filter_conjunction': 'Or',
+                'filters': [],
+                'sorts': [{ 'column_key': 'modified_time', 'sort_type': 'down' }],
+                'groupbys': [],
+                'hidden_columns': [],
+            }
+        ],
+        'navigation': [
+            {'_id': '0000', 'type': 'view'},
+        ]
+    },
 }
 
 
@@ -499,6 +526,7 @@ CONNECTION_DISPLAY_ALL_COLUMNS = {
     ConnectionType.GENERAL_TASK.value: ['_pk', 'title', 'url', 'status', 'size', 'priority', 'assignees', 'participants', 'version', 'others', 'due_date', 'modified_time', 'created_time', 'ai_summary', 'ai_processed_time', 'linked_ticket', 'outdated'],
     ConnectionType.LINEAR.value: ['_pk', 'title', 'author', 'state', 'state_reason', 'labels', 'priority', 'due_date', 'created_time', 'modified_time', 'closed_time', 'ai_summary', 'ai_processed_time', 'linked_ticket', 'outdated'],
     ConnectionType.CONFLUENCE.value: ['_pk', 'title', 'creator', 'modified_time', 'ai_summary', 'ai_processed_time', 'created_time', 'last_modifier', 'outdated'],
+    ConnectionType.DISCORD.value: ['_pk', 'title', 'author', 'content', 'created_time', 'modified_time', 'ai_summary', 'ai_processed_time', 'linked_ticket', 'outdated']
 }
 
 # These columns are must returned to the front end to make some frontend functions work
@@ -508,6 +536,7 @@ CONNECTION_MUST_RETURN_COLUMNS = {
     ConnectionType.NOTION.value: ['page_id'],
     ConnectionType.LINEAR.value: ['identifier'],
     ConnectionType.CONFLUENCE.value: ['page_id'],
+    ConnectionType.DISCORD.value: ['message_id', 'channel_id'],
 }
 
 LLM_INPUT_CHARACTERS_LIMIT = 4000
@@ -530,6 +559,7 @@ class ConnectionCategory:
             ConnectionType.DISCOURSE_FORUM.value,
             ConnectionType.GITHUB_ISSUE.value,
             ConnectionType.LINEAR.value,
+            ConnectionType.DISCORD.value,
         ],
         DOCUMENT: [
             ConnectionType.SEAFILE.value,

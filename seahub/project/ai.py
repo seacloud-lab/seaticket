@@ -508,6 +508,8 @@ class RelatedRecordsView(APIView):
                     table_name = SchemaTables.LINEAR_ISSUES.table_name(connection_id)
                 elif connection.type == ConnectionType.CONFLUENCE.value:
                     table_name = SchemaTables.CONFLUENCE.table_name(connection_id)
+                elif connection.type == ConnectionType.DISCORD.value:
+                    table_name = SchemaTables.DISCORD_MESSAGES.table_name(connection_id)
 
             if not table_name:
                 error_msg = 'Unsupported connection type for similarity search.'

@@ -163,6 +163,14 @@ const getLinearOriginalPageUrl = (connection, row, columns) => {
   return `https://linear.app/${workspaceName}/issue/${identifier}/${slug}`;
 };
 
+const getDiscordOriginalPageUrl = (connection, row, columns) => {
+  const { guild_id, channel_id } = connection.config;
+  const messageIdColumn = getColumnByName(columns, 'message_id');
+  const messageId = getCellValueByColumn(row, messageIdColumn);
+  if (!guild_id || !channel_id || !messageId) return '';
+  return `https://discord.com/channels/${guild_id}/${channel_id}/${messageId}`;
+};
+
 export const getOriginalPageUrl = (connection, row, columns) => {
   if (!connection || !row || !columns) return '';
   switch (connection.type) {
@@ -190,6 +198,9 @@ export const getOriginalPageUrl = (connection, row, columns) => {
     }
     case CONNECTION_TYPE.LINEAR: {
       return getLinearOriginalPageUrl(connection, row, columns);
+    }
+    case CONNECTION_TYPE.DISCORD: {
+      return getDiscordOriginalPageUrl(connection, row, columns);
     }
     default: {
       return '';
@@ -236,6 +247,16 @@ export const initConnectionResourceDetails = (type, record) => {
   if (type === CONNECTION_TYPE.EMAIL) {
     const { emails } = record;
     return Array.isArray(emails) ? emails : [];
+  }
+  if (type === CONNECTION_TYPE.DISCORD) {
+    const { author, created_time, content, replies } = record;
+    const mainPost = {
+      author,
+      created_time,
+      content: content || '',
+    };
+    const initReplies = Array.isArray(replies) ? replies : [];
+    return [mainPost, ...initReplies];
   }
 };
 

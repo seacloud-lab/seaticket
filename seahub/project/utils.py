@@ -56,6 +56,7 @@ LINKED_TICKET_SUPPORT_TYPES = [
     ConnectionType.EMAIL.value,
     ConnectionType.GENERAL_TASK.value,
     ConnectionType.LINEAR.value,
+    ConnectionType.DISCORD.value,
 ]
 
 
@@ -173,6 +174,9 @@ def create_connection(project, username, connection_type, name, config):
         ),
         ConnectionType.CONFLUENCE.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
             [SchemaTables.CONFLUENCE], api, project_uuid, connection_id
+        ),
+        ConnectionType.DISCORD.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
+            [SchemaTables.DISCORD_MESSAGES, SchemaTables.DISCORD_MESSAGE_REPLIES], api, project_uuid, connection_id
         ),
     }
 

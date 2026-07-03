@@ -67,7 +67,7 @@ def generate_views_unique_id(length, folders_views_ids=None):
     return id
 
 
-ENCRYPT_KEYS = ['api_token', 'access_token', 'webhook_secret', 'api_key', 'password', 'integration_secret', 'client_secret', 'refresh_token']
+ENCRYPT_KEYS = ['api_token', 'access_token', 'webhook_secret', 'api_key', 'password', 'integration_secret', 'client_secret', 'refresh_token', 'bot_token']
 
 
 def encrypt_config(config):
@@ -1131,3 +1131,44 @@ class ProjectLinearOauth(models.Model):
 
     class Meta:
         db_table = 'project_linear_oauth'
+
+
+class ProjectDiscordOauthManager(models.Manager):
+    def get_by_project_uuid(self, project_uuid):
+        return self.filter(project_uuid=project_uuid).first()
+
+    def upsert_token(self, project_uuid, access_token, expires_at, refresh_token, guild_id, guild_name):
+        record = self.filter(project_uuid=project_uuid).first()
+        if record:
+            record.access_token = access_token
+            record.refresh_token = refresh_token
+            record.expires_at = expires_at
+            record.guild_id = guild_id
+            record.guild_name = guild_name
+            update_fields = ['access_token', 'expires_at', 'refresh_token', 'guild_id', 'guild_name']
+            record.save(update_fields=update_fields)
+            return record
+        record = super(ProjectDiscordOauthManager, self).create(
+            project_uuid=project_uuid,
+            access_token=access_token,
+            refresh_token=refresh_token,
+            expires_at=expires_at,
+            guild_id=guild_id,
+            guild_name=guild_name,
+        )
+        record.save()
+        return record
+
+
+class ProjectDiscordOauth(models.Model):
+    project_uuid = models.UUIDField(unique=True, db_index=True)
+    access_token = models.CharField(max_length=255)
+    refresh_token = models.CharField(max_length=255)
+    expires_at = models.DateTimeField()
+    guild_id = models.CharField(max_length=64, default='')
+    guild_name = models.CharField(max_length=255, default='')
+
+    objects = ProjectDiscordOauthManager()
+
+    class Meta:
+        db_table = 'project_discord_oauth'

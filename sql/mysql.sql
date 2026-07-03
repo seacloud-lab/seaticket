@@ -821,3 +821,15 @@ CREATE TABLE `project_confluence_oauth` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `project_confluence_oauth_project_uuid_uniq` (`project_uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `project_discord_oauth` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `project_uuid` char(32) NOT NULL,
+  `access_token` varchar(255) NOT NULL,
+  `refresh_token` varchar(255) NOT NULL,
+  `expires_at` datetime(6) NOT NULL,
+  `guild_id` varchar(64) NOT NULL DEFAULT '',
+  `guild_name` varchar(255) NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `project_discord_oauth_project_uuid_uniq` (`project_uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

@@ -312,6 +312,16 @@ class ConnectionsAPI {
     return this.req.get(url);
   }
 
+  getDiscordOauthStatus(projectUuid) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/discord-oauth/';
+    return this.req.get(url);
+  }
+
+  listDiscordChannels(projectUuid, guildId) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/discord-channels/?guild_id=' + encodeURIComponent(guildId);
+    return this.req.get(url);
+  }
+
   replyConnectionEmail(projectUuid, connectionID, payload) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/reply-email/';
     return this.req.post(url, payload);
