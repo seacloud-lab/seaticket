@@ -241,3 +241,17 @@
   height: 26px;
   padding: 0 8px;
 }
+
+.seaqa-project-connection-oauth-status {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.seaqa-project-connection-dialog .oauth-status-badge {
+  color: #666;
+}
+
+.seaqa-project-connection-dialog .oauth-status-badge.connected {
+  color: #099268;
+}

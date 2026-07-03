@@ -21,6 +21,7 @@ CONNECTION_TYPE_TO_SCHEMA_TABLE = {
     ConnectionType.NOTION.value: SchemaTables.NOTION,
     ConnectionType.GENERAL_TASK.value: SchemaTables.GENERAL_TASK,
     ConnectionType.LINEAR.value: SchemaTables.LINEAR_ISSUES,
+    ConnectionType.CONFLUENCE.value: SchemaTables.CONFLUENCE,
 }
 
 
@@ -1052,3 +1053,17 @@ def get_connection_record_by_pk(seadb_api, project_uuid, connection_type, connec
         columns = []
         linked_ticket_title = ''
     return record, columns, linked_ticket_title
+
+
+def list_confluence_record_details(seadb_api, project_uuid, connection_id, _pk):
+    confluence_table_name = SchemaTables.CONFLUENCE.table_name(connection_id)
+    sql = f"SELECT title, content, created_time, modified_time, creator, last_modifier, page_id FROM `{confluence_table_name}` WHERE _pk = {_pk}"
+    try:
+        confluence_res = seadb_api.query_rows(project_uuid, sql)
+        confluence_record = confluence_res.get('results')[0]
+        column_metadata = confluence_res.get('metadata')
+    except Exception as e:
+        logger.error(f'SeaDB query error for confluence details {confluence_table_name}: {e}')
+        confluence_record = {}
+        column_metadata = []
+    return confluence_record, column_metadata, ''

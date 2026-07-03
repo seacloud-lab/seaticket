@@ -23,13 +23,10 @@ const CustomizeSelectSync = ({
   const ref = useRef(null);
 
   useEffect(() => {
-    if (typeof api !== 'function') {
-      setErrorMessage(gettext('Load options failed.'));
+    if (!api) {
       setIsLoading(false);
       return;
     }
-    setIsLoading(true);
-    setErrorMessage('');
     api().then(res => {
       const { options } = res.data || {};
       setAllOptions(Array.isArray(options) ? options : []);

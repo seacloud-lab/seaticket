@@ -786,3 +786,13 @@ CREATE TABLE `project_linear_oauth` (
   UNIQUE KEY `project_linear_oauth_project_uuid_uniq` (`project_uuid`),
   KEY `project_linear_oauth_expires_at` (`expires_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `project_confluence_oauth` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `project_uuid` char(32) NOT NULL,
+  `access_token` TEXT NOT NULL,
+  `refresh_token` TEXT NOT NULL,
+  `expires_at` datetime(6) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `project_confluence_oauth_project_uuid_uniq` (`project_uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

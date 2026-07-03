@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 from django.urls import re_path
 
-from .views import project_view, github_install, github_installation_setup, linear_oauth, linear_oauth_callback
+from .views import project_view, github_install, github_installation_setup, linear_oauth, linear_oauth_callback, \
+    confluence_oauth, confluence_oauth_callback
 
-from .apis import ProjectRelatedUsersView, ProjectItemsSearchView, ProjectGithubRepositories, ProjectLinearTeams
+from .apis import ProjectRelatedUsersView, ProjectItemsSearchView, ProjectGithubRepositories, ProjectLinearTeams, ProjectConfluenceWorkspaces, ProjectConfluenceSpaces
 from .connections import ProjectConnectionsView, ProjectConnectionView, ProjectConnectionSyncView, \
     ProjectConnectionDetailsView, ProjectConnectionMetaView, GithubWebhookView, DiscourseWebhookView, \
     ProjectConnectionsStatusView, ProjectConnectionLogView, ProjectConnectionRecordView, ProjectConnectionRecordsView, \
     ProjectConnectionReplyEmailView, ProjectConnectionDeleteEmailView, ProjectConnectionReplyDiscourseView, \
     ConnectionFileView, GithubIssueView, \
     ProjectEmailOAuthLoginView, ProjectEmailOAuthQueryView, ProjectEmailOAuthCallbackView, \
-    DownloadEmailAttachments, ZipEmailAttachments, QueryIOStatus, ProjectLinearOauthStatusView
+    DownloadEmailAttachments, ZipEmailAttachments, QueryIOStatus, ProjectLinearOauthStatusView, ProjectConfluenceOauthStatusView
 from .files import ProjectUploadFileAPIView, GetProjectUploadFileView, \
     ProjectFileAPIView, GetProjectFileView
 from .connections_views import ConnectionViewsAPI, ConnectionViewAPI, \
@@ -52,6 +53,8 @@ urlpatterns = [
     re_path(r'^github/installation-setup/$', github_installation_setup, name='project_github_installation_setup'),
     re_path(r'^linear/oauth/$', linear_oauth, name='project_linear_oauth'),
     re_path(r'^linear/oauth/callback/$', linear_oauth_callback, name='project_linear_oauth_callback'),
+    re_path(r'^confluence/oauth/$', confluence_oauth, name='project_confluence_oauth'),
+    re_path(r'^confluence/oauth/callback/$', confluence_oauth_callback, name='project_confluence_oauth_callback'),
 
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/$', project_view, name='project_view'),
 
@@ -77,6 +80,9 @@ urlpatterns = [
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/repositories/$', ProjectGithubRepositories.as_view(), name='api-v1-project-github-repositories'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/linear/teams/$', ProjectLinearTeams.as_view(), name='api-v1-project-linear-teams'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/linear-oauth/$', ProjectLinearOauthStatusView.as_view(), name='api-v1-linear-oauth-status'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/confluence/workspaces/$', ProjectConfluenceWorkspaces.as_view(), name='api-v1-project-confluence-workspaces'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/confluence/spaces/$', ProjectConfluenceSpaces.as_view(), name='api-v1-project-confluence-spaces'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/confluence-oauth/$', ProjectConfluenceOauthStatusView.as_view(), name='api-v1-project-confluence-oauth-status'),
 
     # connections
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/$', ProjectConnectionsView.as_view(), name='api-v1-connections'),
