@@ -489,7 +489,7 @@ def list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id,
     try:
         from seahub.tickets.ticket_utils import get_ticket_title
         topics_res = seadb_api.query_rows(project_uuid, topics_sql)
-        topic_record = topics_res.get('results')[0]
+        topic_record = topics_res.get('results')[0] if topics_res.get('results') else {}
         column_metadata = topics_res.get('metadata')
         topic_id = topic_record.get('topic_id')
         replies_sql = f"SELECT author,content,modified_time FROM `{replies_table_name}` WHERE topic_id = {topic_id} ORDER BY post_number ASC"
@@ -564,7 +564,7 @@ def get_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
     issue_sql = f"SELECT `_pk`, `title`, `author`, `content`, `created_time`, `issue_id`, `issue_number`, `state`, `state_reason`, `labels`, `issue_type`, `url`, `linked_ticket`, `outdated`, `ai_summary`  FROM `{issue_table_name}` WHERE _pk = {_pk}"
     try:
         issue_res = seadb_api.query_rows(project_uuid, issue_sql)
-        issue_record = issue_res.get('results')[0]
+        issue_record = issue_res.get('results')[0] if issue_res.get('results') else {}
         column_metadata = issue_res.get('metadata')
         linked_ticket = issue_record.get('linked_ticket')
         linked_ticket_title = get_ticket_title(seadb_api, project_uuid, linked_ticket)
@@ -582,7 +582,7 @@ def get_issue_record_by_issue_number(seadb_api, project_uuid, connection_id, iss
     issue_sql = f"SELECT `_pk`, `title`, `state`, `url`, `linked_ticket`, `ai_summary`  FROM `{issue_table_name}` WHERE issue_number = {issue_number}"
     try:
         issue_res = seadb_api.query_rows(project_uuid, issue_sql)
-        issue_record = issue_res.get('results')[0]
+        issue_record = issue_res.get('results')[0] if issue_res.get('results') else {}
         column_metadata = issue_res.get('metadata')
         linked_ticket = issue_record.get('linked_ticket')
         linked_ticket_title = get_ticket_title(seadb_api, project_uuid, linked_ticket)
@@ -621,7 +621,7 @@ def get_linear_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
     issue_sql = f"SELECT `_pk`, `title`, `author`, `content`, `created_time`, `issue_id`, `identifier`, `state`, `labels`, `linked_ticket` FROM `{issue_table_name}` WHERE _pk = {_pk}"
     try:
         issue_res = seadb_api.query_rows(project_uuid, issue_sql)
-        issue_record = issue_res.get('results')[0]
+        issue_record = issue_res.get('results')[0] if issue_res.get('results') else {}
         column_metadata = issue_res.get('metadata')
         linked_ticket = issue_record.get('linked_ticket')
         linked_ticket_title = get_ticket_title(seadb_api, project_uuid, linked_ticket)
@@ -658,7 +658,7 @@ def get_seafile_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
     sql = f"SELECT `_pk`, `path`, `title`, `modified_time`, `content` FROM `{seafile_table_name}` WHERE _pk = {_pk}"
     try:
         res = seadb_api.query_rows(project_uuid, sql)
-        record = res.get('results')[0]
+        record = res.get('results')[0] if res.get('results') else {}
         column_metadata = res.get('metadata')
     except Exception as e:
         logger.error(f'SeaDB query error for seafile details {seafile_table_name}: {e}')
@@ -683,7 +683,7 @@ def get_general_task_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
     )
     try:
         res = seadb_api.query_rows(project_uuid, sql)
-        record = res.get('results')[0]
+        record = res.get('results')[0] if res.get('results') else {}
         column_metadata = res.get('metadata')
         linked_ticket = record.get('linked_ticket')
         linked_ticket_title = get_ticket_title(seadb_api, project_uuid, linked_ticket)
@@ -713,7 +713,7 @@ def get_site_record_by_id(seadb_api, project_uuid, connection_id, _pk):
     sql = f"SELECT `_pk`, `title`, `url`, `modified_time` FROM `{site_table_name}` WHERE _pk = {_pk}"
     try:
         res = seadb_api.query_rows(project_uuid, sql)
-        record = res.get('results')[0]
+        record = res.get('results')[0] if res.get('results') else {}
         column_metadata = res.get('metadata')
     except Exception as e:
         logger.error(f'SeaDB query error for site details {site_table_name}: {e}')
@@ -739,7 +739,7 @@ def get_email_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
     sql = f"SELECT `title`, `modified_time`, `linked_ticket`, `outdated`, `tags`, `unread` FROM `{thread_table_name}` WHERE _pk = {_pk}"
     try:
         res = seadb_api.query_rows(project_uuid, sql)
-        record = res.get('results')[0]
+        record = res.get('results')[0] if res.get('results') else {}
         column_metadata = res.get('metadata')
         linked_ticket = record.get('linked_ticket')
         linked_ticket_title = get_ticket_title(seadb_api, project_uuid, linked_ticket)
@@ -979,7 +979,7 @@ def get_notion_record_by_id(seadb_api, project_uuid, connection_id, _pk):
     sql = f"SELECT title, content, created_time, modified_time, creator, page_id  FROM `{notion_table_name}` WHERE _pk = {_pk}"
     try:
         notion_res = seadb_api.query_rows(project_uuid, sql)
-        record = notion_res.get('results')[0]
+        record = notion_res.get('results')[0] if notion_res.get('results') else {}
         column_metadata = notion_res.get('metadata')
     except Exception as e:
         logger.error(f'SeaDB query error for notion details {notion_table_name}: {e}')

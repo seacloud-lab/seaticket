@@ -1842,7 +1842,7 @@ def _sync_issue_type_column_options(seadb_api, project_uuid, connection_id, gith
 
     issue_type_column = None
     for column in table_meta.get('columns') or []:
-        if column.get('name') == SchemaTables.GITHUB_ISSUES.issue_type.name:
+        if column.get('name') == SchemaTables.GITHUB_ISSUES.column.issue_type.name:
             issue_type_column = column
             break
     if not issue_type_column:
