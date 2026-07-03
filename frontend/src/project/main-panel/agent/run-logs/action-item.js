@@ -149,9 +149,9 @@ const ActionItem = React.memo(({
     return <div>{errorContent}</div>;
   };
 
-  const renderTicketLink = (ticket) => {
+  const renderTicketLink = (ticket, customText) => {
     if (!ticket?.ticket_url) return null;
-    const linkText = ticket.ticket_title || `${gettext('Ticket')} #${ticket.ticket_pk}`;
+    const linkText = customText || ticket.ticket_title || `${gettext('Ticket')} #${ticket.ticket_pk}`;
     return (
       <>
         <a
@@ -163,6 +163,35 @@ const ActionItem = React.memo(({
         >
           {linkText}
         </a>
+      </>
+    );
+  };
+
+  const renderCompletedTicketMessage = (ticket, message = '') => {
+    const normalizedMessage = typeof message === 'string' ? message : String(message || '');
+    const ticketLabel = ticket?.ticket_pk ? `${gettext('Ticket')} #${ticket.ticket_pk}` : '';
+    if (!ticketLabel) return normalizedMessage;
+
+    const ticketLink = renderTicketLink(ticket, ticketLabel);
+    if (!ticketLink) return normalizedMessage;
+
+    const ticketIndex = normalizedMessage.indexOf(ticketLabel);
+    if (ticketIndex === -1) {
+      return (
+        <>
+          {ticketLink}
+          {normalizedMessage ? <span> {normalizedMessage}</span> : null}
+        </>
+      );
+    }
+
+    const before = normalizedMessage.slice(0, ticketIndex);
+    const after = normalizedMessage.slice(ticketIndex + ticketLabel.length);
+    return (
+      <>
+        {before}
+        {ticketLink}
+        {after}
       </>
     );
   };
@@ -333,11 +362,7 @@ const ActionItem = React.memo(({
                   </span>
                   <span className="result-text">
                     {parsedResult.ticket ? (
-                      <>
-                        {renderTicketLink(parsedResult.ticket)}
-                        <span>. </span>
-                        {parsedResult.message}
-                      </>
+                      renderCompletedTicketMessage(parsedResult.ticket, parsedResult.message)
                     ) : (
                       parsedResult.message
                     )}
