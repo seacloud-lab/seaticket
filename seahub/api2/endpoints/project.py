@@ -283,6 +283,8 @@ class RelatedProjectsView(APIView):
             project_info['uuid'] = project_uuid_36
             project_info['workspace_id'] = wpc.get('workspace_id')
             project_info['permission'] = permission
+            project_info['icon'] = wpc.get('icon')
+            project_info['color'] = wpc.get('color')
             related_projects.append(project_info)
 
         if not has_connection_cache:
