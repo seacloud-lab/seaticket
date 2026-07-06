@@ -295,7 +295,7 @@ class AgentRunDetailView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            seadb_api = SeaDBAPI(username)
+            seadb_api = SeaDBAPI()
             include_details = request.GET.get('include_details') == 'true'
             result = get_agent_run_detail(seadb_api, project_uuid, run_id, include_details=include_details)
         except ValueError as e:
