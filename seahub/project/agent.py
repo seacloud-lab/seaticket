@@ -12,6 +12,7 @@ from rest_framework.authentication import SessionAuthentication
 
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.api2.authentication import TokenAuthentication
+from seahub.api2.authentication import JWTAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.project.seadb_api import SeaDBAPI
@@ -36,7 +37,6 @@ from seahub.project.agent_action_executor import (
 from seahub.project.constants import ConnectionType
 
 from seahub.seadb_models.models import SchemaTables
-from seahub.utils.inner_auth import verify_seaqa_inner_token
 from rest_framework.permissions import AllowAny
 
 
@@ -407,16 +407,11 @@ class AgentActionAutoExecuteView(APIView):
     POST /api/v1/internal/agent/auto-action/execute/
     
     This endpoint is for internal service-to-service calls only.
-    It skips session-based authentication and uses JWT token verification.
+    It uses request-level JWT authentication.
     """
-    authentication_classes = ()
-    permission_classes = (AllowAny,)
+    authentication_classes = (JWTAuthentication, )
 
     def post(self, request):
-        # 1. Verify internal JWT token
-        if not verify_seaqa_inner_token(request):
-            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
-
         project_uuid = request.data.get('project_uuid', '').strip()
         action_id = request.data.get('action_id')
         
