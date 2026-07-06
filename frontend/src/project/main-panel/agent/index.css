@@ -76,6 +76,22 @@
   margin-left: 8px;
 }
 
+.agent-run-logs-expand-fold {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  color: #666;
+  margin: 0px;
+}
+
+.agent-run-logs-expand-fold .seaqa-icon-svg {
+  color: #666;
+}
+
 .agent-container {
   flex-direction: row;
   align-items: stretch;
