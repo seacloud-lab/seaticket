@@ -5,7 +5,7 @@ import SuggestionDetailPanel from './run-logs/suggestion-detail-panel';
 import RefreshBtn from '@/project/components/refresh-btn';
 import { useAgentRunLogs } from './hooks/useAgentRunLogs';
 import { agentAPI, ticketsAPI } from '@/project/api';
-import { toaster } from '@/components';
+import { toaster, IconTooltip } from '@/components';
 import { gettext } from '@/constants';
 import AgentType2GithubTypeMappingDialog from './components/agent-type-to-github-type-mapping-dialog';
 import { useCloseLinkedIssues } from '@/project/main-panel/tickets/hooks';
@@ -19,6 +19,7 @@ const Agent = ({ title, settings, modifySettings }) => {
   const [suggestionDetailPanel, setSuggestionDetailPanel] = useState(null);
   const [isSavingContent, setIsSavingContent] = useState(false);
   const [suggestionDetailPanelWidth, setSuggestionDetailPanelWidth] = useState(400);
+  const [runCardsExpansionCommand, setRunCardsExpansionCommand] = useState(null);
   const { openCloseLinkedGitHubIssuesWarningDialog } = useCloseLinkedIssues();
   const {
     runLogs,
@@ -200,6 +201,20 @@ const Agent = ({ title, settings, modifySettings }) => {
     });
   }, [pendingMapping, settings, updateRunLog, modifySettings]);
 
+  const handleExpandAllRunCards = useCallback(() => {
+    setRunCardsExpansionCommand(prev => ({
+      expanded: true,
+      version: (prev?.version || 0) + 1,
+    }));
+  }, []);
+
+  const handleCollapseAllRunCards = useCallback(() => {
+    setRunCardsExpansionCommand(prev => ({
+      expanded: false,
+      version: (prev?.version || 0) + 1,
+    }));
+  }, []);
+
   return (
     <>
       <TopBar title={title}>
@@ -216,11 +231,36 @@ const Agent = ({ title, settings, modifySettings }) => {
           } : undefined}
         >
           <div className="agent-run-logs-header">
-            <span>{gettext('Run Logs')}</span>
-            <RefreshBtn className="agent-run-logs-refresh" onClick={refresh} />
+            <div className="d-flex align-items-center">
+              <span>{gettext('Run Logs')}</span>
+              <RefreshBtn className="agent-run-logs-refresh" onClick={refresh} />
+            </div>
+            <div className="d-flex align-items-center gap-2">
+              <IconTooltip
+                role="button"
+                tabindex="0"
+                className="agent-run-logs-expand-fold"
+                icon="expand-all"
+                placement="bottom"
+                hoverBackground={true}
+                tip={gettext('Expand all')}
+                onClick={handleExpandAllRunCards}
+              />
+              <IconTooltip
+                role="button"
+                tabindex="0"
+                className="agent-run-logs-expand-fold"
+                icon="collapse-all"
+                placement="bottom"
+                hoverBackground={true}
+                tip={gettext('Collapse all')}
+                onClick={handleCollapseAllRunCards}
+              />
+            </div>
           </div>
           <RunLogs
             runLogs={runLogs}
+            expansionCommand={runCardsExpansionCommand}
             isLoading={isRunLogsLoading}
             hasMore={hasMore}
             loadMore={loadMore}

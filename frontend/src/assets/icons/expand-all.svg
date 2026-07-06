@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32px" height="32px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>expand-all</title>
+    <g id="expand-all" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M7,11.2999894 L9,13.2999996 L16.0000106,6.29996386 L23.0000181,13.2999996 L25,11.2999894 L16.0000106,2.29999961 L7,11.2999894 Z M7,20.7000102 L9,18.7 L16.0000106,25.7000357 L23.0000181,18.7 L25,20.7000102 L16.0000106,29.7 L7,20.7000102 Z" id="形状结合" fill="#000000" fill-rule="nonzero"></path>
+    </g>
+</svg>

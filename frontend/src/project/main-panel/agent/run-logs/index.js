@@ -8,6 +8,7 @@ import './index.css';
 
 const RunLogs = ({
   runLogs,
+  expansionCommand,
   isLoading,
   hasMore,
   loadMore,
@@ -48,6 +49,7 @@ const RunLogs = ({
             <RunCard
               key={run.id || index}
               run={run}
+              expansionCommand={expansionCommand}
               onConfirmAction={onConfirmAction}
               onCancelAction={onCancelAction}
               onViewContent={onViewContent}
