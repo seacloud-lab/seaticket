@@ -79,7 +79,6 @@ configs = _ConfigParser(yaml_file_path, 'seaqa-io')
 
 JWT_PRIVATE_KEY = configs.get('JWT_PRIVATE_KEY', '')
 SEADB_SERVER_URL = configs.get('SEADB_SERVER_URL', 'http://seadb:8888')
-SEADB_SERVER_ACCESS_TOKEN = configs.get('SEADB_SERVER_ACCESS_TOKEN', '')
 
 SEAQA_IO_WORKERS = configs.get('SEAQA_IO_WORKERS', 3)
 SEAQA_IO_TASK_TIMEOUT = configs.get('SEAQA_IO_TASK_TIMEOUT', 3600)
@@ -101,3 +100,6 @@ S3_FILE_BUCKET = configs.get('S3_FILE_BUCKET', '')
 S3_WEB_CRAWL_BUCKET = configs.get('S3_WEB_CRAWL_BUCKET', '')
 S3_KEY_ID = configs.get('S3_KEY_ID', '')
 S3_SECRET_KEY = configs.get('S3_SECRET_KEY', '')
+
+SEADB_USER = configs.get('SEADB_USER', '')
+SEADB_PASSWORD = configs.get('SEADB_PASSWORD', '')
