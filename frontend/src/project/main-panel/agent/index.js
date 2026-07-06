@@ -236,8 +236,8 @@ const Agent = ({ title, settings, modifySettings }) => {
               <RefreshBtn className="agent-run-logs-refresh" onClick={refresh} />
             </div>
             <div className="d-flex align-items-center gap-2">
-              <IconButton icon="expand-all" title={gettext('Expand all')} onClick={handleExpandAllRunCards} />
-              <IconButton icon="collapse-all" title={gettext('Collapse all')} onClick={handleCollapseAllRunCards} />
+              <IconButton role="button" tabindex="0" icon="expand-all" title={gettext('Expand all')} onClick={handleExpandAllRunCards} />
+              <IconButton role="button" tabindex="0" icon="collapse-all" title={gettext('Collapse all')} onClick={handleCollapseAllRunCards} />
             </div>
           </div>
           <RunLogs

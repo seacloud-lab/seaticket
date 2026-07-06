@@ -355,7 +355,9 @@ const RunCard = ({
     isCardExpanded = hasFailed || !noPending;
   }
 
-  const [isExpanded, setIsExpanded] = useState(isCardExpanded);
+  const [isExpanded, setIsExpanded] = useState(
+    expansionCommand?.expanded ?? isCardExpanded,
+  );
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showStatisticsDialog, setShowStatisticsDialog] = useState(false);
   const [showThoughtProcessDialog, setShowThoughtProcessDialog] = useState(false);
