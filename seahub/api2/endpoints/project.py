@@ -258,6 +258,11 @@ class RelatedProjectsView(APIView):
                 record, columns, linked_ticket_title = get_issue_record_by_issue_number(seadb_api, project_uuid, connection_id, external_ref_id)
             if not record:
                 continue
+
+            project_uuid_36 = uuid_str_to_36_chars(project_uuid)
+            if any(item.get("uuid") == project_uuid_36 for item in related_projects):
+                continue
+
             project_info = {}
             project_info['related_info'] = {
                 'record': record,
@@ -275,9 +280,11 @@ class RelatedProjectsView(APIView):
                 project_info['workspace_name'] = 'personal'
                 project_info['workspace_type'] = 'personal'
             project_info['name'] = wpc.get('name')
-            project_info['uuid'] = uuid_str_to_36_chars(project_uuid)
+            project_info['uuid'] = project_uuid_36
             project_info['workspace_id'] = wpc.get('workspace_id')
             project_info['permission'] = permission
+            project_info['icon'] = wpc.get('icon')
+            project_info['color'] = wpc.get('color')
             related_projects.append(project_info)
 
         if not has_connection_cache:
