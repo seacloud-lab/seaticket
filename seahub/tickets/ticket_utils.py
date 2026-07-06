@@ -1422,3 +1422,24 @@ def sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections):
                             }])
                 except Exception as e:
                     logger.error(f'Failed to unlink portal issue: {e}')
+
+def validate_ticket_state_substate_relation(table_columns, state_name, substate_name):
+    state_column = get_column_from_columns_by_name(table_columns, SchemaTables.TICKETS.column.state.name)
+    substate_column = get_column_from_columns_by_name(table_columns, SchemaTables.TICKETS.column.substate.name)
+    state_options = state_column.get('data').get('options')
+    substate_data = substate_column.get('data')
+    substate_options = substate_data.get('options')
+    cascade_settings = substate_data.get('cascade_settings')
+
+    state_id = None
+    substate_id = None
+    for opt in state_options:
+        if opt.get('name') == state_name:
+            state_id = opt.get('id')
+            break
+    for opt in substate_options:
+        if opt.get('name') == substate_name:
+            substate_id = opt.get('id')
+            break
+
+    return bool(state_id and substate_id and substate_id in (cascade_settings.get(state_id) or []))

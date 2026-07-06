@@ -44,7 +44,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
   const contentEditorRef = useRef(null);
   const ticketRef = useRef(null);
 
-  const { typesData } = useMetadata();
+  const { typesData, substatesData } = useMetadata();
   const { insertRow } = useData();
   const { tagsData, createTag } = useTags();
 
@@ -107,6 +107,8 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
         value = typeOption.name;
       } else if (columnName === PREDEFINED_TICKET_COLUMN_NAME.STATE && value) {
         value = value === '0001' ? 'open' : 'closed';
+      } else if (columnName === PREDEFINED_TICKET_COLUMN_NAME.SUB_STATE && value) {
+        value = getRowById(substatesData, value)?.origin_name || value;
       }
       serverData[columnName] = value;
     });
@@ -119,7 +121,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
       toaster.danger(errorMessage);
       setIsSubmitting(false);
     });
-  }, [title, content, type, assignees, tags, priority, due_date, state, substate, participants, typesData, insertRow]);
+  }, [title, content, type, assignees, tags, priority, due_date, state, substate, participants, typesData, substatesData, insertRow]);
 
   useEffect(() => {
     const ticketDom = ticketRef.current;

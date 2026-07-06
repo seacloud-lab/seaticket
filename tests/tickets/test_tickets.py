@@ -32,6 +32,38 @@ class TestBuildTicketDataEvent:
 
 
 class TestTicketsAPIView:
+    def get_ticket_base_metadata(self):
+        return {
+            'tables': [{
+                'name': 'tickets',
+                'columns': [
+                    {
+                        'name': 'state',
+                        'data': {
+                            'options': [
+                                {'id': '0001', 'name': 'open'},
+                                {'id': '0002', 'name': 'closed'},
+                            ],
+                        },
+                    },
+                    {
+                        'name': 'substate',
+                        'data': {
+                            'cascade_settings': {
+                                '0001': ['0010', '0011'],
+                                '0002': ['0014'],
+                            },
+                            'options': [
+                                {'id': '0010', 'name': 'New'},
+                                {'id': '0011', 'name': 'Working on'},
+                                {'id': '0014', 'name': 'Completed'},
+                            ],
+                        },
+                    },
+                ],
+            }]
+        }
+
     # GET
     def test_get_feature_not_enabled(self, factory, no_org_user, real_project):
         project = real_project
@@ -147,7 +179,9 @@ class TestTicketsAPIView:
         data = {'title': 't', 'content': json.dumps({'text': 'c'})}
         request = factory.post(f"/api/v1/projects/{project.uuid}/tickets/", data=data)
         request.user = project_creator
-        with patch('seahub.tickets.tickets.SeaDBAPI', return_value=Mock()), \
+        seadb_api = Mock()
+        seadb_api.get_base_metadata.return_value = self.get_ticket_base_metadata()
+        with patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api), \
                 patch('seahub.tickets.tickets.check_ticket_creation_interval', return_value=False):
             resp = TicketsAPIView.as_view()(request, project_uuid=project.uuid)
         assert resp.status_code == 429
@@ -165,12 +199,60 @@ class TestTicketsAPIView:
         request.user = project_creator
         seadb_api = Mock()
         seadb_api.insert_rows.return_value = {'pks': [1]}
+        seadb_api.get_base_metadata.return_value = self.get_ticket_base_metadata()
         with patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api), \
                 patch('seahub.tickets.tickets.check_ticket_creation_interval', return_value=True):
             resp = TicketsAPIView.as_view()(request, project_uuid=project.uuid)
         assert resp.status_code == 201
         assert resp.data['ticket']['_pk'] == 1
         assert resp.data['ticket']['priority'] == 5
+
+    def test_post_uses_requested_state_and_substate(self, factory, project_creator, real_project):
+        project = real_project
+        data = {
+            'title': 't',
+            'content': json.dumps({'text': 'c'}),
+            'priority': '1',
+            'tags': '[]',
+            'assignees': '[]',
+            'state': 'closed',
+            'substate': 'Completed',
+        }
+        request = factory.post(f"/api/v1/projects/{project.uuid}/tickets/", data=data)
+        request.user = project_creator
+        seadb_api = Mock()
+        seadb_api.insert_rows.return_value = {'pks': [1]}
+        seadb_api.get_base_metadata.return_value = self.get_ticket_base_metadata()
+        with patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.tickets.tickets.check_ticket_creation_interval', return_value=True):
+            resp = TicketsAPIView.as_view()(request, project_uuid=project.uuid)
+        assert resp.status_code == 201
+        assert resp.data['ticket']['state'] == 'closed'
+        assert resp.data['ticket']['substate'] == 'Completed'
+        inserted_row = seadb_api.insert_rows.call_args[0][2][0]
+        assert inserted_row['state'] == 'closed'
+        assert inserted_row['substate'] == 'Completed'
+
+    def test_post_rejects_mismatched_state_and_substate(self, factory, project_creator, real_project):
+        project = real_project
+        data = {
+            'title': 't',
+            'content': json.dumps({'text': 'c'}),
+            'priority': '1',
+            'tags': '[]',
+            'assignees': '[]',
+            'state': 'closed',
+            'substate': 'Working on',
+        }
+        request = factory.post(f"/api/v1/projects/{project.uuid}/tickets/", data=data)
+        request.user = project_creator
+        seadb_api = Mock()
+        seadb_api.get_base_metadata.return_value = self.get_ticket_base_metadata()
+        with patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.tickets.tickets.check_ticket_creation_interval', return_value=True):
+            resp = TicketsAPIView.as_view()(request, project_uuid=project.uuid)
+        assert resp.status_code == 400
+        assert seadb_api.insert_rows.call_count == 0
 
     def test_put_missing_data(self, factory, project_creator, real_project):
         project = real_project
