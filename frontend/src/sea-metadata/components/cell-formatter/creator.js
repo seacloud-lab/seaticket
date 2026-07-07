@@ -2,9 +2,15 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import Collaborator from '@/components/collaborator/collaborator';
+import { mediaUrl as appMediaUrl } from '@/constants';
 import { isValidEmail } from '@/utils/validate';
 
-const CreatorFormatter = ({ value, mediaUrl, className, api, collaborators = [], collaboratorsCache = {}, updateCollaboratorsCache, children: emptyFormatter }) => {
+const getDefaultAvatarUrl = (mediaUrl) => {
+  const normalizedMediaUrl = (mediaUrl || appMediaUrl || '').replace(/\/$/, '');
+  return `${normalizedMediaUrl}/avatars/default.png`;
+};
+
+const CreatorFormatter = ({ value, mediaUrl = appMediaUrl, className, api, collaborators = [], collaboratorsCache = {}, updateCollaboratorsCache, children: emptyFormatter }) => {
   const [collaborator, setCollaborator] = useState(null);
 
   useEffect(() => {
@@ -20,7 +26,7 @@ const CreatorFormatter = ({ value, mediaUrl, className, api, collaborators = [],
       return () => isMounted = false;
     }
 
-    const defaultAvatarUrl = `${mediaUrl}/avatars/default.png`;
+    const defaultAvatarUrl = getDefaultAvatarUrl(mediaUrl);
     if (value === 'anonymous') {
       collaborator = {
         name: 'anonymous',

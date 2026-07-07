@@ -57,8 +57,12 @@ AGENT_ISSUE_TYPES = ('Bug', 'Feature', 'Question')
 # Task) don't include it, so users should always pick a target explicitly.
 AUTO_MATCH_AGENT_ISSUE_TYPES = ('Bug', 'Feature')
 
-# Sender identity used for agent-triggered assignee reminders during auto execution. 
-AGENT_AUTO_NOTIFY_SENDER = 'Agent'
+# Identity used for all agent-triggered actions during auto execution.
+AUTO_EXECUTION_USER = 'Agent'
+# Sender identity used for agent-triggered assignee reminders during auto execution.
+AUTO_NOTIFY_SENDER = AUTO_EXECUTION_USER
+# Creator identity used for agent-triggered ticket creation during auto execution.
+AUTO_TICKET_CREATOR = AUTO_EXECUTION_USER
 
 
 class MappingRequiredError(Exception):
@@ -128,10 +132,6 @@ class AgentActionExecutor:
             if isinstance(key, str) and isinstance(value, bool)
         }
 
-    @staticmethod
-    def resolve_auto_action_operator(project):
-        return getattr(project, 'creator', None)
-
     def _execute_ticket_action(
         self,
         seadb_api,
@@ -183,6 +183,7 @@ class AgentActionExecutor:
         suggestion_content,
         operator,
         request=None,
+        auto_executed=False,
     ):
         if tool_name == 'suggest_reply':
             return self._execute_github_suggest_reply(
@@ -197,9 +198,7 @@ class AgentActionExecutor:
                 seadb_api, project_uuid, source_id, suggestion_text
             )
         if tool_name == 'suggest_create_ticket':
-            return self._execute_github_create_ticket(
-                seadb_api, project, project_uuid, source_id, operator, request=request
-            )
+            return self._execute_github_create_ticket(seadb_api, project, project_uuid, source_id, operator, request=request, auto_executed=auto_executed)
         logger.warning('Unknown github_issue tool_name: %r', tool_name)
         return self._failed_execution(f'Unknown tool_name: {tool_name}')
 
@@ -213,15 +212,14 @@ class AgentActionExecutor:
         suggestion_content,
         operator,
         request=None,
+        auto_executed=False,
     ):
         if tool_name == 'suggest_reply':
             return self._execute_discourse_suggest_reply(
                 seadb_api, project, project_uuid, source_id, suggestion_content, operator
             )
         if tool_name == 'suggest_create_ticket':
-            return self._execute_discourse_create_ticket(
-                seadb_api, project, project_uuid, source_id, operator, request=request
-            )
+            return self._execute_discourse_create_ticket(seadb_api, project, project_uuid, source_id, operator, request=request, auto_executed=auto_executed)
         logger.warning('Unknown discourse_topic tool_name: %r', tool_name)
         return self._failed_execution(f'Unknown tool_name: {tool_name}')
 
@@ -235,11 +233,12 @@ class AgentActionExecutor:
         suggestion_content,
         operator,
         request=None,
+        auto_executed=False,
     ):
         if tool_name == 'suggest_reply':
             return self._execute_email_suggest_reply(seadb_api, project_uuid, source_id, suggestion_content)
         if tool_name == 'suggest_create_ticket':
-            return self._execute_email_create_ticket(seadb_api, project, project_uuid, source_id, operator, request=request)
+            return self._execute_email_create_ticket(seadb_api, project, project_uuid, source_id, operator, request=request, auto_executed=auto_executed)
         if tool_name == 'suggest_move_to_spam':
             return self._execute_email_move_to_spam(seadb_api, project_uuid, source_id)
         logger.warning('Unknown email tool_name: %r', tool_name)
@@ -257,6 +256,7 @@ class AgentActionExecutor:
         request=None,
         auto_executed=False,
     ):
+        effective_operator = AUTO_EXECUTION_USER if auto_executed else operator
         tool_name = action.get('tool_name')
         source_type = action.get('source_type', 'ticket')
         source_id = action.get('source_id', '')
@@ -272,7 +272,7 @@ class AgentActionExecutor:
                 source_id,
                 tool_name,
                 suggestion_content,
-                operator,
+                effective_operator,
                 linked_github_issues_to_close=linked_github_issues_to_close,
                 auto_executed=auto_executed,
             )
@@ -285,8 +285,9 @@ class AgentActionExecutor:
                 tool_name,
                 suggestion_text,
                 suggestion_content,
-                operator,
+                effective_operator,
                 request=request,
+                auto_executed=auto_executed,
             )
         elif source_type == ConnectionType.DISCOURSE_FORUM.value:
             execution = self._execute_discourse_topic_action(
@@ -296,8 +297,9 @@ class AgentActionExecutor:
                 source_id,
                 tool_name,
                 suggestion_content,
-                operator,
+                effective_operator,
                 request=request,
+                auto_executed=auto_executed,
             )
         elif source_type == ConnectionType.EMAIL.value:
             execution = self._execute_email_action(
@@ -307,8 +309,9 @@ class AgentActionExecutor:
                 source_id,
                 tool_name,
                 suggestion_content,
-                operator,
+                effective_operator,
                 request=request,
+                auto_executed=auto_executed,
             )
         else:
             logger.warning('Unknown source_type %r for action %s', source_type, action_id)
@@ -735,6 +738,7 @@ class AgentActionExecutor:
         title,
         source_label,
         request=None,
+        auto_executed=False,
     ):
         org_id = getattr(getattr(project, 'workspace', None), 'org_id', -1) or -1
         params = {
@@ -754,13 +758,14 @@ class AgentActionExecutor:
         ticket_content = ai_content or ''
 
         now = timezone.now().isoformat()
+        ticket_creator = AUTO_TICKET_CREATOR if auto_executed else username
         ticket_row = {
             SchemaTables.TICKETS.column.title.name: ticket_title,
             SchemaTables.TICKETS.column.content.name: ticket_content,
             SchemaTables.TICKETS.column.state.name: 'open',
             SchemaTables.TICKETS.column.substate.name: 'New',
             SchemaTables.TICKETS.column.priority.name: 0,
-            SchemaTables.TICKETS.column.creator.name: username,
+            SchemaTables.TICKETS.column.creator.name: ticket_creator,
             SchemaTables.TICKETS.column.created_time.name: now,
             SchemaTables.TICKETS.column.modified_time.name: now,
             SchemaTables.TICKETS.column.deleted.name: False,
@@ -790,7 +795,7 @@ class AgentActionExecutor:
         }, ensure_ascii=False))
 
     def _execute_github_create_ticket(
-        self, seadb_api, project, project_uuid, source_id, username, request=None
+        self, seadb_api, project, project_uuid, source_id, username, request=None, auto_executed=False
     ):
         connection_id, record_id = self._parse_connection_source_id(source_id, ConnectionType.GITHUB_ISSUE.value)
         if connection_id is None or record_id is None:
@@ -828,6 +833,7 @@ class AgentActionExecutor:
             title=title,
             source_label=ConnectionType.GITHUB_ISSUE.value,
             request=request,
+            auto_executed=auto_executed,
         )
         if error:
             return self._failed_execution(error)
@@ -1146,9 +1152,7 @@ class AgentActionExecutor:
             f'Email thread #{thread_id} moved to the spam folder.'
         )
 
-    def _execute_email_create_ticket(
-        self, seadb_api, project, project_uuid, source_id, username, request=None
-    ):
+    def _execute_email_create_ticket(self, seadb_api, project, project_uuid, source_id, username, request=None, auto_executed=False):
         connection_id, thread_id = self._parse_connection_source_id(source_id, ConnectionType.EMAIL.value)
         if connection_id is None or thread_id is None:
             return self._failed_execution(f'Invalid source_id format: {source_id}')
@@ -1177,6 +1181,7 @@ class AgentActionExecutor:
             title=thread.get('title', ''),
             source_label=ConnectionType.EMAIL.value,
             request=request,
+            auto_executed=auto_executed,
         )
         if error:
             return self._failed_execution(error)
@@ -1199,9 +1204,7 @@ class AgentActionExecutor:
             ticket,
         )
 
-    def _execute_discourse_create_ticket(
-        self, seadb_api, project, project_uuid, source_id, username, request=None
-    ):
+    def _execute_discourse_create_ticket(self, seadb_api, project, project_uuid, source_id, username, request=None, auto_executed=False):
         connection_id, topic_pk = self._parse_connection_source_id(source_id, ConnectionType.DISCOURSE_FORUM.value)
         if connection_id is None or topic_pk is None:
             return self._failed_execution(f'Invalid source_id format: {source_id}')
@@ -1230,6 +1233,7 @@ class AgentActionExecutor:
             title=topic.get('title', ''),
             source_label=ConnectionType.DISCOURSE_FORUM.value,
             request=request,
+            auto_executed=auto_executed,
         )
         if error:
             return self._failed_execution(error)
@@ -1263,7 +1267,7 @@ class AgentActionExecutor:
             logger.info(f'Ticket #{ticket_id} has no assignees, skip notify.')
             return self._failed_execution(f'Ticket #{ticket_id} has no assignees')
 
-        notify_from_user = AGENT_AUTO_NOTIFY_SENDER if auto_executed else operator
+        notify_from_user = AUTO_NOTIFY_SENDER if auto_executed else operator
 
         agent_notify_assignees.send(
             sender=None,
@@ -1339,5 +1343,3 @@ class AgentActionExecutor:
             changes,
         )
         return self._successful_execution(f'Ticket #{ticket_id} closed.')
-
-

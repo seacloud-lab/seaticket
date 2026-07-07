@@ -32,6 +32,7 @@ from seahub.project.utils import (
 )
 from seahub.project.agent_action_executor import (
     AgentActionExecutor,
+    AUTO_EXECUTION_USER,
     MappingRequiredError,
 )
 from seahub.project.constants import ConnectionType
@@ -436,14 +437,13 @@ class AgentActionAutoExecuteView(APIView):
 
         seadb_api = SeaDBAPI()
         auto_confirm_map = AgentActionExecutor.get_effective_auto_confirm_map(project)
-        operator = AgentActionExecutor.resolve_auto_action_operator(project)
 
         results = []
         for action_id in normalized_ids:
             results.append(
                 self._execute_one(
                     seadb_api, project, project_uuid, action_id,
-                    auto_confirm_map, operator,
+                    auto_confirm_map,
                 )
             )
 
@@ -452,7 +452,7 @@ class AgentActionAutoExecuteView(APIView):
             'results': results,
         }, status=status.HTTP_200_OK)
 
-    def _execute_one(self, seadb_api, project, project_uuid, action_id, auto_confirm_map, operator):
+    def _execute_one(self, seadb_api, project, project_uuid, action_id, auto_confirm_map):
         """Execute a single auto action. Returns a per-action result dict.
 
         Never raises; any error is captured into the returned dict so the
@@ -500,28 +500,14 @@ class AgentActionAutoExecuteView(APIView):
         # 4. Move to executing (concurrency guard)
         _update_action_status(seadb_api, project_uuid, action_id, {'status': 'executing'})
 
-        # 5. Resolve operator
-        if not operator:
-            _update_action_status(seadb_api, project_uuid, action_id, {
-                'status': 'failed',
-                'result': 'No valid operator available for auto action execution.',
-                'executed_at': timezone.now().isoformat(),
-            })
-            return {
-                'action_id': action_id,
-                'success': False,
-                'status': 'failed',
-                'result': 'No valid operator available.',
-            }
-
-        # 6. Execute action
+        # 5. Execute action
         try:
             execution = AgentActionExecutor().execute_action(
                 seadb_api=seadb_api,
                 project=project,
                 project_uuid=project_uuid,
                 action=action,
-                operator=operator,
+                operator=AUTO_EXECUTION_USER,
                 auto_executed=True,
                 request=None,
             )

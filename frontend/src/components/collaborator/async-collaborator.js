@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import Collaborator from './collaborator';
+import { mediaUrl as appMediaUrl } from '@/constants';
 import { isValidEmail } from '@/utils/validate';
 
-const AsyncCollaborator = ({ className, value, mediaUrl, api, collaborators, collaboratorsCache, updateCollaboratorsCache, children }) => {
+const getDefaultAvatarUrl = (mediaUrl) => {
+  const normalizedMediaUrl = (mediaUrl || appMediaUrl || '').replace(/\/$/, '');
+  return `${normalizedMediaUrl}/avatars/default.png`;
+};
+
+const AsyncCollaborator = ({ className, value, mediaUrl = appMediaUrl, api, collaborators, collaboratorsCache, updateCollaboratorsCache, children }) => {
   const [collaborator, setCollaborator] = useState(null);
 
   useEffect(() => {
@@ -18,7 +24,7 @@ const AsyncCollaborator = ({ className, value, mediaUrl, api, collaborators, col
       return () => isMounted = false;
     }
 
-    const defaultAvatarUrl = `${mediaUrl}/avatars/default.png`;
+    const defaultAvatarUrl = getDefaultAvatarUrl(mediaUrl);
     if (value === 'anonymous') {
       collaborator = {
         name: 'anonymous',
