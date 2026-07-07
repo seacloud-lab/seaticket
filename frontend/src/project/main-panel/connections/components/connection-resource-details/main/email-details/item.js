@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import classnames from 'classnames';
 import dayjs from '@/utils/dayjs';
 import { gettext, mediaUrl, PERMISSION_TYPES } from '@/constants';
-import { CustomizeMarkdownViewer, IconTextBtn, toaster } from '@/components';
+import { CustomizeMarkdownViewer, IconTextBtn, IconTooltip, toaster } from '@/components';
 import DateFormatter from '../../../cell-formatter/date-formatter';
 import { generatorConnectionAssetURLPrefix, getInfoByEmailFrom } from '../../../../utils';
 import HTMLContentWrapper from './html-content';
@@ -48,6 +49,8 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
   }, [isHTMLContent, content, HTMLContent]);
 
   const emailTo = useMemo(() => detail['email_to']?.split(',')?.join(', '), [detail]);
+
+  const isUnread = useMemo(() => true || detail.is_unread, [detail]);
 
   const addQuoteToggleBtn = useCallback(() => {
     if (!ref.current || ref.current.querySelector('.email-item-toggle-btn')) return;
@@ -205,6 +208,7 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
             <div className="email-record-info-container">
               <span className="email-record-info-sender text-truncate" title={sender}>{sender}</span>
               <span className="email-record-info-content text-truncate" title={contentStart}>{contentStart}</span>
+              <div className={classnames('read-status', { unread: isUnread })}/>
               <DateFormatter value={detail.modified_time} className="email-record-info-time" />
             </div>
             <div className="email-record-info-to-container">
@@ -238,6 +242,16 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
             <div className="email-record-info-to">
               {gettext('To')}: {emailTo}
             </div>
+            <IconTooltip
+              className="email-record-read-status-wrapper"
+              placement="bottom"
+              icon=""
+              hoverBackground={true}
+              tip={isUnread ? gettext('Mark Read') : gettext('Mark unread')}
+              // onClick={openReply}
+            >
+              <div className={classnames('read-status', { unread: isUnread })}/>
+            </IconTooltip>
             {!isReadonly && !isShowReply && (
               <IconTextBtn icon="reply" color="default" text={gettext('Reply')} className="h-5" onClick={openReply} />
             )}
