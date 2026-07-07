@@ -1063,7 +1063,7 @@ def list_discord_message_record_details(seadb_api, project_uuid, connection_id, 
         record = res.get('results')[0]
         column_metadata = res.get('metadata')
         message_id = record.get('message_id')
-        replies_sql = f"SELECT author, content, modified_time FROM `{replies_table_name}` WHERE message_id = {message_id} ORDER BY reply_id ASC"
+        replies_sql = f"SELECT author, content, modified_time FROM `{replies_table_name}` WHERE message_id = '{message_id}' ORDER BY reply_id ASC"
         replies_res = seadb_api.query_rows(project_uuid, replies_sql)
         replies_records = replies_res.get('results')
         record['replies'] = replies_records
