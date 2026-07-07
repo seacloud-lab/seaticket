@@ -489,10 +489,6 @@ def discord_oauth_callback(request):
             guild_id = guild.get('id', '')
             guild_name = guild.get('name', '')
 
-    if guild_id:
-        # Verify guild_id is numeric (snowflake)
-        guild_id = str(guild_id)
-
     ProjectDiscordOauth.objects.upsert_token(
         project_uuid, access_token, expires_at, refresh_token, guild_id, guild_name
     )

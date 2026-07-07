@@ -511,6 +511,8 @@ export const formatColumns = (connection, sourceColumns, { collaborators = [] } 
     CONNECTION_PREDEFINED_COLUMN_NAME.URL,
     CONNECTION_PREDEFINED_COLUMN_NAME.PAGE_ID,
     CONNECTION_PREDEFINED_COLUMN_NAME.IDENTIFIER,
+    CONNECTION_PREDEFINED_COLUMN_NAME.MESSAGE_ID,
+    CONNECTION_PREDEFINED_COLUMN_NAME.CHANNEL_ID,
   ];
   let targetColumns = sourceColumns.slice(0);
   targetColumns = targetColumns
