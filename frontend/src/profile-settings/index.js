@@ -9,7 +9,7 @@ import profileSettingsAPI from './api';
 import UserAvatarForm from './user-avatar-form';
 import UserBasicInfoForm from './user-basic-info-form';
 import WebdavPassword from './webdav-password';
-// import LanguageSetting from './language-setting';
+import LanguageSetting from './language-setting';
 import TwoFactorAuthentication from './two-factor-auth';
 import SocialLogin from './social-login';
 import DeleteAccount from './delete-account';
@@ -68,7 +68,7 @@ class ProfileSettings extends React.Component {
         icon: 'password'
       },
       {
-        show: false,
+        show: true,
         href: '#lang-setting',
         text: gettext('Language'),
         icon: 'language'
@@ -220,7 +220,7 @@ class ProfileSettings extends React.Component {
                   </div>
                 }
                 {enableWebdavSecret && <WebdavPassword />}
-                {/* <LanguageSetting /> */}
+                <LanguageSetting />
                 <EmailNotice />
                 {twoFactorAuthEnabled && <TwoFactorAuthentication />}
                 {(enableSAML || (enableMultiSAML && isOrgContext && canUseSAML)) && !this.isWorkWX && <SocialLogin />}
