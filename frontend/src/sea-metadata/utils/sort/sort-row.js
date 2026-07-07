@@ -42,7 +42,7 @@ const sortRowsWithMultiSorts = (tableRows, sorts, { collaborators, tagsData }) =
           nextValidCollaborators = getCollaboratorsNames(nextCellVal, collaborators);
         }
         initValue = initValue || sortCollaborator(currValidCollaborators, nextValidCollaborators, sort_type);
-      } else if (columnType === CellType.CHECKBOX) {
+      } else if (columnType === CellType.CHECKBOX || columnType === CellType.UNREAD_STATUS) {
         initValue = initValue || sortCheckbox(currCellVal, nextCellVal, sort_type);
       } else {
         initValue = initValue || sortText(currCellVal, nextCellVal, sort_type);

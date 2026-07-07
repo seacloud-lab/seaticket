@@ -159,6 +159,7 @@ const Cell = ({
   const headerIconTooltip = COLUMNS_ICON_NAME[type];
   const canModifyColumnOrder = context.canModifyColumnOrder();
   const isPriorityColumn = checkIsPriorityColumn(column);
+  const isIconOnlyColumn = isPriorityColumn || column.type === CellType.UNREAD_STATUS;
   const contentClassName = 'sea-metadata-table-column-content sea-metadata-row-header-cell-left d-flex align-items-center text-truncate';
 
   const cell = (
@@ -170,14 +171,14 @@ const Cell = ({
       onClick={() => handleHeaderCellClick(column, frozen)}
       onContextMenu={onContextMenu}
     >
-      <div className={classnames(contentClassName, { 'justify-content-center': isPriorityColumn })}>
-        <span className={classnames('', { 'mr-2': !isPriorityColumn })} id={`header-icon-${key}`}>
+      <div className={classnames(contentClassName, { 'justify-content-center': isIconOnlyColumn })}>
+        <span className={classnames('', { 'mr-2': !isIconOnlyColumn })} id={`header-icon-${key}`}>
           <Icon symbol={COLUMNS_ICON_CONFIG[type]} className="sea-metadata-icon sea-metadata-column-icon" />
         </span>
         <Tooltip placement="bottom" target={`header-icon-${key}`} trigger="hover">
           {headerIconTooltip}
         </Tooltip>
-        {!isPriorityColumn && (
+        {!isIconOnlyColumn && (
           <div className="header-name d-flex">
             <span title={name} className={classnames('header-name-text', { 'double': height === 56 })}>{name}</span>
           </div>
@@ -200,7 +201,7 @@ const Cell = ({
     </div>
   );
 
-  if (!canModifyColumnOrder || checkIsNameColumn(column) || column.type === CellType.PRIORITY) {
+  if (!canModifyColumnOrder || checkIsNameColumn(column) || isIconOnlyColumn) {
     return (
       <div key={key} className="sea-metadata-row-header-cell">
         {cell}

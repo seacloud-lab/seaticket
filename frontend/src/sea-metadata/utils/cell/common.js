@@ -81,6 +81,12 @@ export const getCellValueStringResult = (row, column, { collaborators = [], tags
       }
       return cellValue === 'true' ? 'true' : 'false';
     }
+    case CellType.UNREAD_STATUS: {
+      if (typeof cellValue === 'boolean') {
+        return String(cellValue);
+      }
+      return cellValue === 'true' ? 'true' : 'false';
+    }
     case CellType.LONG_TEXT: {
       return getLongtextDisplayString(cellValue);
     }

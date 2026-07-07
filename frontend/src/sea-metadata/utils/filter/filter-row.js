@@ -42,6 +42,9 @@ const getFilterResult = (row, filter, { username, userId, tagsData }) => {
     case CellType.CHECKBOX: {
       return checkboxFilter(cellValue, filter);
     }
+    case CellType.UNREAD_STATUS: {
+      return checkboxFilter(cellValue, filter);
+    }
     case CellType.SINGLE_SELECT:
     case CellType.TYPE: {
       return singleSelectFilter(cellValue, filter);

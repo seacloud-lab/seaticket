@@ -18,6 +18,7 @@ const CellType = {
   TAGS: 'tags',
   TYPE: 'type',
   PRIORITY: 'priority',
+  UNREAD_STATUS: 'unread-status',
   LINK: 'link',
 };
 
