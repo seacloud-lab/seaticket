@@ -402,35 +402,63 @@ class AgentActionConfirmView(APIView):
 
 class AgentActionAutoExecuteView(APIView):
     """
-    Auto-execute an agent action triggered by seaqa-ai.
+    Auto-execute one or more agent actions triggered by seaqa-ai.
 
     POST /api/v1/internal/agent/auto-action/execute/
-    
+    body: {project_uuid, action_ids: [...]}
+
     This endpoint is for internal service-to-service calls only.
-    It uses request-level JWT authentication.
+    It uses request-level JWT authentication. Actions are executed
+    independently; a failure on one does not affect the others.
     """
     authentication_classes = (JWTAuthentication, )
 
     def post(self, request):
-        project_uuid = request.data.get('project_uuid', '').strip()
-        action_id = request.data.get('action_id')
-        
-        if not project_uuid or not action_id:
-            return api_error(status.HTTP_400_BAD_REQUEST, 'project_uuid and action_id are required.')
+        project_uuid = (request.data.get('project_uuid') or '').strip()
+        action_ids = request.data.get('action_ids')
 
-        try:
-            action_id = int(action_id)
-        except (ValueError, TypeError):
-            return api_error(status.HTTP_400_BAD_REQUEST, 'action_id must be an integer.')
+        if not project_uuid or not action_ids:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'project_uuid and action_ids are required.')
 
-        # 2. Get project
+        if not isinstance(action_ids, list):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'action_ids must be a list.')
+
+        normalized_ids = []
+        for raw_id in action_ids:
+            try:
+                normalized_ids.append(int(raw_id))
+            except (ValueError, TypeError):
+                return api_error(status.HTTP_400_BAD_REQUEST, f'Invalid action_id: {raw_id!r}')
+
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
 
         seadb_api = SeaDBAPI()
+        auto_confirm_map = AgentActionExecutor.get_effective_auto_confirm_map(project)
+        operator = AgentActionExecutor.resolve_auto_action_operator(project)
 
-        # 3. Get action details
+        results = []
+        for action_id in normalized_ids:
+            results.append(
+                self._execute_one(
+                    seadb_api, project, project_uuid, action_id,
+                    auto_confirm_map, operator,
+                )
+            )
+
+        return Response({
+            'success': True,
+            'results': results,
+        }, status=status.HTTP_200_OK)
+
+    def _execute_one(self, seadb_api, project, project_uuid, action_id, auto_confirm_map, operator):
+        """Execute a single auto action. Returns a per-action result dict.
+
+        Never raises; any error is captured into the returned dict so the
+        batch loop can continue with the remaining actions.
+        """
+        # 1. Get action details
         sql = (
             "SELECT `_pk`, `run_id`, `status`, `tool_name`, `source_type`, `source_id`, "
             "`suggestion_text`, `suggestion_content` "
@@ -438,54 +466,55 @@ class AgentActionAutoExecuteView(APIView):
         )
         result = seadb_api.query_rows(project_uuid, sql)
         rows = result.get('results', [])
-        
         if not rows:
-            return api_error(status.HTTP_404_NOT_FOUND, 'Action not found.')
-        
+            return {
+                'action_id': action_id,
+                'success': False,
+                'status': 'not_found',
+                'result': 'Action not found.',
+            }
+
         action = rows[0]
 
-        # 4. Idempotency check: only process pending actions
+        # 2. Idempotency check: only process pending actions
         action_status = (action.get('status') or '').strip()
         if action_status != 'pending':
-            # Action already processed or being processed
-            return Response({
-                'success': True,
+            return {
                 'action_id': action_id,
+                'success': True,
                 'status': action_status,
                 'result': 'Skipped: action is not pending.',
-            }, status=status.HTTP_200_OK)
+            }
 
         tool_name = (action.get('tool_name') or '').strip()
-        
-        # 5. Verify auto_confirm is still enabled for this tool
-        auto_confirm_map = AgentActionExecutor.get_effective_auto_confirm_map(project)
+
+        # 3. Verify auto_confirm is still enabled for this tool
         if not auto_confirm_map.get(tool_name, False):
-            return Response({
-                'success': False,
+            return {
                 'action_id': action_id,
+                'success': False,
                 'status': 'pending',
                 'result': 'Skipped: tool is not enabled for auto-confirm.',
-            }, status=status.HTTP_409_CONFLICT)
+            }
 
-        # 6. Move to executing (concurrency guard)
+        # 4. Move to executing (concurrency guard)
         _update_action_status(seadb_api, project_uuid, action_id, {'status': 'executing'})
 
-        # 7. Resolve operator
-        operator = AgentActionExecutor.resolve_auto_action_operator(project)
+        # 5. Resolve operator
         if not operator:
             _update_action_status(seadb_api, project_uuid, action_id, {
                 'status': 'failed',
                 'result': 'No valid operator available for auto action execution.',
                 'executed_at': timezone.now().isoformat(),
             })
-            return Response({
-                'success': False,
+            return {
                 'action_id': action_id,
+                'success': False,
                 'status': 'failed',
                 'result': 'No valid operator available.',
-            }, status=status.HTTP_200_OK)
+            }
 
-        # 8. Execute action
+        # 6. Execute action
         try:
             execution = AgentActionExecutor().execute_action(
                 seadb_api=seadb_api,
@@ -497,18 +526,18 @@ class AgentActionAutoExecuteView(APIView):
                 request=None,
             )
         except MappingRequiredError as e:
-            # Auto-execution cannot prompt for mapping; mark as pending
+            # Auto-execution cannot prompt for mapping; keep pending for manual handling
             _update_action_status(seadb_api, project_uuid, action_id, {
                 'status': 'pending',
                 'result': f'Mapping required for agent type: {e.agent_type}',
                 'executed_at': timezone.now().isoformat(),
             })
-            return Response({
-                'success': False,
+            return {
                 'action_id': action_id,
+                'success': False,
                 'status': 'pending',
                 'result': f'Mapping required for agent type: {e.agent_type}',
-            }, status=status.HTTP_200_OK)
+            }
         except Exception as e:
             logger.exception(
                 'Auto action execution failed for action %s project %s: %s',
@@ -518,7 +547,7 @@ class AgentActionAutoExecuteView(APIView):
             )
             execution = AgentActionExecutor._failed_execution(str(e) or 'Action execution failed.')
 
-        # 9. Update action status
+        # 7. Update action status
         now = timezone.now().isoformat()
         _update_action_status(seadb_api, project_uuid, action_id, {
             'status': execution['status'],
@@ -526,12 +555,12 @@ class AgentActionAutoExecuteView(APIView):
             'executed_at': now,
         })
 
-        return Response({
-            'success': execution['success'],
+        return {
             'action_id': action_id,
+            'success': execution['success'],
             'status': execution['status'],
             'result': execution['result'],
-        }, status=status.HTTP_200_OK)
+        }
 
 
 class AgentActionUpdateView(APIView):
