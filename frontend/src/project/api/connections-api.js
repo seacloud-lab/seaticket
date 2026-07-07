@@ -317,8 +317,9 @@ class ConnectionsAPI {
     return this.req.get(url);
   }
 
-  listDiscordChannels(projectUuid, guildId) {
-    const url = this.server + '/api/v1/project/' + projectUuid + '/discord-channels/?guild_id=' + encodeURIComponent(guildId);
+  listDiscordChannels(projectUuid, guildId, botToken) {
+    const params = new URLSearchParams({ guild_id: guildId, bot_token: botToken });
+    const url = this.server + '/api/v1/project/' + projectUuid + '/discord-channels/?' + params.toString();
     return this.req.get(url);
   }
 

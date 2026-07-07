@@ -141,7 +141,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     if (!name.trim()) return false;
     if (isLinear && !isLinearOauthConnected) return false;
     if (isConfluence && !isConfluenceOauthConnected) return false;
-    if (isDiscord && !isDiscordOauthConnected) return false;
     return customColumns.length > 0 ? customColumns.every(c => {
       if (c.type === CONNECTION_FIELD_TYPE.GROUP) {
         return c.children.every(child => {
@@ -309,8 +308,10 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       }
     }
     if (isDiscord) {
-      _config['guild_id'] = discordOauthGuildId;
-      _config['guild_name'] = discordOauthGuildName;
+      if (discordOauthGuildId) {
+        _config['guild_id'] = discordOauthGuildId;
+        _config['guild_name'] = discordOauthGuildName;
+      }
       const channel = _config.channel_id;
       if (channel && channel.value) {
         _config['channel_id'] = channel.value;
@@ -416,9 +417,10 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   }, [stopConfluenceOAuthPolling]);
 
   const listDiscordChannels = useCallback(() => {
-    const guildId = discordOauthGuildId;
-    if (!guildId) return Promise.resolve({ data: { channels: [] } });
-    return connectionsAPI.listDiscordChannels(projectUuid, guildId).then(res => {
+    const guildId = config.guild_id;
+    const botToken = config.bot_token;
+    if (!guildId || !botToken) return Promise.resolve({ data: { channels: [] } });
+    return connectionsAPI.listDiscordChannels(projectUuid, guildId, botToken).then(res => {
       const channels = (res && res.data && res.data.channels) || [];
       return {
         data: {
@@ -426,7 +428,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         }
       };
     });
-  }, [discordOauthGuildId, projectUuid]);
+  }, [config.guild_id, config.bot_token, projectUuid]);
 
   const fetchDiscordOauthStatus = useCallback(() => {
     setCheckingDiscordOauth(true);

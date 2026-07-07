@@ -183,6 +183,7 @@ CONNECTION_FIELDS = {
     ],
     ConnectionType.DISCORD.value: [
         ConnectionField('guild_id', True, False).to_dict(),
+        ConnectionField('bot_token', True, False).to_dict(),
         ConnectionField('channel_id', True, False).to_dict(),
         ConnectionField('guild_name', False, False).to_dict(),
     ]
