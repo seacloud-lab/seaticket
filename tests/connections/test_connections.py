@@ -466,8 +466,8 @@ class TestAgentActionConfirmView:
             return {'success': True, 'message_id': '<reply@example.com>', 'config_updated': True}
 
         with patch('seahub.project.agent.SeaDBAPI', return_value=seadb_api), \
-                patch('seahub.seadb_models.email_seadb_api', return_value=email_seadb_api), \
-                patch('seahub.utils.email_sender', side_effect=mutate_config):
+                patch('seahub.project.agent_action_executor.EmailSeaDBAPI', return_value=email_seadb_api), \
+                patch('seahub.project.agent_action_executor.toggle_send_email', side_effect=mutate_config):
             resp = AgentActionConfirmView.as_view()(request, project_uuid=project.uuid, run_id='1', action_id='2')
 
         assert resp.status_code == 200
