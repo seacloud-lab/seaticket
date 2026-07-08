@@ -6,7 +6,7 @@ import pytest
 from django.urls import Resolver404, resolve
 
 from seahub.api2.endpoints.project import (
-    RelatedProjectsView,
+    WebpageRelatedInformationView,
     ProjectsView,
     ProjectView,
     SearchView,
@@ -360,7 +360,7 @@ class TestSearchView:
 
 
 @pytest.mark.django_db
-class TestRelatedProjectsView:
+class TestWebpageRelatedInformationView:
 
     def test_extract_fields_from_url(self):
         parts = extract_fields_from_url(
@@ -381,13 +381,13 @@ class TestRelatedProjectsView:
                 patch('seahub.api2.endpoints.project.Workspaces.objects.get_workspace_by_id', return_value=workspace), \
                 patch('seahub.api2.endpoints.project.Projects.objects.get_project', return_value=project) as get_project, \
                 patch('seahub.api2.endpoints.project.ProjectConnections.objects.get_connection_by_id', return_value=SimpleNamespace(project_uuid=project.uuid)) as get_connection:
-            resp = RelatedProjectsView.as_view()(request)
+            resp = WebpageRelatedInformationView.as_view()(request)
 
         assert resp.status_code == 403
         get_project.assert_not_called()
         get_connection.assert_not_called()
 
-    def test_current_server_branch_returns_related_project(self, factory, project_creator, real_project):
+    def test_current_server_branch_returns_related_info(self, factory, project_creator, real_project):
         project = real_project
         workspace = project.workspace
         request = factory.get(
@@ -404,16 +404,14 @@ class TestRelatedProjectsView:
                 patch('seahub.api2.endpoints.project.ProjectConnections.objects.get_connection_by_id', return_value=connection), \
                 patch('seahub.api2.endpoints.project.SeaDBAPI'), \
                 patch('seahub.api2.endpoints.project.get_connection_record_by_pk', return_value=({'_pk': 2}, [], 'linked title')):
-            resp = RelatedProjectsView.as_view()(request)
+            resp = WebpageRelatedInformationView.as_view()(request)
 
         assert resp.status_code == 200
-        assert len(resp.data['projects']) == 1
-        related_project = resp.data['projects'][0]
-        assert related_project['permission'] == PERMISSION_READ_WRITE
-        assert related_project['related_info']['connection_type'] == ConnectionType.GITHUB_ISSUE.value
-        assert related_project['related_info']['connection_id'] == 1
+        related_info = resp.data['related_info'][str(project.uuid)]
+        assert related_info['connection_type'] == ConnectionType.GITHUB_ISSUE.value
+        assert related_info['connection_id'] == 1
 
-    def test_external_branch_returns_related_project(self, factory, project_creator, real_project):
+    def test_external_branch_returns_related_info(self, factory, project_creator, real_project):
         project = real_project
         workspace = project.workspace
         request = factory.get(
@@ -440,15 +438,59 @@ class TestRelatedProjectsView:
                 patch('seahub.api2.endpoints.project.get_org_project_connections_by_prefix_url', return_value=connection_row), \
                 patch('seahub.api2.endpoints.project.SeaDBAPI'), \
                 patch('seahub.api2.endpoints.project.get_issue_record_by_issue_number', return_value=({'_pk': 12}, [], 'linked title')):
-            resp = RelatedProjectsView.as_view()(request)
+            resp = WebpageRelatedInformationView.as_view()(request)
 
         assert resp.status_code == 200
-        assert len(resp.data['projects']) == 1
-        related_project = resp.data['projects'][0]
-        assert related_project['permission'] == PERMISSION_READ_WRITE
-        assert related_project['workspace_type'] == 'personal'
-        assert related_project['related_info']['connection_type'] == ConnectionType.GITHUB_ISSUE.value
-        assert related_project['related_info']['connection_id'] == 8
+        related_info = resp.data['related_info'][str(project.uuid)]
+        assert related_info['connection_type'] == ConnectionType.GITHUB_ISSUE.value
+        assert related_info['connection_id'] == 8
+
+    def test_external_discourse_branch_returns_related_info(self, factory, project_creator, real_project):
+        project = real_project
+        workspace = project.workspace
+        reply_request = factory.get(
+            '/api/v1/webpage-related-information/',
+            data={'webpage': 'https://forum.seafile.com/t/cant-delete-folder/17808'},
+        )
+        reply_request.user = project_creator
+
+        topic_request = factory.get(
+            '/api/v1/webpage-related-information/',
+            data={'webpage': 'https://forum.seafile.com/t/cant-delete-folder/17808/3/'},
+        )
+        topic_request.user = project_creator
+
+        connection_row = [{
+            'owner': project_creator.username,
+            'color': project.color,
+            'icon': project.icon,
+            'name': project.name,
+            'text_color': project.text_color,
+            'uuid': project.uuid,
+            'workspace_id': workspace.id,
+            'connection_id': 8,
+            'workspace_deleted': False,
+            'project_deleted': False,
+            'connection_deleted': False,
+        }]
+
+        with patch('seahub.api2.endpoints.project.is_current_server', return_value=False), \
+                patch('seahub.api2.endpoints.project.get_org_project_connections_by_prefix_url', return_value=connection_row), \
+                patch('seahub.api2.endpoints.project.SeaDBAPI'), \
+                patch('seahub.api2.endpoints.project.get_issue_record_by_issue_number', return_value=({'_pk': 12}, [], 'linked title')):
+            reply_resp = WebpageRelatedInformationView.as_view()(reply_request)
+        
+        with patch('seahub.api2.endpoints.project.is_current_server', return_value=False), \
+                patch('seahub.api2.endpoints.project.get_org_project_connections_by_prefix_url', return_value=connection_row), \
+                patch('seahub.api2.endpoints.project.SeaDBAPI'), \
+                patch('seahub.api2.endpoints.project.get_issue_record_by_issue_number', return_value=({'_pk': 12}, [], 'linked title')):
+            topic_resp = WebpageRelatedInformationView.as_view()(topic_request)
+
+        assert reply_resp.status_code == topic_resp.status_code
+        reply_related_info = reply_resp.data['related_info'][str(project.uuid)]
+        topic_related_info = topic_resp.data['related_info'][str(project.uuid)]
+        assert reply_related_info['connection_type'] == topic_related_info['connection_type']
+        assert reply_related_info['connection_id'] == topic_related_info['connection_id']
 
 
 @pytest.mark.django_db
