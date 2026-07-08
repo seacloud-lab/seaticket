@@ -206,6 +206,7 @@ def test_portal_view_allows_preview_session_when_password_protected(factory, rea
 
 
 @pytest.mark.django_db
+@override_settings(IS_PORTAL_MODE=True)
 def test_portal_anonymous_permission_allows_preview_session(factory, real_project, project_creator):
     enable_portal(real_project, allow_anonymous=False)
     request = factory.get(f'/api/v1/portal/{real_project.uuid}/tags/')
