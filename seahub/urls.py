@@ -19,7 +19,7 @@ from seahub.api2.endpoints.user import User, UserContactEmailView, ResetPassword
 from seahub.api2.endpoints.sessions import SessionsView, OnlineSessionView, SessionView
 from seahub.api2.endpoints.slide_captcha import SlideCaptchaView
 from seahub.api2.endpoints.project import WorkspacesView, ProjectsView, ProjectView, SearchView, TrashProjectsView, \
-    TrashProjectView, RelatedProjectsView
+    TrashProjectView, WebpageRelatedInformationView
 
 from seahub.api2.endpoints.organization import OrganizationView, OrganizationMembersView
 
@@ -101,7 +101,7 @@ urlpatterns = [
 
     # user: project
     re_path(r'^api/v1/workspaces/$', WorkspacesView.as_view(), name='api-v1-workspaces'),
-    re_path(r'^api/v1/webpage-related-information/$', RelatedProjectsView.as_view(), name='api-v1-webpage-related-information'),
+    re_path(r'^api/v1/webpage-related-information/$', WebpageRelatedInformationView.as_view(), name='api-v1-webpage-related-information'),
     re_path(r'^api/v1/projects/$', ProjectsView.as_view(), name='api-v1-projects'),
     re_path(r'^api/v1/workspace/(?P<workspace_id>\d+)/project/$', ProjectView.as_view(), name='api-v1-workspace-project'),
     re_path(r'^api/v1/trash-projects/$', TrashProjectsView.as_view(), name='api-v1-trash-projects'),
