@@ -2,6 +2,8 @@ import json
 from io import BytesIO
 from unittest.mock import Mock, patch
 
+import pytest
+
 from seahub.portal.chat.apis import (
     PortalChatImageView,
     PortalChatMessagesView,
@@ -23,6 +25,12 @@ def _set_portal_settings(project, **kwargs):
     project.save(update_fields=['settings'])
 
 
+@pytest.fixture
+def portal_mode_settings(settings):
+    settings.IS_PORTAL_MODE = True
+
+
+@pytest.mark.usefixtures('portal_mode_settings')
 class TestPortalChatPermissionAnonymous:
 
     def test_anonymous_disabled_returns_403(self, factory, real_project):
@@ -82,6 +90,7 @@ class TestPortalChatPermissionAnonymous:
         assert resp.status_code == 200
 
 
+@pytest.mark.usefixtures('portal_mode_settings')
 class TestPortalChatViewAnonymous:
 
     def test_visitor_session_expired_returns_401_with_error_code(self, factory, real_project):
@@ -185,6 +194,7 @@ class TestPortalChatViewAnonymous:
         assert resp.data['user_message_id'] is not None
         assert resp.data['ai_reply_message_id'] is not None
 
+@pytest.mark.usefixtures('portal_mode_settings')
 class TestPortalChatImageRewriteAnonymous:
 
     def test_rewrite_skips_unsupported_attachment_prefix(self, real_project):
@@ -228,6 +238,7 @@ class TestPortalChatImageRewriteAnonymous:
         assert f'/file/portal-chat-image/{real_project.uuid}/?token=' in resp.data['messages'][0]['content']
 
 
+@pytest.mark.usefixtures('portal_mode_settings')
 class TestPortalChatImageViewAnonymous:
 
     def test_portal_chat_image_proxy_serves_valid_token(self, factory, real_project):
@@ -299,6 +310,7 @@ class TestPortalChatImageViewAnonymous:
         assert resp.status_code == 403
 
 
+@pytest.mark.usefixtures('portal_mode_settings')
 class TestPortalChatSessionsAnonymous:
 
     def test_anonymous_user_gets_own_sessions(self, factory, real_project):
@@ -329,6 +341,7 @@ class TestPortalChatSessionsAnonymous:
         assert 'session-b' not in session_names
 
 
+@pytest.mark.usefixtures('portal_mode_settings')
 class TestPortalChatSessionTitleViewAnonymous:
 
     def test_generate_title_success(self, factory, real_project):

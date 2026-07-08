@@ -4,19 +4,20 @@ import { CenteredLoading, IconButton } from '@/components';
 import Sessions from '@/project/main-panel/ask/sessions';
 import Chat from '@/project/main-panel/ask/chat';
 import { AskPageProvider, SessionsProvider, DocumentsProvider, useAskPage, useSessions } from '@/project/main-panel/ask/hooks';
-import { gettext, siteRoot } from '@/constants';
+import { gettext } from '@/constants';
 import { ASK_PAGE_SLUG_ID } from '@/project/main-panel/ask/constants';
 import Documents from '@/project/main-panel/ask/documents';
 import { chatAPI } from '@/portal/api/chat-api';
 import { isMobile } from '@/utils/utils';
+import { buildPortalPath, getPortalPathSegments } from '@/portal/path-utils';
 
 import '@/project/main-panel/ask/index.css';
 
 const {
-  projectUuid, projectName, workspaceID, isEditMode, streamingResponse
+  projectUuid, projectName, workspaceID, streamingResponse, isEditMode
 } = window.app.pageOptions;
 
-const Main = ({ title, settings }) => {
+const Main = ({ title, settings, isEditMode }) => {
   const { isLoading: isAskPageLoading, pageSlugId, togglePageSlugId } = useAskPage();
   const { isLoading: isSessionsLoading, isShowSessions, toggleIsShowSessions, closeShowSessions, sessions } = useSessions();
 
@@ -93,20 +94,15 @@ const Ask = ({ title = gettext('Chat') }) => {
   }, []);
 
   const resetURL = useCallback((pageSlugId) => {
-    const { origin } = location;
-    let url = `${origin}${siteRoot}${isEditMode ? 'portal-edit' : 'portal'}/${projectUuid}/chat/`;
-    let urlPart = pageSlugId === ASK_PAGE_SLUG_ID.NEW ? '' : pageSlugId + '/';
-    history.replaceState(null, null, url + urlPart);
-  }, [workspaceID]);
+    history.replaceState(
+      null,
+      null,
+      pageSlugId === ASK_PAGE_SLUG_ID.NEW ? buildPortalPath('chat') : buildPortalPath('chat', pageSlugId),
+    );
+  }, []);
 
   const getInitialPageSlugId = useCallback(() => {
-    const { pathname } = location;
-    const decodePathname = decodeURIComponent(pathname);
-    const part = `/${isEditMode ? 'portal-edit' : 'portal'}/${projectUuid}/`;
-    const projectNameIndex = decodePathname.indexOf(part);
-    const paramsString = decodePathname.slice(projectNameIndex + part.length);
-    const params = paramsString.split('/');
-    const [, pageIdFromURL = ''] = params;
+    const [, pageIdFromURL = ''] = getPortalPathSegments();
     return pageIdFromURL || ASK_PAGE_SLUG_ID.NEW;
   }, []);
 
@@ -114,7 +110,7 @@ const Ask = ({ title = gettext('Chat') }) => {
     <AskPageProvider resetURL={resetURL} getInitialPageSlugId={getInitialPageSlugId} >
       <SessionsProvider projectUuid={projectUuid} api={chatAPI}>
         <DocumentsProvider>
-          <Main title={title} settings={settings} />
+          <Main title={title} settings={settings} isEditMode={isEditMode} />
         </DocumentsProvider>
       </SessionsProvider>
     </AskPageProvider>

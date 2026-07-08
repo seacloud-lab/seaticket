@@ -1,16 +1,43 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { Modal, ModalBody } from 'reactstrap';
 import CustomModalHeader from '../../components/modal-header';
-import { IconTooltip } from '../../components';
+import { IconTooltip, toaster } from '../../components';
 import { gettext } from '@/constants';
+import { Utils } from '@/utils/utils';
 import Settings from '../main-panel/settings';
 import UserManagement from '../main-panel/user-management';
+import { portalAPI } from '../api';
+import { getPortalPublicUrl } from '../path-utils';
 
 import './index.css';
 
 const LeftBar = () => {
   const [isShowSettings, setIsShowSettings] = useState(false);
   const [isShowInvite, setIsShowInvite] = useState(false);
+  const [isOpeningPortal, setIsOpeningPortal] = useState(false);
+
+  const onOpenPortal = useCallback(() => {
+    const { projectUuid, isPortalDomain } = window.app.pageOptions;
+    if (isPortalDomain) {
+      window.open(getPortalPublicUrl(), '_blank', 'noopener,noreferrer');
+      return;
+    }
+
+    if (isOpeningPortal) return;
+    setIsOpeningPortal(true);
+    portalAPI.createPreviewToken(projectUuid).then(res => {
+      const previewUrl = res.data && res.data.preview_url;
+      if (!previewUrl) {
+        toaster.danger(gettext('Portal preview URL is unavailable.'));
+        return;
+      }
+      window.open(previewUrl, '_blank', 'noopener,noreferrer');
+    }).catch((error) => {
+      toaster.danger(Utils.getErrorMsg(error));
+    }).finally(() => {
+      setIsOpeningPortal(false);
+    });
+  }, [isOpeningPortal]);
 
   const bars = useMemo(() => {
     return [
@@ -21,17 +48,15 @@ const LeftBar = () => {
       }, {
         icon: 'eye',
         tip: gettext('Go to app'),
-        callback: () => {
-          const { projectUuid } = window.app.pageOptions;
-          window.open(`/portal/${projectUuid}/`, '_blank');
-        },
+        callback: onOpenPortal,
+        disabled: isOpeningPortal,
       }, {
         icon: 'manage-members',
         tip: gettext('User management'),
         callback: () => setIsShowInvite(true),
       },
     ];
-  }, []);
+  }, [isOpeningPortal, onOpenPortal]);
 
   const closeSettings = useCallback(() => {
     setIsShowSettings(false);
@@ -54,6 +79,7 @@ const LeftBar = () => {
               icon={bar.icon}
               tip={bar.tip}
               onClick={bar.callback}
+              disabled={bar.disabled}
             />
           );
         })}

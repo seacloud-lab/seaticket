@@ -1,13 +1,14 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Button } from 'reactstrap';
 import classnames from 'classnames';
-import { gettext, siteRoot } from '@/constants';
+import { gettext } from '@/constants';
 import { CustomizeTabs, IconButton } from '@/components';
 import { PORTAL_PAGE, TICKETS_TAB, BASE_PRIMARY_TABS } from '../constants';
 import Account from '@/components/account';
 import ExternalUserAccount from '@/components/account/external-user-account';
 import { usePortalSettings } from '../hooks';
 import { isMobile } from '@/utils/utils';
+import { getPortalLoginPath } from '../path-utils';
 
 const SidePanel = ({ isEditMode, activePage, onPageChange, enableKB, isAnonymous }) => {
   const { logo, name } = usePortalSettings();
@@ -53,7 +54,7 @@ const SidePanel = ({ isEditMode, activePage, onPageChange, enableKB, isAnonymous
     };
   }, [isMobile]);
 
-  const { projectUuid, isExternalUser } = window.app.pageOptions;
+  const { isExternalUser, isPortalDomain } = window.app.pageOptions;
 
   return (
     <>
@@ -81,15 +82,15 @@ const SidePanel = ({ isEditMode, activePage, onPageChange, enableKB, isAnonymous
             {isAnonymous && (
               <Button
                 color="outline-primary"
-                onClick={() => { window.location.href = siteRoot + `portal/${projectUuid}/login/`; }}
+                onClick={() => { window.location.href = getPortalLoginPath(); }}
                 title={gettext('Login')}
                 size="sm"
               >
                 {gettext('Login')}
               </Button>
             )}
-            {!isAnonymous && isExternalUser && <ExternalUserAccount />}
-            {!isAnonymous && !isExternalUser && <Account />}
+            {!isAnonymous && (isExternalUser || isPortalDomain) && <ExternalUserAccount />}
+            {!isAnonymous && !isExternalUser && !isPortalDomain && <Account />}
           </div>
         </div>
         {isShowMobileMenu && (

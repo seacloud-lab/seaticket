@@ -1,0 +1,157 @@
+import re
+import logging
+import dns.resolver
+from urllib.parse import urlsplit
+
+from django.conf import settings
+
+logger = logging.getLogger(__name__)
+
+HOST_LABEL_RE = re.compile(r'^(?!-)[a-z0-9-]{1,63}(?<!-)$')
+CUSTOM_DOMAIN_TXT_RECORD_PREFIX = '_seaqa-portal-challenge'
+CUSTOM_DOMAIN_VERIFICATION_VALUE_PREFIX = 'seaqa-portal-verification='
+PORTAL_SUBDOMAIN_PREFIX_MIN_LENGTH = 3
+PORTAL_SUBDOMAIN_PREFIX_MAX_LENGTH = 63
+PORTAL_RESERVED_SUBDOMAIN_PREFIXES = ('admin', 'api', 'assets', 'auth', 'cdn', 'custom-domains', 'internal', 'mail', 'media', 'static', 'status', 'support', 'www')
+PORTAL_CUSTOM_DOMAIN_DNS_RESOLVERS = ('8.8.8.8', '1.1.1.1')
+
+
+def normalize_portal_custom_domain(domain, check_reserved=True):
+    domain = (domain or '').strip().lower()
+    if not domain:
+        return ''
+
+    if '://' in domain:
+        raise ValueError('Custom domain must not include scheme.')
+
+    if any(char in domain for char in '/?#'):
+        raise ValueError('Custom domain must not include path, query string or fragment.')
+
+    if domain.endswith('.'):
+        domain = domain[:-1]
+
+    try:
+        domain = domain.encode('idna').decode('ascii')
+    except Exception as error:
+        raise ValueError('Custom domain is invalid.') from error
+
+    if ':' in domain:
+        raise ValueError('Custom domain must not include port.')
+
+    if len(domain) > 253:
+        raise ValueError('Custom domain is too long.')
+
+    labels = domain.split('.')
+    if len(labels) < 2:
+        raise ValueError('Custom domain must be a fully-qualified domain name.')
+
+    if labels[-1].isdigit():
+        raise ValueError('Custom domain is invalid.')
+
+    for label in labels:
+        if not HOST_LABEL_RE.match(label):
+            raise ValueError('Custom domain is invalid.')
+
+    if check_reserved:
+        service_url = getattr(settings, 'SEAQA_WEB_SERVICE_URL', '')
+        service_host = urlsplit(service_url).hostname
+        service_host = service_host.lower() if service_host else ''
+
+        portal_root_domain = getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
+        if portal_root_domain:
+            try:
+                portal_root_domain = portal_root_domain.encode('idna').decode('ascii')
+            except Exception:
+                portal_root_domain = ''
+
+        if service_host and domain == service_host:
+            raise ValueError('This domain is reserved.')
+        if portal_root_domain and (domain == portal_root_domain or domain.endswith('.%s' % portal_root_domain)):
+            raise ValueError('This domain is reserved.')
+
+    return domain
+
+
+def normalize_portal_subdomain_prefix(prefix):
+    prefix = prefix.strip().lower()
+    if not prefix:
+        return ''
+
+    try:
+        prefix = prefix.encode('idna').decode('ascii')
+    except Exception as error:
+        logger.error(error)
+        raise ValueError('Portal subdomain is invalid.')
+
+    if len(prefix) < PORTAL_SUBDOMAIN_PREFIX_MIN_LENGTH:
+        raise ValueError('Portal subdomain is too short.')
+
+    if len(prefix) > PORTAL_SUBDOMAIN_PREFIX_MAX_LENGTH:
+        raise ValueError('Portal subdomain is too long.')
+
+    if not HOST_LABEL_RE.match(prefix):
+        raise ValueError('Portal subdomain is invalid.')
+
+    return prefix
+
+def get_portal_reserved_subdomain_prefixes():
+    reserved_prefixes = set(PORTAL_RESERVED_SUBDOMAIN_PREFIXES)
+    dns_target = getattr(settings, 'PORTAL_CUSTOM_DOMAIN_DNS_TARGET', '')
+    try:
+        target_prefix = get_portal_subdomain_prefix(dns_target)
+    except ValueError:
+        target_prefix = ''
+    if target_prefix:
+        reserved_prefixes.add(target_prefix)
+
+    return reserved_prefixes
+
+def validate_portal_subdomain_prefix_available(prefix):
+    normalized_prefix = normalize_portal_subdomain_prefix(prefix)
+    if normalized_prefix in get_portal_reserved_subdomain_prefixes():
+        raise ValueError('Portal subdomain is reserved.')
+    return normalized_prefix
+
+def get_portal_subdomain_prefix(host):
+    host = normalize_portal_custom_domain(host, check_reserved=False)
+    root_domain = getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
+    if not host or not root_domain:
+        return ''
+    suffix = '.%s' % root_domain
+    if not host.endswith(suffix):
+        return ''
+    prefix = host[:-len(suffix)]
+    if '.' in prefix:
+        return ''
+    return normalize_portal_subdomain_prefix(prefix)
+
+def query_dns_txt_values(record_name):
+    try:
+        resolver = dns.resolver.Resolver(configure=False)
+        resolver.nameservers = list(PORTAL_CUSTOM_DOMAIN_DNS_RESOLVERS)
+        answers = resolver.resolve(record_name, 'TXT', lifetime=5)
+    except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN) as e:
+        logger.error(e)
+        return []
+    except Exception as e:
+        logger.exception(e)
+        raise
+
+    values = []
+    for answer in answers:
+        strings = getattr(answer, 'strings', None)
+        if strings is not None:
+            values.append(''.join([
+                item.decode('utf-8') if isinstance(item, bytes) else str(item)
+                for item in strings
+            ]))
+        else:
+            values.append(answer.to_text())
+    return [str(value or '').strip().strip('"') for value in values]
+
+def is_request_using_portal_domain(request, project_uuid=None):
+    portal_domain = getattr(request, 'portal_domain', None)
+    if project_uuid is None:
+        return bool(portal_domain)
+    binding = getattr(portal_domain, 'binding', None)
+    return bool(binding and str(binding.project_uuid) == str(project_uuid))

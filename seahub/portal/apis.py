@@ -15,12 +15,13 @@ from rest_framework.response import Response
 from django.utils.translation import gettext as _
 from django.utils import timezone
 from django.core.cache import cache
+from django.core import signing
 from django.http import FileResponse
+from django.db import IntegrityError
 from django.template.defaultfilters import filesizeformat
-from django.utils import timezone
 
 from seahub.api2.authentication import TokenAuthentication
-from seahub.api2.throttling import UserRateThrottle
+from seahub.api2.throttling import UserRateThrottle, PortalTLSAskRateThrottle
 from seahub.api2.utils import api_error, get_user_common_info
 from seahub.project.models import Projects
 from seahub.project.utils import replace_file_url_in_content, get_current_table_metadata, check_project_admin_permission, \
@@ -39,11 +40,15 @@ from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.utils.decorators import require_org_context
 from seahub.utils.timeutils import datetime_to_isoformat_timestr
 from seahub.portal.permissions import PortalKnowledgeBasePermission, PortalIssuePermission, PortalAnonymousAccessPermission
-from seahub.portal.models import ProjectExternalUser
+from seahub.portal.models import ProjectExternalUser, PortalCustomDomain, PortalDomainAlias, get_portal_tls_ask_cache_key,\
+    PORTAL_TLS_ASK_CACHE_TIMEOUT, get_preferred_portal_domain
 from seahub.portal.utils import PORTAL_EXTERNAL_LOGIN_CODE_TTL, PORTAL_EXTERNAL_LOGIN_SEND_COOLDOWN, PORTAL_EXTERNAL_LOGIN_VERIFY_FAIL_LIMIT, \
-    PORTAL_EXTERNAL_LOGIN_VERIFY_LOCK_TTL, clear_portal_external_login_code, clear_portal_external_login_state, get_portal_external_login_code_key, \
+    PORTAL_EXTERNAL_LOGIN_VERIFY_LOCK_TTL, PORTAL_PREVIEW_TOKEN_SALT, clear_portal_external_login_code, clear_portal_external_login_state, \
     get_portal_external_login_cooldown_key, get_portal_external_login_fail_key, get_portal_external_login_lock_key, incr_portal_external_login_fail, \
-    is_user_in_the_same_team, is_portal_external_login_locked, normalize_external_login_email
+    is_user_in_the_same_team, is_portal_external_login_locked, normalize_external_login_email, portal_path, get_portal_external_login_code_key, \
+    get_portal_settings, build_absolute_portal_url, can_preview_portal
+from seahub.portal.custom_domain import normalize_portal_custom_domain, query_dns_txt_values, validate_portal_subdomain_prefix_available, \
+    CUSTOM_DOMAIN_TXT_RECORD_PREFIX, CUSTOM_DOMAIN_VERIFICATION_VALUE_PREFIX
 from seahub.utils.verify import get_random_code
 from seahub.utils.auth import gen_user_virtual_id
 from seahub.utils.mail import send_html_email_with_dj_template
@@ -1490,6 +1495,309 @@ class PortalSettingsView(APIView):
         return Response({'success': True})
 
 
+class PortalCustomDomainView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def get(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if not get_portal_settings(project).get('enable_portal'):
+            error_msg = 'Portal is not enabled.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if not check_project_admin_permission(request.user.username, project.workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        dns_target = getattr(settings, 'PORTAL_CUSTOM_DOMAIN_DNS_TARGET', '')
+        data = {
+            'custom_domain': '',
+            'custom_domain_verified': False,
+            'custom_domain_verified_at': None,
+            'custom_domain_txt_record_name': '',
+            'custom_domain_txt_record_value': '',
+            'custom_domain_dns_target': dns_target,
+        }
+        custom_domain = PortalCustomDomain.objects.filter(project_uuid=str(project_uuid)).first()
+        if not custom_domain:
+            return Response(data)
+
+        data.update({
+            'custom_domain': custom_domain.domain,
+            'custom_domain_verified': bool(custom_domain.verified),
+            'custom_domain_verified_at': custom_domain.verified_at,
+            'custom_domain_txt_record_name': custom_domain.txt_record_name,
+            'custom_domain_txt_record_value': custom_domain.txt_record_value,
+        })
+        return Response(data)
+
+    @require_org_context
+    def post(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if not check_project_admin_permission(request.user.username, project.workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+        
+        if not get_portal_settings(project).get('enable_portal'):
+            error_msg = 'Portal is not enabled.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if 'custom_domain' not in request.data:
+            error_msg = 'custom_domain is required.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        try:
+            custom_domain = request.data.get('custom_domain')
+            normalized_custom_domain = normalize_portal_custom_domain(custom_domain)
+        except ValueError as e:
+            error_msg = str(e) or 'custom_domain invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        if not normalized_custom_domain:
+            PortalCustomDomain.objects.delete_by_project_uuid(project_uuid)
+            return Response({'success': True})
+
+        existed_binding = PortalCustomDomain.objects.get_by_domain(normalized_custom_domain)
+        if existed_binding and existed_binding.project_uuid != project_uuid:
+            error_msg = 'custom_domain already in use.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        try:
+            custom_domain_binding = PortalCustomDomain.objects.filter(project_uuid=str(project_uuid)).first()
+            if custom_domain_binding:
+                if custom_domain_binding.domain == normalized_custom_domain:
+                    return Response({'success': True})
+                custom_domain_binding.domain = normalized_custom_domain
+                custom_domain_binding.reset_verification()
+                custom_domain_binding.save()
+            else:
+                PortalCustomDomain.objects.create(
+                    project_uuid=project_uuid,
+                    domain=normalized_custom_domain,
+                )
+        except IntegrityError:
+            error_msg = 'custom_domain already in use.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        return Response({'success': True})
+
+
+class PortalPreviewTokenView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def post(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        username = request.user.username
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        
+        if not get_portal_settings(project).get('enable_portal'):
+            error_msg = 'Portal is not enabled.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if not can_preview_portal(username, project):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        token = signing.dumps({'project_uuid': project_uuid, 'username': username}, salt=PORTAL_PREVIEW_TOKEN_SALT)
+        token_path = '/portal-preview/%s/' % quote(token, safe='')
+        domain = get_preferred_portal_domain(project_uuid, ensure_alias=True)
+        if not domain:
+            error_msg = 'portal public domain is not configured.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        preview_url = build_absolute_portal_url(request, domain, token_path)
+        return Response({'token': token, 'preview_url': preview_url})
+
+
+class PortalDomainAliasView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def get(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if not get_portal_settings(project).get('enable_portal'):
+            error_msg = 'Portal is not enabled.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        
+        if not check_project_admin_permission(request.user.username, project.workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        root_domain = getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
+        alias = PortalDomainAlias.objects.get_by_project_uuid(project_uuid)
+        if not root_domain:
+            return Response({
+                'portal_service_root_domain': '',
+                'subdomain_prefix': alias.prefix if alias else '',
+                'public_url': '',
+            })
+
+        if not alias:
+            alias = PortalDomainAlias.objects.ensure_alias(project_uuid)
+        prefix = alias.prefix
+        public_url = build_absolute_portal_url(request, '%s.%s' % (prefix, root_domain))
+        return Response({
+            'portal_service_root_domain': root_domain,
+            'subdomain_prefix': prefix,
+            'public_url': public_url,
+        })
+
+    @require_org_context
+    def post(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        
+        if not get_portal_settings(project).get('enable_portal'):
+            error_msg = 'Portal is not enabled.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        if not check_project_admin_permission(request.user.username, project.workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        root_domain = getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
+        if not root_domain:
+            error_msg = 'portal service root domain is not configured.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        try:
+            prefix = request.data.get('subdomain_prefix') or ''
+            normalized_prefix = validate_portal_subdomain_prefix_available(prefix)
+        except ValueError as e:
+            error_msg = str(e) or 'subdomain_prefix invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        if not normalized_prefix:
+            PortalDomainAlias.objects.reset_alias_prefix(project_uuid)
+            return Response({'success': True})
+
+        existed_alias = PortalDomainAlias.objects.get_by_prefix(normalized_prefix)
+        if existed_alias and existed_alias.project_uuid != project_uuid:
+            error_msg = 'subdomain_prefix already in use.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        try:
+            alias = PortalDomainAlias.objects.filter(project_uuid=project_uuid).first()
+            if alias:
+                if alias.prefix == normalized_prefix:
+                    return Response({'success': True})
+                alias.prefix = normalized_prefix
+                alias.save()
+            else:
+                PortalDomainAlias.objects.create(
+                    project_uuid=project_uuid,
+                    prefix=normalized_prefix,
+                )
+        except IntegrityError:
+            error_msg = 'subdomain_prefix already in use.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        return Response({'success': True})
+
+
+class PortalCustomDomainVerificationView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def post(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        
+        if not get_portal_settings(project).get('enable_portal'):
+            error_msg = 'Portal is not enabled.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if not check_project_admin_permission(request.user.username, project.workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        custom_domain = PortalCustomDomain.objects.filter(project_uuid=project_uuid).first()
+        if not custom_domain:
+            error_msg = 'custom_domain not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        try:
+            record_name = '%s.%s' % (CUSTOM_DOMAIN_TXT_RECORD_PREFIX, custom_domain.domain)
+            expected_value = '%s%s' % (CUSTOM_DOMAIN_VERIFICATION_VALUE_PREFIX, custom_domain.verification_token)
+            verified = expected_value in query_dns_txt_values(record_name)
+        except Exception:
+            error_msg = 'DNS query failed.'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        if not verified:
+            error_msg = 'TXT record not found or invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        custom_domain.mark_verified()
+        custom_domain.save(update_fields=['verified', 'verified_at', 'updated_at'])
+        return Response({'success': True})
+
+
+class PortalCustomDomainTLSAskView(APIView):
+    authentication_classes = ()
+    permission_classes = ()
+    throttle_classes = (PortalTLSAskRateThrottle,)
+
+    def get(self, request):
+        domain = request.GET.get('domain', '')
+        try:
+            normalized_domain = normalize_portal_custom_domain(domain)
+        except ValueError:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        if not normalized_domain:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        tls_ask_cache_key = get_portal_tls_ask_cache_key(normalized_domain)
+        cached_allowed = cache.get(tls_ask_cache_key)
+        if cached_allowed is False:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        custom_domain = PortalCustomDomain.objects.get_by_domain(normalized_domain)
+        if not custom_domain or not custom_domain.verified:
+            cache.set(tls_ask_cache_key, False, PORTAL_TLS_ASK_CACHE_TIMEOUT)
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        project = Projects.objects.get_project_by_uuid(custom_domain.project_uuid)
+        allowed = bool(project and get_portal_settings(project).get('enable_portal', False))
+        if not allowed:
+            cache.set(tls_ask_cache_key, False, PORTAL_TLS_ASK_CACHE_TIMEOUT)
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        if cached_allowed:
+            return Response(status=status.HTTP_200_OK)
+
+        cache.set(tls_ask_cache_key, True, PORTAL_TLS_ASK_CACHE_TIMEOUT)
+        return Response(status=status.HTTP_200_OK)
+
+
 class PortalExternalInvitationsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
@@ -1501,6 +1809,10 @@ class PortalExternalInvitationsView(APIView):
         if not project:
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if not get_portal_settings(project).get('enable_portal'):
+            error_msg = 'Portal is not enabled.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         
         if not check_project_admin_permission(request.user.username, project.workspace.owner):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
@@ -1511,7 +1823,7 @@ class PortalExternalInvitationsView(APIView):
             for iv in invites:
                 data.append({
                     'token': iv.token,
-                    'link': iv.link,
+                    'link': iv.get_link(request),
                     'expire_time': datetime_to_isoformat_timestr(iv.expire_time),
                     'email': iv.email,
                     'inviter': iv.inviter,
@@ -1538,6 +1850,10 @@ class PortalExternalInvitationsView(APIView):
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
+        if not get_portal_settings(project).get('enable_portal'):
+            error_msg = 'Portal is not enabled.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
         username = request.user.username
         if not check_project_admin_permission(username, project.workspace.owner):
             error_msg = 'Permission denied.'
@@ -1562,7 +1878,16 @@ class PortalExternalInvitationsView(APIView):
             'token': invitation.token,
             'inviter_name': email2nickname(username),
             'project_uuid': str(project.uuid),
+            'invitation_link': invitation.get_link(request),
         }
+        if not context['invitation_link']:
+            try:
+                invitation.delete()
+            except Exception as e:
+                logger.error(e)
+            error_msg = 'portal public domain is not configured.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         sent = False
         try:
             sent = send_html_email_with_dj_template(email, _('Support Portal Invitation'), 'portal/external_invitation_email.html', context=context)
@@ -1590,6 +1915,10 @@ class PortalExternalInvitationsView(APIView):
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             error_msg = 'Project not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        if not get_portal_settings(project).get('enable_portal'):
+            error_msg = 'Portal is not enabled.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         username = request.user.username
@@ -1673,7 +2002,7 @@ class PortalExternalLoginSendCodeView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         if is_user_in_the_same_team(project, email):
-            next_url = f'/portal/{project_uuid}/'
+            next_url = portal_path(request, project_uuid)
             login_url = getattr(settings, 'LOGIN_URL', '/accounts/login/')
             return Response({
                 'success': True,
@@ -1764,7 +2093,10 @@ class PortalExternalLoginVerifyCodeView(APIView):
         clear_portal_external_login_state(project_uuid, email)
         request.session['portal_external_username'] = ext_user.username
         request.session['portal_external_project_uuid'] = project_uuid
-        return Response({'success': True})
+        return Response({
+            'success': True,
+            'redirect_url': portal_path(request, project_uuid),
+        })
 
 
 class PortalIssueViewsView(APIView):

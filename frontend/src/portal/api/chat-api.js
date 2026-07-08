@@ -1,14 +1,13 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { siteRoot } from '../../constants';
+import { buildPortalPath } from '../path-utils';
 
 class ChatAPI {
 
   _getPortalChatRootURL() {
     const { origin } = window.location;
-    const { projectUuid, isEditMode } = window.app.pageOptions;
-    const basePath = isEditMode ? 'portal-edit' : 'portal';
-    return `${origin}${siteRoot}${basePath}/${projectUuid}/chat/`;
+    return `${origin}${buildPortalPath('chat')}`;
   }
 
   _handleVisitorSessionExpired(status, data) {

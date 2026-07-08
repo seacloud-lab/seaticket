@@ -8,7 +8,7 @@ from rest_framework.decorators import api_view, throttle_classes
 from django.conf import settings
 # Avoid shadowing the login() view below.
 from django.views.decorators.csrf import csrf_protect
-from django.urls import reverse
+from django.urls import NoReverseMatch, reverse
 from django.contrib import messages
 from django.shortcuts import render
 from django.contrib.sites.shortcuts import get_current_site
@@ -194,20 +194,27 @@ def login(request, template_name='registration/login.html',
     current_site = get_current_site(request)
 
     multi_tenancy = getattr(settings, 'MULTI_TENANCY', False)
+    is_portal_mode = getattr(settings, 'IS_PORTAL_MODE', False)
 
-    if getattr(settings, 'ENABLE_SIGNUP', False):
-        if multi_tenancy:
-            signup_url = reverse('org_register')
-        else:
-            signup_url = reverse('registration_register')
-    else:
-        signup_url = ''
+    signup_url = ''
+    enable_signup = False
+    enable_sso = False
+    enable_multi_saml = False
+    if not is_portal_mode:
+        if getattr(settings, 'ENABLE_SIGNUP', False):
+            signup_route_name = 'org_register' if multi_tenancy else 'registration_register'
+            try:
+                signup_url = reverse(signup_route_name)
+            except NoReverseMatch:
+                signup_url = ''
+            enable_signup = bool(signup_url)
 
-    enable_sso = getattr(settings, 'ENABLE_SAML', False) or \
-                 getattr(settings, 'ENABLE_OAUTH', False) or \
-                 getattr(settings, 'ENABLE_CUSTOM_OAUTH', False) or \
-                 getattr(settings, 'ENABLE_CAS', False) or \
-                 getattr(settings, 'ENABLE_REMOTE_USER_AUTHENTICATION', False)
+        enable_sso = getattr(settings, 'ENABLE_SAML', False) or \
+                     getattr(settings, 'ENABLE_OAUTH', False) or \
+                     getattr(settings, 'ENABLE_CUSTOM_OAUTH', False) or \
+                     getattr(settings, 'ENABLE_CAS', False) or \
+                     getattr(settings, 'ENABLE_REMOTE_USER_AUTHENTICATION', False)
+        enable_multi_saml = getattr(settings, 'ENABLE_MULTI_SAML', False)
 
     login_bg_image_path = get_login_bg_image_path()
     cur_language = translation.get_language()
@@ -219,8 +226,9 @@ def login(request, template_name='registration/login.html',
         'site_name': get_site_name(),
         'remember_days': LOGIN_REMEMBER_DAYS,
         'signup_url': signup_url,
+        'enable_signup': enable_signup,
         'enable_sso': enable_sso,
-        'enable_multi_saml': getattr(settings, 'ENABLE_MULTI_SAML', False),
+        'enable_multi_saml': enable_multi_saml,
         'login_bg_image_path': login_bg_image_path,
         'email_host': settings.EMAIL_HOST,
         'cur_language': cur_language,

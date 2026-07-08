@@ -9,6 +9,7 @@ import { default as LongTextEditorUtilities } from '@/utils/long-text';
 import { PORTAL_PAGE } from '../../constants';
 import TopBar from '@/project/main-panel/top-bar';
 import { IconButton, CenteredLoading } from '@/components';
+import { buildPortalPath, getPortalPathSegments } from '../../path-utils';
 
 import './index.css';
 
@@ -101,28 +102,26 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID }) => {
   const openIssue = useCallback((issueID) => {
     const { search } = window.location;
     listQueryStringRef.current = new URLSearchParams(search).toString();
-    const basePath = isEditMode ? 'portal-edit' : 'portal';
-    const url = `${origin}/${basePath}/${projectUuid}/${PORTAL_PAGE.MY_ISSUES}/${issueID}/`;
+    const url = buildPortalPath(PORTAL_PAGE.MY_ISSUES, issueID);
     history.replaceState(null, null, url);
     setExpandIssueId(issueID);
-  }, [isEditMode, projectUuid]);
+  }, []);
 
   const closeIssue = useCallback(() => {
-    const basePath = isEditMode ? 'portal-edit' : 'portal';
     const queryString = listQueryStringRef.current;
-    const url = `${origin}/${basePath}/${projectUuid}/${PORTAL_PAGE.MY_ISSUES}/${queryString ? `?${queryString}` : ''}`;
+    const url = buildPortalPath(PORTAL_PAGE.MY_ISSUES) + (queryString ? `?${queryString}` : '');
     history.replaceState(null, null, url);
     listQueryStringRef.current = '';
     setExpandIssueId(null);
-  }, [isEditMode, projectUuid]);
+  }, []);
 
   useEffect(() => {
-    const { pathname } = window.location;
-    if (pathname.endsWith('/my-issues/')) {
+    const pathSegments = getPortalPathSegments();
+    if (pathSegments.length <= 1) {
       setIsLoading(false);
       return;
     }
-    const issueID = pathname.split('/my-issues/')[1].replace('/', '');
+    const [, issueID] = pathSegments;
     openIssue(issueID);
     setIsLoading(false);
   }, []);

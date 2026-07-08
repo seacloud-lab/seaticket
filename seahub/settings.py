@@ -115,11 +115,17 @@ SECRET_KEY = ''
 
 ENABLE_REMOTE_USER_AUTHENTICATION = False
 
+# Runtime mode. Main mode serves the management application. Portal mode serves
+# only the customer-facing portal URL surface.
+SEAQA_APP_MODE = os.environ.get('SEAQA_APP_MODE', 'main')
+IS_PORTAL_MODE = SEAQA_APP_MODE == 'portal'
+
 # Order is important
 MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
+    *(['seahub.portal.middleware.PortalDomainMiddleware'] if IS_PORTAL_MODE else []),
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'seahub.auth.middleware.AuthenticationMiddleware',
@@ -133,7 +139,7 @@ MIDDLEWARE = [
 ]
 
 
-SITE_ROOT_URLCONF = 'seahub.urls'
+SITE_ROOT_URLCONF = 'seahub.portal_site_urls' if IS_PORTAL_MODE else 'seahub.urls'
 ROOT_URLCONF = 'seahub.utils.rooturl'
 SITE_ROOT = '/'
 CSRF_COOKIE_NAME = 'seaqa_csrftoken'
@@ -349,6 +355,7 @@ REST_FRAMEWORK = {
         'ping': '3000/minute',
         'anon': '60/minute',
         'user': '3000/minute',
+        'portal_tls_ask': '300/minute',
         'sync_common_dataset': '60/minute',
         'org-admin': '1000/day',
         'org_register': '3/day',
@@ -439,7 +446,7 @@ REQUEST_RATE_LIMIT_PERIOD = 60  # seconds
 # Please refer https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts for details.
 ALLOWED_HOSTS = ['*']
 
-CSRF_TRUSTED_ORIGINS = ["https://*", "http://*"]
+CSRF_TRUSTED_ORIGINS = [] if IS_PORTAL_MODE else ["https://*", "http://*"]
 
 # Logging
 LOG_LEVEL = os.environ.get('SEAQA_LOG_LEVEL', '"INFO"')
@@ -873,3 +880,7 @@ LINEAR_CLIENT_SECRET = configs.get('LINEAR_CLIENT_SECRET', '')
 LINEAR_REDIRECT_URL = configs.get('LINEAR_REDIRECT_URL', '')
 
 ENABLE_NOTIFICATION_SERVER = configs.get('ENABLE_NOTIFICATION_SERVER', False)
+
+# Portal custom domain
+PORTAL_SERVICE_ROOT_DOMAIN = configs.get('PORTAL_SERVICE_ROOT_DOMAIN', '')
+PORTAL_CUSTOM_DOMAIN_DNS_TARGET = configs.get('PORTAL_CUSTOM_DOMAIN_DNS_TARGET', '')

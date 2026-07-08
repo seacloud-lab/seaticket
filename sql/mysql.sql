@@ -708,6 +708,31 @@ CREATE TABLE `project_external_users` (
   KEY `project_external_username_idx` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+CREATE TABLE `portal_custom_domains` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `domain` varchar(255) NOT NULL,
+  `project_uuid` char(36) NOT NULL,
+  `verification_token` varchar(64) NOT NULL,
+  `verified` TINYINT(1) NOT NULL DEFAULT 0,
+  `verified_at` datetime(6) DEFAULT NULL,
+  `created_at` datetime(6) NOT NULL,
+  `updated_at` datetime(6) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `portal_custom_domains_domain_uniq` (`domain`),
+  UNIQUE KEY `portal_custom_domains_project_uuid_uniq` (`project_uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `portal_domain_aliases` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `prefix` varchar(63) NOT NULL,
+  `project_uuid` char(36) NOT NULL,
+  `created_at` datetime(6) NOT NULL,
+  `updated_at` datetime(6) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `portal_domain_aliases_prefix_uniq` (`prefix`),
+  UNIQUE KEY `portal_domain_aliases_project_uuid_uniq` (`project_uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 CREATE TABLE `portal_chat_sessions` (
   `id` BIGINT(11) NOT NULL AUTO_INCREMENT,
   `project_uuid` VARCHAR(36) NOT NULL,

@@ -9,8 +9,8 @@
 {% blocktrans %}{{ inviter_name }} invited you to the support portal. Please click the link below to start:{% endblocktrans %}
 </p>
 
-<a href="{{ url_base }}/portal-external/accept/{{ token }}/{{ project_uuid }}/" target="_blank">
-  {{ url_base }}/portal-external/accept/{{ token }}/{{ project_uuid }}/
+<a href="{{ invitation_link }}" target="_blank">
+  {{ invitation_link }}
 </a>
 {% endautoescape %}
 {% endblock %}

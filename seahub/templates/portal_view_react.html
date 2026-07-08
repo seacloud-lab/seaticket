@@ -57,8 +57,11 @@
             needPassword: {% if need_password %}true{% else %}false{% endif %},
             isAnonymous: {% if is_anonymous %}true{% else %}false{% endif %},
             isExternalUser: {% if is_external_user %}true{% else %}false{% endif %},
+            isPreviewUser: {% if is_preview_user %}true{% else %}false{% endif %},
             portalName: '{{ portal.portal_name|escapejs }}',
             portalLogo: '{{ portal.portal_logo|escapejs }}',
+            isPortalDomain: {% if is_portal_domain %}true{% else %}false{% endif %},
+            portalBaseUrl: '{{ portal_base_url|escapejs }}',
         }
      };
 </script>

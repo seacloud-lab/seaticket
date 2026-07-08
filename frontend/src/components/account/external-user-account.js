@@ -1,13 +1,14 @@
 import React, { Component } from 'react';
 import { Utils } from '@/utils/utils';
 import { isEnter, isEsc } from '@/utils/hotkey';
-import { siteRoot, gettext, avatarURL } from '@/constants';
+import { gettext, avatarURL } from '@/constants';
+import { getPortalLogoutPath } from '@/portal/path-utils';
 import IconBtn from '../icon-button';
 import Icon from '../icon';
 
 import './account.css';
 
-const { projectUuid, name } = window.app.pageOptions;
+const { name } = window.app.pageOptions;
 
 class ExternalUserAccount extends Component {
 
@@ -109,7 +110,7 @@ class ExternalUserAccount extends Component {
               <img src={avatarURL} width="32" height="32" className="avatar" alt={gettext('Avatar')} />
               <div className="txt text-truncate">{name}</div>
             </div>
-            <a href={siteRoot + `portal-external/logout/${projectUuid}/`} className="item mt-2">
+            <a href={getPortalLogoutPath()} className="item mt-2">
               <Icon symbol="logout" />
               {gettext('Log out')}
             </a>

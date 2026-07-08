@@ -1,4 +1,10 @@
+import json
+from types import SimpleNamespace
+
+from django.conf import settings
 from django.core.cache import cache
+from django.core import signing
+from django.core.signing import BadSignature, SignatureExpired
 
 from rest_framework import status
 
@@ -7,7 +13,7 @@ from seahub.organizations.models import OrgUser
 from seahub.profile.models import Profile
 from seahub.api2.utils import api_error
 from seahub.project.models import Projects
-from seahub.project.utils import check_same_org_permission
+from seahub.project.utils import check_project_admin_permission, check_same_org_permission
 from seahub.portal.chat.utils import get_portal_external_username
 from seahub.portal.visitor_session import (
     clear_visitor_cookie,
@@ -15,13 +21,105 @@ from seahub.portal.visitor_session import (
     set_visitor_cookie,
     touch_visitor_session,
 )
+from seahub.portal.custom_domain import is_request_using_portal_domain
+from seahub.portal.models import PortalCustomDomain, PortalDomainAlias
 
 
 
+PORTAL_DOMAIN_TYPE_SERVICE_ALIAS = 'service_alias'
+PORTAL_DOMAIN_TYPE_CUSTOM = 'custom'
 PORTAL_EXTERNAL_LOGIN_CODE_TTL = 10 * 60
 PORTAL_EXTERNAL_LOGIN_SEND_COOLDOWN = 60
 PORTAL_EXTERNAL_LOGIN_VERIFY_FAIL_LIMIT = 5
 PORTAL_EXTERNAL_LOGIN_VERIFY_LOCK_TTL = 15 * 60
+PORTAL_PREVIEW_TOKEN_SALT = 'seahub.portal.preview'
+PORTAL_PREVIEW_TOKEN_TTL = 5 * 60
+PORTAL_PREVIEW_SESSION_USERNAME_KEY = 'portal_preview_username'
+PORTAL_PREVIEW_SESSION_PROJECT_KEY = 'portal_preview_project_uuid'
+
+def resolve_portal_domain(host):
+    if not host:
+        return None
+
+    alias = PortalDomainAlias.objects.get_by_host(host)
+    if alias:
+        return SimpleNamespace(
+            domain_type=PORTAL_DOMAIN_TYPE_SERVICE_ALIAS,
+            binding=alias,
+        )
+
+    custom_domain = PortalCustomDomain.objects.get_by_domain(host)
+    if custom_domain and custom_domain.verified:
+        return SimpleNamespace(
+            domain_type=PORTAL_DOMAIN_TYPE_CUSTOM,
+            binding=custom_domain,
+        )
+
+    return None
+
+
+def load_portal_preview_token(token):
+    try:
+        payload = signing.loads(
+            token,
+            salt=PORTAL_PREVIEW_TOKEN_SALT,
+            max_age=PORTAL_PREVIEW_TOKEN_TTL,
+        )
+    except (BadSignature, SignatureExpired, TypeError, ValueError):
+        return None
+
+    project_uuid = str(payload.get('project_uuid') or '')
+    username = payload.get('username') or ''
+    if not project_uuid or not username:
+        return None
+    return {
+        'project_uuid': project_uuid,
+        'username': username,
+    }
+
+
+def set_portal_preview_session(request, project_uuid, username):
+    request.session[PORTAL_PREVIEW_SESSION_PROJECT_KEY] = str(project_uuid)
+    request.session[PORTAL_PREVIEW_SESSION_USERNAME_KEY] = username
+
+
+def can_preview_portal(username, project):
+    if check_project_admin_permission(username, project.workspace.owner):
+        return True
+
+    org_id = getattr(project.workspace, 'org_id', -1)
+    if org_id == -1:
+        return False
+    return OrgUser.objects.org_user_exists(org_id, username)
+
+
+def get_request_session(request):
+    session = getattr(request, 'session', None)
+    if session is not None:
+        return session
+
+    django_request = getattr(request, '_request', None)
+    return getattr(django_request, 'session', None)
+
+
+def get_portal_preview_username(request, project_uuid):
+    session = get_request_session(request)
+    if session is None:
+        return ''
+
+    preview_project_uuid = session.get(PORTAL_PREVIEW_SESSION_PROJECT_KEY)
+    preview_username = session.get(PORTAL_PREVIEW_SESSION_USERNAME_KEY)
+    if not preview_project_uuid or not preview_username:
+        return ''
+    if preview_project_uuid != project_uuid:
+        return ''
+
+    project, _portal_settings = get_request_project_and_portal_settings(request, project_uuid)
+    if not project:
+        return ''
+    if not can_preview_portal(preview_username, project):
+        return ''
+    return preview_username
 
 
 def normalize_external_login_email(email):
@@ -88,6 +186,42 @@ def is_user_in_the_same_team(project, email):
     
     return True
 
+def get_portal_settings(project):
+    try:
+        project_settings = json.loads(project.settings) if project.settings else {}
+    except Exception:
+        project_settings = {}
+    portal_settings = project_settings.get('portal', {})
+    streaming_response = bool(project_settings.get('streaming_response', True))
+    return {
+        'enable_portal': bool(portal_settings.get('enable_portal', False)),
+        'allow_anonymous': bool(portal_settings.get('allow_anonymous', False)),
+        'enable_password_protection': bool(portal_settings.get('enable_password_protection', False)),
+        'show_kb_in_portal': bool(portal_settings.get('show_knowledge_base', False)),
+        'password': portal_settings.get('password'),
+        'streaming_response': streaming_response,
+        'portal_name': portal_settings.get('portal_name', ''),
+        'portal_logo': portal_settings.get('portal_logo', ''),
+    }
+
+
+def get_request_project_and_portal_settings(request, project_uuid):
+    request_project = getattr(request, 'project', None)
+    if request_project and str(getattr(request_project, 'uuid', '')) == str(project_uuid):
+        portal_settings = getattr(request, 'portal_settings', None)
+        if portal_settings is None:
+            portal_settings = get_portal_settings(request_project)
+            request.portal_settings = portal_settings
+        return request_project, portal_settings
+
+    project = Projects.objects.get_project_by_uuid(project_uuid)
+    if not project:
+        return None, None
+
+    portal_settings = get_portal_settings(project)
+    request.project = project
+    request.portal_settings = portal_settings
+    return project, portal_settings
 
 def _build_visitor_session_error():
     response = api_error(status.HTTP_401_UNAUTHORIZED, 'Visitor session expired. Please refresh the page.')
@@ -114,6 +248,14 @@ def _get_request_identity(request, project_uuid):
                 'is_external_user': False,
                 'is_anonymous': False,
             }, None
+
+    preview_username = get_portal_preview_username(request, project_uuid)
+    if preview_username:
+        return {
+            'username': preview_username,
+            'is_external_user': False,
+            'is_anonymous': False,
+        }, None
 
     external_username = get_portal_external_username(request, project_uuid)
     if external_username:
@@ -155,6 +297,22 @@ def finalize_visitor_session_response(response, identity):
     return response
 
 
+def portal_path(request, project_uuid, *segments, is_edit_mode=False):
+    suffix = '/'.join(str(segment).strip('/') for segment in segments)
+    if not is_edit_mode and is_request_using_portal_domain(request, project_uuid):
+        return '/%s/' % suffix if suffix else '/'
+
+    prefix = 'portal-edit' if is_edit_mode else 'portal'
+    path = '%s/%s/' % (prefix, project_uuid)
+    if suffix:
+        path = '%s%s/' % (path, suffix)
+
+    site_root = getattr(settings, 'SITE_ROOT', '/')
+    if not site_root.endswith('/'):
+        site_root = '%s/' % site_root
+    return '%s%s' % (site_root, path)
+
+
 def portal_endpoint(func):
     def wrapper(self, request, *args, **kwargs):
         project_uuid = kwargs.get('project_uuid')
@@ -173,3 +331,10 @@ def portal_endpoint(func):
         response = func(self, request, *args, **kwargs)
         return finalize_visitor_session_response(response, identity)
     return wrapper
+
+
+def build_absolute_portal_url(request, domain, path='/'):
+    if not domain:
+        return ''
+    normalized_path = path if path.startswith('/') else '/%s' % path
+    return '%s://%s%s' % (request.scheme, domain, normalized_path)

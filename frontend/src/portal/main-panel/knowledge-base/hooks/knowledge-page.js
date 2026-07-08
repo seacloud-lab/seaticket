@@ -3,32 +3,31 @@ import context from '@/sea-metadata/context';
 import eventBus from '@/utils/event-bus';
 import { isNumber } from '@/utils/type-detection';
 import { Utils } from '@/utils/utils';
-import { siteRoot } from '@/constants';
 import { EVENT_BUS_TYPE as SEAMETADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import { BAR_TYPE, EVENT_BUS_TYPE } from '@/project/constants';
 import { KNOWLEDGE_PAGE_SLUG_ID } from '../constants';
+import { buildPortalPath, getPortalPathSegments } from '@/portal/path-utils';
 
 const PortalKnowledgePageContext = React.createContext(null);
 
-export const PortalKnowledgePageProvider = ({ projectName, projectUuid, children, isEditMode }) => {
+export const PortalKnowledgePageProvider = ({ projectName, projectUuid, children }) => {
   const [isLoading, setLoading] = useState(true);
   const [pageSlugId, setPageSlugId] = useState(KNOWLEDGE_PAGE_SLUG_ID.ALL);
   const listQueryStringRef = useRef('');
 
   const resetURL = useCallback((pageSlugId) => {
-    const { origin } = location;
-    const basePath = isEditMode ? 'portal-edit' : 'portal';
-    const url = `${origin}${siteRoot}${basePath}/${projectUuid}/${BAR_TYPE.KNOWLEDGE}`;
-    let urlPart = pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL || (!pageSlugId && pageSlugId !== 0) ? '/' : `/${pageSlugId}/`;
+    let url = pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL || (!pageSlugId && pageSlugId !== 0)
+      ? buildPortalPath(BAR_TYPE.KNOWLEDGE)
+      : buildPortalPath(BAR_TYPE.KNOWLEDGE, pageSlugId);
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
       const currentUrlParams = new URLSearchParams(window.location.search);
       const currentQueryString = currentUrlParams.toString();
       const queryString = currentQueryString || listQueryStringRef.current;
       listQueryStringRef.current = queryString;
-      urlPart = urlPart + (queryString ? '?' + queryString : '');
+      url = url + (queryString ? '?' + queryString : '');
     }
-    history.replaceState(null, null, url + urlPart);
-  }, [projectUuid, projectName, isEditMode]);
+    history.replaceState(null, null, url);
+  }, []);
 
   const togglePageSlugId = useCallback((newPageSlugId) => {
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
@@ -48,13 +47,7 @@ export const PortalKnowledgePageProvider = ({ projectName, projectUuid, children
 
   // init page
   useEffect(() => {
-    const { pathname } = location;
-    const decodePathname = decodeURIComponent(pathname);
-    const part = `/${projectUuid}`;
-    const projectUuidIndex = decodePathname.indexOf(part);
-    const paramsString = decodePathname.slice(projectUuidIndex + part.length);
-    const params = paramsString.split('/').filter(param => param !== '');
-    const [, pageIdFromURL = ''] = params;
+    const [, pageIdFromURL = ''] = getPortalPathSegments();
     let pageSlugId = KNOWLEDGE_PAGE_SLUG_ID.ALL;
 
     if (pageIdFromURL) {

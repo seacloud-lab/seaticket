@@ -208,6 +208,10 @@ class UserRateThrottle(SimpleRateThrottle):
         }
 
 
+class PortalTLSAskRateThrottle(UserRateThrottle):
+    scope = 'portal_tls_ask'
+
+
 class SyncCommonDatasetThrottle(SimpleRateThrottle):
     scope = 'sync_common_dataset'
 

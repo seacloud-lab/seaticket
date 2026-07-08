@@ -1,7 +1,9 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import classnames from 'classnames';
 import { gettext, mediaUrl, server, siteRoot } from '@/constants';
-import { CustomizeBtn } from '@/components';
+import { CustomizeBtn, toaster } from '@/components';
+import { portalAPI } from '@/portal/api';
+import { Utils } from '@/utils/utils';
 
 import './index.css';
 
@@ -9,12 +11,11 @@ const { projectUuid, isProjectAdmin } = window.app.pageOptions;
 
 const View = () => {
   const [height, setHeight] = useState(600);
+  const [isOpeningPortal, setIsOpeningPortal] = useState(false);
 
   const viewRef = useRef(null);
 
   const editURL = useMemo(() => `${server}${siteRoot}portal-edit/${projectUuid}/`, [projectUuid]);
-  const viewURL = useMemo(() => `${server}${siteRoot}portal/${projectUuid}/`, [projectUuid]);
-
   useEffect(() => {
     const dom = viewRef.current;
     const handleResize = () => {
@@ -28,6 +29,23 @@ const View = () => {
       dom && resizeObserver.unobserve(dom);
     };
   }, []);
+
+  const onViewPortal = useCallback(() => {
+    if (isOpeningPortal) return;
+    setIsOpeningPortal(true);
+    portalAPI.createPreviewToken(projectUuid).then(res => {
+      const previewUrl = res.data && res.data.preview_url;
+      if (!previewUrl) {
+        toaster.danger(gettext('Portal preview URL is unavailable.'));
+        return;
+      }
+      window.open(previewUrl, '_blank', 'noopener,noreferrer');
+    }).catch((error) => {
+      toaster.danger(Utils.getErrorMsg(error));
+    }).finally(() => {
+      setIsOpeningPortal(false);
+    });
+  }, [isOpeningPortal, projectUuid]);
 
   return (
     <div className={classnames('seaqa-support-portal-view', { 'pt-6 pb-4': height <= 424 })} ref={viewRef}>
@@ -46,7 +64,7 @@ const View = () => {
             {gettext('Edit portal')}
           </CustomizeBtn>
         )}
-        <CustomizeBtn color="secondary" icon="open-in-new-tab" onClick={() => window.open(viewURL, '_blank', 'noopener,noreferrer')}>
+        <CustomizeBtn color="secondary" icon="open-in-new-tab" onClick={onViewPortal} disabled={isOpeningPortal}>
           {gettext('View portal')}
         </CustomizeBtn>
       </div>
