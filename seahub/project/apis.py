@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 import logging
-import datetime
-import requests
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -14,8 +12,9 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils.decorators import require_org_context
-from seahub.project.models import Projects, ProjectGithubAppInstallation, ProjectLinearOauth, ProjectConfluenceOauth
-from seahub.project.confluence_api import ConfluenceAPI, ProjectJiraOauth
+from seahub.project.models import Projects, ProjectGithubAppInstallation, ProjectLinearOauth, ProjectConfluenceOauth, \
+    ProjectJiraOauth
+from seahub.project.confluence_api import ConfluenceAPI
 from seahub.project.linear_api import LinearAPI
 from seahub.project.utils import check_project_permission, check_project_admin_permission, get_project_related_users, \
     query_items, check_project_admin_permission
@@ -23,6 +22,7 @@ from seahub.project.constants import ITEMS_SEARCH_QUERY_TYPES_SUPPORT
 from seahub.project.github_issues_api import GitHubAPI
 from seahub.project.discord_api import DiscordAPI
 from seahub.settings import JIRA_CLIENT_ID, JIRA_CLIENT_SECRET
+from seahub.project.jira_api import JiraAPI
 
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
@@ -389,32 +389,23 @@ class ProjectJiraSites(APIView):
         if not jira_oauth:
             return api_error(status.HTTP_400_BAD_REQUEST, 'Jira OAuth authorization is required.')
 
-        if not jira_oauth.expires_at or jira_oauth.expires_at <= datetime.datetime.now(datetime.timezone.utc):
-            try:
-                jira_oauth = _refresh_jira_access_token(jira_oauth)
-            except Exception as e:
-                logger.error('Failed to refresh Jira OAuth token for project %s: %s', project_uuid, e)
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to refresh Jira authorization.')
+        jira_api = JiraAPI(
+            access_token=jira_oauth.access_token,
+            refresh_token=jira_oauth.refresh_token,
+            expires_at=jira_oauth.expires_at,
+        )
 
         try:
-            response = requests.get(
-                'https://api.atlassian.com/oauth/token/accessible-resources',
-                headers={'Authorization': f'Bearer {jira_oauth.access_token}'},
-                timeout=10,
-            )
-            if response.status_code == 401:
-                jira_oauth = _refresh_jira_access_token(jira_oauth)
-                response = requests.get(
-                    'https://api.atlassian.com/oauth/token/accessible-resources',
-                    headers={'Authorization': f'Bearer {jira_oauth.access_token}'},
-                    timeout=10,
-                )
-            response.raise_for_status()
+            resources = jira_api.list_accessible_resources()
         except Exception as e:
             logger.error('Jira API error fetching sites for project %s: %s', project_uuid, e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to fetch Jira sites.')
 
-        resources = response.json() or []
+        if jira_api.access_token != jira_oauth.access_token:
+            ProjectJiraOauth.objects.upsert_token(
+                project_uuid, jira_api.access_token, jira_api.expires_at, jira_api.refresh_token
+            )
+
         sites = []
         for resource in resources:
             scopes = resource.get('scopes') or []
@@ -461,45 +452,21 @@ class ProjectJiraProjects(APIView):
         if not jira_oauth:
             return api_error(status.HTTP_400_BAD_REQUEST, 'Jira OAuth authorization is required.')
 
-        if not jira_oauth.expires_at or jira_oauth.expires_at <= datetime.datetime.now(datetime.timezone.utc):
-            try:
-                jira_oauth = _refresh_jira_access_token(jira_oauth)
-            except Exception as e:
-                logger.error('Failed to refresh Jira OAuth token for project %s: %s', project_uuid, e)
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to refresh Jira authorization.')
+        jira_api = JiraAPI(
+            access_token=jira_oauth.access_token,
+            refresh_token=jira_oauth.refresh_token,
+            expires_at=jira_oauth.expires_at,
+        )
 
         try:
-            url = f'https://api.atlassian.com/ex/jira/{site_id}/rest/api/3/project'
-            response = requests.get(
-                url,
-                headers={'Authorization': f'Bearer {jira_oauth.access_token}'},
-                timeout=10,
-            )
-            if response.status_code == 401:
-                jira_oauth = _refresh_jira_access_token(jira_oauth)
-                response = requests.get(
-                    url,
-                    headers={'Authorization': f'Bearer {jira_oauth.access_token}'},
-                    timeout=10,
-                )
-            response.raise_for_status()
+            projects_list = jira_api.list_projects(site_id)
         except Exception as e:
             logger.error('Jira API error fetching projects for project %s: %s', project_uuid, e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to fetch Jira projects.')
 
-        projects_data = response.json() or []
-        projects_list = []
-        for p in projects_data:
-            p_id = p.get('id')
-            p_key = p.get('key')
-            p_name = p.get('name')
-            if not p_id or not p_key:
-                continue
-            projects_list.append({
-                'id': p_id,
-                'key': p_key,
-                'name': p_name or p_key,
-            })
+        if jira_api.access_token != jira_oauth.access_token:
+            ProjectJiraOauth.objects.upsert_token(
+                project_uuid, jira_api.access_token, jira_api.expires_at, jira_api.refresh_token
+            )
 
-        projects_list.sort(key=lambda item: item['key'].lower())
         return Response({'projects': projects_list})

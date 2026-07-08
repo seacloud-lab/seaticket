@@ -548,6 +548,7 @@ export const CONNECTION_TYPES = [
     type: CONNECTION_TYPE.JIRA_ISSUE,
     icon: 'ticket',
     name: gettext('Jira'),
+    sub_types: CONNECTION_SUB_TYPE_MAP.issues,
   }, {
     type: CONNECTION_TYPE.DISCOURSE_FORUM,
     icon: 'discourse-logo',

@@ -684,7 +684,7 @@ def list_jira_issue_record_details(seadb_api, project_uuid, connection_id, _pk):
     try:
         issue_res = seadb_api.query_rows(project_uuid, issue_sql)
         column_metadata = issue_res.get('metadata')
-        issue_record = issue_res.get('results')[0]
+        issue_record = issue_res.get('results')[0] if issue_res.get('results') else {}
         issue_id = issue_record.get('issue_id')
         issue_record.pop('issue_id', None)
         issue_record['author'] = issue_record.pop('assignees', '')

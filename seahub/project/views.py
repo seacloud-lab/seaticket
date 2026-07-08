@@ -17,6 +17,7 @@ from seahub.project.models import Workspaces, Projects, ProjectGithubAppInstalla
     ProjectJiraOauth
 from seahub.project.utils import check_project_admin_permission, check_project_permission, update_github_connection_installation_id
 from seahub.project.linear_api import LinearAPI
+from seahub.project.jira_api import JiraAPI
 from seahub.utils import render_error
 from seahub.auth.decorators import login_required
 from seahub.settings import MEDIA_URL, LLM_MODELS, GITHUB_APP_NAME, ENABLE_GENERAL_TASK, THOUGHT_PROCESS_ENABLED, \
@@ -606,7 +607,7 @@ def jira_oauth_callback(request):
     ProjectJiraOauth.objects.upsert_token(
         project_uuid,
         access_token,
-        _calc_jira_expires_at(token_json.get('expires_in')),
+        JiraAPI.calc_expires_at(token_json.get('expires_in')),
         refresh_token,
     )
 
