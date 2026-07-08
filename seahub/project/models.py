@@ -15,7 +15,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from seahub.project.constants import ORG_STORAGE_SIZE_PREFIX, ORG_STORAGE_SIZE_CACHE_TIMEOUT, \
     CONNECTION_FIELDS, CONNECTION_DEFAULT_DETAILS, ConnectionType, \
-    GENERAL_EMAIL_PROVIDER, OAUTH_EMAIL_PROVIDERS
+    GENERAL_EMAIL_PROVIDER, OAUTH_EMAIL_PROVIDERS, merge_project_settings_defaults
 from seahub.utils import get_no_duplicate_obj_name, uuid_str_to_32_chars, \
     utf8_normalize, is_valid_uuid
 from seahub.utils.hasher import AESPasswordHasher
@@ -222,8 +222,9 @@ class ProjectsManager(models.Manager):
 
     def create_project(self, username, workspace, name, color=None, text_color=None, icon=None):
         name = utf8_normalize(name)
+        settings = json.dumps(merge_project_settings_defaults({}))
         project = self.model(workspace=workspace, name=name, creator=username, modifier=username,
-                             color=color, text_color=text_color, icon=icon)
+                             color=color, text_color=text_color, icon=icon, settings=settings)
         project.save()
         return project
 
@@ -340,6 +341,10 @@ class Projects(models.Model):
         db_table = 'projects'
 
     def to_dict(self, include_deleted=False):
+        try:
+            settings = json.loads(self.settings) if self.settings else {}
+        except (TypeError, ValueError, json.JSONDecodeError):
+            settings = {}
         result = {
             'id': self.pk,
             'workspace_id': self.workspace_id,
@@ -351,7 +356,7 @@ class Projects(models.Model):
             'text_color': self.text_color,
             'icon': self.icon,
             'is_encrypted': self.is_encrypted(),
-            'settings': json.loads(self.settings) if self.settings else {},
+            'settings': merge_project_settings_defaults(settings),
         }
         if include_deleted:
             result.update({

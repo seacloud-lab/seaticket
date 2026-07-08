@@ -34,7 +34,8 @@ from seahub.utils.indexer import keyword_search, vector_search_with_text
 
 from seahub.seadb_models.models import SchemaTables
 from seahub.seadb_models.utils import get_discourse_topic_by_topic_id, get_issue_record_by_issue_number, get_connection_record_by_pk
-from seahub.project.constants import ConnectionType, REF_URL_CONNECTION_CACHE_PREFIX, REF_URL_CONNECTION_CACHE_TIMEOUT
+from seahub.project.constants import ConnectionType, REF_URL_CONNECTION_CACHE_PREFIX, \
+    REF_URL_CONNECTION_CACHE_TIMEOUT, merge_project_settings_defaults
 
 
 logger = logging.getLogger(__name__)
@@ -503,7 +504,7 @@ class ProjectView(APIView):
                     project_settings[k] = v
                 new_enable_portal = bool((project_settings.get('portal') or {}).get('enable_portal', False))
                 should_init_portal_issues = not old_enable_portal and new_enable_portal
-                project.settings = json.dumps(project_settings)
+                project.settings = json.dumps(merge_project_settings_defaults(project_settings))
             project.modifier = username
             project.save()
             if should_init_portal_issues:

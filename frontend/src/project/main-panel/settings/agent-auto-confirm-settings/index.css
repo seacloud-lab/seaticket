@@ -1,0 +1,32 @@
+.agent-auto-confirm-settings {
+  border: 1px solid #eee;
+  border-radius: 4px;
+}
+
+.agent-auto-confirm-header {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.agent-auto-confirm-row {
+  padding: 10px 0;
+  border-top: 1px solid #f1f1f1;
+}
+
+.agent-auto-confirm-row:first-child {
+  border-top: none;
+}
+
+.agent-auto-confirm-meta {
+  flex: 1 1 auto;
+}
+
+.agent-auto-confirm-title {
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.agent-auto-confirm-risk {
+  font-size: 12px;
+  color: #d97c0b;
+}

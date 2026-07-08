@@ -1,5 +1,6 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
 import logging
+import jwt
 
 from rest_framework import status
 from rest_framework.authentication import BaseAuthentication
@@ -16,9 +17,10 @@ from django.core.cache import cache
 from seahub.organizations.models import Organization
 
 try:
-    from seahub.settings import MULTI_TENANCY
+    from seahub.settings import MULTI_TENANCY, JWT_PRIVATE_KEY
 except ImportError:
     MULTI_TENANCY = False
+    JWT_PRIVATE_KEY = ''
 
 logger = logging.getLogger(__name__)
 
@@ -97,6 +99,44 @@ class TokenAuthentication(BaseAuthentication):
 
         if user.is_active:
             return (user, token)
+
+
+class JWTAuthentication(BaseAuthentication):
+    """
+    JWT based authentication for internal service-to-service requests.
+
+    Clients should authenticate by passing the JWT in the "Authorization"
+    HTTP header, prepended with "Token ". For example:
+
+        Authorization: Token <jwt>
+    """
+
+    def authenticate(self, request):
+        auth = request.headers.get('Authorization', '').split()
+
+        if not auth:
+            raise AuthenticationFailed('Missing Authorization header.')
+        if auth[0].lower() != 'token':
+            raise AuthenticationFailed('Invalid authorization prefix.')
+        if len(auth) == 1:
+            raise AuthenticationFailed('Invalid token header. No credentials provided.')
+        if len(auth) > 2:
+            raise AuthenticationFailed('Invalid token header. Token string should not contain spaces.')
+        if not JWT_PRIVATE_KEY:
+            logger.error('JWT_PRIVATE_KEY is not configured.')
+            raise AuthenticationFailed('JWT auth not configured.')
+
+        token = auth[1]
+        try:
+            jwt.decode(token, JWT_PRIVATE_KEY, algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('Token has expired.')
+        except jwt.InvalidSignatureError:
+            raise AuthenticationFailed('Token signature verification failed.')
+        except Exception:
+            raise AuthenticationFailed('Invalid token.')
+
+        return (AnonymousUser(), token)
 
 
 class ProjectAPITokenAuthentication(BaseAuthentication):

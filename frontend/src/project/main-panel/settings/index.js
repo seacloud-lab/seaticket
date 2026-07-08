@@ -5,6 +5,7 @@ import LanguageSettings from './language-settings';
 import { gettext } from '@/constants';
 import PromptSettings from './prompt-settings';
 import GitHubIssueTypeMappingSettings from './github-issue-type-mapping';
+import AgentAutoConfirmSettings from './agent-auto-confirm-settings';
 
 const Settings = ({
   title,
@@ -51,6 +52,13 @@ const Settings = ({
             placeholder={gettext('Example:\n1) If due soon and substate is Waiting on user, do not send reminder.\n2) If over due and substate is Waiting on user, suggest closing the ticket.')}
             maxLength={4000}
             validationMessage={gettext('Ticket processing rules cannot contain tag-like content such as <system-reminder>.')}
+          />
+          <AgentAutoConfirmSettings
+            className="mb-4"
+            value={settings?.agent?.auto_confirm || {}}
+            onChange={(value, callback) => modifySettings({
+              agent: Object.assign({}, settings.agent, { auto_confirm: value }),
+            }, callback)}
           />
         </>
       )}

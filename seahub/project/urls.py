@@ -26,7 +26,7 @@ from .tags import TagsAPIView, TagAPIView
 from .agent import (
     AgentRunsView, AgentRunDetailView,
     AgentActionConfirmView, AgentActionCancelView, AgentActionUpdateView,
-    GithubIssueTypesView,
+    AgentActionAutoExecuteView, GithubIssueTypesView,
 )
 
 
@@ -130,6 +130,9 @@ urlpatterns = [
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/agent/runs/(?P<run_id>\d+)/actions/(?P<action_id>\d+)/cancel/$', AgentActionCancelView.as_view(), name='api-v1-project-agent-action-cancel'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/agent/runs/(?P<run_id>\d+)/actions/(?P<action_id>\d+)/$', AgentActionUpdateView.as_view(), name='api-v1-project-agent-action-update'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/github/issue-types/$', GithubIssueTypesView.as_view(), name='api-v1-project-github-issue-types'),
+
+    # internal agent auto-action (for seaqa-ai to call)
+    re_path(r'^api/v1/internal/agent/auto-action/execute/$', AgentActionAutoExecuteView.as_view(), name='api-v1-internal-agent-auto-action-execute'),
 ]
 
 # files, must at last

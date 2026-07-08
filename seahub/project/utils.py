@@ -7,7 +7,7 @@ import json
 from urllib.parse import quote_plus, quote, urlparse, unquote
 from email.utils import getaddresses, formataddr
 
-from seahub.settings import SERVICE_URL, ENABLE_GENERAL_TASK, PERSONAL_PROJECT_LIMIT, GROUP_PROJECT_LIMIT, FREE_ORG_PROJECT_LIMIT
+from seahub.settings import SERVICE_URL, SEAQA_WEB_SERVICE_URL, ENABLE_GENERAL_TASK, PERSONAL_PROJECT_LIMIT, GROUP_PROJECT_LIMIT, FREE_ORG_PROJECT_LIMIT
 from seahub.seadb_models.utils import get_current_table_metadata
 from seahub.project.models import Projects, DeletedProjects, AIUsageStatistics, Workspaces, \
     AdditionalCredits, encrypt_config
@@ -707,7 +707,11 @@ def build_project_page_related_url(request, project, page_path) -> str:
         f'{site_root}/workspace/{project.workspace_id}/project/{project_name}/'
         f'{page_path.lstrip("/")}'
     )
-    return request.build_absolute_uri(path)
+    if request is not None:
+        return request.build_absolute_uri(path)
+
+    url_base = (SEAQA_WEB_SERVICE_URL or SERVICE_URL or '').rstrip('/')
+    return f'{url_base}{path}'
 
 def build_connection_record_related_url(request, project, connection_id, record_id):
     return build_project_page_related_url(
