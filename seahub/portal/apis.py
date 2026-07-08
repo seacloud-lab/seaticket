@@ -41,7 +41,7 @@ from seahub.utils.decorators import require_org_context
 from seahub.utils.timeutils import datetime_to_isoformat_timestr
 from seahub.portal.permissions import PortalKnowledgeBasePermission, PortalIssuePermission, PortalAnonymousAccessPermission
 from seahub.portal.models import ProjectExternalUser, PortalCustomDomain, PortalDomainAlias, get_portal_tls_ask_cache_key,\
-    PORTAL_TLS_ASK_CACHE_TIMEOUT
+    PORTAL_TLS_ASK_CACHE_TIMEOUT, get_preferred_portal_domain
 from seahub.portal.utils import PORTAL_EXTERNAL_LOGIN_CODE_TTL, PORTAL_EXTERNAL_LOGIN_SEND_COOLDOWN, PORTAL_EXTERNAL_LOGIN_VERIFY_FAIL_LIMIT, \
     PORTAL_EXTERNAL_LOGIN_VERIFY_LOCK_TTL, PORTAL_PREVIEW_TOKEN_SALT, clear_portal_external_login_code, clear_portal_external_login_state, \
     get_portal_external_login_cooldown_key, get_portal_external_login_fail_key, get_portal_external_login_lock_key, incr_portal_external_login_fail, \
@@ -1615,19 +1615,13 @@ class PortalPreviewTokenView(APIView):
 
         token = signing.dumps({'project_uuid': project_uuid, 'username': username}, salt=PORTAL_PREVIEW_TOKEN_SALT)
         token_path = '/portal-preview/%s/' % quote(token, safe='')
-        custom_domain = PortalCustomDomain.objects.get_verified_by_project_uuid(project_uuid)
-        if custom_domain:
-            preview_url = build_absolute_portal_url(request, custom_domain.domain, token_path)
-            return Response({'token': token, 'preview_url': preview_url})
+        domain = get_preferred_portal_domain(project_uuid, ensure_alias=True)
+        if not domain:
+            error_msg = 'portal public domain is not configured.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        root_domain = getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
-        if root_domain:
-            alias = PortalDomainAlias.objects.ensure_alias(project_uuid)
-            domain = '%s.%s' % (alias.prefix, root_domain)
-            preview_url = build_absolute_portal_url(request, domain, token_path)
-            return Response({'token': token, 'preview_url': preview_url})
-
-        return Response({'token': token, 'preview_url': request.build_absolute_uri(token_path)})
+        preview_url = build_absolute_portal_url(request, domain, token_path)
+        return Response({'token': token, 'preview_url': preview_url})
 
 
 class PortalDomainAliasView(APIView):
@@ -1886,6 +1880,14 @@ class PortalExternalInvitationsView(APIView):
             'project_uuid': str(project.uuid),
             'invitation_link': invitation.get_link(request),
         }
+        if not context['invitation_link']:
+            try:
+                invitation.delete()
+            except Exception as e:
+                logger.error(e)
+            error_msg = 'portal public domain is not configured.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         sent = False
         try:
             sent = send_html_email_with_dj_template(email, _('Support Portal Invitation'), 'portal/external_invitation_email.html', context=context)

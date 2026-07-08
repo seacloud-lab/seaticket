@@ -11,11 +11,10 @@ from django.db import IntegrityError
 from django.core.cache import cache
 from django.utils import timezone
 from django.conf import settings
-from django.urls import reverse
 from copy import deepcopy
 
 from seahub.project.constants import PORTAL_ISSUES_DEFAULT_DETAILS
-from seahub.utils import get_no_duplicate_obj_name, get_service_url, uuid_str_to_32_chars
+from seahub.utils import get_no_duplicate_obj_name, uuid_str_to_32_chars
 from seahub.portal.custom_domain import CUSTOM_DOMAIN_TXT_RECORD_PREFIX, CUSTOM_DOMAIN_VERIFICATION_VALUE_PREFIX, \
     get_portal_subdomain_prefix, normalize_portal_custom_domain, get_portal_reserved_subdomain_prefixes, \
     normalize_portal_subdomain_prefix
@@ -35,6 +34,25 @@ PORTAL_DOMAIN_CACHE_MISS_TIMEOUT = 60
 
 def get_portal_tls_ask_cache_key(domain):
     return '%s%s' % (PORTAL_TLS_ASK_CACHE_PREFIX, domain)
+
+
+def get_preferred_portal_domain(project_uuid, ensure_alias=False):
+    custom_domain = PortalCustomDomain.objects.get_verified_by_project_uuid(project_uuid)
+    if custom_domain:
+        return custom_domain.domain
+
+    root_domain = getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
+    if not root_domain:
+        return ''
+
+    if ensure_alias:
+        alias = PortalDomainAlias.objects.ensure_alias(project_uuid)
+    else:
+        alias = PortalDomainAlias.objects.get_by_project_uuid(project_uuid)
+    if not alias:
+        return ''
+
+    return '%s.%s' % (alias.prefix, root_domain)
 
 
 def generate_random_string_lower_digits(length):
@@ -88,19 +106,10 @@ class PortalExternalInvitation(models.Model):
 
     def get_link(self, request):
         path = '/external/accept/%s/' % self.token
-        custom_domain = PortalCustomDomain.objects.get_verified_by_project_uuid(self.project_uuid)
-        if custom_domain:
-            return '%s://%s%s' % (request.scheme, custom_domain.domain, path)
-
-        alias = PortalDomainAlias.objects.get_by_project_uuid(self.project_uuid)
-        root_domain = getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
-        if alias and root_domain:
-            domain = '%s.%s' % (alias.prefix, root_domain)
-            return '%s://%s%s' % (request.scheme, domain, path)
-
-        base = get_service_url().rstrip('/')
-        fallback_path = reverse('portal_external_invitation_accept_view', args=(self.token, self.project_uuid))
-        return f"{base}{fallback_path}" if base else fallback_path
+        domain = get_preferred_portal_domain(self.project_uuid, ensure_alias=True)
+        if not domain:
+            return ''
+        return '%s://%s%s' % (request.scheme, domain, path)
 
 
 class ProjectExternalUserManager(models.Manager):

@@ -2,12 +2,12 @@
 from django.urls import re_path
 
 from seahub.project.views import project_view
-from .views import portal_view, portal_edit_view, portal_anonymous_validate, portal_external_invitation_accept_view, portal_login_view, portal_external_logout_view, portal_preview_view
+from .views import portal_edit_view
 from .apis import PortalTagsView, PortalKnowledgeBaseViewsView, PortalKnowledgeBaseRecordsView, PortalKnowledgeBaseRecordView, PortalIssueMetadataView, \
-    PortalSettingsView, PortalExternalInvitationsView, PortalExternalLoginSendCodeView, PortalExternalLoginVerifyCodeView, PortalIssueViewsView, \
-    PortalIssueViewView, PortalExternalUsersView, PortalUserListView, PortalIssueViewsMoveView, PortalIssueViewsDuplicateView,\
-    PortalIssuesView, PortalMyIssuesView, PortalIssueView, PortalIssueCommentsView, PortalIssueCommentView, PortalIssueTrashAPIView, PortalLogoView, \
-    PortalCustomDomainTLSAskView, PortalCustomDomainView, PortalCustomDomainVerificationView, PortalDomainAliasView, PortalPreviewTokenView
+    PortalSettingsView, PortalExternalInvitationsView, PortalIssueViewsView, PortalIssueViewView, PortalExternalUsersView, PortalUserListView, \
+    PortalIssueViewsMoveView, PortalIssueViewsDuplicateView, PortalIssuesView, PortalMyIssuesView, PortalIssueView, PortalIssueCommentsView, \
+    PortalIssueCommentView, PortalIssueTrashAPIView, PortalCustomDomainView, PortalCustomDomainVerificationView, PortalDomainAliasView, \
+    PortalPreviewTokenView, PortalLogoView
 from .portal_issue_types import PortalIssueTypesAPIView, PortalIssueTypeAPIView
 from .portal_issue_substates import PortalIssueSubstatesAPIView, PortalIssueSubstateAPIView
 from .chat.apis import (
@@ -30,19 +30,6 @@ urlpatterns = [
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/chat/$', portal_edit_view, name='portal_edit_view'),
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/$', portal_edit_view, name='portal_edit_view'),
 
-    # portal page (for external users)
-    re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/submit-issue/$', portal_view, name='portal_view'),
-    re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/my-issues/$', portal_view, name='portal_view'),
-    re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/my-issues/(?P<issue_id>\d+)/$', portal_view, name='portal_view'),
-    re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-base/(?P<children_id>\d+)/$', portal_view, name='portal_view'),
-    re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-base/$', portal_view, name='portal_view'),
-    re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/chat/(?P<session_uuid>[-0-9a-f]{36})/$', portal_view, name='portal_view'),
-    re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/chat/$', portal_view, name='portal_view'),
-    re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/$', portal_view, name='portal_view'),
-    re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/anonymous-validate/$', portal_anonymous_validate, name='portal_anonymous_validate'),
-    re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/login/$', portal_login_view, name='portal_login_view'),
-    re_path(r'^portal-preview/(?P<token>[^/]+)/$', portal_preview_view, name='portal_preview_view'),
-
     # portal page
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/portal-issues/$', project_view, name='project_portal_issues_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/portal-issues/(?P<children_id>\d+)/$', project_view, name='project_portal_issues_view'),
@@ -59,17 +46,12 @@ urlpatterns = [
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/issue/metadata/$', PortalIssueMetadataView.as_view(), name='api-v1-portal-issue-metadata'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/external-invitations/$', PortalExternalInvitationsView.as_view(), name='api-v1-portal-external-invitations'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/external-invitations/(?P<token>[a-f0-9]{32})/$', PortalExternalInvitationsView.as_view(), name='api-v1-portal-external-invitations-detail'),
-    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/external-login/send-code/$', PortalExternalLoginSendCodeView.as_view(), name='api-v1-portal-external-login-send-code'),
-    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/external-login/verify/$', PortalExternalLoginVerifyCodeView.as_view(), name='api-v1-portal-external-login-verify'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/external-users/$', PortalExternalUsersView.as_view(), name='api-v1-portal-external-users'),
-    re_path(r'^portal-external/accept/(?P<token>[a-f0-9]{32})/(?P<project_uuid>[-0-9a-f]{36})/$', portal_external_invitation_accept_view, name='portal_external_invitation_accept_view'),
-    re_path(r'^portal-external/logout/(?P<project_uuid>[-0-9a-f]{36})/$', portal_external_logout_view, name='portal_external_logout_view'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/settings/$', PortalSettingsView.as_view(), name='api-v1-portal-settings'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/preview-token/$', PortalPreviewTokenView.as_view(), name='api-v1-portal-preview-token'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/domain-alias/$', PortalDomainAliasView.as_view(), name='api-v1-portal-domain-alias'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/custom-domain/$', PortalCustomDomainView.as_view(), name='api-v1-portal-custom-domain'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/custom-domain/verify/$', PortalCustomDomainVerificationView.as_view(), name='api-v1-portal-custom-domain-verify'),
-    re_path(r'^internal/portal/custom-domain/allow-tls$', PortalCustomDomainTLSAskView.as_view(), name='internal-portal-custom-domain-allow-tls'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/logo/$', PortalLogoView.as_view(), name='api-v1-portal-logo'),
 
     # portal upload file
@@ -77,7 +59,6 @@ urlpatterns = [
     re_path(r'^upload-file/portal/(?P<project_uuid>[-0-9a-f]{36})/(?P<file_path>.+)$', GetPortalUploadFileView.as_view(), name='api-v1-get-portal-upload-file'),
     re_path(r'^file/portal/(?P<project_uuid>[-0-9a-f]{36})/(?P<file_path>.*)$', PortalFileView.as_view(), name='api-v1-get-portal-file'),
     re_path(r'^file/portal-chat-image/(?P<project_uuid>[-0-9a-f]{36})/$', PortalChatImageView.as_view(), name='api-v1-portal-chat-image'),
-
 
     # portal issues API
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/issues/$', PortalIssuesView.as_view(), name='api-v1-portal-issues'),

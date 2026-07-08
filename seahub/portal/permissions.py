@@ -1,3 +1,4 @@
+from django.conf import settings
 from rest_framework.permissions import BasePermission
 
 from seahub.project.utils import check_same_org_permission
@@ -47,6 +48,11 @@ def _is_portal_password_verified(request, project_uuid, portal_settings):
     return bool(verified_token and encoded_password and verified_token == encoded_password)
 
 
+def _is_same_org_user(request, project):
+    user = getattr(request, 'user', None)
+    return bool(user and getattr(user, 'is_authenticated', False) and check_same_org_permission(user, project.workspace))
+
+
 class PortalKnowledgeBasePermission(BasePermission):
     def has_permission(self, request, view):
         project, portal_settings = _get_project_and_settings(request, view)
@@ -57,17 +63,18 @@ class PortalKnowledgeBasePermission(BasePermission):
         enable_portal = portal_settings.get('enable_portal', False)
         if not enable_portal:
             return False
-            
+
+        if _is_same_org_user(request, project):
+            return True
+
+        if not getattr(settings, 'IS_PORTAL_MODE', False):
+            return False
+
         if _is_portal_preview_user(request, project_uuid):
             return True
 
         if _is_external_member(request, project_uuid):
             return True
-
-        user = getattr(request, 'user', None)
-        if user and getattr(user, 'is_authenticated', False):
-            if check_same_org_permission(user, project.workspace):
-                return True
         
         allow_anonymous = bool(portal_settings.get('allow_anonymous', False))
         enable_password_protection = bool(portal_settings.get('enable_password_protection', False))
@@ -90,16 +97,17 @@ class PortalAnonymousAccessPermission(BasePermission):
         if not enable_portal:
             return False
 
+        if _is_same_org_user(request, project):
+            return True
+
+        if not getattr(settings, 'IS_PORTAL_MODE', False):
+            return False
+
         if _is_portal_preview_user(request, project_uuid):
             return True
 
         if _is_external_member(request, project_uuid):
             return True
-
-        user = getattr(request, 'user', None)
-        if user and getattr(user, 'is_authenticated', False):
-            if check_same_org_permission(user, project.workspace):
-                return True
         
         allow_anonymous = bool(portal_settings.get('allow_anonymous', False))
         enable_password_protection = bool(portal_settings.get('enable_password_protection', False))
@@ -122,13 +130,14 @@ class PortalIssuePermission(BasePermission):
         if not enable_portal:
             return False
 
-        if _is_portal_preview_user(request, project_uuid):
+        if _is_same_org_user(request, project):
             return True
 
-        user = getattr(request, 'user', None)
-        if user and getattr(user, 'is_authenticated', False):
-            if check_same_org_permission(user, project.workspace):
-                return True
+        if not getattr(settings, 'IS_PORTAL_MODE', False):
+            return False
+
+        if _is_portal_preview_user(request, project_uuid):
+            return True
 
         if _is_external_member(request, project_uuid):
             return True
@@ -147,13 +156,14 @@ class PortalChatPermission(BasePermission):
         if not enable_portal:
             return False
 
-        if _is_portal_preview_user(request, project_uuid):
+        if _is_same_org_user(request, project):
             return True
 
-        user = getattr(request, 'user', None)
-        if user and getattr(user, 'is_authenticated', False):
-            if check_same_org_permission(user, project.workspace):
-                return True
+        if not getattr(settings, 'IS_PORTAL_MODE', False):
+            return False
+
+        if _is_portal_preview_user(request, project_uuid):
+            return True
 
         if _is_external_member(request, project_uuid):
             return True

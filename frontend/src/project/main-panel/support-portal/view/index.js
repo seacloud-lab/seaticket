@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import classnames from 'classnames';
 import { gettext, mediaUrl, server, siteRoot } from '@/constants';
-import { CustomizeBtn } from '@/components';
+import { CustomizeBtn, toaster } from '@/components';
 import { portalAPI } from '@/portal/api';
+import { Utils } from '@/utils/utils';
 
 import './index.css';
 
@@ -15,8 +16,6 @@ const View = () => {
   const viewRef = useRef(null);
 
   const editURL = useMemo(() => `${server}${siteRoot}portal-edit/${projectUuid}/`, [projectUuid]);
-  const viewURL = useMemo(() => `${server}${siteRoot}portal/${projectUuid}/`, [projectUuid]);
-
   useEffect(() => {
     const dom = viewRef.current;
     const handleResize = () => {
@@ -32,22 +31,21 @@ const View = () => {
   }, []);
 
   const onViewPortal = useCallback(() => {
-    if (!isProjectAdmin) {
-      window.open(viewURL, '_blank', 'noopener,noreferrer');
-      return;
-    }
-
     if (isOpeningPortal) return;
     setIsOpeningPortal(true);
     portalAPI.createPreviewToken(projectUuid).then(res => {
       const previewUrl = res.data && res.data.preview_url;
-      window.open(previewUrl || viewURL, '_blank', 'noopener,noreferrer');
-    }).catch(() => {
-      window.open(viewURL, '_blank', 'noopener,noreferrer');
+      if (!previewUrl) {
+        toaster.danger(gettext('Portal preview URL is unavailable.'));
+        return;
+      }
+      window.open(previewUrl, '_blank', 'noopener,noreferrer');
+    }).catch((error) => {
+      toaster.danger(Utils.getErrorMsg(error));
     }).finally(() => {
       setIsOpeningPortal(false);
     });
-  }, [isOpeningPortal, viewURL]);
+  }, [isOpeningPortal, projectUuid]);
 
   return (
     <div className={classnames('seaqa-support-portal-view', { 'pt-6 pb-4': height <= 424 })} ref={viewRef}>
