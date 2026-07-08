@@ -1036,7 +1036,7 @@ def get_connection_records_by_pks(seadb_api, project_uuid, connection_id, connec
 def get_discord_message_by_pk(seadb_api, project_uuid, connection_id, _pk):
     from seahub.tickets.ticket_utils import get_ticket_title
     table_name = SchemaTables.DISCORD_MESSAGES.table_name(connection_id)
-    sql = f"SELECT `_pk`, `message_id`, `channel_id`, `title`, `author`, `content`, `created_time`, `modified_time`, `linked_ticket`, `outdated`, `ai_summary` FROM `{table_name}` WHERE _pk = {_pk}"
+    sql = f"SELECT `_pk`, `message_id`, `thread_id`, `title`, `author`, `content`, `created_time`, `modified_time`, `linked_ticket`, `outdated`, `ai_summary` FROM `{table_name}` WHERE _pk = {_pk}"
     try:
         res = seadb_api.query_rows(project_uuid, sql)
         record = res.get('results', [])
@@ -1056,7 +1056,7 @@ def list_discord_message_record_details(seadb_api, project_uuid, connection_id, 
     """Query a Discord message and its thread replies from SeaDB."""
     table_name = SchemaTables.DISCORD_MESSAGES.table_name(connection_id)
     replies_table_name = SchemaTables.DISCORD_MESSAGE_REPLIES.table_name(connection_id)
-    sql = f"SELECT `message_id`, `channel_id`, `title`, `author`, `content`, `created_time`, `modified_time`, `linked_ticket`, `outdated` FROM `{table_name}` WHERE _pk = {_pk} AND (`deleted` = False OR `deleted` IS NULL)"
+    sql = f"SELECT `message_id`, `thread_id`, `title`, `author`, `content`, `created_time`, `modified_time`, `linked_ticket`, `outdated` FROM `{table_name}` WHERE _pk = {_pk} AND (`deleted` = False OR `deleted` IS NULL)"
     try:
         from seahub.tickets.ticket_utils import get_ticket_title
         res = seadb_api.query_rows(project_uuid, sql)

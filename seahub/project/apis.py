@@ -287,11 +287,12 @@ class ProjectDiscordChannels(APIView):
     throttle_classes = (UserRateThrottle,)
 
     @require_org_context
-    def get(self, request, project_uuid):
+    def post(self, request, project_uuid):
         """List text channels for the given Discord guild.
 
-        Query params:
+        Body params:
             guild_id: Discord guild (server) ID
+            bot_token: Discord bot token
         """
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -306,8 +307,8 @@ class ProjectDiscordChannels(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        guild_id = request.GET.get('guild_id', '').strip()
-        bot_token = request.GET.get('bot_token', '').strip()
+        guild_id = (request.data.get('guild_id') or '').strip()
+        bot_token = (request.data.get('bot_token') or '').strip()
 
         if not guild_id:
             return api_error(status.HTTP_400_BAD_REQUEST, 'guild_id is required.')

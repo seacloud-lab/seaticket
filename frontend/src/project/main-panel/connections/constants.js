@@ -691,7 +691,7 @@ export const CONNECTION_PREDEFINED_COLUMN_NAME = {
   IDENTIFIER: 'identifier',
   DUE_DATE: 'due_date',
   MESSAGE_ID: 'message_id',
-  CHANNEL_ID: 'channel_id',
+  THREAD_ID: 'thread_id',
 };
 
 const CONNECTION_PREDEFINED_COLUMN = {

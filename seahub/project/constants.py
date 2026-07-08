@@ -538,7 +538,7 @@ CONNECTION_MUST_RETURN_COLUMNS = {
     ConnectionType.NOTION.value: ['page_id'],
     ConnectionType.LINEAR.value: ['identifier'],
     ConnectionType.CONFLUENCE.value: ['page_id'],
-    ConnectionType.DISCORD.value: ['message_id', 'channel_id'],
+    ConnectionType.DISCORD.value: ['message_id', 'thread_id'],
 }
 
 LLM_INPUT_CHARACTERS_LIMIT = 4000
