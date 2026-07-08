@@ -18,7 +18,7 @@ const SwitchSettingsItem = ({
     const newValue = !value;
     setValue(newValue);
     onChange && onChange(newValue);
-  }, [value]);
+  }, [value, onChange]);
 
   return (
     <div className={classnames('switch-settings-option w-100 pl-4 pr-4', className)}>
