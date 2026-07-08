@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import TopBar from '../top-bar';
 import RunLogs from './run-logs';
 import SuggestionDetailPanel from './run-logs/suggestion-detail-panel';
+import CreateTicketDialog from '@/project/main-panel/connections/components/create-ticket-dialog';
 import RefreshBtn from '@/project/components/refresh-btn';
 import { useAgentRunLogs } from './hooks/useAgentRunLogs';
 import { agentAPI, ticketsAPI } from '@/project/api';
@@ -9,6 +10,12 @@ import { toaster, IconTooltip } from '@/components';
 import { gettext } from '@/constants';
 import AgentType2GithubTypeMappingDialog from './components/agent-type-to-github-type-mapping-dialog';
 import { useCloseLinkedIssues } from '@/project/main-panel/tickets/hooks';
+import { useMetadata } from '@/project/hooks';
+import {
+  formatTicketSuggestionPreview,
+  parseTicketSuggestionContent,
+  stringifyTicketSuggestionContent,
+} from './ticket-draft-utils';
 
 import './index.css';
 
@@ -17,10 +24,12 @@ const { projectUuid } = window.app.pageOptions;
 const Agent = ({ title, settings, modifySettings }) => {
   const [pendingMapping, setPendingMapping] = useState(null);
   const [suggestionDetailPanel, setSuggestionDetailPanel] = useState(null);
+  const [ticketDraftDialog, setTicketDraftDialog] = useState(null);
   const [isSavingContent, setIsSavingContent] = useState(false);
   const [suggestionDetailPanelWidth, setSuggestionDetailPanelWidth] = useState(400);
   const [runCardsExpansionCommand, setRunCardsExpansionCommand] = useState(null);
   const { openCloseLinkedGitHubIssuesWarningDialog } = useCloseLinkedIssues();
+  const metadata = useMetadata();
   const {
     runLogs,
     isLoading: isRunLogsLoading,
@@ -136,17 +145,31 @@ const Agent = ({ title, settings, modifySettings }) => {
   }, [updateRunLog]);
 
   const openSuggestionDetailPanel = useCallback((action, runId, mode = 'view') => {
+    if (action?.tool_name === 'suggest_create_ticket' && mode === 'edit') {
+      setTicketDraftDialog({
+        action,
+        runId,
+        draft: parseTicketSuggestionContent(action.suggestion_content || '') || {},
+      });
+      return;
+    }
     setSuggestionDetailPanel({
       action,
       runId,
       mode,
       title: action.suggestion_text || action.result || '',
-      content: action.suggestion_content || '',
+      content: action.tool_name === 'suggest_create_ticket'
+        ? formatTicketSuggestionPreview(action.suggestion_content || '')
+        : (action.suggestion_content || ''),
     });
   }, []);
 
   const closeSuggestionDetailPanel = useCallback(() => {
     setSuggestionDetailPanel(null);
+  }, []);
+
+  const closeTicketDraftDialog = useCallback(() => {
+    setTicketDraftDialog(null);
   }, []);
 
   const handleSaveContent = useCallback((value) => {
@@ -161,6 +184,19 @@ const Agent = ({ title, settings, modifySettings }) => {
         setIsSavingContent(false);
       });
   }, [suggestionDetailPanel, handleUpdateContent, closeSuggestionDetailPanel]);
+
+  const handleSaveTicketDraft = useCallback((draft) => {
+    if (!ticketDraftDialog) return Promise.resolve();
+    const { action, runId } = ticketDraftDialog;
+    setIsSavingContent(true);
+    return handleUpdateContent(runId, action.id, stringifyTicketSuggestionContent(draft))
+      .then(() => {
+        closeTicketDraftDialog();
+      })
+      .finally(() => {
+        setIsSavingContent(false);
+      });
+  }, [ticketDraftDialog, handleUpdateContent, closeTicketDraftDialog]);
 
   const handleCancelAction = useCallback((actionId) => {
     for (const run of runLogs) {
@@ -303,6 +339,17 @@ const Agent = ({ title, settings, modifySettings }) => {
           githubIssueTypes={pendingMapping?.githubIssueTypes || []}
           onCancel={dismissMapping}
           onConfirm={submitMappingAndRetry}
+        />
+      )}
+      {ticketDraftDialog && (
+        <CreateTicketDialog
+          projectUuid={projectUuid}
+          useMetadataContext={() => metadata}
+          initialTicketData={ticketDraftDialog.draft}
+          dialogTitle={gettext('Edit ticket draft')}
+          submitButtonText={gettext('Save')}
+          onClose={closeTicketDraftDialog}
+          onSubmit={handleSaveTicketDraft}
         />
       )}
     </>

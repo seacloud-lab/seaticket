@@ -5,6 +5,7 @@ import { gettext } from '@/constants';
 import { ACTION_STATUS, ACTION_TYPE, SUGGESTION_TOOL_NAME_MAP, ACTION_ICON_MAPPER } from './constants';
 import { Icon, IconButton, IconTooltip, CustomizeMarkdownViewer } from '@/components';
 import AIReply from '@/project/components/ai-reply';
+import { formatTicketSuggestionPreview } from '../ticket-draft-utils';
 
 const { projectUuid, projectName } = window?.app?.pageOptions || {};
 
@@ -51,6 +52,9 @@ const ActionItem = React.memo(({
   onViewContent,
 }) => {
   const { id, type, status, result, tool_name, sources, suggestion_text, suggestion_content } = action;
+  const displaySuggestionContent = tool_name === 'suggest_create_ticket'
+    ? formatTicketSuggestionPreview(suggestion_content)
+    : suggestion_content;
   const [isExpanded, setIsExpanded] = useState(false);
   const [isThoughtExpanded, setIsThoughtExpanded] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
@@ -108,7 +112,7 @@ const ActionItem = React.memo(({
 
   useEffect(() => {
     updatePreviewMask();
-  }, [suggestion_content, status, updatePreviewMask]);
+  }, [displaySuggestionContent, status, updatePreviewMask]);
 
   const formatErrorMessage = (errorContent) => {
     errorContent = formatResultText(errorContent);
@@ -280,7 +284,7 @@ const ActionItem = React.memo(({
         );
       case ACTION_TYPE.SUGGESTION: {
         const hasEditableContent = SUGGESTION_TOOL_NAME_MAP[tool_name];
-        const hasContent = !!suggestion_content;
+        const hasContent = !!displaySuggestionContent;
         const isCancelled = status === ACTION_STATUS.CANCELLED;
         const canEdit = hasEditableContent && status === ACTION_STATUS.PENDING;
         const showHeaderActions = !isCancelled && (canEdit || hasContent);
@@ -339,7 +343,7 @@ const ActionItem = React.memo(({
                     ref={previewRef}
                     onScroll={updatePreviewMask}
                   >
-                    {suggestion_content}
+                    {displaySuggestionContent}
                   </div>
                   {showPreviewMask && <div className="suggestion-content-preview-mask" />}
                 </div>
