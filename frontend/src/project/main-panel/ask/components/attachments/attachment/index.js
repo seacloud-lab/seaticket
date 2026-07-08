@@ -95,7 +95,7 @@ const Attachment = ({ attachment, index, isShowBigImage, onRemove, onReupload, o
     <div className={classnames('seaqa-ai-chat-attachment', { 'seaqa-ai-chat-attachment-remove-able': onRemove })} onClick={onClick}>
       <div className="seaqa-ai-chat-attachment-name text-truncate" title={title} aria-label={title}>{title}</div>
       <div className="seaqa-ai-chat-attachment-type-info text-truncate" title={type_name}>
-        <Icon symbol={icon} className={`seaqa-project-ticket-state-${icon}-icon seaqa-project-ai-attachment-icon mr-1`} />
+        {icon && <Icon symbol={icon} className={`seaqa-project-ticket-state-${icon}-icon seaqa-project-ai-attachment-icon mr-1`} />}
         <span>{type_name}</span>
       </div>
       {onRemove && (

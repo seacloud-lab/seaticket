@@ -63,7 +63,15 @@ export const CHAT_ATTACHMENT_TYPE = {
   ...CONNECTION_TYPE,
   TICKET: TICKET_TYPE,
   IMAGE: 'image',
+  SKILL: 'skill',
 };
+
+export const CHAT_SKILLS = [
+  {
+    id: 'issue_research',
+    name: 'issue-research',
+  },
+];
 
 export const CHAT_ATTACHMENT_SOURCE = {
   IMAGE: 'image',

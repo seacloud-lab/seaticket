@@ -231,8 +231,14 @@ def get_attachments(seadb_api, project_uuid, attachments):
     discourse_issues = []
     email_issues = []
     general_tasks = []
+    passthrough_attachments = []
 
     for attachment in attachments:
+        if not isinstance(attachment, dict):
+            continue
+        if attachment.get('type') == 'skill':
+            passthrough_attachments.append(attachment)
+            continue
         try:
             record_id = int(attachment.get('record_id', -1))
         except:
@@ -295,6 +301,8 @@ def get_attachments(seadb_api, project_uuid, attachments):
     if general_tasks:
         general_tasks_seadb_api = GeneralTaskSeaDBAPI(project_uuid, seadb_api=seadb_api)
         results += general_tasks_seadb_api.get_whole_general_tasks_data(general_tasks)
+
+    results += passthrough_attachments
 
     return results
 
