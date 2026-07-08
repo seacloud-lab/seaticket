@@ -460,6 +460,8 @@ class TestWebpageRelatedInformationView:
         )
         topic_request.user = project_creator
 
+        parse_webpage_url = ('https://forum.seafile.com/', 17808, ConnectionType.DISCOURSE_FORUM.value)
+
         connection_row = [{
             'owner': project_creator.username,
             'color': project.color,
@@ -475,12 +477,16 @@ class TestWebpageRelatedInformationView:
         }]
 
         with patch('seahub.api2.endpoints.project.is_current_server', return_value=False), \
+                patch('seahub.api2.endpoints.project.parse_webpage_url', return_value=parse_webpage_url), \
+                patch('seahub.api2.endpoints.project.get_org_project_connections_by_connection_ids', return_value=connection_row), \
                 patch('seahub.api2.endpoints.project.get_org_project_connections_by_prefix_url', return_value=connection_row), \
                 patch('seahub.api2.endpoints.project.SeaDBAPI'), \
                 patch('seahub.api2.endpoints.project.get_discourse_topic_by_topic_id', return_value=({'_pk': 12}, [], 'linked title')):
             reply_resp = WebpageRelatedInformationView.as_view()(reply_request)
         
         with patch('seahub.api2.endpoints.project.is_current_server', return_value=False), \
+                patch('seahub.api2.endpoints.project.parse_webpage_url', return_value=parse_webpage_url), \
+                patch('seahub.api2.endpoints.project.get_org_project_connections_by_connection_ids', return_value=connection_row), \
                 patch('seahub.api2.endpoints.project.get_org_project_connections_by_prefix_url', return_value=connection_row), \
                 patch('seahub.api2.endpoints.project.SeaDBAPI'), \
                 patch('seahub.api2.endpoints.project.get_discourse_topic_by_topic_id', return_value=({'_pk': 12}, [], 'linked title')):
