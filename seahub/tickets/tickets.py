@@ -307,7 +307,7 @@ class TicketsAPIView(APIView):
 
         default_substate = ''
         substate_column = get_column_from_columns_by_name(table_columns, 'substate')
-        substate_options = substate_column.get('data').get('options')
+        substate_options = substate_column.get('data').get('options') or []
         for opt in substate_options:
             if opt.get('name').lower() == 'new':
                 default_substate = opt.get('name')

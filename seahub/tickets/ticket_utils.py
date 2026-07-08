@@ -1428,8 +1428,8 @@ def validate_ticket_state_substate_relation(table_columns, state_name, substate_
     substate_column = get_column_from_columns_by_name(table_columns, SchemaTables.TICKETS.column.substate.name)
     state_options = state_column.get('data').get('options')
     substate_data = substate_column.get('data')
-    substate_options = substate_data.get('options')
-    cascade_settings = substate_data.get('cascade_settings')
+    substate_options = substate_data.get('options') or []
+    cascade_settings = substate_data.get('cascade_settings') or {}
 
     state_id = None
     substate_id = None

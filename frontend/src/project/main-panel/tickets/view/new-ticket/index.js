@@ -98,6 +98,12 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
       return;
     }
 
+    const substateOption = substate ? getRowById(substatesData, substate) : null;
+    if (substate && !substateOption) {
+      toaster.danger(gettext('Substate invalid.'));
+      return;
+    }
+
     const data = { title: validTitle, content, type, assignees, tags, priority, due_date, state, substate, participants };
     let serverData = {};
     Object.keys(data).forEach(columnName => {
@@ -108,7 +114,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
       } else if (columnName === PREDEFINED_TICKET_COLUMN_NAME.STATE && value) {
         value = value === '0001' ? 'open' : 'closed';
       } else if (columnName === PREDEFINED_TICKET_COLUMN_NAME.SUB_STATE && value) {
-        value = getRowById(substatesData, value)?.origin_name || value;
+        value = substateOption.origin_name;
       }
       serverData[columnName] = value;
     });
