@@ -477,13 +477,13 @@ class TestWebpageRelatedInformationView:
         with patch('seahub.api2.endpoints.project.is_current_server', return_value=False), \
                 patch('seahub.api2.endpoints.project.get_org_project_connections_by_prefix_url', return_value=connection_row), \
                 patch('seahub.api2.endpoints.project.SeaDBAPI'), \
-                patch('seahub.api2.endpoints.project.get_issue_record_by_issue_number', return_value=({'_pk': 12}, [], 'linked title')):
+                patch('seahub.api2.endpoints.project.get_discourse_topic_by_topic_id', return_value=({'_pk': 12}, [], 'linked title')):
             reply_resp = WebpageRelatedInformationView.as_view()(reply_request)
         
         with patch('seahub.api2.endpoints.project.is_current_server', return_value=False), \
                 patch('seahub.api2.endpoints.project.get_org_project_connections_by_prefix_url', return_value=connection_row), \
                 patch('seahub.api2.endpoints.project.SeaDBAPI'), \
-                patch('seahub.api2.endpoints.project.get_issue_record_by_issue_number', return_value=({'_pk': 12}, [], 'linked title')):
+                patch('seahub.api2.endpoints.project.get_discourse_topic_by_topic_id', return_value=({'_pk': 12}, [], 'linked title')):
             topic_resp = WebpageRelatedInformationView.as_view()(topic_request)
 
         assert reply_resp.status_code == topic_resp.status_code
