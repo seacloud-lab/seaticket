@@ -22,6 +22,7 @@ from seahub.settings import MEDIA_URL, LLM_MODELS, GITHUB_APP_NAME, ENABLE_GENER
 from seahub.group.models import Group
 from seahub.constants import PERMISSION_READ
 from seahub.portal.utils import get_portal_settings
+from seahub.project.constants import merge_project_settings_defaults
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
@@ -63,9 +64,10 @@ def project_view(request, workspace_id, project_name, children_id = '', record_i
     }
 
     try:
-        project_settings = getattr(project, 'settings', '{}') or '{}'
-    except:
-        project_settings = '{}'
+        project_settings = json.loads(project.settings) if project.settings else {}
+    except ValueError:
+        project_settings = {}
+    project_settings = json.dumps(merge_project_settings_defaults(project_settings))
 
     is_project_admin = check_project_admin_permission(request.user.username, workspace.owner)
     permission = check_project_permission(request.user.username, workspace.owner)
