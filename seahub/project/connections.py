@@ -1408,7 +1408,7 @@ class ProjectConnectionRecordView(APIView):
                         'row': {'linked_connection_records': new_value}
                     }
                 ]
-                seadb_api.update_rows(project_uuid, 'tickets', update_rows)
+                seadb_api.update_rows(project_uuid, SchemaTables.TICKETS.table_name(), update_rows)
             except Exception as e:
                 logger.error(f'update connection record error: {e}')
                 error_msg = 'Internal Server Error'
@@ -1423,6 +1423,11 @@ class ProjectConnectionRecordView(APIView):
             logger.error(f'update connection record error: {e}')
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+        
+        if project_connection.type == ConnectionType.EMAIL.value and 'unread' in row_data:
+            unread = row_data.get('unread')
+            sql = f"UPDATE `{SchemaTables.EMAIL.table_name(connection_id)}` SET unread={unread} WHERE thread_id = {record_id}"
+            seadb_api.query_rows(project_uuid, sql)
 
         if general_task_event:
             send_connection_data_event(
@@ -1437,6 +1442,86 @@ class ProjectConnectionRecordView(APIView):
 
         return Response({'success': True})
 
+class ProjectConnectionUnreadEmailView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def put(self, request, project_uuid, connection_id):
+        unread = request.data.get('unread')
+        if unread is None:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'unread invalid.')
+        
+        record_id = request.data.get('record_id')
+
+        if not record_id:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'record_id invalid.')
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not project_connection and project_connection.type != ConnectionType.EMAIL.value:
+            error_msg = f'project_connection {connection_id} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        seadb_api = SeaDBAPI()
+        email_table_name = SchemaTables.EMAIL.table_name(connection_id)
+        update_row = {'pk': int(record_id), 'row': {}}
+
+        try:
+            sql = f"SELECT `thread_id` FROM `{email_table_name}` WHERE `_pk` = {record_id}"
+            response = seadb_api.query_rows(project_uuid, sql)
+            results = response.get('results', [])
+            if not results:
+                return Response({'success': True})
+            
+            update_row['row']['unread'] = unread
+            seadb_api.update_rows(project_uuid, email_table_name, [update_row])
+
+            thread_id = results[0].get('thread_id')
+
+            if not unread:
+                sql = f"SELECT `_pk` FROM `{SchemaTables.EMAIL.table_name(connection_id)}` WHERE `thread_id` = {thread_id} AND `unread`=true"
+                response = seadb_api.query_rows(project_uuid, sql)
+                unread_results = response.get('results', [])
+                # The thread can only be marked as read once all emails within it have been marked as read.
+                if not unread_results:
+                    update_thread_row = {
+                        'pk': int(thread_id),
+                        'row': {
+                            'unread': False
+                        }
+                    }
+                    seadb_api.update_rows(project_uuid, SchemaTables.THREAD.table_name(connection_id), [update_thread_row])
+            if unread:
+                sql = f"SELECT `_pk` FROM `{SchemaTables.THREAD.table_name(connection_id)}` WHERE `_pk` = {thread_id} AND `unread`=true"
+                response = seadb_api.query_rows(project_uuid, sql)
+                results = response.get('results', [])
+                # Update the thread to "unread" only if it is not already marked as unread.
+                if not results:
+                    update_thread_row = {
+                        'pk': int(thread_id),
+                        'row': {
+                            'unread': True
+                        }
+                    }
+                    seadb_api.update_rows(project_uuid, SchemaTables.THREAD.table_name(connection_id), [update_thread_row])
+        except Exception as e:
+            logger.error(f'update connection record error: {e}')
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'success': True})
 
 class ProjectConnectionRecordsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)

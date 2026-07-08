@@ -318,6 +318,11 @@ class ConnectionsAPI {
     return this.req.post(url, data);
   }
 
+  unreadConnectionEmail(projectUuid, connectionID, recordData) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/unread-email/';
+    return this.req.put(url, recordData);
+  }
+
   replyConnectionEmail(projectUuid, connectionID, payload) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/reply-email/';
     return this.req.post(url, payload);
