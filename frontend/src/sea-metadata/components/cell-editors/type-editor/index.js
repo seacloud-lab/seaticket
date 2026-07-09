@@ -33,7 +33,7 @@ const TypeEditor = forwardRef(({
 
   const style = useMemo(() => {
     return { width: 300, top: 0 };
-  }, [column, rowHeight]);
+  }, []);
 
   const onSubmit = useCallback((value) => {
     setTimeout(() => onCommit && onCommit(true), 1);

@@ -69,7 +69,7 @@ const StatisticItem = ({ item, groupBy, hasFreezed, updateFreezed, onOpenAIStati
         )}
       </>
     );
-  }, [highlight, isMoreMenuShow, isMoreMenuShow, toggleMoreMenu, handleOpenAIStaticsDetailDialog]);
+  }, [highlight, isMoreMenuShow, toggleMoreMenu, handleOpenAIStaticsDetailDialog]);
 
   useEffect(() => {
     updateFreezed && updateFreezed(isMoreMenuShow);

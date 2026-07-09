@@ -65,7 +65,8 @@ const RelatedIssuesDialog = ({ projectUuid, connectionId, row, onClose }) => {
 
   useEffect(() => {
     getDetails();
-  }, [projectUuid, row, connectionId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <>

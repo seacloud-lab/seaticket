@@ -110,7 +110,7 @@ export const TagsProvider = ({ projectUuid, api = projectAPI, children }) => {
       return;
     }
     callback && callback();
-  }, [tagsData]);
+  }, [api, projectUuid]);
 
   useEffect(() => {
     api.listTags(projectUuid).then(res => {
@@ -125,7 +125,8 @@ export const TagsProvider = ({ projectUuid, api = projectAPI, children }) => {
       toaster.danger(errorMessage);
       setLoading(false);
     });
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectUuid]);
 
   return (
     <TagsContext.Provider value={{

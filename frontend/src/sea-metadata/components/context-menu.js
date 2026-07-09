@@ -89,7 +89,7 @@ const ContextMenu = ({
       menuStyles.left = rect.width < boundaryRight ? (boundaryRight - rect.width) / 2 : 0;
     }
     return menuStyles;
-  }, [options]);
+  }, [target, options]);
 
   const handleOptionClick = useCallback((event, option) => {
     event.stopPropagation();

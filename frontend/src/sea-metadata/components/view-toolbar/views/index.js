@@ -152,7 +152,7 @@ const Views = ({ view, toggleView }) => {
       }
       viewsNavContainerRef.current.scrollLeft = totalWidth > offsetWidth ? totalWidth - offsetWidth : 0;
     }
-  }, []);
+  }, [allViews]);
 
   useEffect(() => {
     checkAvailableScrollType();
@@ -170,6 +170,7 @@ const Views = ({ view, toggleView }) => {
     return () => {
       dom && resizeObserver.unobserve(dom);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -179,6 +180,7 @@ const Views = ({ view, toggleView }) => {
     if (viewIndex === -1) return;
     updateScrollBySelectView(viewID, viewIndex);
     isDidMount.current = true;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view]);
 
   const deleteAble = allViews.length > 1 && context.canDeleteView();

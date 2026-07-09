@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import TopBar from '../../top-bar';
 import { useKnowledgePage } from '../hooks/knowledge-page';
 import { KNOWLEDGE_PAGE_SLUG_ID } from '../constants';
@@ -9,10 +9,7 @@ import { RefreshBtn } from '@/project/components';
 import './index.css';
 
 const KnowledgeTopBar = ({ title, permission }) => {
-  const { pageSlugId, childrenPageSlugId, isKBRecordPreview, toggleKBRecordPreview, togglePageSlugId, onRefresh } = useKnowledgePage();
-
-  const [isMoreMenuShow, setIsMoreMenuShow] = useState(false);
-  const toggleMoreMenu = useCallback(() => setIsMoreMenuShow(prev => !prev), []);
+  const { pageSlugId, isKBRecordPreview, toggleKBRecordPreview, togglePageSlugId, onRefresh } = useKnowledgePage();
 
   const renderLeftChildren = useCallback(() => {
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
@@ -62,7 +59,7 @@ const KnowledgeTopBar = ({ title, permission }) => {
         <span className="text-truncate" title={editTitle}>{editTitle}</span>
       </>
     );
-  }, [pageSlugId, title, togglePageSlugId, isKBRecordPreview, toggleKBRecordPreview]);
+  }, [pageSlugId, title, togglePageSlugId, isKBRecordPreview, toggleKBRecordPreview, onRefresh]);
 
   const renderRightChildren = useCallback(() => {
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
@@ -87,7 +84,7 @@ const KnowledgeTopBar = ({ title, permission }) => {
         onClick={() => toggleKBRecordPreview(false)}
       />
     );
-  }, [pageSlugId, childrenPageSlugId, togglePageSlugId, isMoreMenuShow, toggleMoreMenu, isKBRecordPreview, toggleKBRecordPreview]);
+  }, [pageSlugId, togglePageSlugId, permission, isKBRecordPreview, toggleKBRecordPreview]);
 
   return (
     <TopBar>

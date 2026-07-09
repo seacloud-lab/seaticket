@@ -18,7 +18,7 @@ const Body = ({ isLoading, emptyTip, columns = [], rows = [], loadMore, rowHeigh
   const rowsCountRef = useRef(0);
   const rowHeightRef = useRef(0);
 
-  const onScroll = useCallback(Utils.throttle(() => {
+  const onScroll = Utils.throttle(useCallback(() => {
     if (isLoading) return;
     if (!loadMore) return;
     const clientHeight = tableRef.current.clientHeight;
@@ -38,7 +38,7 @@ const Body = ({ isLoading, emptyTip, columns = [], rows = [], loadMore, rowHeigh
     const isBottom = (clientHeight + scrollTop + 1) >= scrollHeight;
     if (!isBottom) return;
     loadMore();
-  }, 100), [isLoading, loadMore, rows.length, rowHeight]);
+  }, [isLoading, loadMore, rows.length, rowHeight, startRenderIndex, endRenderIndex]), 100);
 
   useEffect(() => {
     if (!tableRef.current) return;
@@ -56,6 +56,7 @@ const Body = ({ isLoading, emptyTip, columns = [], rows = [], loadMore, rowHeigh
     if (end !== endRenderIndex) {
       setEndRenderIndex(end);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows, rowHeight]);
 
   if (!Array.isArray(rows) || rows.length === 0) {

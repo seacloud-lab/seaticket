@@ -30,7 +30,7 @@ const MultipleSelectEditor = forwardRef(({
 
   const style = useMemo(() => {
     return { width: 300, top: 0 };
-  }, [column, rowHeight]);
+  }, []);
 
   const createOption = useCallback((name) => {
     const newOption = generateNewOption(options, name || '');
@@ -40,7 +40,7 @@ const MultipleSelectEditor = forwardRef(({
     return new Promise((resolve, reject) => {
       resolve({ value: newOption.id });
     });
-  }, [column, options, onCommit, modifyColumnData]);
+  }, [column, options, modifyColumnData]);
 
   useEffect(() => {
     if (editorRef.current) {

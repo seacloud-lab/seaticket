@@ -78,7 +78,7 @@ const TrashPortalIssues = ({ projectUuid, workspaceID, projectName, permission, 
       },
     });
     return tools;
-  }, [workspaceID, projectName, handleRestorePortalIssues]);
+  }, [handleRestorePortalIssues]);
 
   const createContextMenuOptions = useCallback(({
     isGroupView,
@@ -147,7 +147,7 @@ const TrashPortalIssues = ({ projectUuid, workspaceID, projectName, permission, 
       });
     }
     return list;
-  }, [projectName, workspaceID, handleRestorePortalIssues]);
+  }, [handleRestorePortalIssues]);
 
   const cleanPortalIssues = useCallback(() => {
     clearViewRows(PORTAL_ISSUE_TABLE_NAME, 'trash', () => portalAPI.cleanPortalIssuesTrash(projectUuid), true).then(() => {

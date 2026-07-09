@@ -37,7 +37,7 @@ const EditKnowledge = ({ editorAPI, knowledgeID, projectUuid }) => {
       toaster.danger(errorMessage);
       callback && callback(error);
     });
-  }, [knowledgeID, knowledge, handleUpdateRowsCacheData]);
+  }, [projectUuid, knowledgeID, knowledge, handleUpdateRowsCacheData]);
 
   const onLinkClick = useCallback((link) => {
     if (link.includes(`/project/${projectUuid}/`)) {

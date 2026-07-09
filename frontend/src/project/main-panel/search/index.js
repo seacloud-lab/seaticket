@@ -141,12 +141,14 @@ const Search = ({ title }) => {
     return () => {
       timer.current && clearTimeout(timer.current);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (value) {
       onChange(value, hiddenConnectionIDs, connections, filterDate);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [semanticEnabled]);
 
   const handleConnectionIDsChange = useCallback((hiddenConnectionIDs) => {

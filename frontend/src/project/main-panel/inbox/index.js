@@ -24,12 +24,12 @@ const Inbox = ({ toggleBar }) => {
       page.current = page.current + 1;
       fetchNotifications(page.current, 50);
     }
-  }, [loadingMore, notificationList]);
+  }, [loadingMore, notificationList, allNotificationCount, fetchNotifications]);
 
   const onHandleClick = useCallback((e) => {
     if (inboxPanelRef.current.contains(e.target)) return;
     setShowInboxDrawer(false);
-  }, []);
+  }, [setShowInboxDrawer]);
 
   useEffect(() => {
     document.addEventListener('click', onHandleClick);
@@ -40,6 +40,7 @@ const Inbox = ({ toggleBar }) => {
 
   useEffect(() => {
     fetchNotifications();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

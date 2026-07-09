@@ -61,7 +61,7 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
     if (dialogParam === 'open' && !isShowConnectionDialog) {
       setShowConnectionDialog(true);
     }
-  }, [getUrlParams]);
+  }, [isShowConnectionDialog, getUrlParams]);
 
   const pageRef = useRef(1);
   const pageCountRef = useRef(1000);
@@ -72,7 +72,7 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
   const getConnection = useCallback((connectionID) => {
     const validConnectionId = Number(connectionID);
     return connections.find(c => c.id === validConnectionId);
-  }, [connections, projectUuid, toggleConnectionDialog]);
+  }, [connections]);
 
   const deleteConnection = useCallback((connectionID) => {
     const activeConnectionIndex = connections.findIndex(c => c.id === Number(connectionID));
@@ -117,11 +117,11 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
     }).catch(error => {
       toaster.danger(Utils.getErrorMsg(error));
     });
-  }, [modifyLocalConnectionRecord]);
+  }, [projectUuid, modifyLocalConnectionRecord]);
 
   const closeConnectionDialog = useCallback(() => {
     toggleConnectionDialog(false);
-  }, []);
+  }, [toggleConnectionDialog]);
 
   const createConnection = useCallback(({ type, name, config }, resetSubmittingState, isShowConnectionDialog = false, callback, preloadedConnection = null) => {
     if (preloadedConnection) {
@@ -144,7 +144,7 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
       toaster.danger(errorMessage);
       resetSubmittingState && resetSubmittingState();
     });
-  }, [connections]);
+  }, [projectUuid, connections, toggleConnectionDialog]);
 
   const deleteConnectionRecord = useCallback(() => {
     connectionsAPI.deleteConnection(projectUuid, activeConnectionRef.current.id).then(res => {
@@ -158,7 +158,7 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
       setIsShowConfirmDialog(false);
       activeConnectionRef.current = null;
     });
-  }, [deleteConnection]);
+  }, [projectUuid, deleteConnection]);
 
   const closeDeleteConfirmDialog = useCallback(() => {
     setIsShowConfirmDialog(false);
@@ -189,12 +189,12 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
       toaster.danger(errorMessage);
       resetSubmittingState && resetSubmittingState();
     });
-  }, [connections]);
+  }, [projectUuid, connections, toggleConnectionDialog]);
 
   const handleModify = useCallback((record) => {
     activeConnectionRef.current = record;
     toggleConnectionDialog(true);
-  }, []);
+  }, [toggleConnectionDialog]);
 
   const loadMore = useCallback(() => {
     if (!hasMoreRef.current) return;
@@ -238,7 +238,7 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
       setLoading(false);
       setLoadingMore(false);
     });
-  }, [isLoadingMore, projectUuid]);
+  }, [isLoadingMore, projectUuid, connections, api]);
 
   const reloadConnections = useCallback(() => {
     const currentTime = new Date();
@@ -247,7 +247,7 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
     pageRef.current = Math.ceil((connections?.length || 0) / pageCountRef.current) || 1;
     hasMoreRef.current = true;
     loadMore();
-  }, [isLoading, loadMore]);
+  }, [isLoading, connections, loadMore]);
 
   useEffect(() => {
     const unsubscribeNewConnection = eventBus.subscribe(EVENT_BUS_TYPE.NEW_CONNECTION, () => {
@@ -292,6 +292,7 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
     return () => {
       socket.close();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectUuid]);
 
   return (

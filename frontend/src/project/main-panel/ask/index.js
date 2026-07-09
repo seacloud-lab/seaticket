@@ -79,7 +79,7 @@ const Ask = ({ title, settings }) => {
     let url = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.CHAT}/`;
     let urlPart = pageSlugId === ASK_PAGE_SLUG_ID.NEW ? '' : pageSlugId + '/';
     history.replaceState(null, null, url + urlPart);
-  }, [workspaceID]);
+  }, []);
 
   const getInitialPageSlugId = useCallback(() => {
     const { pathname } = location;
@@ -90,10 +90,11 @@ const Ask = ({ title, settings }) => {
     const params = paramsString.split('/');
     const [, pageIdFromURL = ''] = params;
     return pageIdFromURL || ASK_PAGE_SLUG_ID.NEW;
-  }, [projectName]);
+  }, []);
 
   useEffect(() => {
     reloadConnections();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

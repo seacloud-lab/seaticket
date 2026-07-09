@@ -127,7 +127,10 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
       toaster.danger(errorMessage);
       setIsSubmitting(false);
     });
-  }, [title, content, type, assignees, tags, priority, due_date, state, substate, participants, typesData, substatesData, insertRow]);
+  }, [
+    title, content, type, assignees, tags, priority, due_date, state, substate, participants, typesData, projectUuid, substatesData,
+    insertRow, togglePageSlugId,
+  ]);
 
   useEffect(() => {
     const ticketDom = ticketRef.current;

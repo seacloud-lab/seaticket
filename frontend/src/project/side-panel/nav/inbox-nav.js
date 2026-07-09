@@ -12,6 +12,7 @@ const InboxNav = ({ nav, level }) => {
 
   useEffect(() => {
     fetchNotifications();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

@@ -23,7 +23,7 @@ const TableMain = ({
       rowGetterById,
       modifyColumnData,
     }, { tagsData });
-  }, [metadata, modifyRow, modifyRows, rowGetterByIndex, rowGetterById, modifyColumnData]);
+  }, [metadata, modifyRow, tagsData, modifyRows, rowGetterByIndex, rowGetterById, modifyColumnData]);
 
   const groupbysCount = useMemo(() => {
     if (!isGroupView) return 0;
@@ -39,7 +39,7 @@ const TableMain = ({
     const { hidden_columns, columns: allColumns } = metadata.view;
 
     return allColumns.filter(column => !hidden_columns.includes(column.key));
-  }, [metadata.view.hidden_columns, metadata.view.columns]);
+  }, [metadata.view]);
 
   const getCopiedRowsAndColumnsFromRange = useCallback(({ type, copied, isGroupView }) => {
     return gridUtils.getCopiedContent({ type, copied, isGroupView, columns });
@@ -55,7 +55,7 @@ const TableMain = ({
 
   const paste = useCallback(({ type, copied, multiplePaste, pasteRange, isGroupView, pasteSource, cutPosition, viewId }) => {
     gridUtils.paste({ type, copied, multiplePaste, pasteRange, isGroupView, columns, pasteSource, cutPosition, viewId, tagsData, collaborators });
-  }, [gridUtils, columns]);
+  }, [gridUtils, columns, collaborators, tagsData]);
 
   return (
     <div className={classnames('sea-metadata-table-main-container container-fluid p-0', { [`group-level-${groupbysCount + 1}`]: groupbysCount > 0 })}>

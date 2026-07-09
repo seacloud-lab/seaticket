@@ -87,7 +87,7 @@ export const CloseLinkedIssuesProvider = ({ children }) => {
       callbackRef.current = null;
       return res;
     });
-  }, []);
+  }, [connections, modifyLocalGitHubIssuesClosed]);
 
   return (
     <CloseLinkedIssuesContext.Provider value={{

@@ -67,7 +67,7 @@ const ProjectsTable = forwardRef(({
     setPerPage(perPage);
     setPage(1);
     loadData(1, perPage);
-  }, []);
+  }, [loadData]);
 
   const handleDelete = useCallback((projectUuid) => {
     let newProjects = projects.slice(0);
@@ -106,6 +106,7 @@ const ProjectsTable = forwardRef(({
     setPage(page);
     setPerPage(perPage);
     loadData(page, perPage);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useImperativeHandle(ref, () => ({

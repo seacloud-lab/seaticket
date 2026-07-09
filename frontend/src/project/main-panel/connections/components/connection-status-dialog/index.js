@@ -67,10 +67,11 @@ const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle, onManualS
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
     });
-  }, [isLoading]);
+  }, [connectionId, projectUuid]);
 
   useEffect(() => {
     getConnectionRecord();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const getClosestTime = (statusData) => {

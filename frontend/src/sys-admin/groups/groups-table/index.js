@@ -63,7 +63,7 @@ const GroupsTable = forwardRef(({
     setPerPage(perPage);
     setPage(1);
     loadData(1, perPage);
-  }, []);
+  }, [loadData]);
 
   const handleDelete = useCallback((groupId) => {
     let newGroups = groups.slice(0);
@@ -118,6 +118,7 @@ const GroupsTable = forwardRef(({
     setPage(page);
     setPerPage(perPage);
     loadData(page, perPage);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useImperativeHandle(ref, () => ({

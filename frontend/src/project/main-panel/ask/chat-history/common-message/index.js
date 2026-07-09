@@ -19,7 +19,7 @@ const CommonMessage = ({
 
   const getAIReply = useCallback(() => {
     return markdownMessageRef.current.getAIReply();
-  }, [markdownMessageRef.current]);
+  }, []);
 
   return (
     <>

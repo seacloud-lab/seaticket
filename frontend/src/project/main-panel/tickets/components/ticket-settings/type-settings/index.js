@@ -28,7 +28,7 @@ const TypeSettings = ({
       ...o,
       value: o._id,
     })) : [];
-  }, [isLoading, typesData.rows]);
+  }, [isLoading, typesData]);
 
   const openEditor = useCallback((event) => {
     event.preventDefault();

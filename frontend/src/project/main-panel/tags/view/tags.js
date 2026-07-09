@@ -85,7 +85,7 @@ const Tags = ({ projectUuid, permission }) => {
     deleteRow: (...params) => deleteTag(...params),
     deleteRows: (...params) => deleteTags(...params),
 
-  }), [projectUuid, columns, viewsData, createTag, tagsData]);
+  }), [columns, viewsData, createTag, tagsData, deleteTag, deleteTags, modifyTag]);
 
   const createContextMenuOptions = useCallback(({
     isGroupView,

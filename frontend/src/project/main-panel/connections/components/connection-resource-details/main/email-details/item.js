@@ -112,7 +112,7 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
       toaster.danger(Utils.getErrorMsg(error));
       callback && callback(true);
     });
-  }, [projectUuid, connection_id, handleReplyEmailSuccess]);
+  }, [projectUuid, detail, connection_id, handleReplyEmailSuccess]);
 
   const renderReply = useCallback(() => {
     const sendTime = dayjs(detail.modified_time, 'YYYY-MM-DD HH:mm');
@@ -181,11 +181,12 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [isExpanded, isShowReply]);
+  }, [isExpanded, HTMLContent, isShowReply, addQuoteToggleBtn]);
 
   useEffect(() => {
     if (!isLast) return;
     setIsLastExpanded(isExpanded);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLast, isExpanded]);
 
   useEffect(() => {

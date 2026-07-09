@@ -19,7 +19,7 @@ const Page = () => {
 
   const props = useMemo(() => ({
     projectUuid, projectName, workspaceID, permission, isAdmin: isProjectAdmin, togglePageSlugId
-  }), []);
+  }), [togglePageSlugId]);
 
   if (isLoading) return null;
 

@@ -49,7 +49,7 @@ export const PortalIssuesMetadataProvider = ({
       });
       return newData;
     });
-  }, [typesData]);
+  }, []);
 
   const applyModifyTypes = useCallback((update = {}) => {
     if (Object.keys(update).length === 0) return;
@@ -114,7 +114,7 @@ export const PortalIssuesMetadataProvider = ({
       toaster.danger(errorMessage);
       callback && callback();
     });
-  }, [typesData]);
+  }, [projectUuid, applyCreateTypes]);
 
   // substate
   const applyCreateSubstates = useCallback((newSubstates, isReload = false) => {
@@ -221,7 +221,7 @@ export const PortalIssuesMetadataProvider = ({
       toaster.danger(errorMessage);
       callback && callback();
     });
-  }, [substatesData, initSubStates]);
+  }, [projectUuid, initSubStates]);
 
   // state
   const applyCreateStates = useCallback((newStates, isReload = false) => {
@@ -253,6 +253,7 @@ export const PortalIssuesMetadataProvider = ({
       toaster.danger(errorMessage);
       setLoading(false);
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enablePortal]);
 
   return (

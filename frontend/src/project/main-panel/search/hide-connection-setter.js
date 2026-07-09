@@ -20,6 +20,7 @@ const HideConnectionSetter = ({ onConnectionIDsChange, connections }) => {
     if (onConnectionIDsChange) {
       onConnectionIDsChange(hiddenConnectionIDs);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const modifyHiddenConnections = useCallback((newHiddenConnectionIDs) => {
@@ -35,7 +36,7 @@ const HideConnectionSetter = ({ onConnectionIDsChange, connections }) => {
     const validConnectionIds = connections.map((c) => c.id);
     const newHiddenConnectionIDs = hiddenConnectionIDs.filter((id) => validConnectionIds.includes(id) || id === '__kb__' || id === '__ticket__');
     modifyHiddenConnections(newHiddenConnectionIDs);
-  }, [connections]);
+  }, [connections, hiddenConnectionIDs, modifyHiddenConnections]);
 
   const onSetterToggle = useCallback(() => {
     setShowSetter(!isShowSetter);
@@ -43,7 +44,7 @@ const HideConnectionSetter = ({ onConnectionIDsChange, connections }) => {
 
   const onKeyDown = useCallback((event) => {
     event.stopPropagation();
-  }, [onSetterToggle]);
+  }, []);
 
   const validConnectionIds = connections.map((c) => c.id);
   const hiddenOnConnectionsCount = hiddenConnectionIDs.filter(id => validConnectionIds.includes(id)).length;

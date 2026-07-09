@@ -401,7 +401,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
     const formatValue = getFormatValue(value);
     setValue(formatValue);
     setLoading(false);
-  }, [propsValue]);
+  }, [projectUuid, propsValue, props]);
 
   return (
     <Modal isOpen={true} toggle={onToggle} className="seaqa-ai-thought-process-dialog">

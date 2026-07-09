@@ -62,7 +62,7 @@ const UsersTable = forwardRef(({
       { key: 'create_login', width: 0.2, name: `${gettext('Created at')} / ${gettext('Last login')}` },
       { key: 'op', width: 44, isFixed: true },
     ];
-  }, [multiInstitution, type, users, selectedUsers, customizeColumns, updateSelectedUsers]);
+  }, [type, users, selectedUsers, customizeColumns, updateSelectedUsers]);
 
   const loadData = useCallback((page, perPage) => {
     setErrorMessage('');
@@ -104,7 +104,7 @@ const UsersTable = forwardRef(({
     setPerPage(perPage);
     setPage(1);
     loadData(1, perPage);
-  }, []);
+  }, [loadData]);
 
   const handleDelete = useCallback((userEmail) => {
     let newUsers = users.slice(0);
@@ -211,6 +211,7 @@ const UsersTable = forwardRef(({
     setPage(page);
     setPerPage(perPage);
     loadData(page, perPage);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useImperativeHandle(ref, () => ({

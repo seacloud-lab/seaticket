@@ -11,7 +11,7 @@ const Nav = ({ nav, level, activeBar, onClick }) => {
 
   const handleClick = useCallback(() => {
     onClick([nav.key]);
-  }, [key, onClick, nav.key]);
+  }, [onClick, nav]);
 
   return (
     <div

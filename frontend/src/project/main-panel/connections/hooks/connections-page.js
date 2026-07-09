@@ -83,6 +83,7 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
 
     togglePageSlugId(pageSlugId, childrenPageSlugId);
     setLoading(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectName]);
 
   useEffect(() => {
@@ -90,7 +91,7 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
     return () => {
       allSubscribe();
     };
-  }, []);
+  }, [togglePageSlugId]);
 
   return (
     <ConnectionsPageContext.Provider value={{

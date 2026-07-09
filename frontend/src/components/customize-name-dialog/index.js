@@ -35,7 +35,7 @@ const CustomizeNameDialog = ({
       setErrorMessage(errorMessage);
       setSubmitting(false);
     });
-  }, [value, onSubmit]);
+  }, [value, onSubmit, onToggle]);
 
   return (
     <Modal isOpen={true} autoFocus={false} toggle={onToggle}>

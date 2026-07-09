@@ -118,7 +118,7 @@ const Tickets = ({
   const handleExpandRow = useCallback((ticket) => {
     setCurrentTicket(ticket);
     setIsShowTicketDetailsDialog(true);
-  }, [projectUuid]);
+  }, []);
 
   const metadataAPI = useMemo(() => {
     let _api = {};
@@ -284,8 +284,11 @@ const Tickets = ({
     _api.uploadFile = (...params) => ticketsAPI.uploadFile(projectUuid, ...params);
 
     return _api;
-  }, [projectUuid, isBuiltInView, api, getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
-    getMetadata, modifyRow, modifyRows, deleteRow, deleteRows, openCloseLinkedGitHubIssuesWarningDialog, buildOpenGithubIssuesPayload]);
+  }, [
+    projectUuid, isBuiltInView, api, getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
+    getMetadata, modifyRow, modifyRows, deleteRow, deleteRows, openCloseLinkedGitHubIssuesWarningDialog, buildOpenGithubIssuesPayload,
+    togglePageSlugId,
+  ]);
 
   const localStorageName = useMemo(() => customizeLocalStorageNamePrefix || `seaqa-${projectUuid}-tickets`, [projectUuid, customizeLocalStorageNamePrefix]);
 

@@ -97,6 +97,7 @@ const Portal = () => {
       delete APIRef.current['listUserInfo'];
     }
     setLoading(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -146,7 +147,7 @@ const Portal = () => {
     } finally {
       setIsSubmittingPassword(false);
     }
-  }, [csrfToken, passwordInput]);
+  }, [passwordInput]);
 
   const onPasswordChange = useCallback((e) => {
     setPasswordInput(e.target.value);

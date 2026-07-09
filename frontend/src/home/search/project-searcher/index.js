@@ -122,7 +122,7 @@ const ProjectSearcher = (props) => {
     if (showRecent && searchStr) {
       setShowRecent(false);
     }
-  }, [searchStr]);
+  }, [showRecent, searchStr]);
 
   const renderRecentUsedResults = () => {
     const recentUsed = recentUsedRef.current;

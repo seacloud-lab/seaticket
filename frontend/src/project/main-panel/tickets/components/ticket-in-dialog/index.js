@@ -65,7 +65,7 @@ const TicketInDialog = ({
       avatar_url: avatarURL
     };
     return ticket.creator === user.email || permission === PERMISSION_TYPES.READ_WRITE;
-  }, [ticket]);
+  }, [ticket, permission]);
 
   const handleUpdateRowsCacheData = useCallback((currentTicketID, update) => {
     const tableName = ticketType === TICKET_TYPE ? TICKET_TABLE_NAME : PORTAL_ISSUE_TABLE_NAME;
@@ -86,7 +86,7 @@ const TicketInDialog = ({
       const eventBus = context.eventBus;
       eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, currentTicketID, localRowUpdate);
     }
-  }, [getTableByName, modifyLocalRow, propsColumns, typesData, tagsData]);
+  }, [getTableByName, modifyLocalRow, propsColumns, typesData, tagsData, ticketType]);
 
   const modifyTicket = useCallback((currentTicketID, data, { linkedGithubIssuesToClose = null } = {}) => {
     let serverData = {};
@@ -242,6 +242,7 @@ const TicketInDialog = ({
     }).finally(() => {
       setLoading(false);
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectUuid, ticketID, ticketType]);
 
   useEffect(() => {

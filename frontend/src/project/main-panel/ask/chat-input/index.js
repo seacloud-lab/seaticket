@@ -75,7 +75,7 @@ const ChatInput = forwardRef(({
       });
       updateAttachments(prev => prev.map(att => att._id === attachmentId ? finalAttachment : att));
     });
-  }, []);
+  }, [projectUuid, chatAPI, updateAttachments]);
 
   const onImageUpload = useCallback((image) => {
     const d = Date.now();
@@ -108,7 +108,7 @@ const ChatInput = forwardRef(({
       });
       updateAttachments(prev => prev.map(att => att._id === attachmentId ? finalAttachment : att));
     });
-  }, []);
+  }, [projectUuid, chatAPI, updateAttachments]);
 
   const onImagesUpload = useCallback((images) => {
     const imageAttachments = Array.isArray(attachments) ? attachments.filter(att => att.type === CHAT_ATTACHMENT_TYPE.IMAGE) : [];
@@ -175,7 +175,7 @@ const ChatInput = forwardRef(({
     setValue(text);
 
     inputFocus();
-  }, [readOnly, inputRef, inputFocus]);
+  }, [readOnly, inputFocus]);
 
   const onSendMessage = useCallback((event) => {
     event && event.stopPropagation();
@@ -221,7 +221,7 @@ const ChatInput = forwardRef(({
       onSendMessage();
       return;
     }
-  }, [value, onSendMessage, setAsk]);
+  }, [value, onSendMessage]);
 
   const onMouseUp = useCallback(() => {
     const selection = window.getSelection();
@@ -324,6 +324,7 @@ const ChatInput = forwardRef(({
     return () => {
       clearAttachments();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

@@ -42,7 +42,7 @@ const OptionEditorContainer = forwardRef(({
   const onSearchValueChange = useCallback((newSearchValue) => {
     if (searchValue === newSearchValue) return;
     setSearchValue(newSearchValue);
-  }, [options, searchValue]);
+  }, [searchValue]);
 
   const toggleOption = useCallback((optionValue) => {
     if (isMultiple) {

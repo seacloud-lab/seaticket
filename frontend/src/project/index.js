@@ -114,7 +114,7 @@ const Project = () => {
 
     resetURL(false, newActiveBar, newActiveBar[1]);
     setActiveBar(newActiveBar);
-  }, [activeBar]);
+  }, [activeBar, resetURL]);
 
   const modifyLocalBar = useCallback((newActiveBar) => {
     setActiveBar(newActiveBar);
@@ -164,6 +164,7 @@ const Project = () => {
     resetURL(true, [bar], ...children);
     setActiveBar([bar, children[0]]);
     setLoading(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

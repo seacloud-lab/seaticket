@@ -19,7 +19,7 @@ const Definition = ({ element, attributes, editor, openDefinitionRecord, onClick
 
   const handleClick = useCallback((event) => {
     openDefinitionRecord && openDefinitionRecord(event, source);
-  }, [source, onClick, openDefinitionRecord]);
+  }, [source, openDefinitionRecord]);
 
   const definitionWidth = useMemo(() => {
     // 48px is the width of the more definition button (margin + button width)

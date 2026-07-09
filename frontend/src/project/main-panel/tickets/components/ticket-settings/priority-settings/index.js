@@ -31,7 +31,7 @@ const PrioritySettings = ({
   const onChangeValue = useCallback((value) => {
     onChange(value);
     closeEditor();
-  }, [onChange]);
+  }, [onChange, closeEditor]);
 
   const onUpArrow = useCallback((event) => {
     event.preventDefault();
@@ -69,7 +69,7 @@ const PrioritySettings = ({
         closeEditor();
       }
     }
-  }, [openEditor, closeEditor, onUpArrow, onDownArrow, highlightIndex, isShowEditor]);
+  }, [value, openEditor, closeEditor, onUpArrow, onDownArrow, highlightIndex, isShowEditor, onChangeValue]);
 
   useEffect(() => {
     document.addEventListener('keydown', onHotKey, true);

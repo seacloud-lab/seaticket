@@ -52,7 +52,7 @@ const SidePanel = ({ isEditMode, activePage, onPageChange, enableKB, isAnonymous
     return () => {
       document.removeEventListener('click', handleClickOutside);
     };
-  }, [isMobile]);
+  }, []);
 
   const { isExternalUser, isPortalDomain } = window.app.pageOptions;
 

@@ -101,7 +101,7 @@ const NewKnowledge = ({ editorAPI, projectUuid }) => {
       toaster.danger(errorMessage);
       setIsSubmitting(false);
     });
-  }, [title, content, tags, insertRow]);
+  }, [projectUuid, title, content, tags, insertRow, togglePageSlugId]);
 
   useEffect(() => {
     const knowledgeDom = knowledgeRef.current;

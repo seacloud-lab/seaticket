@@ -158,7 +158,7 @@ const AllUsers = ({ isAdmin, onCloseSidePanel }) => {
       let errMessage = Utils.getErrorMsg(error);
       toaster.danger(errMessage);
     });
-  }, []);
+  }, [addUsers]);
 
   return (
     <>

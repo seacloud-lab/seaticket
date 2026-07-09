@@ -13,10 +13,11 @@ const AllInboxNav = ({ onTabClick, isOpenGroupExpanded }) => {
   const handleClick = useCallback((event) => {
     onTabClick(event);
     setShowInboxDrawer(!showInboxDrawer);
-  }, [showInboxDrawer]);
+  }, [showInboxDrawer, onTabClick, setShowInboxDrawer]);
 
   useEffect(() => {
     fetchAllNotifications();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

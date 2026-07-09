@@ -56,7 +56,7 @@ export const PortalSettingsProvider = ({
       setIsUploadingLogo(false);
       setIsUpdatingNameOrLogo(false);
     });
-  }, [isUploadingLogo, isUpdatingNameOrLogo]);
+  }, [projectUuid, isUploadingLogo, isUpdatingNameOrLogo]);
 
   useEffect(() => {
     window.app.pageOptions.portalName = name;

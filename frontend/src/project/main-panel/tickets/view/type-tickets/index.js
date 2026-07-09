@@ -54,7 +54,7 @@ const TypeTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) => {
       });
     },
 
-  }), [projectUuid, childrenPageSlugId, viewsData, togglePageSlugId]);
+  }), [projectUuid, childrenPageSlugId, viewsData]);
 
   const localStorageNamePrefix = useMemo(() => `seaqa-${projectUuid}-type-tickets`, [projectUuid]);
 

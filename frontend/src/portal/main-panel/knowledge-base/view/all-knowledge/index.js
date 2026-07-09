@@ -67,7 +67,7 @@ const PortalAllKnowledge = ({ projectUuid }) => {
         resolve({ data: { success: true } });
       });
     },
-  }), [projectUuid, getMetadata]);
+  }), [projectUuid, getMetadata, togglePageSlugId]);
 
   const localStorageName = useMemo(() => `seaqa-portal-${projectUuid}-knowledge-base`, [projectUuid]);
 

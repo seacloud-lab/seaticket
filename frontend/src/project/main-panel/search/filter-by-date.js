@@ -98,7 +98,7 @@ const FilterByDate = ({ date, onChange }) => {
       default:
         break;
     }
-  }, [value]);
+  }, [value, onClearDate]);
 
   const disabledStartDate = useCallback((startDate) => {
     if (!startDate) return false;

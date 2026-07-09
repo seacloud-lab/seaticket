@@ -83,7 +83,7 @@ const TicketTopBar = ({ title, type, permission }) => {
         <span className="text-truncate" title={ticketTitle}>{ticketTitle}</span>
       </>
     );
-  }, [pageSlugId, childrenPageSlugId, title, typesData, substatesData, togglePageSlugId]);
+  }, [pageSlugId, childrenPageSlugId, type, title, typesData, substatesData, togglePageSlugId, onRefresh]);
 
   const renderRightChildren = useCallback(() => {
     const isRW = permission === PERMISSION_TYPES.READ_WRITE;

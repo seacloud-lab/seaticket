@@ -21,7 +21,7 @@ const ConnectionLogsDialog = ({ projectUuid, connectionId, onToggle }) => {
     }).finally(() => {
       setIsLoading(false);
     });
-  }, []);
+  }, [projectUuid, connectionId]);
 
   const renderContent = useCallback(() => {
     if (isLoading) return (<CenteredLoading />);

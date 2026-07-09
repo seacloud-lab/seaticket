@@ -18,7 +18,7 @@ const MyProjectsTrash = () => {
       const { trash_project_list, count } = res?.data || {};
       return { data: { projects: trash_project_list, count } };
     });
-  });
+  }, []);
 
   const listManagedGroupTrashProjects = useCallback(() => {
     return homeAPI.listManagedGroupsTrashProjects().then(res => {
@@ -29,7 +29,7 @@ const MyProjectsTrash = () => {
       const errorMsg = Utils.getErrorMsg(error);
       toaster.danger(errorMsg);
     });
-  });
+  }, []);
 
   const handleClean = useCallback(() => {
     homeAPI.cleanTrashProjects().then(res => {

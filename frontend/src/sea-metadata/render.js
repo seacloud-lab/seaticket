@@ -102,6 +102,7 @@ const SeaMetadata = forwardRef(({
       api,
       t,
     }, () => setLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [metadataID]);
 
   useEffect(() => {

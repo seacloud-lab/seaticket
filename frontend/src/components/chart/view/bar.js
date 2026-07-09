@@ -128,6 +128,7 @@ const Bar = ({ data }) => {
     if (!chartRef.current || !ref.current) return;
 
     drawChart(chartRef.current, ref.current, data);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
   return (

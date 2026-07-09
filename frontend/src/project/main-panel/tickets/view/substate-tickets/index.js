@@ -48,7 +48,7 @@ const SubstateTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) =
         resolve({ data: { success: true } });
       });
     },
-  }), [projectUuid, childrenPageSlugId, viewsData, togglePageSlugId]);
+  }), [projectUuid, childrenPageSlugId, viewsData]);
 
   const localStorageNamePrefix = useMemo(() => `seaqa-${projectUuid}-substate-tickets`, [projectUuid]);
 

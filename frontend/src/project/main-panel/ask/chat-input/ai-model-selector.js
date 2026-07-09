@@ -54,6 +54,7 @@ const AIModelSelector = ({ isSimple, selectedModel, updateModel }) => {
       const modelToUse = defaultModel ? defaultModel.model : LLM_MODELS[0].model;
       updateModel(modelToUse);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (LLM_MODELS.length === 0) return null;

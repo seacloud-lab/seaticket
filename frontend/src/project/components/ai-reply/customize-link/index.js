@@ -22,7 +22,7 @@ const CustomizeLink = ({
   const file = useMemo(() => {
     if (!Array.isArray(mdFiles) || mdFiles.length === 0) return null;
     return mdFiles.find(file => file.url === element.url);
-  }, [element]);
+  }, [mdFiles, element]);
 
   const onClick = useCallback((event) => {
     event.stopPropagation();

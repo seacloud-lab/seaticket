@@ -96,7 +96,7 @@ const GroupTitle = ({ column, cellValue, originalCellValue }) => {
         return cellValue || emptyTip;
       }
     }
-  }, [column, cellValue, originalCellValue, emptyTip, deletedOptionTip]);
+  }, [column, cellValue, originalCellValue, emptyTip, deletedOptionTip, tagsData, typesData]);
 
   return (
     <div className="group-title">

@@ -40,7 +40,7 @@ const UserGroups = ({ email, onCloseSidePanel }) => {
     }).finally(() => {
       setLoading(false);
     });
-  }, []);
+  }, [email]);
 
   const validEmail = decodeURIComponent(email);
   return (

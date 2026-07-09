@@ -70,7 +70,7 @@ const FilterPanel = ({
       startDate,
       endDate,
     };
-  }, [dateMarks, maxIndex, startDate, endDate]);
+  }, [dateMarks, startDate, endDate]);
 
   const selectedPresetValue = useMemo(() => {
     const { startIndex, endIndex, startDate, endDate } = selectedRange;
@@ -106,7 +106,7 @@ const FilterPanel = ({
       value: preset,
       disabled: isDisabledPreset(preset, baseStartDate, baseEndDate),
     }));
-  }, [presetLabelMapping, baseStartDate, baseEndDate]);
+  }, [baseStartDate, baseEndDate]);
 
   const rangeLabel = useMemo(() => {
     return getDurationLabel(selectedRange.startDate, selectedRange.endDate);
@@ -138,14 +138,14 @@ const FilterPanel = ({
     const startIndex = Math.min(curIndex, selectedRange.endIndex);
     const endIndex = Math.max(curIndex, selectedRange.endIndex);
     onDateFilterChange(dateMarks[startIndex], dateMarks[endIndex]);
-  }, [maxIndex, selectedRange.endIndex]);
+  }, [dateMarks, selectedRange.endIndex, onDateFilterChange]);
 
   const handleEndChange = useCallback((event) => {
     const curIndex = event.target.value;
     const startIndex = Math.min(selectedRange.startIndex, curIndex);
     const endIndex = Math.max(selectedRange.startIndex, curIndex);
     onDateFilterChange(dateMarks[startIndex], dateMarks[endIndex]);
-  }, [maxIndex, selectedRange.startIndex]);
+  }, [dateMarks, selectedRange.startIndex, onDateFilterChange]);
 
   const handlePresetChange = useCallback((preset) => {
     if (!preset) return;

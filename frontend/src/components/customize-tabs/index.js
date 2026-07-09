@@ -14,7 +14,7 @@ const CustomizeTabs = ({
     event.stopPropagation();
     if (value === newValue) return;
     onChange && onChange(newValue);
-  }, [value]);
+  }, [value, onChange]);
 
   if (!Array.isArray(tabs) || tabs.length === 0) return null;
   return (

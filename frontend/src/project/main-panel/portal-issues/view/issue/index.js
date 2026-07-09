@@ -208,7 +208,7 @@ const Issue = ({
     return options;
   }, [
     issue, deleteRow, canChatWithAI, chatIssuesByAI, projectUuid, workspaceID, projectName,
-    createTicket, handleLinkAnExistingTicket, customGeneratorIssuesContextMenuOptions,
+    createTicket, handleLinkAnExistingTicket, customGeneratorIssuesContextMenuOptions, togglePageSlugId,
   ]);
 
   const onCommentChange = useCallback((value) => {

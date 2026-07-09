@@ -32,7 +32,8 @@ const KBInDialog = ({ projectUuid, knowledgeID, updateKB, getKB = (...params) =>
     }).finally(() => {
       setIsLoading(false);
     });
-  }, [knowledgeID]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectUuid, knowledgeID]);
 
   if (isLoading) return (<CenteredLoading />);
   if (errorMessage) return (<CenteredError>{errorMessage}</CenteredError>);

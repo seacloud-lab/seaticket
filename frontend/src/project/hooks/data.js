@@ -155,7 +155,7 @@ export const DataProvider = ({
       }
       return res;
     });
-  }, [data, updateData]);
+  }, [data, updateTable]);
 
   const deleteView = useCallback((tableName = '', viewID = '', api) => {
     return api().then(res => {
@@ -244,7 +244,7 @@ export const DataProvider = ({
       });
       return res;
     });
-  }, [data, updateTable]);
+  }, []);
 
   const duplicateView = useCallback((tableName, api) => {
     return api().then(res => {
@@ -361,7 +361,7 @@ export const DataProvider = ({
       });
     }
     return func();
-  }, [getTableByName]);
+  }, [data, getTableByName]);
 
   const getRow = useCallback((tableName, rowId, api) => {
     if (!tableName || !rowId) return null;

@@ -158,7 +158,7 @@ const SubmitIssue = ({ projectUuid, onPageChange }) => {
     }).finally(() => {
       setIsSubmitting(false);
     });
-  }, [title, content, type, typesData, projectUuid, onPageChange]);
+  }, [title, content, type, typesData, projectUuid, onPageChange, insertRow]);
 
   const disabled = useMemo(() => {
     return (!title || !title.trim()) || (!content || !content.text?.trim()) || isSubmitting;

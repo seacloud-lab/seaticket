@@ -808,11 +808,14 @@ module.exports = function (webpackEnv) {
         resolvePluginsRelativeTo: __dirname,
         baseConfig: {
           extends: [require.resolve('eslint-config-react-app/base')],
+          plugins: ['react-hooks'],
           rules: {
             ...(!hasJsxRuntime && {
               'react/react-in-jsx-scope': 'error',
             }),
             'no-duplicate-imports': 'warn',
+            'react-hooks/rules-of-hooks': 'warn',
+            'react-hooks/exhaustive-deps': 'warn',
           },
         },
       }),

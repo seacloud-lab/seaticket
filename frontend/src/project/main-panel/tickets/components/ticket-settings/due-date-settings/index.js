@@ -38,9 +38,7 @@ const DueDateSettings = ({ isReadonly, value: propsValue, onChange }) => {
     onChange && onChange(value);
   }, [isReadonly, value, propsValue, onChange]);
 
-  const locale = useMemo(() => {
-    return translateCalendar();
-  }, [translateCalendar]);
+  const locale = useMemo(() => translateCalendar(), []);
 
   return (
     <div className='seaqa-settings-item mb-4'>

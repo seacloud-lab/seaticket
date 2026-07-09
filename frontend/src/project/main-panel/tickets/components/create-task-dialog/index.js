@@ -177,6 +177,7 @@ const CreateTaskDialog = ({
     }).finally(() => {
       abortControllerRef.current = null;
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectUuid, connectionId]);
 
   return (

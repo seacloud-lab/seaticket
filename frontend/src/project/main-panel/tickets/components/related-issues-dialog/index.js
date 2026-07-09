@@ -64,7 +64,7 @@ const RelatedIssuesDialog = ({ projectUuid, ticketId, workspaceID, projectName, 
 
   useEffect(() => {
     getDetails();
-  }, [projectUuid, ticketId]);
+  }, [getDetails]);
 
   const getTypeName = (issue) => {
     const connectionType = issue.type;

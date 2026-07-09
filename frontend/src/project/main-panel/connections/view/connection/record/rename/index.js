@@ -25,7 +25,7 @@ const Rename = ({
       }
       onToggle();
     });
-  }, [title, propsTitle, onSubmit, onToggle]);
+  }, [title, onSubmit, onToggle]);
 
   const onChange = useCallback((event) => {
     const newTitle = event.target.value;

@@ -180,7 +180,7 @@ export const MetadataProvider = forwardRef(({
         success_callback && success_callback();
       },
     });
-  }, [metadata, storeRef]);
+  }, [storeRef]);
 
   const deleteRows = useCallback((rowIds, { success_callback, fail_callback } = {}) => {
     if (!Array.isArray(rowIds) || rowIds.length === 0) return;
@@ -239,13 +239,13 @@ export const MetadataProvider = forwardRef(({
     modifyRow(rowId, rowUpdate, oldRowData, false, { success_callback, fail_callback });
   }, [metadata, modifyRow]);
 
-  const moveRow = () => {
+  const moveRow = useCallback(() => {
     // todo
-  };
+  }, []);
 
-  const duplicateRow = () => {
+  const duplicateRow = useCallback(() => {
     // todo
-  };
+  }, []);
 
   const renameColumn = useCallback((columnKey, newName, oldName) => {
     storeRef.current.renameColumn(columnKey, newName, oldName);
@@ -331,6 +331,7 @@ export const MetadataProvider = forwardRef(({
       isCancelled = true;
       storeRef.current.destroy();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [localStorageNamePrefix, viewID]);
 
   useEffect(() => {
