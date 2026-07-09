@@ -31,7 +31,7 @@ const SubStateSettings = ({
         value: row._id,
       };
     });
-  }, [state]);
+  }, [isLoading, state, substatesData.rows]);
 
   const openEditor = useCallback(() => {
     if (isReadonly) return;
@@ -42,10 +42,9 @@ const SubStateSettings = ({
     setIsShowEditor(false);
   }, []);
 
-  const onStateChange = useCallback((value) => {
+  const onSubstateChange = useCallback((value) => {
     if (!value) return;
-    const [state, substate] = value.split('__');
-    onChange(state, substate);
+    onChange(value);
   }, [onChange]);
 
   const onHotKey = useCallback((event) => {
@@ -86,7 +85,7 @@ const SubStateSettings = ({
           isMultiple={false}
           value={substate}
           options={options}
-          onChange={onStateChange}
+          onChange={onSubstateChange}
           onToggle={closeEditor}
         />
       )}

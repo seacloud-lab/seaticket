@@ -7,7 +7,6 @@ from dateutil.relativedelta import relativedelta
 
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from django.core.cache import cache
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -28,9 +27,8 @@ from seahub.project.utils import check_project_permission, \
     get_connection_general_task_related_users
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.utils.storage import upload_files_to_s3, delete_record_attachments_from_s3
-from seahub.project.constants import TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX, TICKET_DEFAULT_SUBSTATE_CACHE_TIMEOUT, \
-    GITHUB_ISSUE_ACTIVITY_TYPES, DISCOURSE_TOPIC_ACTIVITY_TYPES, EMAIL_ACTIVITY_TYPES, \
-    GENERAL_TASK_ACTIVITY_TYPES, ConnectionType
+from seahub.project.constants import GITHUB_ISSUE_ACTIVITY_TYPES, DISCOURSE_TOPIC_ACTIVITY_TYPES, EMAIL_ACTIVITY_TYPES, \
+    GENERAL_TASK_ACTIVITY_TYPES
 from seahub.seadb_models.utils import list_tickets_view_records, list_tickets_by_search, \
     list_trash_tickets, list_my_tickets
 from seahub.project.seadb_api import SeaDBAPI
@@ -45,12 +43,11 @@ from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     build_tag_id_to_name_map, validate_linked_connection_records, \
     build_linked_github_issue_state_map, \
     collect_open_linked_github_issues_for_tickets, close_linked_github_issues, \
-    build_ticket_close_payloads_from_client
+    build_ticket_close_payloads_from_client, validate_ticket_state_substate_relation
 from seahub.notifications.signal_handler import MSG_TYPE_TICKET_COMMENTED, MSG_TYPE_TICKET_ASSIGNEE_ADDED
 from seahub.tickets.signals import ticket_assignees_added, ticket_commented
 from seahub.utils.decorators import require_org_context
 from seahub.seadb_models.utils import get_connection_table_name
-from seahub.utils import normalize_cache_key
 from seahub.project.constants import DataEventType
 
 from seahub.seadb_models.models import SchemaTables
@@ -278,7 +275,8 @@ class TicketsAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         type_name = request.POST.get('type')
-
+        ticket_state = request.POST.get('state') or 'open'
+        requested_substate = request.POST.get('substate')
         priority = request.data.get('priority')
         if priority is not None:
             try:
@@ -297,29 +295,6 @@ class TicketsAPIView(APIView):
         tag_ids = json.loads(tag_ids)
 
         seadb_api = SeaDBAPI()
-
-        default_substate = ''
-        cache_key = normalize_cache_key(str(project_uuid), prefix=TICKET_DEFAULT_SUBSTATE_CACHE_PREFIX)
-        cached_default_substate = cache.get(cache_key, None)
-        if cached_default_substate is not None:
-            default_substate = cached_default_substate
-        else:
-            try:
-                base_metadata = seadb_api.get_base_metadata(project_uuid)
-                ticket_meta = get_current_table_metadata(base_metadata.get('tables'),
-                                                         TABLE_TICKETS) if base_metadata else None
-                table_columns = (ticket_meta or {}).get('columns') or []
-
-                substate_column = get_column_from_columns_by_name(table_columns, 'substate') or {}
-                substate_options = ((substate_column.get('data') or {}).get('options') or [])
-                for opt in substate_options:
-                    if (opt.get('name') or '').lower() == 'new':
-                        default_substate = opt.get('name') or ''
-                        break
-                cache.set(cache_key, default_substate, TICKET_DEFAULT_SUBSTATE_CACHE_TIMEOUT)
-            except Exception as e:
-                logger.error(e)
-
         if not check_ticket_creation_interval(seadb_api, project_uuid, username):
             error_msg = 'Cannot be created again within 30 seconds.'
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, error_msg)
@@ -339,17 +314,37 @@ class TicketsAPIView(APIView):
             validate_linked_connection_records(linked_connection_records)
         except TicketLinkValidationError as e:
             return api_error(status.HTTP_400_BAD_REQUEST, str(e))
+            
+        try:
+            base_metadata = seadb_api.get_base_metadata(project_uuid)
+            ticket_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
+            table_columns = ticket_meta.get('columns')
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        default_substate = ''
+        substate_column = get_column_from_columns_by_name(table_columns, 'substate')
+        substate_options = substate_column.get('data').get('options') or []
+        for opt in substate_options:
+            if opt.get('name').lower() == 'new':
+                default_substate = opt.get('name')
+                break
         # main
         try:
-            ticket_state = 'open'
             now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
+            ticket_substate = requested_substate or default_substate
+            if ticket_substate and not validate_ticket_state_substate_relation(table_columns, ticket_state, ticket_substate):
+                error_msg = 'state and substate mismatch.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
             row = {
                 SchemaTables.TICKETS.column.title.name: title,
                 SchemaTables.TICKETS.column.content.name: content,
                 SchemaTables.TICKETS.column.state.name: ticket_state,
                 SchemaTables.TICKETS.column.type.name: type_name,
-                SchemaTables.TICKETS.column.substate.name: default_substate,
+                SchemaTables.TICKETS.column.substate.name: ticket_substate,
                 SchemaTables.TICKETS.column.priority.name: priority,
                 SchemaTables.TICKETS.column.assignees.name: assignees,
                 SchemaTables.TICKETS.column.participants.name: [username],
@@ -866,7 +861,6 @@ class TicketAPIView(APIView):
         # argument check
         title = request.data.get('title')
         username = request.user.username
-
         content = None
         file_urls = None
         content_dict = request.data.get('content')
@@ -1026,6 +1020,13 @@ class TicketAPIView(APIView):
                 if not check_project_permission(assignee, workspace.owner):
                     error_msg = 'assignees invalid.'
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        if is_update_substate or ticket_state_name is not None:
+            next_ticket_state = ticket_state_name if ticket_state_name is not None else ticket.get(SchemaTables.TICKETS.column.state.name)
+            next_substate = substate_option_name if is_update_substate else ticket.get(SchemaTables.TICKETS.column.substate.name)
+            if next_substate and not validate_ticket_state_substate_relation(metadata, next_ticket_state, next_substate):
+                error_msg = 'state and substate mismatch.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # upload files
         if file_urls:

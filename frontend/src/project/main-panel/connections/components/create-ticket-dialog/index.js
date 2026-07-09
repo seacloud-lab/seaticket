@@ -52,6 +52,12 @@ const CreateTicketDialog = ({
   }, [substate, openSubstate]);
 
   const handleSubmit = () => {
+    const substateRow = substate ? getRowById(substatesData, substate) : null;
+    if (substate && !substateRow) {
+      setErrMessage(gettext('Substate invalid.'));
+      return;
+    }
+
     setIsSubmitting(true);
     const { previewText, images, links, checklist } = getPreviewContent(content);
     const ticket_content = {
@@ -69,8 +75,6 @@ const CreateTicketDialog = ({
       }
     }
 
-    const substateRow = getRowById(substatesData, substate);
-
     const ticketData = {
       title,
       content: ticket_content,
@@ -79,7 +83,7 @@ const CreateTicketDialog = ({
       tags,
       priority,
       state: state === TICKET_STATE.OPEN ? 'open' : 'closed',
-      substate: substateRow?.origin_name || substate,
+      substate: substateRow ? substateRow.origin_name : '',
       due_date,
       participants,
       linked_connection_records: [`${linkedRecordPrefix}_${row._id}`],
