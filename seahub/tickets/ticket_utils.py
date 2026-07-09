@@ -1431,6 +1431,11 @@ def validate_ticket_state_substate_relation(table_columns, state_name, substate_
     substate_options = substate_data.get('options') or []
     cascade_settings = substate_data.get('cascade_settings') or {}
 
+    if not state_options or not substate_options:
+        return True
+    if not isinstance(cascade_settings, dict) or not cascade_settings:
+        return True
+
     state_id = None
     substate_id = None
     for opt in state_options:

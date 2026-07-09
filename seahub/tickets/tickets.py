@@ -295,24 +295,6 @@ class TicketsAPIView(APIView):
         tag_ids = json.loads(tag_ids)
 
         seadb_api = SeaDBAPI()
-
-        try:
-            base_metadata = seadb_api.get_base_metadata(project_uuid)
-            ticket_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
-            table_columns = ticket_meta.get('columns')
-        except Exception as e:
-            logger.error(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        default_substate = ''
-        substate_column = get_column_from_columns_by_name(table_columns, 'substate')
-        substate_options = substate_column.get('data').get('options') or []
-        for opt in substate_options:
-            if opt.get('name').lower() == 'new':
-                default_substate = opt.get('name')
-                break
-
         if not check_ticket_creation_interval(seadb_api, project_uuid, username):
             error_msg = 'Cannot be created again within 30 seconds.'
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, error_msg)
@@ -332,6 +314,23 @@ class TicketsAPIView(APIView):
             validate_linked_connection_records(linked_connection_records)
         except TicketLinkValidationError as e:
             return api_error(status.HTTP_400_BAD_REQUEST, str(e))
+            
+        try:
+            base_metadata = seadb_api.get_base_metadata(project_uuid)
+            ticket_meta = get_current_table_metadata(base_metadata.get('tables'), TABLE_TICKETS)
+            table_columns = ticket_meta.get('columns')
+        except Exception as e:
+            logger.error(e)
+            error_msg = 'Internal Server Error'
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        default_substate = ''
+        substate_column = get_column_from_columns_by_name(table_columns, 'substate')
+        substate_options = substate_column.get('data').get('options') or []
+        for opt in substate_options:
+            if opt.get('name').lower() == 'new':
+                default_substate = opt.get('name')
+                break
         # main
         try:
             now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
@@ -862,7 +861,6 @@ class TicketAPIView(APIView):
         # argument check
         title = request.data.get('title')
         username = request.user.username
-
         content = None
         file_urls = None
         content_dict = request.data.get('content')
@@ -1022,6 +1020,13 @@ class TicketAPIView(APIView):
                 if not check_project_permission(assignee, workspace.owner):
                     error_msg = 'assignees invalid.'
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        if is_update_substate or ticket_state_name is not None:
+            next_ticket_state = ticket_state_name if ticket_state_name is not None else ticket.get(SchemaTables.TICKETS.column.state.name)
+            next_substate = substate_option_name if is_update_substate else ticket.get(SchemaTables.TICKETS.column.substate.name)
+            if next_substate and not validate_ticket_state_substate_relation(metadata, next_ticket_state, next_substate):
+                error_msg = 'state and substate mismatch.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         # upload files
         if file_urls:
