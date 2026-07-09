@@ -98,6 +98,17 @@
   background-color: #f5f5f5;
 }
 
+.portal-subdomain-prefix-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.portal-subdomain-root-input {
+  flex: 1;
+  min-width: 0;
+  background-color: #f5f5f5;
+}
+
 .portal-settings-help-text {
   font-size: 13px;
   color: #999;
