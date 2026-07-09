@@ -255,7 +255,7 @@ const EmbeddingView = ({
     return () => {
       dom && resizeObserver.unobserve(dom);
     };
-  }, [records, isProcessingData]);
+  }, [records, isProcessingData, isDetailsDialogOpen]);
 
   useEffect(() => {
     if (!Array.isArray(records) || records.length === 0) {
@@ -351,6 +351,7 @@ const EmbeddingView = ({
       }
     };
     insertData(transformedRecords);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [records, connections, lastLoadRecordsTime]);
 
   // Update Mosaic filter Selection when filters or selectedCategories change

@@ -94,7 +94,7 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
       setShowInboxDrawer(false);
       toggleBar([BAR_TYPE.TICKET, detail.ticket_id]);
     }
-  }, [noticeItem, onNoticeItemClick]);
+  }, [noticeItem, onNoticeItemClick, setShowInboxDrawer, toggleBar]);
 
   const renderContent = useCallback(() => {
     const noticeType = noticeItem.msg_type;
@@ -186,7 +186,7 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
         )}
       </div>
     );
-  }, [noticeItem]);
+  }, [noticeItem, username, handleMarkNotificationRead]);
 
   return (
     <div className="inbox-notification-item" onClick={() => handleNoticeItemClick()}>

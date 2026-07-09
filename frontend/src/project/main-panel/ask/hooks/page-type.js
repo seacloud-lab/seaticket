@@ -28,10 +28,12 @@ export const AskPageProvider = ({ getInitialPageSlugId, resetURL, children }) =>
     return () => {
       allSubscribe();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     resetURL(pageSlugId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageSlugId]);
 
   return (

@@ -81,7 +81,7 @@ const ViewItem = ({
 
   const closeDropdown = useCallback(() => {
     setIsShowDropdownMenu(false);
-  }, [isShowDropdownMenu]);
+  }, []);
 
   const openDeleteConfirmationDialog = useCallback(() => {
     setIsShowDropdownMenu(false);

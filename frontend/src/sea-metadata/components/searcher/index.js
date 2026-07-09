@@ -13,7 +13,7 @@ const Searcher = ({ viewId, onChange }) => {
 
   const onToggleSearch = useCallback(() => {
     setIsSearchActive(!isSearchActive);
-  }, []);
+  }, [isSearchActive]);
 
   const onClear = useCallback(() => {
     setIsSearchActive(false);

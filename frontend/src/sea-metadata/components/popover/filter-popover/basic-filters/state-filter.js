@@ -35,7 +35,7 @@ const StateFilter = ({ readOnly = true, value = [], column, onChange: onChangeAP
     return selectOptions;
   }, [column, value]);
 
-  const displayValue = useMemo(() => ({ label: <>{gettext('State')}</> }), [value]);
+  const displayValue = useMemo(() => ({ label: <>{gettext('State')}</> }), []);
 
   const onChange = useCallback((newValue) => {
     if (newValue === '') {

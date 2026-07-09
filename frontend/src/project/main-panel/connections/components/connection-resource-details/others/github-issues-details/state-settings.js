@@ -44,18 +44,15 @@ const StateSettings = ({
     const stateOption = getOption(stateOptions, propsState);
     return stateOption?.id;
   }, [propsState, stateOptions]);
+  // eslint-disable-next-line no-unused-vars
   const propStateReasonValue = useMemo(() => {
     const stateOption = getOption(stateReasonOptions, propsStateReason);
     return stateOption?.id;
   }, [propsStateReason, stateReasonOptions]);
 
   const isClosed = useMemo(() => propStateValue === closedOption?.id, [propStateValue, closedOption]);
-  const closeOptions = useMemo(() => {
-    return stateReasonOptions.filter(o => o.name !== 'reopened');
-  }, [isClosed, stateReasonOptions]);
-  const openOptions = useMemo(() => {
-    return stateReasonOptions.filter(o => o.name === 'reopened');
-  }, [isClosed, stateReasonOptions]);
+  const closeOptions = useMemo(() => stateReasonOptions.filter(o => o.name !== 'reopened'), [stateReasonOptions]);
+  const openOptions = useMemo(() => stateReasonOptions.filter(o => o.name === 'reopened'), [stateReasonOptions]);
   const icon = useMemo(() => {
     return isClosed ? 'dot-circle-stroked' : 'check-circle-stroked';
   }, [isClosed]);
@@ -71,7 +68,7 @@ const StateSettings = ({
         }
         return { value, label: name };
       });
-  }, [propsState, propStateValue, propStateReasonValue, isClosed]);
+  }, [closeOptions, openOptions, propsState, isClosed]);
 
   const openEditor = useCallback(() => {
     if (isReadonly) return;
@@ -90,7 +87,7 @@ const StateSettings = ({
     onChange && onChange({ state: stateOption?.name, state_reason: stateReasonOption?.name }, () => {
       setIsSubmitting(false);
     });
-  }, [state, stateReason, isSubmitting, onChange]);
+  }, [state, stateReason, isSubmitting, stateOptions, stateReasonOptions, onChange]);
 
   const handleLocalChange = useCallback((newValue) => {
     if (!newValue) return;

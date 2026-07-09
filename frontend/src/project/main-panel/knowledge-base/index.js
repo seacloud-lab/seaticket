@@ -22,7 +22,7 @@ const Page = ({ title }) => {
   const props = useMemo(() => ({
     projectUuid, projectName, workspaceID, permission, isAdmin: isProjectAdmin,
     title, togglePageSlugId
-  }), []);
+  }), [title, togglePageSlugId]);
 
   if (isLoading) return null;
 

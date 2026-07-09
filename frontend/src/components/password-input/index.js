@@ -60,7 +60,7 @@ const PasswordInput = ({
     if (initSize) return;
     const { height } = ref.current.getBoundingClientRect();
     setSize(height);
-  }, []);
+  }, [initSize]);
 
   useEffect(() => {
     if (!onShowChange || !isFunction(onShowChange)) return;

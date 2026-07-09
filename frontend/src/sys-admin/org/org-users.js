@@ -51,13 +51,13 @@ const OrgUsers = ({ orgID, onCloseSidePanel }) => {
       }
       toaster.danger(errMsg);
     });
-  }, []);
+  }, [orgID]);
 
   useEffect(() => {
     sysAdminAPI.sysAdminGetOrg(orgID).then((res) => {
       setOrgName(res.data.org_name);
     });
-  }, []);
+  }, [orgID]);
 
   return (
     <SelectedUsersProvider>

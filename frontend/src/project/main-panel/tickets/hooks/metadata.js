@@ -46,7 +46,7 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
       });
       return newData;
     });
-  }, [typesData]);
+  }, []);
 
   const applyModifyTypes = useCallback((update = {}) => {
     if (Object.keys(update).length === 0) return;
@@ -111,7 +111,7 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
       toaster.danger(errorMessage);
       callback && callback();
     });
-  }, [typesData, api]);
+  }, [projectUuid, api, applyCreateTypes]);
 
   // substate
   const applyCreateSubstates = useCallback((newSubstates, isReload = false) => {
@@ -218,7 +218,7 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
       toaster.danger(errorMessage);
       callback && callback();
     });
-  }, [substatesData, initSubStates, api]);
+  }, [projectUuid, initSubStates, api]);
 
   // state
   const applyCreateStates = useCallback((newStates, isReload = false) => {
@@ -250,7 +250,8 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
       toaster.danger(errorMessage);
       setLoading(false);
     });
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectUuid]);
 
   return (
     <MetadataContext.Provider value={{

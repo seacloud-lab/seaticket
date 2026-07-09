@@ -62,7 +62,7 @@ const SingleSelectEditor = forwardRef(({
 
   const style = useMemo(() => {
     return { width: 300, top: 0 };
-  }, [column, rowHeight]);
+  }, []);
 
   const createOption = useCallback((name) => {
     const newOption = generateNewOption(options, name || '');
@@ -72,7 +72,7 @@ const SingleSelectEditor = forwardRef(({
     return new Promise((resolve, reject) => {
       resolve({ value: newOption.id });
     });
-  }, [column, options, onCommit, modifyColumnData]);
+  }, [column, options, modifyColumnData]);
 
   const onSubmit = useCallback((value) => {
     setTimeout(() => onCommit && onCommit(true), 1);

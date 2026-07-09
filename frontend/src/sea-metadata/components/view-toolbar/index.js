@@ -49,7 +49,7 @@ const ViewToolBar = ({ fixedColumnCount, tools = VIEW_TOOLS, createRowsTools, to
       return (<Views view={view} toggleView={toggleView} />);
     }
     return (<div className="sea-metadata-views"></div>);
-  }, [selectedRowIds, tools, metadata, createRowsTools, toggleView, deleteRows, modifyRows]);
+  }, [selectedRowIds, tools, metadata, createRowsTools, toggleView, deleteRows, modifyRows, deleteLocalRows, deleteRow, selectNone, updateLocalRow]);
 
   const view = metadata?.view;
   const viewType = view?.type;

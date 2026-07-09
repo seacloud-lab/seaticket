@@ -42,7 +42,7 @@ const TagsEditor = forwardRef(({
 
   const style = useMemo(() => {
     return { width: 400, top: 0, left: 0 };
-  }, [column, rowHeight]);
+  }, []);
 
   const handleCreateTag = useCallback((name) => {
     const random = Math.floor(Math.random() * (SELECT_OPTION_COLORS.length - 1));
@@ -66,7 +66,7 @@ const TagsEditor = forwardRef(({
       validValue = newValue.map(id => Number(id));
     }
     setValue(validValue);
-  }, [tagsData, value]);
+  }, [value]);
 
   useEffect(() => {
     if (editorRef.current) {

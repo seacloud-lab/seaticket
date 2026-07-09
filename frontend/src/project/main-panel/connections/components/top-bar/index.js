@@ -133,7 +133,7 @@ const TopBar = ({ title, modifyLocalBar }) => {
       setIsSyncing(false);
       toaster.danger(error_msg);
     });
-  }, [projectUuid, modifyLocalConnectionsSyncStatus, onRefresh]);
+  }, [modifyLocalConnectionsSyncStatus]);
 
   const renderRightChildren = useCallback(() => {
     if (pageSlugId === CONNECTION_PAGE_SLUG_ID.ALL) {

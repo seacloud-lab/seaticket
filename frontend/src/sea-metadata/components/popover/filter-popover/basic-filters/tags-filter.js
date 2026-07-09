@@ -45,7 +45,7 @@ const TagsFilter = ({ readOnly, value, onChange }) => {
       onChange?.(validValue);
     }
     setIsShowEditor(false);
-  }, [value, onChange]);
+  }, [value, tagsData, onChange]);
 
   const handleChange = useCallback((newValue) => {
     const _newValue = Array.isArray(newValue) && newValue.length > 0 ? newValue.map(v => Number(v)) : newValue;
@@ -56,7 +56,7 @@ const TagsFilter = ({ readOnly, value, onChange }) => {
       validValue = tags.map(tag => Number(tag._id));
     }
     onChange?.(validValue);
-  }, [value, onChange]);
+  }, [value, tagsData, onChange]);
 
   const handleClearAll = useCallback(() => {
     optionEditorContainerRef.current?.setValue([]);

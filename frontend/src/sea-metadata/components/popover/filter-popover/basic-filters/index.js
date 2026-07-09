@@ -17,9 +17,9 @@ const BasicFilters = ({ readOnly, filters = [], columns, onChange }) => {
   const { tagsData } = useTagsData();
   const { typesData } = useTypesData();
 
-  const stateColumnKey = useMemo(() => context.getSetting('stateColumnKey', 'status'));
-  const typeColumnKey = useMemo(() => context.getSetting('typeColumnKey', 'type'));
-  const tagsColumnKey = useMemo(() => context.getSetting('tagsColumnKey', 'tags'));
+  const stateColumnKey = useMemo(() => context.getSetting('stateColumnKey', 'status'), []);
+  const typeColumnKey = useMemo(() => context.getSetting('typeColumnKey', 'type'), []);
+  const tagsColumnKey = useMemo(() => context.getSetting('tagsColumnKey', 'tags'), []);
 
   const onStatusChange = useCallback((newValue) => {
     const filterIndex = filters.findIndex(filter => filter.column_key === stateColumnKey);

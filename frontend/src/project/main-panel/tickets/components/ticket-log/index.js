@@ -90,7 +90,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
   const { statesData, substatesData, typesData } = useMetadata();
   const { tagsData } = useTags();
 
-  const renderGithubIssueRef = ({ connection_id, issue_number, issue_url } = {}) => {
+  const renderGithubIssueRef = useCallback(({ connection_id, issue_number, issue_url } = {}) => {
     if (!issue_number) return null;
     if (issue_url) {
       return (
@@ -104,9 +104,9 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
       );
     }
     return <span>#{issue_number}</span>;
-  };
+  }, [projectUuid, permission]);
 
-  const renderDiscourseTopicRef = ({ connection_id, topic_id, topic_url }) => {
+  const renderDiscourseTopicRef = useCallback(({ connection_id, topic_id, topic_url }) => {
     if (!topic_id) return null;
     if (topic_url) {
       return (
@@ -120,9 +120,9 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
       );
     }
     return <span>#{topic_id}</span>;
-  };
+  }, [projectUuid, permission]);
 
-  const renderEmailThreadRef = ({ connection_id, thread_id, thread_title } = {}) => {
+  const renderEmailThreadRef = useCallback(({ connection_id, thread_id, thread_title } = {}) => {
     if (!thread_id) return thread_title ? <span>{thread_title}</span> : null;
     const label = thread_title || `#${thread_id}`;
     if (projectUuid && connection_id) {
@@ -143,9 +143,9 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
       return <span>#{thread_id}</span>;
     }
     return null;
-  };
+  }, [projectUuid, permission]);
 
-  const renderGeneralTaskRef = ({ connection_id, record_id, task_title } = {}) => {
+  const renderGeneralTaskRef = useCallback(({ connection_id, record_id, task_title } = {}) => {
     const taskId = record_id;
     const taskTitle = task_title || '';
     if (!taskId) return taskTitle ? <span>{taskTitle}</span> : null;
@@ -162,7 +162,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
       );
     }
     return <span>{label}</span>;
-  };
+  }, [permission, projectUuid]);
 
   const renderActivityMessage = useCallback(() => {
     const { activity_type, old_value, new_value, thread_id, thread_title } = activity;
@@ -626,7 +626,10 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
       default:
         return <span>{gettext('made changes')}</span>;
     }
-  }, [activity, renderEmailThreadRef]);
+  }, [
+    activity, collaborators, collaboratorsCache, queryUser, statesData, tagsData, substatesData, typesData, updateCollaboratorsCache,
+    renderGeneralTaskRef, renderDiscourseTopicRef, renderEmailThreadRef, renderGithubIssueRef,
+  ]);
 
   const iconSymbol = LOG_ICONS[activity.activity_type] || 'info';
 

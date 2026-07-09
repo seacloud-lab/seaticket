@@ -31,7 +31,7 @@ const CollaboratorEditor = ({
       }
     }
     onClose();
-  }, [value, onChange, onClose]);
+  }, [isMultiple, value, onChange, onClose]);
 
   return (
     <CustomizePopover

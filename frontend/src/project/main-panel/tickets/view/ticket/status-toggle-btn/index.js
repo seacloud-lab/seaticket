@@ -95,7 +95,7 @@ const StatusToggleButton = ({
     if (!comment) return option?.name;
     if (state === TICKET_STATE.CLOSED) return gettext('Close with comment');
     return oldState === TICKET_STATE.CLOSED ? gettext('Reopen with comment') : gettext('Open with comment');
-  }, [options, state, substate, comment]);
+  }, [oldState, options, state, substate, comment]);
 
   const openPopover = useCallback(() => {
     setIsShowPopover(true);

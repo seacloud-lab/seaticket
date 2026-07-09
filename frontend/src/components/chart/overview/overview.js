@@ -118,7 +118,7 @@ const Overview = () => {
 
     setCreditSummaryData(newCreditHeaderData);
     return true;
-  }, []);
+  }, [creditSummaryData]);
 
   const buildScenarioData = useCallback((scenarioData = {}) => {
     const results = Array.isArray(scenarioData.results) ? scenarioData.results : [];
@@ -168,7 +168,7 @@ const Overview = () => {
       setStatus(statusKey, REQUEST_STATUS.EMPTY);
       toaster.danger(Utils.getErrorMsg(error));
     }
-  }, [setStatus, buildSummaryData, buildScenarioData, buildMonthData, buildDateData]);
+  }, [setStatus]);
 
   useEffect(() => {
     const cancelledRef = { current: false };

@@ -163,7 +163,7 @@ const Ticket = ({
 
       return update;
     });
-  }, [projectUuid, ticket, user, tagsData, typesData, statesData, substatesData, handleUpdateRowsCacheData]);
+  }, [projectUuid, ticket, user, typesData, statesData, substatesData, handleUpdateRowsCacheData]);
 
   const handleUpdateParticipants = useCallback((ticket) => {
     const { participants = [] } = ticket;
@@ -292,7 +292,8 @@ const Ticket = ({
     return options;
   }, [
     ticket, projectUuid, workspaceID, projectName, connections,
-    getTableByName, deleteRow, chatTicketsByAI, findRelatedIssues, createKnowledgeBaseRecord, createTask
+    getTableByName, deleteRow, chatTicketsByAI, findRelatedIssues, createKnowledgeBaseRecord, createTask,
+    togglePageSlugId,
   ]);
 
   const onCommentChange = useCallback((value) => {
@@ -519,6 +520,7 @@ const Ticket = ({
   useEffect(() => {
     if (isLoading || isLoadingNotifications || !ticket) return;
     markProjectNoticeAsReadByTicket(projectUuid, Number(ticketID));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectUuid, isLoading, isLoadingNotifications, ticketID]);
 
   useEffect(() => {

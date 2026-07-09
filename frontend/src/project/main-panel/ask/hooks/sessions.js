@@ -209,7 +209,7 @@ export const SessionsProvider = ({ projectUuid, api, children }) => {
     }).catch(error => {
       eventBus.dispatch(EVENT_BUS_TYPE.AI_REPLY, sessionId, { error }, callback);
     });
-  }, [api, projectUuid]);
+  }, [api, projectUuid, markSessionRunningTask]);
 
   const loadTeamSessions = useCallback(() => {
     setIsTeamSessionsLoading(true);

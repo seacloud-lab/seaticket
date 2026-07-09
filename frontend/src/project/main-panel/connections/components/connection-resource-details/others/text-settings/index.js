@@ -19,7 +19,7 @@ const TextSettings = ({
     const validValue = value.trim();
     if (propsValue === validValue) return;
     onChange && onChange(validValue);
-  }, [value, propsValue]);
+  }, [value, propsValue, onChange]);
 
   const onValueChange = useCallback((event) => {
     const newValue = event.target.value;

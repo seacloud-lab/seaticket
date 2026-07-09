@@ -140,7 +140,7 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
       }
     });
     onSubmit({ name, config: validConfig }, () => setSubmitting(false));
-  }, [record, name, config, onSubmit, onToggle]);
+  }, [record, name, config, showEmailAdvancedOptions, onSubmit]);
 
   const renderConnectionField = useCallback((column) => {
     const { type, key, children, is_edit_readonly, is_advanced_option } = column;

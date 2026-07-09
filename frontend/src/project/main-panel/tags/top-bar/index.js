@@ -9,7 +9,7 @@ const TicketTopBar = ({ title, permission }) => {
 
   const renderLeftChildren = useCallback(() => {
     return (<span className="text-truncate" title={title}>{title}</span>);
-  }, []);
+  }, [title]);
 
   const renderRightChildren = useCallback(() => {
     const isRW = permission === PERMISSION_TYPES.READ_WRITE;

@@ -31,7 +31,7 @@ const SubStateSettings = ({
         value: row._id,
       };
     });
-  }, [isLoading, state, substatesData.rows]);
+  }, [isLoading, substatesData, state]);
 
   const openEditor = useCallback(() => {
     if (isReadonly) return;

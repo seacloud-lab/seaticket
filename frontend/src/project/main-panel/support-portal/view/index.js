@@ -15,7 +15,7 @@ const View = () => {
 
   const viewRef = useRef(null);
 
-  const editURL = useMemo(() => `${server}${siteRoot}portal-edit/${projectUuid}/`, [projectUuid]);
+  const editURL = useMemo(() => `${server}${siteRoot}portal-edit/${projectUuid}/`, []);
   useEffect(() => {
     const dom = viewRef.current;
     const handleResize = () => {
@@ -45,7 +45,7 @@ const View = () => {
     }).finally(() => {
       setIsOpeningPortal(false);
     });
-  }, [isOpeningPortal, projectUuid]);
+  }, [isOpeningPortal]);
 
   return (
     <div className={classnames('seaqa-support-portal-view', { 'pt-6 pb-4': height <= 424 })} ref={viewRef}>

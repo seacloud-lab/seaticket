@@ -56,7 +56,7 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
       _pk: payload._pk,
     };
     setLocalEmailDetails(prev => [...prev, nextDetail]);
-  }, [connection, details]);
+  }, [details]);
 
   const handleReplyDiscourseSuccess = useCallback((payload) => {
     if (!payload) return;
@@ -86,7 +86,7 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
       setErrorMessage(errMessage);
       setStatus('error');
     });
-  }, [projectUuid, resource, type]);
+  }, [projectUuid, resource, type, updateResource]);
 
   if (status === 'loading') return (<CenteredLoading />);
   if (status === 'error') return (<CenteredError>{errorMessage}</CenteredError>);

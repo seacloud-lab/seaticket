@@ -105,7 +105,7 @@ const CollaboratorFilter = ({ readOnly, filterTerm, collaborators, filter_predic
         </div>
       ),
     }));
-  }, [collaborators, selectedCollaboratorEmails]);
+  }, [collaborators]);
 
   const getNormalizedOptionValue = useCallback((newValue) => {
     const rawValue = Array.isArray(newValue) ? newValue[0] : newValue;

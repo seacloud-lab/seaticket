@@ -144,13 +144,14 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
 
   const rowsWillUnmount = useCallback(() => {
     selfQuery.clear();
-  }, []);
+  }, [selfQuery]);
 
   useEffect(() => {
     reloadConnections();
     return () => {
       selfQuery.clear();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (isLoading) return (<CenteredLoading />);

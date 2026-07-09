@@ -58,7 +58,7 @@ const CustomizeSelectSync = ({
     return (
       <span className="selected-option-show">{selectOption?.label}</span>
     );
-  }, [isLoading, errorMessage, value, placeholder, allOptions, openEditor]);
+  }, [isLoading, errorMessage, value, placeholder, allOptions]);
 
   return (
     <>

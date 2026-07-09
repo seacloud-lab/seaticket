@@ -45,7 +45,7 @@ const SeaMetadataPriorityEditor = ({ row, column, value: oldValue, onChange, isC
     return () => {
       window.removeEventListener('keydown', handleKeyDown, true);
     };
-  }, [onChangeValue, isOpen, isCellSelected]);
+  }, [isOpen, value, column, isCellSelected, onChange]);
 
   return (
     <>

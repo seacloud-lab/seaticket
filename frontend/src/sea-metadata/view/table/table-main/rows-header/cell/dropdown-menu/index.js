@@ -65,6 +65,7 @@ const HeaderDropdownMenu = forwardRef(({
     setSubMenuShow(false);
   }, []);
 
+  // eslint-disable-next-line no-unused-vars
   const openOptionPopover = useCallback(() => {
     setOptionPopoverShow(true);
   }, []);
@@ -93,10 +94,12 @@ const HeaderDropdownMenu = forwardRef(({
     }
   }, [column, modifyColumnData]);
 
+  // eslint-disable-next-line no-unused-vars
   const onDelete = useCallback(() => {
     deleteColumn(column.key, column);
   }, [column, deleteColumn]);
 
+  // eslint-disable-next-line no-unused-vars
   const openRenamePopover = useCallback(() => {
     setRenamePopoverShow(true);
   }, []);
@@ -114,6 +117,7 @@ const HeaderDropdownMenu = forwardRef(({
     setRenamePopoverShow(false);
   }, [column, renameColumn]);
 
+  // eslint-disable-next-line no-unused-vars
   const renderDateFormat = useCallback((canModifyColumnData) => {
     const { data = {} } = column;
     if (!canModifyColumnData) {
@@ -170,6 +174,7 @@ const HeaderDropdownMenu = forwardRef(({
     );
   }, [today, column, isMenuShow, isSubMenuShow, onChangeDateFormat, openSubMenu, isPrivateColumn]);
 
+  // eslint-disable-next-line no-unused-vars
   const modifySort = useCallback((type, event) => {
     const canModifyView = context.canModifyView();
     if (!canModifyView) {
@@ -290,7 +295,7 @@ const HeaderDropdownMenu = forwardRef(({
         </div>
       </CustomizeDropdownMenu>
     );
-  }, [column, openRenamePopover, hideSubMenu, renderDateFormat, openOptionPopover, menuRef, dropdownDomRef, modifySort, onDelete, isPrivateColumn]);
+  }, [column, hideSubMenu, menuRef, dropdownDomRef, toggleAllSubstates, toggleAllTypes]);
 
   return (
     <>

@@ -69,7 +69,7 @@ const Issues = ({
   const handleExpandRow = useCallback((issue) => {
     setCurrentIssue({ ...issue, type: PORTAL_ISSUE_TYPE });
     setIsShowIssueDetailsDialog(true);
-  }, [projectUuid]);
+  }, []);
 
   const metadataAPI = useMemo(() => {
     let _api = {};
@@ -174,8 +174,10 @@ const Issues = ({
     _api.uploadFile = (...params) => ticketsAPI.uploadFile(projectUuid, ...params);
 
     return _api;
-  }, [projectUuid, isBuiltInView, api, getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
-    getMetadata, modifyRow, modifyRows, deleteRow, deleteRows]);
+  }, [
+    projectUuid, isBuiltInView, api, getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
+    getMetadata, modifyRow, modifyRows, deleteRow, deleteRows, togglePageSlugId,
+  ]);
 
   const localStorageName = useMemo(() => customizeLocalStorageNamePrefix || `seaqa-${projectUuid}-issues`, [projectUuid, customizeLocalStorageNamePrefix]);
 
@@ -233,7 +235,7 @@ const Issues = ({
         callback && callback(true);
       });
     });
-  }, [currentIssue, modifyRowLink]);
+  }, [projectUuid, currentIssue, modifyRowLink]);
 
   const createRowsTools = useCallback((props) => {
     let params = { ...props, projectName, workspaceID, togglePageSlugId };
@@ -338,7 +340,7 @@ const Issues = ({
       eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, currentRow._id, rowUpdateData);
       eventBus.dispatch(EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: linkedUpdateRecord }, false);
     });
-  }, []);
+  }, [insertRowByLink]);
 
   if (isLoading) return (<CenteredLoading />);
 

@@ -93,7 +93,7 @@ const HideConnectionPopover = ({ hidePopover, onChange, readOnly, target, placem
 
   const hideAll = useCallback(() => {
     update(displayItems.map(connection => connection.id));
-  }, [hiddenConnectionIDs, update]);
+  }, [displayItems, update]);
 
   const showAll = useCallback(() => {
     update([]);

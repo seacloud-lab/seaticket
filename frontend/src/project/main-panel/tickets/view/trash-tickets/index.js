@@ -79,7 +79,7 @@ const TrashTickets = ({ projectUuid, workspaceID, projectName, permission, toggl
       },
     });
     return tools;
-  }, [workspaceID, projectName, handleRestoreTickets]);
+  }, [handleRestoreTickets]);
 
   const createContextMenuOptions = useCallback(({
     isGroupView,
@@ -148,7 +148,7 @@ const TrashTickets = ({ projectUuid, workspaceID, projectName, permission, toggl
       });
     }
     return list;
-  }, [projectName, workspaceID, handleRestoreTickets]);
+  }, [handleRestoreTickets]);
 
   const cleanTickets = useCallback(() => {
     clearViewRows(TICKET_TABLE_NAME, 'trash', () => ticketsAPI.cleanTicketsTrash(projectUuid), true).then(() => {

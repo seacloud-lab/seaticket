@@ -37,7 +37,7 @@ const RowCard = forwardRef(({
       return;
     }
     if (setItemScrollLeft) setItemScrollLeft(rowBodyRef.current.scrollLeft, row._id);
-  }, [setItemScrollLeft]);
+  }, [row, setItemScrollLeft]);
 
   const handleIconClick = useCallback((event) => {
     event.stopPropagation();
@@ -60,6 +60,7 @@ const RowCard = forwardRef(({
       scrollActiveRef.current = true;
       rowBodyRef.current.scrollLeft = scrollLeft;
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const titleColumn = getColumnByKey(columns, titleColumnKey);
@@ -111,6 +112,7 @@ const Row = ({
     return () => {
       removeRowDom(row._id);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

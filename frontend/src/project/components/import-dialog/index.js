@@ -74,7 +74,7 @@ const ImportDialog = ({ activeBar, onToggle, onClickBar }) => {
       onHandleFileUpload(file);
     };
     input.click();
-  }, []);
+  }, [onHandleFileUpload]);
 
   const onDragUpload = useCallback((event) => {
     event.preventDefault();
@@ -89,7 +89,7 @@ const ImportDialog = ({ activeBar, onToggle, onClickBar }) => {
     } else {
       uploadBoxRef.current.style.backgroundColor = HOVER_BACKGROUND;
     }
-  }, []);
+  }, [onHandleFileUpload]);
 
   const handleSubmit = useCallback(() => {
     if (!previewFileName) {
@@ -113,7 +113,7 @@ const ImportDialog = ({ activeBar, onToggle, onClickBar }) => {
       toaster.danger(errorMsg);
       setIsLoading(false);
     });
-  }, [activeBar, previewFileName, markTablesViewExpired]);
+  }, [activeBar, previewFileName, markTablesViewExpired, onClickBar, onToggle]);
 
   return (
     <Modal isOpen={true} autoFocus={false} className="seaqa-import-dialog" toggle={onToggle}>

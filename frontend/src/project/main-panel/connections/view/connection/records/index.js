@@ -51,8 +51,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const { toggleChildrenPageSlugId } = useConnectionsPage();
   const { connections } = useConnections();
   const {
-    data,
-    getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
+    getTableViews, getTableView, insertView, deleteView, modifyView, duplicateView,
     getMetadata, modifyRow, modifyRows, deleteRows, modifyRowLink, insertRowByLink,
   } = useData();
   const { tagsData, createTag } = useTags();
@@ -238,8 +237,8 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
 
     return _api;
   }, [
-    projectUuid, connectionID, connection, connections, getTableNameByConnectionID,
-    data, getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView, getMetadata,
+    projectUuid, connectionID, connection, getTableNameByConnectionID,
+    getTableViews, getTableView, insertView, deleteView, modifyView, duplicateView, getMetadata,
     modifyRows, modifyRow, toggleChildrenPageSlugId,
   ]);
 
@@ -262,13 +261,13 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     const newAttachments = attachments.map(attachment => new AttachmentObject(attachment));
     updateAttachments(newAttachments);
     toggleBar([BAR_TYPE.CHAT]);
-  }, [connection?.type, connectionID, toggleBar, updateAttachments]);
+  }, [connectionID, toggleBar, updateAttachments]);
 
   const handleFindRelatedIssues = useCallback((row) => {
     if (!row) return;
     setCurrentRow(row);
     setIsShowRelatedIssuesDialog(true);
-  }, [projectUuid, connectionID]);
+  }, []);
 
   const deleteEmailRows = useCallback((rows) => {
     if (!rows || rows.length === 0) return;
@@ -344,7 +343,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     return tools;
   }, [
     connection, handleCreateRelatedTicket,
-    handleResolveIssueByAI, handleLinkAnExistingTicket,
+    handleResolveIssueByAI, handleLinkAnExistingTicket, handleFindRelatedIssues,
   ]);
 
   const createContextMenuOptions = useCallback(({
@@ -440,7 +439,10 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     }
 
     return normalizeContextMenuOptions(list);
-  }, [connection, handleResolveIssueByAI, handleCreateRelatedTicket, handleLinkAnExistingTicket, deleteEmailRows]);
+  }, [
+    connection, handleResolveIssueByAI, handleCreateRelatedTicket, handleLinkAnExistingTicket, deleteEmailRows,
+    handleFindRelatedIssues,
+  ]);
 
   const modifyRowsByDetailsMenu = useCallback((rowIds, idRowUpdates, idOldRowOldData, isCopyPaste = false) => {
     if (!api?.modifyRow) return;
@@ -519,7 +521,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
         callback && callback(true);
       });
     });
-  }, [currentRow, getTableNameByConnectionID, connectionID, modifyRowLink]);
+  }, [projectUuid, currentRow, getTableNameByConnectionID, connectionID, modifyRowLink]);
 
   const createTicketCallback = useCallback((ticket, currentRow) => {
     const tableName = getTableNameByConnectionID(connectionID);
@@ -533,7 +535,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
       eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, currentRow._id, rowUpdateData);
       eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: linkedUpdateRecord }, false);
     });
-  }, [getTableNameByConnectionID, connectionID]);
+  }, [connectionID, getTableNameByConnectionID, insertRowByLink]);
 
   const closeAll = useCallback(() => {
     setIsShowRowDetailsDialog(false);

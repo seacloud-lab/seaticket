@@ -32,7 +32,7 @@ const PortalKnowledgeTopBar = () => {
         <span className="text-truncate" title={editTitle}>{editTitle}</span>
       </>
     );
-  }, [pageSlugId, togglePageSlugId]);
+  }, [pageSlugId, togglePageSlugId, onRefresh]);
 
   return (
     <TopBar>

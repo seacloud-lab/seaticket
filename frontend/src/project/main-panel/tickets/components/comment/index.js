@@ -150,7 +150,7 @@ const Comment = ({
         handleUpdateComment(event);
       }
     }
-  }, [handleUpdateComment, isModEnter]);
+  }, [handleUpdateComment]);
 
   const onAddHotKey = useCallback((event) => {
     if (isModEnter(event)) {
@@ -159,7 +159,7 @@ const Comment = ({
         onSubmitComment();
       }
     }
-  }, [onSubmitComment, isModEnter]);
+  }, [onSubmitComment]);
 
   useEffect(() => {
     // Edit comment

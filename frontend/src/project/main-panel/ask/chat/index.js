@@ -147,7 +147,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
       }
     }
     setClearContext(!clearContext);
-  }, [clearContext, chatHistories]);
+  }, [clearContext, chatHistories, updateChatHistories]);
 
   const resetClearContext = useCallback(() => {
     setClearContext(false);
@@ -265,6 +265,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
       toaster.danger(errorMessage);
       setLoading(false);
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
 
   useEffect(() => {
@@ -539,7 +540,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
       unsubscribeAIReply();
       unsubscribeAIStreamReply();
     };
-  }, [sessionId, chatHistories, modifyLocalSession, triggerTitleGeneration]);
+  }, [sessionId, chatHistories, modifyLocalSession, triggerTitleGeneration, updateChatHistories]);
 
   useEffect(() => {
     aiReplyStreamTimer.current && clearTimeout(aiReplyStreamTimer.current);

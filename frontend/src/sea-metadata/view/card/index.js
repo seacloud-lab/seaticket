@@ -23,7 +23,7 @@ const Card = ({
     }
     expandRowRef.current = row || null;
     setIsShowRowExpand(true);
-  }, [expandRow, children]);
+  }, [expandRow]);
 
   const closeRowExpand = useCallback(() => {
     expandRowRef.current = null;

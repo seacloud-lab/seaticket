@@ -65,7 +65,7 @@ const Main = ({
     if (offsetHeight + contentScrollTop >= rowsContainer.current.scrollHeight) {
       loadMore && loadMore();
     }
-  }, [startRenderIndex, endRenderIndex, rowsCount]);
+  }, [startRenderIndex, endRenderIndex, rowsCount, loadMore]);
 
   const updateScrollTop = useCallback((highlightIndex, step = 0) => {
     if (!rowsContainer.current) return;
@@ -153,7 +153,7 @@ const Main = ({
     return () => {
       document.removeEventListener('keydown', onHotKey, true);
     };
-  }, [rowsCount]);
+  }, [rowsCount, updateScrollTop]);
 
   const renderColumns = columns.filter(c => c.key !== titleColumnKey);
 

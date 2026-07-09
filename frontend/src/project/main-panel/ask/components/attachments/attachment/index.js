@@ -15,7 +15,7 @@ const Attachment = ({ attachment, index, isShowBigImage, onRemove, onReupload, o
     event.stopPropagation();
     event.nativeEvent.stopImmediatePropagation();
     onRemove(attachment, index);
-  }, [onRemove]);
+  }, [attachment, index, onRemove]);
 
   const onClick = useCallback((event) => {
     event.stopPropagation();
@@ -49,6 +49,7 @@ const Attachment = ({ attachment, index, isShowBigImage, onRemove, onReupload, o
     }
     imageRef.current.addEventListener('load', getOriginalSize);
     return () => {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       imageRef.current && imageRef.current.removeEventListener('load', getOriginalSize);
     };
   }, [isShowBigImage, attachment.type, attachment.path]);

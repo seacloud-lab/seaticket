@@ -49,7 +49,7 @@ const Main = forwardRef(({
   const onSearchValueChange = useCallback((newSearchValue) => {
     if (searchValue === newSearchValue) return;
     setSearchValue(newSearchValue);
-  }, [collaborators, searchValue]);
+  }, [searchValue]);
 
   const removeCollaborator = useCallback((email) => {
     const newValue = value.filter(i => i !== email);

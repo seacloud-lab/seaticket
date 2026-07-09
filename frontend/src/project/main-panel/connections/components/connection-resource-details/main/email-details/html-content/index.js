@@ -148,7 +148,7 @@ const HTMLContent = ({
       imgObserver.disconnect();
       linkObserver.disconnect();
     };
-  }, []);
+  }, [assetURLPrefix, detail._pk]);
 
   useEffect(() => {
     return () => {

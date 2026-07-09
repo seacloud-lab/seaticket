@@ -75,7 +75,7 @@ const AllViews = ({
   const closeAllViewsPopover = useCallback(() => {
     setIsShowAllViewsPopover(false);
     setSearchValue('');
-  }, [isShowAllViewsPopover]);
+  }, []);
 
   const views = useMemo(() => {
     if (searchValue) {

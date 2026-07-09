@@ -30,7 +30,7 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
   const handleExpandRow = useCallback((kb) => {
     setCurrentKB({ ...kb, type: KNOWLEDGE_BASE_TYPE });
     setIsShowKBDetailsDialog(true);
-  }, [projectUuid]);
+  }, []);
 
   const api = useMemo(() => {
     return {
@@ -92,7 +92,7 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
     return generatorKnowledgeContextMenuOptions({ ...props });
   }, []);
 
-  const localStorageName = useMemo(() => `seaqa-${projectUuid}-knowledge-base`, []);
+  const localStorageName = useMemo(() => `seaqa-${projectUuid}-knowledge-base`, [projectUuid]);
 
   const t = useMemo(() => ({
     row: gettext('record'),

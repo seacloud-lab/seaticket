@@ -74,7 +74,7 @@ const Main = ({
       }
       onToggle && onToggle();
     }, []);
-  }, [selectedRowIds, ticketsData, onSubmit, onToggle]);
+  }, [selectedRowIds, onSubmit, onToggle]);
 
   const renderTip = useCallback(() => {
     if (isLoading) return null;
@@ -158,7 +158,8 @@ const Main = ({
         abortControllerRef.current = null;
       });
     }, 300);
-  }, [searchValue]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectUuid, searchValue]);
 
   useEffect(() => {
     return () => {

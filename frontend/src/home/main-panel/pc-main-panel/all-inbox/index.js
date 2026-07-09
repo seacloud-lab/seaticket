@@ -33,13 +33,13 @@ const AllInbox = () => {
       page.current = page.current + 1;
       fetchAllNotifications(page.current, 20, curTab);
     }
-  }, [loadingMore, notificationList, allNotificationCount, curTab]);
+  }, [loadingMore, notificationList, allNotificationCount, curTab, fetchAllNotifications]);
 
   const onHandleClick = useCallback((e) => {
     if (!showInboxDrawer) return;
     if (inboxPanelRef.current.contains(e.target)) return;
     setShowInboxDrawer(false);
-  }, [showInboxDrawer]);
+  }, [showInboxDrawer, setShowInboxDrawer]);
 
   useEffect(() => {
     document.addEventListener('click', onHandleClick);
@@ -56,6 +56,7 @@ const AllInbox = () => {
     if (notifications === 'all') {
       setShowInboxDrawer(true);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -65,6 +66,7 @@ const AllInbox = () => {
       page.current = 1;
       fetchAllNotifications(1, 20, curTab);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showInboxDrawer, curTab]);
 
   if (!showInboxDrawer) return null;

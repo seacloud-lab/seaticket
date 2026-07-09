@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import TopBar from '../../top-bar';
-import { usePortalIssuesPage, usePortalIssuesMetadata } from '../hooks';
+import { usePortalIssuesPage } from '../hooks';
 import { PORTAL_ISSUE_PAGE_SLUG_ID } from '../constants';
 import { EVENT_BUS_TYPE } from '@/project/constants/event-bus-type';
 import { IconButton, IconTextBtn } from '@/components';
@@ -9,8 +9,7 @@ import eventBus from '@/utils/event-bus';
 import { RefreshBtn } from '@/project/components';
 
 const PortalIssuesTopBar = ({ title, permission, type }) => {
-  const { pageSlugId, togglePageSlugId, onRefresh, childrenPageSlugId } = usePortalIssuesPage();
-  const { typesData, substatesData } = usePortalIssuesMetadata();
+  const { pageSlugId, togglePageSlugId, onRefresh } = usePortalIssuesPage();
 
   const renderLeftChildren = useCallback(() => {
     if (pageSlugId === PORTAL_ISSUE_PAGE_SLUG_ID.ALL) {
@@ -73,7 +72,7 @@ const PortalIssuesTopBar = ({ title, permission, type }) => {
         <span className="text-truncate" title={issueTitle}>{issueTitle}</span>
       </>
     );
-  }, [pageSlugId, childrenPageSlugId, title, typesData, substatesData, togglePageSlugId, onRefresh]);
+  }, [pageSlugId, title, togglePageSlugId, onRefresh]);
 
   const renderRightChildren = useCallback(() => {
     const isRW = permission === PERMISSION_TYPES.READ_WRITE;
@@ -90,7 +89,7 @@ const PortalIssuesTopBar = ({ title, permission, type }) => {
       );
     }
     return null;
-  }, [permission, pageSlugId, childrenPageSlugId]);
+  }, [permission, pageSlugId]);
 
   return (
     <TopBar>

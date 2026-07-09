@@ -38,7 +38,7 @@ const initializeConfig = (newType) => {
 };
 
 const NewConnectionDialog = ({ onSubmit, onToggle }) => {
-  const availableConnectionTypes = useMemo(() => getAvailableConnectionTypes(enableGeneralTask), [enableGeneralTask]);
+  const availableConnectionTypes = useMemo(() => getAvailableConnectionTypes(enableGeneralTask), []);
   const [stepIndex, setStepIndex] = useState(0);
   const [type, setType] = useState(availableConnectionTypes[0]?.type || CONNECTION_TYPES[0].type);
   const [name, setName] = useState('');
@@ -50,6 +50,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const [isWaitingEmailOAuth, setWaitingEmailOAuth] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState([]);
   const [isWaitingConfluenceOAuth, setWaitingConfluenceOAuth] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const [confluenceWorkspacesVersion, setConfluenceWorkspacesVersion] = useState(0);
   const [isConfluenceOauthConnected, setConfluenceOauthConnected] = useState(false);
   const [isCheckingConfluenceOauth, setCheckingConfluenceOauth] = useState(false);
@@ -62,6 +63,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const emailOAuthIntervalRef = useRef(null);
   const oauthWindowRef = useRef(null);
   const pollingIntervalRef = useRef(null);
+  // eslint-disable-next-line no-unused-vars
   const [linearTeamsVersion, setLinearTeamsVersion] = useState(0);
   const [isLinearOauthConnected, setLinearOauthConnected] = useState(false);
   const [isCheckingLinearOauth, setCheckingLinearOauth] = useState(false);
@@ -75,6 +77,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       onTypeChange(CONNECTION_TYPE.GITHUB_ISSUE);
       setStepIndex(1);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -88,14 +91,14 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     const url = new URL(`${server}/workspace/${workspaceID}/project/${projectName}/connections/?connection-dialog=open&connection-type=github`);
     const newPath = url.href;
     return `${server}/github/install/?next=${encodeURIComponent(newPath)}&project_uuid=${projectUuid}`;
-  }, [server, projectUuid]);
+  }, []);
 
   const columns = useMemo(() => {
     const _columns = CONNECTION_FIELDS[type] || [];
     if (type === CONNECTION_TYPE.GITHUB_ISSUE) return _columns;
     if (type !== CONNECTION_TYPE.EMAIL) return _columns;
     return getVisibleEmailFields(_columns, getEmailProvider(config), showEmailAdvancedOptions);
-  }, [type, config.server_provider, showEmailAdvancedOptions]);
+  }, [type, config, showEmailAdvancedOptions]);
 
   const customColumns = useMemo(() => columns.filter(c => {
     if (c.type === CONNECTION_FIELD_TYPE.GROUP) return c.children.find(children => children.is_custom);
@@ -110,11 +113,11 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
 
   const isMicrosoftEmailProvider = useMemo(() => {
     return isEmail && getEmailProvider(config) === EMAIL_SERVER_PROVIDER.MICROSOFT;
-  }, [isEmail, config.server_provider]);
+  }, [isEmail, config]);
 
   const isOAuthEmail = useMemo(() => {
     return isEmail && isOAuthEmailProvider(getEmailProvider(config));
-  }, [isEmail, config.server_provider]);
+  }, [isEmail, config]);
 
   const basicCustomColumns = useMemo(() => {
     return customColumns.filter(column => !column.is_advanced_option);
@@ -126,7 +129,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
 
   const step = useMemo(() => {
     return STEPS[stepIndex];
-  }, [STEPS, stepIndex]);
+  }, [stepIndex]);
 
   const isValid = useMemo(() => {
     if (!name.trim()) return false;
@@ -303,7 +306,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       setSubmitting(false);
     });
     return;
-  }, [name, type, config, onSubmit, stopEmailOAuthPolling, isConfluence, isGithub, selectedSpaceKeys]);
+  }, [name, type, config, isLinear, onSubmit, stopEmailOAuthPolling, isConfluence, isGithub, selectedSpaceKeys]);
 
   const onCopyCallbackUrl = useCallback(() => {
     copy(callbackUrl);
@@ -338,7 +341,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         }
       };
     });
-  }, [projectUuid, confluenceWorkspacesVersion, isConfluenceOauthConnected]);
+  }, [isConfluenceOauthConnected]);
 
   const fetchConfluenceSpaces = useCallback(() => {
     const workspaceId = config.workspace_id;
@@ -356,7 +359,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     }).finally(() => {
       setLoadingConfluenceSpaces(false);
     });
-  }, [projectUuid, config.workspace_id, isConfluenceOauthConnected]);
+  }, [config.workspace_id, isConfluenceOauthConnected]);
 
   // Reload spaces when workspace changes
   useEffect(() => {
@@ -395,7 +398,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         // Keep polling
       });
     }, 2000);
-  }, [projectUuid, stopConfluenceOAuthPolling]);
+  }, [stopConfluenceOAuthPolling]);
 
   const typeOption = availableConnectionTypes.find(i => i.type === type) || availableConnectionTypes[0];
   const connectionSections = useMemo(() => {
@@ -441,7 +444,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         }
       };
     });
-  }, [projectUuid, linearTeamsVersion]);
+  }, []);
 
   const fetchLinearOauthStatus = useCallback(() => {
     setCheckingLinearOauth(true);
@@ -478,7 +481,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         // Silently retry on next interval
       });
     }, 2000);
-  }, [projectUuid]);
+  }, []);
 
   useEffect(() => {
     if (!isLinear) return;
@@ -546,7 +549,10 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         onChange={onConfigChange}
       />
     );
-  }, [config, isSubmitting, onConfigChange, isGithub, listGitHubRepositories, isLinearOauthConnected, isConfluence, isConfluenceOauthConnected]);
+  }, [
+    config, isSubmitting, isGithub, isConfluence, isConfluenceOauthConnected, isLinear,
+    onConfigChange, listGitHubRepositories, listConfluenceWorkspaces, listLinearTeams,
+  ]);
 
   return (
     <Modal

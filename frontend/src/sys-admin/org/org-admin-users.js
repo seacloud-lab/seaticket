@@ -16,7 +16,7 @@ const OrgUsers = ({ orgID, onCloseSidePanel }) => {
     sysAdminAPI.sysAdminGetOrg(orgID).then((res) => {
       setOrgName(res.data.org_name);
     });
-  }, []);
+  }, [orgID]);
 
   return (
     <SelectedUsersProvider>

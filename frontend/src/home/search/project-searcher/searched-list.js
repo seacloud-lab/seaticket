@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useRef, useState } from 'react';
+import React, { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import SearchedProject from './searched-project';
 import { Utils } from '@/utils/utils';
@@ -20,10 +20,10 @@ const SearchedList = forwardRef(function SearchedList(props, ref) {
   const mounted = useRef(false);
   const searchedListRef = useRef(null);
 
-  const clickSearched = (searched) => {
+  const clickSearched = useCallback((searched) => {
     props.handleClickSearchedItem(searched);
     openOnBlankWindow(searched);
-  };
+  }, [props]);
 
   if (ref) {
     if (!ref.current) {
@@ -31,7 +31,7 @@ const SearchedList = forwardRef(function SearchedList(props, ref) {
     }
   }
 
-  const onEnter = (event) => {
+  const onEnter = useCallback((event) => {
     event.stopPropagation();
     const searchedItem = Array.isArray(searchedList) && searchedList[highlightIndex];
     if (!searchedItem) {
@@ -48,9 +48,9 @@ const SearchedList = forwardRef(function SearchedList(props, ref) {
         break;
       }
     }
-  };
+  }, [searchedList, highlightIndex, props, clickSearched]);
 
-  const onUpArrow = (event) => {
+  const onUpArrow = useCallback((event) => {
     event.preventDefault();
     event.stopPropagation();
     const nextHighlightIndex = highlightIndex > 0 ? highlightIndex - 1 : 0;
@@ -58,9 +58,9 @@ const SearchedList = forwardRef(function SearchedList(props, ref) {
 
     // update scrollTop
     props.handleUpArrow(nextHighlightIndex, searchedList.length);
-  };
+  }, [highlightIndex, props, searchedList]);
 
-  const onDownArrow = (event) => {
+  const onDownArrow = useCallback((event) => {
     event.preventDefault();
     event.stopPropagation();
     const maxIndex = searchedList.length - 1;
@@ -69,9 +69,9 @@ const SearchedList = forwardRef(function SearchedList(props, ref) {
 
     // update scrollTop
     props.handleDownArrow(nextHighlightIndex);
-  };
+  }, [highlightIndex, props, searchedList]);
 
-  const onHotKey = (event) => {
+  const onHotKey = useCallback((event) => {
     const keyCode = event.keyCode;
     if (
       keyCode === Utils.keyCodes.enter
@@ -83,7 +83,7 @@ const SearchedList = forwardRef(function SearchedList(props, ref) {
     } else if (keyCode === Utils.keyCodes.down) {
       onDownArrow(event);
     }
-  };
+  }, [searchedList, onEnter, onUpArrow, onDownArrow]);
 
   useEffect(() => {
     document.addEventListener('keydown', onHotKey, true);
@@ -91,7 +91,7 @@ const SearchedList = forwardRef(function SearchedList(props, ref) {
       document.removeEventListener('keydown', onHotKey, true);
     };
     // get latest highlight index: need re-register hot key while highlight index or query type changed
-  }, [highlightIndex, searchedList]);
+  }, [onHotKey]);
 
   useEffect(() => {
     // init highlight index while query type is changed

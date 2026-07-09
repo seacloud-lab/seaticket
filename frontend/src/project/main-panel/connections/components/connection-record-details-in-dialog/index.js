@@ -120,7 +120,7 @@ const ConnectionRecordDetailsInDialog = ({ projectUuid, resource, columns, permi
         throw error;
       });
     });
-  }, [connection, targetColumns, tagsData, modifyRow, projectUuid, resource?._id, connectionTableName, syncRecordDetails]);
+  }, [connection, targetColumns, tagsData, modifyRow, projectUuid, resource?._id, connectionTableName, connectionDetails, syncRecordDetails]);
 
   const createTicketCallback = useCallback((ticket) => {
     const linkedUpdateRecord = { [ticket._pk]: ticket.title };
@@ -136,7 +136,7 @@ const ConnectionRecordDetailsInDialog = ({ projectUuid, resource, columns, permi
       eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdateData);
       eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: linkedUpdateRecord }, false);
     });
-  }, [connection, targetColumns, insertRowByLink, resource?._id, syncRecordDetails]);
+  }, [targetColumns, insertRowByLink, resource?._id, connectionTableName, syncRecordDetails]);
 
   const linkAnExistingTicket = useCallback((ticket, linkedConnectionRecordsColumn, callback) => {
     const linkedTicketColumn = getColumnByName(targetColumns, CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET);
@@ -170,7 +170,7 @@ const ConnectionRecordDetailsInDialog = ({ projectUuid, resource, columns, permi
         throw error;
       });
     });
-  }, [connection, connectionDetails, targetColumns, modifyRowLink, projectUuid, syncRecordDetails]);
+  }, [connection, connectionDetails, targetColumns, modifyRowLink, projectUuid, connectionTableName, resource._id, syncRecordDetails]);
 
   const linkedTicketTools = useMemo(() => {
     if (!connectionDetails?.record) return [];

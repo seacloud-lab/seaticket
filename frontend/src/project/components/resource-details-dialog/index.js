@@ -79,7 +79,7 @@ const ResourceDetailsDialog = ({
       title = getCellValueByColumn(currentResource, filenameColumn);
     }
     return title;
-  }, [resource, type, resourceDetails, columns]);
+  }, [type, currentResourceDetails, currentResource, currentColumns]);
 
   const url = useMemo(() => {
     return getResourceOriginalURL(type, { ...currentResource, url: currentResourceDetails?.url || currentResource?.url }, connections, currentColumns);

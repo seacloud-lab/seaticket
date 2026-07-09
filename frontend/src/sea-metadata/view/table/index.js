@@ -47,11 +47,11 @@ const Table = ({ fixedColumnCount, expandRow, children }) => {
 
   const { collaborators } = useCollaborators();
 
-  const canModify = useMemo(() => context.canModify(), [context]);
+  const canModify = useMemo(() => context.canModify(), []);
 
   const focusDataGrid = useCallback(() => {
     setTimeout(() => context.eventBus.dispatch(EVENT_BUS_TYPE.FOCUS_CANVAS), 0);
-  }, [context]);
+  }, []);
 
   const onHotKey = useCallback((event) => {
     if (event.keyCode === toKeyCode('mod+shift')) return;
@@ -144,7 +144,7 @@ const Table = ({ fixedColumnCount, expandRow, children }) => {
 
   const getTableContentRect = useCallback(() => {
     return containerRef?.current?.getBoundingClientRect() || { x: 0, right: window.innerWidth, width: 0 };
-  }, [containerRef?.current]);
+  }, []);
 
   const onRowExpand = useCallback((row) => {
     if (isFunction(expandRow)) {
@@ -153,7 +153,7 @@ const Table = ({ fixedColumnCount, expandRow, children }) => {
     }
     expandRowRef.current = row || null;
     setIsShowRowExpand(true);
-  }, [expandRow, children]);
+  }, [expandRow]);
 
   const closeRowExpand = useCallback(() => {
     expandRowRef.current = null;

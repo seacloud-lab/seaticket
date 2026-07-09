@@ -90,7 +90,7 @@ const AllTypes = ({
     deleteRow: (...params) => deleteType(...params),
     deleteRows: (...params) => deleteTypes(...params),
 
-  }), [projectUuid, columns, viewsData, createType, deleteType, deleteTypes, typesData]);
+  }), [columns, viewsData, createType, deleteType, deleteTypes, typesData, modifyType]);
 
   const createContextMenuOptions = useCallback(({
     isGroupView,

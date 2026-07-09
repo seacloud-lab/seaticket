@@ -162,7 +162,10 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
       return acc;
     }, []);
     return _tools;
-  }, [record, connection, permission, cacheRecord, columns, childrenPageSlugId, linkedTicketTools, updateAttachments, toggleBar, deleteEmailRecord]);
+  }, [
+    projectUuid, record, connection, permission, cacheRecord, columns, childrenPageSlugId, linkedTicketTools,
+    updateAttachments, toggleBar, deleteEmailRecord, modifyRow,
+  ]);
 
   const title = useMemo(() => {
     if (record && record.title) return record.title;
@@ -202,7 +205,10 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
         callback && callback(true);
       });
     });
-  }, [title, columns, childrenPageSlugId, connection, record, modifyRowLink]);
+  }, [
+    title, columns, childrenPageSlugId, connection, record, connectionTableName, projectUuid,
+    modifyRowLink
+  ]);
 
   const updateResource = useCallback(({ record, columns, linked_ticket_title, related_users }) => {
     linkedTicketTitle.current = linked_ticket_title;
@@ -262,7 +268,10 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
         callback && callback(true);
       }),
     );
-  }, [connection, connectionTableName, childrenPageSlugId, columns, modifyGitHubRecord], modifyRow);
+  }, [
+    connection, connectionTableName, childrenPageSlugId, columns, projectUuid, record,
+    modifyGitHubRecord, modifyRow,
+  ]);
 
   const unreadColumn = useMemo(() => {
     if (permission !== PERMISSION_TYPES.READ_WRITE) return null;
@@ -290,7 +299,7 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
       setRecord({ ...record, [CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET]: ticket._pk });
       linkedTicketTitle.current = ticket.title;
     });
-  }, [columns, childrenPageSlugId]);
+  }, [columns, childrenPageSlugId, connectionTableName, insertRowByLink, record]);
 
   useEffect(() => {
     if (isConnectionsPageLoading || !record) return;

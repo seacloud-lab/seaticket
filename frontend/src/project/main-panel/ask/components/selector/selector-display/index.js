@@ -23,7 +23,7 @@ const SelectorDisplay = ({
       'highlight': highlight,
       'bg-color': displayBgColor,
     });
-  }, [className, highlight, border]);
+  }, [className, highlight, border, displayBgColor]);
 
   return (
     <>
