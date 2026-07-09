@@ -469,32 +469,38 @@ const Settings = () => {
             </div>
           </div>
         </TabPane>
-        <TabPane tabId={SETTING_TAB.CUSTOM_DOMAIN}>
+        <TabPane tabId={SETTING_TAB.PORTAL_DOMAIN}>
           <div className="portal-settings-content">
+            <label className="portal-settings-label">{gettext('Your current portal domain is')}</label>
+            <div className="portal-url-container">
+              <input
+                type="text"
+                className="form-control portal-url-input"
+                value={subdomainPublicUrl}
+                readOnly
+                placeholder={!domainAliasRoot ? gettext('Portal service root domain is not configured') : ''}
+              />
+              <Button
+                color="outline-primary"
+                onClick={() => onCopyUrl(subdomainPublicUrl)}
+                disabled={!subdomainPublicUrl}
+                title={gettext('Copy URL')}
+              >
+                <Icon symbol="copy" />
+              </Button>
+            </div>
+            {!domainAliasRoot && (
+              <p className="portal-settings-help-text mt-2 mb-0">
+                {gettext('Portal service root domain is not configured, so the portal domain is unavailable.')}
+              </p>
+            )}
             {domainAliasRoot && (
               <>
-                <label className="portal-settings-label">{gettext('Portal domain')}</label>
+                <label className="portal-settings-label mt-3">{gettext('Customize the prefix:')}</label>
                 <div className="portal-url-container">
                   <input
                     type="text"
-                    className="form-control portal-url-input"
-                    value={subdomainPublicUrl}
-                    readOnly
-                  />
-                  <Button
-                    color="outline-primary"
-                    onClick={() => onCopyUrl(subdomainPublicUrl)}
-                    disabled={!subdomainPublicUrl}
-                    title={gettext('Copy URL')}
-                  >
-                    <Icon symbol="copy" />
-                  </Button>
-                </div>
-                <label className="portal-settings-label mt-3">{gettext('Custom subdomain')}</label>
-                <div className="portal-url-container">
-                  <input
-                    type="text"
-                    className="form-control portal-url-input"
+                    className="form-control portal-subdomain-prefix-input"
                     value={subdomainPrefix}
                     onChange={onCustomSubdomainPrefixChange}
                     placeholder={gettext('my-brand')}
@@ -503,7 +509,7 @@ const Settings = () => {
                   />
                   <input
                     type="text"
-                    className="form-control portal-url-input"
+                    className="form-control portal-subdomain-root-input"
                     value={`.${domainAliasRoot}`}
                     readOnly
                   />
@@ -513,9 +519,12 @@ const Settings = () => {
                     {isSavingDomainAlias ? gettext('Saving...') : gettext('Save')}
                   </Button>
                 </div>
-                <hr />
               </>
             )}
+          </div>
+        </TabPane>
+        <TabPane tabId={SETTING_TAB.CUSTOM_DOMAIN}>
+          <div className="portal-settings-content">
             <label className="portal-settings-label">{gettext('Custom domain')}</label>
             <input
               type="text"
