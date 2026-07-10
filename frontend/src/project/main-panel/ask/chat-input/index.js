@@ -2,13 +2,13 @@ import React, { useCallback, useRef, useState, useEffect, useMemo, useImperative
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import slugid from 'slugid';
-import { IconButton, ClickOutside, Tooltip, UploadFile, toaster } from '@/components';
+import { IconButton, ClickOutside, OptionEditor, Tooltip, UploadFile, toaster } from '@/components';
 import { gettext } from '@/constants';
 import * as CommonlyUsedHotkey from '@/utils/hotkey';
 import { Utils } from '@/utils/utils';
 import { getType } from '@/utils/type-detection';
 import InputUtils from '@/utils/input-utils';
-import { CHAT_ATTACHMENT_TYPE, CHAT_ATTACHMENT_SOURCE, CHAT_IMAGE_ATTACHMENT_MAX_COUNT, CHAT_MESSAGE_TYPE, DEFAULT_ALLOWED_ATTACHMENT_SOURCES } from '../constants';
+import { CHAT_ATTACHMENT_TYPE, CHAT_ATTACHMENT_SOURCE, CHAT_IMAGE_ATTACHMENT_MAX_COUNT, CHAT_MESSAGE_TYPE, DEFAULT_ALLOWED_ATTACHMENT_SOURCES, CHAT_SKILLS } from '../constants';
 import AttachmentsSelector from './attachments-selector';
 import AttachmentsFormatter from './attachments';
 import { useAIChatTools } from '../hooks';
@@ -17,6 +17,74 @@ import { chatAPI as defaultChatAPI } from '@/project/api';
 import { AttachmentObject } from '../models';
 
 import './index.css';
+
+const DELETE_KEY_CODE = 46;
+
+const getSkillCommandRange = (value, cursor) => {
+  if (!Number.isInteger(cursor)) return null;
+  const beforeCursor = value.slice(0, cursor);
+  const slashIndex = beforeCursor.lastIndexOf('/');
+  if (slashIndex !== 0) return null;
+  const command = beforeCursor.slice(slashIndex + 1);
+  if (/\s/.test(command)) return null;
+  return { start: slashIndex, end: cursor };
+};
+
+const getSkillCommandQuery = (value, range) => {
+  if (!range) return '';
+  return value.slice(range.start + 1, range.end).trim().toLowerCase();
+};
+
+const getSelectedSkillCommandRange = (value, selectionStart, selectionEnd) => {
+  const skillCommands = CHAT_SKILLS.map(skill => `/${skill.id}`);
+  for (const command of skillCommands) {
+    let start = value.indexOf(command);
+    while (start !== -1) {
+      const end = start + command.length;
+      const hasValidStart = start === 0;
+      const hasValidEnd = end === value.length || /\s/.test(value[end]);
+      const trailingEnd = value[end] === ' ' ? end + 1 : end;
+      const isSelected = selectionStart !== selectionEnd && selectionStart < trailingEnd && selectionEnd > start;
+      const isBackspacePosition = selectionStart === selectionEnd && selectionStart > start && selectionStart <= trailingEnd;
+      const isDeletePosition = selectionStart === selectionEnd && selectionStart >= start && selectionStart < trailingEnd;
+      if (hasValidStart && hasValidEnd && (isSelected || isBackspacePosition || isDeletePosition)) {
+        return { start, end };
+      }
+      start = value.indexOf(command, start + 1);
+    }
+  }
+  return null;
+};
+
+const getSkillCommandDeleteRange = (value, selectionStart, selectionEnd, keyCode) => {
+  const commandRange = getSelectedSkillCommandRange(value, selectionStart, selectionEnd);
+  if (!commandRange) return null;
+
+  const trailingEnd = value[commandRange.end] === ' ' ? commandRange.end + 1 : commandRange.end;
+  if (selectionStart !== selectionEnd) {
+    const intersects = selectionStart < trailingEnd && selectionEnd > commandRange.start;
+    return intersects ? { start: commandRange.start, end: trailingEnd } : null;
+  }
+
+  if (keyCode === Utils.keyCodes.backspace && selectionStart > commandRange.start && selectionStart <= trailingEnd) {
+    return { start: commandRange.start, end: trailingEnd };
+  }
+  if (keyCode === DELETE_KEY_CODE && selectionStart >= commandRange.start && selectionStart < trailingEnd) {
+    return { start: commandRange.start, end: trailingEnd };
+  }
+  return null;
+};
+
+const getMessageWithoutLeadingSkillCommand = (value) => {
+  if (typeof value !== 'string') return '';
+  const skillCommands = CHAT_SKILLS.map(skill => `/${skill.id}`);
+  for (const command of skillCommands) {
+    if (value === command || value.startsWith(`${command} `)) {
+      return value.slice(command.length).trim();
+    }
+  }
+  return value.trim();
+};
 
 const ChatInput = forwardRef(({
   isReply,
@@ -27,6 +95,7 @@ const ChatInput = forwardRef(({
   clearContext,
   sendMessage,
   resetClearContext,
+  enableSkills = true,
   api,
 }, ref) => {
   const chatAPI = api || defaultChatAPI;
@@ -39,6 +108,8 @@ const ChatInput = forwardRef(({
   const [selectedModel, setSelectedModel] = useState(null);
   const [width, setWidth] = useState(0);
   const [isDragging, setDragging] = useState(false);
+  const [isShowSkillCommandSelector, setIsShowSkillCommandSelector] = useState(false);
+  const [skillCommandRange, setSkillCommandRange] = useState(null);
 
   const inputContentRef = useRef(null);
   const inputRef = useRef(null);
@@ -47,6 +118,7 @@ const ChatInput = forwardRef(({
   const domRef = useRef(null);
   const sendBtnRef = useRef(null);
   const uploadFileRef = useRef(null);
+  const isSelectingSkillCommandRef = useRef(false);
 
   const {
     attachments, updateAttachments, removeAttachment, clearAttachments,
@@ -143,10 +215,50 @@ const ChatInput = forwardRef(({
     uploadFileRef.current && uploadFileRef.current.onClick();
   }, []);
 
-  const onValueChange = useCallback((event) => {
-    const value = event.target.value;
-    setValue(value);
+  const closeSkillCommandSelector = useCallback(() => {
+    setIsShowSkillCommandSelector(false);
+    setSkillCommandRange(null);
   }, []);
+
+  const updateSkillCommandSelector = useCallback((nextValue, cursor) => {
+    if (!enableSkills) {
+      closeSkillCommandSelector();
+      return;
+    }
+    const nextSkillCommandRange = getSkillCommandRange(nextValue, cursor);
+    setSkillCommandRange(nextSkillCommandRange);
+    setIsShowSkillCommandSelector(Boolean(nextSkillCommandRange));
+  }, [enableSkills, closeSkillCommandSelector]);
+
+  const onValueChange = useCallback((event) => {
+    const nextValue = event.target.value;
+    setValue(nextValue);
+    updateSkillCommandSelector(nextValue, event.target.selectionStart);
+  }, [updateSkillCommandSelector]);
+
+  const onSkillCommandChange = useCallback((skillId) => {
+    if (!skillId) {
+      closeSkillCommandSelector();
+      return;
+    }
+    const textarea = inputRef.current;
+    const cursor = Number.isInteger(textarea?.selectionStart) ? textarea.selectionStart : value.length;
+    const range = skillCommandRange || getSkillCommandRange(value, cursor) || { start: cursor, end: cursor };
+    const command = `/${skillId}`;
+    const nextValue = value.slice(0, range.start) + command + ' ' + value.slice(range.end);
+    const nextCursor = range.start + command.length + 1;
+
+    isSelectingSkillCommandRef.current = true;
+    setValue(nextValue);
+    closeSkillCommandSelector();
+    setTimeout(() => {
+      textarea && textarea.focus();
+      if (textarea) {
+        textarea.selectionStart = textarea.selectionEnd = nextCursor;
+      }
+      isSelectingSkillCommandRef.current = false;
+    }, 0);
+  }, [value, skillCommandRange, closeSkillCommandSelector]);
 
   const inputFocus = useCallback(() => {
     // set cursor at end
@@ -173,13 +285,19 @@ const ChatInput = forwardRef(({
     });
 
     setValue(text);
+    closeSkillCommandSelector();
 
     inputFocus();
-  }, [readOnly, inputFocus]);
+  }, [readOnly, inputFocus, closeSkillCommandSelector]);
 
   const onSendMessage = useCallback((event) => {
     event && event.stopPropagation();
     event && event.nativeEvent.stopImmediatePropagation();
+    const messageText = enableSkills ? getMessageWithoutLeadingSkillCommand(value) : value.trim();
+    if (!messageText) {
+      inputRef.current?.focus();
+      return;
+    }
     const isUploadingAttachment = attachments.some(att => att.type === CHAT_ATTACHMENT_TYPE.IMAGE && att.status === 'uploading');
     if (isUploadingAttachment) return;
     sendMessage({
@@ -188,18 +306,46 @@ const ChatInput = forwardRef(({
       model: selectedModel,
       clearContext
     });
+    closeSkillCommandSelector();
     clearAttachments();
     resetClearContext();
-  }, [value, attachments, selectedModel, sendMessage, clearAttachments, clearContext, resetClearContext]);
+  }, [value, attachments, selectedModel, sendMessage, clearAttachments, clearContext, resetClearContext, closeSkillCommandSelector, enableSkills]);
+
+  const skillCommandOptions = useMemo(() => {
+    if (!enableSkills) return [];
+    const query = getSkillCommandQuery(value, skillCommandRange);
+    return CHAT_SKILLS
+      .filter(skill => !query || skill.id.toLowerCase().startsWith(query))
+      .map(skill => ({
+        value: skill.id,
+        label: `/${skill.id}`,
+      }));
+  }, [value, skillCommandRange, enableSkills]);
 
   const onKeyUp = useCallback((event) => {
     if (!(CommonlyUsedHotkey.isModUp(event) || CommonlyUsedHotkey.isModDown(event))) {
       const selection = window.getSelection();
       rangeRef.current = selection.getRangeAt(0);
     }
-  }, []);
+    updateSkillCommandSelector(event.target.value, event.target.selectionStart);
+  }, [updateSkillCommandSelector]);
 
   const onKeyDown = useCallback((event) => {
+    const keyCode = event.keyCode;
+    if (enableSkills && (keyCode === Utils.keyCodes.backspace || keyCode === DELETE_KEY_CODE)) {
+      const textarea = inputRef.current;
+      const deleteRange = getSkillCommandDeleteRange(value, textarea.selectionStart, textarea.selectionEnd, keyCode);
+      if (deleteRange) {
+        event.preventDefault();
+        const nextValue = value.slice(0, deleteRange.start) + value.slice(deleteRange.end);
+        setValue(nextValue);
+        closeSkillCommandSelector();
+        setTimeout(() => {
+          textarea.selectionStart = textarea.selectionEnd = deleteRange.start;
+        }, 0);
+        return;
+      }
+    }
     if (CommonlyUsedHotkey.isShiftEnter(event)) return;
     if (CommonlyUsedHotkey.isModEnter(event)) {
       event.preventDefault();
@@ -215,18 +361,29 @@ const ChatInput = forwardRef(({
       }, 0);
       return;
     }
-    const keyCode = event.keyCode;
+    if (isSelectingSkillCommandRef.current && keyCode === Utils.keyCodes.enter) {
+      event.preventDefault();
+      return;
+    }
+    if (isShowSkillCommandSelector && keyCode === Utils.keyCodes.enter) {
+      event.preventDefault();
+      if (skillCommandOptions.length === 1) {
+        onSkillCommandChange(skillCommandOptions[0].value);
+      }
+      return;
+    }
     if (keyCode === Utils.keyCodes.enter) {
       event.preventDefault();
       onSendMessage();
       return;
     }
-  }, [value, onSendMessage]);
+  }, [value, onSendMessage, isShowSkillCommandSelector, skillCommandOptions, onSkillCommandChange, closeSkillCommandSelector, enableSkills]);
 
-  const onMouseUp = useCallback(() => {
+  const onMouseUp = useCallback((event) => {
     const selection = window.getSelection();
     rangeRef.current = selection.getRangeAt(0);
-  }, []);
+    updateSkillCommandSelector(event.target.value, event.target.selectionStart);
+  }, [updateSkillCommandSelector]);
 
   const onContainerBlur = useCallback(() => {
     setContainerFocus(false);
@@ -340,7 +497,8 @@ const ChatInput = forwardRef(({
   const disabled = isReply || readOnly;
   const isSimple = width <= 673;
   const isUploadingAttachment = attachments.some(att => att.type === CHAT_ATTACHMENT_TYPE.IMAGE && att.status === 'uploading');
-  const sendDisabled = disabled || !value || isUploadingAttachment;
+  const messageText = enableSkills ? getMessageWithoutLeadingSkillCommand(value) : value.trim();
+  const sendDisabled = disabled || !messageText || isUploadingAttachment;
 
   const domProps = allowImageAttachments && !disabled ? {
     onDragStart,
@@ -384,6 +542,20 @@ const ChatInput = forwardRef(({
               disabled={disabled}
             />
             <div ref={previewContentRef} className="message-input message-input-preview"></div>
+            {isShowSkillCommandSelector && !disabled && (
+              <OptionEditor
+                className="seaqa-ai-chat-selector-display-editor"
+                target={inputContentRef}
+                isMultiple={false}
+                isSearchEnabled={false}
+                emptyTip={gettext('No results')}
+                options={skillCommandOptions}
+                value=""
+                placement="top-start"
+                onChange={onSkillCommandChange}
+                onToggle={closeSkillCommandSelector}
+              />
+            )}
           </div>
           <div className="seaqa-ai-ask-chat-operations-container">
             <div className="seaqa-ai-ask-chat-operations-container-left">
@@ -435,6 +607,7 @@ ChatInput.propTypes = {
   isReply: PropTypes.bool,
   readOnly: PropTypes.bool,
   hasHistoryMessages: PropTypes.bool,
+  enableSkills: PropTypes.bool,
   sendMessage: PropTypes.func.isRequired,
 };
 

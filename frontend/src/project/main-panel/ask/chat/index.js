@@ -15,7 +15,7 @@ import ChatHeader from '../chat-header';
 
 import './index.css';
 
-const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allowedAttachmentSources, canSelectModel, api, renderOperation, customHeaderTitle }) => {
+const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allowedAttachmentSources, canSelectModel, enableSkills = true, api, renderOperation, customHeaderTitle }) => {
   const [isReply, setReply] = useState(false);
   const [loading, setLoading] = useState(true);
   const [chatHistories, setChatHistories] = useState([]);
@@ -616,6 +616,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
             placeholder={isEmpty ? undefined : ''}
             allowedAttachmentSources={allowedAttachmentSources}
             canSelectModel={canSelectModel}
+            enableSkills={enableSkills}
             sendMessage={sendMessage}
             clearContext={clearContext}
             resetClearContext={resetClearContext}

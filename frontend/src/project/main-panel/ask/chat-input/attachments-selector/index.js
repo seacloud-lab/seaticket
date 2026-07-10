@@ -2,12 +2,12 @@ import React, { useCallback, useState, useRef } from 'react';
 import { Dropdown, DropdownToggle } from 'reactstrap';
 import {
   CustomizeDropdownItem, CustomizeDropdownMenu, CustomizeDropdownItemIcon, CustomizeDropdownItemText,
-  Icon, OptionEditor, SyncOptionEditor, Tooltip
+  Icon, SyncOptionEditor, Tooltip
 } from '@/components';
 import { gettext } from '@/constants';
 import { searchAPI } from '@/project/api';
 import { AttachmentObject } from '@/project/main-panel/ask/models';
-import { CHAT_ATTACHMENT_TYPE, CHAT_IMAGE_ATTACHMENT_MAX_COUNT, CHAT_SKILLS } from '../../constants';
+import { CHAT_ATTACHMENT_TYPE, CHAT_IMAGE_ATTACHMENT_MAX_COUNT } from '../../constants';
 
 import './index.css';
 
@@ -24,21 +24,13 @@ const AttachmentsSelector = ({
   const ref = useRef(null);
 
   const [isShowSelector, setIsShowSelector] = useState(false);
-  const [isShowSkillSelector, setIsShowSkillSelector] = useState(false);
 
   const openSelector = useCallback(() => {
-    setIsShowSkillSelector(false);
     setIsShowSelector(true);
-  }, []);
-
-  const openSkillSelector = useCallback(() => {
-    setIsShowSelector(false);
-    setIsShowSkillSelector(true);
   }, []);
 
   const onToggle = useCallback(() => {
     setIsShowSelector(false);
-    setIsShowSkillSelector(false);
   }, []);
 
   const onSearch = useCallback((value, signal) => {
@@ -54,37 +46,14 @@ const AttachmentsSelector = ({
   }, [projectUuid, attachments]);
 
   const onChange = useCallback((newAttachmentKeys) => {
-    const skillAttachments = attachments.filter(t => t?.type === CHAT_ATTACHMENT_TYPE.SKILL);
     const newAttachments = newAttachmentKeys.map(key => {
       if (key.startsWith('image')) return attachments.find(t => t.key === key);
       return attachmentsRef.current.find(t => t.key === key);
     }).filter(Boolean);
-    propsOnChange && propsOnChange([...newAttachments, ...skillAttachments]);
+    propsOnChange && propsOnChange(newAttachments);
   }, [attachments, propsOnChange]);
 
-  const onSkillChange = useCallback((skillId) => {
-    const newAttachments = attachments.filter(t => t?.type !== CHAT_ATTACHMENT_TYPE.SKILL);
-    if (!skillId) {
-      propsOnChange && propsOnChange(newAttachments);
-      return;
-    }
-    const skill = CHAT_SKILLS.find(skill => skill.id === skillId);
-    const newSkillAttachment = new AttachmentObject({
-      type: CHAT_ATTACHMENT_TYPE.SKILL,
-      skill_id: skillId,
-      title: skill?.name,
-    });
-    propsOnChange && propsOnChange([...newAttachments, newSkillAttachment]);
-  }, [attachments, propsOnChange]);
-
-  const selectedSkill = attachments.find(t => t?.type === CHAT_ATTACHMENT_TYPE.SKILL);
-  const skillOptions = CHAT_SKILLS.map(skill => ({
-    value: skill.id,
-    label: skill.name,
-  }));
-
-  const value = Array.isArray(attachments) ? attachments.filter(t => t?.type !== CHAT_ATTACHMENT_TYPE.SKILL).map(t => t.key) : [];
-  const skillValue = selectedSkill?.skill_id || '';
+  const value = Array.isArray(attachments) ? attachments.map(t => t.key) : [];
   const images = Array.isArray(attachments) ? attachments.filter(v => v.type === CHAT_ATTACHMENT_TYPE.IMAGE) : [];
 
   return (
@@ -114,9 +83,6 @@ const AttachmentsSelector = ({
             <CustomizeDropdownItemIcon symbol="image"/>
             <CustomizeDropdownItemText>{gettext('Upload image')}</CustomizeDropdownItemText>
           </CustomizeDropdownItem>
-          <CustomizeDropdownItem onClick={openSkillSelector}>
-            <CustomizeDropdownItemText>{gettext('Skills')}</CustomizeDropdownItemText>
-          </CustomizeDropdownItem>
         </CustomizeDropdownMenu>
       </Dropdown>
       {canAddSources && isShowSelector && (
@@ -131,20 +97,6 @@ const AttachmentsSelector = ({
           onChange={onChange}
           onToggle={onToggle}
           onSearch={onSearch}
-        />
-      )}
-      {isShowSkillSelector && (
-        <OptionEditor
-          className="seaqa-ai-chat-selector-display-editor"
-          target={ref}
-          isMultiple={false}
-          isSearchEnabled={false}
-          emptyTip={gettext('No results')}
-          options={skillOptions}
-          value={skillValue}
-          placement="top-start"
-          onChange={onSkillChange}
-          onToggle={onToggle}
         />
       )}
     </>

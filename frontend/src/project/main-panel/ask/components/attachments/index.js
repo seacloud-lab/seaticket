@@ -40,7 +40,6 @@ const Attachments = ({
   }, [attachments]);
 
   const openAttachment = useCallback((attachment) => {
-    if (attachment.type === CHAT_ATTACHMENT_TYPE.SKILL) return;
     if (attachment.type === CHAT_ATTACHMENT_TYPE.IMAGE) {
       const index = imageAttachments.findIndex(otherAttachment => otherAttachment.key === attachment.key);
       setImageAttachmentIndex(index);

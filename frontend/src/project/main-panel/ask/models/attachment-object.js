@@ -1,27 +1,21 @@
 import slugid from 'slugid';
 import { gettext } from '@/constants';
-import { CHAT_ATTACHMENT_TYPE, CHAT_SKILLS } from '../constants';
+import { CHAT_ATTACHMENT_TYPE } from '../constants';
 
 class AttachmentObject {
   constructor(object = {}) {
-    this.skill_id = object.skill_id || '';
-    this.type = object.type || (this.skill_id ? CHAT_ATTACHMENT_TYPE.SKILL : '');
     this.record_id = object._id || object._pk || object.record_id || -1;
-    this._id = this.type === CHAT_ATTACHMENT_TYPE.SKILL ? this.skill_id : (this.record_id !== -1 ? String(this.record_id) : slugid.nice());
+    this._id = this.record_id !== -1 ? String(this.record_id) : slugid.nice();
     this.title = object.title || object.name || '';
+    this.type = object.type || '';
     this.connection_id = object.connection_id || '';
-    this.key = this.type === CHAT_ATTACHMENT_TYPE.SKILL ? `${CHAT_ATTACHMENT_TYPE.SKILL}_${this.skill_id}` : `${this.type}_${this.connection_id}_${this._id}`;
+    this.key = `${this.type}_${this.connection_id}_${this._id}`;
     this.icon = (
       this.type === CHAT_ATTACHMENT_TYPE.TICKET ||
       this.type === CHAT_ATTACHMENT_TYPE.EMAIL ||
       this.type === CHAT_ATTACHMENT_TYPE.GITHUB_ISSUE ||
       this.type === CHAT_ATTACHMENT_TYPE.DISCOURSE_FORUM
     ) ? 'dot-circle-stroked' : 'document';
-    if (this.type === CHAT_ATTACHMENT_TYPE.SKILL) {
-      const skill = CHAT_SKILLS.find(skill => skill.id === this.skill_id);
-      this.title = this.title || skill?.name || this.skill_id;
-      this.icon = '';
-    }
     if (this.type === CHAT_ATTACHMENT_TYPE.IMAGE) {
       this.status = object.status || 'done'; // uploading, failed, done
       this.path = object.path || object.value || '';
@@ -48,14 +42,11 @@ class AttachmentObject {
       this.type_name = gettext('Discourse forum');
     } else if (this.type === CHAT_ATTACHMENT_TYPE.IMAGE) {
       this.type_name = 'Image';
-    } else if (this.type === CHAT_ATTACHMENT_TYPE.SKILL) {
-      this.type_name = gettext('Skill');
     }
   }
 
   to_json = () => {
     if (this.type === CHAT_ATTACHMENT_TYPE.IMAGE) return { type: this.type, path: this.path };
-    if (this.type === CHAT_ATTACHMENT_TYPE.SKILL) return { type: this.type, skill_id: this.skill_id };
     if (this.type === CHAT_ATTACHMENT_TYPE.TICKET) return { type: this.type, record_id: this.record_id };
     return {
       type: this.type,

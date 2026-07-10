@@ -51,6 +51,7 @@ const Main = ({ title, settings, isEditMode }) => {
                 api={chatAPI}
                 allowedAttachmentSources={['image']}
                 canSelectModel={false}
+                enableSkills={false}
                 customHeaderTitle={gettext('Chat')}
                 renderOperation={() => (
                   <div className="d-flex">
