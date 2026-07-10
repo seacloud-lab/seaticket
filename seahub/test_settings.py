@@ -16,5 +16,6 @@ REST_FRAMEWORK = {
         'app': '90000/minute',
         'export': '90000/minute',
         'import': '90000/minute',
+        'portal_tls_ask': '90000/minute',
     },
 }
