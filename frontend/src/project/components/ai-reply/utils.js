@@ -16,7 +16,7 @@ export const formatSources = (sources, { workspaceID, projectName }) => {
       icon: getResourceIconURL(type),
       url: urlObject.href,
       connection_id,
-      title: title ? title.replaceAll('"', '\'') : '',
+      title: title ? title.replaceAll('"', '\'') : ' ',
       content: ai_summary,
       mtime: source?.bumped_at || source?.mtime || source?.updated_at || source?.modified_time || '',
       filename: source.filename,
