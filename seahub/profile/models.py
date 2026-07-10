@@ -165,12 +165,12 @@ class ProfileManager(models.Manager):
         - `self`:
         - `username`:
         """
-        # try:
-        #     profile = self.get(user=username)
-        #     if profile.lang_code is not None:
-        #         return profile.lang_code
-        # except Profile.DoesNotExist:
-        #     pass
+        try:
+            profile = self.get(user=username)
+            if profile.lang_code:
+                return profile.lang_code
+        except Profile.DoesNotExist:
+            pass
 
         return settings.LANGUAGE_CODE if settings.LANGUAGE_CODE else None
 

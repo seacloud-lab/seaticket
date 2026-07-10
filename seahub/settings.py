@@ -175,6 +175,8 @@ TEMPLATES = [
 LANGUAGES = [
     ('en', 'English'),
     ('zh-cn', '简体中文'),
+    ('de', 'Deutsch'),
+    ('fr', 'Français'),
 ]
 
 LOCALE_PATHS = [

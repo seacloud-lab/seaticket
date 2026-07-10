@@ -76,7 +76,7 @@ html, body, #wrapper {
   <div id="wrapper" class="{{ LANGUAGE_CODE }} d-flex flex-column">
     <div id="header" class="hide">
       {# for non-logged-in user #}
-      <!-- <div id="lang">
+      <div id="lang">
         <a href="#" id="lang-context" data-lang="{{ LANGUAGE_CODE }}">
           {{ LANGUAGE_CODE|language_name_local|capfirst }}
           <span class="seaqa-html-icon-svg">{% include "svg/arrow-down-b.svg" %}</span>
@@ -95,7 +95,7 @@ html, body, #wrapper {
             {% endfor %}
           </ul>
         </div>
-      </div> -->
+      </div>
     </div>
     <div id="main" class="container-fluid seaqa-container-fluid seaqa-container-layout">
       <div class="head-logo-container">

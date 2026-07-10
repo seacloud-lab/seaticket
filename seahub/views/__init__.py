@@ -20,7 +20,7 @@ from seahub.auth import get_backends
 from seahub.base.accounts import User
 import seahub.settings as settings
 from seahub.settings import AVATAR_FILE_STORAGE
-
+from seahub.profile.models import Profile
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 CUSTOM_NAV_ITEMS = getattr(settings, 'CUSTOM_NAV_ITEMS', [])
