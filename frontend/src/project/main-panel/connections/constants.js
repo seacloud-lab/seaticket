@@ -662,6 +662,8 @@ export const CONNECTION_PREDEFINED_COLUMN_NAME = {
   AUTHOR: 'author',
   CREATOR: 'creator',
   LAST_MODIFIER: 'last_modifier',
+  CREATOR_ID: 'creator_id',
+  LAST_MODIFIER_ID: 'last_modifier_id',
   STATE: 'state',
   STATE_REASON: 'state_reason',
   ISSUE_TYPE: 'issue_type',
@@ -905,11 +907,11 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       display_name: gettext('Modified time'),
       type: CellType.CTIME,
     },
-    [CONNECTION_PREDEFINED_COLUMN_NAME.CREATOR]: {
+    [CONNECTION_PREDEFINED_COLUMN_NAME.CREATOR_ID]: {
       display_name: gettext('Creator'),
       type: CellType.TEXT,
     },
-    [CONNECTION_PREDEFINED_COLUMN_NAME.LAST_MODIFIER]: {
+    [CONNECTION_PREDEFINED_COLUMN_NAME.LAST_MODIFIER_ID]: {
       display_name: gettext('Last modifier'),
       type: CellType.TEXT,
     },

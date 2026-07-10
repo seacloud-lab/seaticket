@@ -173,7 +173,7 @@ def create_connection(project, username, connection_type, name, config):
             [SchemaTables.LINEAR_ISSUES, SchemaTables.LINEAR_ISSUE_COMMENTS], api, project_uuid, connection_id
         ),
         ConnectionType.CONFLUENCE.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
-            [SchemaTables.CONFLUENCE], api, project_uuid, connection_id
+            [SchemaTables.CONFLUENCE, SchemaTables.CONFLUENCE_USER], api, project_uuid, connection_id
         ),
         ConnectionType.DISCORD.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
             [SchemaTables.DISCORD_THREADS, SchemaTables.DISCORD_THREAD_MESSAGES], api, project_uuid, connection_id
@@ -337,6 +337,36 @@ def get_connection_general_task_related_users(project_uuid, connection_id):
             'email': email,
             'name': name,
             'avatar_url': default_avatar_url,
+        }
+
+    result = list(related_users.values())
+    cache.set(cache_key, result, 60)
+    return result
+
+
+def get_connection_confluence_related_users(project_uuid, connection_id):
+    cache_key = f'cf_related_users_{project_uuid}_{connection_id}'
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return cached
+    seadb_api = SeaDBAPI()
+    related_users = {}
+    table_name = SchemaTables.CONFLUENCE_USER.table_name(connection_id)
+    try:
+        sql = f"SELECT `account_id`, `display_name` FROM `{table_name}`"
+        results = seadb_api.query_rows(project_uuid, sql).get('results', [])
+    except Exception as e:
+        logger.error(f'get connection confluence related users error: {e}')
+        return []
+
+    for item in results:
+        account_id = str(item.get('account_id') or '').strip()
+        display_name = str(item.get('display_name') or '').strip()
+        if not account_id or not display_name or account_id in related_users:
+            continue
+        related_users[account_id] = {
+            'account_id': account_id,
+            'name': display_name,
         }
 
     result = list(related_users.values())

@@ -120,6 +120,30 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
           allColumns.current = columns;
           const relatedUsers = Array.isArray(res?.data?.related_users) ? res.data.related_users : [];
           const collaborators = relatedUsers.map(user => new User(user));
+          // Resolve Confluence account IDs → display names in-place
+          if (connection.type === CONNECTION_TYPE.CONFLUENCE && relatedUsers.length > 0) {
+            const userMap = {};
+            relatedUsers.forEach(u => { if (u.account_id) userMap[u.account_id] = u.name; });
+            const creatorCol = columns.find(c => c.name === 'creator_id');
+            const modifierCol = columns.find(c => c.name === 'last_modifier_id');
+            rows.forEach(row => {
+              if (creatorCol) {
+                const val = row[creatorCol.key] || row[creatorCol.name];
+                if (val && userMap[val]) {
+                  row[creatorCol.key] = userMap[val];
+                  row[creatorCol.name] = userMap[val];
+                }
+              }
+              if (modifierCol) {
+                const val = row[modifierCol.key] || row[modifierCol.name];
+                if (val && userMap[val]) {
+                  row[modifierCol.key] = userMap[val];
+                  row[modifierCol.name] = userMap[val];
+                }
+              }
+            });
+          }
+
           const targetColumns = formatColumns(connection, columns, { collaborators });
           const tagsColumn = targetColumns.find(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.TAGS);
           if (tagsColumn) {
