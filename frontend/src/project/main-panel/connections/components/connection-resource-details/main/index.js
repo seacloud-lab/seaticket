@@ -126,7 +126,7 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
 
     setDetails(nextDetails);
     onThreadUnreadChange?.(isEmailThreadUnread(nextDetails));
-  }, [type, details, onThreadUnreadChange]);
+  }, [type, details, onThreadUnreadChange, isEmailThreadUnread, updateEmailDetailUnread]);
 
   useEffect(() => {
     setStatus('loading');
@@ -161,7 +161,7 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
       setErrorMessage(errMessage);
       setStatus('error');
     });
-  }, [projectUuid, resource, type, updateResource, permission]);
+  }, [projectUuid, resource, type, updateResource, permission, getAutoReadEmailState]);
 
   if (status === 'loading') return (<CenteredLoading />);
   if (status === 'error') return (<CenteredError>{errorMessage}</CenteredError>);
