@@ -9,8 +9,6 @@ ORG_MEMBER_QUOTA_ENABLED = getattr(settings, 'ORG_MEMBER_QUOTA_ENABLED', False)
 
 ORG_MEMBER_QUOTA_DEFAULT = getattr(settings, 'ORG_MEMBER_QUOTA_DEFAULT', 10)
 
-ORG_AUTO_URL_PREFIX = getattr(settings, 'ORG_AUTO_URL_PREFIX', True)
-
 ORG_GROUP_QUOTA = getattr(settings, 'ORG_GROUP_QUOTA', 3000)
 
 FREE_ORG_GROUP_LIMIT = getattr(settings, 'FREE_ORG_GROUP_LIMIT', 100)

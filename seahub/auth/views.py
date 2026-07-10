@@ -41,6 +41,7 @@ from seahub.utils.ip import get_remote_ip
 from seahub.utils.two_factor_auth import two_factor_auth_enabled, handle_two_factor_auth
 from seahub.utils.auth import get_login_bg_image_path
 from seahub.utils.http import rate_limit
+from seahub.utils.turnstile import check_turnstile
 from seahub.settings import LOGIN_ATTEMPT_LIMIT, FREEZE_USER_ON_LOGIN_FAILED, \
     LOGIN_REMEMBER_DAYS, USER_PASSWORD_MIN_LENGTH, USER_STRONG_PASSWORD_REQUIRED, \
     USER_PASSWORD_STRENGTH_LEVEL
@@ -377,9 +378,15 @@ def password_reset(request, is_admin_site=False, template_name='registration/pas
 
     if post_reset_redirect is None:
         post_reset_redirect = reverse('auth_password_reset_done')
+    turnstile_error = None
+    login_bg_image_path = get_login_bg_image_path()
     if request.method == "POST":
         form = password_reset_form(request.POST)
-        if form.is_valid():
+        turnstile_valid = check_turnstile(request)
+        if not turnstile_valid:
+            turnstile_error = _('Cloudflare Turnstile check failed. Please refresh and try again.')
+            form = password_reset_form()
+        if turnstile_valid and form.is_valid():
             opts = {}
             opts['use_https'] = request.is_secure()
             opts['token_generator'] = token_generator
@@ -395,17 +402,22 @@ def password_reset(request, is_admin_site=False, template_name='registration/pas
                 messages.error(request, _('Failed to send email, please contact administrator.'))
                 return render(request, template_name, {
                         'form': form,
+                        'login_bg_image_path': login_bg_image_path,
+                        'enable_turnstile': settings.ENABLE_TURNSTILE,
+                        'turnstile_site_key': settings.TURNSTILE_SITE_KEY,
                         })
             else:
                 return HttpResponseRedirect(post_reset_redirect)
     else:
         form = password_reset_form()
 
-    login_bg_image_path = get_login_bg_image_path()
 
     return render(request, template_name, {
         'form': form,
         'login_bg_image_path': login_bg_image_path,
+        'enable_turnstile': settings.ENABLE_TURNSTILE,
+        'turnstile_site_key': settings.TURNSTILE_SITE_KEY,
+        'turnstile_error': turnstile_error,
     })
 
 def password_reset_done(request, template_name='registration/password_reset_done.html'):

@@ -844,6 +844,24 @@ input.short-input {
   border-color: #FF8000;
 }
 
+.password-reset-panel-wrapper .login-form-wrapper .turnstile-wrapper,
+.org-register-panel-wrapper .login-form-wrapper .turnstile-wrapper {
+  width: 100%;
+  min-height: 67px;
+  margin-top: 12px;
+  padding: 0;
+  border-radius: 4px;
+  background-color: var(--bs-body-bg);
+  overflow: hidden;
+}
+
+.password-reset-panel-wrapper .login-form-wrapper .turnstile-wrapper .cf-turnstile,
+.org-register-panel-wrapper .login-form-wrapper .turnstile-wrapper .cf-turnstile,
+.password-reset-panel-wrapper .login-form-wrapper .turnstile-wrapper iframe,
+.org-register-panel-wrapper .login-form-wrapper .turnstile-wrapper iframe {
+  width: 100% !important;
+}
+
 .password-reset-panel-wrapper .login-form-wrapper li {
   margin-top: .25rem;
   font-size: 12px;
