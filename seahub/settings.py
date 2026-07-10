@@ -656,6 +656,11 @@ def validate_llm_models(models):
 
     return validated_models
 
+# Cloudflare Turnstile
+ENABLE_TURNSTILE = False
+TURNSTILE_SITE_KEY = ''
+TURNSTILE_SECRET_KEY = ''
+
 #####################
 # External settings #
 #####################

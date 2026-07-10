@@ -21,10 +21,11 @@ from seahub.constants import TEAM_FREE
 from seahub.group.views import remove_group_common
 from seahub.utils import get_service_url, render_error
 from seahub.utils.auth import get_login_bg_image_path
+from seahub.utils.turnstile import check_turnstile
 from seahub.organizations.signals import org_created
 from seahub.organizations.decorators import org_staff_required
 from seahub.organizations.forms import OrgRegistrationForm
-from seahub.organizations.settings import ORG_AUTO_URL_PREFIX, ORG_MEMBER_QUOTA_ENABLED, ENABLE_ORG_LOGO, ORG_ENABLE_ADMIN_DELETE_ORG
+from seahub.organizations.settings import ORG_MEMBER_QUOTA_ENABLED, ENABLE_ORG_LOGO, ORG_ENABLE_ADMIN_DELETE_ORG
 from seahub.organizations.utils import transfer_user_to_org, can_org_use_saml
 from seahub.organizations.models import OrgSettings, Organization
 from seahub.utils.two_factor_auth import has_two_factor_auth
@@ -213,29 +214,40 @@ def org_register(request, redirect_field_name=REDIRECT_FIELD_NAME):
 
     login_bg_image_path = get_login_bg_image_path()
     redirect_to = request.GET.get(redirect_field_name)
+    turnstile_context = {
+        'enable_turnstile': settings.ENABLE_TURNSTILE,
+        'turnstile_site_key': settings.TURNSTILE_SITE_KEY,
+    }
 
     if request.user.is_authenticated:
         return redirect(redirect_to or 'projects_list')
 
+    turnstile_error = None
     if request.method == 'POST':
         form = OrgRegistrationForm(request.POST)
 
-        if ORG_AUTO_URL_PREFIX:
-            # generate url prefix automatically
+        turnstile_valid = check_turnstile(request)
+        if not turnstile_valid:
+            turnstile_error = _('Cloudflare Turnstile check failed. Please refresh and try again.')
+            form = OrgRegistrationForm(initial={
+                'org_name': request.POST.get('org_name', ''),
+                'name': request.POST.get('name', ''),
+                'email': request.POST.get('email', ''),
+            })
+        if turnstile_valid and form.is_valid():
+            name = form.cleaned_data['name']
+            email = form.cleaned_data['email']
+            password = form.cleaned_data['password1']
+            org_name = form.cleaned_data['org_name']
             url_prefix = gen_org_url_prefix(3)
             if url_prefix is None:
                 messages.error(request, "Failed to create organization account, please try again later.")
                 return render(request, 'organizations/org_register.html', {
                     'form': form,
                     'login_bg_image_path': login_bg_image_path,
-                    'org_auto_url_prefix': ORG_AUTO_URL_PREFIX,
+                    'turnstile_error': turnstile_error,
+                    **turnstile_context,
                 })
-
-        if form.is_valid():
-            name = form.cleaned_data['name']
-            email = form.cleaned_data['email']
-            password = form.cleaned_data['password1']
-            org_name = form.cleaned_data['org_name']
 
             site = get_current_site(request)
 
@@ -262,7 +274,8 @@ def org_register(request, redirect_field_name=REDIRECT_FIELD_NAME):
                         return render(request, 'organizations/org_register.html', {
                             'form': form,
                             'login_bg_image_path': login_bg_image_path,
-                            'org_auto_url_prefix': ORG_AUTO_URL_PREFIX,
+                            'turnstile_error': turnstile_error,
+                            **turnstile_context,
                         })
             create_org(org_name, url_prefix, new_user.username)
             new_org = get_org_by_url_prefix(url_prefix)
@@ -320,8 +333,9 @@ def org_register(request, redirect_field_name=REDIRECT_FIELD_NAME):
         'login_bg_image_path': login_bg_image_path,
         'service_url_scheme': service_url_scheme,
         'service_url_remaining': service_url_remaining,
-        'org_auto_url_prefix': ORG_AUTO_URL_PREFIX,
         'redirect_to': redirect_to or reverse('projects_list'),
+        'turnstile_error': turnstile_error,
+        **turnstile_context,
     })
 
 

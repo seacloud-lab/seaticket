@@ -34,10 +34,18 @@
         {{ form.password2.errors }}
 
         {{ form.non_field_errors }}
+        {% if turnstile_error %}
+        <p class="error mt-1">{{ turnstile_error }}</p>
+        {% endif %}
         <div class="form-check mt-1 d-flex align-items-center">
           <input type="checkbox" id="newsletter" name="newsletter" class="form-check-input mr-2 mt-0">
           <label for="newsletter">{% trans "Subscribe to our newsletter" %}</label>
         </div>
+        {% if enable_turnstile %}
+        <div class="turnstile-wrapper">
+          <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}" data-size="flexible" data-theme="light"></div>
+        </div>
+        {% endif %}
         <button id="org-register-submit" type="submit" class="submit btn btn-primary btn-block">{% trans "Submit" %}</button>
       </form>
     </div>
@@ -49,6 +57,9 @@
 {% endblock %}
 
 {% block extra_script %}
+{% if enable_turnstile %}
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+{% endif %}
 <script type="text/javascript">
 $('.login-panel-bottom-container').append($('#lang').removeClass('fright'));
 
