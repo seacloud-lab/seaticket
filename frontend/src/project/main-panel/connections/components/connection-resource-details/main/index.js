@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useCallback, useState } from 'react';
-import { EmptyTip, CustomizeMarkdownViewer, CenteredLoading, CenteredError } from '@/components';
-import { gettext, mediaUrl } from '@/constants';
+import React, { useEffect, useMemo, useCallback, useRef, useState } from 'react';
+import { EmptyTip, CustomizeMarkdownViewer, CenteredLoading, CenteredError, toaster } from '@/components';
+import { gettext, mediaUrl, PERMISSION_TYPES } from '@/constants';
 import { CONNECTION_TYPE } from '../../../constants';
 import CommonDetailItem from './common-detail-item';
 import EmailDetails from './email-details';
@@ -12,13 +12,58 @@ import { connectionsAPI } from '@/project/api';
 
 import './index.css';
 
-const ConnectionResourceDetails = ({ resource, projectUuid, permission, connection, isSmallScreen, updateResource }) => {
+const isEmailThreadUnread = (details) => {
+  return Array.isArray(details) && details.some(item => Boolean(item?.unread));
+};
+
+const updateEmailDetailUnread = (details, emailRecordId, unread) => {
+  if (!Array.isArray(details)) return details;
+
+  let isChanged = false;
+  const nextDetails = details.map((item) => {
+    if (item?._pk !== emailRecordId || Boolean(item.unread) === unread) return item;
+    isChanged = true;
+    return { ...item, unread };
+  });
+
+  return isChanged ? nextDetails : details;
+};
+
+const getAutoReadEmailState = (record, details, permission) => {
+  if (permission !== PERMISSION_TYPES.READ_WRITE || !Array.isArray(details) || details.length === 0) {
+    return { record, details, target: null };
+  }
+
+  const lastDetailIndex = details.length - 1;
+  const lastDetail = details[lastDetailIndex];
+  if (!lastDetail?.unread) return { record, details, target: null };
+
+  const nextDetails = details.map((item, index) => {
+    if (index !== lastDetailIndex) return item;
+    return { ...item, unread: false };
+  });
+
+  return {
+    details: nextDetails,
+    record: { ...record, unread: isEmailThreadUnread(nextDetails) },
+    target: lastDetail._pk,
+  };
+};
+
+const ConnectionResourceDetails = ({ resource, projectUuid, permission, connection, isSmallScreen, updateResource, onThreadUnreadChange }) => {
   const [status, setStatus] = useState('loading'); // loading / error / loaded
   const [errorMessage, setErrorMessage] = useState('');
   const [details, setDetails] = useState(null);
   const [localEmailDetails, setLocalEmailDetails] = useState([]);
   const [localDiscourseDetails, setLocalDiscourseDetails] = useState([]);
+  const updateResourceRef = useRef(updateResource);
+  const onThreadUnreadChangeRef = useRef(onThreadUnreadChange);
   const type = useMemo(() => resource.type, [resource]);
+
+  useEffect(() => {
+    updateResourceRef.current = updateResource;
+    onThreadUnreadChangeRef.current = onThreadUnreadChange;
+  }, [updateResource, onThreadUnreadChange]);
 
   const mergedDetails = useMemo(() => {
     if (!Array.isArray(details)) return details;
@@ -73,20 +118,50 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
     setLocalDiscourseDetails(prev => [...prev, nextDetail]);
   }, []);
 
+  const handleEmailUnreadChange = useCallback((emailRecordId, unread) => {
+    if (type !== CONNECTION_TYPE.EMAIL) return;
+
+    const nextDetails = updateEmailDetailUnread(details, emailRecordId, unread);
+    if (nextDetails === details) return;
+
+    setDetails(nextDetails);
+    onThreadUnreadChange?.(isEmailThreadUnread(nextDetails));
+  }, [type, details, onThreadUnreadChange]);
+
   useEffect(() => {
     setStatus('loading');
-    connectionsAPI.getConnectionRecord(projectUuid, resource.connection_id, resource._id).then((res) => {
+    const { connection_id, _id } = resource;
+    connectionsAPI.getConnectionRecord(projectUuid, connection_id, _id).then((res) => {
       const { record, columns, linked_ticket_title, related_users } = res.data;
-      const details = initConnectionResourceDetails(resource.type, record);
-      setDetails(details);
-      updateResource({ record, columns, linked_ticket_title, related_users });
+      const initialDetails = initConnectionResourceDetails(type, record);
+      const autoReadState = type === CONNECTION_TYPE.EMAIL
+        ? getAutoReadEmailState(record, initialDetails, permission)
+        : { record, details: initialDetails, target: null };
+      const nextDetails = autoReadState.details;
+      const nextRecord = autoReadState.record;
+      const autoReadTarget = autoReadState.target;
+
+      setDetails(nextDetails);
+      updateResourceRef.current({ record: nextRecord, columns, linked_ticket_title, related_users });
+      if (autoReadTarget) onThreadUnreadChangeRef.current?.(nextRecord.unread);
       setStatus('loaded');
+
+      if (!autoReadTarget) return;
+      connectionsAPI.unreadConnectionEmail(projectUuid, connection_id, {
+        record_id: autoReadTarget,
+        unread: false,
+      }).catch((error) => {
+        setDetails(initialDetails);
+        updateResourceRef.current({ record, columns, linked_ticket_title, related_users });
+        onThreadUnreadChangeRef.current?.(record.unread);
+        toaster.danger(Utils.getErrorMsg(error));
+      });
     }).catch((error) => {
       const errMessage = Utils.getErrorMsg(error);
       setErrorMessage(errMessage);
       setStatus('error');
     });
-  }, [projectUuid, resource, type, updateResource]);
+  }, [projectUuid, resource, type, updateResource, permission]);
 
   if (status === 'loading') return (<CenteredLoading />);
   if (status === 'error') return (<CenteredError>{errorMessage}</CenteredError>);
@@ -104,6 +179,7 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
         recordId={resource._id}
         permission={permission}
         handleReplyEmailSuccess={handleReplyEmailSuccess}
+        onUnreadChange={handleEmailUnreadChange}
       />
     );
   }

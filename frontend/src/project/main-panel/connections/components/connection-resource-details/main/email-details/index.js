@@ -11,7 +11,10 @@ const EmailDetails = ({ details, className, ...props }) => {
   const [isShowAll, setIsShowAll] = useState(details.length <= 5);
   const [isLastExpand, setIsLastExpanded] = useState(false);
 
-  const isUnread = useMemo(() => true, []);
+  const isUnread = useMemo(() => {
+    if (details.length <= 1) return false;
+    return details.slice(0, -1).some(item => Boolean(item?.unread));
+  }, [details]);
 
   if (details.length === 0) {
     return (
@@ -34,7 +37,7 @@ const EmailDetails = ({ details, className, ...props }) => {
             <div className="email-record-info-container">
               <span className="email-record-info-sender">{email}</span>
               <span className="email-record-info-content text-truncate"></span>
-              <div className={classnames('read-status', { unread: isUnread })}/>
+              {isUnread && <div className="read-status unread"/>}
               <span className="email-record-info-time">
                 {gettext('Show')}
                 <span className="email-record-info-more-count">{` ${details.length - 1} ${gettext('more')} `}</span>

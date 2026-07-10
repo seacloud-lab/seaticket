@@ -1454,8 +1454,11 @@ class ProjectConnectionUnreadEmailView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, 'unread invalid.')
         
         record_id = request.data.get('record_id')
-
-        if not record_id:
+        try:
+            record_pk = int(record_id)
+            if record_pk <= 0:
+                raise ValueError
+        except (TypeError, ValueError):
             return api_error(status.HTTP_400_BAD_REQUEST, 'record_id invalid.')
 
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -1470,16 +1473,19 @@ class ProjectConnectionUnreadEmailView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
-        if not project_connection and project_connection.type != ConnectionType.EMAIL.value:
+        if not project_connection:
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        if project_connection.type != ConnectionType.EMAIL.value:
+            error_msg = 'Connection type invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         seadb_api = SeaDBAPI()
         email_table_name = SchemaTables.EMAIL.table_name(connection_id)
-        update_row = {'pk': int(record_id), 'row': {}}
+        update_row = {'pk': record_pk, 'row': {}}
 
         try:
-            sql = f"SELECT `thread_id` FROM `{email_table_name}` WHERE `_pk` = {record_id}"
+            sql = f"SELECT `thread_id` FROM `{email_table_name}` WHERE `_pk` = {record_pk}"
             response = seadb_api.query_rows(project_uuid, sql)
             results = response.get('results', [])
             if not results:

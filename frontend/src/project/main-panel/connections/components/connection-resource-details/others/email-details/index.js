@@ -4,8 +4,6 @@ import { CONNECTION_PREDEFINED_COLUMN_NAME } from '@/project/main-panel/connecti
 import LinkedTicket from '../linked-ticket';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
-import CheckboxSettings from '../checkbox-settings';
-import { gettext } from '@/constants';
 
 const EmailDetails = ({
   record,
@@ -19,7 +17,6 @@ const EmailDetails = ({
 }) => {
   const tagsColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.TAGS);
   const linkedTicketColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET);
-  const unreadColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.UNREAD);
 
   return (
     <>
@@ -29,13 +26,6 @@ const EmailDetails = ({
         value={getCellValueByColumn(record, tagsColumn)}
         tagsData={tagsData}
         onChange={(newValue) => onChange({ [CONNECTION_PREDEFINED_COLUMN_NAME.TAGS]: newValue })}
-      />
-      <CheckboxSettings
-        isReadonly={isReadonly}
-        title={gettext('unread')}
-        className="mb-4"
-        value={getCellValueByColumn(record, unreadColumn)}
-        onChange={(newValue, callback) => onChange({ [unreadColumn.name]: newValue }, callback)}
       />
       <LinkedTicket
         ticketID={getCellValueByColumn(record, linkedTicketColumn)}
