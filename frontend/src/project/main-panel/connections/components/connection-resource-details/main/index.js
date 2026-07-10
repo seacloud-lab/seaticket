@@ -12,44 +12,6 @@ import { connectionsAPI } from '@/project/api';
 
 import './index.css';
 
-const isEmailThreadUnread = (details) => {
-  return Array.isArray(details) && details.some(item => Boolean(item?.unread));
-};
-
-const updateEmailDetailUnread = (details, emailRecordId, unread) => {
-  if (!Array.isArray(details)) return details;
-
-  let isChanged = false;
-  const nextDetails = details.map((item) => {
-    if (item?._pk !== emailRecordId || Boolean(item.unread) === unread) return item;
-    isChanged = true;
-    return { ...item, unread };
-  });
-
-  return isChanged ? nextDetails : details;
-};
-
-const getAutoReadEmailState = (record, details, permission) => {
-  if (permission !== PERMISSION_TYPES.READ_WRITE || !Array.isArray(details) || details.length === 0) {
-    return { record, details, target: null };
-  }
-
-  const lastDetailIndex = details.length - 1;
-  const lastDetail = details[lastDetailIndex];
-  if (!lastDetail?.unread) return { record, details, target: null };
-
-  const nextDetails = details.map((item, index) => {
-    if (index !== lastDetailIndex) return item;
-    return { ...item, unread: false };
-  });
-
-  return {
-    details: nextDetails,
-    record: { ...record, unread: isEmailThreadUnread(nextDetails) },
-    target: lastDetail._pk,
-  };
-};
-
 const ConnectionResourceDetails = ({ resource, projectUuid, permission, connection, isSmallScreen, updateResource, onThreadUnreadChange }) => {
   const [status, setStatus] = useState('loading'); // loading / error / loaded
   const [errorMessage, setErrorMessage] = useState('');
@@ -117,6 +79,44 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
     };
     setLocalDiscourseDetails(prev => [...prev, nextDetail]);
   }, []);
+
+  const isEmailThreadUnread = useCallback((details) => {
+    return Array.isArray(details) && details.some(item => Boolean(item?.unread));
+  }, []);
+
+  const updateEmailDetailUnread = useCallback((details, emailRecordId, unread) => {
+    if (!Array.isArray(details)) return details;
+
+    let isChanged = false;
+    const nextDetails = details.map((item) => {
+      if (item?._pk !== emailRecordId || Boolean(item.unread) === unread) return item;
+      isChanged = true;
+      return { ...item, unread };
+    });
+
+    return isChanged ? nextDetails : details;
+  }, []);
+
+  const getAutoReadEmailState = useCallback((record, details, permission) => {
+    if (permission !== PERMISSION_TYPES.READ_WRITE || !Array.isArray(details) || details.length === 0) {
+      return { record, details, target: null };
+    }
+
+    const lastDetailIndex = details.length - 1;
+    const lastDetail = details[lastDetailIndex];
+    if (!lastDetail?.unread) return { record, details, target: null };
+
+    const nextDetails = details.map((item, index) => {
+      if (index !== lastDetailIndex) return item;
+      return { ...item, unread: false };
+    });
+
+    return {
+      details: nextDetails,
+      record: { ...record, unread: isEmailThreadUnread(nextDetails) },
+      target: lastDetail._pk,
+    };
+  }, [isEmailThreadUnread]);
 
   const handleEmailUnreadChange = useCallback((emailRecordId, unread) => {
     if (type !== CONNECTION_TYPE.EMAIL) return;
