@@ -401,7 +401,8 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
     const formatValue = getFormatValue(value);
     setValue(formatValue);
     setLoading(false);
-  }, [projectUuid, propsValue, props]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [propsValue]);
 
   return (
     <Modal isOpen={true} toggle={onToggle} className="seaqa-ai-thought-process-dialog">
