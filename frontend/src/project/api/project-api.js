@@ -128,11 +128,6 @@ class ProjectAPI {
     return this.req.delete(url, { data: { tag_ids: tagIds } });
   }
 
-  getNotificationToken(projectUuid) {
-    const url = this.server + '/api/v1/project/' + projectUuid + '/project-notification-jwt-token/';
-    return this.req.get(url);
-  }
-
 }
 
 const projectAPI = new ProjectAPI();

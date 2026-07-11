@@ -4,6 +4,8 @@ import { toaster } from '@/components';
 import { Utils } from '@/utils/utils';
 import { NOTIFICATION_TYPE, TICKET_MSG_TYPES } from '@/components/common/notification/constants';
 import { siteRoot } from '@/constants';
+import { enableNotificationServer } from '@/constants';
+import sharedWsClient from '@/utils/websocket-service';
 
 const NotificationContext = createContext();
 
@@ -19,6 +21,31 @@ export const NotificationProvider = ({ children, projectUuid }) => {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const abortControllerRef = useRef(null);
+
+  const handleRealtimeNotification = useCallback((notice) => {
+    const noticeType = notice?.type;
+    if (noticeType === 'user_notification') {
+      setUnseen(prev => prev + 1);
+      setUnseenByType(prev => ({
+        ...prev,
+        [NOTIFICATION_TYPE.GENERAL]: prev[NOTIFICATION_TYPE.GENERAL] + 1,
+      }));
+      return;
+    }
+    if (noticeType === 'project_notification') {
+      setUnseen(prev => prev + 1);
+      setUnseenByType(prev => ({
+        ...prev,
+        [NOTIFICATION_TYPE.PROJECT]: prev[NOTIFICATION_TYPE.PROJECT] + 1,
+      }));
+      return;
+    }
+
+    if (noticeType === 'user_logout') {
+      sharedWsClient.close();
+      return;
+    }
+  }, []);
 
   const getFormatList = useCallback((res, type) => {
     let list = [];
@@ -257,6 +284,24 @@ export const NotificationProvider = ({ children, projectUuid }) => {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (!enableNotificationServer) return;
+
+    const handleNotice = (noticeData) => {
+      if (noticeData?.type === 'user_notification' || noticeData?.type === 'project_notification' || noticeData?.type === 'user_logout') {
+        handleRealtimeNotification(noticeData);
+      }
+    };
+
+    sharedWsClient.addMessageListener(handleNotice);
+    sharedWsClient.subscribe(projectUuid);
+
+    return () => {
+      sharedWsClient.removeMessageListener(handleNotice);
+      sharedWsClient.unsubscribe(projectUuid);
+    };
+  }, [projectUuid, handleRealtimeNotification]);
 
   const value = {
     notificationList,

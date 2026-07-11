@@ -14,7 +14,7 @@ import { getTableName, initConnectionStatus } from '../utils';
 import { CONNECTION_SYNC_STATUS } from '../constants';
 import ObjectUtils from '@/utils/object-utils';
 import { isFunction } from '@/utils/type-detection';
-import WebSocketClient from '@/utils/websocket-service';
+import sharedWsClient from '@/utils/websocket-service';
 
 const ConnectionsContext = React.createContext(null);
 
@@ -270,9 +270,9 @@ export const ConnectionsProvider = ({
   }, [isLoading, loadMore]);
 
   useEffect(() => {
-    if (!isSubscribeConnectionsSyncStatus) return;
-    const socket = new WebSocketClient(projectUuid, (noticeData) => {
-      if (noticeData.type === 'connection-sync') {
+if (!isSubscribeConnectionsSyncStatus) return;
+    const handleNotice = (noticeData) => {
+      if (noticeData.type === 'connection_sync') {
         const { connection_id, status } = noticeData.content;
         if (status === CONNECTION_SYNC_STATUS.CRAWLING) {
           modifyLocalConnectionsSyncStatus({
@@ -293,10 +293,14 @@ export const ConnectionsProvider = ({
           });
         });
       }
-    });
+    };
+
+    sharedWsClient.addMessageListener(handleNotice);
+    sharedWsClient.subscribe(projectUuid);
 
     return () => {
-      socket.close();
+      sharedWsClient.removeMessageListener(handleNotice);
+      sharedWsClient.unsubscribe(projectUuid);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectUuid, isSubscribeConnectionsSyncStatus]);

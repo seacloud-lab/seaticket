@@ -9,6 +9,7 @@ from .endpoints.search_user import SearchUser
 urlpatterns = [
     re_path(r'^ping/$', Ping.as_view()),
     re_path(r'^auth/ping/$', AuthPing.as_view()),
+    re_path(r'^auth/check-session/$', SessionCheck.as_view(), name='auth-check-session'),
     re_path(r'^auth-token/', ObtainAuthToken.as_view()),
     re_path(r'^two-factor-auth/(?P<email>\S+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/$', TwoFactorAuthView.as_view(), name="two-factor-auth-view"),
 

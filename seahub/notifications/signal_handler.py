@@ -2,6 +2,7 @@ import logging
 import json
 from django.dispatch import receiver
 
+from seahub.utils import mq
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.group.models import Group
 from seahub.group.signals import add_user_to_group
@@ -21,6 +22,16 @@ MSG_TYPE_AGENT_NOTIFY_ASSIGNEE = 'agent_notify_assignee'
 MSG_TYPE_TICKET_COMMENTED = 'ticket_commented'
 MSG_TYPE_ADD_USER_TO_GROUP = 'add_user_to_group'
 MSG_TYPE_ORG_MEMBER_INVITE_ACCEPTED = 'org_member_invite_accepted'
+NOTIFICATION_REDIS_CHANNEL = 'seaqa_notification'
+
+
+def _publish_realtime_notification(payload: dict) -> None:
+    try:
+        if mq is None:
+            return
+        mq.publish(NOTIFICATION_REDIS_CHANNEL, json.dumps(payload))
+    except Exception as e:
+        logger.error('publish realtime notification failed: %s', e)
 
 
 @receiver(org_member_invite_accepted)
@@ -40,6 +51,12 @@ def org_member_invite_accepted_msg_cb(sender, **kwargs):
                 msg_type=MSG_TYPE_ORG_MEMBER_INVITE_ACCEPTED,
                 detail=json.dumps(detail),
             )
+        
+        _publish_realtime_notification({
+            'type': 'user_notification',
+            'to_user': inv_obj.inviter,
+            'msg_type': MSG_TYPE_ORG_MEMBER_INVITE_ACCEPTED,
+        })
     except Exception as e:
         logger.error(e)
 
@@ -77,6 +94,11 @@ def add_user_to_group_msg_cb(sender, **kwargs):
             msg_type=MSG_TYPE_ADD_USER_TO_GROUP,
             detail=json.dumps(detail),
         )
+        _publish_realtime_notification({
+            'type': 'user_notification',
+            'to_user': added_user,
+            'msg_type': MSG_TYPE_ADD_USER_TO_GROUP,
+        })
     except Exception as e:
         logger.error(e)
 
@@ -114,6 +136,13 @@ def add_ticket_assignees_added_project_msg_cb(sender, **kwargs):
             )
             for to_user in need_send_notification_users
         ])
+        for to_user in need_send_notification_users:
+            _publish_realtime_notification({
+                'type': 'project_notification',
+                'to_user': to_user,
+                'project_uuid': project_uuid,
+                'msg_type': msg_type,
+            })
     except Exception as e:
         logger.error(e)
 
@@ -152,6 +181,14 @@ def add_agent_notify_assignees_project_msg_cb(sender, **kwargs):
             )
             for to_user in need_send_notification_users
         ])
+
+        for to_user in need_send_notification_users:
+            _publish_realtime_notification({
+                'type': 'project_notification',
+                'to_user': to_user,
+                'project_uuid': project_uuid,
+                'msg_type': msg_type,
+            })
     except Exception as e:
         logger.error(e)
 
@@ -193,5 +230,13 @@ def add_ticket_commented_project_msg_cb(sender, **kwargs):
             )
             for to_user in related_users
         ])
+
+        for to_user in related_users:
+            _publish_realtime_notification({
+                'type': 'project_notification',
+                'to_user': to_user,
+                'project_uuid': project_uuid,
+                'msg_type': msg_type,
+            })
     except Exception as e:
         logger.error(e)
