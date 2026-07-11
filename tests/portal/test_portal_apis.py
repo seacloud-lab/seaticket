@@ -19,6 +19,7 @@ from seahub.portal.apis import (
     PortalMyIssuesView,
     PortalIssueTrashAPIView,
     PortalCustomDomainTLSAskView,
+    PortalCustomDomainVerificationView,
     PortalExternalInvitationsView,
     PortalCustomDomainView,
     PortalDomainAliasView,
@@ -649,8 +650,13 @@ class TestPortalPreviewTokenView:
 @pytest.mark.django_db
 class TestPortalCustomDomainView:
 
-    def test_get_success(self, factory, project_creator, real_project):
+    def test_get_success(self, factory, project_creator, real_project, settings):
+        settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
         project = real_project
+        PortalDomainAlias.objects.create(
+            project_uuid=str(project.uuid),
+            prefix='x765cd',
+        )
         custom_domain = PortalCustomDomain.objects.create(
             domain='support.local.test',
             project_uuid=str(project.uuid),
@@ -666,9 +672,25 @@ class TestPortalCustomDomainView:
         assert resp.data['custom_domain_verified'] is True
         assert resp.data['custom_domain_txt_record_name'] == custom_domain.txt_record_name
         assert resp.data['custom_domain_txt_record_value'] == custom_domain.txt_record_value
+        assert resp.data['custom_domain_txt_record_name'] == '_seaticket-portal-challenge.support.local.test'
+        assert resp.data['custom_domain_txt_record_value'].startswith('seaticket-portal-verification=')
+        assert resp.data['current_subdomain_domain'] == 'x765cd.seaticket-portal.test'
         assert 'custom_public_url' not in resp.data
         assert 'default_public_url' not in resp.data
         assert 'public_url' not in resp.data
+
+    def test_get_creates_current_subdomain_domain(self, factory, project_creator, real_project, settings):
+        settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
+        project = real_project
+        request = factory.get(f"/api/v1/portal/{project.uuid}/custom-domain/")
+        request.user = project_creator
+
+        resp = PortalCustomDomainView.as_view()(request, project_uuid=str(project.uuid))
+
+        alias = PortalDomainAlias.objects.get(project_uuid=str(project.uuid))
+        assert resp.status_code == 200
+        assert resp.data['custom_domain'] == ''
+        assert resp.data['current_subdomain_domain'] == '%s.seaticket-portal.test' % alias.prefix
 
     def test_get_permission_denied(self, factory, auth_user, real_project):
         project = real_project
@@ -694,6 +716,21 @@ class TestPortalCustomDomainView:
         custom_domain = PortalCustomDomain.objects.filter(project_uuid=str(project.uuid)).first()
         assert custom_domain.domain == 'support.local.test'
         assert custom_domain.verified is False
+
+    def test_post_rejects_domain_under_portal_service_root(self, factory, project_creator, real_project, settings):
+        settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
+        project = real_project
+        request = factory.post(
+            f"/api/v1/portal/{project.uuid}/custom-domain/",
+            data={'custom_domain': 'custom.seaticket-portal.test'},
+            format='json'
+        )
+        request.user = project_creator
+
+        resp = PortalCustomDomainView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 400
+        assert PortalCustomDomain.objects.filter(project_uuid=str(project.uuid)).first() is None
 
     def test_post_replace_custom_domain_resets_verification(self, factory, project_creator, real_project):
         project = real_project
@@ -740,6 +777,103 @@ class TestPortalCustomDomainView:
         assert resp.status_code == 200
         assert PortalCustomDomain.objects.filter(project_uuid=str(project.uuid)).first() is None
         assert cache.get(get_portal_tls_ask_cache_key(domain)) is None
+
+
+@pytest.mark.django_db
+class TestPortalCustomDomainVerificationView:
+
+    def test_post_marks_custom_domain_verified_when_txt_record_matches(self, factory, project_creator, real_project):
+        project = real_project
+        custom_domain = PortalCustomDomain.objects.create(
+            domain='support.local.test',
+            project_uuid=str(project.uuid),
+            verified=False,
+        )
+        request = factory.post(f"/api/v1/portal/{project.uuid}/custom-domain/verify/")
+        request.user = project_creator
+
+        with patch('seahub.portal.apis.query_dns_txt_values', return_value=[custom_domain.txt_record_value]) as mock_query:
+            resp = PortalCustomDomainVerificationView.as_view()(request, project_uuid=str(project.uuid))
+
+        custom_domain.refresh_from_db()
+        assert resp.status_code == 200
+        assert custom_domain.verified is True
+        assert custom_domain.verified_at is not None
+        mock_query.assert_called_once_with(custom_domain.txt_record_name)
+
+    def test_post_rejects_custom_domain_when_txt_record_does_not_match(self, factory, project_creator, real_project):
+        project = real_project
+        custom_domain = PortalCustomDomain.objects.create(
+            domain='support.local.test',
+            project_uuid=str(project.uuid),
+            verified=False,
+        )
+        request = factory.post(f"/api/v1/portal/{project.uuid}/custom-domain/verify/")
+        request.user = project_creator
+
+        with patch('seahub.portal.apis.query_dns_txt_values', return_value=['seaticket-portal-verification=other']):
+            resp = PortalCustomDomainVerificationView.as_view()(request, project_uuid=str(project.uuid))
+
+        custom_domain.refresh_from_db()
+        assert resp.status_code == 400
+        assert custom_domain.verified is False
+        assert custom_domain.verified_at is None
+
+
+@pytest.mark.django_db
+class TestPortalCustomDomainTLSAskView:
+
+    def test_get_allows_verified_custom_domain_when_portal_enabled(self, factory, real_project):
+        project = real_project
+        _set_portal_settings(project, enable_portal=True)
+        domain = 'tls-allowed.local.test'
+        cache.delete(get_portal_tls_ask_cache_key(domain))
+        PortalCustomDomain.objects.create(
+            domain=domain,
+            project_uuid=str(project.uuid),
+            verified=True,
+        )
+        request = factory.get('/internal/portal/custom-domain/allow-tls', data={'domain': domain})
+
+        resp = PortalCustomDomainTLSAskView.as_view()(request)
+
+        assert resp.status_code == 200
+        assert cache.get(get_portal_tls_ask_cache_key(domain)) is True
+
+    def test_get_rejects_unverified_custom_domain(self, factory, real_project):
+        project = real_project
+        _set_portal_settings(project, enable_portal=True)
+        domain = 'tls-unverified.local.test'
+        cache.delete(get_portal_tls_ask_cache_key(domain))
+        PortalCustomDomain.objects.create(
+            domain=domain,
+            project_uuid=str(project.uuid),
+            verified=False,
+        )
+        request = factory.get('/internal/portal/custom-domain/allow-tls', data={'domain': domain})
+
+        resp = PortalCustomDomainTLSAskView.as_view()(request)
+
+        assert resp.status_code == 403
+        assert cache.get(get_portal_tls_ask_cache_key(domain)) is False
+
+    def test_get_rejects_verified_custom_domain_when_portal_disabled(self, factory, real_project):
+        project = real_project
+        _set_portal_settings(project, enable_portal=False)
+        domain = 'tls-disabled.local.test'
+        cache.delete(get_portal_tls_ask_cache_key(domain))
+        PortalCustomDomain.objects.create(
+            domain=domain,
+            project_uuid=str(project.uuid),
+            verified=True,
+        )
+        request = factory.get('/internal/portal/custom-domain/allow-tls', data={'domain': domain})
+
+        resp = PortalCustomDomainTLSAskView.as_view()(request)
+
+        assert resp.status_code == 403
+        assert cache.get(get_portal_tls_ask_cache_key(domain)) is False
+
 
 @pytest.mark.django_db
 class TestPortalExternalInvitationsView:

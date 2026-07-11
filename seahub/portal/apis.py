@@ -41,7 +41,7 @@ from seahub.utils.decorators import require_org_context
 from seahub.utils.timeutils import datetime_to_isoformat_timestr
 from seahub.portal.permissions import PortalKnowledgeBasePermission, PortalIssuePermission, PortalAnonymousAccessPermission
 from seahub.portal.models import ProjectExternalUser, PortalCustomDomain, PortalDomainAlias, get_portal_tls_ask_cache_key,\
-    PORTAL_TLS_ASK_CACHE_TIMEOUT, get_preferred_portal_domain
+    PORTAL_TLS_ASK_CACHE_TIMEOUT, get_preferred_portal_domain, get_service_portal_domain
 from seahub.portal.utils import PORTAL_EXTERNAL_LOGIN_CODE_TTL, PORTAL_EXTERNAL_LOGIN_SEND_COOLDOWN, PORTAL_EXTERNAL_LOGIN_VERIFY_FAIL_LIMIT, \
     PORTAL_EXTERNAL_LOGIN_VERIFY_LOCK_TTL, PORTAL_PREVIEW_TOKEN_SALT, clear_portal_external_login_code, clear_portal_external_login_state, \
     get_portal_external_login_cooldown_key, get_portal_external_login_fail_key, get_portal_external_login_lock_key, incr_portal_external_login_fail, \
@@ -1515,14 +1515,14 @@ class PortalCustomDomainView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        dns_target = getattr(settings, 'PORTAL_CUSTOM_DOMAIN_DNS_TARGET', '')
+        service_domain = get_service_portal_domain(project_uuid, ensure_alias=True)
         data = {
             'custom_domain': '',
             'custom_domain_verified': False,
             'custom_domain_verified_at': None,
             'custom_domain_txt_record_name': '',
             'custom_domain_txt_record_value': '',
-            'custom_domain_dns_target': dns_target,
+            'current_subdomain_domain': service_domain,
         }
         custom_domain = PortalCustomDomain.objects.filter(project_uuid=str(project_uuid)).first()
         if not custom_domain:

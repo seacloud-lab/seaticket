@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { Nav, NavItem, NavLink, TabContent, TabPane, Button } from 'reactstrap';
 import copy from 'copy-to-clipboard';
 import classnames from 'classnames';
-import { Icon, toaster, Switch, PasswordInput } from '@/components';
+import { CommonOperationConfirmationDialog, Icon, toaster, Switch, PasswordInput } from '@/components';
 import { gettext } from '@/constants';
 import { portalAPI } from '../../api';
 import { connectionsAPI } from '@/project/api/connections-api';
@@ -15,6 +15,14 @@ import CustomizationSettings from './customization-settings';
 import './index.css';
 
 const { projectUuid, showKBInPortal } = window.app.pageOptions;
+const getHostFromUrl = (value) => {
+  if (!value) return '';
+  try {
+    return new URL(value).host;
+  } catch (error) {
+    return '';
+  }
+};
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState(SETTING_TAB.PORTAL_CUSTOMIZATION);
@@ -46,9 +54,10 @@ const Settings = () => {
   const [customDomainVerified, setCustomDomainVerified] = useState(false);
   const [customDomainTxtRecordName, setCustomDomainTxtRecordName] = useState('');
   const [customDomainTxtRecordValue, setCustomDomainTxtRecordValue] = useState('');
-  const [customDomainDnsTarget, setCustomDomainDnsTarget] = useState('');
+  const [currentSubdomainDomain, setCurrentSubdomainDomain] = useState('');
   const [isVerifyingCustomDomain, setIsVerifyingCustomDomain] = useState(false);
   const [isSavingCustomDomain, setIsSavingCustomDomain] = useState(false);
+  const [isShowRemoveCustomDomainConfirm, setIsShowRemoveCustomDomainConfirm] = useState(false);
   const [domainAliasRoot, setDomainAliasRoot] = useState('');
   const [subdomainPrefix, setSubdomainPrefix] = useState('');
   const [savedSubdomainPrefix, setSavedSubdomainPrefix] = useState('');
@@ -56,9 +65,11 @@ const Settings = () => {
   const [isSavingDomainAlias, setIsSavingDomainAlias] = useState(false);
   const [isOpeningPortalPreview, setIsOpeningPortalPreview] = useState(false);
 
-  const customDomainUrl = savedCustomDomain && customDomainVerified && customDomain === savedCustomDomain
-    ? `${window.location.protocol}//${savedCustomDomain}/`
-    : '';
+  const trimmedCustomDomain = customDomain.trim();
+  const currentPortalDomain = currentSubdomainDomain || getHostFromUrl(subdomainPublicUrl);
+  const customDomainHint = currentPortalDomain
+    ? gettext('Custom domain allows you to serve your portal from a domain other than {domain}.').replace('{domain}', currentPortalDomain)
+    : gettext('Custom domain allows you to serve your portal from a domain other than your current portal domain.');
 
   const applyLoadedSettings = useCallback((data) => {
     setAllowAnonymous(!!data.allow_anonymous);
@@ -78,7 +89,7 @@ const Settings = () => {
     setCustomDomainVerified(!!data.custom_domain_verified);
     setCustomDomainTxtRecordName(data.custom_domain_txt_record_name);
     setCustomDomainTxtRecordValue(data.custom_domain_txt_record_value);
-    setCustomDomainDnsTarget(data.custom_domain_dns_target);
+    setCurrentSubdomainDomain(data.current_subdomain_domain || '');
   }, []);
 
   const applyLoadedDomainAlias = useCallback((data) => {
@@ -230,7 +241,7 @@ const Settings = () => {
   }, []);
 
   const onVerifyCustomDomain = useCallback(() => {
-    if (!savedCustomDomain || customDomain !== savedCustomDomain || isVerifyingCustomDomain) {
+    if (!savedCustomDomain || trimmedCustomDomain !== savedCustomDomain || isVerifyingCustomDomain) {
       return;
     }
 
@@ -244,14 +255,14 @@ const Settings = () => {
     }).finally(() => {
       setIsVerifyingCustomDomain(false);
     });
-  }, [savedCustomDomain, customDomain, isVerifyingCustomDomain, loadCustomDomain]);
+  }, [savedCustomDomain, trimmedCustomDomain, isVerifyingCustomDomain, loadCustomDomain]);
 
   const onSaveCustomDomain = useCallback(() => {
     if (isSavingCustomDomain) return;
 
     setIsSavingCustomDomain(true);
     portalAPI.updateCustomDomain(projectUuid, {
-      custom_domain: customDomain,
+      custom_domain: trimmedCustomDomain,
     }).then(() => {
       return loadCustomDomain();
     }).then(() => {
@@ -261,7 +272,33 @@ const Settings = () => {
     }).finally(() => {
       setIsSavingCustomDomain(false);
     });
-  }, [customDomain, isSavingCustomDomain, loadCustomDomain]);
+  }, [trimmedCustomDomain, isSavingCustomDomain, loadCustomDomain]);
+
+  const onOpenRemoveCustomDomainConfirm = useCallback(() => {
+    if (isSavingCustomDomain || !savedCustomDomain) return;
+    setIsShowRemoveCustomDomainConfirm(true);
+  }, [isSavingCustomDomain, savedCustomDomain]);
+
+  const onCloseRemoveCustomDomainConfirm = useCallback(() => {
+    setIsShowRemoveCustomDomainConfirm(false);
+  }, []);
+
+  const onRemoveCustomDomain = useCallback(() => {
+    if (isSavingCustomDomain || !savedCustomDomain) return;
+
+    setIsSavingCustomDomain(true);
+    portalAPI.updateCustomDomain(projectUuid, {
+      custom_domain: '',
+    }).then(() => {
+      return loadCustomDomain();
+    }).then(() => {
+      toaster.success(gettext('Removed'), { duration: 2, hasCloseButton: false });
+    }).catch((error) => {
+      toaster.danger(Utils.getErrorMsg(error));
+    }).finally(() => {
+      setIsSavingCustomDomain(false);
+    });
+  }, [isSavingCustomDomain, savedCustomDomain, loadCustomDomain]);
 
   const onSaveDomainAlias = useCallback(() => {
     if (isSavingDomainAlias) return;
@@ -337,9 +374,11 @@ const Settings = () => {
     });
   }, [chatSettings]);
 
-  const hasUnsavedCustomDomain = customDomain !== savedCustomDomain;
-  const canVerifyCustomDomain = !!savedCustomDomain && !hasUnsavedCustomDomain && !customDomainVerified && !isVerifyingCustomDomain;
-  const canSaveCustomDomain = hasUnsavedCustomDomain && !isSavingCustomDomain;
+  const hasUnsavedCustomDomain = trimmedCustomDomain !== savedCustomDomain;
+  const isSavedCustomDomainCurrent = !!savedCustomDomain && !hasUnsavedCustomDomain;
+  const canVerifyCustomDomain = isSavedCustomDomainCurrent && !customDomainVerified && !isVerifyingCustomDomain;
+  const canSaveCustomDomain = !!trimmedCustomDomain && hasUnsavedCustomDomain && !isSavingCustomDomain;
+  const canRemoveCustomDomain = !!savedCustomDomain && !isSavingCustomDomain;
   const hasUnsavedDomainAlias = subdomainPrefix !== savedSubdomainPrefix;
   const canSaveDomainAlias = !!domainAliasRoot && hasUnsavedDomainAlias && !isSavingDomainAlias;
 
@@ -526,62 +565,61 @@ const Settings = () => {
         <TabPane tabId={SETTING_TAB.CUSTOM_DOMAIN}>
           <div className="portal-settings-content">
             <label className="portal-settings-label">{gettext('Custom domain')}</label>
-            <input
-              type="text"
-              className="form-control"
-              value={customDomain}
-              onChange={onCustomDomainChange}
-              placeholder={gettext('support.example.com')}
-              spellCheck={false}
-              autoComplete="off"
-            />
-            <p className="portal-settings-help-text mt-2 mb-0">
-              {customDomainDnsTarget
-                ? gettext('Configure a CNAME or ALIAS record for this domain to the DNS target below.')
-                : gettext('After DNS is pointed to the portal ingress, this domain can be used to access the portal.')}
+            <p className="portal-settings-help-text mt-2">
+              {customDomainHint}
             </p>
-            <div className="mt-3">
-              <Button color="primary" size="sm" onClick={onSaveCustomDomain} disabled={!canSaveCustomDomain}>
+            <div className="portal-url-container">
+              <input
+                type="text"
+                className="form-control portal-custom-domain-input"
+                value={customDomain}
+                onChange={onCustomDomainChange}
+                placeholder={gettext('support.example.com')}
+                spellCheck={false}
+                autoComplete="off"
+              />
+              <Button className="portal-custom-domain-action-btn" color="primary" size="sm" onClick={onSaveCustomDomain} disabled={!canSaveCustomDomain}>
                 {isSavingCustomDomain ? gettext('Saving...') : gettext('Save')}
               </Button>
+              {savedCustomDomain && (
+                <Button className="portal-custom-domain-action-btn" color="outline-danger" size="sm" onClick={onOpenRemoveCustomDomainConfirm} disabled={!canRemoveCustomDomain}>
+                  {gettext('Remove')}
+                </Button>
+              )}
             </div>
-            {customDomainDnsTarget && (
+            {trimmedCustomDomain && currentPortalDomain && (
               <>
-                <label className="portal-settings-label mt-3">{gettext('DNS target')}</label>
-                <div className="portal-url-container">
+                <p className="portal-settings-help-text mt-3 mb-0">
+                  {gettext('Add a CNAME record in your DNS hosting provider to make custom domain work. The CNAME record should be as following:')}
+                </p>
+                <div className="portal-dns-record-row mt-2">
                   <input
                     type="text"
                     className="form-control portal-url-input"
-                    value={customDomainDnsTarget}
+                    value={trimmedCustomDomain}
                     readOnly
                   />
-                  <Button color="outline-primary" onClick={() => onCopyUrl(customDomainDnsTarget)} title={gettext('Copy URL')}>
+                  <span className="portal-dns-record-type">CNAME</span>
+                  <input
+                    type="text"
+                    className="form-control portal-url-input"
+                    value={currentPortalDomain}
+                    readOnly
+                  />
+                  <Button color="outline-primary" onClick={() => onCopyUrl(currentPortalDomain)} title={gettext('Copy URL')}>
                     <Icon symbol="copy" />
                   </Button>
                 </div>
               </>
             )}
-            {savedCustomDomain && (
+            {isSavedCustomDomainCurrent && (
               <>
-                <label className="portal-settings-label mt-3">{gettext('Verification status')}</label>
-                <div className="d-flex align-items-center gap-2">
-                  <span className={customDomainVerified ? 'text-success' : 'text-secondary'}>
-                    {customDomainVerified ? gettext('Verified') : gettext('Not verified')}
-                  </span>
-                  {!customDomainVerified && (
-                    <Button
-                      color="outline-primary"
-                      size="sm"
-                      disabled={!canVerifyCustomDomain}
-                      onClick={onVerifyCustomDomain}
-                    >
-                      {isVerifyingCustomDomain ? gettext('Verifying...') : gettext('Verify')}
-                    </Button>
-                  )}
-                </div>
+                <p className="portal-settings-help-text mt-3 mb-0">
+                  {gettext('You also need to add a TXT record to verify the ownership of your custom domain.')}
+                </p>
               </>
             )}
-            {savedCustomDomain && !customDomainVerified && customDomainTxtRecordName && customDomainTxtRecordValue && (
+            {isSavedCustomDomainCurrent && customDomainTxtRecordName && customDomainTxtRecordValue && (
               <>
                 <label className="portal-settings-label mt-3">{gettext('TXT record name')}</label>
                 <div className="portal-url-container">
@@ -607,28 +645,29 @@ const Settings = () => {
                     <Icon symbol="copy" />
                   </Button>
                 </div>
+                {!customDomainVerified && (
+                  <div className="mt-3">
+                    <Button
+                      color="outline-primary"
+                      size="sm"
+                      disabled={!canVerifyCustomDomain}
+                      onClick={onVerifyCustomDomain}
+                    >
+                      {isVerifyingCustomDomain ? gettext('Verifying...') : gettext('Verify')}
+                    </Button>
+                  </div>
+                )}
+                {customDomainVerified && (
+                  <p className="portal-settings-help-text mt-3 mb-0 text-success">
+                    {gettext('Verified')}
+                  </p>
+                )}
               </>
             )}
             {hasUnsavedCustomDomain && (
               <p className="portal-settings-help-text mt-2 mb-0">
                 {gettext('Save the custom domain before verification.')}
               </p>
-            )}
-            {customDomainUrl && (
-              <>
-                <label className="portal-settings-label mt-3">{gettext('Custom domain URL')}</label>
-                <div className="portal-url-container">
-                  <input
-                    type="text"
-                    className="form-control portal-url-input"
-                    value={customDomainUrl}
-                    readOnly
-                  />
-                  <Button color="outline-primary" onClick={() => onCopyUrl(customDomainUrl)} title={gettext('Copy URL')}>
-                    <Icon symbol="copy" />
-                  </Button>
-                </div>
-              </>
             )}
           </div>
         </TabPane>
@@ -670,6 +709,15 @@ const Settings = () => {
           </div>
         </TabPane>
       </TabContent>
+      {isShowRemoveCustomDomainConfirm && (
+        <CommonOperationConfirmationDialog
+          title={gettext('Remove custom domain')}
+          message={gettext('Are you sure you want to remove this custom domain?')}
+          confirmBtnText={gettext('Remove')}
+          executeOperation={onRemoveCustomDomain}
+          toggleDialog={onCloseRemoveCustomDomainConfirm}
+        />
+      )}
     </>
   );
 };

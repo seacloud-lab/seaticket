@@ -8,8 +8,8 @@ from django.conf import settings
 logger = logging.getLogger(__name__)
 
 HOST_LABEL_RE = re.compile(r'^(?!-)[a-z0-9-]{1,63}(?<!-)$')
-CUSTOM_DOMAIN_TXT_RECORD_PREFIX = '_seaqa-portal-challenge'
-CUSTOM_DOMAIN_VERIFICATION_VALUE_PREFIX = 'seaqa-portal-verification='
+CUSTOM_DOMAIN_TXT_RECORD_PREFIX = '_seaticket-portal-challenge'
+CUSTOM_DOMAIN_VERIFICATION_VALUE_PREFIX = 'seaticket-portal-verification='
 PORTAL_SUBDOMAIN_PREFIX_MIN_LENGTH = 3
 PORTAL_SUBDOMAIN_PREFIX_MAX_LENGTH = 63
 PORTAL_RESERVED_SUBDOMAIN_PREFIXES = ('admin', 'api', 'assets', 'auth', 'cdn', 'custom-domains', 'internal', 'mail', 'media', 'static', 'status', 'support', 'www')
@@ -94,21 +94,9 @@ def normalize_portal_subdomain_prefix(prefix):
 
     return prefix
 
-def get_portal_reserved_subdomain_prefixes():
-    reserved_prefixes = set(PORTAL_RESERVED_SUBDOMAIN_PREFIXES)
-    dns_target = getattr(settings, 'PORTAL_CUSTOM_DOMAIN_DNS_TARGET', '')
-    try:
-        target_prefix = get_portal_subdomain_prefix(dns_target)
-    except ValueError:
-        target_prefix = ''
-    if target_prefix:
-        reserved_prefixes.add(target_prefix)
-
-    return reserved_prefixes
-
 def validate_portal_subdomain_prefix_available(prefix):
     normalized_prefix = normalize_portal_subdomain_prefix(prefix)
-    if normalized_prefix in get_portal_reserved_subdomain_prefixes():
+    if normalized_prefix in PORTAL_RESERVED_SUBDOMAIN_PREFIXES:
         raise ValueError('Portal subdomain is reserved.')
     return normalized_prefix
 

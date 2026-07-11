@@ -47,7 +47,7 @@ const LeftBar = () => {
         callback: () => setIsShowSettings(true),
       }, {
         icon: 'eye',
-        tip: gettext('Go to app'),
+        tip: gettext('Go to portal'),
         callback: onOpenPortal,
         disabled: isOpeningPortal,
       }, {

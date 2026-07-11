@@ -16,7 +16,7 @@ from copy import deepcopy
 from seahub.project.constants import PORTAL_ISSUES_DEFAULT_DETAILS
 from seahub.utils import get_no_duplicate_obj_name, uuid_str_to_32_chars
 from seahub.portal.custom_domain import CUSTOM_DOMAIN_TXT_RECORD_PREFIX, CUSTOM_DOMAIN_VERIFICATION_VALUE_PREFIX, \
-    get_portal_subdomain_prefix, normalize_portal_custom_domain, get_portal_reserved_subdomain_prefixes, \
+    PORTAL_RESERVED_SUBDOMAIN_PREFIXES, get_portal_subdomain_prefix, normalize_portal_custom_domain, \
     normalize_portal_subdomain_prefix
 from seahub.seadb_models.models import SchemaTables
 
@@ -41,6 +41,10 @@ def get_preferred_portal_domain(project_uuid, ensure_alias=False):
     if custom_domain:
         return custom_domain.domain
 
+    return get_service_portal_domain(project_uuid, ensure_alias=ensure_alias)
+
+
+def get_service_portal_domain(project_uuid, ensure_alias=False):
     root_domain = getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
     if not root_domain:
         return ''
@@ -187,10 +191,9 @@ class PortalDomainAliasManager(models.Manager):
         return self.get_by_prefix(prefix)
 
     def generate_unique_prefix(self, length=6):
-        reserved_prefixes = get_portal_reserved_subdomain_prefixes()
         while True:
             prefix = generate_random_string_lower_digits(length)
-            if prefix in reserved_prefixes:
+            if prefix in PORTAL_RESERVED_SUBDOMAIN_PREFIXES:
                 continue
             if not super().filter(prefix=prefix).exists():
                 return prefix
