@@ -90,6 +90,10 @@
   padding-bottom: 28px !important;
 }
 
+.seaqa-connection-record-details .seaqa-connection-email-resource-details:last-child {
+  margin-bottom: 24px;
+}
+
 .seaqa-connection-record-details .seaqa-connection-email-resource-details.last-record-expand {
   padding-bottom: 0 !important;
 }
