@@ -105,6 +105,7 @@ def _build_items_map_from_actions(actions):
             'suggestion_reason': action.get('suggestion_reason', ''),
             'suggestion_text': action.get('suggestion_text', ''),
             'suggestion_content': action.get('suggestion_content', ''),
+            'suggestion_payload': action.get('suggestion_payload', ''),
             'sources': _parse_action_sources(action.get('sources')),
             'statistics': action.get('statistics', ''),
             'created_at': action.get('created_at', ''),
@@ -133,7 +134,7 @@ def get_agent_run_detail(seadb_api, project_uuid, run_id):
         run = runs[0]
         
         actions_sql = "SELECT `_pk`, `run_id`, `source_type`, `source_id`, `source_title`, " \
-            f"`action_type`, `tool_name`, `result`, `status`, `suggestion_reason`, `suggestion_text`, `suggestion_content`, " \
+            f"`action_type`, `tool_name`, `result`, `status`, `suggestion_reason`, `suggestion_text`, `suggestion_content`, `suggestion_payload`, " \
             f"`phase`, `prompt`, `input`, `statistics`, `created_at`, `executed_at`, `sources`, `step`, `tool_arguments`, `observation` FROM `{SchemaTables.AGENT_ACTIONS.table_name()}` " \
             f"WHERE `run_id` = {run_id} ORDER BY `created_at` ASC"
         actions_result = seadb_api.query_rows(project_uuid, actions_sql)
@@ -176,6 +177,7 @@ def _build_item_action(action):
         'suggestion_reason': action.get('suggestion_reason'),
         'suggestion_text': action.get('suggestion_text'),
         'suggestion_content': action.get('suggestion_content'),
+        'suggestion_payload': action.get('suggestion_payload'),
         'sources': _parse_action_sources(action.get('sources')),
         'statistics': action.get('statistics'),
         'created_at': action.get('created_at'),
@@ -375,7 +377,7 @@ def get_agent_log_runs(seadb_api, project_uuid, source_id, source_type):
 
     actions_sql = (
         "SELECT `_pk`, `run_id`, `action_type`, `tool_name`, `result`, `status`, "
-        "`suggestion_reason`, `suggestion_text`, `suggestion_content`, `sources`, "
+        "`suggestion_reason`, `suggestion_text`, `suggestion_content`, `suggestion_payload`, `sources`, "
         "`source_type`, `source_id`, `source_title`, `created_at`, "
         f"`executed_at` FROM `{actions_table}` WHERE {action_filter} "
         "ORDER BY `run_id` ASC, `_pk` ASC"
@@ -576,7 +578,7 @@ class AgentActionConfirmView(APIView):
             seadb_api = SeaDBAPI()
 
             # 1. Get action details from SeaDB
-            sql = "SELECT `run_id`, `status`, `tool_name`, `source_type`, `source_id`, `suggestion_text`, `suggestion_content` " \
+            sql = "SELECT `run_id`, `status`, `tool_name`, `source_type`, `source_id`, `suggestion_text`, `suggestion_content`, `suggestion_payload` " \
                 f"FROM `{SchemaTables.AGENT_ACTIONS.table_name()}` WHERE `_pk` = {action_id}"
             result = seadb_api.query_rows(project_uuid, sql)
             actions = result.get('results', [])
@@ -714,7 +716,7 @@ class AgentActionAutoExecuteView(APIView):
         # 1. Get action details
         sql = (
             "SELECT `_pk`, `run_id`, `status`, `tool_name`, `source_type`, `source_id`, "
-            "`suggestion_text`, `suggestion_content` "
+            "`suggestion_text`, `suggestion_content`, `suggestion_payload` "
             f"FROM `{SchemaTables.AGENT_ACTIONS.table_name()}` WHERE `_pk` = {action_id} LIMIT 1"
         )
         result = seadb_api.query_rows(project_uuid, sql)

@@ -437,6 +437,82 @@ class TestProjectConnectionReplyEmailView:
 
 class TestAgentActionConfirmView:
 
+    def test_confirm_link_existing_ticket_success(self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        connection = connection_factory(connection_type='email', config={'server_provider': 'general_email_provider'})
+        request = factory.post(
+            f"/api/v1/project/{project.uuid}/agent/runs/1/actions/2/confirm/",
+            data={},
+            format='json',
+        )
+        request.user = project_creator
+
+        seadb_api = Mock()
+        seadb_api.query_rows.return_value = {
+            'results': [{
+                'run_id': 1,
+                'status': 'pending',
+                'tool_name': 'suggest_link_existing_ticket',
+                'source_type': 'email',
+                'source_id': f'{connection.id}_10',
+                'suggestion_text': 'Suggest linking this record to existing ticket #42.',
+                'suggestion_content': 'This thread matches an already tracked internal ticket.',
+            }]
+        }
+        sync_plan = Mock()
+        ticket = {'_pk': 42, 'linked_connection_records': []}
+
+        with patch('seahub.project.agent.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.project.agent_action_executor.get_ticket', return_value=(ticket, {})), \
+                patch('seahub.project.agent_action_executor.check_ticket_link_changes', return_value=(sync_plan, [connection])) as check_mock, \
+                patch('seahub.project.agent_action_executor.sync_links_in_connection') as sync_mock:
+            resp = AgentActionConfirmView.as_view()(request, project_uuid=project.uuid, run_id='1', action_id='2')
+
+        assert resp.status_code == 200
+        assert resp.data['status'] == 'executed'
+        check_mock.assert_called_once_with(
+            seadb_api,
+            project.uuid,
+            {42: ({f'{connection.id}_10'}, set())},
+        )
+        sync_mock.assert_called_once_with(seadb_api, project.uuid, sync_plan, [connection])
+        assert any(
+            call.args[1] == 'tickets' and call.args[2][0]['row'].get('linked_connection_records') == [f'{connection.id}_10']
+            for call in seadb_api.update_rows.call_args_list
+        )
+
+    def test_confirm_link_existing_ticket_fails_when_ticket_missing_in_suggestion(self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        connection = connection_factory(connection_type='email', config={'server_provider': 'general_email_provider'})
+        request = factory.post(
+            f"/api/v1/project/{project.uuid}/agent/runs/1/actions/2/confirm/",
+            data={},
+            format='json',
+        )
+        request.user = project_creator
+
+        seadb_api = Mock()
+        seadb_api.query_rows.return_value = {
+            'results': [{
+                'run_id': 1,
+                'status': 'pending',
+                'tool_name': 'suggest_link_existing_ticket',
+                'source_type': 'email',
+                'source_id': f'{connection.id}_10',
+                'suggestion_text': 'Suggest linking this record to an existing internal ticket.',
+                'suggestion_content': 'This thread matches an already tracked internal ticket.',
+            }]
+        }
+
+        with patch('seahub.project.agent.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.project.agent_action_executor.sync_links_in_connection') as sync_mock:
+            resp = AgentActionConfirmView.as_view()(request, project_uuid=project.uuid, run_id='1', action_id='2')
+
+        assert resp.status_code == 200
+        assert resp.data['status'] == 'failed'
+        assert 'Cannot determine related ticket' in resp.data['result']
+        sync_mock.assert_not_called()
+
     def test_confirm_email_reply_persists_refreshed_oauth_tokens(self, factory, project_creator, real_project, connection_factory):
         project = real_project
         config = {

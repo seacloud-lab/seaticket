@@ -26,6 +26,9 @@ from seahub.tickets.ticket_utils import (
     record_ticket_activities,
     build_ticket_close_payloads_from_client,
     convert_select_field_option_ids_to_names,
+    check_ticket_link_changes,
+    sync_links_in_connection,
+    TicketLinkValidationError,
 )
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.seadb_models.discord_seadb_api import DiscordSeaDBAPI
@@ -120,6 +123,20 @@ class AgentActionExecutor:
         }
 
     @staticmethod
+    def _parse_suggestion_payload(raw_payload):
+        if isinstance(raw_payload, dict):
+            return raw_payload
+        if not raw_payload:
+            return {}
+        if not isinstance(raw_payload, str):
+            return {}
+        try:
+            payload = json.loads(raw_payload)
+        except Exception:
+            return {}
+        return payload if isinstance(payload, dict) else {}
+
+    @staticmethod
     def get_effective_auto_confirm_map(project):
         settings = getattr(project, 'settings', None) or {}
         if isinstance(settings, str):
@@ -186,6 +203,7 @@ class AgentActionExecutor:
         source_id,
         tool_name,
         suggestion_text,
+        suggestion_payload,
         suggestion_content,
         operator,
         request=None,
@@ -197,14 +215,16 @@ class AgentActionExecutor:
             )
         if tool_name == 'suggest_modify_type':
             return self._execute_github_suggest_modify_type(
-                seadb_api, project, project_uuid, source_id, suggestion_text
+                seadb_api, project, project_uuid, source_id, suggestion_text, suggestion_payload
             )
         if tool_name == 'suggest_assign_labels':
             return self._execute_github_suggest_assign_labels(
-                seadb_api, project_uuid, source_id, suggestion_content, suggestion_text
+                seadb_api, project_uuid, source_id, suggestion_text, suggestion_payload
             )
         if tool_name == 'suggest_create_ticket':
             return self._execute_github_create_ticket(seadb_api, project, project_uuid, source_id, suggestion_content, operator, request=request, auto_executed=auto_executed)
+        if tool_name == 'suggest_link_existing_ticket':
+            return self._execute_link_existing_ticket(seadb_api, project_uuid, source_id, ConnectionType.GITHUB_ISSUE.value, suggestion_text, suggestion_payload)
         logger.warning('Unknown github_issue tool_name: %r', tool_name)
         return self._failed_execution(f'Unknown tool_name: {tool_name}')
 
@@ -215,6 +235,8 @@ class AgentActionExecutor:
         project_uuid,
         source_id,
         tool_name,
+        suggestion_text,
+        suggestion_payload,
         suggestion_content,
         operator,
         request=None,
@@ -226,6 +248,8 @@ class AgentActionExecutor:
             )
         if tool_name == 'suggest_create_ticket':
             return self._execute_discourse_create_ticket(seadb_api, project, project_uuid, source_id, suggestion_content, operator, request=request, auto_executed=auto_executed)
+        if tool_name == 'suggest_link_existing_ticket':
+            return self._execute_link_existing_ticket(seadb_api, project_uuid, source_id, ConnectionType.DISCOURSE_FORUM.value, suggestion_text, suggestion_payload)
         logger.warning('Unknown discourse_topic tool_name: %r', tool_name)
         return self._failed_execution(f'Unknown tool_name: {tool_name}')
 
@@ -236,6 +260,8 @@ class AgentActionExecutor:
         project_uuid,
         source_id,
         tool_name,
+        suggestion_text,
+        suggestion_payload,
         suggestion_content,
         operator,
         request=None,
@@ -245,6 +271,8 @@ class AgentActionExecutor:
             return self._execute_email_suggest_reply(seadb_api, project_uuid, source_id, suggestion_content)
         if tool_name == 'suggest_create_ticket':
             return self._execute_email_create_ticket(seadb_api, project, project_uuid, source_id, suggestion_content, operator, request=request, auto_executed=auto_executed)
+        if tool_name == 'suggest_link_existing_ticket':
+            return self._execute_link_existing_ticket(seadb_api, project_uuid, source_id, ConnectionType.EMAIL.value, suggestion_text, suggestion_payload)
         if tool_name == 'suggest_move_to_spam':
             return self._execute_email_move_to_spam(seadb_api, project_uuid, source_id)
         logger.warning('Unknown email tool_name: %r', tool_name)
@@ -295,6 +323,7 @@ class AgentActionExecutor:
         source_type = action.get('source_type', 'ticket')
         source_id = action.get('source_id', '')
         suggestion_text = action.get('suggestion_text', '')
+        suggestion_payload = self._parse_suggestion_payload(action.get('suggestion_payload'))
         suggestion_content = action.get('suggestion_content', '')
         action_id = action.get('_pk') or action.get('id') or ''
 
@@ -318,6 +347,7 @@ class AgentActionExecutor:
                 source_id,
                 tool_name,
                 suggestion_text,
+                suggestion_payload,
                 suggestion_content,
                 effective_operator,
                 request=request,
@@ -330,6 +360,8 @@ class AgentActionExecutor:
                 project_uuid,
                 source_id,
                 tool_name,
+                suggestion_text,
+                suggestion_payload,
                 suggestion_content,
                 effective_operator,
                 request=request,
@@ -342,6 +374,8 @@ class AgentActionExecutor:
                 project_uuid,
                 source_id,
                 tool_name,
+                suggestion_text,
+                suggestion_payload,
                 suggestion_content,
                 effective_operator,
                 request=request,
@@ -546,6 +580,15 @@ class AgentActionExecutor:
         return ''
 
     @staticmethod
+    def _extract_suggested_type(suggestion_payload, suggestion_text):
+        suggested_type = str((suggestion_payload or {}).get('suggested_type') or '').strip()
+        if suggested_type:
+            return suggested_type
+        # Legacy fallback for pending actions recorded before suggestion_payload
+        # was introduced. New actions should provide suggested_type via payload.
+        return AgentActionExecutor._parse_suggested_type(suggestion_text)
+
+    @staticmethod
     def _parse_suggested_labels(result_text):
         if not result_text:
             return []
@@ -572,15 +615,14 @@ class AgentActionExecutor:
             normalized.append(name)
         return normalized
 
-    @classmethod
-    def _parse_suggested_label_content(cls, suggestion_content):
-        try:
-            labels = json.loads(suggestion_content)
-        except (TypeError, ValueError):
-            return []
-        if not isinstance(labels, list):
-            return []
-        return cls._normalize_issue_labels(labels)
+    def _extract_suggested_labels(self, suggestion_payload, suggestion_text):
+        payload_labels = (suggestion_payload or {}).get('suggested_labels')
+        labels = self._normalize_issue_labels(payload_labels)
+        if labels:
+            return labels
+        # Legacy fallback for older pending actions that only stored labels in
+        # suggestion_text. New actions should use suggestion_payload instead.
+        return self._parse_suggested_labels(suggestion_text)
 
     @staticmethod
     def _normalize_issue_labels(raw_labels):
@@ -629,21 +671,17 @@ class AgentActionExecutor:
                 filtered.append(canonical)
         return filtered
 
-    def _execute_github_suggest_assign_labels(
-        self, seadb_api, project_uuid, source_id, suggestion_content='', suggestion_text=''
-    ):
+    def _execute_github_suggest_assign_labels(self, seadb_api, project_uuid, source_id, suggestion_text='', suggestion_payload=None):
         ctx = self._get_github_issue_context(seadb_api, project_uuid, source_id)
         if not ctx:
             return self._failed_execution(f'Failed to get GitHub issue context for {source_id}.')
 
-        labels = self._parse_suggested_label_content(suggestion_content)
-        if not labels:
-            labels = self._parse_suggested_labels(suggestion_text)
+        labels = self._extract_suggested_labels(suggestion_payload, suggestion_text)
         if not labels:
             logger.error(
-                'Cannot parse suggested labels for GitHub issue %s from suggestion_content %r or suggestion_text %r',
+                'Cannot determine suggested labels for GitHub issue %s: payload=%r text=%r',
                 ctx['record_id'],
-                suggestion_content,
+                suggestion_payload,
                 suggestion_text,
             )
             return self._failed_execution(f'Cannot determine suggested labels for GitHub issue {ctx["record_id"]}.')
@@ -692,19 +730,21 @@ class AgentActionExecutor:
             logger.warning(f'Failed to update SeaDB for GitHub issue {ctx["record_id"]}: {e}')
 
         return self._successful_execution(
-            f'Labels updated for GitHub issue {ctx["record_id"]}: {json.dumps(applied_labels, ensure_ascii=False)}.'
+            f'Labels updated for GitHub issue #{ctx["record_id"]}: {json.dumps(applied_labels, ensure_ascii=False)}.'
         )
 
-    def _execute_github_suggest_modify_type(self, seadb_api, project, project_uuid, source_id, suggestion_text=''):
+    def _execute_github_suggest_modify_type(self, seadb_api, project, project_uuid, source_id, suggestion_text='', suggestion_payload=None):
         ctx = self._get_github_issue_context(seadb_api, project_uuid, source_id)
         if not ctx:
             return self._failed_execution(f'Failed to get GitHub issue context for {source_id}.')
 
-        suggested_type = self._parse_suggested_type(suggestion_text)
+        suggested_type = self._extract_suggested_type(suggestion_payload, suggestion_text)
         if not suggested_type:
             logger.error(
-                f'Cannot parse suggested_type from suggestion_text for GitHub issue {ctx["record_id"]}: '
-                f'{suggestion_text!r}'
+                'Cannot determine suggested_type for GitHub issue %s: payload=%r text=%r',
+                ctx["record_id"],
+                suggestion_payload,
+                suggestion_text,
             )
             return self._failed_execution(
                 f'Cannot determine suggested issue type for GitHub issue {ctx["record_id"]}.'
@@ -785,7 +825,7 @@ class AgentActionExecutor:
             logger.warning(f'Failed to update SeaDB for GitHub issue {ctx["record_id"]}: {e}')
 
         return self._successful_execution(
-            f'Issue type updated to "{new_type}" for GitHub issue {ctx["record_id"]}.'
+            f'Issue type updated to "{new_type}" for GitHub issue #{ctx["record_id"]}.'
         )
 
     @staticmethod
@@ -992,6 +1032,80 @@ class AgentActionExecutor:
         return self._ticket_created_execution(
             f'Ticket #{ticket_pk} created from GitHub issue #{record_id}.',
             ticket,
+        )
+
+    @staticmethod
+    def _parse_related_ticket_id(suggestion_text):
+        if not suggestion_text:
+            return None
+        match = re.search(r'ticket\s+#(\d+)', str(suggestion_text), flags=re.IGNORECASE)
+        if not match:
+            return None
+        try:
+            return int(match.group(1))
+        except (TypeError, ValueError):
+            return None 
+
+    @staticmethod
+    def _extract_related_ticket_id(suggestion_payload, suggestion_text):
+        related_ticket = (suggestion_payload or {}).get('related_ticket')
+        if related_ticket not in (None, ''):
+            try:
+                return int(related_ticket)
+            except (TypeError, ValueError):
+                pass
+        # Legacy fallback for pending actions recorded before suggestion_payload
+        # was introduced. New actions should provide related_ticket via payload.
+        return AgentActionExecutor._parse_related_ticket_id(suggestion_text)
+
+    def _execute_link_existing_ticket(self, seadb_api, project_uuid, source_id, source_type, suggestion_text='', suggestion_payload=None):
+        ticket_id = self._extract_related_ticket_id(suggestion_payload, suggestion_text)
+        if ticket_id is None:
+            return self._failed_execution('Cannot determine related ticket from this suggestion.')
+
+        connection_id, record_id = self._parse_connection_source_id(source_id, source_type)
+        if connection_id is None or record_id is None:
+            return self._failed_execution(f'Invalid source_id format: {source_id}')
+
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not project_connection or project_connection.type != source_type:
+            return self._failed_execution(f'{source_type} connection {connection_id} not found.')
+
+        ticket, _ = get_ticket(seadb_api, project_uuid, ticket_id)
+        if not ticket:
+            return self._failed_execution(f'Ticket #{ticket_id} not found.')
+
+        linked_record_key = f'{connection_id}_{record_id}'
+        ticket_link_diff = {int(ticket_id): ({linked_record_key}, set())}
+
+        try:
+            sync_plan, connections = check_ticket_link_changes(seadb_api, project_uuid, ticket_link_diff)
+            old_value = ticket.get('linked_connection_records', []) or []
+            if not isinstance(old_value, list):
+                old_value = []
+            new_value = list(dict.fromkeys(old_value + [linked_record_key]))
+            seadb_api.update_rows(project_uuid, SchemaTables.TICKETS.table_name(), [{
+                'pk': ticket.get('_pk'),
+                'row': {
+                    'linked_connection_records': new_value,
+                    'modified_time': timezone.now().isoformat(),
+                },
+            }])
+            sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections)
+        except TicketLinkValidationError as e:
+            return self._failed_execution(str(e))
+        except Exception as e:
+            logger.exception(
+                'Failed to link %s %s to ticket #%s: %s',
+                source_type,
+                source_id,
+                ticket_id,
+                e,
+            )
+            return self._failed_execution('Failed to link this record to the existing ticket.')
+
+        return self._successful_execution(
+            f'Current record #{record_id} linked to ticket #{ticket_id}.'
         )
 
     def _parse_connection_source_id(self, source_id, source_type):
