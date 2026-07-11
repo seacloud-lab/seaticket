@@ -3,10 +3,10 @@ import { gettext } from '@/constants';
 import { CHAT_ATTACHMENT_TYPE } from '../constants';
 
 class AttachmentObject {
-  constructor(object = {}) {
+  constructor(object) {
     this.record_id = object._id || object._pk || object.record_id || -1;
     this._id = this.record_id !== -1 ? String(this.record_id) : slugid.nice();
-    this.title = object.title || object.name || '';
+    this.title = object.title || '';
     this.type = object.type || '';
     this.connection_id = object.connection_id || '';
     this.key = `${this.type}_${this.connection_id}_${this._id}`;
