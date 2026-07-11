@@ -49,7 +49,7 @@ const AttachmentsSelector = ({
     const newAttachments = newAttachmentKeys.map(key => {
       if (key.startsWith('image')) return attachments.find(t => t.key === key);
       return attachmentsRef.current.find(t => t.key === key);
-    });
+    }).filter(Boolean);
     propsOnChange && propsOnChange(newAttachments);
   }, [attachments, propsOnChange]);
 
