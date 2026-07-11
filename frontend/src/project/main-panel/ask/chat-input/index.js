@@ -8,7 +8,7 @@ import * as CommonlyUsedHotkey from '@/utils/hotkey';
 import { Utils } from '@/utils/utils';
 import { getType } from '@/utils/type-detection';
 import InputUtils from '@/utils/input-utils';
-import { CHAT_ATTACHMENT_TYPE, CHAT_ATTACHMENT_SOURCE, CHAT_IMAGE_ATTACHMENT_MAX_COUNT, CHAT_MESSAGE_TYPE, DEFAULT_ALLOWED_ATTACHMENT_SOURCES, CHAT_SKILLS } from '../constants';
+import { CHAT_ATTACHMENT_TYPE, CHAT_ATTACHMENT_SOURCE, CHAT_IMAGE_ATTACHMENT_MAX_COUNT, CHAT_MESSAGE_TYPE, DEFAULT_ALLOWED_ATTACHMENT_SOURCES, CHAT_SKILL_COMMANDS } from '../constants';
 import AttachmentsSelector from './attachments-selector';
 import AttachmentsFormatter from './attachments';
 import { useAIChatTools } from '../hooks';
@@ -36,7 +36,7 @@ const getSkillCommandQuery = (value, range) => {
 };
 
 const getSelectedSkillCommandRange = (value, selectionStart, selectionEnd) => {
-  const skillCommands = CHAT_SKILLS.map(skill => `/${skill.id}`);
+  const skillCommands = CHAT_SKILL_COMMANDS.map(skill => `/${skill}`);
   for (const command of skillCommands) {
     let start = value.indexOf(command);
     while (start !== -1) {
@@ -77,7 +77,7 @@ const getSkillCommandDeleteRange = (value, selectionStart, selectionEnd, keyCode
 
 const getMessageWithoutLeadingSkillCommand = (value) => {
   if (typeof value !== 'string') return '';
-  const skillCommands = CHAT_SKILLS.map(skill => `/${skill.id}`);
+  const skillCommands = CHAT_SKILL_COMMANDS.map(skill => `/${skill}`);
   for (const command of skillCommands) {
     if (value === command || value.startsWith(`${command} `)) {
       return value.slice(command.length).trim();
@@ -314,11 +314,11 @@ const ChatInput = forwardRef(({
   const skillCommandOptions = useMemo(() => {
     if (!enableSkills) return [];
     const query = getSkillCommandQuery(value, skillCommandRange);
-    return CHAT_SKILLS
-      .filter(skill => !query || skill.id.toLowerCase().startsWith(query))
+    return CHAT_SKILL_COMMANDS
+      .filter(skill => !query || skill.toLowerCase().startsWith(query))
       .map(skill => ({
-        value: skill.id,
-        label: `/${skill.id}`,
+        value: skill,
+        label: `/${skill}`,
       }));
   }, [value, skillCommandRange, enableSkills]);
 
