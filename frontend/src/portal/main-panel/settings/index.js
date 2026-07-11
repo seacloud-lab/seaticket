@@ -404,7 +404,7 @@ const Settings = () => {
         <CustomizationSettings />
         <TabPane tabId={SETTING_TAB.OPEN_ACCESS}>
           <div className="portal-settings-content">
-            <label className="portal-settings-label">{gettext('Default portal URL')}</label>
+            <label className="portal-settings-label">{gettext('Your current portal domain is')}</label>
             <div className="portal-url-container">
               <input
                 type="text"
@@ -564,7 +564,6 @@ const Settings = () => {
         </TabPane>
         <TabPane tabId={SETTING_TAB.CUSTOM_DOMAIN}>
           <div className="portal-settings-content">
-            <label className="portal-settings-label">{gettext('Custom domain')}</label>
             <p className="portal-settings-help-text mt-2">
               {customDomainHint}
             </p>
