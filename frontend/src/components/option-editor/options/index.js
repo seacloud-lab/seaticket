@@ -23,12 +23,13 @@ const Options = ({
   onToggleOption,
   onPressTab,
   onToggle,
+  defaultHighlightIndex = -1,
 }) => {
   const maxItemNum = useMemo(() => isNumber(optionHeight) ? Math.floor(parseInt(maxHeight) / parseInt(optionHeight)) - 1 : 30, [maxHeight, optionHeight]);
 
   const optionsRef = useRef(null);
 
-  const [highlightIndex, setHighlightIndex] = useState(-1);
+  const [highlightIndex, setHighlightIndex] = useState(defaultHighlightIndex);
 
   const onOptionMouseEnter = useCallback((highlightIndex) => {
     setHighlightIndex(highlightIndex);

@@ -554,6 +554,7 @@ const ChatInput = forwardRef(({
                 placement="top-start"
                 onChange={onSkillCommandChange}
                 onToggle={closeSkillCommandSelector}
+                defaultHighlightIndex={0}
               />
             )}
           </div>
