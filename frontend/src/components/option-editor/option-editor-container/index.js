@@ -33,6 +33,7 @@ const OptionEditorContainer = forwardRef(({
   onCreate,
   onPressTab,
   isShowClearIcon = true,
+  defaultHighlightIndex,
   addToolText = gettext('Add tag'),
 }, ref) => {
   const [value, setValue] = useState(propsValue || (isMultiple ? [] : ''));
@@ -148,6 +149,7 @@ const OptionEditorContainer = forwardRef(({
         onToggleOption={toggleOption}
         onPressTab={onPressTab}
         onToggle={onToggle}
+        defaultHighlightIndex={defaultHighlightIndex}
       />
       {showCreateBtn && (
         <div className="option-editor-add-tool">
