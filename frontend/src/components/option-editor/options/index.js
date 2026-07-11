@@ -110,8 +110,8 @@ const Options = ({
   }, [onHotKey]);
 
   useEffect(() => {
-    setHighlightIndex(-1);
-  }, [options]);
+    setHighlightIndex(defaultHighlightIndex);
+  }, [options, defaultHighlightIndex]);
 
   return (
     <div
