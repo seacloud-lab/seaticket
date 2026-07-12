@@ -1016,6 +1016,7 @@ class AIUsageStatistics(models.Model):
     model = models.CharField(max_length=64)
     scenario = models.CharField(max_length=64, default='unknown')
     input_tokens = models.IntegerField(default=0)
+    cached_tokens = models.IntegerField(default=0)
     output_tokens = models.IntegerField(default=0)
     cost = models.FloatField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
