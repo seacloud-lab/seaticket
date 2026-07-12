@@ -45,6 +45,7 @@ const getToolName = (action) => action.tool_name || action.type || '-';
 const getPhaseStatistics = (actions = []) => {
   const stepStats = [];
   let totalInputTokens = 0;
+  let totalCachedTokens = 0;
   let totalOutputTokens = 0;
   let totalTokens = 0;
   let totalDurationMs = 0;
@@ -52,6 +53,7 @@ const getPhaseStatistics = (actions = []) => {
   actions.forEach((action, index) => {
     const stats = parseStatistics(action.statistics);
     const inputTokens = stats?.input_tokens || 0;
+    const cachedTokens = stats?.cached_tokens || 0;
     const outputTokens = stats?.output_tokens || 0;
     const stepTotalTokens = stats?.total_tokens || 0;
     const durationMs = stats?.duration_ms || 0;
@@ -62,12 +64,14 @@ const getPhaseStatistics = (actions = []) => {
       step: step !== null ? step + 1 : index + 1,
       toolName: getToolName(action),
       inputTokens,
+      cachedTokens,
       outputTokens,
       totalTokens: stepTotalTokens,
       durationSec: formatDuration(durationMs),
     });
 
     totalInputTokens += inputTokens;
+    totalCachedTokens += cachedTokens;
     totalOutputTokens += outputTokens;
     totalTokens += stepTotalTokens;
     totalDurationMs += durationMs;
@@ -77,6 +81,7 @@ const getPhaseStatistics = (actions = []) => {
     stepStats,
     totals: {
       inputTokens: totalInputTokens,
+      cachedTokens: totalCachedTokens,
       outputTokens: totalOutputTokens,
       totalTokens,
       durationMs: totalDurationMs,
@@ -146,7 +151,7 @@ const RunStatisticsDialog = ({ run: initialRun, runId, onToggle }) => {
                 <div className="summary-item">
                   <span className="summary-label">{gettext('Total tokens')}:</span>
                   <span className="summary-value">
-                    {totals.totalTokens} (↑{totals.inputTokens}, ↓{totals.outputTokens})
+                    {totals.totalTokens} (↑{totals.inputTokens}, ↑{totals.cachedTokens}, ↓{totals.outputTokens})
                   </span>
                 </div>
               </div>
@@ -158,6 +163,7 @@ const RunStatisticsDialog = ({ run: initialRun, runId, onToggle }) => {
                       <th>{gettext('Tool')}</th>
                       <th>{gettext('Duration')} (s)</th>
                       <th>{gettext('Input tokens')}</th>
+                      <th>{gettext('Cached tokens')}</th>
                       <th>{gettext('Output tokens')}</th>
                       <th>{gettext('Total tokens')}</th>
                     </tr>
@@ -169,6 +175,7 @@ const RunStatisticsDialog = ({ run: initialRun, runId, onToggle }) => {
                         <td className="tool-name-cell" title={step.toolName}>{step.toolName}</td>
                         <td>{step.durationSec}</td>
                         <td>{step.inputTokens}</td>
+                        <td>{step.cachedTokens}</td>
                         <td>{step.outputTokens}</td>
                         <td>{step.totalTokens}</td>
                       </tr>
@@ -179,6 +186,7 @@ const RunStatisticsDialog = ({ run: initialRun, runId, onToggle }) => {
                       <td colSpan="2"><strong>{gettext('Total')}</strong></td>
                       <td><strong>{totals.durationSec}</strong></td>
                       <td><strong>{totals.inputTokens}</strong></td>
+                      <td><strong>{totals.cachedTokens}</strong></td>
                       <td><strong>{totals.outputTokens}</strong></td>
                       <td><strong>{totals.totalTokens}</strong></td>
                     </tr>

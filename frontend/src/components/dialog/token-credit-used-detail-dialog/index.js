@@ -75,6 +75,7 @@ class TokenCreditUsedDetailDialog extends Component {
 
     let newData = [];
     let totalInputTokens = 0;
+    let totalCachedTokens = 0;
     let totalOutputTokens = 0;
     let totalCreditUsed = 0;
 
@@ -91,18 +92,20 @@ class TokenCreditUsedDetailDialog extends Component {
           newData.push({
             name: date.format('YYYY-MM-DD'),
             input_tokens: data.total_input_tokens || 0,
+            cached_tokens: data.total_cached_tokens || 0,
             output_tokens: data.total_output_tokens || 0,
             credit_used: data.total_credit_used || 0,
             total_tokens: (data.total_input_tokens || 0) + (data.total_output_tokens || 0)
           });
           totalInputTokens += data.total_input_tokens || 0;
+          totalCachedTokens += data.total_cached_tokens || 0;
           totalOutputTokens += data.total_output_tokens || 0;
           totalCreditUsed += data.total_credit_used || 0;
         }
       }
     });
 
-    this.setState({ data: newData, modelsUsageStatics: { totalInputTokens, totalOutputTokens, totalCreditUsed } });
+    this.setState({ data: newData, modelsUsageStatics: { totalInputTokens, totalCachedTokens, totalOutputTokens, totalCreditUsed } });
   };
 
   updateDataByDate = () => {
@@ -136,11 +139,13 @@ class TokenCreditUsedDetailDialog extends Component {
         } else {
           let newData = [];
           let totalInputTokens = 0;
+          let totalCachedTokens = 0;
           let totalOutputTokens = 0;
           let totalCreditUsed = 0;
           fullData.forEach((data) => {
             let record = {
               input_tokens: data.total_input_tokens || 0,
+              cached_tokens: data.total_cached_tokens || 0,
               output_tokens: data.total_output_tokens || 0,
               credit_used: data.total_credit_used || 0,
               total_tokens: (data.total_input_tokens || 0) + (data.total_output_tokens || 0)
@@ -152,10 +157,11 @@ class TokenCreditUsedDetailDialog extends Component {
             }
             newData.push(record);
             totalInputTokens += data.total_input_tokens || 0;
+            totalCachedTokens += data.total_cached_tokens || 0;
             totalOutputTokens += data.total_output_tokens || 0;
             totalCreditUsed += data.total_credit_used || 0;
           });
-          this.setState({ data: newData, modelsUsageStatics: { totalInputTokens, totalOutputTokens, totalCreditUsed }, isLoading: false });
+          this.setState({ data: newData, modelsUsageStatics: { totalInputTokens, totalCachedTokens, totalOutputTokens, totalCreditUsed }, isLoading: false });
         }
       });
     }).catch(error => {
