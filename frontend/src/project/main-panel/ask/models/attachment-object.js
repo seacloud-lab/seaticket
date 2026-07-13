@@ -23,6 +23,11 @@ class AttachmentObject {
       this.image = object.image || null;
       this.icon = 'image';
     }
+    if (this.type === CHAT_ATTACHMENT_TYPE.PAGE_CONTENT) {
+      this.icon = 'new-page';
+      this.content = object.content || '';
+      this.url = object.url || '';
+    }
     this.type_name = '';
     if (this.type === CHAT_ATTACHMENT_TYPE.TICKET) {
       this.type_name = gettext('Ticket');
@@ -41,13 +46,18 @@ class AttachmentObject {
     } else if (this.type === CHAT_ATTACHMENT_TYPE.DISCOURSE_FORUM) {
       this.type_name = gettext('Discourse forum');
     } else if (this.type === CHAT_ATTACHMENT_TYPE.IMAGE) {
-      this.type_name = 'Image';
+      this.type_name = gettext('Image');
+    } else if (this.type === CHAT_ATTACHMENT_TYPE.PAGE_CONTENT) {
+      this.type_name = gettext('Page content');
     }
   }
 
   to_json = () => {
     if (this.type === CHAT_ATTACHMENT_TYPE.IMAGE) return { type: this.type, path: this.path };
     if (this.type === CHAT_ATTACHMENT_TYPE.TICKET) return { type: this.type, record_id: this.record_id };
+    if (this.type === CHAT_ATTACHMENT_TYPE.PAGE_CONTENT) {
+      return { type: this.type, url: this.url, title: this.title, content: this.content };
+    }
     return {
       type: this.type,
       connection_id: this.connection_id,

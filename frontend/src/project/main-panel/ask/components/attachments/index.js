@@ -28,18 +28,26 @@ const Attachments = ({
 
   const { imageAttachments, otherAttachments } = useMemo(() => {
     let imageAttachments = [];
+    let pageContentAttachments = [];
     let otherAttachments = [];
     attachments.forEach(attachment => {
       if (attachment.type === CHAT_ATTACHMENT_TYPE.IMAGE) {
         imageAttachments.push(attachment);
+      } else if (attachment.type === CHAT_ATTACHMENT_TYPE.PAGE_CONTENT) {
+        pageContentAttachments.push(attachment);
       } else {
         otherAttachments.push(attachment);
       }
     });
-    return { imageAttachments, otherAttachments };
+    return { imageAttachments, otherAttachments, pageContentAttachments };
   }, [attachments]);
 
   const openAttachment = useCallback((attachment) => {
+    if (attachment.type === CHAT_ATTACHMENT_TYPE.PAGE_CONTENT) {
+      const { url } = attachment;
+      window.open(url, '_blank');
+      return;
+    }
     if (attachment.type === CHAT_ATTACHMENT_TYPE.IMAGE) {
       const index = imageAttachments.findIndex(otherAttachment => otherAttachment.key === attachment.key);
       setImageAttachmentIndex(index);
