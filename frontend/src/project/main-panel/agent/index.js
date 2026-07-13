@@ -95,7 +95,12 @@ const Agent = ({ title, settings, modifySettings }) => {
         openCloseLinkedGitHubIssuesWarningDialog({
           tickets,
           stateReason: '',
-          callback: () => {
+          onCloseTicketOnly: () => {
+            return executeConfirm().then(() => {
+              toaster.success(gettext('Action confirmed'));
+            });
+          },
+          onCloseTicketAndGitHubIssues: () => {
             return executeConfirm({ linked_github_issues_to_close: tickets }).then(() => {
               toaster.success(gettext('Action confirmed'));
             });

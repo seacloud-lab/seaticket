@@ -8,8 +8,19 @@ import { Utils } from '@/utils/utils';
 
 import './index.css';
 
-const CloseLinkedGitHubIssuesWarningDialog = ({ tickets, onToggle, onSubmit }) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+const SUBMIT_ACTION = {
+  TICKET_ONLY: 'ticket_only',
+  TICKET_AND_GITHUB_ISSUES: 'ticket_and_github_issues',
+};
+
+const CloseLinkedGitHubIssuesWarningDialog = ({
+  tickets,
+  onToggle,
+  onCloseTicketOnly,
+  onCloseTicketAndGitHubIssues,
+}) => {
+  const [submittingAction, setSubmittingAction] = useState(null);
+  const isSubmitting = submittingAction !== null;
 
   const handleToggle = useCallback((event) => {
     event?.stopPropagation();
@@ -17,14 +28,14 @@ const CloseLinkedGitHubIssuesWarningDialog = ({ tickets, onToggle, onSubmit }) =
     onToggle && onToggle();
   }, [onToggle]);
 
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback((action, callback) => {
     if (isSubmitting) return;
-    setIsSubmitting(true);
-    onSubmit().catch(error => {
+    setSubmittingAction(action);
+    Promise.resolve(callback()).catch(error => {
       toaster.danger(Utils.getErrorMsg(error));
-      setIsSubmitting(false);
+      setSubmittingAction(null);
     });
-  }, [isSubmitting, onSubmit]);
+  }, [isSubmitting]);
 
   const iconSrc = getConnectionIcon(CONNECTION_TYPE.GITHUB_ISSUE);
 
@@ -32,13 +43,6 @@ const CloseLinkedGitHubIssuesWarningDialog = ({ tickets, onToggle, onSubmit }) =
     <Modal isOpen={true} className="seaqa-close-linked-github-issues-dialog" toggle={handleToggle}>
       <ModalHeader toggle={handleToggle}>{gettext('Close linked GitHub issues')}</ModalHeader>
       <ModalBody style={{ maxHeight: window.innerHeight - 184 }}>
-        <div className="seaqa-tip-default">
-          {tickets.length === 1 ?
-            gettext('Please confirm that you want to close this ticket along with its linked GitHub issues.')
-            :
-            gettext('Please confirm that you want to close these tickets along with its linked GitHub issues.')
-          }
-        </div>
         {tickets.map((ticket) => (
           <div key={ticket.ticket_id} className="seaqa-ticket-close-linked-github-issues-content">
             <div className="seaqa-ticket-close-linked-github-issues-title">
@@ -57,11 +61,21 @@ const CloseLinkedGitHubIssuesWarningDialog = ({ tickets, onToggle, onSubmit }) =
         ))}
       </ModalBody>
       <ModalFooter>
-        <Button color="secondary" onClick={handleToggle} disabled={isSubmitting}>
-          {gettext('Cancel')}
+        <Button
+          color="secondary"
+          onClick={() => handleSubmit(SUBMIT_ACTION.TICKET_ONLY, onCloseTicketOnly)}
+          disabled={isSubmitting}
+          style={{ height: 38 }}
+        >
+          {submittingAction === SUBMIT_ACTION.TICKET_ONLY ? (<CenteredLoading />) : (<>{gettext('Close ticket only')}</>)}
         </Button>
-        <Button color="primary" onClick={handleSubmit} disabled={isSubmitting} style={{ height: 38 }}>
-          {isSubmitting ? (<CenteredLoading />) : (<>{gettext('Confirm')}</>)}
+        <Button
+          color="primary"
+          onClick={() => handleSubmit(SUBMIT_ACTION.TICKET_AND_GITHUB_ISSUES, onCloseTicketAndGitHubIssues)}
+          disabled={isSubmitting}
+          style={{ height: 38 }}
+        >
+          {submittingAction === SUBMIT_ACTION.TICKET_AND_GITHUB_ISSUES ? (<CenteredLoading />) : (<>{gettext('Close ticket & GitHub issues')}</>)}
         </Button>
       </ModalFooter>
     </Modal>

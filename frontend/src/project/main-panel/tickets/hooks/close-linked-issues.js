@@ -13,81 +13,92 @@ export const CloseLinkedIssuesProvider = ({ children }) => {
   const [isShowCloseGitHubIssuesWarningDialog, setIsShowCloseGitHubIssuesWarningDialog] = useState(false);
   const ticketsRef = useRef(null);
   const stateReasonRef = useRef(null);
-  const callbackRef = useRef(null);
+  const closeTicketOnlyCallbackRef = useRef(null);
+  const closeTicketAndGitHubIssuesCallbackRef = useRef(null);
 
   const { connections } = useConnections();
   const { modifyLocalGitHubIssuesClosed } = useData();
 
-  const openCloseLinkedGitHubIssuesWarningDialog = useCallback(({ tickets, stateReason, callback }) => {
+  const resetDialogState = useCallback(() => {
+    setIsShowCloseGitHubIssuesWarningDialog(false);
+    ticketsRef.current = null;
+    stateReasonRef.current = null;
+    closeTicketOnlyCallbackRef.current = null;
+    closeTicketAndGitHubIssuesCallbackRef.current = null;
+  }, []);
+
+  const openCloseLinkedGitHubIssuesWarningDialog = useCallback(({
+    tickets,
+    stateReason,
+    onCloseTicketOnly,
+    onCloseTicketAndGitHubIssues,
+  }) => {
     ticketsRef.current = tickets;
     stateReasonRef.current = stateReason;
-    callbackRef.current = callback;
+    closeTicketOnlyCallbackRef.current = onCloseTicketOnly;
+    closeTicketAndGitHubIssuesCallbackRef.current = onCloseTicketAndGitHubIssues;
     setIsShowCloseGitHubIssuesWarningDialog(true);
   }, []);
 
   const onToggle = useCallback(() => {
-    setIsShowCloseGitHubIssuesWarningDialog(false);
-    ticketsRef.current = null;
-    stateReasonRef.current = null;
-    callbackRef.current = null;
-  }, []);
+    resetDialogState();
+  }, [resetDialogState]);
 
-  const onSubmit = useCallback(() => {
-    if (!isFunction(callbackRef.current)) {
-      return new Promise((resolve, reject) => {
-        setIsShowCloseGitHubIssuesWarningDialog(false);
-        resolve({
-          data: { success: true }
-        });
+  const handleSubmit = useCallback((shouldCloseGitHubIssues) => {
+    const callback = shouldCloseGitHubIssues ? closeTicketAndGitHubIssuesCallbackRef.current : closeTicketOnlyCallbackRef.current;
+    if (!isFunction(callback)) {
+      resetDialogState();
+      return Promise.resolve({
+        data: { success: true }
       });
     }
-    return callbackRef.current().then(res => {
-      setIsShowCloseGitHubIssuesWarningDialog(false);
-      const pathname = window.location.pathname;
 
-      // update connection table cache
-      const issues = ticketsRef.current.map(ticket => ticket.open_github_issues).flat();
-      modifyLocalGitHubIssuesClosed(issues, connections, stateReasonRef.current);
+    return Promise.resolve(callback()).then(res => {
+      if (shouldCloseGitHubIssues) {
+        const pathname = window.location.pathname;
 
-      const record = {
-        [CONNECTION_PREDEFINED_COLUMN_NAME.STATE]: 'closed',
-        [CONNECTION_PREDEFINED_COLUMN_NAME.STATE_REASON]: stateReasonRef.current,
-      };
+        // update connection table cache
+        const issues = ticketsRef.current.map(ticket => ticket.open_github_issues).flat();
+        modifyLocalGitHubIssuesClosed(issues, connections, stateReasonRef.current);
 
-      // current is connection table, update current view
-      const connectionTableReg = /\/connections\/(\d+)\/$/;
-      const connectionTableMatch = pathname.match(connectionTableReg);
-      if (connectionTableMatch) {
-        const connectionId = Number(connectionTableMatch[1]);
-        const currentConnectionIssues = issues.filter(issue => issue.connection_id === connectionId);
-        if (currentConnectionIssues.length > 0) {
-          const idRecordUpdates = currentConnectionIssues.reduce((_update, cur) => {
-            const key = cur.record_pk + '';
-            _update[key] = record;
-            return _update;
-          }, {});
-          eventBus.dispatch(EVENT_BUS_TYPE.MODIFY_LOCAL_RECORDS, idRecordUpdates);
+        const record = {
+          [CONNECTION_PREDEFINED_COLUMN_NAME.STATE]: 'closed',
+          [CONNECTION_PREDEFINED_COLUMN_NAME.STATE_REASON]: stateReasonRef.current,
+        };
+
+        // current is connection table, update current view
+        const connectionTableReg = /\/connections\/(\d+)\/$/;
+        const connectionTableMatch = pathname.match(connectionTableReg);
+        if (connectionTableMatch) {
+          const connectionId = Number(connectionTableMatch[1]);
+          const currentConnectionIssues = issues.filter(issue => issue.connection_id === connectionId);
+          if (currentConnectionIssues.length > 0) {
+            const idRecordUpdates = currentConnectionIssues.reduce((_update, cur) => {
+              const key = cur.record_pk + '';
+              _update[key] = record;
+              return _update;
+            }, {});
+            eventBus.dispatch(EVENT_BUS_TYPE.MODIFY_LOCAL_RECORDS, idRecordUpdates);
+          }
+        }
+
+        // current is connection record details, update record details
+        const connectionTableRecordReg = /\/connections\/(\d+)\/records\/(\d+)\/$/;
+        const connectionTableRecordMatch = pathname.match(connectionTableRecordReg);
+        if (connectionTableRecordMatch) {
+          const connectionId = Number(connectionTableRecordMatch[1]);
+          const recordId = Number(connectionTableRecordMatch[2]);
+          const currentConnectionIssue = issues.find(issue => issue.connection_id === connectionId && issue.record_pk === recordId);
+          if (currentConnectionIssue) {
+            eventBus.dispatch(EVENT_BUS_TYPE.MODIFY_LOCAL_RECORD, recordId, record);
+          }
         }
       }
 
-      // current is connection record details, update record details
-      const connectionTableRecordReg = /\/connections\/(\d+)\/records\/(\d+)\/$/;
-      const connectionTableRecordMatch = pathname.match(connectionTableRecordReg);
-      if (connectionTableRecordMatch) {
-        const connectionId = Number(connectionTableRecordMatch[1]);
-        const recordId = Number(connectionTableRecordMatch[2]);
-        const currentConnectionIssue = issues.find(issue => issue.connection_id === connectionId && issue.record_pk === recordId);
-        if (currentConnectionIssue) {
-          eventBus.dispatch(EVENT_BUS_TYPE.MODIFY_LOCAL_RECORD, recordId, record);
-        }
-      }
-
-      ticketsRef.current = null;
-      stateReasonRef.current = null;
-      callbackRef.current = null;
+      resetDialogState();
       return res;
     });
-  }, [connections, modifyLocalGitHubIssuesClosed]);
+  }, [connections, modifyLocalGitHubIssuesClosed, resetDialogState]);
 
   return (
     <CloseLinkedIssuesContext.Provider value={{
@@ -98,7 +109,8 @@ export const CloseLinkedIssuesProvider = ({ children }) => {
         <CloseLinkedGitHubIssuesWarningDialog
           tickets={ticketsRef.current}
           onToggle={onToggle}
-          onSubmit={onSubmit}
+          onCloseTicketOnly={() => handleSubmit(false)}
+          onCloseTicketAndGitHubIssues={() => handleSubmit(true)}
         />
       )}
     </CloseLinkedIssuesContext.Provider>
