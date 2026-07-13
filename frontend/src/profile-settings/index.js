@@ -188,7 +188,9 @@ class ProfileSettings extends React.Component {
                     (
                       <li key={index} className={`nav-item ${this.state.curItemID === item.href.substr(1) ? 'seaqa-bg-grey' : ''}`}>
                         <Icon symbol={item.icon} />
-                        <a className="nav-link" href={item.href}>{item.text}</a>
+                        <a className="nav-link" href={item.href} title={item.text}>
+                          <span className="user-setting-nav-text">{item.text}</span>
+                        </a>
                       </li>
                     ) : null;
                 })}

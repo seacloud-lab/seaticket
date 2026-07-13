@@ -390,10 +390,10 @@ const Settings = () => {
             return (
               <NavItem key={tab.value}>
                 <NavLink
-                  className={activeTab === tab.value ? 'active' : ''}
+                  className={classnames({ 'active': activeTab === tab.value })}
                   onClick={() => toggle(tab.value)}
                 >
-                  {tab.label}
+                  <span className="portal-settings-dialog-side-text text-truncate" title={tab.label}>{tab.label}</span>
                 </NavLink>
               </NavItem>
             );

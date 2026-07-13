@@ -181,7 +181,7 @@ class Account extends Component {
     return (
       <a href={data.url} title={data.text} className="item">
         <Icon symbol={data.icon} />
-        {data.text}
+        <span className="text-truncate" title={data.text}>{data.text}</span>
       </a>
     );
   };
@@ -220,7 +220,7 @@ class Account extends Component {
             </div>
             <a href={siteRoot + 'profile/'} className="item">
               <Icon symbol="personal-settings" />
-              {gettext('Personal settings')}
+              <span className="text-truncate" title={gettext('Personal settings')}>{gettext('Personal settings')}</span>
             </a>
             {this.renderMenu()}
             {!this.isWorkWX &&
