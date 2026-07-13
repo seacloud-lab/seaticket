@@ -17,7 +17,7 @@ import { Selector } from '../components';
 import './index.css';
 
 const Documents = () => {
-  const { isShowDocuments, documents, currentDocument, openDocument, closeDocuments, clear } = useDocuments();
+  const { isShowDocuments, documents, currentDocument, openDocument, closeDocuments } = useDocuments();
   const [isFull, setIsFull] = useState(false);
   const [isMoreMenuShow, setIsMoreMenuShow] = useState(false);
 
@@ -105,9 +105,6 @@ const Documents = () => {
               <CustomizeDropdownMenu>
                 <CustomizeDropdownItem onClick={handleDownLoadAll}>
                   <CustomizeDropdownItemText>{gettext('Download all files')}</CustomizeDropdownItemText>
-                </CustomizeDropdownItem>
-                <CustomizeDropdownItem onClick={clear}>
-                  <CustomizeDropdownItemText>{gettext('Close all tabs')}</CustomizeDropdownItemText>
                 </CustomizeDropdownItem>
               </CustomizeDropdownMenu>
             </Dropdown>
