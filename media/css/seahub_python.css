@@ -850,7 +850,6 @@ input.short-input {
   min-height: 67px;
   margin-top: 12px;
   padding: 0;
-  border-radius: 4px;
   background-color: var(--bs-body-bg);
   overflow: hidden;
 }
