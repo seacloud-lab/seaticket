@@ -86,9 +86,14 @@ body {
 /* Navigation menu styles */
 .user-setting-nav .nav-item {
   padding: 0 12px;
+  width: 100%;
+  box-sizing: border-box;
   height: 32px;
   line-height: 32px;
   border-radius: 4px;
+  display: flex;
+  align-items: center;
+  min-width: 0;
 }
 
 .user-setting-nav .nav-item .seaqa-icon-svg {
@@ -100,6 +105,13 @@ body {
   padding: 0;
   padding-left: 0.5rem;
   flex: auto;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.user-setting-nav .nav-item .nav-link .user-setting-nav-text {
+  display: block;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -113,6 +125,10 @@ body {
 
 .language-selector {
   width: 260px;
+}
+
+.language-selector .seaqa-customize-select .option-group {
+  padding: 0;
 }
 
 .profile-settings .btn {

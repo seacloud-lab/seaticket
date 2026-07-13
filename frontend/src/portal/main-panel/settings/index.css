@@ -1,6 +1,7 @@
 .portal-settings-dialog-side {
   display: flex;
-  flex: 0 0 25%;
+  flex: 0 1 25%;
+  max-width: 25%;
   border-right: 1px solid #eee;
 }
 
@@ -19,6 +20,19 @@
 
 .portal-settings-dialog-side .nav .nav-item {
   padding: 0;
+  width: 100%;
+  min-width: 0;
+}
+
+.portal-settings-dialog-side .nav-pills .nav-item .nav-link {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.portal-settings-dialog-side .nav-pills .nav-item .nav-link .portal-settings-dialog-side-text {
+  display: block;
+  min-width: 0;
 }
 
 .portal-settings-dialog-side .nav-pills .nav-item .nav-link.active {
@@ -45,7 +59,8 @@
 
 .portal-settings-dialog-main {
   display: flex;
-  flex: 0 0 75%;
+  flex: 1 0 75%;
+  min-width: 75%;
   padding: 16px;
   overflow: auto;
 }
