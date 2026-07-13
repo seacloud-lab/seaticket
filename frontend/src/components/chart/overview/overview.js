@@ -118,7 +118,8 @@ const Overview = () => {
 
     setCreditSummaryData(newCreditHeaderData);
     return true;
-  }, [creditSummaryData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const buildScenarioData = useCallback((scenarioData = {}) => {
     const results = Array.isArray(scenarioData.results) ? scenarioData.results : [];
@@ -168,7 +169,8 @@ const Overview = () => {
       setStatus(statusKey, REQUEST_STATUS.EMPTY);
       toaster.danger(Utils.getErrorMsg(error));
     }
-  }, [setStatus]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setStatus, buildSummaryData, buildScenarioData, buildMonthData, buildDateData]);
 
   useEffect(() => {
     const cancelledRef = { current: false };
