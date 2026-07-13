@@ -210,6 +210,7 @@ const Tickets = ({
         }
         const closePayload = buildOpenGithubIssuesPayload(row_id, row_update, rowData, data);
         if (closePayload) {
+          const closeTicket = closePayload[0];
           const submitClose = (shouldCloseLinkedGithubIssues) => {
             const updateData = shouldCloseLinkedGithubIssues ? { ...rowData, linked_github_issues_to_close: closePayload } : rowData;
             return modifyRow(
@@ -224,7 +225,7 @@ const Tickets = ({
             });
           };
           openCloseLinkedGitHubIssuesWarningDialog({
-            tickets: closePayload,
+            ticket: closeTicket,
             stateReason: '',
             onCloseTicketOnly: () => submitClose(false),
             onCloseTicketAndGitHubIssues: () => submitClose(true),
@@ -238,44 +239,6 @@ const Tickets = ({
     if (isFunction(api.modifyRows)) {
       _api.modifyRows = (rowsUpdate, isCopyPaste, { data, typesData, tagsData } = {}) => {
         const rowsData = convertRowsToNameValue(rowsUpdate, { data, typesData, tagsData });
-        const closePayload = [];
-        rowsUpdate.forEach((rowUpdate, index) => {
-          const item = buildOpenGithubIssuesPayload(
-            rowUpdate.row_id,
-            rowUpdate.row,
-            rowsData[index]?.row || {},
-            data,
-          );
-          if (item) {
-            closePayload.push(...item);
-          }
-        });
-        if (closePayload.length > 0) {
-          const submitClose = (shouldCloseLinkedGithubIssues) => {
-            const options = shouldCloseLinkedGithubIssues ? { linked_github_issues_to_close: closePayload } : undefined;
-            return modifyRows(
-              TICKET_TABLE_NAME,
-              rowsUpdate,
-              () => api.modifyRows(rowsData, isCopyPaste, options)
-            ).then(() => {
-              const eventBus = context.eventBus;
-              let idRowsUpdate = {};
-              rowsUpdate.forEach(rowUpdate => {
-                const { row_id, row } = rowUpdate;
-                idRowsUpdate[row_id] = row;
-              });
-              eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROWS_CHANGED, idRowsUpdate);
-            });
-          };
-          openCloseLinkedGitHubIssuesWarningDialog({
-            tickets: closePayload,
-            stateReason: '',
-            onCloseTicketOnly: () => submitClose(false),
-            onCloseTicketAndGitHubIssues: () => submitClose(true),
-          });
-          // Reject with 409 so SeaMetadata restores the optimistic row updates until confirmed.
-          return Promise.reject({ response: { status: 409 } });
-        }
         return modifyRows(TICKET_TABLE_NAME, rowsUpdate, () => api.modifyRows(rowsData, isCopyPaste));
       };
     }

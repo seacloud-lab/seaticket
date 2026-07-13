@@ -11,7 +11,7 @@ const CloseLinkedIssuesContext = React.createContext(null);
 
 export const CloseLinkedIssuesProvider = ({ children }) => {
   const [isShowCloseGitHubIssuesWarningDialog, setIsShowCloseGitHubIssuesWarningDialog] = useState(false);
-  const ticketsRef = useRef(null);
+  const ticketRef = useRef(null);
   const stateReasonRef = useRef(null);
   const closeTicketOnlyCallbackRef = useRef(null);
   const closeTicketAndGitHubIssuesCallbackRef = useRef(null);
@@ -21,19 +21,19 @@ export const CloseLinkedIssuesProvider = ({ children }) => {
 
   const resetDialogState = useCallback(() => {
     setIsShowCloseGitHubIssuesWarningDialog(false);
-    ticketsRef.current = null;
+    ticketRef.current = null;
     stateReasonRef.current = null;
     closeTicketOnlyCallbackRef.current = null;
     closeTicketAndGitHubIssuesCallbackRef.current = null;
   }, []);
 
   const openCloseLinkedGitHubIssuesWarningDialog = useCallback(({
-    tickets,
+    ticket,
     stateReason,
     onCloseTicketOnly,
     onCloseTicketAndGitHubIssues,
   }) => {
-    ticketsRef.current = tickets;
+    ticketRef.current = ticket;
     stateReasonRef.current = stateReason;
     closeTicketOnlyCallbackRef.current = onCloseTicketOnly;
     closeTicketAndGitHubIssuesCallbackRef.current = onCloseTicketAndGitHubIssues;
@@ -58,7 +58,7 @@ export const CloseLinkedIssuesProvider = ({ children }) => {
         const pathname = window.location.pathname;
 
         // update connection table cache
-        const issues = ticketsRef.current.map(ticket => ticket.open_github_issues).flat();
+        const issues = ticketRef.current?.open_github_issues || [];
         modifyLocalGitHubIssuesClosed(issues, connections, stateReasonRef.current);
 
         const record = {
@@ -107,7 +107,7 @@ export const CloseLinkedIssuesProvider = ({ children }) => {
       {children}
       {isShowCloseGitHubIssuesWarningDialog && (
         <CloseLinkedGitHubIssuesWarningDialog
-          tickets={ticketsRef.current}
+          ticket={ticketRef.current}
           onToggle={onToggle}
           onCloseTicketOnly={() => handleSubmit(false)}
           onCloseTicketAndGitHubIssues={() => handleSubmit(true)}

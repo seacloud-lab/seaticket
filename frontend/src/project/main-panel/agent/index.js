@@ -92,8 +92,9 @@ const Agent = ({ title, settings, modifySettings }) => {
     return ticketsAPI.checkLinkedGithubIssues(projectUuid, [ticketId]).then((res) => {
       const tickets = res?.data?.tickets || [];
       if (tickets.length > 0) {
+        const ticket = tickets[0];
         openCloseLinkedGitHubIssuesWarningDialog({
-          tickets,
+          ticket,
           stateReason: '',
           onCloseTicketOnly: () => {
             return executeConfirm().then(() => {

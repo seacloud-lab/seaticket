@@ -14,7 +14,7 @@ const SUBMIT_ACTION = {
 };
 
 const CloseLinkedGitHubIssuesWarningDialog = ({
-  tickets,
+  ticket,
   onToggle,
   onCloseTicketOnly,
   onCloseTicketAndGitHubIssues,
@@ -43,22 +43,15 @@ const CloseLinkedGitHubIssuesWarningDialog = ({
     <Modal isOpen={true} className="seaqa-close-linked-github-issues-dialog" toggle={handleToggle}>
       <ModalHeader toggle={handleToggle}>{gettext('Close linked GitHub issues')}</ModalHeader>
       <ModalBody style={{ maxHeight: window.innerHeight - 184 }}>
-        {tickets.map((ticket) => (
-          <div key={ticket.ticket_id} className="seaqa-ticket-close-linked-github-issues-content">
-            <div className="seaqa-ticket-close-linked-github-issues-title">
-              {ticket.ticket_title || ''}
+        <div className="seaqa-ticket-close-linked-github-issue">
+          {(ticket?.open_github_issues || []).map((issue) => (
+            <div className="link-item" key={`${issue.connection_id}-${issue.record_pk}`}>
+              <img src={iconSrc} alt="" className="connection-icon" />
+              <span className="link-item-name" title={issue.title}>{issue.title}</span>
+              <IconTooltip icon="dot-circle-stroked" tip={gettext('Open')} placement="bottom" />
             </div>
-            <div className="seaqa-ticket-close-linked-github-issue">
-              {(ticket.open_github_issues || []).map((issue) => (
-                <div className="link-item" key={`${issue.connection_id}-${issue.record_pk}`}>
-                  <img src={iconSrc} alt="" className="connection-icon" />
-                  <span className="link-item-name" title={issue.title}>{issue.title}</span>
-                  <IconTooltip icon="dot-circle-stroked" tip={gettext('Open')} placement="bottom" />
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </ModalBody>
       <ModalFooter>
         <Button

@@ -18,21 +18,11 @@
   gap: 16px;
 }
 
-.seaqa-ticket-close-linked-github-issues-content {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
 .seaqa-ticket-close-linked-github-issue {
   padding: 6px 0;
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
-}
-
-.seaqa-ticket-close-linked-github-issues-title {
-  font-weight: 500;
 }
 
 .seaqa-ticket-close-linked-github-issue .link-item {

@@ -344,13 +344,14 @@ const Ticket = ({
     }, []);
 
     if (isClosing && openGithubIssues.length > 0) {
-      const tickets = [{
+      const ticketToClose = {
         ticket_id: Number(ticket.id),
         ticket_title: ticket.title || '',
         open_github_issues: openGithubIssues,
-      }];
+      };
+      const closePayload = [ticketToClose];
       const submitClose = (shouldCloseLinkedGithubIssues) => {
-        const options = shouldCloseLinkedGithubIssues ? { linkedGithubIssuesToClose: tickets } : undefined;
+        const options = shouldCloseLinkedGithubIssues ? { linkedGithubIssuesToClose: closePayload } : undefined;
         return modifyTicket(ticket.id, { state, substate }, options).then(() => {
           if (shouldCloseLinkedGithubIssues) {
             setLinkedRecords(pre => generatorLinkedRecordsForClosedGitHubIssues(pre, openGithubIssues));
@@ -358,7 +359,7 @@ const Ticket = ({
         });
       };
       openCloseLinkedGitHubIssuesWarningDialog({
-        tickets,
+        ticket: ticketToClose,
         stateReason: convertSubstateToGitHubStateReason(getRowById(substatesData, substate)?.origin_name),
         onCloseTicketOnly: () => submitClose(false),
         onCloseTicketAndGitHubIssues: () => submitClose(true),
