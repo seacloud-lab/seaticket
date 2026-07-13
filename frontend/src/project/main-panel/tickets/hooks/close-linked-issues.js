@@ -54,6 +54,10 @@ export const CloseLinkedIssuesProvider = ({ children }) => {
     }
 
     return Promise.resolve(callback()).then(res => {
+      if (res?.success === false) {
+        return res;
+      }
+
       if (shouldCloseGitHubIssues) {
         const pathname = window.location.pathname;
 

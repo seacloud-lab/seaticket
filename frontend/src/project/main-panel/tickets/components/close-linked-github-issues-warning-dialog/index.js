@@ -31,10 +31,16 @@ const CloseLinkedGitHubIssuesWarningDialog = ({
   const handleSubmit = useCallback((action, callback) => {
     if (isSubmitting) return;
     setSubmittingAction(action);
-    Promise.resolve(callback()).catch(error => {
-      toaster.danger(Utils.getErrorMsg(error));
-      setSubmittingAction(null);
-    });
+    Promise.resolve(callback())
+      .then((result) => {
+        if (result?.success === false) {
+          setSubmittingAction(null);
+        }
+      })
+      .catch(error => {
+        toaster.danger(Utils.getErrorMsg(error));
+        setSubmittingAction(null);
+      });
   }, [isSubmitting]);
 
   const iconSrc = getConnectionIcon(CONNECTION_TYPE.GITHUB_ISSUE);

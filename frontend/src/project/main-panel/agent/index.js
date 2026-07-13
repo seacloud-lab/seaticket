@@ -55,6 +55,7 @@ const Agent = ({ title, settings, modifySettings }) => {
     const executeConfirm = (options = null) => {
       return agentAPI.confirmAgentAction(projectUuid, runId, actionId, options || {}).then(() => {
         updateRunLog(runId);
+        return { success: true };
       }).catch((err) => {
         const payload = err?.response?.data;
         if (payload?.error_code === 'mapping_required') {
@@ -64,13 +65,14 @@ const Agent = ({ title, settings, modifySettings }) => {
             agentType: payload.agent_type,
             githubIssueTypes: payload.github_issue_types || [],
           });
-          return;
+          return { success: false, reason: 'mapping_required' };
         }
         if (payload?.detail) {
           toaster.danger(payload.detail);
-          return;
+          return { success: false, reason: 'error' };
         }
         toaster.danger(gettext('Failed to confirm action'));
+        return { success: false, reason: 'error' };
       });
     };
 
@@ -97,13 +99,19 @@ const Agent = ({ title, settings, modifySettings }) => {
           ticket,
           stateReason: '',
           onCloseTicketOnly: () => {
-            return executeConfirm().then(() => {
-              toaster.success(gettext('Action confirmed'));
+            return executeConfirm().then((result) => {
+              if (result?.success) {
+                toaster.success(gettext('Action confirmed'));
+              }
+              return result;
             });
           },
           onCloseTicketAndGitHubIssues: () => {
-            return executeConfirm({ linked_github_issues_to_close: tickets }).then(() => {
-              toaster.success(gettext('Action confirmed'));
+            return executeConfirm({ linked_github_issues_to_close: tickets }).then((result) => {
+              if (result?.success) {
+                toaster.success(gettext('Action confirmed'));
+              }
+              return result;
             });
           },
         });
