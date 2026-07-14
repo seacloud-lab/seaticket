@@ -4,7 +4,7 @@ import { useSessions } from './sessions';
 
 const DocumentsContext = React.createContext(null);
 
-export const DocumentsProvider = ({ projectUuid, workspaceID, children }) => {
+export const DocumentsProvider = ({ children }) => {
   const [isShowDocuments, setIsShowDocuments] = useState(false);
   const [documents, setDocuments] = useState([]);
   const [currentDocument, setCurrentDocument] = useState(null);
@@ -42,12 +42,6 @@ export const DocumentsProvider = ({ projectUuid, workspaceID, children }) => {
     setIsShowDocuments(false);
   }, []);
 
-  const clear = useCallback(() => {
-    setIsShowDocuments(false);
-    setDocuments([]);
-    setCurrentDocument(null);
-  }, []);
-
   useEffect(() => {
     setDocuments([]);
     setCurrentDocument(null);
@@ -61,7 +55,6 @@ export const DocumentsProvider = ({ projectUuid, workspaceID, children }) => {
       openDocument,
       closeDocument,
       closeDocuments,
-      clear,
     }}>
       {children}
     </DocumentsContext.Provider>
