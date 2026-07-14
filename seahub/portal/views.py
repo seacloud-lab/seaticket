@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import jwt
 
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
@@ -9,7 +10,7 @@ from django.utils import timezone
 
 from seahub.auth import REDIRECT_FIELD_NAME
 from seahub.auth import views as auth_views
-from seahub.portal.models import PortalExternalInvitation, ProjectExternalUser
+from seahub.portal.models import PortalExternalInvitation, ProjectExternalUser, PortalExternalSSOProvider
 from seahub.portal.visitor_session import (
     ensure_visitor_cookie,
 )
@@ -19,7 +20,8 @@ from seahub.portal.utils import can_preview_portal, get_portal_preview_username,
 from seahub.portal.custom_domain import is_request_using_portal_domain
 from seahub import settings
 from seahub.project.utils import check_project_admin_permission, check_same_org_permission
-from seahub.utils import render_error
+from seahub.utils import render_error, is_valid_email
+from seahub.utils.auth import gen_user_virtual_id
 from seahub.auth.decorators import login_required
 from seahub.settings import MEDIA_URL
 
@@ -277,6 +279,75 @@ def portal_external_invitation_accept_view(request, token, project_uuid):
         redirect_url = portal_path(request, project_uuid, 'login')
 
     return HttpResponseRedirect(redirect_url)
+
+
+def portal_external_sso_login_view(request, provider_key, project_uuid):
+    project, portal_settings = get_request_project_and_portal_settings(request, project_uuid)
+    if not project:
+        raise Http404
+    if not portal_settings.get('enable_portal'):
+        return render_error(request, _('Portal is not enabled'))
+
+    provider = PortalExternalSSOProvider.objects.get_by_project_uuid_and_key(project_uuid, provider_key)
+    if not provider or not provider.enabled:
+        return render_error(request, _('This login provider is unavailable.'))
+
+    login_token = request.GET.get('token', '')
+    if not login_token or len(login_token) > 4096:
+        return render_error(request, _('Login link is invalid.'))
+
+    try:
+        payload = jwt.decode(
+            login_token,
+            provider.get_secret(),
+            algorithms=['HS256'],
+            audience=str(project_uuid),
+            issuer=provider.provider_key,
+            leeway=30,
+            options={
+                'require': ['iss', 'sub', 'email', 'aud', 'iat', 'exp'],
+            },
+        )
+    except jwt.ExpiredSignatureError:
+        return render_error(request, _('Login link has expired. Please return to the source system and try again.'))
+    except jwt.PyJWTError:
+        logger.warning('Portal external SSO token validation failed: project=%s provider=%s',
+                       project_uuid, provider.provider_key)
+        return render_error(request, _('Login link is invalid.'))
+    except Exception:
+        logger.exception('Failed to load portal external SSO provider secret: project=%s provider=%s',
+                         project_uuid, provider.provider_key)
+        return render_error(request, _('Unable to sign in. Please try again later.'))
+
+    external_user_id = payload.get('sub')
+    raw_email = payload.get('email')
+    if not isinstance(external_user_id, str) or not external_user_id or not isinstance(raw_email, str):
+        return render_error(request, _('Login link is invalid.'))
+    email = raw_email.strip().lower()
+    if not is_valid_email(email):
+        return render_error(request, _('Login link is invalid.'))
+
+    try:
+        ext_user, created = ProjectExternalUser.objects.get_or_create(
+            email=email,
+            project_uuid=str(project_uuid),
+            defaults={
+                'username': gen_user_virtual_id(),
+                'activated': True,
+            },
+        )
+        if not created and not ext_user.activated:
+            ext_user.activated = True
+            ext_user.save(update_fields=['activated'])
+    except Exception:
+        logger.exception('Failed to create portal external user from SSO: project=%s provider=%s',
+                         project_uuid, provider.provider_key)
+        return render_error(request, _('Unable to sign in. Please try again later.'))
+
+    request.session.cycle_key()
+    request.session['portal_external_username'] = ext_user.username
+    request.session['portal_external_project_uuid'] = str(project_uuid)
+    return redirect(portal_path(request, project_uuid))
 
 
 @login_required

@@ -5,6 +5,7 @@ export const SETTING_TAB = {
   OPEN_ACCESS: 'open_access',
   PORTAL_DOMAIN: 'portal_domain',
   CUSTOM_DOMAIN: 'custom_domain',
+  SSO_PROVIDERS: 'sso_providers',
   CHAT: 'chat',
 };
 
@@ -21,6 +22,9 @@ export const SETTING_TABS = [
   }, {
     value: SETTING_TAB.CUSTOM_DOMAIN,
     label: gettext('Custom domain')
+  }, {
+    value: SETTING_TAB.SSO_PROVIDERS,
+    label: gettext('SSO providers')
   }, {
     value: SETTING_TAB.CHAT,
     label: gettext('Chat')

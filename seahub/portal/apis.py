@@ -40,8 +40,9 @@ from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.utils.decorators import require_org_context
 from seahub.utils.timeutils import datetime_to_isoformat_timestr
 from seahub.portal.permissions import PortalKnowledgeBasePermission, PortalIssuePermission, PortalAnonymousAccessPermission
-from seahub.portal.models import ProjectExternalUser, PortalCustomDomain, PortalDomainAlias, get_portal_tls_ask_cache_key,\
-    PORTAL_TLS_ASK_CACHE_TIMEOUT, get_preferred_portal_domain, get_service_portal_domain
+from seahub.portal.models import ProjectExternalUser, PortalCustomDomain, PortalDomainAlias, PortalExternalSSOProvider, \
+    get_portal_tls_ask_cache_key, PORTAL_TLS_ASK_CACHE_TIMEOUT, get_preferred_portal_domain, get_service_portal_domain, \
+    normalize_portal_external_sso_provider_key
 from seahub.portal.utils import PORTAL_EXTERNAL_LOGIN_CODE_TTL, PORTAL_EXTERNAL_LOGIN_SEND_COOLDOWN, PORTAL_EXTERNAL_LOGIN_VERIFY_FAIL_LIMIT, \
     PORTAL_EXTERNAL_LOGIN_VERIFY_LOCK_TTL, PORTAL_PREVIEW_TOKEN_SALT, clear_portal_external_login_code, clear_portal_external_login_state, \
     get_portal_external_login_cooldown_key, get_portal_external_login_fail_key, get_portal_external_login_lock_key, incr_portal_external_login_fail, \
@@ -67,6 +68,42 @@ logger = logging.getLogger(__name__)
 
 
 MAX_LENGTH = 10000
+PORTAL_EXTERNAL_SSO_SECRET_MIN_LENGTH = 32
+
+
+def _serialize_portal_external_sso_provider(request, provider, include_secret=None):
+    domain = get_preferred_portal_domain(provider.project_uuid, ensure_alias=True)
+    login_path = '/external/sso/%s/' % provider.provider_key
+    data = {
+        'provider_key': provider.provider_key,
+        'name': provider.name,
+        'enabled': bool(provider.enabled),
+        'login_url': build_absolute_portal_url(request, domain, login_path),
+        'created_at': datetime_to_isoformat_timestr(provider.created_at),
+        'updated_at': datetime_to_isoformat_timestr(provider.updated_at),
+    }
+    if include_secret is not None:
+        data['secret'] = include_secret
+    return data
+
+
+def _validate_portal_external_sso_secret(raw_secret):
+    if raw_secret is None or raw_secret == '':
+        return None
+    if not isinstance(raw_secret, str) or len(raw_secret) < PORTAL_EXTERNAL_SSO_SECRET_MIN_LENGTH:
+        raise ValueError('secret must contain at least 32 characters.')
+    return raw_secret
+
+
+def _get_portal_admin_project(request, project_uuid):
+    project = Projects.objects.get_project_by_uuid(project_uuid)
+    if not project:
+        return None, api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
+    if not get_portal_settings(project).get('enable_portal'):
+        return None, api_error(status.HTTP_404_NOT_FOUND, 'Portal is not enabled.')
+    if not check_project_admin_permission(request.user.username, project.workspace.owner):
+        return None, api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+    return project, None
 
 
 def _replace_kb_file_urls_for_portal(project_uuid, value):
@@ -1984,6 +2021,168 @@ class PortalExternalUsersView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
         return Response({'success': True})
+
+
+class PortalExternalSSOProvidersView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def get(self, request, project_uuid):
+        _project, error = _get_portal_admin_project(request, project_uuid)
+        if error:
+            return error
+
+        try:
+            providers = [
+                _serialize_portal_external_sso_provider(request, provider)
+                for provider in PortalExternalSSOProvider.objects.list_by_project_uuid(project_uuid)
+            ]
+        except Exception:
+            logger.exception('Failed to list portal external SSO providers: project=%s', project_uuid)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        return Response({'providers': providers})
+
+    @require_org_context
+    def post(self, request, project_uuid):
+        _project, error = _get_portal_admin_project(request, project_uuid)
+        if error:
+            return error
+
+        try:
+            provider_key = normalize_portal_external_sso_provider_key(request.data.get('provider_key'))
+        except ValueError as e:
+            return api_error(status.HTTP_400_BAD_REQUEST, str(e))
+
+        name = request.data.get('name')
+        if not isinstance(name, str) or not name.strip() or len(name.strip()) > 128:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'name invalid.')
+
+        try:
+            raw_secret = _validate_portal_external_sso_secret(request.data.get('secret'))
+            enabled = bool(int(request.data.get('enabled', 1)))
+        except (TypeError, ValueError):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Invalid params.')
+
+        if PortalExternalSSOProvider.objects.get_by_project_uuid_and_key(project_uuid, provider_key):
+            return api_error(status.HTTP_409_CONFLICT, 'Provider already exists.')
+
+        try:
+            provider = PortalExternalSSOProvider(
+                project_uuid=project_uuid,
+                provider_key=provider_key,
+                name=name.strip(),
+                enabled=enabled,
+            )
+            raw_secret = provider.reset_secret(raw_secret)
+            provider.save()
+        except IntegrityError:
+            return api_error(status.HTTP_409_CONFLICT, 'Provider already exists.')
+        except Exception as e:
+            logger.exception('Failed to create portal external SSO provider: project=%s provider=%s',
+                             project_uuid, provider_key)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        return Response(
+            _serialize_portal_external_sso_provider(request, provider, include_secret=raw_secret),
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class PortalExternalSSOProviderView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def put(self, request, project_uuid, provider_key):
+        _project, error = _get_portal_admin_project(request, project_uuid)
+        if error:
+            return error
+
+        provider = PortalExternalSSOProvider.objects.get_by_project_uuid_and_key(project_uuid, provider_key)
+        if not provider:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Provider not found.')
+
+        name = request.data.get('name')
+        if name is not None and (not isinstance(name, str) or not name.strip() or len(name.strip()) > 128):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'name invalid.')
+
+        enabled = request.data.get('enabled')
+        if enabled is not None:
+            try:
+                enabled = bool(int(enabled))
+            except (TypeError, ValueError):
+                return api_error(status.HTTP_400_BAD_REQUEST, 'enabled invalid.')
+
+        if name is None and enabled is None:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'No changes provided.')
+
+        if name is not None:
+            provider.name = name.strip()
+        if enabled is not None:
+            provider.enabled = enabled
+
+        try:
+            provider.save()
+        except Exception as e:
+            logger.exception('Failed to update portal external SSO provider: project=%s provider=%s',
+                             project_uuid, provider.provider_key)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        return Response(_serialize_portal_external_sso_provider(request, provider))
+
+    @require_org_context
+    def delete(self, request, project_uuid, provider_key):
+        _project, error = _get_portal_admin_project(request, project_uuid)
+        if error:
+            return error
+
+        provider = PortalExternalSSOProvider.objects.get_by_project_uuid_and_key(project_uuid, provider_key)
+        if not provider:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Provider not found.')
+
+        try:
+            provider.delete()
+        except Exception as e:
+            logger.exception('Failed to delete portal external SSO provider: project=%s provider=%s',
+                             project_uuid, provider.provider_key)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        return Response({'success': True})
+
+
+class PortalExternalSSOProviderResetSecretView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def post(self, request, project_uuid, provider_key):
+        _project, error = _get_portal_admin_project(request, project_uuid)
+        if error:
+            return error
+
+        provider = PortalExternalSSOProvider.objects.get_by_project_uuid_and_key(project_uuid, provider_key)
+        if not provider:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Provider not found.')
+
+        try:
+            requested_secret = _validate_portal_external_sso_secret(request.data.get('secret'))
+        except ValueError as e:
+            return api_error(status.HTTP_400_BAD_REQUEST, str(e))
+
+        try:
+            raw_secret = provider.reset_secret(requested_secret)
+            provider.save()
+        except Exception as e:
+            logger.exception('Failed to reset portal external SSO provider secret: project=%s provider=%s',
+                             project_uuid, provider.provider_key)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        return Response(_serialize_portal_external_sso_provider(request, provider, include_secret=raw_secret))
 
 
 class PortalExternalLoginSendCodeView(APIView):

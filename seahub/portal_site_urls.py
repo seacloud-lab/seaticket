@@ -3,7 +3,7 @@ from django.conf import settings
 from django.urls import include, re_path
 
 from seahub.portal.views import portal_anonymous_validate, portal_external_invitation_accept_view, portal_external_logout_view, \
-    portal_accounts_login_view, portal_login_view, portal_preview_view, portal_view
+    portal_accounts_login_view, portal_external_sso_login_view, portal_login_view, portal_preview_view, portal_view
 from seahub.portal.apis import PortalCustomDomainTLSAskView, PortalExternalLoginSendCodeView, PortalExternalLoginVerifyCodeView, \
     PortalIssueCommentView, PortalIssueCommentsView, PortalIssueMetadataView, PortalIssueView, PortalIssuesView, PortalKnowledgeBaseRecordView, \
     PortalKnowledgeBaseRecordsView, PortalKnowledgeBaseViewsView, PortalLogoView, PortalMyIssuesView, PortalTagsView, PortalUserListView
@@ -33,6 +33,7 @@ urlpatterns = [
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/login/$', portal_login_view, name='portal_login_view'),
     re_path(r'^portal-preview/(?P<token>[^/]+)/$', portal_preview_view, name='portal_preview_view'),
     re_path(r'^portal-external/accept/(?P<token>[a-f0-9]{32})/(?P<project_uuid>[-0-9a-f]{36})/$', portal_external_invitation_accept_view, name='portal_external_invitation_accept_view'),
+    re_path(r'^portal-external/sso/(?P<provider_key>[a-z0-9]+(?:-[a-z0-9]+)*)/(?P<project_uuid>[-0-9a-f]{36})/$', portal_external_sso_login_view, name='portal_external_sso_login_view'),
     re_path(r'^portal-external/logout/(?P<project_uuid>[-0-9a-f]{36})/$', portal_external_logout_view, name='portal_external_logout_view'),
 
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/tags/$', PortalTagsView.as_view(), name='api-v1-portal-tags'),

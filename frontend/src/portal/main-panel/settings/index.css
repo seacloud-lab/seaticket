@@ -151,3 +151,101 @@
 .portal-settings-source-selector-wrapper {
   width: 100%;
 }
+
+.portal-sso-provider-create {
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.portal-sso-provider-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 14px 16px;
+  align-items: end;
+}
+
+.portal-sso-provider-form label {
+  display: block;
+  margin-bottom: 6px;
+  color: #444;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.portal-sso-provider-secret-field {
+  min-width: 0;
+}
+
+.portal-sso-provider-create-action {
+  display: flex;
+  align-items: flex-end;
+  min-height: 38px;
+}
+
+.portal-sso-provider-secret-result {
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px solid #e4c878;
+  border-radius: 4px;
+  background: #fff9e8;
+}
+
+.portal-sso-provider-list {
+  margin-top: 24px;
+}
+
+.portal-sso-provider-table {
+  table-layout: fixed;
+  min-width: 720px;
+}
+
+.portal-sso-provider-table th:nth-child(1) {
+  width: 22%;
+}
+
+.portal-sso-provider-table th:nth-child(2) {
+  width: 38%;
+}
+
+.portal-sso-provider-table th:nth-child(3) {
+  width: 20%;
+}
+
+.portal-sso-provider-table th:nth-child(4) {
+  width: 20%;
+}
+
+.portal-sso-provider-key {
+  color: #777;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+.portal-sso-provider-url {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.portal-sso-provider-url > span {
+  overflow: hidden;
+  color: #555;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.portal-sso-provider-copy-btn {
+  flex: 0 0 auto;
+  padding: 2px 6px;
+}
+
+.portal-sso-provider-actions {
+  white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+  .portal-sso-provider-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -58,6 +58,8 @@ def _get_internal_path_for_portal_domain(project_uuid, normalized_path):
         token = segments[2]
         if segments[:2] == ['external', 'accept'] and token:
             return '%sportal-external/accept/%s/%s/' % (site_root, token, project_uuid)
+        if segments[:2] == ['external', 'sso'] and token:
+            return '%sportal-external/sso/%s/%s/' % (site_root, token, project_uuid)
 
     return ''
 
