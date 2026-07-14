@@ -210,21 +210,25 @@ const Tickets = ({
         }
         const closePayload = buildOpenGithubIssuesPayload(row_id, row_update, rowData, data);
         if (closePayload) {
+          const closeTicket = closePayload[0];
+          const submitClose = (shouldCloseLinkedGithubIssues) => {
+            const updateData = shouldCloseLinkedGithubIssues ? { ...rowData, linked_github_issues_to_close: closePayload } : rowData;
+            return modifyRow(
+              TICKET_TABLE_NAME,
+              row_id,
+              row_update,
+              () => api.modifyRow(row_id, updateData, isCopyPaste),
+              { typesData }
+            ).then(() => {
+              const eventBus = context.eventBus;
+              eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, row_id, row_update);
+            });
+          };
           openCloseLinkedGitHubIssuesWarningDialog({
-            tickets: closePayload,
+            ticket: closeTicket,
             stateReason: '',
-            callback: () => {
-              return modifyRow(
-                TICKET_TABLE_NAME,
-                row_id,
-                row_update,
-                () => api.modifyRow(row_id, { ...rowData, linked_github_issues_to_close: closePayload }, isCopyPaste),
-                { typesData }
-              ).then(() => {
-                const eventBus = context.eventBus;
-                eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, row_id, row_update);
-              });
-            },
+            onCloseTicketOnly: () => submitClose(false),
+            onCloseTicketAndGitHubIssues: () => submitClose(true),
           });
           // Reject with 409 so SeaMetadata restores the optimistic row update until confirmed.
           return Promise.reject({ response: { status: 409 } });
@@ -235,41 +239,6 @@ const Tickets = ({
     if (isFunction(api.modifyRows)) {
       _api.modifyRows = (rowsUpdate, isCopyPaste, { data, typesData, tagsData } = {}) => {
         const rowsData = convertRowsToNameValue(rowsUpdate, { data, typesData, tagsData });
-        const closePayload = [];
-        rowsUpdate.forEach((rowUpdate, index) => {
-          const item = buildOpenGithubIssuesPayload(
-            rowUpdate.row_id,
-            rowUpdate.row,
-            rowsData[index]?.row || {},
-            data,
-          );
-          if (item) {
-            closePayload.push(...item);
-          }
-        });
-        if (closePayload.length > 0) {
-          openCloseLinkedGitHubIssuesWarningDialog({
-            tickets: closePayload,
-            stateReason: '',
-            callback: () => {
-              return modifyRows(
-                TICKET_TABLE_NAME,
-                rowsUpdate,
-                () => api.modifyRows(rowsData, isCopyPaste, { linked_github_issues_to_close: closePayload })
-              ).then(() => {
-                const eventBus = context.eventBus;
-                let idRowsUpdate = {};
-                rowsUpdate.forEach(rowUpdate => {
-                  const { row_id, row } = rowUpdate;
-                  idRowsUpdate[row_id] = row;
-                });
-                eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROWS_CHANGED, idRowsUpdate);
-              });
-            },
-          });
-          // Reject with 409 so SeaMetadata restores the optimistic row updates until confirmed.
-          return Promise.reject({ response: { status: 409 } });
-        }
         return modifyRows(TICKET_TABLE_NAME, rowsUpdate, () => api.modifyRows(rowsData, isCopyPaste));
       };
     }

@@ -55,6 +55,7 @@ const Agent = ({ title, settings, modifySettings }) => {
     const executeConfirm = (options = null) => {
       return agentAPI.confirmAgentAction(projectUuid, runId, actionId, options || {}).then(() => {
         updateRunLog(runId);
+        return { success: true };
       }).catch((err) => {
         const payload = err?.response?.data;
         if (payload?.error_code === 'mapping_required') {
@@ -64,13 +65,14 @@ const Agent = ({ title, settings, modifySettings }) => {
             agentType: payload.agent_type,
             githubIssueTypes: payload.github_issue_types || [],
           });
-          return;
+          return { success: false, reason: 'mapping_required' };
         }
         if (payload?.detail) {
           toaster.danger(payload.detail);
-          return;
+          return { success: false, reason: 'error' };
         }
         toaster.danger(gettext('Failed to confirm action'));
+        return { success: false, reason: 'error' };
       });
     };
 
@@ -92,12 +94,24 @@ const Agent = ({ title, settings, modifySettings }) => {
     return ticketsAPI.checkLinkedGithubIssues(projectUuid, [ticketId]).then((res) => {
       const tickets = res?.data?.tickets || [];
       if (tickets.length > 0) {
+        const ticket = tickets[0];
         openCloseLinkedGitHubIssuesWarningDialog({
-          tickets,
+          ticket,
           stateReason: '',
-          callback: () => {
-            return executeConfirm({ linked_github_issues_to_close: tickets }).then(() => {
-              toaster.success(gettext('Action confirmed'));
+          onCloseTicketOnly: () => {
+            return executeConfirm().then((result) => {
+              if (result?.success) {
+                toaster.success(gettext('Action confirmed'));
+              }
+              return result;
+            });
+          },
+          onCloseTicketAndGitHubIssues: () => {
+            return executeConfirm({ linked_github_issues_to_close: tickets }).then((result) => {
+              if (result?.success) {
+                toaster.success(gettext('Action confirmed'));
+              }
+              return result;
             });
           },
         });
