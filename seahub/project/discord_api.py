@@ -24,7 +24,7 @@ class DiscordAPI(object):
         }
 
     def list_guild_channels(self, guild_id):
-        """List all channels in a guild, returning only text channels.
+        """List forum channels (type 15) in a guild.
 
         Returns:
             list[dict]: Channels with keys 'id' (str) and 'name' (str).
@@ -34,15 +34,15 @@ class DiscordAPI(object):
             resp = requests.get(url, headers=self.headers, timeout=15)
             resp.raise_for_status()
             channels = resp.json()
-            # channel types: 0=GUILD_TEXT, 5=GUILD_ANNOUNCEMENT, 15=GUILD_FORUM
-            text_channels = [
+            # Only forum channels (type 15) are supported
+            forum_channels = [
                 {'id': str(ch['id']), 'name': ch['name']}
                 for ch in channels
-                if ch.get('type') in (0, 5, 15)
+                if ch.get('type') == 15
             ]
             # Sort alphabetically by name
-            text_channels.sort(key=lambda c: c['name'].lower())
-            return text_channels
+            forum_channels.sort(key=lambda c: c['name'].lower())
+            return forum_channels
         except requests.exceptions.RequestException as e:
             logger.error(f'Failed to list Discord guild channels for guild {guild_id}: {e}')
             raise
