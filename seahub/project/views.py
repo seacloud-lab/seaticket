@@ -285,6 +285,7 @@ def confluence_oauth(request):
         'search:confluence',
         'read:space:confluence',
         'read:confluence-user',
+        'report:personal-data',
     ]
 
     params = {
