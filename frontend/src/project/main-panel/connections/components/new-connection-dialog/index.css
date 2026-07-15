@@ -130,7 +130,7 @@
   display: inline-flex;
   align-items: center;
   overflow: hidden;
-  padding: 14px;
+  padding: 0px 16px;
   background: #f7f7f5;
   border: none;
   border-radius: 8px;
@@ -153,8 +153,8 @@
   flex-shrink: 0;
   margin-right: 8px;
   overflow: hidden;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
 }
 
 .seaqa-project-connection-github-tip {
@@ -245,13 +245,31 @@
 .seaqa-project-connection-oauth-status {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   flex-wrap: wrap;
+  background: #f7f7f5;
+  height: 42px;
+  border-radius: 4px;
+  padding: 0px 8px 0px 16px;
 }
 
-.seaqa-project-connection-dialog .oauth-status-badge {
-  color: #666;
+.seaqa-project-connection-oauth-status .oauth-status-badge .seaqa-icon-svg {
+  fill: #666;
+  width: 14px;
+  height: 14px;
+  margin-right: 8px;
 }
 
-.seaqa-project-connection-dialog .oauth-status-badge.connected {
-  color: #099268;
+.seaqa-project-connection-oauth-status .oauth-status-badge .seaqa-icon-svg-check-circle-filled   {
+  fill: #47B881;
+}
+
+.seaqa-project-connection-oauth-status .oauth-status-badge .oauth-status-text {
+  font-weight: 500;
+}
+
+.seaqa-project-connection-oauth-status .oauth-status-button {
+  height: 26px;
+  padding-top: 0px;
+  padding-bottom: 0px;
 }
