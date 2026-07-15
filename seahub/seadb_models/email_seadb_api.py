@@ -246,6 +246,7 @@ class EmailSeaDBAPI:
             SchemaTables.EMAIL.column.message_id.name: email_data.get('message_id') or '',
             SchemaTables.EMAIL.column.origin_thread_id.name: email_data.get('origin_thread_id') or '',
             SchemaTables.EMAIL.column.email_id.name: email_data.get('email_id') or '',
+            SchemaTables.EMAIL.column.modified_time.name: now,
         }
 
         result = self.seadb_api.insert_rows(project_uuid, email_table_name, [email_row])
