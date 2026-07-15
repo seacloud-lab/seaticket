@@ -527,7 +527,7 @@ export const CONNECTION_TYPES = [
     sub_types: CONNECTION_SUB_TYPE_MAP.documents,
   }, {
     type: CONNECTION_TYPE.CONFLUENCE,
-    icon: 'sites',
+    icon: 'confluence',
     name: gettext('Confluence'),
     help_text: gettext('Authorize SeaTicket with your Atlassian account, then choose the workspace to sync all pages from that workspace. If any problem occurs, check the'),
     help_link: HELP_WEB_URL + 'Confluence',
