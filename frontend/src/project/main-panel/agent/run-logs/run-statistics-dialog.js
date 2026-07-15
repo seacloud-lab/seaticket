@@ -87,6 +87,7 @@ const RunStatisticsDialog = ({ run: initialRun, runId, onToggle }) => {
     const stepStats = [];
     let totalInputTokens = 0;
     let totalOutputTokens = 0;
+    let totalCachedTokens = 0;
     let totalTokens = 0;
     let totalDurationMs = 0;
     const stepGroupIndexes = new Map();
@@ -95,6 +96,7 @@ const RunStatisticsDialog = ({ run: initialRun, runId, onToggle }) => {
       const stats = parseStatistics(action.statistics);
       const inputTokens = stats?.input_tokens || 0;
       const outputTokens = stats?.output_tokens || 0;
+      const cachedTokens = stats?.cached_tokens || 0;
       const stepTotalTokens = stats?.total_tokens || 0;
       const durationMs = stats?.duration_ms || 0;
       const fallbackStep = index + 1;
@@ -108,6 +110,7 @@ const RunStatisticsDialog = ({ run: initialRun, runId, onToggle }) => {
           toolNames: [],
           inputTokens: 0,
           outputTokens: 0,
+          cachedTokens: 0,
           totalTokens: 0,
           durationMs: 0,
           durationSec: formatDuration(0),
@@ -118,12 +121,14 @@ const RunStatisticsDialog = ({ run: initialRun, runId, onToggle }) => {
       stepStat.toolNames.push(getToolName(action));
       stepStat.inputTokens += inputTokens;
       stepStat.outputTokens += outputTokens;
+      stepStat.cachedTokens += cachedTokens;
       stepStat.totalTokens += stepTotalTokens;
       stepStat.durationMs += durationMs;
       stepStat.durationSec = formatDuration(stepStat.durationMs);
 
       totalInputTokens += inputTokens;
       totalOutputTokens += outputTokens;
+      totalCachedTokens += cachedTokens;
       totalTokens += stepTotalTokens;
       totalDurationMs += durationMs;
     });
@@ -133,6 +138,7 @@ const RunStatisticsDialog = ({ run: initialRun, runId, onToggle }) => {
       totals: {
         inputTokens: totalInputTokens,
         outputTokens: totalOutputTokens,
+        cachedTokens: totalCachedTokens,
         totalTokens,
         durationMs: totalDurationMs,
         durationSec: formatDuration(totalDurationMs),
@@ -159,7 +165,7 @@ const RunStatisticsDialog = ({ run: initialRun, runId, onToggle }) => {
               <div className="summary-item">
                 <span className="summary-label">{gettext('Total tokens')}:</span>
                 <span className="summary-value">
-                  {totals.totalTokens} (↑{totals.inputTokens}, ↓{totals.outputTokens})
+                  {totals.totalTokens} (↑{totals.inputTokens}, ↓{totals.outputTokens}, ↻{totals.cachedTokens})
                 </span>
               </div>
             </div>
@@ -176,6 +182,7 @@ const RunStatisticsDialog = ({ run: initialRun, runId, onToggle }) => {
                     <th>{gettext('Duration')} (s)</th>
                     <th>{gettext('Input tokens')}</th>
                     <th>{gettext('Output tokens')}</th>
+                    <th>{gettext('Cached tokens')}</th>
                     <th>{gettext('Total tokens')}</th>
                   </tr>
                 </thead>
@@ -187,6 +194,7 @@ const RunStatisticsDialog = ({ run: initialRun, runId, onToggle }) => {
                       <td>{step.durationSec}</td>
                       <td>{step.inputTokens}</td>
                       <td>{step.outputTokens}</td>
+                      <td>{step.cachedTokens}</td>
                       <td>{step.totalTokens}</td>
                     </tr>
                   ))}
@@ -197,6 +205,7 @@ const RunStatisticsDialog = ({ run: initialRun, runId, onToggle }) => {
                     <td><strong>{totals.durationSec}</strong></td>
                     <td><strong>{totals.inputTokens}</strong></td>
                     <td><strong>{totals.outputTokens}</strong></td>
+                    <td><strong>{totals.cachedTokens}</strong></td>
                     <td><strong>{totals.totalTokens}</strong></td>
                   </tr>
                 </tfoot>
