@@ -33,6 +33,14 @@
   padding-top: 12px;
 }
 
+.project-side-nav .help-resources-nav-list {
+  padding-top: 4px;
+}
+
+.project-side-nav .help-resources-nav-list .projects-nav .nav-link {
+  width: 100% !important;
+}
+
 .seaqa-nav-list .seaqa-nav-item {
   line-height: 38px;
   border-radius: 4px;
