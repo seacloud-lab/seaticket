@@ -176,7 +176,7 @@ def create_connection(project, username, connection_type, name, config):
             [SchemaTables.CONFLUENCE], api, project_uuid, connection_id
         ),
         ConnectionType.DISCORD.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
-            [SchemaTables.DISCORD_MESSAGES, SchemaTables.DISCORD_MESSAGE_REPLIES], api, project_uuid, connection_id
+            [SchemaTables.DISCORD_THREADS, SchemaTables.DISCORD_THREAD_MESSAGES], api, project_uuid, connection_id
         ),
     }
 

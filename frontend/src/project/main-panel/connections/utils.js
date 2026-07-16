@@ -249,14 +249,8 @@ export const initConnectionResourceDetails = (type, record) => {
     return Array.isArray(emails) ? emails : [];
   }
   if (type === CONNECTION_TYPE.DISCORD) {
-    const { author, created_time, content, replies } = record;
-    const mainPost = {
-      author,
-      created_time,
-      content: content || '',
-    };
-    const initReplies = Array.isArray(replies) ? replies : [];
-    return [mainPost, ...initReplies];
+    const { replies } = record;
+    return Array.isArray(replies) ? replies : [];
   }
 };
 
