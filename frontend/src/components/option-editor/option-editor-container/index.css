@@ -3,8 +3,19 @@
   min-height: 40px;
 }
 
+.seaqa-ai-chat-selector-display-editor .option-editor-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .option-editor-search-wrapper {
   padding: 0 8px 8px 8px;
+}
+
+.seaqa-ai-chat-selector-display-editor .option-editor-search-wrapper {
+  flex: 0 0 auto;
 }
 
 .option-editor-popover .option-editor-selected-value-wrapper {
@@ -48,6 +59,16 @@
 
 .option-editor-container:not(.search-enabled) .option-editor-content {
   padding: 0 8px;
+}
+
+.seaqa-ai-chat-selector-display-editor .option-editor-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none !important;
+}
+
+.seaqa-ai-chat-selector-display-editor .option-editor-add-tool {
+  flex: 0 0 auto;
 }
 
 .option-editor-add-tool {

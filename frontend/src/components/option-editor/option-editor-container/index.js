@@ -33,6 +33,7 @@ const OptionEditorContainer = forwardRef(({
   onCreate,
   onPressTab,
   isShowClearIcon = true,
+  isShowSearchIcon = false,
   defaultHighlightIndex,
   addToolText = gettext('Add tag'),
 }, ref) => {
@@ -123,7 +124,7 @@ const OptionEditorContainer = forwardRef(({
       {isSearchEnabled && (
         <div className="option-editor-search-wrapper">
           <SearchInput
-            isShowSearchIcon={false}
+            isShowSearchIcon={isShowSearchIcon}
             autoFocus={true}
             value={searchValue}
             size={searchHeight}
