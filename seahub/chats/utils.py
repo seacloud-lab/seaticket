@@ -10,7 +10,7 @@ import uuid
 import time
 from copy import deepcopy
 from django.core.cache import cache
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin
 from trafilatura import extract
 from bs4 import BeautifulSoup
 from seahub.chats.constants import AI_REPLY_TIMEOUT
@@ -356,12 +356,12 @@ def extract_other_page_info(html_content, title, url):
         return { 'content': url }, title
 
 
-def extract_discourse_posts(html_content, title, url):
+def extract_discourse_info(html_content, title, url):
     try:
         soup = BeautifulSoup(html_content, 'html.parser')
     except Exception as e:
-        logger.error(f'Failed to parse GitHub issue HTML: {e}')
-        return url, title
+        logger.error(f'Failed to parse discourse HTML: {e}')
+        return { 'content': url }, title
 
     title_div = soup.find('a', class_='fancy-title')
     topic_title = title_div.get_text(strip=True) if title_div else ''
@@ -759,7 +759,7 @@ def extract_GitHub_issues(html_content, title, url):
         soup = BeautifulSoup(html_content, 'html.parser')
     except Exception as e:
         logger.error(f'Failed to parse GitHub issue HTML: {e}')
-        return url, title
+        return { 'content': url }, title
 
     try:
         # Extract issue info
@@ -799,7 +799,7 @@ def build_page_content_attachments(attachments):
 
         external_ref_url, external_ref_id, connection_type = parse_webpage_url(url)
         if connection_type == ConnectionType.DISCOURSE_FORUM.value:
-            other_info, title = extract_discourse_posts(html_content, title, url)
+            other_info, title = extract_discourse_info(html_content, title, url)
         elif connection_type == ConnectionType.GITHUB_ISSUE.value:
             other_info, title = extract_GitHub_issues(html_content, title, url)
         else:

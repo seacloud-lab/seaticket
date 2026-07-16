@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 import pytest
 
 from seahub.chats.utils import (
-    extract_discourse_posts,
+    extract_discourse_info,
     extract_GitHub_issues,
     extract_other_page_info,
     _extract_github_issue_title,
@@ -91,12 +91,13 @@ class TestExtractDiscoursePosts:
             fancy_title=self.FANCY_TITLE,
             posts=[{'author': 'alice', 'time': '2025-01-01', 'content': 'Hello world'}]
         )
-        text, title = extract_discourse_posts(html, 'Page Title', self.URL)
+        info, title = extract_discourse_info(html, 'Page Title', self.URL)
         assert title == self.FANCY_TITLE
-        assert 'alice' in text
-        assert f'create a topic about {self.FANCY_TITLE}' in text
-        assert '2025-01-01' in text
-        assert 'Hello world' in text
+        assert len(info['replies']) == 1
+        reply = info['replies'][0]
+        assert reply['author'] == 'alice'
+        assert reply['time'] == '2025-01-01'
+        assert reply['content'] == 'Hello world'
 
     def test_multiple_posts(self):
         html = _discourse_html(
@@ -106,10 +107,15 @@ class TestExtractDiscoursePosts:
                 {'author': 'bob', 'time': '2025-01-02', 'content': 'I can reproduce'},
             ]
         )
-        text, title = extract_discourse_posts(html, 'ignored', self.URL)
+        info, title = extract_discourse_info(html, 'ignored', self.URL)
         assert title == 'Bug report'
-        assert 'alice create a topic about Bug report on 2025-01-01, stating: Found a bug.' in text
-        assert 'bob replied on 2025-01-02 with: I can reproduce.' in text
+        assert len(info['replies']) == 2
+        assert info['replies'][0]['author'] == 'alice'
+        assert info['replies'][0]['time'] == '2025-01-01'
+        assert info['replies'][0]['content'] == 'Found a bug'
+        assert info['replies'][1]['author'] == 'bob'
+        assert info['replies'][1]['time'] == '2025-01-02'
+        assert info['replies'][1]['content'] == 'I can reproduce'
 
     def test_title_fallback_to_param(self):
         """When fancy-title is missing, the title param is used as fallback."""
@@ -117,27 +123,28 @@ class TestExtractDiscoursePosts:
             fancy_title='',
             posts=[{'author': 'alice', 'time': '2025-01-01', 'content': 'Hello'}]
         )
-        text, title = extract_discourse_posts(html, 'Fallback Title', self.URL)
+        info, title = extract_discourse_info(html, 'Fallback Title', self.URL)
         assert title == 'Fallback Title'
-        assert 'Fallback Title' in text
+        assert len(info['replies']) == 1
+        assert info['replies'][0]['author'] == 'alice'
 
     def test_no_posts_falls_back_to_other_page_info(self):
         """Zero posts -> delegates to extract_other_page_info."""
         html = _discourse_html(fancy_title='Empty thread', posts=[])
         with patch('seahub.chats.utils.extract_other_page_info',
-                   return_value=('extracted text', 'extracted title')) as mock:
-            text, title = extract_discourse_posts(html, 'ignored', self.URL)
+                   return_value=({'content': 'extracted text'}, 'extracted title')) as mock:
+            info, title = extract_discourse_info(html, 'ignored', self.URL)
         mock.assert_called_once_with(html, 'Empty thread', self.URL)
-        assert text == 'extracted text'
+        assert info == {'content': 'extracted text'}
         assert title == 'extracted title'
 
     def test_empty_html_falls_back_to_other_page_info(self):
         html = '<html><body></body></html>'
         with patch('seahub.chats.utils.extract_other_page_info',
-                   return_value=('extracted text', 'param title')) as mock:
-            text, title = extract_discourse_posts(html, 'param title', self.URL)
+                   return_value=({'content': 'extracted text'}, 'param title')) as mock:
+            info, title = extract_discourse_info(html, 'param title', self.URL)
         mock.assert_called_once_with(html, 'param title', self.URL)
-        assert text == 'extracted text'
+        assert info == {'content': 'extracted text'}
         assert title == 'param title'
 
     def test_missing_author(self):
@@ -153,10 +160,11 @@ class TestExtractDiscoursePosts:
         </article>
         </body></html>
         '''
-        text, title = extract_discourse_posts(html, 'ignored', self.URL)
+        info, title = extract_discourse_info(html, 'ignored', self.URL)
         assert title == 'Topic'
-        assert 'Unknown user' in text
-        assert 'No author here' in text
+        assert len(info['replies']) == 1
+        assert info['replies'][0]['author'] == 'Unknown user'
+        assert info['replies'][0]['content'] == 'No author here'
 
     def test_missing_time(self):
         """Post without a .post-date .relative-date element."""
@@ -171,10 +179,12 @@ class TestExtractDiscoursePosts:
         </article>
         </body></html>
         '''
-        text, title = extract_discourse_posts(html, 'ignored', self.URL)
+        info, title = extract_discourse_info(html, 'ignored', self.URL)
         assert title == 'Topic'
-        assert 'alice' in text
-        assert 'No time here' in text
+        assert len(info['replies']) == 1
+        assert info['replies'][0]['author'] == 'alice'
+        assert info['replies'][0]['time'] == ''
+        assert info['replies'][0]['content'] == 'No time here'
 
     def test_post_with_quoted_content_stripped(self):
         """aside.quote blocks should be removed from post content."""
@@ -196,10 +206,12 @@ class TestExtractDiscoursePosts:
         </article>
         </body></html>
         '''
-        text, title = extract_discourse_posts(html, 'ignored', self.URL)
-        assert 'Quoted text to remove' not in text
-        assert 'Main content' in text
-        assert 'More text' in text
+        info, title = extract_discourse_info(html, 'ignored', self.URL)
+        assert len(info['replies']) == 1
+        content = info['replies'][0]['content']
+        assert 'Quoted text to remove' not in content
+        assert 'Main content' in content
+        assert 'More text' in content
 
     def test_post_without_parent_article(self):
         """cooked div without an <article> parent falls back to Unknown user."""
@@ -209,9 +221,10 @@ class TestExtractDiscoursePosts:
         <div class="cooked">Orphan post content</div>
         </body></html>
         '''
-        text, title = extract_discourse_posts(html, 'ignored', self.URL)
-        assert 'Orphan post content' in text
-        assert 'Unknown user' in text
+        info, title = extract_discourse_info(html, 'ignored', self.URL)
+        assert len(info['replies']) == 1
+        assert info['replies'][0]['author'] == 'Unknown user'
+        assert info['replies'][0]['content'] == 'Orphan post content'
 
 
 class TestExtractOtherPageInfo:
@@ -223,31 +236,31 @@ class TestExtractOtherPageInfo:
         mock_result = json.dumps({'text': 'Hello world', 'excerpt': 'Hello'})
 
         with patch('seahub.chats.utils.extract', return_value=mock_result) as mock_extract:
-            text, title = extract_other_page_info(html, 'My Title', self.URL)
+            info, title = extract_other_page_info(html, 'My Title', self.URL)
 
         mock_extract.assert_called_once_with(
             html, output_format='json', favor_recall=True, include_tables=True)
         assert title == 'My Title'
-        assert 'Text: Hello world' in text
-        assert 'Excerpt: Hello' in text
+        assert 'Text: Hello world' in info['content']
+        assert 'Excerpt: Hello' in info['content']
 
     def test_extraction_failure_returns_url(self):
         html = '<html><body>bad</body></html>'
 
         with patch('seahub.chats.utils.extract', side_effect=Exception('parse error')):
-            text, title = extract_other_page_info(html, 'My Title', self.URL)
+            info, title = extract_other_page_info(html, 'My Title', self.URL)
 
-        assert text == self.URL
+        assert info['content'] == self.URL
         assert title == 'My Title'
 
     def test_empty_json_fallback(self):
         html = '<html><body></body></html>'
 
         with patch('seahub.chats.utils.extract', return_value=None):
-            text, title = extract_other_page_info(html, 'T', self.URL)
+            info, title = extract_other_page_info(html, 'T', self.URL)
 
-        assert 'Text: ' in text
-        assert 'Excerpt: ' in text
+        assert 'Text: ' in info['content']
+        assert 'Excerpt: ' in info['content']
         assert title == 'T'
 
 
@@ -265,11 +278,12 @@ class TestExtractGitHubIssues:
             post_time='2025-03-01T10:00:00Z',
             issue_content='The login page crashes on submit.',
         )
-        text, title = extract_GitHub_issues(html, self.TITLE_PARAM, self.URL)
+        info, title = extract_GitHub_issues(html, self.TITLE_PARAM, self.URL)
         assert title == 'Fix login bug'
-        assert 'dev1' in text
-        assert 'opened an issue about Fix login bug' in text
-        assert 'The login page crashes on submit.' in text
+        assert info['author'] == 'dev1'
+        assert info['created_at'] == '2025-03-01T10:00:00Z'
+        assert info['content'] == 'The login page crashes on submit.'
+        assert info['comments'] == []
 
     def test_issue_with_comments(self):
         html = _github_html(
@@ -286,34 +300,46 @@ class TestExtractGitHubIssues:
                  'content': '+1 from me.'},
             ]
         )
-        text, title = extract_GitHub_issues(html, self.TITLE_PARAM, self.URL)
+        info, title = extract_GitHub_issues(html, self.TITLE_PARAM, self.URL)
         assert title == 'Add dark mode'
-        assert 'alice opened an issue about Add dark mode' in text
-        assert 'Would be nice to have dark mode.' in text
-        assert 'bob replied on 2025-04-02T08:00:00Z with: I can work on this.' in text
-        assert 'charlie replied on 2025-04-03T09:00:00Z with: +1 from me.' in text
+        assert info['author'] == 'alice'
+        assert info['created_at'] == '2025-04-01T12:00:00Z'
+        assert info['content'] == 'Would be nice to have dark mode.'
+        assert len(info['comments']) == 2
+        assert info['comments'][0]['author'] == 'bob'
+        assert info['comments'][0]['time'] == '2025-04-02T08:00:00Z'
+        assert info['comments'][0]['content'] == 'I can work on this.'
+        assert info['comments'][1]['author'] == 'charlie'
+        assert info['comments'][1]['time'] == '2025-04-03T09:00:00Z'
+        assert info['comments'][1]['content'] == '+1 from me.'
 
     def test_minimal_html_with_only_title(self):
         """Issue page with only a title h1 and nothing else."""
         html = '<html><body><h1 data-testid="issue-title">Minimal</h1></body></html>'
-        text, title = extract_GitHub_issues(html, self.TITLE_PARAM, self.URL)
+        info, title = extract_GitHub_issues(html, self.TITLE_PARAM, self.URL)
         assert title == 'Minimal'
-        assert 'opened an issue about Minimal' in text
-        assert 'unknown' in text
+        assert info['author'] == 'unknown'
+        assert info['content'] == ''
+        assert info['comments'] == []
 
     def test_empty_html(self):
-        """Empty HTML still produces a default formatted string."""
+        """Empty HTML still produces a default-info dict."""
         html = ''
-        text, title = extract_GitHub_issues(html, self.TITLE_PARAM, self.URL)
+        info, title = extract_GitHub_issues(html, self.TITLE_PARAM, self.URL)
         assert title == ''
-        assert 'unknown opened an issue' in text
+        assert info['author'] == 'unknown'
+        assert info['content'] == ''
+        assert info['comments'] == []
 
     def test_malformed_html(self):
         """Even with broken HTML, BeautifulSoup should handle it gracefully."""
         html = '<h1 data-testid="issue-title">Broken'
-        text, title = extract_GitHub_issues(html, self.TITLE_PARAM, self.URL)
+        info, title = extract_GitHub_issues(html, self.TITLE_PARAM, self.URL)
         assert title == 'Broken'
-        assert isinstance(text, str)
+        assert isinstance(info, dict)
+        assert 'author' in info
+        assert 'content' in info
+        assert 'comments' in info
 
     def test_issue_metadata_extraction(self):
         html = _github_html(
@@ -324,10 +350,11 @@ class TestExtractGitHubIssues:
             post_time='2025-05-01',
             issue_content='Slow queries in dashboard.',
         )
-        text, title = extract_GitHub_issues(html, self.TITLE_PARAM, self.URL)
+        info, title = extract_GitHub_issues(html, self.TITLE_PARAM, self.URL)
         assert title == 'Enhance performance'
-        assert 'dev opened an issue about Enhance performance' in text
-        assert 'Slow queries in dashboard.' in text
+        assert info['author'] == 'dev'
+        assert info['created_at'] == '2025-05-01'
+        assert info['content'] == 'Slow queries in dashboard.'
 
     def test_comments_with_missing_author(self):
         """Comment without an author element defaults to 'unknown'."""
@@ -348,16 +375,21 @@ class TestExtractGitHubIssues:
         </div>
         </body></html>
         '''
-        text, title = extract_GitHub_issues(html, self.TITLE_PARAM, self.URL)
-        assert 'anonymous reply' in text
-        assert 'unknown replied' in text
+        info, title = extract_GitHub_issues(html, self.TITLE_PARAM, self.URL)
+        assert len(info['comments']) == 1
+        assert info['comments'][0]['author'] == 'unknown'
+        assert info['comments'][0]['time'] == '2025-01-02'
+        assert info['comments'][0]['content'] == 'anonymous reply'
 
     def test_html_without_issue_body(self):
         """HTML that has a title but no issue body at all."""
         html = '<html><body><h1 data-testid="issue-title">Title only</h1></body></html>'
-        text, title = extract_GitHub_issues(html, self.TITLE_PARAM, self.URL)
+        info, title = extract_GitHub_issues(html, self.TITLE_PARAM, self.URL)
         assert title == 'Title only'
-        assert isinstance(text, str)
+        assert isinstance(info, dict)
+        assert 'author' in info
+        assert 'content' in info
+        assert 'comments' in info
 
 
 class TestExtractGitHubIssueTitle:
