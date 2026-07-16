@@ -234,18 +234,18 @@ class SidePanel extends React.Component {
                   </Link>
                 </div>
               </div>
-              <span className="seaqa-nav-title help-resources-title">{gettext('Help and Resources')}</span>
+              <span className="seaqa-nav-title help-resources-title">{gettext('Help and resources')}</span>
               <div className="nav nav-pills flex-column seaqa-nav-list help-resources-nav-list">
                 <div className="nav-item seaqa-nav-item projects-nav">
                   <a
                     href="https://user-docs.seaticket.ai/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label={gettext('User Manual')}
+                    aria-label={gettext('Manual')}
                     className="nav-link seaqa-nav-link"
                   >
                     <Icon symbol="question-circle-filled" className="nav-icon" />
-                    <span className="nav-text">{gettext('User Manual')}</span>
+                    <span className="nav-text">{gettext('Manual')}</span>
                   </a>
                 </div>
               </div>
