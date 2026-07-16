@@ -37,6 +37,17 @@
   padding-right: 6px;
 }
 
+.seaqa-search-input-wrapper .search-control {
+  position: absolute;
+  top: 8px;
+  right: 5px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .seaqa-search-input-wrapper .seaqa-search-input-search:hover {
   background-color: inherit;
   cursor: default;

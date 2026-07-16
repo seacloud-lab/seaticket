@@ -53,6 +53,7 @@ const Selector = ({
           options={options}
           target={ref}
           isSearchEnabled={isSearchEnabled}
+          isShowSearchIcon={true}
           value={value}
           placement={placement}
           onChange={handleChange}
