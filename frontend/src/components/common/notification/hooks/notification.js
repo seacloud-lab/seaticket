@@ -24,7 +24,19 @@ export const NotificationProvider = ({ children, projectUuid }) => {
 
   const handleRealtimeNotification = useCallback((notice) => {
     const noticeType = notice?.type;
+    const noticeProjectUuid = notice?.content?.project_uuid;
     if (noticeType === 'user_notification') {
+      if (noticeProjectUuid) {
+        if (projectUuid && (projectUuid !== noticeProjectUuid)) {
+          return;
+        }
+        setUnseen(prev => prev + 1);
+        setUnseenByType(prev => ({
+          ...prev,
+          [NOTIFICATION_TYPE.PROJECT]: prev[NOTIFICATION_TYPE.PROJECT] + 1,
+        }));
+        return;
+      }
       setUnseen(prev => prev + 1);
       setUnseenByType(prev => ({
         ...prev,
@@ -32,17 +44,11 @@ export const NotificationProvider = ({ children, projectUuid }) => {
       }));
       return;
     }
-    if (noticeType === 'project_notification') {
-      setUnseen(prev => prev + 1);
-      setUnseenByType(prev => ({
-        ...prev,
-        [NOTIFICATION_TYPE.PROJECT]: prev[NOTIFICATION_TYPE.PROJECT] + 1,
-      }));
-      return;
-    }
 
     if (noticeType === 'user_logout') {
-      sharedWsClient.close();
+      if (notice?.content?.session_id) {
+        sharedWsClient.close();
+      }
       return;
     }
   }, []);
@@ -289,7 +295,7 @@ export const NotificationProvider = ({ children, projectUuid }) => {
     if (!enableNotificationServer) return;
 
     const handleNotice = (noticeData) => {
-      if (noticeData?.type === 'user_notification' || noticeData?.type === 'project_notification' || noticeData?.type === 'user_logout') {
+      if (noticeData?.type === 'user_notification' || noticeData?.type === 'user_logout') {
         handleRealtimeNotification(noticeData);
       }
     };

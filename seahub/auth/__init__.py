@@ -112,13 +112,14 @@ def logout(request):
     """
     try:
         if getattr(request, 'user', None) and getattr(request.user, 'is_authenticated', False):
-            from seahub.utils import mq
-            from seahub.notifications.signal_handler import NOTIFICATION_REDIS_CHANNEL
-            import json
-            mq.publish(NOTIFICATION_REDIS_CHANNEL, json.dumps({
+            from seahub.notifications.signal_handler import _publish_realtime_notification
+            session_id = getattr(request.session, 'session_key', None)
+
+            _publish_realtime_notification({
                 'type': 'user_logout',
                 'user_id': request.user.username,
-            }))
+                'session_id': session_id,
+            })
     except Exception:
         # Logout must continue even if realtime notification publish fails.
         pass

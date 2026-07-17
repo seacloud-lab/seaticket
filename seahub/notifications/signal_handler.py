@@ -22,7 +22,7 @@ MSG_TYPE_AGENT_NOTIFY_ASSIGNEE = 'agent_notify_assignee'
 MSG_TYPE_TICKET_COMMENTED = 'ticket_commented'
 MSG_TYPE_ADD_USER_TO_GROUP = 'add_user_to_group'
 MSG_TYPE_ORG_MEMBER_INVITE_ACCEPTED = 'org_member_invite_accepted'
-NOTIFICATION_REDIS_CHANNEL = 'seaqa_notification'
+NOTIFICATION_REDIS_CHANNEL = 'web_notifications'
 
 
 def _publish_realtime_notification(payload: dict) -> None:
@@ -138,7 +138,7 @@ def add_ticket_assignees_added_project_msg_cb(sender, **kwargs):
         ])
         for to_user in need_send_notification_users:
             _publish_realtime_notification({
-                'type': 'project_notification',
+                'type': 'user_notification',
                 'to_user': to_user,
                 'project_uuid': project_uuid,
                 'msg_type': msg_type,
@@ -184,7 +184,7 @@ def add_agent_notify_assignees_project_msg_cb(sender, **kwargs):
 
         for to_user in need_send_notification_users:
             _publish_realtime_notification({
-                'type': 'project_notification',
+                'type': 'user_notification',
                 'to_user': to_user,
                 'project_uuid': project_uuid,
                 'msg_type': msg_type,
@@ -233,7 +233,7 @@ def add_ticket_commented_project_msg_cb(sender, **kwargs):
 
         for to_user in related_users:
             _publish_realtime_notification({
-                'type': 'project_notification',
+                'type': 'user_notification',
                 'to_user': to_user,
                 'project_uuid': project_uuid,
                 'msg_type': msg_type,

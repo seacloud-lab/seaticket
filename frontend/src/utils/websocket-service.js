@@ -1,4 +1,5 @@
 import { enableNotificationServer, server } from './../constants';
+import projectAPI from '@/project/api/project-api';
 
 const getNotificationServerUrl = () => {
   return `${server.replace(/^http/, 'ws')}/notification/`;
@@ -46,7 +47,7 @@ class WebSocketClient {
 
     const isCurrentSocket = () => this.socket === socket && this.socketId === socketId;
     const sendIfOpen = (msg) => {
-      if (isCurrentSocket() && socket.readyState === WebSocket.OPEN) {
+      if (isCurrentSocket() && socket.readyState === WebSocket.OPEN && msg) {
         socket.send(JSON.stringify(msg));
         return true;
       }
@@ -54,23 +55,23 @@ class WebSocketClient {
       return false;
     };
 
+    const resubscribeActiveProjects = async () => {
+      for (const [projectUuid, count] of this.subscriptions.entries()) {
+        if (count > 0) {
+          const msg = await this.formatSubscriptionMsg(projectUuid);
+          sendIfOpen(msg);
+        }
+      }
+    };
+
     socket.onopen = async () => {
       if (!isCurrentSocket()) {
         return;
       }
       this.reconnectAttempts = 0;
-      try {
-        for (const [projectUuid, count] of this.subscriptions.entries()) {
-          if (count > 0) {
-            const msg = this.formatSubscriptionMsg(projectUuid);
-            if (msg) {
-              sendIfOpen(msg);
-            }
-          }
-        }
-      } catch (error) {
+      resubscribeActiveProjects().catch((error) => {
         console.error('Failed to subscribe websocket', error);
-      }
+      });
     };
 
     // listen message from WebSocket server
@@ -112,7 +113,7 @@ class WebSocketClient {
     };
   }
 
-  subscribe(projectUuid) {
+  async subscribe(projectUuid) {
     if (!projectUuid) {
       return;
     }
@@ -121,8 +122,8 @@ class WebSocketClient {
     this.subscriptions.set(projectUuid, count + 1);
 
     if (count === 0 && this.socket && this.socket.readyState === WebSocket.OPEN) {
-      const msg = this.formatSubscriptionMsg(projectUuid);
-      if (msg) {
+      const msg = await this.formatSubscriptionMsg(projectUuid);
+      if (msg && this.socket && this.socket.readyState === WebSocket.OPEN) {
         this.socket.send(JSON.stringify(msg));
       }
     }
@@ -148,14 +149,27 @@ class WebSocketClient {
     this.subscriptions.set(projectUuid, count - 1);
   }
 
-  formatSubscriptionMsg(projectUuid) {
+  async getProjectNotificationJwtToken(projectUuid) {
+    try {
+      const response = await projectAPI.getNotificationToken(projectUuid);
+      return response.data.token;
+    } catch (error) {
+      console.error('Failed to get websocket notification token', error);
+      throw error;
+    }
+  }
+
+  async formatSubscriptionMsg(projectUuid) {
     if (!projectUuid) {
       return null;
     }
+
+    const notificationToken = await this.getProjectNotificationJwtToken(projectUuid);
     return {
       type: 'subscribe',
       content: {
         project_uuid: projectUuid,
+        token: notificationToken,
       },
     };
   }

@@ -272,7 +272,7 @@ export const ConnectionsProvider = ({
   useEffect(() => {
 if (!isSubscribeConnectionsSyncStatus) return;
     const handleNotice = (noticeData) => {
-      if (noticeData.type === 'connection_sync') {
+      if (noticeData.type === 'project_notification') {
         const { connection_id, status } = noticeData.content;
         if (status === CONNECTION_SYNC_STATUS.CRAWLING) {
           modifyLocalConnectionsSyncStatus({

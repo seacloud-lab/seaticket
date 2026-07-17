@@ -70,10 +70,8 @@ class SessionCheck(APIView):
 
     def get(self, request, format=None):
         return Response({
-            'success': True,
             'user_id': request.user.username,
             'session_id': request.session.session_key,
-            'message': '',
         })
 
 ########## Token
