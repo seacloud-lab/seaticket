@@ -6,6 +6,7 @@ from copy import deepcopy
 from seahub.project.constants import ConnectionType, ExtraSourceType, CONNECTION_DISPLAY_ALL_COLUMNS, \
     CONNECTION_MUST_RETURN_COLUMNS, TICKET_DISPLAY_ALL_COLUMNS, KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS, \
     PORTAL_ISSUE_DISPLAY_ALL_COLUMNS
+from seahub.project.task_utils import normalize_general_task_due_date
 from seahub.project.view_utils import view_data_2_sql, SQLGenerator, SQLGeneratorOptionInvalidError
 from seahub.seadb_models.models import SchemaTables
 
@@ -142,7 +143,7 @@ def build_general_task_row_data(task, sync_time=None):
         SchemaTables.GENERAL_TASK.column.version.name: task.get('version', ''),
         SchemaTables.GENERAL_TASK.column.others.name: others,
         SchemaTables.GENERAL_TASK.column.content.name: task.get('description') or task.get('content') or '',
-        SchemaTables.GENERAL_TASK.column.due_date.name: task.get('due_date'),
+        SchemaTables.GENERAL_TASK.column.due_date.name: normalize_general_task_due_date(task.get('due_date')),
         SchemaTables.GENERAL_TASK.column.modified_time.name: task.get('modified_time') or task.get('_mtime'),
         SchemaTables.GENERAL_TASK.column.created_time.name: task.get('created_time') or task.get('_ctime'),
         SchemaTables.GENERAL_TASK.column.sync_time.name: now,

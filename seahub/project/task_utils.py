@@ -1,10 +1,13 @@
 import base64
+from datetime import date, datetime, time, timedelta, timezone
+
 import requests
 
 from seahub.utils import time_str_to_utc_time
 from seahub.utils.storage import get_project_file_from_s3
 
 GENERAL_TASK_ACTIVITY_FIELDS = ('title', 'status', 'size', 'priority', 'assignees', 'version', 'due_date')
+GENERAL_TASK_DUE_DATE_TZ = timezone(timedelta(hours=8))
 
 
 # general task utils
@@ -72,6 +75,31 @@ def update_general_task_via_adapter(connection_config, source_task_id, task_payl
     updated_task = response.json() if response.content else {}
     return updated_task
 
+def normalize_general_task_due_date(value):
+    if value in (None, ''):
+        return None
+
+    if isinstance(value, datetime):
+        dt = value
+    elif isinstance(value, date):
+        dt = datetime.combine(value, time.min, tzinfo=GENERAL_TASK_DUE_DATE_TZ)
+    else:
+        value = str(value).strip()
+        if not value:
+            return None
+        if len(value) == 10 and value.count('-') == 2:
+            dt = datetime.fromisoformat(value).replace(tzinfo=GENERAL_TASK_DUE_DATE_TZ)
+        else:
+            dt = time_str_to_utc_time(value).astimezone(GENERAL_TASK_DUE_DATE_TZ)
+
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=GENERAL_TASK_DUE_DATE_TZ)
+    else:
+        dt = dt.astimezone(GENERAL_TASK_DUE_DATE_TZ)
+
+    normalized_dt = datetime.combine(dt.date(), time.min, tzinfo=GENERAL_TASK_DUE_DATE_TZ)
+    return normalized_dt.isoformat()
+
 def build_general_task_change_values(current_record, row_data, changed_fields):
     old_value = {}
     new_value = {}
@@ -81,12 +109,8 @@ def build_general_task_change_values(current_record, row_data, changed_fields):
         old_field_value = current_record.get(field)
         new_field_value = row_data.get(field)
         if field == 'due_date':
-            due_date_values = [old_field_value, new_field_value]
-            for index, value in enumerate(due_date_values):
-                if not value:
-                    continue
-                due_date_values[index] = time_str_to_utc_time(value).isoformat()
-            old_field_value, new_field_value = due_date_values
+            old_field_value = normalize_general_task_due_date(old_field_value)
+            new_field_value = normalize_general_task_due_date(new_field_value)
         if old_field_value != new_field_value:
             old_value[field] = old_field_value
             new_value[field] = new_field_value

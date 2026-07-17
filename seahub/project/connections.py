@@ -62,7 +62,7 @@ from seahub.utils.mailbox_manager import move_emails_to_trash
 from seahub.project.discourse_api import DiscourseForumAPI, DiscourseForumAPIException
 from seahub.utils.io import zip_email_attachments, query_io_task_status
 from seahub.project.task_utils import create_general_task_via_adapter, update_general_task_via_adapter, \
-    prepare_image_data_for_adapter, build_general_task_change_values
+    prepare_image_data_for_adapter, build_general_task_change_values, normalize_general_task_due_date
 
 from seahub.seadb_models.models import SchemaTables
 
@@ -1340,7 +1340,9 @@ class ProjectConnectionRecordView(APIView):
                     'version': row_data.get('version', current_record.get('version', '')),
                     'others': row_data.get('others', current_record.get('others', '')),
                     'description': row_data.get('description', current_record.get('content', '')),
-                    'due_date': row_data.get('due_date', current_record.get('due_date')),
+                    'due_date': normalize_general_task_due_date(
+                        row_data.get('due_date', current_record.get('due_date'))
+                    ),
                     'created_time': current_record.get('created_time'),
                     'modified_time': current_record.get('modified_time'),
                     'url': current_record.get('url'),
@@ -1352,14 +1354,15 @@ class ProjectConnectionRecordView(APIView):
                 if image_data_map:
                     merged_task['image_data_map'] = image_data_map
                 try:
-                    update_general_task_via_adapter(connection_config, source_task_id, merged_task)
+                    updated_task = update_general_task_via_adapter(connection_config, source_task_id, merged_task)
                 except ValueError as e:
                     logger.warning(f'update general task adapter error: {e}')
                     return api_error(status.HTTP_400_BAD_REQUEST, 'Failed to update general task.')
-                update_row['row'].update(build_general_task_row_data(merged_task))
+                persisted_task = {**merged_task, **(updated_task or {})}
+                update_row['row'].update(build_general_task_row_data(persisted_task))
                 update_row['row']['source_task_id'] = source_task_id
                 old_value, new_value = build_general_task_change_values(current_record, row_data, changed_task_fields)
-                linked_ticket = merged_task.get('linked_ticket')
+                linked_ticket = persisted_task.get('linked_ticket')
                 if linked_ticket and old_value and new_value:
                     general_task_event = {
                         'record_id': record_id,
@@ -1458,6 +1461,7 @@ class ProjectConnectionRecordsView(APIView):
         task_payload['status'] = task_payload.get('status') or 'new'
         task_payload['priority'] = task_payload.get('priority') or 'medium'
         task_payload['size'] = task_payload.get('size') or 'medium'
+        task_payload['due_date'] = normalize_general_task_due_date(task_payload.get('due_date'))
 
         linked_ticket = request.data.get('linked_ticket')
         if linked_ticket in ('', None):
@@ -1638,7 +1642,9 @@ class ProjectConnectionRecordsView(APIView):
                         'version': row_data.get('version', current_record.get('version', '')),
                         'others': row_data.get('others', current_record.get('others', '')),
                         'description': row_data.get('description', current_record.get('content', '')),
-                        'due_date': row_data.get('due_date', current_record.get('due_date')),
+                        'due_date': normalize_general_task_due_date(
+                            row_data.get('due_date', current_record.get('due_date'))
+                        ),
                         'created_time': current_record.get('created_time'),
                         'modified_time': current_record.get('modified_time'),
                         'url': current_record.get('url'),
@@ -1650,14 +1656,15 @@ class ProjectConnectionRecordsView(APIView):
                     if image_data_map:
                         merged_task['image_data_map'] = image_data_map
                     try:
-                        update_general_task_via_adapter(connection_config, source_task_id, merged_task)
+                        updated_task = update_general_task_via_adapter(connection_config, source_task_id, merged_task)
                     except ValueError as e:
                         logger.warning(f'batch update general task adapter error: {e}')
                         return api_error(status.HTTP_400_BAD_REQUEST, str(e))
-                    update_row['row'].update(build_general_task_row_data(merged_task))
+                    persisted_task = {**merged_task, **(updated_task or {})}
+                    update_row['row'].update(build_general_task_row_data(persisted_task))
                     update_row['row']['source_task_id'] = source_task_id
                     old_value, new_value = build_general_task_change_values(current_record, row_data, changed_task_fields)
-                    linked_ticket = merged_task.get('linked_ticket')
+                    linked_ticket = persisted_task.get('linked_ticket')
                     if linked_ticket and old_value and new_value:
                         general_task_events.append({
                             'record_id': row_id,
