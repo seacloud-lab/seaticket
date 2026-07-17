@@ -21,8 +21,8 @@ from seahub.chats.constants import AI_REPLY_TIMEOUT
 from seahub.chats.models import ChatSessions, ChatMessages, ChatMessageThoughtProcess
 from seahub.chats.utils import get_ai_reply, gen_message_id, gen_chat_task_id, get_attachments, \
     record_message_to_db, process_stream_ai_reply, strip_content_details_from_attachments, \
-    split_image_and_other_attachments, build_image_attachments, build_ai_images_payload, \
-    ImageProcessingError, generate_session_title
+    split_attachments, build_image_attachments, build_ai_images_payload, \
+    ImageProcessingError, generate_session_title, build_page_content_attachments
 from django.utils.translation import gettext as _
 from seahub.utils.decorators import require_org_context
 from seahub.project.constants import AIScenario
@@ -505,10 +505,10 @@ class ChatView(APIView):
             return api_error(status.HTTP_402_PAYMENT_REQUIRED, error_msg)
 
         raw_attachments = request.data.get('attachments', [])
-        temp_image_paths, non_image_attachments = split_image_and_other_attachments(project_uuid, raw_attachments)
+        temp_image_paths, page_content_attachments, other_attachments = split_attachments(project_uuid, raw_attachments)
         # Extra contents
         try:
-            attachments = get_attachments(SeaDBAPI(), project_uuid, non_image_attachments)
+            attachments = get_attachments(SeaDBAPI(), project_uuid, other_attachments)
         except Exception as e:
             attachments = []
             logger.warning(f'Failure to get extra contents: {e}')
@@ -570,6 +570,9 @@ class ChatView(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Failed to upload image. Please try again.')
 
             attachments = attachments + build_image_attachments(permanent_image_paths)
+
+        if page_content_attachments:
+            attachments = attachments + build_page_content_attachments(page_content_attachments)
 
         # Read project-level custom prompt from settings
         project_prompt = ''

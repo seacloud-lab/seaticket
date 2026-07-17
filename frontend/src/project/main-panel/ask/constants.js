@@ -63,6 +63,8 @@ export const CHAT_ATTACHMENT_TYPE = {
   ...CONNECTION_TYPE,
   TICKET: TICKET_TYPE,
   IMAGE: 'image',
+  PAGE_CONTENT: 'page_content',
+  EMPTY: 'empty',
 };
 
 export const CHAT_SKILL_COMMANDS = [
