@@ -1,14 +1,10 @@
 import base64
-import logging
-
 import requests
 
 from seahub.utils import time_str_to_utc_time
 from seahub.utils.storage import get_project_file_from_s3
 
 GENERAL_TASK_ACTIVITY_FIELDS = ('title', 'status', 'size', 'priority', 'assignees', 'version', 'due_date')
-
-logger = logging.getLogger(__name__)
 
 
 # general task utils
@@ -89,10 +85,7 @@ def build_general_task_change_values(current_record, row_data, changed_fields):
             for index, value in enumerate(due_date_values):
                 if not value:
                     continue
-                try:
-                    due_date_values[index] = time_str_to_utc_time(str(value)).isoformat()
-                except (ValueError, TypeError) as error:
-                    logger.warning('Failed to normalize general task due_date %r to UTC: %s', value, error)
+                due_date_values[index] = time_str_to_utc_time(value).isoformat()
             old_field_value, new_field_value = due_date_values
         if old_field_value != new_field_value:
             old_value[field] = old_field_value
