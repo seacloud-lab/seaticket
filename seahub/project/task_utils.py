@@ -1,4 +1,6 @@
 import base64
+import datetime
+
 import requests
 
 from seahub.utils.storage import get_project_file_from_s3
@@ -7,6 +9,19 @@ GENERAL_TASK_ACTIVITY_FIELDS = ('title', 'status', 'size', 'priority', 'assignee
 
 
 # general task utils
+def normalize_general_task_due_date(value):
+    if value in (None, ''):
+        return value
+
+    try:
+        due_date = datetime.date.fromisoformat(value)
+    except (TypeError, ValueError):
+        raise ValueError('due_date invalid.')
+
+    local_midnight = datetime.datetime.combine(due_date, datetime.time.min).astimezone()
+    return local_midnight.astimezone(datetime.UTC).isoformat(timespec='milliseconds')
+
+
 def build_general_task_endpoint(base_url, task_id=None):
     base_url = (base_url or '').strip()
     if not base_url:
