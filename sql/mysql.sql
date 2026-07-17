@@ -711,15 +711,14 @@ CREATE TABLE `project_external_users` (
 CREATE TABLE `portal_external_sso_providers` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `project_uuid` char(36) NOT NULL,
-  `provider_key` varchar(64) NOT NULL,
+  `provider_id` varchar(64) NOT NULL,
   `name` varchar(128) NOT NULL,
   `secret` varchar(255) NOT NULL,
   `enabled` TINYINT(1) NOT NULL DEFAULT 1,
   `created_at` datetime(6) NOT NULL,
   `updated_at` datetime(6) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `portal_external_sso_project_provider_uniq` (`project_uuid`,`provider_key`),
-  KEY `portal_external_sso_project_uuid_idx` (`project_uuid`)
+  UNIQUE KEY `portal_external_sso_project_provider_id_uniq` (`project_uuid`,`provider_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `portal_custom_domains` (

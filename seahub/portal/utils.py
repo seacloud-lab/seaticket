@@ -126,6 +126,11 @@ def normalize_external_login_email(email):
     return (email or '').strip().lower()
 
 
+def external_user_can_access_issue(request, issue):
+    external_username = getattr(request, 'portal_external_username', '')
+    return not external_username or issue.get('creator') == external_username
+
+
 def _portal_external_login_cache_key(prefix, project_uuid, email):
     return normalize_cache_key(f'{project_uuid}:{email}', prefix=prefix)
 

@@ -142,18 +142,18 @@ class PortalAPI {
     return this.req.post(url, data);
   }
 
-  updateExternalSSOProvider(projectUuid, providerKey, data) {
-    const url = this.server + '/api/v1/portal/' + projectUuid + '/external-sso-providers/' + encodeURIComponent(providerKey) + '/';
+  updateExternalSSOProvider(projectUuid, providerId, data) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/external-sso-providers/' + encodeURIComponent(providerId) + '/';
     return this.req.put(url, data);
   }
 
-  deleteExternalSSOProvider(projectUuid, providerKey) {
-    const url = this.server + '/api/v1/portal/' + projectUuid + '/external-sso-providers/' + encodeURIComponent(providerKey) + '/';
+  deleteExternalSSOProvider(projectUuid, providerId) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/external-sso-providers/' + encodeURIComponent(providerId) + '/';
     return this.req.delete(url);
   }
 
-  resetExternalSSOProviderSecret(projectUuid, providerKey, secret = '') {
-    const url = this.server + '/api/v1/portal/' + projectUuid + '/external-sso-providers/' + encodeURIComponent(providerKey) + '/reset-secret/';
+  resetExternalSSOProviderSecret(projectUuid, providerId, secret = '') {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/external-sso-providers/' + encodeURIComponent(providerId) + '/reset-secret/';
     return this.req.post(url, { secret });
   }
 

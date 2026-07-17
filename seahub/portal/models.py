@@ -1,5 +1,4 @@
 import json
-import re
 import string
 import random
 import copy
@@ -140,46 +139,21 @@ class ProjectExternalUser(models.Model):
         db_table = 'project_external_users'
 
 
-def normalize_portal_external_sso_provider_key(provider_key):
-    if not isinstance(provider_key, str):
-        raise ValueError('provider_key invalid.')
-    normalized_key = (provider_key or '').strip().lower()
-    if not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*', normalized_key) or len(normalized_key) > 64:
-        raise ValueError('provider_key invalid.')
-    return normalized_key
-
-
-class PortalExternalSSOProviderManager(models.Manager):
-
-    def list_by_project_uuid(self, project_uuid):
-        return super().filter(project_uuid=str(project_uuid)).order_by('name', 'provider_key')
-
-    def get_by_project_uuid_and_key(self, project_uuid, provider_key):
-        try:
-            normalized_key = normalize_portal_external_sso_provider_key(provider_key)
-        except ValueError:
-            return None
-        return super().filter(project_uuid=str(project_uuid), provider_key=normalized_key).first()
-
-
 class PortalExternalSSOProvider(models.Model):
-    project_uuid = models.CharField(max_length=36, db_index=True)
-    provider_key = models.CharField(max_length=64)
+    project_uuid = models.CharField(max_length=36)
+    provider_id = models.CharField(max_length=64)
     name = models.CharField(max_length=128)
     secret = models.CharField(max_length=255)
     enabled = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    objects = PortalExternalSSOProviderManager()
-
     class Meta:
-        unique_together = (('project_uuid', 'provider_key'),)
+        unique_together = (('project_uuid', 'provider_id'),)
         db_table = 'portal_external_sso_providers'
 
     def save(self, *args, **kwargs):
         self.project_uuid = str(self.project_uuid)
-        self.provider_key = normalize_portal_external_sso_provider_key(self.provider_key)
         self.name = (self.name or '').strip()
         return super().save(*args, **kwargs)
 

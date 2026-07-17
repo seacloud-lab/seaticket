@@ -10,7 +10,7 @@ const ExternalSSOProviders = ({ projectUuid }) => {
   const [providers, setProviders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
-  const [providerKey, setProviderKey] = useState('');
+  const [providerId, setProviderId] = useState('');
   const [providerName, setProviderName] = useState('');
   const [secret, setSecret] = useState('');
   const [revealedSecret, setRevealedSecret] = useState(null);
@@ -38,26 +38,26 @@ const ExternalSSOProviders = ({ projectUuid }) => {
   }, []);
 
   const createProvider = useCallback(() => {
-    const normalizedKey = providerKey.trim().toLowerCase();
+    const normalizedId = providerId.trim().toLowerCase();
     const normalizedName = providerName.trim();
-    if (!normalizedKey || !normalizedName) {
-      toaster.danger(gettext('Provider key and name are required.'));
+    if (!normalizedId || !normalizedName) {
+      toaster.danger(gettext('Provider ID and name are required.'));
       return;
     }
-    if (secret && secret.length < 32) {
-      toaster.danger(gettext('Shared secret must contain at least 32 characters.'));
+    if (secret && (secret.length < 32 || secret.length > 128)) {
+      toaster.danger(gettext('Shared secret must contain 32 to 128 ASCII characters.'));
       return;
     }
 
     setIsCreating(true);
     portalAPI.createExternalSSOProvider(projectUuid, {
-      provider_key: normalizedKey,
+      provider_id: normalizedId,
       name: normalizedName,
       secret,
       enabled: 1,
     }).then(res => {
       setRevealedSecret(res.data);
-      setProviderKey('');
+      setProviderId('');
       setProviderName('');
       setSecret('');
       loadProviders();
@@ -67,15 +67,15 @@ const ExternalSSOProviders = ({ projectUuid }) => {
     }).finally(() => {
       setIsCreating(false);
     });
-  }, [loadProviders, projectUuid, providerKey, providerName, secret]);
+  }, [loadProviders, projectUuid, providerId, providerName, secret]);
 
   const toggleProvider = useCallback((provider) => {
     const nextEnabled = !provider.enabled;
-    portalAPI.updateExternalSSOProvider(projectUuid, provider.provider_key, {
+    portalAPI.updateExternalSSOProvider(projectUuid, provider.provider_id, {
       enabled: nextEnabled ? 1 : 0,
     }).then(res => {
       setProviders(current => current.map(item => (
-        item.provider_key === provider.provider_key ? res.data : item
+        item.provider_id === provider.provider_id ? res.data : item
       )));
     }).catch(error => {
       toaster.danger(Utils.getErrorMsg(error));
@@ -86,8 +86,8 @@ const ExternalSSOProviders = ({ projectUuid }) => {
     if (!pendingAction) return Promise.resolve();
     const { type, provider } = pendingAction;
     if (type === 'delete') {
-      return portalAPI.deleteExternalSSOProvider(projectUuid, provider.provider_key).then(() => {
-        setProviders(current => current.filter(item => item.provider_key !== provider.provider_key));
+      return portalAPI.deleteExternalSSOProvider(projectUuid, provider.provider_id).then(() => {
+        setProviders(current => current.filter(item => item.provider_id !== provider.provider_id));
         toaster.success(gettext('SSO provider deleted'));
       }).catch(error => {
         toaster.danger(Utils.getErrorMsg(error));
@@ -96,10 +96,10 @@ const ExternalSSOProviders = ({ projectUuid }) => {
       });
     }
 
-    return portalAPI.resetExternalSSOProviderSecret(projectUuid, provider.provider_key).then(res => {
+    return portalAPI.resetExternalSSOProviderSecret(projectUuid, provider.provider_id).then(res => {
       setRevealedSecret(res.data);
       setProviders(current => current.map(item => (
-        item.provider_key === provider.provider_key ? { ...item, updated_at: res.data.updated_at } : item
+        item.provider_id === provider.provider_id ? { ...item, updated_at: res.data.updated_at } : item
       )));
       toaster.success(gettext('Shared secret reset'));
     }).catch(error => {
@@ -118,12 +118,13 @@ const ExternalSSOProviders = ({ projectUuid }) => {
         </p>
         <div className="portal-sso-provider-form">
           <div>
-            <label htmlFor="portal-sso-provider-key">{gettext('Provider key')}</label>
+            <label htmlFor="portal-sso-provider-id">{gettext('Provider ID')}</label>
             <Input
-              id="portal-sso-provider-key"
-              value={providerKey}
-              onChange={event => setProviderKey(event.target.value)}
+              id="portal-sso-provider-id"
+              value={providerId}
+              onChange={event => setProviderId(event.target.value)}
               placeholder={gettext('customer-system')}
+              maxLength={64}
               spellCheck={false}
               autoComplete="off"
             />
@@ -135,6 +136,7 @@ const ExternalSSOProviders = ({ projectUuid }) => {
               value={providerName}
               onChange={event => setProviderName(event.target.value)}
               placeholder={gettext('Customer system')}
+              maxLength={128}
               autoComplete="off"
             />
           </div>
@@ -146,6 +148,7 @@ const ExternalSSOProviders = ({ projectUuid }) => {
               value={secret}
               onChange={event => setSecret(event.target.value)}
               placeholder={gettext('Leave empty to generate a secret')}
+              maxLength={128}
               autoComplete="new-password"
             />
           </div>
@@ -200,10 +203,10 @@ const ExternalSSOProviders = ({ projectUuid }) => {
               </thead>
               <tbody>
                 {providers.map(provider => (
-                  <tr key={provider.provider_key}>
+                  <tr key={provider.provider_id}>
                     <td className="align-middle">
                       <div>{provider.name}</div>
-                      <div className="portal-sso-provider-key">{provider.provider_key}</div>
+                      <div className="portal-sso-provider-id">{provider.provider_id}</div>
                     </td>
                     <td className="align-middle">
                       <div className="portal-sso-provider-url">

@@ -33,7 +33,7 @@ urlpatterns = [
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/login/$', portal_login_view, name='portal_login_view'),
     re_path(r'^portal-preview/(?P<token>[^/]+)/$', portal_preview_view, name='portal_preview_view'),
     re_path(r'^portal-external/accept/(?P<token>[a-f0-9]{32})/(?P<project_uuid>[-0-9a-f]{36})/$', portal_external_invitation_accept_view, name='portal_external_invitation_accept_view'),
-    re_path(r'^portal-external/sso/(?P<provider_key>[a-z0-9]+(?:-[a-z0-9]+)*)/(?P<project_uuid>[-0-9a-f]{36})/$', portal_external_sso_login_view, name='portal_external_sso_login_view'),
+    re_path(r'^portal-external/sso/(?P<provider_id>[a-z0-9]+(?:-[a-z0-9]+)*)/(?P<project_uuid>[-0-9a-f]{36})/$', portal_external_sso_login_view, name='portal_external_sso_login_view'),
     re_path(r'^portal-external/logout/(?P<project_uuid>[-0-9a-f]{36})/$', portal_external_logout_view, name='portal_external_logout_view'),
 
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/tags/$', PortalTagsView.as_view(), name='api-v1-portal-tags'),

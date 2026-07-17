@@ -23,6 +23,7 @@ def _is_external_member(request, project_uuid):
     ext_project_uuid = session.get('portal_external_project_uuid')
     if ext_username and ext_project_uuid and ext_project_uuid == project_uuid and \
             ProjectExternalUser.objects.filter(project_uuid=project_uuid, username=ext_username, activated=True).exists():
+        request.portal_external_username = ext_username
         if getattr(request, 'user', None):
             request.user.username = ext_username
         return True

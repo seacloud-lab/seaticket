@@ -96,7 +96,11 @@ class PortalDomainMiddleware(MiddlewareMixin):
         if portal_domain.domain_type == PORTAL_DOMAIN_TYPE_SERVICE_ALIAS:
             custom_domain = PortalCustomDomain.objects.get_verified_by_project_uuid(project_uuid)
             if custom_domain:
-                return HttpResponseRedirect('%s://%s%s' % (request.scheme, custom_domain.domain, request.get_full_path()))
+                response = HttpResponseRedirect('%s://%s%s' % (request.scheme, custom_domain.domain, request.get_full_path()))
+                if normalized_path.startswith('/external/sso/'):
+                    response['Cache-Control'] = 'no-store'
+                    response['Referrer-Policy'] = 'no-referrer'
+                return response
 
         if any(normalized_path == prefix.rstrip('/') or normalized_path.startswith(prefix) for prefix in PASS_THROUGH_PREFIXES):
             return None

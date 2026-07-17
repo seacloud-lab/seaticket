@@ -1,4 +1,6 @@
 import time
+import json
+from uuid import uuid4
 
 import jwt
 import pytest
@@ -13,6 +15,7 @@ from seahub.portal.apis import (
 )
 from seahub.portal.models import PortalExternalSSOProvider, ProjectExternalUser
 from seahub.portal.views import portal_external_sso_login_view
+from seahub.project.models import Projects, Workspaces
 
 
 def build_sso_request(path):
@@ -23,17 +26,28 @@ def build_sso_request(path):
     return request
 
 
-def build_sso_token(project_uuid, provider_key, secret, **overrides):
+def build_sso_token(provider_id, secret, **overrides):
     payload = {
-        'iss': provider_key,
-        'sub': 'third-party-user-1',
+        'iss': provider_id,
         'email': 'external@example.com',
-        'aud': str(project_uuid),
         'iat': int(time.time()),
         'exp': int(time.time()) + 60,
     }
     payload.update(overrides)
     return jwt.encode(payload, secret, algorithm='HS256')
+
+
+def create_portal_project():
+    owner = f'owner_{uuid4().hex[:6]}@example.com'
+    workspace = Workspaces.objects.create(owner=owner, org_id=1)
+    project = Projects.objects.create_project(
+        username=owner,
+        workspace=workspace,
+        name=f'proj-{uuid4().hex[:6]}',
+    )
+    project.settings = json.dumps({'portal': {'enable_portal': True}})
+    project.save(update_fields=['settings'])
+    return project
 
 
 @pytest.mark.django_db
@@ -44,7 +58,7 @@ class TestPortalExternalSSOProvidersView:
         request = factory.post(
             f'/api/v1/portal/{real_project.uuid}/external-sso-providers/',
             data={
-                'provider_key': 'customer',
+                'provider_id': ' Customer ',
                 'name': 'Customer system',
                 'secret': 's' * 32,
             },
@@ -55,11 +69,11 @@ class TestPortalExternalSSOProvidersView:
         response = PortalExternalSSOProvidersView.as_view()(request, project_uuid=str(real_project.uuid))
 
         assert response.status_code == 201
-        assert response.data['provider_key'] == 'customer'
+        assert response.data['provider_id'] == 'customer'
         assert response.data['secret'] == 's' * 32
         assert response.data['login_url'].endswith('/external/sso/customer/')
 
-        provider = PortalExternalSSOProvider.objects.get(project_uuid=str(real_project.uuid), provider_key='customer')
+        provider = PortalExternalSSOProvider.objects.get(project_uuid=str(real_project.uuid), provider_id='customer')
         assert provider.secret != 's' * 32
         assert provider.get_secret() == 's' * 32
 
@@ -68,13 +82,70 @@ class TestPortalExternalSSOProvidersView:
         response = PortalExternalSSOProvidersView.as_view()(request, project_uuid=str(real_project.uuid))
 
         assert response.status_code == 200
-        assert response.data['providers'][0]['provider_key'] == 'customer'
+        assert response.data['providers'][0]['provider_id'] == 'customer'
         assert 'secret' not in response.data['providers'][0]
+
+    @pytest.mark.parametrize('secret', ['s' * 31, 's' * 129, '\u5bc6' * 32])
+    def test_create_rejects_invalid_secret(self, factory, project_creator, real_project, secret):
+        request = factory.post(
+            f'/api/v1/portal/{real_project.uuid}/external-sso-providers/',
+            data={
+                'provider_id': 'customer',
+                'name': 'Customer system',
+                'secret': secret,
+            },
+            format='json',
+        )
+        request.user = project_creator
+
+        response = PortalExternalSSOProvidersView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert response.status_code == 400
+        assert not PortalExternalSSOProvider.objects.filter(project_uuid=str(real_project.uuid)).exists()
+
+    def test_create_rejects_invalid_provider_id(self, factory, project_creator, real_project):
+        request = factory.post(
+            f'/api/v1/portal/{real_project.uuid}/external-sso-providers/',
+            data={
+                'provider_id': 'customer/system',
+                'name': 'Customer system',
+            },
+            format='json',
+        )
+        request.user = project_creator
+
+        response = PortalExternalSSOProvidersView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert response.status_code == 400
+        assert not PortalExternalSSOProvider.objects.filter(project_uuid=str(real_project.uuid)).exists()
+
+    def test_reset_rejects_invalid_secret(self, factory, project_creator, real_project):
+        provider = PortalExternalSSOProvider(
+            project_uuid=str(real_project.uuid),
+            provider_id='plus',
+            name='Plus',
+        )
+        provider.reset_secret('p' * 32)
+        provider.save()
+        request = factory.post(
+            f'/api/v1/portal/{real_project.uuid}/external-sso-providers/plus/reset-secret/',
+            data={'secret': 's' * 129},
+            format='json',
+        )
+        request.user = project_creator
+
+        response = PortalExternalSSOProviderResetSecretView.as_view()(
+            request, project_uuid=str(real_project.uuid), provider_id='plus'
+        )
+
+        assert response.status_code == 400
+        provider.refresh_from_db()
+        assert provider.get_secret() == 'p' * 32
 
     def test_update_toggle_reset_and_delete(self, factory, project_creator, real_project):
         provider = PortalExternalSSOProvider(
             project_uuid=str(real_project.uuid),
-            provider_key='plus',
+            provider_id='plus',
             name='Plus',
             enabled=True,
         )
@@ -87,7 +158,7 @@ class TestPortalExternalSSOProvidersView:
             format='json',
         )
         request.user = project_creator
-        response = PortalExternalSSOProviderView.as_view()(request, project_uuid=str(real_project.uuid), provider_key='plus')
+        response = PortalExternalSSOProviderView.as_view()(request, project_uuid=str(real_project.uuid), provider_id='plus')
         assert response.status_code == 200
         assert response.data['enabled'] is False
 
@@ -97,7 +168,7 @@ class TestPortalExternalSSOProvidersView:
             format='json',
         )
         request.user = project_creator
-        response = PortalExternalSSOProviderResetSecretView.as_view()(request, project_uuid=str(real_project.uuid), provider_key='plus')
+        response = PortalExternalSSOProviderResetSecretView.as_view()(request, project_uuid=str(real_project.uuid), provider_id='plus')
         assert response.status_code == 200
         assert len(response.data['secret']) == 64
         provider.refresh_from_db()
@@ -107,7 +178,7 @@ class TestPortalExternalSSOProvidersView:
             f'/api/v1/portal/{real_project.uuid}/external-sso-providers/plus/',
         )
         request.user = project_creator
-        response = PortalExternalSSOProviderView.as_view()(request, project_uuid=str(real_project.uuid), provider_key='plus')
+        response = PortalExternalSSOProviderView.as_view()(request, project_uuid=str(real_project.uuid), provider_id='plus')
         assert response.status_code == 200
         assert not PortalExternalSSOProvider.objects.filter(pk=provider.pk).exists()
 
@@ -119,19 +190,21 @@ class TestPortalExternalSSOLoginView:
         secret = 'x' * 32
         provider = PortalExternalSSOProvider(
             project_uuid=str(real_project.uuid),
-            provider_key='plus',
+            provider_id='plus',
             name='Plus',
             enabled=True,
         )
         provider.reset_secret(secret)
         provider.save()
-        token = build_sso_token(real_project.uuid, 'plus', secret)
+        token = build_sso_token('plus', secret)
         request = build_sso_request(f'/portal-external/sso/plus/{real_project.uuid}/?token={token}')
 
         response = portal_external_sso_login_view(request, 'plus', str(real_project.uuid))
 
         assert response.status_code == 302
         assert response['Location'] == f'/portal/{real_project.uuid}/'
+        assert response['Cache-Control'] == 'no-store'
+        assert response['Referrer-Policy'] == 'no-referrer'
         ext_user = ProjectExternalUser.objects.get(
             project_uuid=str(real_project.uuid),
             email='external@example.com',
@@ -150,13 +223,13 @@ class TestPortalExternalSSOLoginView:
         secret = 'x' * 32
         provider = PortalExternalSSOProvider(
             project_uuid=str(real_project.uuid),
-            provider_key='plus',
+            provider_id='plus',
             name='Plus',
             enabled=True,
         )
         provider.reset_secret(secret)
         provider.save()
-        token = build_sso_token(real_project.uuid, 'plus', secret)
+        token = build_sso_token('plus', secret, sub='third-party-user-1')
         request = build_sso_request(f'/portal-external/sso/plus/{real_project.uuid}/?token={token}')
 
         response = portal_external_sso_login_view(request, 'plus', str(real_project.uuid))
@@ -169,42 +242,71 @@ class TestPortalExternalSSOLoginView:
         secret = 'x' * 32
         provider = PortalExternalSSOProvider(
             project_uuid=str(real_project.uuid),
-            provider_key='plus',
+            provider_id='plus',
             name='Plus',
             enabled=True,
         )
         provider.reset_secret(secret)
         provider.save()
-        token = build_sso_token(real_project.uuid, 'plus', secret, exp=int(time.time()) - 1)
+        token = build_sso_token('plus', secret, exp=int(time.time()) - 1)
         request = build_sso_request(f'/portal-external/sso/plus/{real_project.uuid}/?token={token}')
 
         response = portal_external_sso_login_view(request, 'plus', str(real_project.uuid))
 
         assert response.status_code == 200
+        assert response['Cache-Control'] == 'no-store'
+        assert response['Referrer-Policy'] == 'no-referrer'
         assert not ProjectExternalUser.objects.filter(project_uuid=str(real_project.uuid)).exists()
 
-    def test_login_rejects_wrong_audience(self, real_project):
+    def test_login_rejects_token_lifetime_over_300_seconds(self, real_project):
         secret = 'x' * 32
         provider = PortalExternalSSOProvider(
             project_uuid=str(real_project.uuid),
-            provider_key='plus',
+            provider_id='plus',
             name='Plus',
             enabled=True,
         )
         provider.reset_secret(secret)
         provider.save()
-        token = build_sso_token(real_project.uuid, 'plus', secret, aud='another-project')
+        now = int(time.time())
+        token = build_sso_token('plus', secret, iat=now, exp=now + 301)
         request = build_sso_request(f'/portal-external/sso/plus/{real_project.uuid}/?token={token}')
 
         response = portal_external_sso_login_view(request, 'plus', str(real_project.uuid))
 
         assert response.status_code == 200
         assert not ProjectExternalUser.objects.filter(project_uuid=str(real_project.uuid)).exists()
+
+    def test_same_provider_id_in_different_projects_uses_independent_secret(self, real_project):
+        other_project = create_portal_project()
+        provider = PortalExternalSSOProvider(
+            project_uuid=str(real_project.uuid),
+            provider_id='plus',
+            name='Plus',
+            enabled=True,
+        )
+        provider.reset_secret('a' * 32)
+        provider.save()
+        other_provider = PortalExternalSSOProvider(
+            project_uuid=str(other_project.uuid),
+            provider_id='plus',
+            name='Plus',
+            enabled=True,
+        )
+        other_provider.reset_secret('b' * 32)
+        other_provider.save()
+        token = build_sso_token('plus', 'a' * 32)
+        request = build_sso_request(f'/portal-external/sso/plus/{other_project.uuid}/?token={token}')
+
+        response = portal_external_sso_login_view(request, 'plus', str(other_project.uuid))
+
+        assert response.status_code == 200
+        assert not ProjectExternalUser.objects.filter(project_uuid=str(other_project.uuid)).exists()
 
     def test_login_rejects_disabled_provider(self, real_project):
         provider = PortalExternalSSOProvider(
             project_uuid=str(real_project.uuid),
-            provider_key='plus',
+            provider_id='plus',
             name='Plus',
             enabled=False,
         )

@@ -29,6 +29,15 @@ SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
 logger = logging.getLogger(__name__)
 
+PORTAL_EXTERNAL_SSO_TOKEN_MAX_LIFETIME = 300
+
+
+def _render_portal_external_sso_error(request, message):
+    response = render_error(request, message)
+    response['Cache-Control'] = 'no-store'
+    response['Referrer-Policy'] = 'no-referrer'
+    return response
+
 
 def _get_external_session_user(request, project_uuid):
     ext_username = request.session.get('portal_external_username')
@@ -281,54 +290,58 @@ def portal_external_invitation_accept_view(request, token, project_uuid):
     return HttpResponseRedirect(redirect_url)
 
 
-def portal_external_sso_login_view(request, provider_key, project_uuid):
+def portal_external_sso_login_view(request, provider_id, project_uuid):
     project, portal_settings = get_request_project_and_portal_settings(request, project_uuid)
     if not project:
-        raise Http404
+        response = _render_portal_external_sso_error(request, _('This project does not exist'))
+        response.status_code = 404
+        return response
     if not portal_settings.get('enable_portal'):
-        return render_error(request, _('Portal is not enabled'))
+        return _render_portal_external_sso_error(request, _('Portal is not enabled'))
 
-    provider = PortalExternalSSOProvider.objects.get_by_project_uuid_and_key(project_uuid, provider_key)
+    provider = PortalExternalSSOProvider.objects.filter(project_uuid=project_uuid, provider_id=provider_id).first()
     if not provider or not provider.enabled:
-        return render_error(request, _('This login provider is unavailable.'))
+        return _render_portal_external_sso_error(request, _('This login provider is unavailable.'))
 
     login_token = request.GET.get('token', '')
     if not login_token or len(login_token) > 4096:
-        return render_error(request, _('Login link is invalid.'))
+        return _render_portal_external_sso_error(request, _('Login link is invalid.'))
 
     try:
         payload = jwt.decode(
             login_token,
             provider.get_secret(),
             algorithms=['HS256'],
-            audience=str(project_uuid),
-            issuer=provider.provider_key,
+            issuer=provider.provider_id,
             leeway=30,
             options={
-                'require': ['iss', 'sub', 'email', 'aud', 'iat', 'exp'],
+                'require': ['iss', 'email', 'iat', 'exp'],
+                'verify_aud': False,
             },
         )
     except jwt.ExpiredSignatureError:
-        return render_error(request, _('Login link has expired. Please return to the source system and try again.'))
+        return _render_portal_external_sso_error(request, _('Login link has expired. Please return to the source system and try again.'))
     except jwt.PyJWTError:
-        logger.warning('Portal external SSO token validation failed: project=%s provider=%s',
-                       project_uuid, provider.provider_key)
-        return render_error(request, _('Login link is invalid.'))
+        logger.warning('Portal external SSO token validation failed: project=%s provider=%s',project_uuid, provider.provider_id)
+        return _render_portal_external_sso_error(request, _('Login link is invalid.'))
     except Exception:
-        logger.exception('Failed to load portal external SSO provider secret: project=%s provider=%s',
-                         project_uuid, provider.provider_key)
-        return render_error(request, _('Unable to sign in. Please try again later.'))
+        logger.exception('Failed to load portal external SSO provider secret: project=%s provider=%s',project_uuid, provider.provider_id)
+        return _render_portal_external_sso_error(request, _('Unable to sign in. Please try again later.'))
 
-    external_user_id = payload.get('sub')
     raw_email = payload.get('email')
-    if not isinstance(external_user_id, str) or not external_user_id or not isinstance(raw_email, str):
-        return render_error(request, _('Login link is invalid.'))
+    issued_at = payload.get('iat')
+    expires_at = payload.get('exp')
+    if not isinstance(raw_email, str):
+        return _render_portal_external_sso_error(request, _('Login link is invalid.'))
+    if not isinstance(issued_at, int) or not isinstance(expires_at, int) or \
+            expires_at <= issued_at or expires_at - issued_at > PORTAL_EXTERNAL_SSO_TOKEN_MAX_LIFETIME:
+        return _render_portal_external_sso_error(request, _('Login link is invalid.'))
     email = raw_email.strip().lower()
     if not is_valid_email(email):
-        return render_error(request, _('Login link is invalid.'))
+        return _render_portal_external_sso_error(request, _('Login link is invalid.'))
 
     try:
-        ext_user, created = ProjectExternalUser.objects.get_or_create(
+        ext_user, _created = ProjectExternalUser.objects.get_or_create(
             email=email,
             project_uuid=str(project_uuid),
             defaults={
@@ -336,18 +349,20 @@ def portal_external_sso_login_view(request, provider_key, project_uuid):
                 'activated': True,
             },
         )
-        if not created and not ext_user.activated:
+        if not ext_user.activated:
             ext_user.activated = True
             ext_user.save(update_fields=['activated'])
     except Exception:
-        logger.exception('Failed to create portal external user from SSO: project=%s provider=%s',
-                         project_uuid, provider.provider_key)
-        return render_error(request, _('Unable to sign in. Please try again later.'))
+        logger.exception('Failed to create portal external user from SSO: project=%s provider=%s',project_uuid, provider.provider_id)
+        return _render_portal_external_sso_error(request, _('Unable to sign in. Please try again later.'))
 
     request.session.cycle_key()
     request.session['portal_external_username'] = ext_user.username
     request.session['portal_external_project_uuid'] = str(project_uuid)
-    return redirect(portal_path(request, project_uuid))
+    response = redirect(portal_path(request, project_uuid))
+    response['Cache-Control'] = 'no-store'
+    response['Referrer-Policy'] = 'no-referrer'
+    return response
 
 
 @login_required

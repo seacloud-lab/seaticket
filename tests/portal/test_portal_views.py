@@ -289,6 +289,24 @@ def test_custom_domain_external_accept_path_rewrites_to_bound_invitation(factory
 
 
 @pytest.mark.django_db
+def test_custom_domain_external_sso_path_rewrites_to_bound_provider(factory, real_project):
+    PortalCustomDomain.objects.create(
+        domain='support.local.test',
+        project_uuid=str(real_project.uuid),
+        verified=True,
+    )
+    request = factory.get('/external/sso/plus/?token=jwt', HTTP_HOST='support.local.test')
+
+    response = process_portal_domain_request(request)
+
+    assert response is None
+    assert request.path_info == f'/portal-external/sso/plus/{real_project.uuid}/'
+    assert request.GET['token'] == 'jwt'
+    assert request.portal_domain.domain_type == PORTAL_DOMAIN_TYPE_CUSTOM
+    assert request.portal_domain.binding.project_uuid == str(real_project.uuid)
+
+
+@pytest.mark.django_db
 def test_custom_domain_portal_chat_image_path_passes_through(factory, real_project):
     PortalCustomDomain.objects.create(
         domain='support.local.test',
@@ -349,3 +367,29 @@ def test_service_domain_alias_redirects_to_verified_custom_domain(factory, real_
         'project_uuid': project_uuid,
         'verified': True,
     }
+
+
+@pytest.mark.django_db
+def test_service_domain_alias_sso_redirect_disables_referrer_and_cache(factory, real_project, settings):
+    settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
+    project_uuid = str(real_project.uuid)
+    PortalDomainAlias.objects.create(
+        prefix='my-brand',
+        project_uuid=project_uuid,
+    )
+    PortalCustomDomain.objects.create(
+        domain='support.local.test',
+        project_uuid=project_uuid,
+        verified=True,
+    )
+    request = factory.get(
+        '/external/sso/plus/?token=jwt',
+        HTTP_HOST='my-brand.seaticket-portal.test',
+    )
+
+    response = process_portal_domain_request(request)
+
+    assert response.status_code == 302
+    assert response['Location'] == 'http://support.local.test/external/sso/plus/?token=jwt'
+    assert response['Cache-Control'] == 'no-store'
+    assert response['Referrer-Policy'] == 'no-referrer'

@@ -3,8 +3,10 @@ from io import BytesIO
 from unittest.mock import Mock, MagicMock, patch
 
 import pytest
+from django.contrib.auth.models import AnonymousUser
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.cache import cache
+from django.test import override_settings
 
 from seahub.project.models import Projects
 from seahub.portal.apis import (
@@ -15,6 +17,8 @@ from seahub.portal.apis import (
     PortalTagsView,
     PortalIssuesView,
     PortalIssueView,
+    PortalIssueCommentsView,
+    PortalIssueCommentView,
     PortalIssueMetadataView,
     PortalMyIssuesView,
     PortalIssueTrashAPIView,
@@ -26,7 +30,8 @@ from seahub.portal.apis import (
     PortalPreviewTokenView,
     SQLGeneratorOptionInvalidError,
 )
-from seahub.portal.models import PortalCustomDomain, PortalDomainAlias, PortalExternalInvitation, get_portal_tls_ask_cache_key
+from seahub.portal.models import PortalCustomDomain, PortalDomainAlias, PortalExternalInvitation, ProjectExternalUser, \
+    get_portal_tls_ask_cache_key
 from seahub.portal.utils import load_portal_preview_token
 from seahub.portal.portal_issue_types import PortalIssueTypeAPIView
 from seahub.portal.portal_issue_substates import PortalIssueSubstateAPIView
@@ -45,6 +50,15 @@ def _set_portal_settings(project, *, enable_portal=True, allow_anonymous=False,
     settings_dict['portal'] = portal
     project.settings = json.dumps(settings_dict)
     project.save(update_fields=['settings'])
+
+
+def _build_external_request(factory, method, path, project_uuid, username, data=None, format=None):
+    request_method = getattr(factory, method)
+    request = request_method(path, data=data, format=format) if data is not None else request_method(path)
+    request.user = AnonymousUser()
+    request.session['portal_external_username'] = username
+    request.session['portal_external_project_uuid'] = str(project_uuid)
+    return request
 
 
 class TestPortalIssuesView:
@@ -1221,6 +1235,36 @@ class TestPortalIssuesViewDelete:
 @pytest.mark.django_db
 class TestPortalIssueViewPut:
 
+    def test_external_user_cannot_link_ticket(self, factory, real_project):
+        ext_user = ProjectExternalUser.objects.create(
+            project_uuid=str(real_project.uuid),
+            email='external-user@example.com',
+            username='external-user',
+            activated=True,
+        )
+        request = _build_external_request(
+            factory,
+            'put',
+            f'/api/v1/portal/{real_project.uuid}/issues/1/',
+            real_project.uuid,
+            ext_user.username,
+            data={'linked_ticket': 10},
+            format='json',
+        )
+        issue = {'_pk': 1, 'creator': ext_user.username, 'linked_ticket': None}
+        seadb_api = Mock()
+
+        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.portal.apis.get_portal_issue', return_value=(issue, {})), \
+                patch('seahub.portal.apis.get_ticket') as get_ticket_mock:
+            response = PortalIssueView.as_view()(
+                request, project_uuid=str(real_project.uuid), issue_id=1
+            )
+
+        assert response.status_code == 403
+        get_ticket_mock.assert_not_called()
+        seadb_api.update_rows.assert_not_called()
+
     def test_link_ticket_success(self, factory, project_creator, real_project):
         project = real_project
         request = factory.put(
@@ -1473,3 +1517,154 @@ class TestPortalIssueSubstateAPIView:
         assert update_data['description'] == 'Updated description'
         assert update_data['color'] == '#000000'
         assert update_data['text_color'] == '#ffffff'
+
+
+@pytest.mark.django_db
+@override_settings(IS_PORTAL_MODE=True)
+class TestExternalPortalIssueOwnership:
+
+    def _create_external_user(self, project, username='external-user'):
+        return ProjectExternalUser.objects.create(
+            project_uuid=str(project.uuid),
+            email=f'{username}@example.com',
+            username=username,
+            activated=True,
+        )
+
+    def test_issue_detail_rejects_another_external_users_issue(self, factory, real_project):
+        ext_user = self._create_external_user(real_project)
+        request = _build_external_request(
+            factory,
+            'get',
+            f'/api/v1/portal/{real_project.uuid}/issues/1/',
+            real_project.uuid,
+            ext_user.username,
+        )
+
+        with patch(
+            'seahub.portal.apis.list_portal_issue_comments_records',
+            return_value=({'_pk': 1, 'creator': 'another-external-user'}, [], ''),
+        ):
+            response = PortalIssueView.as_view()(request, project_uuid=str(real_project.uuid), issue_id=1)
+
+        assert response.status_code == 403
+
+    def test_issue_detail_allows_own_external_user(self, factory, real_project):
+        ext_user = self._create_external_user(real_project)
+        request = _build_external_request(
+            factory,
+            'get',
+            f'/api/v1/portal/{real_project.uuid}/issues/1/',
+            real_project.uuid,
+            ext_user.username,
+        )
+
+        with patch(
+            'seahub.portal.apis.list_portal_issue_comments_records',
+            return_value=({'_pk': 1, 'creator': ext_user.username}, [], ''),
+        ):
+            response = PortalIssueView.as_view()(request, project_uuid=str(real_project.uuid), issue_id=1)
+
+        assert response.status_code == 200
+
+    def test_issue_detail_allows_team_member_to_access_another_users_issue(
+            self, factory, project_creator, real_project):
+        request = factory.get(f'/api/v1/portal/{real_project.uuid}/issues/1/')
+        request.user = project_creator
+
+        with patch(
+            'seahub.portal.apis.list_portal_issue_comments_records',
+            return_value=({'_pk': 1, 'creator': 'another-user'}, [], ''),
+        ):
+            response = PortalIssueView.as_view()(request, project_uuid=str(real_project.uuid), issue_id=1)
+
+        assert response.status_code == 200
+
+    def test_comments_reject_another_external_users_issue(self, factory, real_project):
+        ext_user = self._create_external_user(real_project)
+        request = _build_external_request(
+            factory,
+            'get',
+            f'/api/v1/portal/{real_project.uuid}/issues/1/comments/',
+            real_project.uuid,
+            ext_user.username,
+        )
+
+        with patch(
+            'seahub.portal.apis.get_portal_issue',
+            return_value=({'_pk': 1, 'creator': 'another-external-user'}, {}),
+        ), patch('seahub.portal.apis.get_portal_issue_comments') as comments_mock:
+            response = PortalIssueCommentsView.as_view()(request, project_uuid=str(real_project.uuid), issue_id=1)
+
+        assert response.status_code == 403
+        comments_mock.assert_not_called()
+
+    def test_comment_creation_rejects_another_external_users_issue(self, factory, real_project):
+        ext_user = self._create_external_user(real_project)
+        request = _build_external_request(
+            factory,
+            'post',
+            f'/api/v1/portal/{real_project.uuid}/issues/1/comments/',
+            real_project.uuid,
+            ext_user.username,
+            data={'content': json.dumps({'text': 'comment'})},
+            format='multipart',
+        )
+
+        with patch(
+            'seahub.portal.apis.get_portal_issue',
+            return_value=({'_pk': 1, 'creator': 'another-external-user'}, {}),
+        ):
+            response = PortalIssueCommentsView.as_view()(request, project_uuid=str(real_project.uuid), issue_id=1)
+
+        assert response.status_code == 403
+
+    def test_comment_update_rejects_another_external_users_issue(self, factory, real_project):
+        ext_user = self._create_external_user(real_project)
+        request = _build_external_request(
+            factory,
+            'put',
+            f'/api/v1/portal/{real_project.uuid}/issues/1/comments/2/',
+            real_project.uuid,
+            ext_user.username,
+            data={'content': json.dumps({'text': 'updated comment'})},
+            format='json',
+        )
+
+        with patch(
+            'seahub.portal.apis.get_portal_issue',
+            return_value=({'_pk': 1, 'creator': 'another-external-user'}, {}),
+        ), patch('seahub.portal.apis.get_portal_issue_comment_by_pk') as comment_mock:
+            response = PortalIssueCommentView.as_view()(
+                request,
+                project_uuid=str(real_project.uuid),
+                issue_id=1,
+                comment_id=2,
+            )
+
+        assert response.status_code == 403
+        comment_mock.assert_not_called()
+
+    def test_comment_delete_rejects_another_external_users_issue(self, factory, real_project):
+        ext_user = self._create_external_user(real_project)
+        request = _build_external_request(
+            factory,
+            'delete',
+            f'/api/v1/portal/{real_project.uuid}/issues/1/comments/2/',
+            real_project.uuid,
+            ext_user.username,
+        )
+
+        with patch(
+            'seahub.portal.apis.get_portal_issue',
+            return_value=({'_pk': 1, 'creator': 'another-external-user'}, {}),
+        ), patch('seahub.portal.apis.get_portal_issue_comment_by_pk') as comment_mock:
+            response = PortalIssueCommentView.as_view()(
+                request,
+                project_uuid=str(real_project.uuid),
+                issue_id=1,
+                comment_id=2,
+            )
+
+        assert response.status_code == 403
+        comment_mock.assert_not_called()
