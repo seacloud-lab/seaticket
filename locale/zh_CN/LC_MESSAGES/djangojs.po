@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: seaqa-web\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-07-06 16:06+0800\n"
-"PO-Revision-Date: 2026-07-06 09:24\n"
+"PO-Revision-Date: 2026-07-17 02:50\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Language: zh\n"
@@ -3358,7 +3358,7 @@ msgstr "常规任务"
 #: frontend/src/project/main-panel/ask/models/attachment-object.js:42
 #: frontend/src/project/main-panel/connections/view/connection/records/index.js:90
 msgid "Discourse forum"
-msgstr "讨论论坛"
+msgstr "Discourse 论坛"
 
 #: frontend/src/project/main-panel/ask/sessions/index.js:61
 msgid "No chats"
@@ -4293,11 +4293,11 @@ msgstr "GitHub 问题"
 
 #: frontend/src/project/main-panel/connections/view/connection/records/index.js:88
 msgid "discourse forum"
-msgstr "讨论论坛"
+msgstr "Discourse 论坛"
 
 #: frontend/src/project/main-panel/connections/view/connection/records/index.js:89
 msgid "discourse forums"
-msgstr "讨论论坛"
+msgstr "Discourse 论坛"
 
 #: frontend/src/project/main-panel/connections/view/connection/records/index.js:96
 msgid "general task"
