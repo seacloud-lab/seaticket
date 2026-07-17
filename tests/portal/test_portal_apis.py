@@ -6,7 +6,6 @@ import pytest
 from django.contrib.auth.models import AnonymousUser
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.cache import cache
-from django.test import override_settings
 
 from seahub.project.models import Projects
 from seahub.portal.apis import (
@@ -1520,8 +1519,11 @@ class TestPortalIssueSubstateAPIView:
 
 
 @pytest.mark.django_db
-@override_settings(IS_PORTAL_MODE=True)
 class TestExternalPortalIssueOwnership:
+
+    @pytest.fixture(autouse=True)
+    def _enable_portal_mode(self, settings):
+        settings.IS_PORTAL_MODE = True
 
     def _create_external_user(self, project, username='external-user'):
         return ProjectExternalUser.objects.create(

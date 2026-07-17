@@ -6,7 +6,7 @@ import jwt
 import pytest
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.sessions.middleware import SessionMiddleware
-from django.test import RequestFactory, override_settings
+from django.test import RequestFactory
 
 from seahub.portal.apis import (
     PortalExternalSSOProviderResetSecretView,
@@ -23,6 +23,8 @@ def build_sso_request(path):
     SessionMiddleware(lambda _request: None).process_request(request)
     request.session.save()
     request.user = AnonymousUser()
+    request.is_mobile = False
+    request.is_tablet = False
     return request
 
 
@@ -51,8 +53,11 @@ def create_portal_project():
 
 
 @pytest.mark.django_db
-@override_settings(PORTAL_SERVICE_ROOT_DOMAIN='seaticket-portal.test')
 class TestPortalExternalSSOProvidersView:
+
+    @pytest.fixture(autouse=True)
+    def _set_portal_service_root_domain(self, settings):
+        settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
 
     def test_create_returns_secret_once_and_list_hides_secret(self, factory, project_creator, real_project):
         request = factory.post(
