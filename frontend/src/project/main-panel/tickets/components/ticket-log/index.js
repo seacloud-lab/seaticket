@@ -208,7 +208,6 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
     const formatDateValue = (val) => {
       const dateValue = String(val || '').trim();
       if (!dateValue) return null;
-      if (dateValue.includes('T')) return dateValue.split('T')[0];
       const date = dayjs(dateValue);
       if (date.isValid()) {
         return date.format('YYYY-MM-DD');
