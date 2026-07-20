@@ -164,9 +164,7 @@ const RunStatisticsDialog = ({ run: initialRun, runId, onToggle }) => {
               </div>
               <div className="summary-item">
                 <span className="summary-label">{gettext('Total tokens')}:</span>
-                <span className="summary-value">
-                  {totals.totalTokens} (↑{totals.inputTokens}, ↓{totals.outputTokens}, ↻{totals.cachedTokens})
-                </span>
+                <span className="summary-value">{totals.totalTokens}</span>
               </div>
             </div>
           </div>
@@ -181,8 +179,8 @@ const RunStatisticsDialog = ({ run: initialRun, runId, onToggle }) => {
                     <th>{gettext('Tool')}</th>
                     <th>{gettext('Duration')} (s)</th>
                     <th>{gettext('Input tokens')}</th>
+                    <th>{gettext('Cached input tokens')}</th>
                     <th>{gettext('Output tokens')}</th>
-                    <th>{gettext('Cached tokens')}</th>
                     <th>{gettext('Total tokens')}</th>
                   </tr>
                 </thead>
@@ -193,8 +191,8 @@ const RunStatisticsDialog = ({ run: initialRun, runId, onToggle }) => {
                       <td className="tool-name-cell" title={step.toolNames.join(', ')}>{step.toolNames.join(', ')}</td>
                       <td>{step.durationSec}</td>
                       <td>{step.inputTokens}</td>
-                      <td>{step.outputTokens}</td>
                       <td>{step.cachedTokens}</td>
+                      <td>{step.outputTokens}</td>
                       <td>{step.totalTokens}</td>
                     </tr>
                   ))}
@@ -204,8 +202,8 @@ const RunStatisticsDialog = ({ run: initialRun, runId, onToggle }) => {
                     <td colSpan="2"><strong>{gettext('Total')}</strong></td>
                     <td><strong>{totals.durationSec}</strong></td>
                     <td><strong>{totals.inputTokens}</strong></td>
-                    <td><strong>{totals.outputTokens}</strong></td>
                     <td><strong>{totals.cachedTokens}</strong></td>
+                    <td><strong>{totals.outputTokens}</strong></td>
                     <td><strong>{totals.totalTokens}</strong></td>
                   </tr>
                 </tfoot>

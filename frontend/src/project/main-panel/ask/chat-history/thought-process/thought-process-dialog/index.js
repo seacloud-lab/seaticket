@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { Modal, ModalBody } from 'reactstrap';
-import { ModalHeader } from '@/components';
+import { useEffect, useRef, useState } from 'react';
+import { Label, Modal, ModalBody } from 'reactstrap';
+import { ModalHeader, Tooltip } from '@/components';
 import { gettext } from '@/constants';
 import ProcessDetails from '@/project/components/thought-process/process-details';
 import { isObject } from '@/utils/type-detection';
@@ -11,6 +11,50 @@ import { CHAT_MESSAGE_TYPE, THOUGHT_PROCESS_TYPE } from '../../../constants';
 import { hasOwnProperty } from '@/utils/object-utils';
 
 import './index.css';
+
+const TokenUsageValue = ({ label, tokenUsage = {} }) => {
+  const targetRef = useRef(null);
+
+  return (
+    <Label className="seaqa-ai-thought-process-content-title token-usage-statistic">
+      <span className="description">{label}:</span>
+      <span ref={targetRef} className="value token-usage-value" tabIndex={0}>
+        {tokenUsage.total_tokens || 0}
+      </span>
+      <Tooltip target={targetRef} placement="top" innerClassName="token-usage-tooltip">
+        <span className="token-usage-tooltip-row">
+          <span>{gettext('Input tokens')}:</span>
+          <span>{tokenUsage.input_tokens || 0}</span>
+        </span>
+        <span className="token-usage-tooltip-row">
+          <span>{gettext('Cached input tokens')}:</span>
+          <span>{tokenUsage.cached_tokens || 0}</span>
+        </span>
+        <span className="token-usage-tooltip-row">
+          <span>{gettext('Output tokens')}:</span>
+          <span>{tokenUsage.output_tokens || 0}</span>
+        </span>
+      </Tooltip>
+    </Label>
+  );
+};
+
+const getPhaseTokenUsage = (tokenUsage, phase) => ({
+  total_tokens: tokenUsage.total_tokens?.[phase] || 0,
+  input_tokens: tokenUsage.input_tokens?.[phase] || 0,
+  output_tokens: tokenUsage.output_tokens?.[phase] || 0,
+  cached_tokens: tokenUsage.cached_tokens?.[phase] || 0,
+});
+
+const TokenUsageStatistics = ({ tokenUsage }) => {
+  return (
+    <div className="token-usage-statistics">
+      <TokenUsageValue label={gettext('Token usage')} tokenUsage={getPhaseTokenUsage(tokenUsage, 'total')} />
+      <TokenUsageValue label={gettext('Action steps')} tokenUsage={getPhaseTokenUsage(tokenUsage, 'action_steps')} />
+      <TokenUsageValue label={gettext('Answer generation')} tokenUsage={getPhaseTokenUsage(tokenUsage, 'answer_generation')} />
+    </div>
+  );
+};
 
 const getCompletionRetryChildren = (retries = []) => {
   return retries
@@ -247,7 +291,10 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
               staticValue.push(`${gettext('Time usage')}: ${action.time_usage?.toFixed(2) || 0} s`);
             }
             if (action.token_usage) {
-              staticValue.push(`${gettext('Token usage')}: ${action.token_usage.total_tokens || 0} (↑${action.token_usage.input_tokens || 0}, ↓${action.token_usage.output_tokens || 0}, ↻${action.token_usage.cached_tokens || 0})`);
+              staticValue.push({
+                value: action.token_usage,
+                formatter: ({ value }) => <TokenUsageValue label={gettext('Token usage')} tokenUsage={value} />,
+              });
             }
             otherInfos.push({
               name: gettext('Statistics'),
@@ -363,7 +410,10 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
           staticValue.push(`${gettext('Time usage')}: ${final_answer.time_usage?.toFixed(2) || 0 } s`);
         }
         if (final_answer.token_usage) {
-          staticValue.push(`${gettext('Token usage')}: ${final_answer.token_usage.total_tokens || 0} (↑${final_answer.token_usage.input_tokens || 0}, ↓${final_answer.token_usage.output_tokens || 0}, ↻${final_answer.token_usage.cached_tokens || 0})`);
+          staticValue.push({
+            value: final_answer.token_usage,
+            formatter: ({ value }) => <TokenUsageValue label={gettext('Token usage')} tokenUsage={value} />,
+          });
         }
         finalAnswerValue.push({
           name: gettext('Statistics'),
@@ -385,12 +435,10 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
         staticValue.push(`${gettext('Time usage')}: ${time_usage.total?.toFixed(2) || 0} s / ${gettext('Action steps')}: ${time_usage.action_steps?.toFixed(2) || 0} s / ${gettext('Answer generation')}: ${time_usage.answer_generation?.toFixed(2) || 0} s`);
       }
       if (token_usage) {
-        staticValue.push(
-          `${gettext('Token usages')}: ${token_usage.total_tokens?.total || 0} (↑${token_usage.input_tokens?.total || 0}, ↓${token_usage.output_tokens?.total || 0}, ↻${token_usage.cached_tokens?.total || 0}) /
-          ${gettext('Action steps')}: ${token_usage.total_tokens?.action_steps || 0} (↑${token_usage.input_tokens?.action_steps || 0}, ↓${token_usage.output_tokens?.action_steps || 0}, ↻${token_usage.cached_tokens?.action_steps || 0}) /
-          ${gettext('Answer generation')}: ${token_usage.total_tokens?.answer_generation || 0} (↑${token_usage.input_tokens?.answer_generation || 0}, ↓${token_usage.output_tokens?.answer_generation || 0}, ↻${token_usage.cached_tokens?.answer_generation || 0})
-          `
-        );
+        staticValue.push({
+          value: token_usage,
+          formatter: ({ value }) => <TokenUsageStatistics tokenUsage={value} />,
+        });
       }
       value.push({
         ...THOUGHT_PROCESS_TYPE.STATISTICS,
