@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import { ticketsAPI } from '../../../../api';
 import { VIEW_TOOL } from '@/sea-metadata';
-import { gettext } from '@/constants';
 import context from '@/sea-metadata/context';
 import Tickets from '../../components/tickets';
 import { useTicketsPage } from '../../hooks';
@@ -22,10 +21,10 @@ const MyTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBa
     views: [
       {
         _id: 'open',
-        name: gettext('Open'),
+        name: 'Open',
       }, {
         _id: 'closed',
-        name: gettext('Closed'),
+        name: 'Closed',
       },
     ]
   }), []);
