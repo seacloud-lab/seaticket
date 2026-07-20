@@ -121,6 +121,7 @@ export const CONNECTION_FIELD_TYPE = {
   URL: 'url',
   OP: 'op',
   DATE: 'date',
+  SYNC_DATE: 'sync_date',
   LONG_TEXT: 'long_text',
   PASSWORD: 'password',
   CONNECTION_NAME: 'connection_name',

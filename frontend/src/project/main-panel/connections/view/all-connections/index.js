@@ -44,7 +44,7 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
     return [
       { key: 'name', name: gettext('Connection'), type: CONNECTION_FIELD_TYPE.CONNECTION_NAME, width: 0.4 },
       { key: 'sync_status', name: gettext('Sync status'), type: CONNECTION_FIELD_TYPE.SYNC_STATUS, width: 0.2 },
-      { key: 'last_sync_time', name: gettext('Last synced at'), type: CONNECTION_FIELD_TYPE.DATE, width: 0.2 },
+      { key: 'last_sync_time', name: gettext('Last synced at'), type: CONNECTION_FIELD_TYPE.SYNC_DATE, width: 0.2 },
       { key: '', name: '', type: CONNECTION_FIELD_TYPE.EMPTY, width: 0.2 },
       { key: 'op', name: '', type: CONNECTION_FIELD_TYPE.OP, width: 0.1 }
     ].map(column => (
@@ -113,7 +113,7 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
       modifyLocalConnectionsSyncStatus({
         [id]: {
           status: { last_sync_status: CONNECTION_SYNC_STATUS.PENDING },
-          last_sync_time: null,
+          last_sync_time: Date.now()
         }
       });
     }).catch((error) => {

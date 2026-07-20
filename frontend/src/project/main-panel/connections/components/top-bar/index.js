@@ -118,7 +118,7 @@ const TopBar = ({ title, modifyLocalBar }) => {
         }, 3000);
       };
       modifyLocalConnectionsSyncStatus({
-        [connectionID]: { status: { last_sync_status: CONNECTION_SYNC_STATUS.PENDING }, last_sync_time: null }
+        [connectionID]: { status: { last_sync_status: CONNECTION_SYNC_STATUS.PENDING }, last_sync_time: Date.now() }
       });
       onQueryConnectionStatus(connectionID);
     }).catch((error) => {
