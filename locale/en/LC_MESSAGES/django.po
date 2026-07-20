@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: seahub\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-06 16:06+0800\n"
+"POT-Creation-Date: 2026-07-20 15:53+0800\n"
 "PO-Revision-Date: 2013-10-25 07:03+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: English (http://app.transifex.com/haiwen/seahub/language/"
@@ -144,7 +144,7 @@ msgid ""
 "configuration."
 msgstr ""
 
-#: seahub/api2/endpoints/admin/users.py:670 seahub/auth/views.py:368
+#: seahub/api2/endpoints/admin/users.py:670 seahub/auth/views.py:377
 msgid "Unable to reset password."
 msgstr ""
 
@@ -206,8 +206,8 @@ msgstr ""
 
 #: seahub/api2/endpoints/org_admin/settings.py:54
 #: seahub/api2/endpoints/org_admin/settings.py:72
-#: seahub/api2/endpoints/org_admin/settings.py:104 seahub/auth/views.py:317
-#: seahub/auth/views.py:331 seahub/oauth/views.py:253 seahub/oauth/views.py:265
+#: seahub/api2/endpoints/org_admin/settings.py:104 seahub/auth/views.py:326
+#: seahub/auth/views.py:340 seahub/oauth/views.py:253 seahub/oauth/views.py:265
 #: seahub/views/sso.py:98
 msgid "Feature is not enabled."
 msgstr ""
@@ -221,7 +221,7 @@ msgid ""
 msgstr ""
 
 #: seahub/api2/endpoints/org_admin/settings.py:91
-#: seahub/api2/endpoints/user_avatar.py:43 seahub/portal/apis.py:130
+#: seahub/api2/endpoints/user_avatar.py:43 seahub/portal/apis.py:135
 #: seahub/utils/error_msg.py:13
 #, python-format
 msgid ""
@@ -238,51 +238,52 @@ msgstr ""
 
 #: seahub/api2/endpoints/org_admin/users.py:580
 #: seahub/api2/endpoints/org_admin/users.py:622 seahub/auth/forms.py:135
-#: seahub/portal/apis.py:1551
+#: seahub/portal/apis.py:1867
 msgid ""
 "Failed to send email, email service is not properly configured, please "
 "contact administrator."
 msgstr ""
 
-#: seahub/api2/endpoints/project.py:182 seahub/portal/views.py:60
-#: seahub/portal/views.py:150 seahub/portal/views.py:172
-#: seahub/portal/views.py:269 seahub/project/views.py:58
+#: seahub/api2/endpoints/project.py:189 seahub/portal/views.py:66
+#: seahub/portal/views.py:153 seahub/portal/views.py:167
+#: seahub/portal/views.py:192 seahub/portal/views.py:286
+#: seahub/project/views.py:58
 msgid "This project does not exist"
 msgstr ""
 
-#: seahub/api2/endpoints/project.py:344 seahub/api2/endpoints/project.py:362
+#: seahub/api2/endpoints/project.py:323 seahub/api2/endpoints/project.py:341
 #, python-format
 msgid "Project %s already exists in this workspace."
 msgstr ""
 
-#: seahub/api2/endpoints/project.py:359 seahub/api2/endpoints/project.py:506
+#: seahub/api2/endpoints/project.py:338 seahub/api2/endpoints/project.py:488
 msgid "Project name contains illegal characters"
 msgstr ""
 
-#: seahub/api2/endpoints/project.py:403
+#: seahub/api2/endpoints/project.py:382
 msgid "Project name is invalid"
 msgstr ""
 
-#: seahub/api2/endpoints/project.py:423
+#: seahub/api2/endpoints/project.py:402
 #, python-brace-format
 msgid "Project {project_name} not found."
 msgstr ""
 
-#: seahub/api2/endpoints/project.py:427
+#: seahub/api2/endpoints/project.py:406
 #, python-brace-format
 msgid "{new_project_name} exists."
 msgstr ""
 
-#: seahub/api2/endpoints/project.py:463
+#: seahub/api2/endpoints/project.py:442
 #, python-brace-format
 msgid "{target_project_name} exists."
 msgstr ""
 
-#: seahub/api2/endpoints/project.py:486
+#: seahub/api2/endpoints/project.py:465
 msgid "Project prompt contains disallowed tag-like content."
 msgstr ""
 
-#: seahub/api2/endpoints/project.py:492
+#: seahub/api2/endpoints/project.py:471
 msgid ""
 "Ticket processing rules must be text, and cannot contain tag-like content."
 msgstr ""
@@ -401,15 +402,19 @@ msgstr ""
 msgid "A user with this email already exists."
 msgstr ""
 
-#: seahub/auth/views.py:172
+#: seahub/auth/views.py:173
 msgid "This account has been frozen due to too many failed login attempts."
 msgstr ""
 
-#: seahub/auth/views.py:288
+#: seahub/auth/views.py:297
 msgid "Logged out"
 msgstr ""
 
-#: seahub/auth/views.py:387
+#: seahub/auth/views.py:387 seahub/organizations/views.py:231
+msgid "Cloudflare Turnstile check failed. Please refresh and try again."
+msgstr ""
+
+#: seahub/auth/views.py:402
 msgid "Failed to send email, please contact administrator."
 msgstr ""
 
@@ -512,8 +517,8 @@ msgstr ""
 msgid "Can not remove myself"
 msgstr ""
 
-#: seahub/group/views.py:98 seahub/portal/views.py:275
-#: seahub/project/views.py:74
+#: seahub/group/views.py:98 seahub/portal/views.py:171
+#: seahub/portal/views.py:292 seahub/project/views.py:75
 msgid "Permission denied"
 msgstr ""
 
@@ -579,10 +584,10 @@ msgid "Confirm Password"
 msgstr ""
 
 #: seahub/invitations/templates/invitations/token_view.html:30
-#: seahub/templates/organizations/org_register.html:41
+#: seahub/templates/organizations/org_register.html:49
 #: seahub/templates/registration/password_change_form.html:38
 #: seahub/templates/registration/password_reset_confirm.html:172
-#: seahub/templates/registration/password_reset_form.html:46
+#: seahub/templates/registration/password_reset_form.html:54
 #: seahub/templates/registration/password_set_form.html:28
 msgid "Submit"
 msgstr ""
@@ -615,22 +620,22 @@ msgid "Passwords don't match"
 msgstr ""
 
 #: seahub/invitations/views.py:22 seahub/invitations/views.py:32
-#: seahub/invitations/views.py:59 seahub/portal/views.py:233
-#: seahub/portal/views.py:238
+#: seahub/invitations/views.py:59 seahub/portal/views.py:248
+#: seahub/portal/views.py:253
 msgid "Invitation link is invalid or expired."
 msgstr ""
 
-#: seahub/knowledge_base/knowledge_base.py:175 seahub/portal/apis.py:210
-#: seahub/portal/apis.py:603 seahub/portal/apis.py:1256
-#: seahub/project/connections.py:805 seahub/tickets/tickets.py:186
+#: seahub/knowledge_base/knowledge_base.py:175 seahub/portal/apis.py:215
+#: seahub/portal/apis.py:608 seahub/portal/apis.py:1261
+#: seahub/project/connections.py:805 seahub/tickets/tickets.py:183
 msgid "There are errors with the filters. Please correct them."
 msgstr ""
 
-#: seahub/knowledge_base/models.py:89 seahub/project/constants.py:251
-#: seahub/project/constants.py:270 seahub/project/constants.py:289
-#: seahub/project/constants.py:308 seahub/project/constants.py:327
-#: seahub/project/constants.py:346 seahub/project/constants.py:365
-#: seahub/project/constants.py:384
+#: seahub/knowledge_base/models.py:89 seahub/project/constants.py:288
+#: seahub/project/constants.py:307 seahub/project/constants.py:326
+#: seahub/project/constants.py:345 seahub/project/constants.py:364
+#: seahub/project/constants.py:383 seahub/project/constants.py:402
+#: seahub/project/constants.py:421
 msgid "All"
 msgstr ""
 
@@ -738,47 +743,53 @@ msgstr ""
 msgid "Email address is not valid"
 msgstr ""
 
-#: seahub/organizations/views.py:261
+#: seahub/organizations/views.py:273
 msgid "Failed to send email"
 msgstr ""
 
-#: seahub/organizations/views.py:358 seahub/profile/views.py:219
+#: seahub/organizations/views.py:372 seahub/profile/views.py:212
 #: seahub/utils/__init__.py:89
 msgid "Internal Server Error"
 msgstr ""
 
-#: seahub/portal/apis.py:1547
+#: seahub/portal/apis.py:1863
 msgid ""
 "The user is already a member of your team. Cannot invite the user to the "
 "portal."
 msgstr ""
 
-#: seahub/portal/apis.py:1568
+#: seahub/portal/apis.py:1893
 msgid "Support Portal Invitation"
 msgstr ""
 
-#: seahub/portal/apis.py:1686 seahub/templates/portal_login.html:43
+#: seahub/portal/apis.py:2015 seahub/templates/portal_login.html:43
 msgid "If the email is eligible, a login code has been sent."
 msgstr ""
 
-#: seahub/portal/apis.py:1712 seahub/templates/portal/email_login_code.html:4
+#: seahub/portal/apis.py:2041 seahub/templates/portal/email_login_code.html:4
 msgid "Your login code"
 msgstr ""
 
-#: seahub/portal/views.py:70 seahub/portal/views.py:185
-#: seahub/portal/views.py:292 seahub/project/views.py:79
+#: seahub/portal/views.py:74 seahub/portal/views.py:155
+#: seahub/portal/views.py:169 seahub/portal/views.py:198
+#: seahub/portal/views.py:259 seahub/portal/views.py:301
+#: seahub/project/views.py:80
 msgid "Portal is not enabled"
 msgstr ""
 
-#: seahub/portal/views.py:218 seahub/portal/views.py:223
+#: seahub/portal/views.py:162
+msgid "Preview link is invalid or expired."
+msgstr ""
+
+#: seahub/portal/views.py:233 seahub/portal/views.py:238
 msgid "Password invalid"
 msgstr ""
 
-#: seahub/profile/forms.py:24 seahub/profile/views.py:171
-#: seahub/profile/views.py:176 seahub/project/connections.py:394
-#: seahub/project/views.py:118 seahub/project/views.py:150
-#: seahub/project/views.py:174 seahub/project/views.py:217
-#: seahub/project/views.py:273 seahub/project/views.py:327
+#: seahub/profile/forms.py:24 seahub/profile/views.py:164
+#: seahub/profile/views.py:169 seahub/project/connections.py:394
+#: seahub/project/views.py:115 seahub/project/views.py:147
+#: seahub/project/views.py:171 seahub/project/views.py:214
+#: seahub/project/views.py:270 seahub/project/views.py:324
 msgid "Permission denied."
 msgstr ""
 
@@ -806,19 +817,19 @@ msgstr ""
 msgid "Profile"
 msgstr ""
 
-#: seahub/profile/views.py:181
+#: seahub/profile/views.py:174
 msgid "Demo account can not be deleted."
 msgstr ""
 
-#: seahub/profile/views.py:210
+#: seahub/profile/views.py:203
 msgid "The email address has already been bound to another account."
 msgstr ""
 
-#: seahub/profile/views.py:212 seahub/profile/views.py:223
+#: seahub/profile/views.py:205 seahub/profile/views.py:216
 msgid "Back to SeaTicket"
 msgstr ""
 
-#: seahub/profile/views.py:221
+#: seahub/profile/views.py:214
 msgid "Contact email has been updated."
 msgstr ""
 
@@ -826,48 +837,48 @@ msgstr ""
 msgid "Request not found"
 msgstr ""
 
-#: seahub/project/constants.py:173 seahub/project/constants.py:214
-#: seahub/project/constants.py:538
+#: seahub/project/constants.py:210 seahub/project/constants.py:251
+#: seahub/project/constants.py:575
 msgid "Open"
 msgstr ""
 
-#: seahub/project/constants.py:188 seahub/project/constants.py:228
-#: seahub/project/constants.py:553
+#: seahub/project/constants.py:225 seahub/project/constants.py:265
+#: seahub/project/constants.py:590
 msgid "Closed"
 msgstr ""
 
-#: seahub/project/views.py:109 seahub/project/views.py:113
-#: seahub/project/views.py:141 seahub/project/views.py:145
-#: seahub/project/views.py:165 seahub/project/views.py:169
-#: seahub/project/views.py:208 seahub/project/views.py:212
-#: seahub/project/views.py:264 seahub/project/views.py:268
-#: seahub/project/views.py:318 seahub/project/views.py:322
+#: seahub/project/views.py:106 seahub/project/views.py:110
+#: seahub/project/views.py:138 seahub/project/views.py:142
+#: seahub/project/views.py:162 seahub/project/views.py:166
+#: seahub/project/views.py:205 seahub/project/views.py:209
+#: seahub/project/views.py:261 seahub/project/views.py:265
+#: seahub/project/views.py:315 seahub/project/views.py:319
 msgid "Please install through the address provided by sea-ticket."
 msgstr ""
 
-#: seahub/project/views.py:177 seahub/project/views.py:220
+#: seahub/project/views.py:174 seahub/project/views.py:217
 msgid "Linear OAuth settings are invalid."
 msgstr ""
 
-#: seahub/project/views.py:205
+#: seahub/project/views.py:202
 msgid "Invalid Linear OAuth state."
 msgstr ""
 
-#: seahub/project/views.py:234 seahub/project/views.py:238
-#: seahub/project/views.py:246
+#: seahub/project/views.py:231 seahub/project/views.py:235
+#: seahub/project/views.py:243
 msgid "Failed to authorize Linear."
 msgstr ""
 
-#: seahub/project/views.py:279 seahub/project/views.py:333
+#: seahub/project/views.py:276 seahub/project/views.py:330
 msgid "Confluence OAuth settings are invalid."
 msgstr ""
 
-#: seahub/project/views.py:315
+#: seahub/project/views.py:312
 msgid "Invalid Confluence OAuth state."
 msgstr ""
 
-#: seahub/project/views.py:347 seahub/project/views.py:351
-#: seahub/project/views.py:358
+#: seahub/project/views.py:344 seahub/project/views.py:348
+#: seahub/project/views.py:355
 msgid "Failed to authorize Confluence."
 msgstr ""
 
@@ -1033,7 +1044,7 @@ msgstr ""
 msgid "Confirm password"
 msgstr ""
 
-#: seahub/templates/organizations/org_register.html:39
+#: seahub/templates/organizations/org_register.html:42
 #: seahub/templates/registration/registration_form.html:45
 msgid "Subscribe to our newsletter"
 msgstr ""

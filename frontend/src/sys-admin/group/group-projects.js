@@ -30,7 +30,7 @@ const GroupProjects = ({ onCloseSidePanel, groupID }) => {
             { name: '', key: 'icon', width: 44, isFixed: true },
             { name: gettext('Name'), key: 'name', width: 0.18 },
             { name: 'ID', key: 'uuid', width: 0.32 },
-            { name: 'Owner', key: 'owner', width: 0.25, link_to: false },
+            { name: gettext('Owner'), key: 'owner', width: 0.25, link_to: false },
             { name: gettext('Created at'), key: 'created_at', type: 'date', width: 0.15 },
             { name: '', key: 'placeholder', width: 0.1 },
             { name: '', key: 'op', width: 44, isFixed: true }

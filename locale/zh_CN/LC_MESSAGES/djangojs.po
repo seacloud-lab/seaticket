@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: seaqa-web\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-06 16:06+0800\n"
-"PO-Revision-Date: 2026-07-17 02:50\n"
+"POT-Creation-Date: 2026-07-20 15:53+0800\n"
+"PO-Revision-Date: 2026-07-20 08:05\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Language: zh\n"
@@ -18,17 +18,17 @@ msgstr ""
 "X-Crowdin-File: djangojs.po\n"
 "X-Crowdin-File-ID: 6\n"
 
-#: frontend/src/components/account/external-user-account.js:91
 #: frontend/src/components/account/external-user-account.js:92
-#: frontend/src/components/account/external-user-account.js:102
+#: frontend/src/components/account/external-user-account.js:93
 #: frontend/src/components/account/external-user-account.js:103
+#: frontend/src/components/account/external-user-account.js:104
 #: frontend/src/components/account/index.js:196
 #: frontend/src/components/account/index.js:197
 msgid "View profile and more"
 msgstr "查看个人资料"
 
-#: frontend/src/components/account/external-user-account.js:96
-#: frontend/src/components/account/external-user-account.js:109
+#: frontend/src/components/account/external-user-account.js:97
+#: frontend/src/components/account/external-user-account.js:110
 #: frontend/src/components/account/index.js:201
 #: frontend/src/components/account/index.js:207
 #: frontend/src/home/mobile/mobile-mine/index.js:58
@@ -39,7 +39,7 @@ msgstr "查看个人资料"
 msgid "Avatar"
 msgstr "头像"
 
-#: frontend/src/components/account/external-user-account.js:114
+#: frontend/src/components/account/external-user-account.js:115
 #: frontend/src/components/account/index.js:229
 #: frontend/src/home/mobile/mobile-mine/index.js:141
 #: frontend/src/profile-settings/session-logs/index.js:64
@@ -88,7 +88,7 @@ msgstr "AI 积分已使用"
 
 #: frontend/src/components/account/index.js:223
 #: frontend/src/home/mobile/mobile-mine/index.js:123
-#: frontend/src/profile-settings/index.js:198
+#: frontend/src/profile-settings/index.js:200
 #: frontend/src/project/components/account/index.js:56
 msgid "Personal settings"
 msgstr "个人设置"
@@ -105,7 +105,7 @@ msgstr "上月总积分"
 msgid "Month on month changes"
 msgstr "月度环比变化"
 
-#: frontend/src/components/chart/overview/overview.js:127
+#: frontend/src/components/chart/overview/overview.js:128
 #: frontend/src/project/components/ai-reply/utils.js:103
 #: frontend/src/project/main-panel/agent/run-logs/action-item.js:135
 #: frontend/src/project/main-panel/agent/run-logs/action-item.js:138
@@ -113,19 +113,19 @@ msgstr "月度环比变化"
 msgid "Unknown"
 msgstr "未知"
 
-#: frontend/src/components/chart/overview/overview.js:198
+#: frontend/src/components/chart/overview/overview.js:200
 msgid "No data"
 msgstr "无数据"
 
-#: frontend/src/components/chart/overview/overview.js:230
+#: frontend/src/components/chart/overview/overview.js:232
 msgid "Credit proportion"
 msgstr "积分比例"
 
-#: frontend/src/components/chart/overview/overview.js:234
+#: frontend/src/components/chart/overview/overview.js:236
 msgid "Monthly credit consumption trend"
 msgstr "月度积分消费趋势"
 
-#: frontend/src/components/chart/overview/overview.js:240
+#: frontend/src/components/chart/overview/overview.js:242
 msgid "Daily credit consumption trend this month"
 msgstr "本月每日积分消费趋势"
 
@@ -206,15 +206,15 @@ msgstr "系统"
 
 #: frontend/src/components/common/notification/components/inbox-notification-item.js:65
 msgid "User {user_link} has added you to %a"
-msgstr "用户 {user_link} 已将您添加到 %a"
+msgstr "用户 {user_link} 已将你添加到 %a"
 
 #: frontend/src/components/common/notification/components/inbox-notification-item.js:71
 msgid "{accepter} has accepted your team invitation"
-msgstr "{accepter} 已接受您的团队邀请"
+msgstr "{accepter} 已接受你的团队邀请"
 
 #: frontend/src/components/common/notification/components/inbox-notification-item.js:104
 msgid "You are added as a assignee for ticket named"
-msgstr "您已被添加为名为"
+msgstr "你已被添加为名为"
 
 #: frontend/src/components/common/notification/components/inbox-notification-item.js:106
 #: frontend/src/components/common/notification/components/inbox-notification-item.js:116
@@ -228,7 +228,7 @@ msgstr "为名为"
 
 #: frontend/src/components/common/notification/components/inbox-notification-item.js:132
 msgid "Sent you a reminder for ticket named"
-msgstr "向您发送了名为"
+msgstr "向你发送了名为"
 
 #: frontend/src/components/common/notification/components/inbox-notification-list.js:20
 msgid "No notifications"
@@ -237,7 +237,7 @@ msgstr "无通知"
 #: frontend/src/components/copy-input.js:10
 #: frontend/src/project/main-panel/connections/components/configure-webhook-dialog/index.js:37
 #: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:180
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:310
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:313
 msgid "Connection URL has been copied to clipboard"
 msgstr "连接 URL 已复制到剪贴板"
 
@@ -245,8 +245,8 @@ msgstr "连接 URL 已复制到剪贴板"
 #: frontend/src/components/customize-dropdown-more-toggle/index.js:15
 #: frontend/src/home/dropdown-menu/header-dropdown-menu.js:77
 #: frontend/src/home/dropdown-menu/header-dropdown-menu.js:78
-#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:303
-#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:304
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:308
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:309
 msgid "More operations"
 msgstr "更多操作"
 
@@ -286,19 +286,18 @@ msgstr "新建"
 #: frontend/src/project/main-panel/connections/components/configure-webhook-dialog/index.js:80
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/main/discourse-details/reply-discourse/index.js:79
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/main/email-details/reply-email/index.js:78
-#: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:211
+#: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:215
 #: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:222
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:794
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:800
 #: frontend/src/project/main-panel/connections/view/connection/record/rename/index.js:56
 #: frontend/src/project/main-panel/knowledge-base/view/knowledge/edit/index.js:108
 #: frontend/src/project/main-panel/knowledge-base/view/new-knowledge/index.js:123
 #: frontend/src/project/main-panel/settings/prompt-settings/edit-prompt-dialog.js:48
-#: frontend/src/project/main-panel/tickets/components/close-linked-github-issues-warning-dialog/index.js:61
 #: frontend/src/project/main-panel/tickets/components/comment/index.js:241
 #: frontend/src/project/main-panel/tickets/components/create-kb-record-dialog.js:107
-#: frontend/src/project/main-panel/tickets/components/create-task-dialog/index.js:247
-#: frontend/src/project/main-panel/tickets/components/tickets-dialog/index.js:194
-#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:142
+#: frontend/src/project/main-panel/tickets/components/create-task-dialog/index.js:248
+#: frontend/src/project/main-panel/tickets/components/tickets-dialog/index.js:195
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:153
 #: frontend/src/project/main-panel/tickets/view/ticket/header/index.js:103
 #: frontend/src/sea-metadata/components/popover/column-popover/index.js:89
 #: frontend/src/sys-admin/dialog/sysadmin-add-org-dialog.js:138
@@ -344,17 +343,17 @@ msgstr "取消"
 #: frontend/src/project/main-panel/connections/components/configure-webhook-dialog/index.js:81
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/main/discourse-details/reply-discourse/index.js:81
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/main/email-details/reply-email/index.js:80
-#: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:213
+#: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:217
 #: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:223
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:808
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:814
 #: frontend/src/project/main-panel/connections/view/connection/record/rename/index.js:59
 #: frontend/src/project/main-panel/knowledge-base/view/knowledge/edit/index.js:109
 #: frontend/src/project/main-panel/knowledge-base/view/new-knowledge/index.js:124
 #: frontend/src/project/main-panel/settings/prompt-settings/edit-prompt-dialog.js:49
 #: frontend/src/project/main-panel/tickets/components/create-kb-record-dialog.js:113
-#: frontend/src/project/main-panel/tickets/components/create-task-dialog/index.js:254
-#: frontend/src/project/main-panel/tickets/components/tickets-dialog/index.js:196
-#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:144
+#: frontend/src/project/main-panel/tickets/components/create-task-dialog/index.js:255
+#: frontend/src/project/main-panel/tickets/components/tickets-dialog/index.js:197
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:155
 #: frontend/src/project/main-panel/tickets/view/ticket/header/index.js:106
 #: frontend/src/sea-metadata/components/popover/column-popover/index.js:90
 #: frontend/src/sys-admin/dialog/sysadmin-add-org-dialog.js:139
@@ -403,7 +402,6 @@ msgstr "你确定要清空回收站吗？"
 #: frontend/src/profile-settings/dialog/confirm-user-convert-to-team.js:39
 #: frontend/src/profile-settings/user-convert-to-team.js:34
 #: frontend/src/project/main-panel/agent/components/agent-type-to-github-type-mapping-dialog/index.js:85
-#: frontend/src/project/main-panel/tickets/components/close-linked-github-issues-warning-dialog/index.js:64
 msgid "Confirm"
 msgstr "确认"
 
@@ -430,16 +428,16 @@ msgstr "确定要注销该帐号吗？"
 #: frontend/src/org-admin/groups/group.js:119
 #: frontend/src/org-admin/users/user.js:190
 #: frontend/src/org-admin/users/user.js:213
-#: frontend/src/portal/main-panel/user-management.js:109
-#: frontend/src/portal/main-panel/user-management.js:167
+#: frontend/src/portal/main-panel/user-management.js:116
+#: frontend/src/portal/main-panel/user-management.js:174
 #: frontend/src/profile-settings/delete-account.js:38
 #: frontend/src/profile-settings/session-logs/index.js:67
 #: frontend/src/project/main-panel/ask/sessions/session/index.js:111
 #: frontend/src/project/main-panel/ask/sessions/session/index.js:130
 #: frontend/src/project/main-panel/connections/components/cell-formatter/op-formatter/index.js:26
 #: frontend/src/project/main-panel/connections/components/cell-formatter/op-formatter/index.js:43
-#: frontend/src/project/main-panel/connections/hooks/connections.js:331
-#: frontend/src/project/main-panel/connections/hooks/connections.js:334
+#: frontend/src/project/main-panel/connections/hooks/connections.js:332
+#: frontend/src/project/main-panel/connections/hooks/connections.js:335
 #: frontend/src/project/main-panel/portal-issues/view/trash-issues/clean-portal-issues.js:27
 #: frontend/src/project/main-panel/tickets/components/comment/index.js:214
 #: frontend/src/project/main-panel/tickets/components/comment/index.js:264
@@ -479,7 +477,7 @@ msgstr "此链接未经验证"
 
 #: frontend/src/components/dialog/link-verified-dialog/index.js:33
 msgid "Before continuing, please ensure you trust this link. If you do not trust the URL, do not open the link to access the site."
-msgstr "继续之前，请确保您信任此链接。如果您不信任该URL，请不要打开链接访问该网站。"
+msgstr "继续之前，请确保你信任此链接。如果你不信任该URL，请不要打开链接访问该网站。"
 
 #: frontend/src/components/dialog/link-verified-dialog/index.js:42
 #: frontend/src/home/dialog/group-invite-members-dialog/index.js:95
@@ -594,6 +592,36 @@ msgstr "邮箱地址无效！"
 msgid "Bind contact email"
 msgstr "绑定联系邮箱"
 
+#: frontend/src/components/dialog/token-credit-used-detail-dialog/index.js:268
+msgid "Credit used detail"
+msgstr "信用使用详情"
+
+#: frontend/src/components/dialog/token-credit-used-detail-dialog/index.js:276
+msgid "Group by"
+msgstr "按分组显示"
+
+#: frontend/src/components/dialog/token-credit-used-detail-dialog/index.js:285
+msgid "Scenario"
+msgstr "场景"
+
+#: frontend/src/components/dialog/token-credit-used-detail-dialog/index.js:294
+msgid "Model"
+msgstr "模型"
+
+#: frontend/src/components/dialog/token-credit-used-detail-dialog/index.js:294
+msgid "selected"
+msgstr "已选择"
+
+#: frontend/src/components/dialog/token-credit-used-detail-dialog/index.js:300
+msgid "Date range: "
+msgstr "日期范围："
+
+#: frontend/src/components/dialog/token-credit-used-detail-dialog/index.js:331
+#: frontend/src/project/components/thought-process/process-details/index.js:103
+#: frontend/src/sea-metadata/view/table/table-main/rows/group-body/group-container/group-title.js:11
+msgid "Empty"
+msgstr "空"
+
 #: frontend/src/components/group-select.js:76
 #: frontend/src/org-admin/group-info/index.js:38
 #: frontend/src/org-admin/group-members/index.js:38
@@ -602,7 +630,7 @@ msgid "Group not found"
 msgstr "未找到群组"
 
 #: frontend/src/components/group-select.js:76
-#: frontend/src/components/option-editor/tip/index.js:23
+#: frontend/src/components/option-editor/tip/index.js:31
 #: frontend/src/components/user-select/index.js:285
 #: frontend/src/project/main-panel/tickets/components/tickets-dialog/index.js:85
 msgid "Enter characters to start searching"
@@ -620,9 +648,9 @@ msgstr "缩小"
 #: frontend/src/components/modal-header/index.js:16
 #: frontend/src/home/dialog/manage-members-dialog/index.js:42
 #: frontend/src/home/dialog/transfer-group-dialog.js:66
-#: frontend/src/project/main-panel/ask/documents/index.js:117
+#: frontend/src/project/main-panel/ask/documents/index.js:114
 #: frontend/src/project/main-panel/ask/sessions/index.js:46
-#: frontend/src/project/main-panel/connections/components/connection-status-dialog/index.js:144
+#: frontend/src/project/main-panel/connections/components/connection-status-dialog/index.js:145
 #: frontend/src/project/main-panel/portal-issues/constants.js:26
 #: frontend/src/project/main-panel/tickets/constants.js:42
 msgid "Close"
@@ -639,9 +667,21 @@ msgstr "关闭"
 msgid "No options available"
 msgstr "没有可用的选项"
 
-#: frontend/src/components/option-editor/option-editor-container/index.js:36
+#: frontend/src/components/option-editor/option-editor-container/index.js:38
 msgid "Add tag"
 msgstr "添加标签"
+
+#: frontend/src/components/option-editor/tip/index.js:22
+#: frontend/src/project/main-panel/ask/chat-input/attachments-selector/index.js:94
+#: frontend/src/project/main-panel/ask/chat-input/index.js:551
+#: frontend/src/project/main-panel/search/index.js:224
+#: frontend/src/project/main-panel/tickets/components/tickets-dialog/index.js:94
+#: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item/index.js:641
+#: frontend/src/sea-metadata/components/popover/groupbys-popover/groupbys/groupby-item.js:190
+#: frontend/src/sea-metadata/components/popover/sort-popover/index.js:213
+#: frontend/src/sea-metadata/components/view-toolbar/views/all-views/index.js:174
+msgid "No results"
+msgstr "没有结果"
 
 #: frontend/src/components/paginator/index.js:61
 msgid "{number_placeholder} / Page"
@@ -718,10 +758,10 @@ msgstr "确定要删除项目 {placeholder} 吗？"
 #: frontend/src/components/select-editor/index.js:102
 #: frontend/src/org-admin/user-profile/user-info.js:58
 #: frontend/src/org-admin/user-profile/user-info.js:65
-#: frontend/src/project/main-panel/agent/run-logs/action-item.js:309
+#: frontend/src/project/main-panel/agent/run-logs/action-item.js:310
 #: frontend/src/project/main-panel/connections/components/cell-formatter/op-formatter/index.js:23
 #: frontend/src/project/main-panel/connections/components/cell-formatter/op-formatter/index.js:38
-#: frontend/src/project/main-panel/knowledge-base/knowledge-top-bar/index.js:86
+#: frontend/src/project/main-panel/knowledge-base/knowledge-top-bar/index.js:83
 #: frontend/src/project/main-panel/settings/prompt-settings/index.js:65
 #: frontend/src/project/main-panel/tickets/components/comment/index.js:208
 #: frontend/src/sys-admin/org/org-info.js:44
@@ -744,11 +784,13 @@ msgid "File loading failed"
 msgstr "文件加载失败"
 
 #: frontend/src/components/user-item/index.js:40
-#: frontend/src/profile-settings/index.js:218
+#: frontend/src/portal/main-panel/settings/index.js:585
+#: frontend/src/portal/main-panel/settings/index.js:715
+#: frontend/src/profile-settings/index.js:220
 #: frontend/src/profile-settings/password-widgets/user-remove-password-dialog.js:34
 #: frontend/src/project/main-panel/analyze/components/connection-setting/index.js:69
-#: frontend/src/project/main-panel/ask/components/attachments/attachment/index.js:70
-#: frontend/src/project/main-panel/ask/components/attachments/attachment/index.js:105
+#: frontend/src/project/main-panel/ask/components/attachments/attachment/index.js:71
+#: frontend/src/project/main-panel/ask/components/attachments/attachment/index.js:106
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/main/email-details/reply-email/send-to/index.js:56
 #: frontend/src/sys-admin/group/group-members.js:157
 #: frontend/src/sys-admin/group/group-members.js:158
@@ -764,7 +806,7 @@ msgstr "删除"
 #: frontend/src/org-admin/users/index.js:214
 #: frontend/src/org-admin/users/search-users.js:149
 #: frontend/src/org-admin/users/search-users.js:153
-#: frontend/src/portal/main-panel/user-management.js:86
+#: frontend/src/portal/main-panel/user-management.js:93
 #: frontend/src/project/main-panel/tickets/components/ticket-settings/collaborators-settings/index.js:107
 #: frontend/src/sea-metadata/components/cell-editors/collaborator-editor/index.js:65
 #: frontend/src/sys-admin/dialog/sysadmin-batch-add-admin-dialog.js:46
@@ -892,7 +934,7 @@ msgstr "删除链接"
 
 #: frontend/src/home/dialog/group-invite-members-dialog/index.js:105
 msgid "Users in your team can join the group via group invitation link. If the user has not registered yet, you should ask your team admin to add the user first."
-msgstr "团队中的用户可以通过群组邀请链接加入群组。如果用户尚未注册，您应该先请团队管理员添加该用户。"
+msgstr "团队中的用户可以通过群组邀请链接加入群组。如果用户尚未注册，你应该先请团队管理员添加该用户。"
 
 #: frontend/src/home/dialog/group-invite-members-dialog/index.js:111
 msgid "No group invitation link yet. Group invitation link let registered users to join the group by clicking a link."
@@ -934,16 +976,24 @@ msgstr "群组成员"
 #: frontend/src/home/dialog/workspace-member-dialog/index.js:48
 #: frontend/src/org-admin/group-info/index.js:69
 #: frontend/src/org-admin/group-members/member.js:15
+#: frontend/src/org-admin/group-projects/index.js:32
 #: frontend/src/org-admin/groups/index.js:136
+#: frontend/src/org-admin/projects/index.js:67
+#: frontend/src/org-admin/projects/search-projects.js:65
+#: frontend/src/org-admin/projects/trash-projects.js:32
 #: frontend/src/org-admin/statistics/statistic-list.js:28
 #: frontend/src/org-admin/statistics/statistic-list.js:35
 #: frontend/src/sys-admin/dialog/sysadmin-create-group-dialog.js:73
+#: frontend/src/sys-admin/group/group-projects.js:33
 #: frontend/src/sys-admin/groups/groups-table/group.js:69
 #: frontend/src/sys-admin/groups/groups.js:59
 #: frontend/src/sys-admin/groups/search-groups.js:65
+#: frontend/src/sys-admin/org/org-projects.js:39
+#: frontend/src/sys-admin/projects/search-projects.js:66
 #: frontend/src/sys-admin/statistics/statistic-list.js:28
 #: frontend/src/sys-admin/statistics/statistic-list.js:37
 #: frontend/src/sys-admin/statistics/statistic-list.js:45
+#: frontend/src/sys-admin/user/user-projects/index.js:42
 msgid "Owner"
 msgstr "拥有者"
 
@@ -956,7 +1006,7 @@ msgstr "拥有者"
 #: frontend/src/project/constants/bar.js:65
 #: frontend/src/project/constants/bar.js:87
 #: frontend/src/project/constants/bar.js:107
-#: frontend/src/project/main-panel/portal-issues/components/portal-issues-top-bar.js:52
+#: frontend/src/project/main-panel/portal-issues/components/portal-issues-top-bar.js:51
 #: frontend/src/sys-admin/projects/project-nav.js:17
 msgid "Trash"
 msgstr "回收站"
@@ -1064,10 +1114,10 @@ msgstr "SeaTicket 徽标"
 #: frontend/src/org-admin/users/search-users.js:76
 #: frontend/src/org-admin/users/user.js:107
 #: frontend/src/profile-settings/session-logs/index.js:288
-#: frontend/src/project/main-panel/agent/run-logs/action-item.js:392
+#: frontend/src/project/main-panel/agent/run-logs/action-item.js:398
 #: frontend/src/project/main-panel/agent/run-logs/tool-details-content.js:39
 #: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:210
-#: frontend/src/project/main-panel/ask/chat/index.js:329
+#: frontend/src/project/main-panel/ask/chat/index.js:330
 #: frontend/src/sys-admin/group/group-members.js:225
 #: frontend/src/sys-admin/info/index.js:42
 #: frontend/src/sys-admin/org/org-info.js:143
@@ -1117,12 +1167,12 @@ msgstr "项目"
 msgid "Mine"
 msgstr "我的"
 
-#: frontend/src/home/main-panel/pc-main-panel/all-inbox/index.js:81
+#: frontend/src/home/main-panel/pc-main-panel/all-inbox/index.js:83
 #: frontend/src/project/main-panel/tickets/components/tickets-keyboard-shortcuts-dialog/index.js:45
 msgid "General"
 msgstr "常规"
 
-#: frontend/src/home/main-panel/pc-main-panel/all-inbox/index.js:86
+#: frontend/src/home/main-panel/pc-main-panel/all-inbox/index.js:88
 #: frontend/src/home/search/project-searcher/index.js:207
 #: frontend/src/org-admin/statistics/index.js:66
 #: frontend/src/org-admin/statistics/statistic-list.js:27
@@ -1131,14 +1181,14 @@ msgstr "常规"
 msgid "Project"
 msgstr "项目"
 
-#: frontend/src/home/main-panel/pc-main-panel/all-inbox/index.js:99
+#: frontend/src/home/main-panel/pc-main-panel/all-inbox/index.js:101
 msgid "mark all as read"
 msgstr "全部标为已读"
 
 #: frontend/src/home/main-panel/pc-main-panel/all-workspaces/org-ai-limit-prompt.js:15
 #, javascript-format
 msgid "AI credits over limit — You are %s credits over your limit. Replenish your credits now to resume full service."
-msgstr "AI 积分超限——您超出限制 %s 积分。请立即补充积分以恢复完整服务。"
+msgstr "AI 积分超限——你超出限制 %s 积分。请立即补充积分以恢复完整服务。"
 
 #: frontend/src/home/main-panel/pc-main-panel/index.js:68
 msgid "Main panel"
@@ -1224,8 +1274,8 @@ msgstr "输入更多字符开始搜索"
 #: frontend/src/project/constants/bar.js:40
 #: frontend/src/project/main-panel/ask/chat-input/attachments-selector/index.js:93
 #: frontend/src/project/main-panel/search/hidden-connection-popover/index.js:115
-#: frontend/src/project/main-panel/search/index.js:193
-#: frontend/src/project/main-panel/tickets/components/tickets-dialog/index.js:181
+#: frontend/src/project/main-panel/search/index.js:195
+#: frontend/src/project/main-panel/tickets/components/tickets-dialog/index.js:182
 #: frontend/src/sea-metadata/components/searcher/index.js:61
 #: frontend/src/sea-metadata/components/searcher/index.js:62
 #: frontend/src/sea-metadata/components/searcher/index.js:72
@@ -1238,8 +1288,8 @@ msgstr "搜索"
 msgid "My projects"
 msgstr "我的项目"
 
-#: frontend/src/home/side-panel/components/all-inbox-nav.js:27
-#: frontend/src/home/side-panel/components/all-inbox-nav.js:29
+#: frontend/src/home/side-panel/components/all-inbox-nav.js:28
+#: frontend/src/home/side-panel/components/all-inbox-nav.js:30
 #: frontend/src/project/constants/bar.js:124
 msgid "Inbox"
 msgstr "收件箱"
@@ -1256,6 +1306,15 @@ msgstr "工作区"
 #: frontend/src/home/side-panel/index.js:202
 msgid "Expand all workspaces"
 msgstr "展开所有工作区"
+
+#: frontend/src/home/side-panel/index.js:237
+msgid "Help and resources"
+msgstr "帮助和资源"
+
+#: frontend/src/home/side-panel/index.js:244
+#: frontend/src/home/side-panel/index.js:248
+msgid "Manual"
+msgstr "手册"
 
 #: frontend/src/home/workspace/body/project-item-dropdown-menu/index.js:44
 msgid "Edit name and icon"
@@ -1396,11 +1455,12 @@ msgid "Search projects"
 msgstr "搜索项目"
 
 #: frontend/src/org-admin/projects/index.js:68
+#: frontend/src/org-admin/projects/search-projects.js:66
 #: frontend/src/org-admin/projects/trash-projects.js:33
 #: frontend/src/portal/constants.js:24
 #: frontend/src/portal/main-panel/chat-source-selector/index.js:110
 #: frontend/src/project/main-panel/connections/constants.js:473
-#: frontend/src/project/main-panel/portal-issues/components/issues.js:187
+#: frontend/src/project/main-panel/portal-issues/components/issues.js:189
 #: frontend/src/project/main-panel/search/hidden-connection-popover/hidden-connections/index.js:92
 msgid "Issues"
 msgstr "问题"
@@ -1428,7 +1488,8 @@ msgid "Domain verified"
 msgstr "域名已验证"
 
 #: frontend/src/org-admin/saml/index.js:86
-#: frontend/src/portal/main-panel/user-management.js:62
+#: frontend/src/portal/main-panel/settings/index.js:182
+#: frontend/src/portal/main-panel/user-management.js:69
 msgid "Copied"
 msgstr "已复制"
 
@@ -1449,11 +1510,11 @@ msgstr "使用这些值来配置你的身份提供商"
 #: frontend/src/org-admin/saml/index.js:137
 #: frontend/src/org-admin/saml/index.js:149
 #: frontend/src/org-admin/saml/index.js:195
-#: frontend/src/portal/main-panel/user-management.js:166
+#: frontend/src/portal/main-panel/user-management.js:173
 #: frontend/src/project/main-panel/ask/chat-history/message-operations/index.js:18
-#: frontend/src/project/main-panel/ask/documents/index.js:114
+#: frontend/src/project/main-panel/ask/documents/index.js:111
 #: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:202
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:649
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:655
 msgid "Copy"
 msgstr "复制"
 
@@ -1490,10 +1551,13 @@ msgid "Copy the domain DNS TXT and add it to your domain's DNS records, then cli
 msgstr "复制域 DNS TXT 并将其添加到域的 DNS 记录中，然后单击按钮验证域所有权。你必须在单点登录前验证域的所有权。"
 
 #: frontend/src/org-admin/saml/index.js:206
+#: frontend/src/portal/main-panel/settings/index.js:655
 msgid "Verify"
 msgstr "验证"
 
 #: frontend/src/org-admin/saml/input-item.js:73
+#: frontend/src/portal/main-panel/settings/index.js:252
+#: frontend/src/portal/main-panel/settings/index.js:661
 msgid "Verified"
 msgstr "已验证"
 
@@ -1517,7 +1581,8 @@ msgid "Please type {placeholder} to confirm."
 msgstr "请输入 {placeholder} 进行确认。"
 
 #: frontend/src/org-admin/settings/index.js:108
-#: frontend/src/portal/left-bar/index.js:19
+#: frontend/src/portal/left-bar/index.js:46
+#: frontend/src/portal/left-bar/index.js:89
 #: frontend/src/project/constants/bar.js:50
 #: frontend/src/project/main-panel/analyze/components/settings-panel/index.js:51
 #: frontend/src/sea-metadata/components/data-process-setter/manage-setter.js:28
@@ -1533,6 +1598,7 @@ msgid "Enable force two factor authentication"
 msgstr "启用强制两步验证"
 
 #: frontend/src/org-admin/settings/index.js:132
+#: frontend/src/portal/left-bar/index.js:55
 msgid "User management"
 msgstr "用户管理"
 
@@ -1575,7 +1641,7 @@ msgstr "概览"
 
 #: frontend/src/org-admin/statistics/index.js:196
 #: frontend/src/org-admin/users/search-users.js:147
-#: frontend/src/portal/main-panel/user-management.js:72
+#: frontend/src/portal/main-panel/user-management.js:79
 #: frontend/src/sys-admin/constants.js:38
 #: frontend/src/sys-admin/statistics/index.js:207
 #: frontend/src/sys-admin/user/user-title/index.js:11
@@ -1589,7 +1655,7 @@ msgid "Month"
 msgstr "月份"
 
 #: frontend/src/org-admin/statistics/statistic-item.js:60
-#: frontend/src/project/main-panel/agent/run-logs/action-item.js:321
+#: frontend/src/project/main-panel/agent/run-logs/action-item.js:322
 #: frontend/src/sys-admin/statistics/statistic-item.js:66
 msgid "Details"
 msgstr "详情"
@@ -1600,7 +1666,7 @@ msgid "group"
 msgstr "群组"
 
 #: frontend/src/org-admin/statistics/statistic-list.js:20
-#: frontend/src/portal/main-panel/user-management.js:92
+#: frontend/src/portal/main-panel/user-management.js:99
 #: frontend/src/sys-admin/statistics/index.js:79
 #: frontend/src/sys-admin/statistics/statistic-list.js:19
 msgid "User"
@@ -1712,7 +1778,7 @@ msgstr "添加用户"
 
 #: frontend/src/org-admin/users/add-user-dialog.js:109
 #: frontend/src/org-admin/users/invite-user-dialog.js:54
-#: frontend/src/portal/main-panel/user-management.js:146
+#: frontend/src/portal/main-panel/user-management.js:153
 #: frontend/src/project/main-panel/agent/run-logs/run-card.js:67
 #: frontend/src/project/main-panel/ask/models/attachment-object.js:30
 #: frontend/src/sys-admin/dialog/sysadmin-add-user-dialog.js:143
@@ -1725,7 +1791,7 @@ msgstr "用户名"
 
 #: frontend/src/org-admin/users/add-user-dialog.js:117
 #: frontend/src/profile-settings/index.js:61
-#: frontend/src/profile-settings/index.js:208
+#: frontend/src/profile-settings/index.js:210
 #: frontend/src/profile-settings/password-widgets/user-set-password-dialog.js:57
 #: frontend/src/project/main-panel/connections/constants.js:269
 #: frontend/src/sys-admin/dialog/sysadmin-add-org-dialog.js:127
@@ -1734,6 +1800,7 @@ msgid "Password"
 msgstr "密码"
 
 #: frontend/src/org-admin/users/add-user-dialog.js:127
+#: frontend/src/portal/main-panel/settings/index.js:493
 #: frontend/src/profile-settings/password-widgets/user-set-password-dialog.js:61
 #: frontend/src/profile-settings/password-widgets/user-update-password-dialog.js:71
 msgid "Confirm password"
@@ -1803,7 +1870,7 @@ msgstr "邀请用户"
 
 #: frontend/src/org-admin/users/invite-user-dialog.js:52
 msgid "You can enter multiple emails, each will receive an invitation link."
-msgstr "您可以输入多个邮箱，每个邮箱都会收到邀请链接。"
+msgstr "你可以输入多个邮箱，每个邮箱都会收到邀请链接。"
 
 #: frontend/src/org-admin/users/invite-user-dialog.js:60
 msgid "Enter emails separated by comma, space, or newline"
@@ -1811,7 +1878,7 @@ msgstr "输入邮箱，用逗号、空格或换行分隔"
 
 #: frontend/src/org-admin/users/org-admin-list.js:18
 #: frontend/src/org-admin/users/users.js:17
-#: frontend/src/portal/main-panel/user-management.js:93
+#: frontend/src/portal/main-panel/user-management.js:100
 #: frontend/src/project/main-panel/analyze/components/filter-panel/index.js:166
 #: frontend/src/project/main-panel/connections/components/cell-formatter/op-formatter/index.js:50
 #: frontend/src/project/main-panel/connections/constants.js:881
@@ -1834,7 +1901,7 @@ msgid "1 user"
 msgstr "1个用户"
 
 #: frontend/src/org-admin/users/search-users.js:124
-#: frontend/src/portal/main-panel/user-management.js:118
+#: frontend/src/portal/main-panel/user-management.js:125
 #: frontend/src/sys-admin/users/users-table/index.js:12
 #: frontend/src/translation.js:4
 msgid "No users"
@@ -1883,18 +1950,18 @@ msgid "Are you sure you want to set xxx inactive?"
 msgstr "确定要将 xxx 设置为非活动状态吗？"
 
 #: frontend/src/org-admin/users/user.js:222
-#: frontend/src/profile-settings/index.js:212
+#: frontend/src/profile-settings/index.js:214
 #: frontend/src/profile-settings/password-widgets/user-set-password-dialog.js:71
 #: frontend/src/sys-admin/users/users-table/user.js:287
 msgid "Set"
 msgstr "设置"
 
 #: frontend/src/portal/constants.js:23
-#: frontend/src/portal/main-panel/chat/index.js:53
-#: frontend/src/portal/main-panel/chat/index.js:88
-#: frontend/src/portal/main-panel/settings/constants.js:18
-#: frontend/src/portal/side-panel/index.js:19
+#: frontend/src/portal/main-panel/chat/index.js:55
+#: frontend/src/portal/main-panel/chat/index.js:90
+#: frontend/src/portal/main-panel/settings/constants.js:26
 #: frontend/src/portal/side-panel/index.js:20
+#: frontend/src/portal/side-panel/index.js:21
 #: frontend/src/project/constants/bar.js:30
 msgid "Chat"
 msgstr "聊天"
@@ -1912,9 +1979,9 @@ msgstr "我的问题"
 msgid "Portal"
 msgstr "门户"
 
-#: frontend/src/portal/index.js:30
-#: frontend/src/project/main-panel/settings/index.js:58
-#: frontend/src/project/main-panel/settings/index.js:59
+#: frontend/src/portal/index.js:36
+#: frontend/src/project/main-panel/settings/index.js:66
+#: frontend/src/project/main-panel/settings/index.js:67
 #: frontend/src/project/side-panel/index.js:63
 msgid "Support portal"
 msgstr "支持门户"
@@ -1924,8 +1991,8 @@ msgid "Access password"
 msgstr "访问密码"
 
 #: frontend/src/portal/index.js:177
-#: frontend/src/portal/main-panel/settings/index.js:289
-#: frontend/src/portal/main-panel/settings/index.js:307
+#: frontend/src/portal/main-panel/settings/index.js:472
+#: frontend/src/portal/main-panel/settings/index.js:490
 msgid "Enter password"
 msgstr "输入密码"
 
@@ -1941,11 +2008,15 @@ msgstr "密码无效"
 msgid "Validating..."
 msgstr "验证中..."
 
-#: frontend/src/portal/left-bar/index.js:23
-msgid "Go to app"
-msgstr "前往应用"
+#: frontend/src/portal/left-bar/index.js:31
+msgid "Portal preview URL is unavailable."
+msgstr "门户预览 URL 未可用。"
 
-#: frontend/src/portal/left-bar/index.js:71
+#: frontend/src/portal/left-bar/index.js:50
+msgid "Go to portal"
+msgstr "前往门户"
+
+#: frontend/src/portal/left-bar/index.js:97
 msgid "External users management"
 msgstr "外部用户管理"
 
@@ -1959,7 +2030,7 @@ msgstr "知识库"
 #: frontend/src/project/main-panel/ask/models/attachment-object.js:28
 #: frontend/src/project/main-panel/search/hidden-connection-popover/index.js:19
 #: frontend/src/project/main-panel/tickets/components/related-issues-dialog/index.js:72
-#: frontend/src/project/main-panel/tickets/components/tickets.js:296
+#: frontend/src/project/main-panel/tickets/components/tickets.js:268
 msgid "Ticket"
 msgstr "工单"
 
@@ -1982,7 +2053,7 @@ msgid "Other"
 msgstr "其他"
 
 #: frontend/src/portal/main-panel/chat-source-selector/index.js:212
-#: frontend/src/project/main-panel/search/hide-connection-setter.js:70
+#: frontend/src/project/main-panel/search/hide-connection-setter.js:71
 msgid "Sources"
 msgstr "来源"
 
@@ -2001,15 +2072,15 @@ msgstr "全部清除"
 msgid "Select all"
 msgstr "全选"
 
-#: frontend/src/portal/main-panel/chat/index.js:60
-#: frontend/src/portal/main-panel/chat/index.js:61
+#: frontend/src/portal/main-panel/chat/index.js:62
+#: frontend/src/portal/main-panel/chat/index.js:63
 #: frontend/src/project/main-panel/ask/index.js:37
 #: frontend/src/project/main-panel/ask/index.js:38
 msgid "New chat"
 msgstr "新建聊天"
 
-#: frontend/src/portal/main-panel/chat/index.js:66
-#: frontend/src/portal/main-panel/chat/index.js:67
+#: frontend/src/portal/main-panel/chat/index.js:68
+#: frontend/src/portal/main-panel/chat/index.js:69
 #: frontend/src/project/main-panel/ask/index.js:44
 #: frontend/src/project/main-panel/ask/index.js:45
 #: frontend/src/project/main-panel/ask/sessions/index.js:45
@@ -2019,7 +2090,7 @@ msgstr "历史"
 #: frontend/src/portal/main-panel/knowledge-base/constants.js:19
 #: frontend/src/portal/main-panel/submit-issue.js:181
 #: frontend/src/project/components/import-dialog/index.js:141
-#: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:131
+#: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:135
 #: frontend/src/project/main-panel/connections/constants.js:688
 #: frontend/src/project/main-panel/connections/constants.js:745
 #: frontend/src/project/main-panel/connections/constants.js:765
@@ -2031,9 +2102,9 @@ msgstr "历史"
 #: frontend/src/project/main-panel/knowledge-base/view/knowledge/edit/index.js:124
 #: frontend/src/project/main-panel/knowledge-base/view/new-knowledge/index.js:145
 #: frontend/src/project/main-panel/tickets/components/create-kb-record-dialog.js:80
-#: frontend/src/project/main-panel/tickets/components/create-task-dialog/index.js:189
+#: frontend/src/project/main-panel/tickets/components/create-task-dialog/index.js:190
 #: frontend/src/project/main-panel/tickets/constants.js:127
-#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:177
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:188
 msgid "Title"
 msgstr "标题"
 
@@ -2103,14 +2174,14 @@ msgid "Last modified time"
 msgstr "最后修改时间"
 
 #: frontend/src/portal/main-panel/knowledge-base/knowledge-top-bar/index.js:18
-#: frontend/src/portal/side-panel/index.js:19
-#: frontend/src/portal/side-panel/index.js:22
+#: frontend/src/portal/side-panel/index.js:20
+#: frontend/src/portal/side-panel/index.js:23
 #: frontend/src/project/constants/bar.js:82
 msgid "Knowledge base"
 msgstr "知识库"
 
 #: frontend/src/portal/main-panel/knowledge-base/knowledge-top-bar/index.js:24
-#: frontend/src/project/main-panel/knowledge-base/knowledge-top-bar/index.js:54
+#: frontend/src/project/main-panel/knowledge-base/knowledge-top-bar/index.js:51
 msgid "Knowledge"
 msgstr "知识"
 
@@ -2150,12 +2221,12 @@ msgstr "记录"
 msgid "Records"
 msgstr "记录"
 
-#: frontend/src/portal/main-panel/my-issues/index.js:34
+#: frontend/src/portal/main-panel/my-issues/index.js:35
 #: frontend/src/project/main-panel/analyze/components/filter-panel/index.js:12
 #: frontend/src/project/main-panel/connections/constants.js:564
 #: frontend/src/project/main-panel/portal-issues/constants.js:20
 #: frontend/src/project/main-panel/portal-issues/constants.js:21
-#: frontend/src/project/main-panel/tickets/components/close-linked-github-issues-warning-dialog/index.js:52
+#: frontend/src/project/main-panel/tickets/components/close-linked-github-issues-warning-dialog/index.js:57
 #: frontend/src/project/main-panel/tickets/components/ticket-settings/link-settings/index.js:96
 #: frontend/src/project/main-panel/tickets/constants.js:36
 #: frontend/src/project/main-panel/tickets/constants.js:37
@@ -2164,7 +2235,7 @@ msgstr "记录"
 msgid "Open"
 msgstr "打开"
 
-#: frontend/src/portal/main-panel/my-issues/index.js:37
+#: frontend/src/portal/main-panel/my-issues/index.js:38
 #: frontend/src/project/main-panel/analyze/components/filter-panel/index.js:13
 #: frontend/src/project/main-panel/connections/constants.js:565
 #: frontend/src/project/main-panel/tickets/components/ticket-settings/link-settings/index.js:97
@@ -2173,13 +2244,21 @@ msgstr "打开"
 msgid "Closed"
 msgstr "关闭"
 
-#: frontend/src/portal/main-panel/settings/constants.js:12
+#: frontend/src/portal/main-panel/settings/constants.js:14
 msgid "Portal customization"
 msgstr "门户定制"
 
-#: frontend/src/portal/main-panel/settings/constants.js:15
+#: frontend/src/portal/main-panel/settings/constants.js:17
 msgid "Open access"
 msgstr "开放访问"
+
+#: frontend/src/portal/main-panel/settings/constants.js:20
+msgid "Portal domain"
+msgstr "门户域名"
+
+#: frontend/src/portal/main-panel/settings/constants.js:23
+msgid "Custom domain"
+msgstr "自定义域名"
 
 #: frontend/src/portal/main-panel/settings/customization-settings/index.js:11
 msgid "File invalid!"
@@ -2229,29 +2308,161 @@ msgid "Change logo"
 msgstr "更改标志"
 
 #: frontend/src/portal/main-panel/settings/customization-settings/index.js:131
+#: frontend/src/portal/main-panel/settings/index.js:507
+#: frontend/src/portal/main-panel/settings/index.js:558
+#: frontend/src/portal/main-panel/settings/index.js:581
+#: frontend/src/portal/main-panel/settings/index.js:706
 #: frontend/src/project/main-panel/agent/run-logs/suggestion-detail-panel.js:85
 msgid "Save"
 msgstr "保存"
 
-#: frontend/src/portal/main-panel/settings/index.js:243
-msgid "Portal URL"
-msgstr "门户URL"
+#: frontend/src/portal/main-panel/settings/index.js:71
+msgid "Custom domain allows you to serve your portal from a domain other than {domain}."
+msgstr "自定义域名允许你从其他域名提供门户。"
 
-#: frontend/src/portal/main-panel/settings/index.js:251
+#: frontend/src/portal/main-panel/settings/index.js:72
+msgid "Custom domain allows you to serve your portal from a domain other than your current portal domain."
+msgstr "自定义域名允许你从其他域名提供门户。"
+
+#: frontend/src/portal/main-panel/settings/index.js:174
+msgid "Save failed"
+msgstr "保存失败"
+
+#: frontend/src/portal/main-panel/settings/index.js:269
+#: frontend/src/portal/main-panel/settings/index.js:312
+#: frontend/src/portal/main-panel/settings/index.js:343
+#: frontend/src/portal/main-panel/settings/index.js:368
+msgid "Saved"
+msgstr "已保存"
+
+#: frontend/src/portal/main-panel/settings/index.js:295
+msgid "Removed"
+msgstr "已移除"
+
+#: frontend/src/portal/main-panel/settings/index.js:325
+msgid "Password must be at least 8 characters"
+msgstr "密码必须至少包含8个字符"
+
+#: frontend/src/portal/main-panel/settings/index.js:329
+msgid "Passwords do not match"
+msgstr "密码不匹配"
+
+#: frontend/src/portal/main-panel/settings/index.js:407
+#: frontend/src/portal/main-panel/settings/index.js:513
+msgid "Your current portal domain is"
+msgstr "你的门户域名是"
+
+#: frontend/src/portal/main-panel/settings/index.js:414
+#: frontend/src/portal/main-panel/settings/index.js:520
+msgid "Portal service root domain is not configured"
+msgstr "门户服务根域名未配置"
+
+#: frontend/src/portal/main-panel/settings/index.js:420
+#: frontend/src/portal/main-panel/settings/index.js:526
+#: frontend/src/portal/main-panel/settings/index.js:608
+#: frontend/src/portal/main-panel/settings/index.js:631
+#: frontend/src/portal/main-panel/settings/index.js:643
 msgid "Copy URL"
 msgstr "复制URL"
 
-#: frontend/src/portal/main-panel/settings/index.js:317
+#: frontend/src/portal/main-panel/settings/index.js:428
+msgid "Open preview"
+msgstr "打开预览"
+
+#: frontend/src/portal/main-panel/settings/index.js:435
+msgid "Portal service root domain is not configured, so the default portal URL is unavailable."
+msgstr "门户服务根域名未配置，因此门户URL不可用。"
+
+#: frontend/src/portal/main-panel/settings/index.js:442
+msgid "Allow anonymous access"
+msgstr "允许匿名访问"
+
+#: frontend/src/portal/main-panel/settings/index.js:452
+msgid "Enable password protection"
+msgstr "启用密码保护"
+
+#: frontend/src/portal/main-panel/settings/index.js:463
+#: frontend/src/portal/main-panel/settings/index.js:483
+msgid "Password (at least 8 characters)"
+msgstr "密码（至少包含8个字符）"
+
+#: frontend/src/portal/main-panel/settings/index.js:474
+msgid "Replace password"
+msgstr "替换密码"
+
+#: frontend/src/portal/main-panel/settings/index.js:500
 msgid "Re-enter password"
 msgstr "重新输入密码"
 
-#: frontend/src/portal/main-panel/settings/index.js:336
+#: frontend/src/portal/main-panel/settings/index.js:533
+msgid "Portal service root domain is not configured, so the portal domain is unavailable."
+msgstr "门户服务根域名未配置，因此门户域名不可用。"
+
+#: frontend/src/portal/main-panel/settings/index.js:538
+msgid "Customize the prefix:"
+msgstr "自定义前缀："
+
+#: frontend/src/portal/main-panel/settings/index.js:545
+msgid "my-brand"
+msgstr "我的品牌"
+
+#: frontend/src/portal/main-panel/settings/index.js:558
+#: frontend/src/portal/main-panel/settings/index.js:581
+#: frontend/src/project/main-panel/agent/run-logs/suggestion-detail-panel.js:85
+msgid "Saving..."
+msgstr "正在保存..."
+
+#: frontend/src/portal/main-panel/settings/index.js:576
+msgid "support.example.com"
+msgstr "例如 support.example.com"
+
+#: frontend/src/portal/main-panel/settings/index.js:592
+msgid "Add a CNAME record in your DNS hosting provider to make custom domain work. The CNAME record should be as following:"
+msgstr "在你的 DNS 托管提供商中添加一个 CNAME 记录以使自定义域名工作。CNAME 记录应如下所示："
+
+#: frontend/src/portal/main-panel/settings/index.js:617
+msgid "You also need to add a TXT record to verify the ownership of your custom domain."
+msgstr "你还需要添加一个 TXT 记录以验证自定义域名的所有权。"
+
+#: frontend/src/portal/main-panel/settings/index.js:623
+msgid "TXT record name"
+msgstr "TXT 记录名称"
+
+#: frontend/src/portal/main-panel/settings/index.js:635
+msgid "TXT record value"
+msgstr "TXT 记录值"
+
+#: frontend/src/portal/main-panel/settings/index.js:655
+msgid "Verifying..."
+msgstr "正在验证..."
+
+#: frontend/src/portal/main-panel/settings/index.js:668
+msgid "Save the custom domain before verification."
+msgstr "在验证之前保存自定义域名。"
+
+#: frontend/src/portal/main-panel/settings/index.js:675
+msgid "Display"
+msgstr "显示"
+
+#: frontend/src/portal/main-panel/settings/index.js:681
 msgid "Show knowledge base"
 msgstr "显示知识库"
 
-#: frontend/src/portal/main-panel/settings/index.js:345
+#: frontend/src/portal/main-panel/settings/index.js:688
+msgid "Chat sources"
+msgstr "聊天来源"
+
+#: frontend/src/portal/main-panel/settings/index.js:690
 msgid "Select which data sources can be used for AI responses in the portal."
 msgstr "选择门户中AI响应可以使用的数据源。"
+
+#: frontend/src/portal/main-panel/settings/index.js:713
+msgid "Remove custom domain"
+msgstr "移除自定义域名"
+
+#: frontend/src/portal/main-panel/settings/index.js:714
+msgid "Are you sure you want to remove this custom domain?"
+msgstr "你确定要移除此自定义域名吗？"
 
 #: frontend/src/portal/main-panel/submit-issue.js:47
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/others/github-issues-details/type-settings.js:67
@@ -2304,19 +2515,19 @@ msgstr "提交问题失败"
 #: frontend/src/project/components/option-dialog/index.js:189
 #: frontend/src/project/components/option-dialog/index.js:237
 #: frontend/src/project/main-panel/connections/components/connection-config-editor/index.js:14
-#: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:132
+#: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:136
 #: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:190
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:637
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:779
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:643
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:785
 #: frontend/src/project/main-panel/knowledge-base/view/knowledge/edit/index.js:125
 #: frontend/src/project/main-panel/knowledge-base/view/knowledge/edit/index.js:132
 #: frontend/src/project/main-panel/knowledge-base/view/new-knowledge/index.js:146
 #: frontend/src/project/main-panel/knowledge-base/view/new-knowledge/index.js:153
 #: frontend/src/project/main-panel/tickets/components/create-kb-record-dialog.js:81
 #: frontend/src/project/main-panel/tickets/components/create-kb-record-dialog.js:93
-#: frontend/src/project/main-panel/tickets/components/create-task-dialog/index.js:190
-#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:178
-#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:185
+#: frontend/src/project/main-panel/tickets/components/create-task-dialog/index.js:191
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:189
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:196
 msgid "Required"
 msgstr "必填项"
 
@@ -2326,16 +2537,16 @@ msgstr "必填项"
 #: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:266
 #: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:303
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/main/discourse-details/reply-discourse/index.js:66
-#: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:145
+#: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:149
 #: frontend/src/project/main-panel/knowledge-base/view/knowledge/edit/index.js:131
 #: frontend/src/project/main-panel/knowledge-base/view/knowledge/edit/index.js:138
 #: frontend/src/project/main-panel/knowledge-base/view/new-knowledge/index.js:152
 #: frontend/src/project/main-panel/knowledge-base/view/new-knowledge/index.js:159
 #: frontend/src/project/main-panel/tickets/components/create-kb-record-dialog.js:92
-#: frontend/src/project/main-panel/tickets/components/create-task-dialog/index.js:202
+#: frontend/src/project/main-panel/tickets/components/create-task-dialog/index.js:203
 #: frontend/src/project/main-panel/tickets/constants.js:161
-#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:184
-#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:191
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:195
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:202
 msgid "Content"
 msgstr "内容"
 
@@ -2351,46 +2562,46 @@ msgstr "链接已生成"
 msgid "Failed to generate invitation link"
 msgstr "生成邀请链接失败"
 
-#: frontend/src/portal/main-panel/user-management.js:77
+#: frontend/src/portal/main-panel/user-management.js:84
 msgid "Invite users"
 msgstr "邀请用户"
 
-#: frontend/src/portal/main-panel/user-management.js:107
+#: frontend/src/portal/main-panel/user-management.js:114
 #: frontend/src/project/main-panel/connections/hooks/connections.js:116
 msgid "Activated"
 msgstr "已激活"
 
-#: frontend/src/portal/main-panel/user-management.js:107
+#: frontend/src/portal/main-panel/user-management.js:114
 #: frontend/src/utils/role-status-utils.js:62
 msgid "Inactive"
 msgstr "未激活"
 
-#: frontend/src/portal/main-panel/user-management.js:109
+#: frontend/src/portal/main-panel/user-management.js:116
 msgid "Delete failed"
 msgstr "删除失败"
 
-#: frontend/src/portal/main-panel/user-management.js:132
+#: frontend/src/portal/main-panel/user-management.js:139
 msgid "Enter email to invite an external user to your portal"
-msgstr "输入邮箱以邀请外部用户到您的门户"
+msgstr "输入邮箱以邀请外部用户到你的门户"
 
-#: frontend/src/portal/main-panel/user-management.js:137
+#: frontend/src/portal/main-panel/user-management.js:144
 msgid "Invite"
 msgstr "邀请"
 
-#: frontend/src/portal/main-panel/user-management.js:147
+#: frontend/src/portal/main-panel/user-management.js:154
 msgid "Invitation link"
 msgstr "邀请链接"
 
-#: frontend/src/portal/main-panel/user-management.js:148
+#: frontend/src/portal/main-panel/user-management.js:155
 msgid "Expiration time"
 msgstr "过期时间"
 
-#: frontend/src/portal/main-panel/user-management.js:178
+#: frontend/src/portal/main-panel/user-management.js:185
 msgid "No pending invitations"
 msgstr "没有待处理的邀请"
 
-#: frontend/src/portal/side-panel/index.js:85
-#: frontend/src/portal/side-panel/index.js:88
+#: frontend/src/portal/side-panel/index.js:86
+#: frontend/src/portal/side-panel/index.js:89
 msgid "Login"
 msgstr "登录"
 
@@ -2399,7 +2610,7 @@ msgid "An email has been sent to the new email address. Please click the confirm
 msgstr "邮件已发送到新的邮箱地址。请点击邮件中的确认链接。"
 
 #: frontend/src/profile-settings/bind-contact-email.js:42
-#: frontend/src/profile-settings/index.js:215
+#: frontend/src/profile-settings/index.js:217
 #: frontend/src/profile-settings/password-widgets/user-update-password-dialog.js:81
 #: frontend/src/profile-settings/webdav-password.js:60
 msgid "Update"
@@ -2475,7 +2686,7 @@ msgid "Social login"
 msgstr "社交账号登录"
 
 #: frontend/src/profile-settings/index.js:103
-#: frontend/src/profile-settings/index.js:230
+#: frontend/src/profile-settings/index.js:232
 msgid "Session logs"
 msgstr "会话日志"
 
@@ -2483,13 +2694,13 @@ msgstr "会话日志"
 msgid "User info updated"
 msgstr "用户信息已更新"
 
-#: frontend/src/profile-settings/index.js:201
+#: frontend/src/profile-settings/index.js:203
 msgid "Profile setting"
 msgstr "个人信息设置"
 
-#: frontend/src/profile-settings/index.js:211
+#: frontend/src/profile-settings/index.js:213
 msgid "You have not set a password yet. Setting a password and binding an email will enable you to login via email."
-msgstr "您尚未设置密码。设置密码并绑定邮箱后，您将可以使用邮箱登录。"
+msgstr "你尚未设置密码。设置密码并绑定邮箱后，你将可以使用邮箱登录。"
 
 #: frontend/src/profile-settings/language-setting.js:26
 msgid "Language setting"
@@ -2645,7 +2856,7 @@ msgid "Download the example file"
 msgstr "下载示例文件"
 
 #: frontend/src/project/components/import-dialog/index.js:125
-#: frontend/src/project/main-panel/ask/documents/index.js:115
+#: frontend/src/project/main-panel/ask/documents/index.js:112
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/main/email-details/html-content/index.js:204
 msgid "Download"
 msgstr "下载"
@@ -2734,8 +2945,8 @@ msgid "Open the source address in a new tab"
 msgstr "在新标签页中打开源地址"
 
 #: frontend/src/project/components/resource-details-dialog/index.js:179
-#: frontend/src/project/main-panel/connections/view/connection/record/index.js:361
-#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:165
+#: frontend/src/project/main-panel/connections/view/connection/record/index.js:370
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:176
 #: frontend/src/project/main-panel/tickets/view/ticket/header/index.js:111
 #: frontend/src/project/side-panel/nav/default-more-nav.js:29
 #: frontend/src/project/side-panel/nav/knowledge-more-nav.js:36
@@ -2752,14 +2963,9 @@ msgstr "普通"
 msgid "Raw"
 msgstr "原始"
 
-#: frontend/src/project/components/thought-process/process-details/index.js:103
-#: frontend/src/sea-metadata/view/table/table-main/rows/group-body/group-container/group-title.js:11
-msgid "Empty"
-msgstr "空"
-
 #: frontend/src/project/constants/bar.js:35
 #: frontend/src/project/main-panel/agent/settings/index.js:15
-#: frontend/src/project/main-panel/settings/index.js:26
+#: frontend/src/project/main-panel/settings/index.js:27
 msgid "Agent"
 msgstr "智能体 (Agent)"
 
@@ -2774,7 +2980,7 @@ msgid "Home"
 msgstr "首页"
 
 #: frontend/src/project/constants/bar.js:60
-#: frontend/src/project/main-panel/portal-issues/components/portal-issues-top-bar.js:69
+#: frontend/src/project/main-panel/portal-issues/components/portal-issues-top-bar.js:68
 msgid "Issues from portal"
 msgstr "来自门户的问题"
 
@@ -2804,7 +3010,7 @@ msgstr "我的工单"
 #: frontend/src/project/constants/bar.js:102
 #: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:58
 #: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:112
-#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:162
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:173
 msgid "New ticket"
 msgstr "新建 ticket"
 
@@ -2812,69 +3018,74 @@ msgstr "新建 ticket"
 msgid "Select suitable issue type"
 msgstr "选择合适的问题类型"
 
-#: frontend/src/project/main-panel/agent/index.js:73
-#: frontend/src/project/main-panel/agent/index.js:198
+#: frontend/src/project/main-panel/agent/index.js:74
+#: frontend/src/project/main-panel/agent/index.js:212
 msgid "Failed to confirm action"
 msgstr "确认操作失败"
 
-#: frontend/src/project/main-panel/agent/index.js:100
-#: frontend/src/project/main-panel/agent/index.js:194
+#: frontend/src/project/main-panel/agent/index.js:104
+#: frontend/src/project/main-panel/agent/index.js:112
+#: frontend/src/project/main-panel/agent/index.js:208
 msgid "Action confirmed"
 msgstr "操作已确认"
 
-#: frontend/src/project/main-panel/agent/index.js:109
+#: frontend/src/project/main-panel/agent/index.js:123
 msgid "Failed to check linked GitHub issues"
 msgstr "检查关联的 GitHub issue 失败"
 
-#: frontend/src/project/main-panel/agent/index.js:115
+#: frontend/src/project/main-panel/agent/index.js:129
 msgid "Content updated"
 msgstr "内容已更新"
 
-#: frontend/src/project/main-panel/agent/index.js:119
+#: frontend/src/project/main-panel/agent/index.js:133
 msgid "Failed to update content"
 msgstr "更新内容失败"
 
-#: frontend/src/project/main-panel/agent/index.js:235
+#: frontend/src/project/main-panel/agent/index.js:249
 msgid "Run Logs"
 msgstr "运行日志"
 
-#: frontend/src/project/main-panel/agent/index.js:246
+#: frontend/src/project/main-panel/agent/index.js:260
 #: frontend/src/sea-metadata/components/popover/groupbys-popover/index.js:135
 msgid "Expand all"
 msgstr "展开全部"
 
-#: frontend/src/project/main-panel/agent/index.js:256
+#: frontend/src/project/main-panel/agent/index.js:270
 #: frontend/src/sea-metadata/components/popover/groupbys-popover/index.js:134
 msgid "Collapse all"
 msgstr "折叠全部"
 
-#: frontend/src/project/main-panel/agent/run-logs/action-item.js:245
+#: frontend/src/project/main-panel/agent/run-logs/action-item.js:246
 #: frontend/src/project/main-panel/agent/run-logs/thought-process-dialog.js:27
 msgid "Event"
 msgstr "事件"
 
-#: frontend/src/project/main-panel/agent/run-logs/action-item.js:252
+#: frontend/src/project/main-panel/agent/run-logs/action-item.js:253
 #: frontend/src/project/main-panel/agent/run-logs/thought-process-dialog.js:28
 msgid "Analysis"
 msgstr "分析"
 
-#: frontend/src/project/main-panel/agent/run-logs/action-item.js:266
+#: frontend/src/project/main-panel/agent/run-logs/action-item.js:267
 msgid "Tool call"
 msgstr "工具调用"
 
-#: frontend/src/project/main-panel/agent/run-logs/action-item.js:289
+#: frontend/src/project/main-panel/agent/run-logs/action-item.js:290
 msgid "Suggestion"
 msgstr "建议"
 
-#: frontend/src/project/main-panel/agent/run-logs/action-item.js:350
+#: frontend/src/project/main-panel/agent/run-logs/action-item.js:351
 msgid "Approve"
 msgstr "通过"
 
-#: frontend/src/project/main-panel/agent/run-logs/action-item.js:354
+#: frontend/src/project/main-panel/agent/run-logs/action-item.js:355
 msgid "Discard"
 msgstr "丢弃"
 
-#: frontend/src/project/main-panel/agent/run-logs/action-item.js:407
+#: frontend/src/project/main-panel/agent/run-logs/action-item.js:361
+msgid "Executing..."
+msgstr "正在执行..."
+
+#: frontend/src/project/main-panel/agent/run-logs/action-item.js:413
 msgid "Thought"
 msgstr "思考"
 
@@ -2903,43 +3114,43 @@ msgstr "Github 问题"
 msgid "Discourse Forum"
 msgstr "Discourse 论坛"
 
-#: frontend/src/project/main-panel/agent/run-logs/run-card.js:405
+#: frontend/src/project/main-panel/agent/run-logs/run-card.js:407
 msgid "Run"
 msgstr "运行"
 
-#: frontend/src/project/main-panel/agent/run-logs/run-card.js:417
+#: frontend/src/project/main-panel/agent/run-logs/run-card.js:419
 msgid "No action needed"
 msgstr "无需操作"
 
-#: frontend/src/project/main-panel/agent/run-logs/run-card.js:430
-#: frontend/src/project/main-panel/ask/components/attachments/attachment/index.js:84
+#: frontend/src/project/main-panel/agent/run-logs/run-card.js:432
+#: frontend/src/project/main-panel/ask/components/attachments/attachment/index.js:85
 #: frontend/src/project/main-panel/connections/constants.js:603
 msgid "Failed"
 msgstr "失败"
 
-#: frontend/src/project/main-panel/agent/run-logs/run-card.js:437
+#: frontend/src/project/main-panel/agent/run-logs/run-card.js:439
 msgid "More options"
 msgstr "更多选项"
 
-#: frontend/src/project/main-panel/agent/run-logs/run-card.js:445
+#: frontend/src/project/main-panel/agent/run-logs/run-card.js:447
 #: frontend/src/project/main-panel/agent/run-logs/run-statistics-dialog.js:145
 msgid "Running log details"
 msgstr "运行日志详情"
 
-#: frontend/src/project/main-panel/agent/run-logs/run-card.js:449
+#: frontend/src/project/main-panel/agent/run-logs/run-card.js:451
 #: frontend/src/project/main-panel/agent/run-logs/thought-process-dialog.js:252
 #: frontend/src/project/main-panel/ask/chat-history/thought-process/index.js:25
-#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:408
+#: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:409
 msgid "Thought process"
 msgstr "思考过程"
 
-#: frontend/src/project/main-panel/agent/run-logs/run-card.js:456
-#: frontend/src/project/main-panel/ask/documents/index.js:116
+#: frontend/src/project/main-panel/agent/run-logs/run-card.js:458
+#: frontend/src/project/main-panel/ask/documents/index.js:113
 msgid "Collapse"
 msgstr "折叠"
 
-#: frontend/src/project/main-panel/agent/run-logs/run-card.js:456
-#: frontend/src/project/main-panel/ask/documents/index.js:116
+#: frontend/src/project/main-panel/agent/run-logs/run-card.js:458
+#: frontend/src/project/main-panel/ask/documents/index.js:113
 #: frontend/src/sea-metadata/view/table/table-main/rows/row/actions-cell/index.js:88
 msgid "Expand"
 msgstr "展开"
@@ -2984,10 +3195,6 @@ msgstr "总计"
 msgid "Edit content..."
 msgstr "编辑内容..."
 
-#: frontend/src/project/main-panel/agent/run-logs/suggestion-detail-panel.js:85
-msgid "Saving..."
-msgstr "正在保存..."
-
 #: frontend/src/project/main-panel/agent/run-logs/thought-process-dialog.js:29
 msgid "Handling"
 msgstr "处理中"
@@ -3027,12 +3234,12 @@ msgid "Observation"
 msgstr "观测结果 (Observation)"
 
 #: frontend/src/project/main-panel/agent/settings/index.js:16
-#: frontend/src/project/main-panel/settings/index.js:27
+#: frontend/src/project/main-panel/settings/index.js:28
 msgid "Enable Agent"
 msgstr "启用智能体 (Agent)"
 
 #: frontend/src/project/main-panel/agent/settings/index.js:17
-#: frontend/src/project/main-panel/settings/index.js:28
+#: frontend/src/project/main-panel/settings/index.js:29
 msgid "Enable agent to automatically analyze and process tickets, GitHub issues, etc."
 msgstr "启用智能体以自动分析和处理工单、GitHub issue 等。"
 
@@ -3042,16 +3249,16 @@ msgstr "添加连接"
 
 #: frontend/src/project/main-panel/analyze/components/connection-setting/index.js:91
 #: frontend/src/project/main-panel/search/hidden-connection-popover/hidden-connections/index.js:62
-#: frontend/src/project/main-panel/tickets/components/create-task-dialog/index.js:226
+#: frontend/src/project/main-panel/tickets/components/create-task-dialog/index.js:227
 msgid "No connections available"
 msgstr "没有可用的连接"
 
-#: frontend/src/project/main-panel/analyze/components/embedding-view/index.js:415
+#: frontend/src/project/main-panel/analyze/components/embedding-view/index.js:416
 #: frontend/src/project/main-panel/analyze/index.js:174
 msgid "No analysis"
 msgstr "暂无分析"
 
-#: frontend/src/project/main-panel/analyze/components/embedding-view/index.js:416
+#: frontend/src/project/main-panel/analyze/components/embedding-view/index.js:417
 msgid "Click analyze to start"
 msgstr "点击分析以开始"
 
@@ -3081,13 +3288,13 @@ msgstr "日期范围"
 
 #: frontend/src/project/main-panel/analyze/components/settings-panel/index.js:28
 #: frontend/src/project/main-panel/connections/view/all-connections/index.js:45
-#: frontend/src/project/main-panel/tickets/components/create-task-dialog/index.js:216
+#: frontend/src/project/main-panel/tickets/components/create-task-dialog/index.js:217
 msgid "Connection"
 msgstr "连接"
 
 #: frontend/src/project/main-panel/analyze/components/settings-panel/index.js:29
 #: frontend/src/project/main-panel/analyze/index.js:89
-#: frontend/src/project/main-panel/connections/components/connection-resource-details/others/github-issues-details/state-settings.js:136
+#: frontend/src/project/main-panel/connections/components/connection-resource-details/others/github-issues-details/state-settings.js:133
 #: frontend/src/project/main-panel/connections/constants.js:704
 #: frontend/src/project/main-panel/connections/constants.js:935
 #: frontend/src/project/main-panel/tickets/components/ticket-settings/state-settings/index.js:97
@@ -3246,50 +3453,32 @@ msgstr "添加工单和文档"
 msgid "Upload image"
 msgstr "上传图片"
 
-#: frontend/src/project/main-panel/ask/chat-input/attachments-selector/index.js:94
-#: frontend/src/project/main-panel/search/index.js:222
-#: frontend/src/project/main-panel/tickets/components/tickets-dialog/index.js:94
-#: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item/index.js:641
-#: frontend/src/sea-metadata/components/popover/groupbys-popover/groupbys/groupby-item.js:190
-#: frontend/src/sea-metadata/components/popover/sort-popover/index.js:213
-#: frontend/src/sea-metadata/components/view-toolbar/views/all-views/index.js:174
-msgid "No results"
-msgstr "没有结果"
-
-#: frontend/src/project/main-panel/ask/chat-input/index.js:116
-msgid "Each message may contain a maximum of {count} images."
-msgstr "每条消息最多可包含 {count} 张图片。"
-
-#: frontend/src/project/main-panel/ask/chat-input/index.js:120
-msgid "Each message may contain a maximum of {count} images, additional images will not be allowed."
-msgstr "每条消息最多可包含 {count} 张图片，超出部分将不被允许。"
-
-#: frontend/src/project/main-panel/ask/chat-input/index.js:380
+#: frontend/src/project/main-panel/ask/chat-input/index.js:539
 msgid "What problem do you want to solve?"
-msgstr "您想解决什么问题？"
+msgstr "你想解决什么问题？"
 
-#: frontend/src/project/main-panel/ask/chat-input/index.js:410
-#: frontend/src/project/main-panel/ask/chat-input/index.js:413
+#: frontend/src/project/main-panel/ask/chat-input/index.js:584
+#: frontend/src/project/main-panel/ask/chat-input/index.js:587
 msgid "Send"
 msgstr "发送"
 
-#: frontend/src/project/main-panel/ask/chat-input/index.js:413
+#: frontend/src/project/main-panel/ask/chat-input/index.js:587
 msgid "Uploading..."
 msgstr "正在上传..."
 
-#: frontend/src/project/main-panel/ask/chat-input/index.js:423
+#: frontend/src/project/main-panel/ask/chat-input/index.js:597
 msgid "Drop here"
 msgstr "拖拽至此处"
 
-#: frontend/src/project/main-panel/ask/chat/index.js:579
+#: frontend/src/project/main-panel/ask/chat/index.js:580
 msgid "You can say \"Help solve the following issue: <issue description>\" to let AI solve the issue by searching knowledge bases."
-msgstr "您可以说“请帮助解决以下问题：<问题描述>”，让 AI 通过搜索知识库来解决问题。"
+msgstr "你可以说“请帮助解决以下问题：<问题描述>”，让 AI 通过搜索知识库来解决问题。"
 
-#: frontend/src/project/main-panel/ask/chat/index.js:604
+#: frontend/src/project/main-panel/ask/chat/index.js:605
 msgid "Start a new chat from this conversation"
 msgstr "基于此对话开始新聊天"
 
-#: frontend/src/project/main-panel/ask/components/attachments/attachment/index.js:64
+#: frontend/src/project/main-panel/ask/components/attachments/attachment/index.js:65
 msgid "Image"
 msgstr "图片"
 
@@ -3317,17 +3506,13 @@ msgstr "Markdown 已下载"
 msgid "Download all files"
 msgstr "下载所有文件"
 
-#: frontend/src/project/main-panel/ask/documents/index.js:110
-msgid "Close all tabs"
-msgstr "关闭所有标签页"
-
 #: frontend/src/project/main-panel/ask/hooks/sessions.js:43
 msgid "Started a new chat from this conversation"
 msgstr "已基于此对话开始新聊天"
 
 #: frontend/src/project/main-panel/ask/models/attachment-object.js:32
-#: frontend/src/project/main-panel/connections/view/connection/records/index.js:80
-#: frontend/src/project/main-panel/connections/view/connection/records/index.js:82
+#: frontend/src/project/main-panel/connections/view/connection/records/index.js:79
+#: frontend/src/project/main-panel/connections/view/connection/records/index.js:81
 #: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:552
 #: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:556
 #: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:566
@@ -3345,18 +3530,18 @@ msgid "Notion"
 msgstr "Notion"
 
 #: frontend/src/project/main-panel/ask/models/attachment-object.js:38
-#: frontend/src/project/main-panel/connections/view/connection/records/index.js:74
+#: frontend/src/project/main-panel/connections/view/connection/records/index.js:73
 msgid "Site"
 msgstr "网站"
 
 #: frontend/src/project/main-panel/ask/models/attachment-object.js:40
 #: frontend/src/project/main-panel/connections/constants.js:538
-#: frontend/src/project/main-panel/connections/view/connection/records/index.js:99
+#: frontend/src/project/main-panel/connections/view/connection/records/index.js:98
 msgid "General tasks"
 msgstr "常规任务"
 
 #: frontend/src/project/main-panel/ask/models/attachment-object.js:42
-#: frontend/src/project/main-panel/connections/view/connection/records/index.js:90
+#: frontend/src/project/main-panel/connections/view/connection/records/index.js:89
 msgid "Discourse forum"
 msgstr "Discourse 论坛"
 
@@ -3389,7 +3574,7 @@ msgid "Logs"
 msgstr "日志"
 
 #: frontend/src/project/main-panel/connections/components/cell-formatter/op-formatter/index.js:60
-#: frontend/src/project/main-panel/connections/components/connection-status-dialog/index.js:145
+#: frontend/src/project/main-panel/connections/components/connection-status-dialog/index.js:146
 #: frontend/src/project/main-panel/connections/components/top-bar/index.js:156
 msgid "Sync now"
 msgstr "立即同步"
@@ -3428,8 +3613,8 @@ msgid "Connection logs"
 msgstr "连接日志"
 
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/main/discourse-details/index.js:68
-#: frontend/src/project/main-panel/connections/components/connection-resource-details/main/email-details/item.js:214
-#: frontend/src/project/main-panel/connections/components/connection-resource-details/main/email-details/item.js:241
+#: frontend/src/project/main-panel/connections/components/connection-resource-details/main/email-details/item.js:215
+#: frontend/src/project/main-panel/connections/components/connection-resource-details/main/email-details/item.js:242
 msgid "Reply"
 msgstr "回复"
 
@@ -3466,8 +3651,8 @@ msgstr "消息"
 msgid "On {day}, {date_year}, at {time}, {email_from} wrote:"
 msgstr "在 {date_year} {day} {time}，{email_from} 写道："
 
-#: frontend/src/project/main-panel/connections/components/connection-resource-details/main/email-details/item.js:211
-#: frontend/src/project/main-panel/connections/components/connection-resource-details/main/email-details/item.js:238
+#: frontend/src/project/main-panel/connections/components/connection-resource-details/main/email-details/item.js:212
+#: frontend/src/project/main-panel/connections/components/connection-resource-details/main/email-details/item.js:239
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/main/email-details/reply-email/index.js:61
 msgid "To"
 msgstr "到"
@@ -3495,41 +3680,41 @@ msgid "unread"
 msgstr "未读"
 
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/others/general-task-details/index.js:67
-#: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:162
+#: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:166
 #: frontend/src/project/main-panel/connections/constants.js:895
 #: frontend/src/project/main-panel/connections/constants.js:932
-#: frontend/src/project/main-panel/tickets/components/create-task-dialog/index.js:236
-#: frontend/src/project/main-panel/tickets/components/ticket-in-dialog/index.js:311
+#: frontend/src/project/main-panel/tickets/components/create-task-dialog/index.js:237
+#: frontend/src/project/main-panel/tickets/components/ticket-in-dialog/index.js:316
 #: frontend/src/project/main-panel/tickets/constants.js:180
-#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:213
-#: frontend/src/project/main-panel/tickets/view/ticket/index.js:671
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:224
+#: frontend/src/project/main-panel/tickets/view/ticket/index.js:677
 msgid "Assignees"
 msgstr "受让人"
 
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/others/general-task-details/index.js:68
-#: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:164
-#: frontend/src/project/main-panel/tickets/components/create-task-dialog/index.js:237
-#: frontend/src/project/main-panel/tickets/components/ticket-in-dialog/index.js:313
-#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:215
-#: frontend/src/project/main-panel/tickets/view/ticket/index.js:673
+#: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:168
+#: frontend/src/project/main-panel/tickets/components/create-task-dialog/index.js:238
+#: frontend/src/project/main-panel/tickets/components/ticket-in-dialog/index.js:318
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:226
+#: frontend/src/project/main-panel/tickets/view/ticket/index.js:679
 msgid "No one assigned"
 msgstr "无人指派"
 
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/others/general-task-details/index.js:75
-#: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:200
+#: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:204
 #: frontend/src/project/main-panel/connections/constants.js:900
-#: frontend/src/project/main-panel/tickets/components/ticket-in-dialog/index.js:341
+#: frontend/src/project/main-panel/tickets/components/ticket-in-dialog/index.js:346
 #: frontend/src/project/main-panel/tickets/constants.js:193
-#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:249
-#: frontend/src/project/main-panel/tickets/view/ticket/index.js:691
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:260
+#: frontend/src/project/main-panel/tickets/view/ticket/index.js:697
 msgid "Participants"
 msgstr "参与者"
 
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/others/general-task-details/index.js:76
-#: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:202
-#: frontend/src/project/main-panel/tickets/components/ticket-in-dialog/index.js:343
-#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:251
-#: frontend/src/project/main-panel/tickets/view/ticket/index.js:694
+#: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:206
+#: frontend/src/project/main-panel/tickets/components/ticket-in-dialog/index.js:348
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:262
+#: frontend/src/project/main-panel/tickets/view/ticket/index.js:700
 #: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-item/collaborator-filter/index.js:44
 msgid "No participants"
 msgstr "无参与者"
@@ -3560,7 +3745,7 @@ msgstr "理由"
 msgid "No options"
 msgstr "无选项"
 
-#: frontend/src/project/main-panel/connections/components/connection-resource-details/others/github-issues-details/state-settings.js:70
+#: frontend/src/project/main-panel/connections/components/connection-resource-details/others/github-issues-details/state-settings.js:67
 #: frontend/src/project/main-panel/tickets/view/ticket/status-toggle-btn/index.js:64
 #, javascript-format
 msgid "Close as %s"
@@ -3621,27 +3806,32 @@ msgstr "已处理： "
 msgid "Vector index"
 msgstr "向量索引"
 
-#: frontend/src/project/main-panel/connections/components/connection-status-dialog/index.js:112
+#: frontend/src/project/main-panel/connections/components/connection-status-dialog/index.js:113
 msgid "Connection status"
 msgstr "连接状态"
 
-#: frontend/src/project/main-panel/connections/components/connection-status-dialog/index.js:119
+#: frontend/src/project/main-panel/connections/components/connection-status-dialog/index.js:120
 msgid "Total records"
 msgstr "总记录"
 
-#: frontend/src/project/main-panel/connections/components/connection-status-dialog/index.js:121
+#: frontend/src/project/main-panel/connections/components/connection-status-dialog/index.js:122
 msgid "Latest synchronization time"
 msgstr "最后同步时间"
 
-#: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:88
+#: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:57
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:103
+msgid "Substate invalid."
+msgstr "子状态无效。"
+
+#: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:92
 msgid "Ticket created"
 msgstr "Ticket 已创建"
 
-#: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:103
+#: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:107
 msgid "Linked record"
 msgstr "关联记录"
 
-#: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:121
+#: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:125
 #: frontend/src/project/main-panel/connections/utils.js:419
 msgid "Create related ticket"
 msgstr "创建相关的 ticket"
@@ -3651,152 +3841,152 @@ msgid "Edit connection"
 msgstr "编辑连接"
 
 #: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:189
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:636
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:778
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:642
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:784
 msgid "Connection name"
 msgstr "连接名称"
 
 #: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:197
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:644
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:650
 msgid "OAuth callback URL"
 msgstr "OAuth 回调 URL"
 
 #: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:198
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:645
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:651
 msgid "Use this callback URL in your email provider OAuth app configuration. It is read-only and must match exactly."
-msgstr "在您的邮件提供商 OAuth 应用配置中使用此回调 URL。它是只读的，且必须完全匹配。"
+msgstr "在你的邮件提供商 OAuth 应用配置中使用此回调 URL。它是只读的，且必须完全匹配。"
 
 #: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:213
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:660
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:666
 msgid "Advanced options"
 msgstr "高级选项"
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:214
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:217
 msgid "Failed to check Confluence authorization status."
 msgstr "检查 Confluence 授权状态失败。"
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:264
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:267
 msgid "Failed to fetch authorization url"
 msgstr "获取授权 URL 失败"
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:453
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:456
 msgid "Failed to check Linear authorization status."
 msgstr "检查 Linear 授权状态失败。"
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:559
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:565
 #: frontend/src/project/main-panel/connections/components/top-bar/index.js:142
-#: frontend/src/project/main-panel/connections/view/all-connections/index.js:171
+#: frontend/src/project/main-panel/connections/view/all-connections/index.js:172
 msgid "New connection"
 msgstr "新建连接"
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:565
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:571
 msgid "Help Docs"
 msgstr "帮助文档"
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:577
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:583
 msgid "Manage GitHub app"
 msgstr "管理 GitHub 应用"
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:597
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:603
 msgid "Expand section"
 msgstr "展开区域"
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:597
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:603
 msgid "Collapse section"
 msgstr "折叠区域"
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:668
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:693
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:674
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:699
 msgid "Authorization"
 msgstr "授权"
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:671
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:699
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:677
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:705
 msgid "Connected"
 msgstr "已连接"
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:671
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:699
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:677
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:705
 msgid "Not connected"
 msgstr "未连接"
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:679
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:685
 msgid "Reconnect Confluence"
 msgstr "重新连接 Confluence"
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:679
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:685
 msgid "Connect Confluence"
 msgstr "连接 Confluence"
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:688
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:694
 msgid "Waiting for OAuth authorization to complete..."
 msgstr "正在等待 OAuth 授权完成..."
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:706
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:712
 msgid "Reconnect Linear"
 msgstr "重新连接 Linear"
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:706
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:712
 msgid "Connect Linear"
 msgstr "连接 Linear"
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:715
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:721
 msgid "Waiting for Confluence authorization to complete..."
 msgstr "正在等待 Confluence 授权完成..."
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:720
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:726
 msgid "Spaces (optional)"
 msgstr "空间 (可选)"
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:722
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:728
 msgid "Select specific spaces to sync. Leave empty to sync all spaces in the workspace."
 msgstr "选择要同步的特定空间。留空则同步工作区中的所有空间。"
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:726
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:732
 msgid "Loading spaces..."
 msgstr "正在加载空间..."
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:729
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:735
 msgid "No spaces found in this workspace."
 msgstr "在此工作区中未找到空间。"
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:761
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:767
 msgid "Checking GitHub App installation status..."
 msgstr "正在检查 GitHub App 安装状态..."
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:762
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:769
-msgid "Install GitHub app to your repositories to enable SeaTicket to sync issues from these repositories"
-msgstr "将 GitHub App 安装到您的仓库中，以便 SeaTicket 同步这些仓库的 issue"
-
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:768
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:775
+msgid "Install GitHub app to your repositories to enable SeaTicket to sync issues from these repositories"
+msgstr "将 GitHub App 安装到你的仓库中，以便 SeaTicket 同步这些仓库的 issue"
+
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:774
 msgid "GitHub app not installed"
 msgstr "GitHub App 未安装"
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:770
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:776
 msgid "Install GitHub app"
 msgstr "安装 GitHub App"
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:801
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:807
 msgid "Next"
 msgstr "下一步"
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:807
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:813
 msgid "Previous"
 msgstr "上一步"
 
-#: frontend/src/project/main-panel/connections/components/related-issues-dialog/index.js:73
+#: frontend/src/project/main-panel/connections/components/related-issues-dialog/index.js:74
 #: frontend/src/project/main-panel/tickets/components/related-issues-dialog/index.js:81
 msgid "Related issues"
 msgstr "相关 issue"
 
-#: frontend/src/project/main-panel/connections/components/related-issues-dialog/index.js:92
 #: frontend/src/project/main-panel/connections/components/related-issues-dialog/index.js:93
+#: frontend/src/project/main-panel/connections/components/related-issues-dialog/index.js:94
 #: frontend/src/project/main-panel/tickets/components/related-issues-dialog/index.js:103
 msgid "No title"
 msgstr "无标题"
 
-#: frontend/src/project/main-panel/connections/components/related-issues-dialog/index.js:109
+#: frontend/src/project/main-panel/connections/components/related-issues-dialog/index.js:110
 msgid "No related issues"
 msgstr "无相关 issue"
 
@@ -3831,7 +4021,7 @@ msgstr "Microsoft (Microsoft 365 和 Outlook)"
 
 #: frontend/src/project/main-panel/connections/constants.js:149
 msgid "The authentication type for third-party account login via email service provider. For most email service providers, you can use \"General Email Service Provider\", which authenticates via username and password; for Gmail accounts, users can choose either \"General Email Service Provider\" or \"Gmail\", the latter authenticating the Google account using OAuth2 mode; for MS365 and Outlook email users, only the \"Microsoft (Microsoft 365 and Outlook)\" mode can be selected for account authentication via OAuth2."
-msgstr "通过邮件服务商登录第三方账号的认证类型。对于大多数邮件服务商，您可以使用“通用邮件服务商”，通过用户名和密码进行认证；对于 Gmail 账号，用户可以选择“通用邮件服务商”或“Gmail”，后者使用 OAuth2 模式认证 Google 账号；对于 MS365 和 Outlook 邮件用户，只能选择“Microsoft (Microsoft 365 和 Outlook)”模式通过 OAuth2 进行账号认证。"
+msgstr "通过邮件服务商登录第三方账号的认证类型。对于大多数邮件服务商，你可以使用“通用邮件服务商”，通过用户名和密码进行认证；对于 Gmail 账号，用户可以选择“通用邮件服务商”或“Gmail”，后者使用 OAuth2 模式认证 Google 账号；对于 MS365 和 Outlook 邮件用户，只能选择“Microsoft (Microsoft 365 和 Outlook)”模式通过 OAuth2 进行账号认证。"
 
 #: frontend/src/project/main-panel/connections/constants.js:152
 msgid "\"From\" display name (optional)"
@@ -3892,7 +4082,7 @@ msgstr "用户名是该账号的电子邮件地址。"
 
 #: frontend/src/project/main-panel/connections/constants.js:275
 msgid "The password for your email account. For some email providers, you may need to create an app password and use that app password here."
-msgstr "您的电子邮件账号密码。对于某些邮件提供商，您可能需要创建一个应用专用密码并在此处使用。"
+msgstr "你的电子邮件账号密码。对于某些邮件提供商，你可能需要创建一个应用专用密码并在此处使用。"
 
 #: frontend/src/project/main-panel/connections/constants.js:280
 msgid "Only sync email sent within following number of years"
@@ -3979,7 +4169,7 @@ msgstr "邮箱"
 
 #: frontend/src/project/main-panel/connections/constants.js:490
 msgid "The connection requires an App Password generated by your email provider. Do not use your regular account password. If any problem occurs, check the"
-msgstr "此连接需要您的邮件提供商生成的应用专用密码。请勿使用普通账号密码。如果遇到任何问题，请检查"
+msgstr "此连接需要你的邮件提供商生成的应用专用密码。请勿使用普通账号密码。如果遇到任何问题，请检查"
 
 #: frontend/src/project/main-panel/connections/constants.js:496
 msgid "GitHub"
@@ -3990,7 +4180,7 @@ msgid "Only GitHub organization or repository Admin/Owner accounts can be connec
 msgstr "只有 GitHub 组织或仓库的管理员/所有者账号可以连接。如果遇到任何问题，请检查"
 
 #: frontend/src/project/main-panel/connections/constants.js:503
-#: frontend/src/project/main-panel/connections/view/connection/records/index.js:91
+#: frontend/src/project/main-panel/connections/view/connection/records/index.js:90
 msgid "Discourse forums"
 msgstr "讨论论坛"
 
@@ -3999,7 +4189,7 @@ msgid "Before connecting, please prepare Discourse admin access, forum URL, API-
 msgstr "在连接之前，请准备好 Discourse 管理员权限、论坛 URL、关联 API 的用户名以及管理员生成的 API 密钥。如果遇到任何问题，请检查"
 
 #: frontend/src/project/main-panel/connections/constants.js:510
-#: frontend/src/project/main-panel/connections/view/connection/records/index.js:75
+#: frontend/src/project/main-panel/connections/view/connection/records/index.js:74
 msgid "Sites"
 msgstr "网站"
 
@@ -4013,11 +4203,11 @@ msgstr "Seafile 资料库"
 
 #: frontend/src/project/main-panel/connections/constants.js:518
 msgid "Please provide your Seafile server URL and the API token of the library to be connected. If any problem occurs, check the"
-msgstr "请提供您的 Seafile 服务器 URL 以及要连接的资料库的 API token。如果遇到任何问题，请检查"
+msgstr "请提供你的 Seafile 服务器 URL 以及要连接的资料库的 API token。如果遇到任何问题，请检查"
 
 #: frontend/src/project/main-panel/connections/constants.js:525
 msgid "Before connecting, prepare your Notion integration token and ensure you have workspace admin/owner access, plus read permissions for target pages and databases. If any problem occurs, check the"
-msgstr "在连接之前，请准备好您的 Notion 集成令牌，并确保您拥有工作区管理员/所有者权限，以及目标页面和数据库的读取权限。如果遇到任何问题，请检查"
+msgstr "在连接之前，请准备好你的 Notion 集成令牌，并确保你拥有工作区管理员/所有者权限，以及目标页面和数据库的读取权限。如果遇到任何问题，请检查"
 
 #: frontend/src/project/main-panel/connections/constants.js:531
 msgid "Confluence"
@@ -4025,7 +4215,7 @@ msgstr "Confluence"
 
 #: frontend/src/project/main-panel/connections/constants.js:532
 msgid "Authorize SeaTicket with your Atlassian account, then choose the workspace to sync all pages from that workspace. If any problem occurs, check the"
-msgstr "通过您的 Atlassian 账号授权 SeaTicket，然后选择要从中同步所有页面的工作区。如果遇到任何问题，请检查"
+msgstr "通过你的 Atlassian 账号授权 SeaTicket，然后选择要从中同步所有页面的工作区。如果遇到任何问题，请检查"
 
 #: frontend/src/project/main-panel/connections/constants.js:539
 msgid "Provide the base URL of your API endpoint that list tasks, create a task and so on. If any problem occurs, check the"
@@ -4103,7 +4293,7 @@ msgstr "待办的"
 #: frontend/src/project/main-panel/connections/constants.js:671
 #: frontend/src/project/main-panel/connections/constants.js:834
 #: frontend/src/project/main-panel/connections/constants.js:867
-#: frontend/src/project/main-panel/connections/view/connection/record/index.js:340
+#: frontend/src/project/main-panel/connections/view/connection/record/index.js:349
 msgid "Outdated"
 msgstr "已过时"
 
@@ -4162,7 +4352,7 @@ msgstr "其他"
 #: frontend/src/project/main-panel/connections/constants.js:912
 #: frontend/src/project/main-panel/connections/constants.js:948
 #: frontend/src/project/main-panel/connections/utils.js:481
-#: frontend/src/project/main-panel/tickets/components/ticket-settings/due-date-settings/index.js:48
+#: frontend/src/project/main-panel/tickets/components/ticket-settings/due-date-settings/index.js:46
 #: frontend/src/project/main-panel/tickets/constants.js:223
 msgid "Due date"
 msgstr "截止日期"
@@ -4179,7 +4369,7 @@ msgstr "连接 {name} 已同步"
 msgid "Connection {name} sync failed"
 msgstr "连接 {name} 同步失败"
 
-#: frontend/src/project/main-panel/connections/hooks/connections.js:332
+#: frontend/src/project/main-panel/connections/hooks/connections.js:333
 #: frontend/src/sys-admin/orgs/orgs-content.js:138
 msgid "Are you sure you want to delete {placeholder} ?"
 msgstr "确定要删除 {placeholder} 吗？"
@@ -4244,16 +4434,16 @@ msgstr "Webhook 配置成功"
 msgid "Sync task queued"
 msgstr "同步任务已排队"
 
-#: frontend/src/project/main-panel/connections/view/all-connections/index.js:166
+#: frontend/src/project/main-panel/connections/view/all-connections/index.js:167
 msgid "No connections"
 msgstr "没有连接"
 
-#: frontend/src/project/main-panel/connections/view/all-connections/index.js:167
+#: frontend/src/project/main-panel/connections/view/all-connections/index.js:168
 msgid "Connections enable you to sync contents from third party applications and search them"
-msgstr "连接功能使您能够同步第三方应用程序的内容并进行搜索"
+msgstr "连接功能使你能够同步第三方应用程序的内容并进行搜索"
 
 #: frontend/src/project/main-panel/connections/view/connection/record/index.js:88
-#: frontend/src/project/main-panel/connections/view/connection/records/index.js:276
+#: frontend/src/project/main-panel/connections/view/connection/records/index.js:275
 #: frontend/src/sys-admin/users/users-table/user.js:104
 #: frontend/src/sys-admin/users/users.js:88
 #: frontend/src/sys-admin/users/users.js:105
@@ -4261,74 +4451,74 @@ msgid "It may take some time, please wait."
 msgstr "可能需要一些时间，请稍候。"
 
 #: frontend/src/project/main-panel/connections/view/connection/record/index.js:95
-#: frontend/src/project/main-panel/connections/view/connection/records/index.js:283
+#: frontend/src/project/main-panel/connections/view/connection/records/index.js:282
 msgid "Email thread has been moved to trash."
 msgstr "邮件会话已移至回收站。"
 
 #: frontend/src/project/main-panel/connections/view/connection/record/index.js:124
-#: frontend/src/project/main-panel/connections/view/connection/records/index.js:432
+#: frontend/src/project/main-panel/connections/view/connection/records/index.js:431
 msgid "Delete email"
 msgstr "删除邮件"
 
-#: frontend/src/project/main-panel/connections/view/connection/record/index.js:345
+#: frontend/src/project/main-panel/connections/view/connection/record/index.js:354
 msgid "Open the original URL in a new tab"
 msgstr "在新标签页中打开原始 URL"
 
-#: frontend/src/project/main-panel/connections/view/connection/record/index.js:353
+#: frontend/src/project/main-panel/connections/view/connection/record/index.js:362
 msgid "Edit title"
 msgstr "编辑标题"
 
-#: frontend/src/project/main-panel/connections/view/connection/records/index.js:72
+#: frontend/src/project/main-panel/connections/view/connection/records/index.js:71
 msgid "site"
 msgstr "网站"
 
-#: frontend/src/project/main-panel/connections/view/connection/records/index.js:73
+#: frontend/src/project/main-panel/connections/view/connection/records/index.js:72
 msgid "sites"
 msgstr "网站"
 
-#: frontend/src/project/main-panel/connections/view/connection/records/index.js:81
-#: frontend/src/project/main-panel/connections/view/connection/records/index.js:83
+#: frontend/src/project/main-panel/connections/view/connection/records/index.js:80
+#: frontend/src/project/main-panel/connections/view/connection/records/index.js:82
 msgid "GitHub issues"
 msgstr "GitHub 问题"
 
-#: frontend/src/project/main-panel/connections/view/connection/records/index.js:88
+#: frontend/src/project/main-panel/connections/view/connection/records/index.js:87
 msgid "discourse forum"
 msgstr "Discourse 论坛"
 
-#: frontend/src/project/main-panel/connections/view/connection/records/index.js:89
+#: frontend/src/project/main-panel/connections/view/connection/records/index.js:88
 msgid "discourse forums"
 msgstr "Discourse 论坛"
 
-#: frontend/src/project/main-panel/connections/view/connection/records/index.js:96
+#: frontend/src/project/main-panel/connections/view/connection/records/index.js:95
 msgid "general task"
 msgstr "常规任务"
 
-#: frontend/src/project/main-panel/connections/view/connection/records/index.js:97
+#: frontend/src/project/main-panel/connections/view/connection/records/index.js:96
 msgid "general tasks"
 msgstr "常规任务"
 
-#: frontend/src/project/main-panel/connections/view/connection/records/index.js:98
+#: frontend/src/project/main-panel/connections/view/connection/records/index.js:97
 msgid "General task"
 msgstr "常规任务"
 
-#: frontend/src/project/main-panel/connections/view/connection/records/index.js:284
+#: frontend/src/project/main-panel/connections/view/connection/records/index.js:283
 msgid "Email threads have been moved to trash."
 msgstr "邮件会话已移至回收站。"
 
-#: frontend/src/project/main-panel/connections/view/connection/records/index.js:406
+#: frontend/src/project/main-panel/connections/view/connection/records/index.js:405
 msgid "Delete emails"
 msgstr "删除邮件"
 
-#: frontend/src/project/main-panel/inbox/index.js:51
+#: frontend/src/project/main-panel/inbox/index.js:52
 msgid "Mark all as read"
 msgstr "全部标记为已读"
 
-#: frontend/src/project/main-panel/knowledge-base/knowledge-top-bar/index.js:35
-#: frontend/src/project/main-panel/knowledge-base/knowledge-top-bar/index.js:70
+#: frontend/src/project/main-panel/knowledge-base/knowledge-top-bar/index.js:32
+#: frontend/src/project/main-panel/knowledge-base/knowledge-top-bar/index.js:67
 msgid "New record"
 msgstr "新记录"
 
-#: frontend/src/project/main-panel/knowledge-base/knowledge-top-bar/index.js:48
+#: frontend/src/project/main-panel/knowledge-base/knowledge-top-bar/index.js:45
 msgid "Deleted records"
 msgstr "已删除记录"
 
@@ -4348,40 +4538,40 @@ msgstr "记录已恢复"
 msgid "Failed to restore records"
 msgstr "恢复记录失败"
 
-#: frontend/src/project/main-panel/portal-issues/components/issues.js:184
+#: frontend/src/project/main-panel/portal-issues/components/issues.js:186
 msgid "issue"
 msgstr "问题 (issue)"
 
-#: frontend/src/project/main-panel/portal-issues/components/issues.js:185
+#: frontend/src/project/main-panel/portal-issues/components/issues.js:187
 msgid "issues"
 msgstr "问题 (issue)"
 
-#: frontend/src/project/main-panel/portal-issues/components/issues.js:186
+#: frontend/src/project/main-panel/portal-issues/components/issues.js:188
 msgid "Issue"
 msgstr "问题 (issue)"
 
-#: frontend/src/project/main-panel/portal-issues/components/portal-issues-top-bar.js:40
+#: frontend/src/project/main-panel/portal-issues/components/portal-issues-top-bar.js:39
 #: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:39
 #: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:42
 #: frontend/src/project/main-panel/tickets/view/types/index.js:202
-#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:276
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:281
 msgid "Types"
 msgstr "类型"
 
-#: frontend/src/project/main-panel/portal-issues/components/portal-issues-top-bar.js:64
+#: frontend/src/project/main-panel/portal-issues/components/portal-issues-top-bar.js:63
 #: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:64
 #: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:67
 #: frontend/src/project/main-panel/tickets/view/substates/index.js:98
-#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:284
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:289
 msgid "Substates"
 msgstr "子状态"
 
-#: frontend/src/project/main-panel/portal-issues/components/portal-issues-top-bar.js:83
+#: frontend/src/project/main-panel/portal-issues/components/portal-issues-top-bar.js:82
 #: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:93
 msgid "New type"
 msgstr "新建类型"
 
-#: frontend/src/project/main-panel/portal-issues/components/portal-issues-top-bar.js:89
+#: frontend/src/project/main-panel/portal-issues/components/portal-issues-top-bar.js:88
 #: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:99
 msgid "New substate"
 msgstr "新建子状态"
@@ -4395,7 +4585,7 @@ msgid "Issue deleted"
 msgstr "问题已删除"
 
 #: frontend/src/project/main-panel/portal-issues/view/issue/index.js:201
-#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:168
+#: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:179
 #: frontend/src/project/main-panel/tickets/view/ticket/index.js:288
 msgid "Open keyboard shortcuts"
 msgstr "打开键盘快捷键"
@@ -4405,20 +4595,20 @@ msgid "Not found issue"
 msgstr "未找到问题"
 
 #: frontend/src/project/main-panel/portal-issues/view/issue/index.js:501
-#: frontend/src/project/main-panel/tickets/view/ticket/index.js:628
+#: frontend/src/project/main-panel/tickets/view/ticket/index.js:634
 msgid "Add a comment"
 msgstr "添加评论"
 
 #: frontend/src/project/main-panel/portal-issues/view/issue/index.js:506
 #: frontend/src/project/main-panel/portal-issues/view/issue/index.js:534
 #: frontend/src/project/main-panel/tickets/components/comment/index.js:228
-#: frontend/src/project/main-panel/tickets/view/ticket/index.js:633
-#: frontend/src/project/main-panel/tickets/view/ticket/index.js:661
+#: frontend/src/project/main-panel/tickets/view/ticket/index.js:639
+#: frontend/src/project/main-panel/tickets/view/ticket/index.js:667
 msgid "Comment"
 msgstr "评论"
 
 #: frontend/src/project/main-panel/portal-issues/view/substates/index.js:13
-#: frontend/src/project/main-panel/tickets/components/ticket-settings/substate-settings/index.js:74
+#: frontend/src/project/main-panel/tickets/components/ticket-settings/substate-settings/index.js:73
 #: frontend/src/project/main-panel/tickets/constants.js:146
 #: frontend/src/project/main-panel/tickets/view/substates/index.js:17
 #: frontend/src/project/main-panel/tickets/view/substates/index.js:99
@@ -4437,7 +4627,7 @@ msgstr "删除门户问题"
 #: frontend/src/project/main-panel/portal-issues/view/trash-issues/clean-portal-issues.js:25
 #: frontend/src/project/main-panel/tickets/view/trash-tickets/clean-tickets.js:25
 msgid "Are you sure you want to delete the {placeholder} ?"
-msgstr "您确定要删除 {placeholder} 吗？"
+msgstr "你确定要删除 {placeholder} 吗？"
 
 #: frontend/src/project/main-panel/portal-issues/view/trash-issues/clean-portal-issues.js:25
 msgid "portal issues"
@@ -4526,13 +4716,41 @@ msgstr "关闭全部"
 msgid "Open all"
 msgstr "打开全部"
 
-#: frontend/src/project/main-panel/search/index.js:205
+#: frontend/src/project/main-panel/search/index.js:207
 msgid "Semantic search"
 msgstr "语义搜索"
 
-#: frontend/src/project/main-panel/search/index.js:217
+#: frontend/src/project/main-panel/search/index.js:219
 msgid "Start your search above to find results"
 msgstr "在上方开始搜索以查找结果"
+
+#: frontend/src/project/main-panel/settings/agent-auto-confirm-settings/index.js:11
+msgid "Notify assignees"
+msgstr "通知分配人"
+
+#: frontend/src/project/main-panel/settings/agent-auto-confirm-settings/index.js:12
+msgid "Automatically send assignee reminders without manual approval."
+msgstr "自动发送分配人提醒，无需手动审批。"
+
+#: frontend/src/project/main-panel/settings/agent-auto-confirm-settings/index.js:18
+msgid "Create internal ticket"
+msgstr "创建内部工单"
+
+#: frontend/src/project/main-panel/settings/agent-auto-confirm-settings/index.js:19
+msgid "Automatically create a ticket from AI suggestions."
+msgstr "自动从 AI 建议创建工单。"
+
+#: frontend/src/project/main-panel/settings/agent-auto-confirm-settings/index.js:20
+msgid "Use with caution"
+msgstr "谨慎使用"
+
+#: frontend/src/project/main-panel/settings/agent-auto-confirm-settings/index.js:44
+msgid "Auto-approve actions"
+msgstr "自动审批操作"
+
+#: frontend/src/project/main-panel/settings/agent-auto-confirm-settings/index.js:47
+msgid "When enabled, matching suggestions are executed automatically without clicking Approve in run logs."
+msgstr "当启用时，匹配建议在运行日志中自动执行，无需点击审批。"
 
 #: frontend/src/project/main-panel/settings/github-issue-type-mapping/index.js:26
 msgid "Sync GitHub issue type"
@@ -4551,19 +4769,19 @@ msgstr "同步完成"
 msgid "Please select"
 msgstr "请选择"
 
-#: frontend/src/project/main-panel/settings/index.js:48
+#: frontend/src/project/main-panel/settings/index.js:49
 msgid "Ticket processing rules"
 msgstr "工单处理规则"
 
-#: frontend/src/project/main-panel/settings/index.js:49
-msgid "Define your own additional rules for ticket processing in natural-language."
-msgstr "使用自然语言为您自己的工单处理定义额外规则。"
-
 #: frontend/src/project/main-panel/settings/index.js:50
+msgid "Define your own additional rules for ticket processing in natural-language."
+msgstr "使用自然语言为你自己的工单处理定义额外规则。"
+
+#: frontend/src/project/main-panel/settings/index.js:51
 msgid "Edit Ticket Processing Rules"
 msgstr "编辑工单处理规则"
 
-#: frontend/src/project/main-panel/settings/index.js:51
+#: frontend/src/project/main-panel/settings/index.js:52
 msgid "Example:\n"
 "1) If due soon and substate is Waiting on user, do not send reminder.\n"
 "2) If over due and substate is Waiting on user, suggest closing the ticket."
@@ -4571,15 +4789,15 @@ msgstr "示例：\n"
 "1) 如果即将到期且子状态为“等待用户”，则不发送提醒。\n"
 "2) 如果已逾期且子状态为“等待用户”，则建议关闭工单。"
 
-#: frontend/src/project/main-panel/settings/index.js:53
+#: frontend/src/project/main-panel/settings/index.js:54
 msgid "Ticket processing rules cannot contain tag-like content such as <system-reminder>."
 msgstr "工单处理规则不能包含类似标签的内容，例如 <system-reminder>。"
 
-#: frontend/src/project/main-panel/settings/index.js:60
+#: frontend/src/project/main-panel/settings/index.js:68
 msgid "Enable support portal"
 msgstr "启用支持门户"
 
-#: frontend/src/project/main-panel/settings/index.js:67
+#: frontend/src/project/main-panel/settings/index.js:75
 #: frontend/src/project/main-panel/settings/language-settings/index.js:38
 msgid "Language for AI summary"
 msgstr "AI 总结语言"
@@ -4596,7 +4814,7 @@ msgstr "编辑提示词"
 #: frontend/src/project/main-panel/settings/prompt-settings/edit-prompt-dialog.js:16
 #: frontend/src/project/main-panel/settings/prompt-settings/index.js:15
 msgid "Provide the project background information for the AI to understand the project accurately. Enter your custom project prompt here..."
-msgstr "提供项目背景信息，以便 AI 准确理解项目。在此输入您的自定义项目提示词..."
+msgstr "提供项目背景信息，以便 AI 准确理解项目。在此输入你的自定义项目提示词..."
 
 #: frontend/src/project/main-panel/settings/prompt-settings/edit-prompt-dialog.js:18
 #: frontend/src/project/main-panel/settings/prompt-settings/index.js:17
@@ -4615,15 +4833,15 @@ msgstr "为此项目设置 AI 系统提示词。此提示词将应用于该项�
 msgid "Not set"
 msgstr "未设置"
 
-#: frontend/src/project/main-panel/support-portal/view/index.js:38
+#: frontend/src/project/main-panel/support-portal/view/index.js:56
 msgid "What is support portal?"
 msgstr "什么是支持门户？"
 
-#: frontend/src/project/main-panel/support-portal/view/index.js:46
+#: frontend/src/project/main-panel/support-portal/view/index.js:64
 msgid "Edit portal"
 msgstr "编辑门户"
 
-#: frontend/src/project/main-panel/support-portal/view/index.js:50
+#: frontend/src/project/main-panel/support-portal/view/index.js:68
 msgid "View portal"
 msgstr "查看门户"
 
@@ -4688,17 +4906,17 @@ msgstr "标签"
 msgid "tags"
 msgstr "标签"
 
-#: frontend/src/project/main-panel/tickets/components/close-linked-github-issues-warning-dialog/index.js:33
+#: frontend/src/project/main-panel/tickets/components/close-linked-github-issues-warning-dialog/index.js:50
 msgid "Close linked GitHub issues"
-msgstr "关闭关联的 GitHub issue"
+msgstr "关闭关联的 GitHub 问题"
 
-#: frontend/src/project/main-panel/tickets/components/close-linked-github-issues-warning-dialog/index.js:37
-msgid "Please confirm that you want to close this ticket along with its linked GitHub issues."
-msgstr "请确认您想关闭此工单及其关联的 GitHub issue。"
+#: frontend/src/project/main-panel/tickets/components/close-linked-github-issues-warning-dialog/index.js:69
+msgid "Close ticket only"
+msgstr "仅关闭工单"
 
-#: frontend/src/project/main-panel/tickets/components/close-linked-github-issues-warning-dialog/index.js:39
-msgid "Please confirm that you want to close these tickets along with its linked GitHub issues."
-msgstr "请确认您想关闭这些工单及其关联的 GitHub issue。"
+#: frontend/src/project/main-panel/tickets/components/close-linked-github-issues-warning-dialog/index.js:77
+msgid "Close ticket & GitHub issues"
+msgstr "关闭工单和关联的 GitHub 问题"
 
 #: frontend/src/project/main-panel/tickets/components/comment/index.js:130
 msgid "SeaTicket AI"
@@ -4740,23 +4958,23 @@ msgstr "相关工单"
 msgid "Task created"
 msgstr "任务已创建"
 
-#: frontend/src/project/main-panel/tickets/components/create-task-dialog/index.js:184
+#: frontend/src/project/main-panel/tickets/components/create-task-dialog/index.js:185
 msgid "Create task"
 msgstr "创建任务"
 
-#: frontend/src/project/main-panel/tickets/components/create-task-dialog/index.js:223
+#: frontend/src/project/main-panel/tickets/components/create-task-dialog/index.js:224
 msgid "Select a connection"
 msgstr "选择连接"
 
-#: frontend/src/project/main-panel/tickets/components/create-task-dialog/index.js:225
+#: frontend/src/project/main-panel/tickets/components/create-task-dialog/index.js:226
 msgid "Search connections"
 msgstr "搜索连接"
 
-#: frontend/src/project/main-panel/tickets/components/ticket-in-dialog/index.js:276
+#: frontend/src/project/main-panel/tickets/components/ticket-in-dialog/index.js:281
 msgid "Ticket not found"
 msgstr "未找到工单"
 
-#: frontend/src/project/main-panel/tickets/components/ticket-in-dialog/index.js:276
+#: frontend/src/project/main-panel/tickets/components/ticket-in-dialog/index.js:281
 msgid "Issue not found"
 msgstr "未找到问题 (issue)"
 
@@ -4928,7 +5146,7 @@ msgstr "协作人"
 msgid "No collaborators"
 msgstr "没有协作人"
 
-#: frontend/src/project/main-panel/tickets/components/ticket-settings/due-date-settings/index.js:65
+#: frontend/src/project/main-panel/tickets/components/ticket-settings/due-date-settings/index.js:63
 msgid "No due date"
 msgstr "无截止日期"
 
@@ -4938,8 +5156,8 @@ msgid "Linked records"
 msgstr "关联记录"
 
 #: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:79
-#: frontend/src/project/main-panel/tickets/components/tickets-dialog/index.js:174
-#: frontend/src/project/main-panel/tickets/components/tickets.js:297
+#: frontend/src/project/main-panel/tickets/components/tickets-dialog/index.js:175
+#: frontend/src/project/main-panel/tickets/components/tickets.js:269
 #: frontend/src/project/side-panel/index.js:53
 msgid "Tickets"
 msgstr "工单"
@@ -4972,11 +5190,12 @@ msgstr "打开子状态面板"
 msgid "Open type panel"
 msgstr "打开类型面板"
 
-#: frontend/src/project/main-panel/tickets/components/tickets.js:294
+#: frontend/src/project/main-panel/tickets/components/tickets.js:266
+#: frontend/src/translation.js:16
 msgid "ticket"
 msgstr "工单"
 
-#: frontend/src/project/main-panel/tickets/components/tickets.js:295
+#: frontend/src/project/main-panel/tickets/components/tickets.js:267
 #: frontend/src/project/main-panel/tickets/view/trash-tickets/clean-tickets.js:25
 msgid "tickets"
 msgstr "工单"
@@ -5092,7 +5311,7 @@ msgstr "删除子状态"
 msgid "Ticket deleted"
 msgstr "工单已删除"
 
-#: frontend/src/project/main-panel/tickets/view/ticket/index.js:541
+#: frontend/src/project/main-panel/tickets/view/ticket/index.js:547
 msgid "Not found ticket"
 msgstr "未找到工单"
 
@@ -5204,22 +5423,22 @@ msgid "Sort"
 msgstr "排序"
 
 #: frontend/src/sea-metadata/components/popover/column-popover/data/date-data/index.js:34
-#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:134
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:138
 msgid "ISO"
 msgstr "国际标准格式"
 
 #: frontend/src/sea-metadata/components/popover/column-popover/data/date-data/index.js:38
-#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:135
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:139
 msgid "US"
 msgstr "美国格式"
 
 #: frontend/src/sea-metadata/components/popover/column-popover/data/date-data/index.js:42
-#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:136
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:140
 msgid "European"
 msgstr "欧洲格式"
 
 #: frontend/src/sea-metadata/components/popover/column-popover/data/date-data/index.js:46
-#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:137
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:141
 msgid "Germany Russia etc"
 msgstr "德国，俄罗斯等"
 
@@ -5546,27 +5765,27 @@ msgstr "所有视图"
 msgid "Search view"
 msgstr "搜索视图"
 
-#: frontend/src/sea-metadata/components/view-toolbar/views/index.js:198
-#: frontend/src/sea-metadata/components/view-toolbar/views/index.js:199
+#: frontend/src/sea-metadata/components/view-toolbar/views/index.js:200
+#: frontend/src/sea-metadata/components/view-toolbar/views/index.js:201
 msgid "Scroll to the left"
 msgstr "向左滚动"
 
-#: frontend/src/sea-metadata/components/view-toolbar/views/index.js:237
-#: frontend/src/sea-metadata/components/view-toolbar/views/index.js:238
+#: frontend/src/sea-metadata/components/view-toolbar/views/index.js:239
+#: frontend/src/sea-metadata/components/view-toolbar/views/index.js:240
 msgid "Scroll to the right"
 msgstr "向右滚动"
 
-#: frontend/src/sea-metadata/components/view-toolbar/views/index.js:259
-#: frontend/src/sea-metadata/components/view-toolbar/views/index.js:260
+#: frontend/src/sea-metadata/components/view-toolbar/views/index.js:261
+#: frontend/src/sea-metadata/components/view-toolbar/views/index.js:262
 msgid "Add view"
 msgstr "添加视图"
 
-#: frontend/src/sea-metadata/components/view-toolbar/views/index.js:267
+#: frontend/src/sea-metadata/components/view-toolbar/views/index.js:269
 #: frontend/src/sea-metadata/components/view-toolbar/views/view-item/index.js:194
 msgid "Rename view"
 msgstr "重命名视图"
 
-#: frontend/src/sea-metadata/components/view-toolbar/views/index.js:267
+#: frontend/src/sea-metadata/components/view-toolbar/views/index.js:269
 msgid "New view"
 msgstr "新建视图"
 
@@ -6003,12 +6222,12 @@ msgstr "{count} 行"
 msgid "Loading"
 msgstr "加载中"
 
-#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:124
-#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:153
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:128
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:157
 msgid "Edit format settings"
 msgstr "编辑格式设置"
 
-#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:125
+#: frontend/src/sea-metadata/view/table/table-main/rows-header/cell/dropdown-menu/index.js:129
 msgid "You do not have permission"
 msgstr "你没有权限"
 
@@ -6398,6 +6617,38 @@ msgstr "群组信息"
 #: frontend/src/translation.js:12
 msgid "Current browser"
 msgstr "当前浏览器"
+
+#: frontend/src/translation.js:17
+msgid "Support portal allows external users to self-service and obtain support information, including documentation, knowledge base articles, and ticket management. It acts as the customer-facing interface for your support services."
+msgstr "支持门户允许外部用户自助服务并获取支持信息，包括文档、知识库文章和工单管理。它充当你的支持服务的客户面向界面。"
+
+#: frontend/src/translation.js:18
+msgid "How can I help you?"
+msgstr "我可以帮助你吗？"
+
+#: frontend/src/translation.js:19
+msgid "Total issues"
+msgstr "总问题数"
+
+#: frontend/src/translation.js:20
+msgid "Included Al credits"
+msgstr "包含的 Al 信用"
+
+#: frontend/src/translation.js:21
+msgid "Additional credits"
+msgstr "额外信用"
+
+#: frontend/src/translation.js:22
+msgid "GitHub issue type"
+msgstr "GitHub 问题类型"
+
+#: frontend/src/translation.js:23
+msgid "Agent issue type"
+msgstr "智能体问题类型"
+
+#: frontend/src/translation.js:24
+msgid "Agent issue type to GitHub issue type"
+msgstr "智能体问题类型到 GitHub 问题类型"
 
 #: frontend/src/utils/role-status-utils.js:32
 msgid "Default admin"
