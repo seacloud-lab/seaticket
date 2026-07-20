@@ -27,7 +27,7 @@ from seahub.api2.utils import api_error, to_python_boolean
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.utils import uuid_str_to_32_chars, gen_file_etag_and_modified_time
 from seahub.project.models import Projects, ProjectConnections, decrypt_config, \
-    ConnectionsViews, ProjectGithubAppInstallation, ProjectLinearOauth, ProjectConfluenceOauth, ProjectDiscordOauth
+    ConnectionsViews, ProjectGithubAppInstallation, ProjectLinearOauth, ProjectConfluenceOauth
 from seahub.project.utils import check_project_admin_permission, check_project_permission, url_to_filename, \
     extract_email_addresses, get_email_oauth_callback_url, is_oauth_email_provider, create_connection, \
     fetch_oauth_email_sender_info, EmailOAuthProfileError, persist_project_connection_config, \
@@ -1180,36 +1180,6 @@ class ProjectConfluenceOauthStatusView(APIView):
 
         connected = ProjectConfluenceOauth.objects.get_by_project_uuid(project_uuid) is not None
         return Response({'connected': connected})
-
-
-class ProjectDiscordOauthStatusView(APIView):
-    authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated,)
-    throttle_classes = (UserRateThrottle,)
-
-    @require_org_context
-    def get(self, request, project_uuid):
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = f'Project {project_uuid} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        username = request.user.username
-        if not check_project_admin_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        discord_oauth = ProjectDiscordOauth.objects.get_by_project_uuid(project_uuid)
-        if not discord_oauth:
-            return Response({'connected': False, 'expires_at': None, 'guild_id': None, 'guild_name': None}, status=status.HTTP_200_OK)
-
-        return Response({
-            'connected': True,
-            'expires_at': discord_oauth.expires_at,
-            'guild_id': discord_oauth.guild_id,
-            'guild_name': discord_oauth.guild_name,
-        }, status=status.HTTP_200_OK)
 
 
 class ProjectConnectionRecordView(APIView):

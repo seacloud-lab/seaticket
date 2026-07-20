@@ -1036,7 +1036,7 @@ def get_connection_records_by_pks(seadb_api, project_uuid, connection_id, connec
 def get_discord_thread_by_pk(seadb_api, project_uuid, connection_id, _pk):
     from seahub.tickets.ticket_utils import get_ticket_title
     table_name = SchemaTables.DISCORD_THREADS.table_name(connection_id)
-    sql = f"SELECT `_pk`, `message_id`, `thread_id`, `title`, `created_time`, `modified_time`, `linked_ticket`, `outdated`, `ai_summary` FROM `{table_name}` WHERE _pk = {_pk}"
+    sql = f"SELECT `_pk`, `thread_id`, `title`, `created_time`, `modified_time`, `linked_ticket`, `outdated`, `ai_summary` FROM `{table_name}` WHERE _pk = {_pk}"
     try:
         res = seadb_api.query_rows(project_uuid, sql)
         record = res.get('results', [])
@@ -1056,14 +1056,14 @@ def list_discord_thread_record_details(seadb_api, project_uuid, connection_id, _
     """Query a Discord message and its thread replies from SeaDB."""
     table_name = SchemaTables.DISCORD_THREADS.table_name(connection_id)
     replies_table_name = SchemaTables.DISCORD_THREAD_MESSAGES.table_name(connection_id)
-    sql = f"SELECT `message_id`, `thread_id`, `title`, `created_time`, `modified_time`, `linked_ticket`, `outdated` FROM `{table_name}` WHERE _pk = {_pk} AND (`deleted` = False OR `deleted` IS NULL)"
+    sql = f"SELECT `thread_id`, `title`, `created_time`, `modified_time`, `linked_ticket`, `outdated` FROM `{table_name}` WHERE _pk = {_pk} AND (`deleted` = False OR `deleted` IS NULL)"
     try:
         from seahub.tickets.ticket_utils import get_ticket_title
         res = seadb_api.query_rows(project_uuid, sql)
         record = res.get('results')[0]
         column_metadata = res.get('metadata')
-        message_id = record.get('message_id')
-        replies_sql = f"SELECT author, content, modified_time FROM `{replies_table_name}` WHERE message_id = '{message_id}' ORDER BY reply_id ASC"
+        thread_id = record.get('thread_id')
+        replies_sql = f"SELECT author, content, modified_time FROM `{replies_table_name}` WHERE thread_id = '{thread_id}' ORDER BY message_id ASC"
         replies_res = seadb_api.query_rows(project_uuid, replies_sql)
         replies_records = replies_res.get('results')
         record['replies'] = replies_records

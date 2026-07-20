@@ -70,11 +70,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const [linearOauthError, setLinearOauthError] = useState('');
   const confluenceOauthIntervalRef = useRef(null);
   const confluenceOauthWindowRef = useRef(null);
-  const [isDiscordOauthConnected, setDiscordOauthConnected] = useState(false);
-  const [isCheckingDiscordOauth, setCheckingDiscordOauth] = useState(false);
-  const [discordOauthError, setDiscordOauthError] = useState('');
-  const [discordOauthGuildId, setDiscordOauthGuildId] = useState('');
-  const [discordOauthGuildName, setDiscordOauthGuildName] = useState('');
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -151,7 +146,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       if (c.is_required) return Boolean(config[c.key]);
       return true;
     }) : true;
-  }, [name, config, customColumns, isLinear, isLinearOauthConnected, isConfluence, isConfluenceOauthConnected, isDiscord, isDiscordOauthConnected]);
+  }, [name, config, customColumns, isLinear, isLinearOauthConnected, isConfluence, isConfluenceOauthConnected, isDiscord]);
 
   const callbackUrl = useMemo(() => {
     return getEmailOAuthCallbackUrl(projectUuid);
@@ -308,10 +303,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       }
     }
     if (isDiscord) {
-      if (discordOauthGuildId) {
-        _config['guild_id'] = discordOauthGuildId;
-        _config['guild_name'] = discordOauthGuildName;
-      }
       const channel = _config.channel_id;
       if (channel && channel.value) {
         _config['channel_id'] = channel.value;
@@ -322,7 +313,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       setSubmitting(false);
     });
     return;
-  }, [name, type, config, isLinear, onSubmit, stopEmailOAuthPolling, isConfluence, isGithub, selectedSpaceKeys, isDiscord, discordOauthGuildId, discordOauthGuildName]);
+  }, [name, type, config, isLinear, onSubmit, stopEmailOAuthPolling, isConfluence, isGithub, selectedSpaceKeys, isDiscord]);
 
   const onCopyCallbackUrl = useCallback(() => {
     copy(callbackUrl);
@@ -429,50 +420,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       };
     });
   }, [config.guild_id, config.bot_token, projectUuid]);
-
-  const fetchDiscordOauthStatus = useCallback(() => {
-    setCheckingDiscordOauth(true);
-    return connectionsAPI.getDiscordOauthStatus(projectUuid).then(res => {
-      const connected = Boolean(res?.data?.connected);
-      setDiscordOauthConnected(connected);
-      setDiscordOauthGuildId(res?.data?.guild_id || '');
-      setDiscordOauthGuildName(res?.data?.guild_name || '');
-      setDiscordOauthError('');
-    }).catch(() => {
-      setDiscordOauthConnected(false);
-      setDiscordOauthError(gettext('Failed to check Discord authorization status.'));
-    }).finally(() => {
-      setCheckingDiscordOauth(false);
-    });
-  }, [projectUuid]);
-
-  const handleConnectDiscord = useCallback(() => {
-    const next = window.location.href;
-    const oauthUrl = `${server}/discord/oauth/?project_uuid=${projectUuid}&next=${encodeURIComponent(next)}`;
-    oauthWindowRef.current = window.open(oauthUrl, 'discord-oauth', 'width=800,height=700');
-
-    // Start polling for OAuth status
-    clearInterval(pollingIntervalRef.current);
-    pollingIntervalRef.current = setInterval(() => {
-      connectionsAPI.getDiscordOauthStatus(projectUuid).then(res => {
-        if (res?.data?.connected) {
-          setDiscordOauthConnected(true);
-          setDiscordOauthGuildId(res?.data?.guild_id || '');
-          setDiscordOauthGuildName(res?.data?.guild_name || '');
-          setDiscordOauthError('');
-          clearInterval(pollingIntervalRef.current);
-          if (oauthWindowRef.current && !oauthWindowRef.current.closed) {
-            oauthWindowRef.current.close();
-          }
-        }
-      }).catch(() => {});
-    }, 2000);
-  }, [projectUuid]);
-
-  useEffect(() => {
-    if (!isDiscord) return;
-    fetchDiscordOauthStatus();
-  }, [isDiscord, fetchDiscordOauthStatus]);
 
   const typeOption = availableConnectionTypes.find(i => i.type === type) || availableConnectionTypes[0];
   const connectionSections = useMemo(() => {
@@ -632,7 +579,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   }, [
     config, isSubmitting, isGithub, isConfluence, isConfluenceOauthConnected, isLinear,
     onConfigChange, listGitHubRepositories, listConfluenceWorkspaces, listLinearTeams,
-      isDiscord, listDiscordChannels, isDiscordOauthConnected
+      isDiscord, listDiscordChannels
   ]);
 
   return (
@@ -794,34 +741,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
                     {isLinearOauthConnected ? gettext('Reconnect Linear') : gettext('Connect Linear')}
                   </Button>
                   {linearOauthError && (<div className="text-danger mt-2">{linearOauthError}</div>)}
-                </div>
-              </FormGroup>
-            )}
-            {isDiscord && (
-              <FormGroup>
-                <Label>{gettext('Authorization')}</Label>
-                <div className="seaqa-project-discord-oauth">
-                  <span className={classnames('linear-oauth-status', { connected: isDiscordOauthConnected })}>
-                    <span className="linear-status-icon d-flex">
-                      <Icon symbol={isDiscordOauthConnected ? 'check-circle-filled' : 'close-circle-filled'} />
-                    </span>
-                    <span className="ml-2">
-                      {isDiscordOauthConnected
-                        ? gettext('Connected') + (discordOauthGuildName ? ` (${discordOauthGuildName})` : '')
-                        : gettext('Not connected')
-                      }
-                    </span>
-                    {isCheckingDiscordOauth && <Loading className="ml-4" />}
-                  </span>
-                  <Button
-                    color={isDiscordOauthConnected ? 'secondary' : 'primary'}
-                    className="ml-4"
-                    disabled={isCheckingDiscordOauth}
-                    onClick={handleConnectDiscord}
-                  >
-                    {isDiscordOauthConnected ? gettext('Reconnect Discord') : gettext('Connect Discord')}
-                  </Button>
-                  {discordOauthError && (<div className="text-danger mt-2">{discordOauthError}</div>)}
                 </div>
               </FormGroup>
             )}

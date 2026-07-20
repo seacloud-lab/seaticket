@@ -12,15 +12,13 @@ from django.shortcuts import render, redirect
 from django.utils.translation import gettext as _
 
 from seahub import settings
-from seahub.project.models import Workspaces, Projects, ProjectGithubAppInstallation, ProjectLinearOauth, ProjectConfluenceOauth, \
-    ProjectDiscordOauth
+from seahub.project.models import Workspaces, Projects, ProjectGithubAppInstallation, ProjectLinearOauth, ProjectConfluenceOauth
 from seahub.project.utils import check_project_admin_permission, check_project_permission, update_github_connection_installation_id
 from seahub.project.linear_api import LinearAPI
 from seahub.utils import render_error
 from seahub.auth.decorators import login_required
 from seahub.settings import MEDIA_URL, LLM_MODELS, GITHUB_APP_NAME, ENABLE_GENERAL_TASK, THOUGHT_PROCESS_ENABLED, \
-    LINEAR_CLIENT_ID, LINEAR_CLIENT_SECRET, LINEAR_REDIRECT_URL, \
-    DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_REDIRECT_URL
+    LINEAR_CLIENT_ID, LINEAR_CLIENT_SECRET, LINEAR_REDIRECT_URL
 from seahub.group.models import Group
 from seahub.constants import PERMISSION_READ
 from seahub.portal.utils import get_portal_settings
@@ -369,132 +367,3 @@ def confluence_oauth_callback(request):
 
     return redirect(return_to)
 
-
-@login_required
-def discord_oauth(request):
-    """Initiate Discord OAuth2 flow to add the bot to a server."""
-    return_to = request.GET.get('next') or '/'
-    project_uuid = request.GET.get('project_uuid', '')
-
-    if not project_uuid:
-        return render_error(request, _('Please install through the address provided by sea-ticket.'))
-
-    project = Projects.objects.get_project_by_uuid(project_uuid)
-    if not project:
-        return render_error(request, _('Please install through the address provided by sea-ticket.'))
-    workspace = project.workspace
-
-    username = request.user.username
-    if not check_project_admin_permission(username, workspace.owner):
-        return render_error(request, _('Permission denied.'))
-
-    if not DISCORD_CLIENT_ID or not DISCORD_CLIENT_SECRET or not DISCORD_REDIRECT_URL:
-        return render_error(request, _('Discord OAuth settings are invalid.'))
-
-    state = secrets.token_urlsafe(24)
-    request.session['discord_oauth_state'] = state
-    request.session['discord_oauth_project_uuid'] = project_uuid
-    request.session['discord_oauth_return_to'] = return_to
-
-    # Discord OAuth2 with bot scope: user selects a server to add the bot to
-    # Permissions: 68608 = Read Messages (65536) + Read Message History (65536) = 131072
-    # Actually: 68608 = Read Messages (65536) + Read Message History (65536)?
-    # Let's calculate: 1 << 16 = 65536 (READ_MESSAGES), 1 << 17 = 131072 (READ_MESSAGE_HISTORY)
-    # Total: 65536 + 131072 = 196608
-    # Wait, let me recalculate: READ_MESSAGES = 0x800 = 2048, no...
-    # Discord permissions: VIEW_CHANNEL=1024, READ_MESSAGE_HISTORY=65536
-    # Let me use: 68608 = VIEW_CHANNEL (1024) + READ_MESSAGE_HISTORY (65536) + ?
-    # Actually common bot permissions: 68608 is a known value
-    permissions = 68608  # Read Messages + Read Message History + View Channel
-
-    params = {
-        'client_id': DISCORD_CLIENT_ID,
-        'permissions': permissions,
-        'redirect_uri': DISCORD_REDIRECT_URL,
-        'response_type': 'code',
-        'scope': 'bot identify',
-        'state': state,
-    }
-
-    authorize_url = 'https://discord.com/api/oauth2/authorize' + f"?{urlencode(params)}"
-    return redirect(authorize_url)
-
-
-@login_required
-def discord_oauth_callback(request):
-    """Handle Discord OAuth2 callback after user authorizes the bot."""
-    code = request.GET.get('code')
-    state = request.GET.get('state')
-    guild_id = request.GET.get('guild_id', '')
-
-    session_state = request.session.get('discord_oauth_state')
-    project_uuid = request.session.get('discord_oauth_project_uuid')
-    return_to = request.session.get('discord_oauth_return_to', '/')
-
-    if not code or not state or state != session_state:
-        return render_error(request, _('Invalid Discord OAuth state.'))
-
-    if not project_uuid:
-        return render_error(request, _('Please install through the address provided by sea-ticket.'))
-
-    project = Projects.objects.get_project_by_uuid(project_uuid)
-    if not project:
-        return render_error(request, _('Please install through the address provided by sea-ticket.'))
-    workspace = project.workspace
-
-    username = request.user.username
-    if not check_project_admin_permission(username, workspace.owner):
-        return render_error(request, _('Permission denied.'))
-
-    if not DISCORD_CLIENT_ID or not DISCORD_CLIENT_SECRET or not DISCORD_REDIRECT_URL:
-        return render_error(request, _('Discord OAuth settings are invalid.'))
-
-    # Exchange code for tokens
-    token_payload = {
-        'grant_type': 'authorization_code',
-        'code': code,
-        'redirect_uri': DISCORD_REDIRECT_URL,
-        'client_id': DISCORD_CLIENT_ID,
-        'client_secret': DISCORD_CLIENT_SECRET,
-    }
-
-    try:
-        resp = requests.post('https://discord.com/api/oauth2/token', data=token_payload, timeout=10)
-    except Exception as e:
-        logger.error('Discord OAuth token request error: %s', e)
-        return render_error(request, _('Failed to authorize Discord.'))
-
-    if resp.status_code != 200:
-        logger.error('Discord OAuth token response invalid: %s %s', resp.status_code, resp.text)
-        return render_error(request, _('Failed to authorize Discord.'))
-
-    token_json = resp.json()
-    access_token = token_json.get('access_token')
-    refresh_token = token_json.get('refresh_token')
-    expires_in = token_json.get('expires_in')
-
-    if not access_token:
-        logger.error('Discord OAuth token missing access_token: %s', token_json)
-        return render_error(request, _('Failed to authorize Discord.'))
-
-    # Discord token expires_in is in seconds
-    expires_at = datetime.datetime.now(datetime.UTC) + datetime.timedelta(seconds=int(expires_in))
-
-    # The guild info may be in the token response or we fetch it separately
-    guild_name = ''
-    if not guild_id:
-        # Try to get guild from the token response (bot scope may include guild)
-        guild = token_json.get('guild')
-        if guild:
-            guild_id = guild.get('id', '')
-            guild_name = guild.get('name', '')
-
-    ProjectDiscordOauth.objects.upsert_token(
-        project_uuid, access_token, expires_at, refresh_token, guild_id, guild_name
-    )
-
-    request.session.pop('discord_oauth_state', None)
-    request.session.pop('discord_oauth_project_uuid', None)
-    request.session.pop('discord_oauth_return_to', None)
-
-    return redirect(return_to)
