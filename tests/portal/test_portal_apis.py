@@ -31,7 +31,11 @@ from seahub.portal.apis import (
 )
 from seahub.portal.models import PortalCustomDomain, PortalDomainAlias, PortalExternalInvitation, ProjectExternalUser, \
     get_portal_tls_ask_cache_key
-from seahub.portal.utils import load_portal_preview_token
+from seahub.portal.utils import (
+    PORTAL_EXTERNAL_SESSION_PROJECT_KEY,
+    PORTAL_EXTERNAL_SESSION_USERNAME_KEY,
+    load_portal_preview_token,
+)
 from seahub.portal.portal_issue_types import PortalIssueTypeAPIView
 from seahub.portal.portal_issue_substates import PortalIssueSubstateAPIView
 
@@ -55,8 +59,8 @@ def _build_external_request(factory, method, path, project_uuid, username, data=
     request_method = getattr(factory, method)
     request = request_method(path, data=data, format=format) if data is not None else request_method(path)
     request.user = AnonymousUser()
-    request.session['portal_external_username'] = username
-    request.session['portal_external_project_uuid'] = str(project_uuid)
+    request.session[PORTAL_EXTERNAL_SESSION_USERNAME_KEY] = username
+    request.session[PORTAL_EXTERNAL_SESSION_PROJECT_KEY] = str(project_uuid)
     return request
 
 

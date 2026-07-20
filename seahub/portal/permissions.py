@@ -2,8 +2,8 @@ from django.conf import settings
 from rest_framework.permissions import BasePermission
 
 from seahub.project.utils import check_same_org_permission
-from seahub.portal.models import ProjectExternalUser
-from seahub.portal.utils import get_portal_preview_username, get_request_project_and_portal_settings, get_request_session
+from seahub.portal.utils import get_portal_external_username, get_portal_preview_username, get_request_project_and_portal_settings, \
+    get_request_session
 
 
 
@@ -15,14 +15,8 @@ def _get_project_and_settings(request, view):
 
 
 def _is_external_member(request, project_uuid):
-    session = get_request_session(request)
-    if session is None:
-        return False
-
-    ext_username = session.get('portal_external_username')
-    ext_project_uuid = session.get('portal_external_project_uuid')
-    if ext_username and ext_project_uuid and ext_project_uuid == project_uuid and \
-            ProjectExternalUser.objects.filter(project_uuid=project_uuid, username=ext_username, activated=True).exists():
+    ext_username = get_portal_external_username(request, project_uuid)
+    if ext_username:
         request.portal_external_username = ext_username
         if getattr(request, 'user', None):
             request.user.username = ext_username
@@ -65,14 +59,15 @@ class PortalKnowledgeBasePermission(BasePermission):
         if not enable_portal:
             return False
 
+        is_portal_mode = getattr(settings, 'IS_PORTAL_MODE', False)
+        if is_portal_mode and _is_portal_preview_user(request, project_uuid):
+            return True
+
         if _is_same_org_user(request, project):
             return True
 
-        if not getattr(settings, 'IS_PORTAL_MODE', False):
+        if not is_portal_mode:
             return False
-
-        if _is_portal_preview_user(request, project_uuid):
-            return True
 
         if _is_external_member(request, project_uuid):
             return True
@@ -98,14 +93,15 @@ class PortalAnonymousAccessPermission(BasePermission):
         if not enable_portal:
             return False
 
+        is_portal_mode = getattr(settings, 'IS_PORTAL_MODE', False)
+        if is_portal_mode and _is_portal_preview_user(request, project_uuid):
+            return True
+
         if _is_same_org_user(request, project):
             return True
 
-        if not getattr(settings, 'IS_PORTAL_MODE', False):
+        if not is_portal_mode:
             return False
-
-        if _is_portal_preview_user(request, project_uuid):
-            return True
 
         if _is_external_member(request, project_uuid):
             return True
@@ -131,14 +127,15 @@ class PortalIssuePermission(BasePermission):
         if not enable_portal:
             return False
 
+        is_portal_mode = getattr(settings, 'IS_PORTAL_MODE', False)
+        if is_portal_mode and _is_portal_preview_user(request, project_uuid):
+            return True
+
         if _is_same_org_user(request, project):
             return True
 
-        if not getattr(settings, 'IS_PORTAL_MODE', False):
+        if not is_portal_mode:
             return False
-
-        if _is_portal_preview_user(request, project_uuid):
-            return True
 
         if _is_external_member(request, project_uuid):
             return True
@@ -157,14 +154,15 @@ class PortalChatPermission(BasePermission):
         if not enable_portal:
             return False
 
+        is_portal_mode = getattr(settings, 'IS_PORTAL_MODE', False)
+        if is_portal_mode and _is_portal_preview_user(request, project_uuid):
+            return True
+
         if _is_same_org_user(request, project):
             return True
 
-        if not getattr(settings, 'IS_PORTAL_MODE', False):
+        if not is_portal_mode:
             return False
-
-        if _is_portal_preview_user(request, project_uuid):
-            return True
 
         if _is_external_member(request, project_uuid):
             return True

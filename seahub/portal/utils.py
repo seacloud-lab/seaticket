@@ -14,7 +14,6 @@ from seahub.profile.models import Profile
 from seahub.api2.utils import api_error
 from seahub.project.models import Projects
 from seahub.project.utils import check_project_admin_permission, check_same_org_permission
-from seahub.portal.chat.utils import get_portal_external_username
 from seahub.portal.visitor_session import (
     clear_visitor_cookie,
     load_visitor_session,
@@ -22,9 +21,7 @@ from seahub.portal.visitor_session import (
     touch_visitor_session,
 )
 from seahub.portal.custom_domain import is_request_using_portal_domain
-from seahub.portal.models import PortalCustomDomain, PortalDomainAlias
-
-
+from seahub.portal.models import PortalCustomDomain, PortalDomainAlias, ProjectExternalUser
 
 PORTAL_DOMAIN_TYPE_SERVICE_ALIAS = 'service_alias'
 PORTAL_DOMAIN_TYPE_CUSTOM = 'custom'
@@ -36,6 +33,9 @@ PORTAL_PREVIEW_TOKEN_SALT = 'seahub.portal.preview'
 PORTAL_PREVIEW_TOKEN_TTL = 5 * 60
 PORTAL_PREVIEW_SESSION_USERNAME_KEY = 'portal_preview_username'
 PORTAL_PREVIEW_SESSION_PROJECT_KEY = 'portal_preview_project_uuid'
+PORTAL_EXTERNAL_SESSION_USERNAME_KEY = 'portal_external_username'
+PORTAL_EXTERNAL_SESSION_PROJECT_KEY = 'portal_external_project_uuid'
+
 
 def resolve_portal_domain(host):
     if not host:
@@ -78,9 +78,18 @@ def load_portal_preview_token(token):
     }
 
 
-def set_portal_preview_session(request, project_uuid, username):
-    request.session[PORTAL_PREVIEW_SESSION_PROJECT_KEY] = str(project_uuid)
-    request.session[PORTAL_PREVIEW_SESSION_USERNAME_KEY] = username
+def set_portal_login_session(request, project_uuid, username, is_external_user=False):
+    request.session.pop(PORTAL_PREVIEW_SESSION_PROJECT_KEY, None)
+    request.session.pop(PORTAL_PREVIEW_SESSION_USERNAME_KEY, None)
+    request.session.pop(PORTAL_EXTERNAL_SESSION_PROJECT_KEY, None)
+    request.session.pop(PORTAL_EXTERNAL_SESSION_USERNAME_KEY, None)
+
+    if is_external_user:
+        request.session[PORTAL_EXTERNAL_SESSION_PROJECT_KEY] = project_uuid
+        request.session[PORTAL_EXTERNAL_SESSION_USERNAME_KEY] = username
+    else:
+        request.session[PORTAL_PREVIEW_SESSION_PROJECT_KEY] = project_uuid
+        request.session[PORTAL_PREVIEW_SESSION_USERNAME_KEY] = username
 
 
 def can_preview_portal(username, project):
@@ -120,6 +129,20 @@ def get_portal_preview_username(request, project_uuid):
     if not can_preview_portal(preview_username, project):
         return ''
     return preview_username
+
+
+def get_portal_external_username(request, project_uuid):
+    session = get_request_session(request)
+    if session is None:
+        return ''
+
+    external_username = session.get(PORTAL_EXTERNAL_SESSION_USERNAME_KEY)
+    external_project_uuid = session.get(PORTAL_EXTERNAL_SESSION_PROJECT_KEY)
+    if not external_username or external_project_uuid != project_uuid:
+        return ''
+    if not ProjectExternalUser.objects.filter(project_uuid=project_uuid, username=external_username, activated=True).exists():
+        return ''
+    return external_username
 
 
 def normalize_external_login_email(email):
@@ -243,6 +266,14 @@ def _get_project_or_error(project_uuid):
 
 
 def _get_request_identity(request, project_uuid):
+    preview_username = get_portal_preview_username(request, project_uuid)
+    if preview_username:
+        return {
+            'username': preview_username,
+            'is_external_user': False,
+            'is_anonymous': False,
+        }, None
+
     user = getattr(request, 'user', None)
     if user and getattr(user, 'is_authenticated', False):
         project = getattr(request, 'project', None) or Projects.objects.get_project_by_uuid(project_uuid)
@@ -253,14 +284,6 @@ def _get_request_identity(request, project_uuid):
                 'is_external_user': False,
                 'is_anonymous': False,
             }, None
-
-    preview_username = get_portal_preview_username(request, project_uuid)
-    if preview_username:
-        return {
-            'username': preview_username,
-            'is_external_user': False,
-            'is_anonymous': False,
-        }, None
 
     external_username = get_portal_external_username(request, project_uuid)
     if external_username:

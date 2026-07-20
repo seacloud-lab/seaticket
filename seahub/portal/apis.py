@@ -47,7 +47,8 @@ from seahub.portal.utils import PORTAL_EXTERNAL_LOGIN_CODE_TTL, PORTAL_EXTERNAL_
     PORTAL_EXTERNAL_LOGIN_VERIFY_LOCK_TTL, PORTAL_PREVIEW_TOKEN_SALT, clear_portal_external_login_code, clear_portal_external_login_state, \
     get_portal_external_login_cooldown_key, get_portal_external_login_fail_key, get_portal_external_login_lock_key, incr_portal_external_login_fail, \
     is_user_in_the_same_team, is_portal_external_login_locked, normalize_external_login_email, portal_path, get_portal_external_login_code_key, \
-    get_portal_settings, build_absolute_portal_url, can_preview_portal, external_user_can_access_issue
+    get_portal_settings, build_absolute_portal_url, can_preview_portal, external_user_can_access_issue, set_portal_login_session, \
+    get_portal_external_username
 from seahub.portal.custom_domain import normalize_portal_custom_domain, query_dns_txt_values, validate_portal_subdomain_prefix_available, \
     CUSTOM_DOMAIN_TXT_RECORD_PREFIX, CUSTOM_DOMAIN_VERIFICATION_VALUE_PREFIX
 from seahub.utils.verify import get_random_code
@@ -1346,13 +1347,7 @@ class PortalUserListView(APIView):
 
         is_authenticated = bool(getattr(request.user, 'is_authenticated', False))
 
-        ext_username = request.session.get('portal_external_username')
-        ext_project_uuid = request.session.get('portal_external_project_uuid')
-        is_external = False
-        if ext_username and ext_project_uuid == project_uuid:
-            is_external = ProjectExternalUser.objects.filter(
-                project_uuid=project_uuid, username=ext_username, activated=True
-            ).exists()
+        is_external = bool(get_portal_external_username(request, project_uuid))
 
         if not is_authenticated and not is_external:
             return Response({'user_list': []})
@@ -2063,7 +2058,7 @@ class PortalExternalSSOProvidersView(APIView):
 
         if not get_portal_settings(project).get('enable_portal'):
             return api_error(status.HTTP_404_NOT_FOUND, 'Portal is not enabled.')
-            
+
         if not check_project_admin_permission(request.user.username, project.workspace.owner):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
@@ -2109,7 +2104,7 @@ class PortalExternalSSOProviderView(APIView):
 
         if not get_portal_settings(project).get('enable_portal'):
             return api_error(status.HTTP_404_NOT_FOUND, 'Portal is not enabled.')
-            
+
         if not check_project_admin_permission(request.user.username, project.workspace.owner):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
@@ -2149,7 +2144,7 @@ class PortalExternalSSOProviderView(APIView):
 
         if not get_portal_settings(project).get('enable_portal'):
             return api_error(status.HTTP_404_NOT_FOUND, 'Portal is not enabled.')
-            
+
         if not check_project_admin_permission(request.user.username, project.workspace.owner):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
@@ -2186,7 +2181,7 @@ class PortalExternalSSOProviderResetSecretView(APIView):
 
         if not get_portal_settings(project).get('enable_portal'):
             return api_error(status.HTTP_404_NOT_FOUND, 'Portal is not enabled.')
-            
+
         if not check_project_admin_permission(request.user.username, project.workspace.owner):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
@@ -2310,8 +2305,7 @@ class PortalExternalLoginVerifyCodeView(APIView):
 
         # Set session to log the user in as an external collaborator
         clear_portal_external_login_state(project_uuid, email)
-        request.session['portal_external_username'] = ext_user.username
-        request.session['portal_external_project_uuid'] = project_uuid
+        set_portal_login_session(request, project_uuid, ext_user.username, is_external_user=True)
         return Response({
             'success': True,
             'redirect_url': portal_path(request, project_uuid),

@@ -20,7 +20,7 @@ from seahub.project.constants import AIScenario
 from seahub.project.constants import IMAGE_EXTS
 from seahub.project.models import AIUsageStatistics
 from seahub.project.utils import convert_cost_to_credit
-from seahub.portal.models import PortalChatMessages, ProjectExternalUser
+from seahub.portal.models import PortalChatMessages
 from seahub.utils import normalize_cache_key, uuid_str_to_32_chars
 from seahub.chats.utils import strip_content_details_from_attachments
 from seahub.chats.constants import CHAT_IMAGE_MAX_COUNT
@@ -40,17 +40,6 @@ from .constants import (
     PORTAL_CHAT_IMAGE_TOKEN_TTL,
     PORTAL_CHAT_PROXY_IMAGE_ATTACHMENT_PREFIXES,
 )
-
-
-def get_portal_external_username(request, project_uuid):
-    ext_username = request.session.get('portal_external_username')
-    ext_project_uuid = request.session.get('portal_external_project_uuid')
-    if not ext_username or ext_project_uuid != project_uuid:
-        return ''
-    exists = ProjectExternalUser.objects.filter(
-        project_uuid=project_uuid, username=ext_username, activated=True
-    ).exists()
-    return ext_username if exists else ''
 
 
 def _get_counter_cache_key(prefix, *parts):

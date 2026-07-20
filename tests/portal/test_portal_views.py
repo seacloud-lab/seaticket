@@ -10,13 +10,16 @@ from django.test import RequestFactory, override_settings
 
 from seahub.portal.middleware import PortalDomainMiddleware
 from seahub.portal.models import PortalCustomDomain, PortalDomainAlias, ProjectExternalUser
-from seahub.portal.permissions import PortalAnonymousAccessPermission
+from seahub.portal.permissions import PortalAnonymousAccessPermission, PortalIssuePermission
 from seahub.portal.utils import (
     PORTAL_DOMAIN_TYPE_CUSTOM,
     PORTAL_DOMAIN_TYPE_SERVICE_ALIAS,
-    set_portal_preview_session,
+    PORTAL_EXTERNAL_SESSION_PROJECT_KEY,
+    PORTAL_EXTERNAL_SESSION_USERNAME_KEY,
+    set_portal_login_session,
 )
 from seahub.portal.views import portal_accounts_login_view, portal_external_logout_view, portal_view
+from seahub.organizations.models import OrgUser
 
 
 def process_portal_domain_request(request):
@@ -80,8 +83,8 @@ def test_portal_view_treats_cross_org_authenticated_external_user_as_external(fa
         is_authenticated=True,
         org=SimpleNamespace(org_id=999),
     )
-    request.session['portal_external_username'] = ext_username
-    request.session['portal_external_project_uuid'] = str(real_project.uuid)
+    request.session[PORTAL_EXTERNAL_SESSION_USERNAME_KEY] = ext_username
+    request.session[PORTAL_EXTERNAL_SESSION_PROJECT_KEY] = str(real_project.uuid)
 
     captured = {}
 
@@ -122,15 +125,32 @@ def test_portal_external_logout_clears_external_session_for_authenticated_user(f
         is_authenticated=True,
         org=SimpleNamespace(org_id=999),
     )
-    request.session['portal_external_username'] = ext_username
-    request.session['portal_external_project_uuid'] = str(real_project.uuid)
+    request.session[PORTAL_EXTERNAL_SESSION_USERNAME_KEY] = ext_username
+    request.session[PORTAL_EXTERNAL_SESSION_PROJECT_KEY] = str(real_project.uuid)
 
     response = portal_external_logout_view(request, str(real_project.uuid))
 
     assert response.status_code == 302
     assert response['Location'] == f'/portal/{real_project.uuid}/'
-    assert 'portal_external_username' not in request.session
-    assert 'portal_external_project_uuid' not in request.session
+    assert PORTAL_EXTERNAL_SESSION_USERNAME_KEY not in request.session
+    assert PORTAL_EXTERNAL_SESSION_PROJECT_KEY not in request.session
+
+
+@pytest.mark.django_db
+@override_settings(IS_PORTAL_MODE=True)
+def test_portal_issue_permission_prefers_sso_team_user_session(factory, real_project, project_creator):
+    team_username = 'sso-team-user@example.com'
+    OrgUser.objects.create(org_id=real_project.workspace.org_id, email=team_username)
+    request = factory.get(f'/api/v1/portal/{real_project.uuid}/issues/1/')
+    request.user = project_creator
+    set_portal_login_session(request, str(real_project.uuid), team_username)
+    view = SimpleNamespace(kwargs={'project_uuid': str(real_project.uuid)})
+
+    allowed = PortalIssuePermission().has_permission(request, view)
+
+    assert allowed is True
+    assert request.user.username == team_username
+    assert not hasattr(request, 'portal_external_username')
 
 
 @pytest.mark.django_db
@@ -139,7 +159,7 @@ def test_portal_view_allows_preview_session_when_anonymous_disabled(factory, rea
     request = factory.get(f'/portal/{real_project.uuid}/')
     request.session = {}
     request.user = SimpleNamespace(username='', is_authenticated=False)
-    set_portal_preview_session(request, str(real_project.uuid), project_creator.username)
+    set_portal_login_session(request, str(real_project.uuid), project_creator.username)
 
     captured = {}
 
@@ -180,7 +200,7 @@ def test_portal_view_allows_preview_session_when_password_protected(factory, rea
     request = factory.get(f'/portal/{real_project.uuid}/')
     request.session = {}
     request.user = SimpleNamespace(username='', is_authenticated=False)
-    set_portal_preview_session(request, str(real_project.uuid), project_creator.username)
+    set_portal_login_session(request, str(real_project.uuid), project_creator.username)
 
     captured = {}
 
@@ -212,7 +232,7 @@ def test_portal_anonymous_permission_allows_preview_session(factory, real_projec
     request = factory.get(f'/api/v1/portal/{real_project.uuid}/tags/')
     request.session = {}
     request.user = SimpleNamespace(username='', is_authenticated=False)
-    set_portal_preview_session(request, str(real_project.uuid), project_creator.username)
+    set_portal_login_session(request, str(real_project.uuid), project_creator.username)
     view = SimpleNamespace(kwargs={'project_uuid': str(real_project.uuid)})
 
     assert PortalAnonymousAccessPermission().has_permission(request, view) is True

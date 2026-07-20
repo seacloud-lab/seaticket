@@ -9,17 +9,20 @@ from django.http import HttpResponseRedirect, Http404
 from django.utils import timezone
 
 from seahub.auth import REDIRECT_FIELD_NAME
+from seahub.auth import logout as auth_logout
 from seahub.auth import views as auth_views
 from seahub.portal.models import PortalExternalInvitation, ProjectExternalUser, PortalExternalSSOProvider
 from seahub.portal.visitor_session import (
     ensure_visitor_cookie,
 )
-from seahub.portal.utils import can_preview_portal, get_portal_preview_username, load_portal_preview_token, portal_path, \
-    set_portal_preview_session, get_request_project_and_portal_settings, PORTAL_PREVIEW_SESSION_PROJECT_KEY, \
-    PORTAL_PREVIEW_SESSION_USERNAME_KEY
+from seahub.portal.utils import can_preview_portal, get_portal_external_username, get_portal_preview_username, get_request_project_and_portal_settings, \
+    load_portal_preview_token, portal_path, set_portal_login_session
 from seahub.portal.custom_domain import is_request_using_portal_domain
 from seahub import settings
 from seahub.project.utils import check_project_admin_permission, check_same_org_permission
+from seahub.organizations.models import OrgUser
+from seahub.profile.models import Profile
+from seahub.base.accounts import User
 from seahub.utils import render_error, is_valid_email
 from seahub.utils.auth import gen_user_virtual_id
 from seahub.auth.decorators import login_required
@@ -37,17 +40,6 @@ def _render_portal_external_sso_error(request, message):
     response['Cache-Control'] = 'no-store'
     response['Referrer-Policy'] = 'no-referrer'
     return response
-
-
-def _get_external_session_user(request, project_uuid):
-    ext_username = request.session.get('portal_external_username')
-    ext_project = request.session.get('portal_external_project_uuid')
-    if not (ext_username and ext_project == project_uuid):
-        return '', False
-    ext_is_valid = ProjectExternalUser.objects.filter(
-        project_uuid=project_uuid, username=ext_username, activated=True
-    ).exists()
-    return ext_username, ext_is_valid
 
 
 def _get_portal_login_context(request, project, portal_settings):
@@ -84,7 +76,8 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
     if not enable_portal:
         return render_error(request, _('Portal is not enabled'))
 
-    ext_username, ext_is_valid = _get_external_session_user(request, project_uuid)
+    ext_username = get_portal_external_username(request, project_uuid)
+    ext_is_valid = bool(ext_username)
     preview_username = get_portal_preview_username(request, project_uuid)
     is_authenticated_user = bool(getattr(request, 'user', None) and request.user.is_authenticated)
 
@@ -96,7 +89,6 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
             same_org = False
 
     has_ticket_access = bool(preview_username) or ext_is_valid or same_org
-    is_logged_in = bool(preview_username) or is_authenticated_user or ext_is_valid
     # Treat invited users from other orgs as external portal users even when
     # they also have a normal site login in the current browser.
     is_external_user = bool(ext_is_valid and not same_org)
@@ -181,20 +173,12 @@ def portal_preview_view(request, token):
     if not can_preview_portal(payload['username'], project):
         return render_error(request, _('Permission denied'))
 
-    set_portal_preview_session(request, project_uuid, payload['username'])
+    set_portal_login_session(request, project_uuid, payload['username'])
     return redirect(portal_path(request, project_uuid))
 
 
 def portal_external_logout_view(request, project_uuid):
-    ext_username, ext_is_valid = _get_external_session_user(request, project_uuid)
-    if ext_username and ext_is_valid:
-        request.session.pop('portal_external_username', None)
-        request.session.pop('portal_external_project_uuid', None)
-
-    if request.session.get(PORTAL_PREVIEW_SESSION_PROJECT_KEY) == project_uuid:
-        request.session.pop(PORTAL_PREVIEW_SESSION_PROJECT_KEY, None)
-        request.session.pop(PORTAL_PREVIEW_SESSION_USERNAME_KEY, None)
-
+    auth_logout(request)
     return redirect(portal_path(request, project_uuid))
 
 def portal_anonymous_validate(request, project_uuid):
@@ -281,8 +265,7 @@ def portal_external_invitation_accept_view(request, token, project_uuid):
         ext_user = None
 
     if ext_user and getattr(ext_user, 'username', None):
-        request.session['portal_external_username'] = ext_user.username
-        request.session['portal_external_project_uuid'] = project_uuid
+        set_portal_login_session(request, project_uuid, ext_user.username, is_external_user=True)
         redirect_url = portal_path(request, project_uuid)
     else:
         redirect_url = portal_path(request, project_uuid, 'login')
@@ -340,25 +323,32 @@ def portal_external_sso_login_view(request, provider_id, project_uuid):
     if not is_valid_email(email):
         return _render_portal_external_sso_error(request, _('Login link is invalid.'))
 
-    try:
-        ext_user, _created = ProjectExternalUser.objects.get_or_create(
-            email=email,
-            project_uuid=str(project_uuid),
-            defaults={
-                'username': gen_user_virtual_id(),
-                'activated': True,
-            },
-        )
-        if not ext_user.activated:
-            ext_user.activated = True
-            ext_user.save(update_fields=['activated'])
-    except Exception:
-        logger.exception('Failed to create portal external user from SSO: project=%s provider=%s',project_uuid, provider.provider_id)
-        return _render_portal_external_sso_error(request, _('Unable to sign in. Please try again later.'))
-
     request.session.cycle_key()
-    request.session['portal_external_username'] = ext_user.username
-    request.session['portal_external_project_uuid'] = str(project_uuid)
+    team_username = Profile.objects.convert_login_str_to_username(email)
+    org_id = getattr(project.workspace, 'org_id', -1)
+    if org_id != -1 and OrgUser.objects.org_user_exists(org_id, team_username):
+        try:
+            team_user = User.objects.get(email=team_username)
+        except User.DoesNotExist:
+            return _render_portal_external_sso_error(request, _('This account is unavailable.'))
+        if not team_user.is_active:
+            return _render_portal_external_sso_error(request, _('This account is unavailable.'))
+        set_portal_login_session(request, project_uuid, team_username)
+    else:
+        try:
+            ext_user, _created = ProjectExternalUser.objects.get_or_create(
+                email=email, project_uuid=project_uuid,
+                defaults={'username': gen_user_virtual_id(),
+                          'activated': True,},
+            )
+            if not ext_user.activated:
+                ext_user.activated = True
+                ext_user.save(update_fields=['activated'])
+        except Exception:
+            logger.exception('Failed to create portal external user from SSO: project=%s provider=%s',project_uuid, provider.provider_id)
+            return _render_portal_external_sso_error(request, _('Unable to sign in. Please try again later.'))
+
+        set_portal_login_session(request, project_uuid, ext_user.username, is_external_user=True)
     response = redirect(portal_path(request, project_uuid))
     response['Cache-Control'] = 'no-store'
     response['Referrer-Policy'] = 'no-referrer'

@@ -14,6 +14,8 @@ from seahub.portal.chat.apis import (
 from seahub.portal.chat.utils import encode_portal_chat_image_token, rewrite_portal_chat_image_urls
 from seahub.portal.visitor_session import create_visitor_session
 from seahub.portal.models import PortalChatSessions, PortalChatMessages
+from seahub.portal.utils import set_portal_login_session
+from seahub.organizations.models import OrgUser
 
 
 def _set_portal_settings(project, **kwargs):
@@ -55,6 +57,23 @@ class TestPortalChatPermissionAnonymous:
         resp = PortalChatSessionsView.as_view()(request, project_uuid=str(real_project.uuid))
 
         assert resp.status_code == 200
+
+    def test_sso_team_user_session_takes_priority_for_chat(self, factory, real_project, project_creator):
+        team_username = 'sso-team-user@example.com'
+        OrgUser.objects.create(org_id=real_project.workspace.org_id, email=team_username)
+        request = factory.post(
+            f'/api/v1/portal/{real_project.uuid}/chat/sessions/',
+            data={'session_name': 'Team chat'},
+            format='json',
+        )
+        request.user = project_creator
+        set_portal_login_session(request, str(real_project.uuid), team_username)
+
+        response = PortalChatSessionsView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert response.status_code == 201
+        assert response.data['session']['username'] == team_username
+        assert PortalChatSessions.objects.get(session_uuid=response.data['session']['session_uuid']).username == team_username
 
     def test_anonymous_enabled_with_password_not_verified_returns_403(self, factory, real_project):
         _set_portal_settings(

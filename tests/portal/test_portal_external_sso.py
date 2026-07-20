@@ -8,13 +8,21 @@ from django.contrib.auth.models import AnonymousUser
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.test import RequestFactory
 
+from seahub.base.accounts import User
 from seahub.portal.apis import (
     PortalExternalSSOProviderResetSecretView,
     PortalExternalSSOProviderView,
     PortalExternalSSOProvidersView,
 )
 from seahub.portal.models import PortalExternalSSOProvider, ProjectExternalUser
+from seahub.portal.utils import (
+    PORTAL_EXTERNAL_SESSION_PROJECT_KEY,
+    PORTAL_EXTERNAL_SESSION_USERNAME_KEY,
+    PORTAL_PREVIEW_SESSION_PROJECT_KEY,
+    PORTAL_PREVIEW_SESSION_USERNAME_KEY,
+)
 from seahub.portal.views import portal_external_sso_login_view
+from seahub.organizations.models import OrgUser
 from seahub.project.models import Projects, Workspaces
 
 
@@ -203,6 +211,8 @@ class TestPortalExternalSSOLoginView:
         provider.save()
         token = build_sso_token('plus', secret)
         request = build_sso_request(f'/portal-external/sso/plus/{real_project.uuid}/?token={token}')
+        request.session[PORTAL_PREVIEW_SESSION_USERNAME_KEY] = 'previous-team-user'
+        request.session[PORTAL_PREVIEW_SESSION_PROJECT_KEY] = str(real_project.uuid)
 
         response = portal_external_sso_login_view(request, 'plus', str(real_project.uuid))
 
@@ -215,8 +225,10 @@ class TestPortalExternalSSOLoginView:
             email='external@example.com',
         )
         assert ext_user.activated is True
-        assert request.session['portal_external_username'] == ext_user.username
-        assert request.session['portal_external_project_uuid'] == str(real_project.uuid)
+        assert request.session[PORTAL_EXTERNAL_SESSION_USERNAME_KEY] == ext_user.username
+        assert request.session[PORTAL_EXTERNAL_SESSION_PROJECT_KEY] == str(real_project.uuid)
+        assert PORTAL_PREVIEW_SESSION_USERNAME_KEY not in request.session
+        assert PORTAL_PREVIEW_SESSION_PROJECT_KEY not in request.session
 
     def test_login_reuses_existing_external_user(self, real_project):
         ext_user = ProjectExternalUser.objects.create(
@@ -241,7 +253,87 @@ class TestPortalExternalSSOLoginView:
 
         assert response.status_code == 302
         assert ProjectExternalUser.objects.filter(project_uuid=str(real_project.uuid), email=ext_user.email).count() == 1
-        assert request.session['portal_external_username'] == ext_user.username
+        assert request.session[PORTAL_EXTERNAL_SESSION_USERNAME_KEY] == ext_user.username
+
+    def test_login_uses_team_user_without_creating_external_user(self, real_project):
+        login_email = 'team-user@example.com'
+        team_user = User.objects.create_user(login_email, password='!', is_active=True)
+        team_username = team_user.username
+        OrgUser.objects.create(org_id=real_project.workspace.org_id, email=team_username)
+        secret = 'x' * 32
+        provider = PortalExternalSSOProvider(
+            project_uuid=str(real_project.uuid),
+            provider_id='plus',
+            name='Plus',
+            enabled=True,
+        )
+        provider.reset_secret(secret)
+        provider.save()
+        token = build_sso_token('plus', secret, email=login_email)
+        request = build_sso_request(f'/portal-external/sso/plus/{real_project.uuid}/?token={token}')
+        request.session[PORTAL_EXTERNAL_SESSION_USERNAME_KEY] = 'previous-external-user'
+        request.session[PORTAL_EXTERNAL_SESSION_PROJECT_KEY] = str(real_project.uuid)
+
+        response = portal_external_sso_login_view(request, 'plus', str(real_project.uuid))
+
+        assert response.status_code == 302
+        assert not ProjectExternalUser.objects.filter(
+            project_uuid=str(real_project.uuid), email=login_email
+        ).exists()
+        assert request.session[PORTAL_PREVIEW_SESSION_USERNAME_KEY] == team_username
+        assert request.session[PORTAL_PREVIEW_SESSION_PROJECT_KEY] == str(real_project.uuid)
+        assert PORTAL_EXTERNAL_SESSION_USERNAME_KEY not in request.session
+        assert PORTAL_EXTERNAL_SESSION_PROJECT_KEY not in request.session
+
+    def test_login_rejects_team_user_without_station_account(self, real_project):
+        team_username = real_project.creator
+        OrgUser.objects.create(org_id=real_project.workspace.org_id, email=team_username)
+        secret = 'x' * 32
+        provider = PortalExternalSSOProvider(
+            project_uuid=str(real_project.uuid),
+            provider_id='plus',
+            name='Plus',
+            enabled=True,
+        )
+        provider.reset_secret(secret)
+        provider.save()
+        token = build_sso_token('plus', secret, email=team_username)
+        request = build_sso_request(f'/portal-external/sso/plus/{real_project.uuid}/?token={token}')
+
+        response = portal_external_sso_login_view(request, 'plus', str(real_project.uuid))
+
+        assert response.status_code == 200
+        assert not ProjectExternalUser.objects.filter(
+            project_uuid=str(real_project.uuid), email=team_username
+        ).exists()
+        assert PORTAL_PREVIEW_SESSION_USERNAME_KEY not in request.session
+        assert PORTAL_PREVIEW_SESSION_PROJECT_KEY not in request.session
+
+    def test_login_rejects_inactive_team_user(self, real_project):
+        login_email = 'inactive-team-user@example.com'
+        team_user = User.objects.create_user(login_email, password='!', is_active=False)
+        team_username = team_user.username
+        OrgUser.objects.create(org_id=real_project.workspace.org_id, email=team_username)
+        secret = 'x' * 32
+        provider = PortalExternalSSOProvider(
+            project_uuid=str(real_project.uuid),
+            provider_id='plus',
+            name='Plus',
+            enabled=True,
+        )
+        provider.reset_secret(secret)
+        provider.save()
+        token = build_sso_token('plus', secret, email=login_email)
+        request = build_sso_request(f'/portal-external/sso/plus/{real_project.uuid}/?token={token}')
+
+        response = portal_external_sso_login_view(request, 'plus', str(real_project.uuid))
+
+        assert response.status_code == 200
+        assert not ProjectExternalUser.objects.filter(
+            project_uuid=str(real_project.uuid), email=login_email
+        ).exists()
+        assert PORTAL_PREVIEW_SESSION_USERNAME_KEY not in request.session
+        assert PORTAL_PREVIEW_SESSION_PROJECT_KEY not in request.session
 
     def test_login_rejects_expired_token(self, real_project):
         secret = 'x' * 32

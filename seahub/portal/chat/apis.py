@@ -7,7 +7,7 @@ from django.http import FileResponse, StreamingHttpResponse
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
 from seahub.portal.permissions import PortalChatPermission
-from seahub.portal.utils import portal_endpoint
+from seahub.portal.utils import get_portal_external_username, portal_endpoint
 from rest_framework import status
 from rest_framework.response import Response
 
@@ -29,7 +29,6 @@ from seahub.portal.chat.utils import (
     gen_portal_chat_task_id,
     gen_portal_message_id,
     get_portal_chat_settings,
-    get_portal_external_username,
     get_project_portal_chat_credit_used,
     is_portal_chat_proxy_image_file_path,
     mark_anonymous_chat_rate_limit,
