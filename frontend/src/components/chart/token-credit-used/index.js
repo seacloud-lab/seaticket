@@ -5,9 +5,7 @@ import Tooltip from './tooltip';
 
 const formatCreditUsed = (value) => {
   if (value === 0) return '0';
-  const withDecimals = value.toFixed(0);
-  const trimmed = withDecimals.replace(/\.?0+$/, '');
-  return trimmed;
+  return value.toFixed(0);
 };
 
 const TokenCreditUsed = ({
