@@ -3012,7 +3012,7 @@ msgstr "我的工单"
 #: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:112
 #: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:173
 msgid "New ticket"
-msgstr "新建 ticket"
+msgstr "新建工单"
 
 #: frontend/src/project/main-panel/agent/components/agent-type-to-github-type-mapping-dialog/index.js:42
 msgid "Select suitable issue type"
