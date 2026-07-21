@@ -18,7 +18,12 @@ import WebSocketClient from '@/utils/websocket-service';
 
 const ConnectionsContext = React.createContext(null);
 
-export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, children }) => {
+export const ConnectionsProvider = ({
+  projectUuid,
+  api = connectionsAPI,
+  isSubscribeConnectionsSyncStatus,
+  children
+}) => {
   const [isLoading, setLoading] = useState(true);
   const [isLoadingMore, setLoadingMore] = useState(false);
   const [connections, setConnections] = useState([]);
@@ -265,6 +270,7 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
   }, [isLoading, loadMore]);
 
   useEffect(() => {
+    if (!isSubscribeConnectionsSyncStatus) return;
     const socket = new WebSocketClient(projectUuid, (noticeData) => {
       if (noticeData.type === 'connection-sync') {
         const { connection_id, status } = noticeData.content;
@@ -293,7 +299,7 @@ export const ConnectionsProvider = ({ projectUuid, api = connectionsAPI, childre
       socket.close();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectUuid]);
+  }, [projectUuid, isSubscribeConnectionsSyncStatus]);
 
   return (
     <ConnectionsContext.Provider value={{

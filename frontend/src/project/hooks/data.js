@@ -30,6 +30,7 @@ export const DataProvider = ({
   activeBar,
   api,
   enablePortal,
+  isSubscribeConnectionsSyncStatus = true,
   children
 }) => {
   const [data, setData] = useState({ version: 0 });
@@ -731,7 +732,7 @@ export const DataProvider = ({
           <CollaboratorsProvider listUserInfo={listUserInfo} getCollaborators={getCollaborators}>
             <TagsProvider projectUuid={projectUuid} api={api}>
               <MetadataProvider projectUuid={projectUuid} api={api}>
-                <ConnectionsProvider projectUuid={projectUuid} api={api}>
+                <ConnectionsProvider projectUuid={projectUuid} api={api} isSubscribeConnectionsSyncStatus={isSubscribeConnectionsSyncStatus}>
                   <PortalIssuesMetadataProvider projectUuid={projectUuid} enablePortal={enablePortal}>
                     <AnalyzeTaskProvider>
                       <CloseLinkedIssuesProvider>
