@@ -32,10 +32,10 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID }) => {
     views: [
       {
         _id: 'open',
-        name: gettext('Open'),
+        name: 'Open',
       }, {
         _id: 'closed',
-        name: gettext('Closed'),
+        name: 'Closed',
       },
     ]
   }), []);

@@ -207,7 +207,7 @@ TICKET_DEFAULT_DETAILS = {
     'views': [
         {
             '_id': 'open',
-            'name': _('Open'),
+            'name': 'Open',
             'type': 'table',
             'basic_filters': [
                 {'column_key': 'state', 'filter_predicate': 'is_any_of', 'filter_term': ['open']},
@@ -222,7 +222,7 @@ TICKET_DEFAULT_DETAILS = {
             'hidden_columns': [],
         }, {
             '_id': 'closed',
-            'name': _('Closed'),
+            'name': 'Closed',
             'type': 'table',
             'basic_filters': [
                 {'column_key': 'state', 'filter_predicate': 'is_any_of', 'filter_term': ['closed']},
@@ -248,7 +248,7 @@ CONNECTION_DEFAULT_DETAILS = {
         'views': [
             {
                 '_id': 'open',
-                'name': _('Open'),
+                'name': 'Open',
                 'type': 'table',
                 'basic_filters': [
                     {'column_key': 'state', 'filter_predicate': 'is_any_of', 'filter_term': ['open']},
@@ -262,7 +262,7 @@ CONNECTION_DEFAULT_DETAILS = {
                 'hidden_columns': [],
             }, {
                 '_id': 'closed',
-                'name': _('Closed'),
+                'name': 'Closed',
                 'type': 'table',
                 'basic_filters': [
                     {'column_key': 'state', 'filter_predicate': 'is_any_of', 'filter_term': ['closed']},
@@ -572,7 +572,7 @@ PORTAL_ISSUES_DEFAULT_DETAILS = {
     'views': [
         {
             '_id': 'open',
-            'name': _('Open'),
+            'name': 'Open',
             'type': 'table',
             'basic_filters': [
                 {'column_key': 'state', 'filter_predicate': 'is_any_of', 'filter_term': ['open']},
@@ -587,7 +587,7 @@ PORTAL_ISSUES_DEFAULT_DETAILS = {
             'hidden_columns': [],
         }, {
             '_id': 'closed',
-            'name': _('Closed'),
+            'name': 'Closed',
             'type': 'table',
             'basic_filters': [
                 {'column_key': 'state', 'filter_predicate': 'is_any_of', 'filter_term': ['closed']},
