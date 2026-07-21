@@ -175,7 +175,10 @@ const AIReply = forwardRef(({
       generateCopyOriginalLinkOption({ row, columns, connection }),
     ];
 
-    const markAsOutdatedOptions = generateMarkAsOutdatedOptions({ rows: [row], columns, connection }, modifyRowsByDetailsMenu);
+    const markAsOutdatedOptions = generateMarkAsOutdatedOptions({ rows: [row], columns, connection }, (...args) => {
+      actionContextRef.current = { row, details, updateResourceDetails, columns, connection };
+      return modifyRowsByDetailsMenu(...args);
+    });
     if (markAsOutdatedOptions.length > 0) {
       options.push('Divider');
       options.push(...markAsOutdatedOptions);
