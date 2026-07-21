@@ -538,7 +538,7 @@ def build_linked_ticket_titles_map(seadb_api, project_uuid, records, columns, co
     # Query ticket titles if we have any IDs
     if ticket_ids:
         ticket_ids_str = ','.join([str(i) for i in ticket_ids])
-        sql = f"SELECT _pk, title FROM `{TABLE_TICKETS}` WHERE `_pk` IN ({ticket_ids_str})"
+        sql = f"SELECT _pk, title FROM `{TABLE_TICKETS}` WHERE `_pk` IN ({ticket_ids_str}) LIMIT 0, {len(ticket_ids)}"
         try:
             res = seadb_api.query_rows(project_uuid, sql)
             for row in (res.get('results') or []):
