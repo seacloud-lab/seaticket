@@ -17,7 +17,7 @@
   position: relative;
 }
 
-.connection-status-container .timeline .timeline-item:not(:last-child)::before  {
+.connection-status-container .timeline .timeline-item:not(:last-child)::before {
   content: '';
   position: absolute;
   left: 20px;
