@@ -8,7 +8,12 @@ export const MSG_TYPE_AGENT_NOTIFY_ASSIGNEE = 'agent_notify_assignee';
 export const MSG_TYPE_TICKET_COMMENTED = 'ticket_commented';
 export const MSG_TYPE_ADD_USER_TO_GROUP = 'add_user_to_group';
 export const MSG_TYPE_ORG_MEMBER_INVITE_ACCEPTED = 'org_member_invite_accepted';
-export const MSG_TYPE_PROJECT = 'project_notifications';
+export const MSG_TYPE_PROJECTS = 'project_notifications';
+
+// ws
+export const MSG_TYPE_WS_PROJECT = 'project_notification';
+export const MSG_TYPE_WS_USER_NOTIFICATION = 'user_notification';
+export const MSG_TYPE_WS_USER_LOGOUT_NOTIFICATION = 'user_logout';
 
 export const TICKET_MSG_TYPES = [
   MSG_TYPE_TICKET_ASSIGNEE_ADDED,

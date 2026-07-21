@@ -416,6 +416,8 @@ class TicketsAPIView(APIView):
             ticket_title=title,
             workspace_id=workspace.id,
             project_name=project.project_name,
+            project_color=project.color,
+            project_icon=project.icon,
         )
 
         send_ticket_update_msg(project_uuid, added=1)
@@ -671,6 +673,8 @@ class TicketsAPIView(APIView):
                         ticket_title=row_data.get('title') or ticket.get('title'),
                         workspace_id=workspace.id,
                         project_name=project.project_name,
+                        project_color=project.color,
+                        project_icon=project.icon,
                     )
             except Exception as e:
                 logger.error(e)
@@ -1198,6 +1202,8 @@ class TicketAPIView(APIView):
                     ticket_title=title or ticket.get('title'),
                     workspace_id=workspace.id,
                     project_name=project.project_name,
+                    project_color=project.color,
+                    project_icon=project.icon,
                 )
 
         send_ticket_update_msg(project_uuid, updated=1)
@@ -1494,6 +1500,8 @@ class TicketCommentsAPIView(APIView):
                 ticket_title=ticket.get('title'),
                 workspace_id=workspace.id,
                 project_name=project.project_name,
+                project_color=project.color,
+                project_icon=project.icon,
             )
 
         send_data_update_msg(

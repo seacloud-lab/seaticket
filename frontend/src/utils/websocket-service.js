@@ -22,6 +22,37 @@ class WebSocketClient {
     }
   }
 
+  _formatSubscriptionMsg(projectUuid) {
+    if (!projectUuid) return null;
+    return projectAPI.getNotificationToken(projectUuid).then(res => {
+      const token = res?.data?.token || '';
+      if (!token) {
+        console.warn(`Empty notification token for project ${projectUuid}`);
+        return null;
+      }
+      return {
+        type: 'subscribe',
+        content: {
+          project_uuid: projectUuid,
+          token: token,
+        },
+      };
+    }).catch(error => {
+      console.error('Failed to get websocket notification token: ', error);
+      return null;
+    });
+  }
+
+  _formatUnSubscriptionMsg(projectUuid) {
+    if (!projectUuid) return null;
+    return {
+      type: 'unsubscribe',
+      content: {
+        project_uuid: projectUuid,
+      },
+    };
+  }
+
   addMessageListener(callback) {
     if (typeof callback === 'function') {
       this.listeners.add(callback);
@@ -33,13 +64,9 @@ class WebSocketClient {
   }
 
   connect() {
-    if (!enableNotificationServer) {
-      return;
-    }
+    if (!enableNotificationServer) return;
 
-    if (this.socket) {
-      return;
-    }
+    if (this.socket) return;
 
     const socket = new WebSocket(this.url);
     const socketId = ++this.socketId; // Used to prevent old connections from interfering with new connections.
@@ -58,7 +85,7 @@ class WebSocketClient {
     const resubscribeActiveProjects = async () => {
       for (const [projectUuid, count] of this.subscriptions.entries()) {
         if (count > 0) {
-          const msg = await this.formatSubscriptionMsg(projectUuid);
+          const msg = await this._formatSubscriptionMsg(projectUuid);
           sendIfOpen(msg);
         }
       }
@@ -114,15 +141,13 @@ class WebSocketClient {
   }
 
   async subscribe(projectUuid) {
-    if (!projectUuid) {
-      return;
-    }
+    if (!projectUuid) return;
 
     const count = this.subscriptions.get(projectUuid) || 0;
     this.subscriptions.set(projectUuid, count + 1);
 
     if (count === 0 && this.socket && this.socket.readyState === WebSocket.OPEN) {
-      const msg = await this.formatSubscriptionMsg(projectUuid);
+      const msg = await this._formatSubscriptionMsg(projectUuid);
       if (msg && this.socket && this.socket.readyState === WebSocket.OPEN) {
         this.socket.send(JSON.stringify(msg));
       }
@@ -130,15 +155,13 @@ class WebSocketClient {
   }
 
   unsubscribe(projectUuid) {
-    if (!projectUuid) {
-      return null;
-    }
+    if (!projectUuid) return null;
 
     const count = this.subscriptions.get(projectUuid) || 0;
     if (count <= 1) {
       this.subscriptions.delete(projectUuid);
       if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-        const msg = this.formatUnSubscriptionMsg(projectUuid);
+        const msg = this._formatUnSubscriptionMsg(projectUuid);
         if (msg) {
           this.socket.send(JSON.stringify(msg));
         }
@@ -146,44 +169,7 @@ class WebSocketClient {
       return;
     }
 
-    this.subscriptions.set(projectUuid, count - 1);
-  }
-
-  async getProjectNotificationJwtToken(projectUuid) {
-    try {
-      const response = await projectAPI.getNotificationToken(projectUuid);
-      return response.data.token;
-    } catch (error) {
-      console.error('Failed to get websocket notification token', error);
-      throw error;
-    }
-  }
-
-  async formatSubscriptionMsg(projectUuid) {
-    if (!projectUuid) {
-      return null;
-    }
-
-    const notificationToken = await this.getProjectNotificationJwtToken(projectUuid);
-    return {
-      type: 'subscribe',
-      content: {
-        project_uuid: projectUuid,
-        token: notificationToken,
-      },
-    };
-  }
-
-  formatUnSubscriptionMsg(projectUuid) {
-    if (!projectUuid) {
-      return null;
-    }
-    return {
-      type: 'unsubscribe',
-      content: {
-        project_uuid: projectUuid,
-      },
-    };
+    this.subscriptions.set(projectUuid, Math.max(0, count - 1));
   }
 
   close() {
@@ -196,7 +182,7 @@ class WebSocketClient {
     if (this.socket) {
       if (this.socket.readyState === WebSocket.OPEN) {
         for (const projectUuid of this.subscriptions.keys()) {
-          const msg = this.formatUnSubscriptionMsg(projectUuid);
+          const msg = this._formatUnSubscriptionMsg(projectUuid);
           if (msg) {
             this.socket.send(JSON.stringify(msg));
           }
