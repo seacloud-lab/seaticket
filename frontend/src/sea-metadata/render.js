@@ -31,6 +31,8 @@ const Main = forwardRef(({
   toggleAllSubstates,
   expandRow,
   createRowsTools,
+  CustomView,
+  onCustomViewRowClick,
   children,
   ...params
 }, ref) => {
@@ -69,7 +71,13 @@ const Main = forwardRef(({
                   createRowsTools={createRowsTools}
                   toggleView={toggleView}
                 />
-                <View fixedColumnCount={fixedColumnCount} expandRow={expandRow} children={children} />
+                <View
+                  fixedColumnCount={fixedColumnCount}
+                  expandRow={expandRow}
+                  CustomView={CustomView}
+                  onCustomViewRowClick={onCustomViewRowClick}
+                  children={children}
+                />
               </div>
             </MetadataProvider>
           </SelectedRowsProvider>

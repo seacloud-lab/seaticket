@@ -1,3 +1,81 @@
 .seaqa-portal-issue-header.seaqa-project-main-panel-header .seaqa-project-main-panel-header-left {
 	font-size: 14px;
 }
+
+@media (max-width: 768px) {
+  .seaqa-portal-issue-cards {
+    width: 100%;
+    height: 100%;
+    padding: 12px 16px 0;
+    overflow-y: auto;
+  }
+
+  .seaqa-portal-issue-card {
+    width: 100%;
+    min-width: 0;
+    padding: 16px;
+    margin-bottom: 12px;
+    border: 1px solid var(--bs-border-secondary-color);
+    border-radius: 8px;
+    background-color: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    text-align: left;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .04);
+  }
+
+  .seaqa-portal-issue-card:active {
+    background-color: var(--bs-th-fifth-bg);
+  }
+
+  .seaqa-portal-issue-card-title {
+    margin-bottom: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 22px;
+    overflow-wrap: anywhere;
+  }
+
+  .seaqa-portal-issue-card-meta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    overflow: hidden;
+  }
+
+  .seaqa-portal-issue-card-meta-item {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    font-size: 13px;
+  }
+
+  .seaqa-portal-issue-card-meta-label {
+    color: var(--bs-body-secondary-color);
+    flex-shrink: 0;
+  }
+
+  .seaqa-portal-issue-card-meta-value,
+  .seaqa-portal-issue-card-state {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .seaqa-portal-issue-card-state.open {
+    color: var(--ticket-open-color);
+  }
+
+  .seaqa-portal-issue-card-state.closed {
+    color: var(--ticket-close-color);
+  }
+
+  .seaqa-portal-issue-cards-empty {
+    padding: 48px 16px;
+    color: var(--bs-body-secondary-color);
+    text-align: center;
+  }
+}
