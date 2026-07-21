@@ -180,7 +180,13 @@ const Project = () => {
   }, []);
 
   return (
-    <DataProvider projectUuid={projectUuid} projectName={projectName} workspaceID={workspaceID} enablePortal={settings?.portal?.enable_portal}>
+    <DataProvider
+      projectUuid={projectUuid}
+      projectName={projectName}
+      workspaceID={workspaceID}
+      enablePortal={settings?.portal?.enable_portal}
+      isSubscribeConnectionsSyncStatus={true}
+    >
       <I18nextProvider i18n={i18n}>
         <div className="seaqa-project">
           {isLoading ? (

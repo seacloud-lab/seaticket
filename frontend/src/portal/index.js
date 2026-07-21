@@ -203,7 +203,14 @@ const Portal = () => {
         {isLoading ? (
           <CenteredLoading />
         ) : (
-          <DataProvider projectUuid={projectUuid} api={APIRef.current} projectName={projectName} workspaceID={workspaceID} enablePortal={true}>
+          <DataProvider
+            projectUuid={projectUuid}
+            api={APIRef.current}
+            projectName={projectName}
+            workspaceID={workspaceID}
+            enablePortal={true}
+            isSubscribeConnectionsSyncStatus={false}
+          >
             {isEditMode && <LeftBar />}
             <div className="seaqa-portal-body">
               <SidePanel
