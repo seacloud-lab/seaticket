@@ -673,12 +673,13 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
               <FormGroup>
                 <Label>{gettext('Authorization')}</Label>
                 <div className="seaqa-project-connection-oauth-status">
-                  <span className={classnames('oauth-status-badge', { connected: isConfluenceOauthConnected })}>
-                    {isConfluenceOauthConnected ? gettext('Connected') : gettext('Not connected')}
+                  <span className="oauth-status-badge d-flex align-items-center">
+                    <Icon symbol={isConfluenceOauthConnected ? 'check-circle-filled' : 'close-circle-filled'} />
+                    <span className="oauth-status-text">{isConfluenceOauthConnected ? gettext('Connected') : gettext('Not connected')}</span>
                   </span>
                   <Button
-                    color="primary"
-                    className="ml-2"
+                    color={isConfluenceOauthConnected ? 'secondary' : 'primary'}
+                    className="oauth-status-button"
                     disabled={isSubmitting || isCheckingConfluenceOauth || isWaitingConfluenceOAuth}
                     onClick={handleConnectConfluence}
                   >
