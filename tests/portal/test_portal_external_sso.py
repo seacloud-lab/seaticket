@@ -20,6 +20,7 @@ from seahub.portal.utils import (
     PORTAL_EXTERNAL_SESSION_USERNAME_KEY,
     PORTAL_PREVIEW_SESSION_PROJECT_KEY,
     PORTAL_PREVIEW_SESSION_USERNAME_KEY,
+    get_portal_external_username,
 )
 from seahub.portal.views import portal_external_sso_login_view
 from seahub.organizations.models import OrgUser
@@ -255,7 +256,7 @@ class TestPortalExternalSSOLoginView:
         assert ProjectExternalUser.objects.filter(project_uuid=str(real_project.uuid), email=ext_user.email).count() == 1
         assert request.session[PORTAL_EXTERNAL_SESSION_USERNAME_KEY] == ext_user.username
 
-    def test_login_uses_team_user_without_creating_external_user(self, real_project):
+    def test_login_uses_team_user_with_external_session(self, real_project):
         login_email = 'team-user@example.com'
         team_user = User.objects.create_user(login_email, password='!', is_active=True)
         team_username = team_user.username
@@ -280,10 +281,11 @@ class TestPortalExternalSSOLoginView:
         assert not ProjectExternalUser.objects.filter(
             project_uuid=str(real_project.uuid), email=login_email
         ).exists()
-        assert request.session[PORTAL_PREVIEW_SESSION_USERNAME_KEY] == team_username
-        assert request.session[PORTAL_PREVIEW_SESSION_PROJECT_KEY] == str(real_project.uuid)
-        assert PORTAL_EXTERNAL_SESSION_USERNAME_KEY not in request.session
-        assert PORTAL_EXTERNAL_SESSION_PROJECT_KEY not in request.session
+        assert request.session[PORTAL_EXTERNAL_SESSION_USERNAME_KEY] == team_username
+        assert request.session[PORTAL_EXTERNAL_SESSION_PROJECT_KEY] == str(real_project.uuid)
+        assert get_portal_external_username(request, str(real_project.uuid)) == team_username
+        assert PORTAL_PREVIEW_SESSION_USERNAME_KEY not in request.session
+        assert PORTAL_PREVIEW_SESSION_PROJECT_KEY not in request.session
 
     def test_login_rejects_team_user_without_station_account(self, real_project):
         team_username = real_project.creator
@@ -306,6 +308,7 @@ class TestPortalExternalSSOLoginView:
         assert not ProjectExternalUser.objects.filter(
             project_uuid=str(real_project.uuid), email=team_username
         ).exists()
+        assert PORTAL_EXTERNAL_SESSION_USERNAME_KEY not in request.session
         assert PORTAL_PREVIEW_SESSION_USERNAME_KEY not in request.session
         assert PORTAL_PREVIEW_SESSION_PROJECT_KEY not in request.session
 
@@ -332,6 +335,7 @@ class TestPortalExternalSSOLoginView:
         assert not ProjectExternalUser.objects.filter(
             project_uuid=str(real_project.uuid), email=login_email
         ).exists()
+        assert PORTAL_EXTERNAL_SESSION_USERNAME_KEY not in request.session
         assert PORTAL_PREVIEW_SESSION_USERNAME_KEY not in request.session
         assert PORTAL_PREVIEW_SESSION_PROJECT_KEY not in request.session
 

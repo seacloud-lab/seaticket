@@ -7,7 +7,7 @@ from django.http import FileResponse, StreamingHttpResponse
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
 from seahub.portal.permissions import PortalChatPermission
-from seahub.portal.utils import get_portal_external_username, portal_endpoint
+from seahub.portal.utils import portal_endpoint
 from rest_framework import status
 from rest_framework.response import Response
 
@@ -16,9 +16,8 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import uuid_str_to_32_chars
 from seahub.utils.storage import upload_portal_files_to_s3
-from seahub.project.models import Projects
 from seahub.project.constants import AIScenario
-from seahub.project.utils import check_ai_limit, check_same_org_permission, delete_portal_sessions
+from seahub.project.utils import check_ai_limit, delete_portal_sessions
 from seahub.utils.ip import get_remote_ip
 from seahub.portal.chat.utils import (
     build_portal_message_result,

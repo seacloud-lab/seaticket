@@ -9,6 +9,7 @@ from django.core.signing import BadSignature, SignatureExpired
 from rest_framework import status
 
 from seahub.utils import normalize_cache_key
+from seahub.base.accounts import User
 from seahub.organizations.models import OrgUser
 from seahub.profile.models import Profile
 from seahub.api2.utils import api_error
@@ -140,9 +141,13 @@ def get_portal_external_username(request, project_uuid):
     external_project_uuid = session.get(PORTAL_EXTERNAL_SESSION_PROJECT_KEY)
     if not external_username or external_project_uuid != project_uuid:
         return ''
-    if not ProjectExternalUser.objects.filter(project_uuid=project_uuid, username=external_username, activated=True).exists():
-        return ''
-    return external_username
+    if ProjectExternalUser.objects.filter(project_uuid=project_uuid, username=external_username, activated=True).exists():
+        return external_username
+
+    project, _portal_settings = get_request_project_and_portal_settings(request, project_uuid)
+    if project and is_active_portal_team_user(project, external_username):
+        return external_username
+    return ''
 
 
 def normalize_external_login_email(email):
@@ -214,6 +219,19 @@ def is_user_in_the_same_team(project, email):
     
     return True
 
+
+def is_active_portal_team_user(project, username):
+    org_id = getattr(project.workspace, 'org_id', -1)
+    if org_id == -1 or not OrgUser.objects.org_user_exists(org_id, username):
+        return False
+
+    try:
+        user = User.objects.get(email=username)
+    except User.DoesNotExist:
+        return False
+    return bool(user.is_active)
+
+
 def get_portal_settings(project):
     try:
         project_settings = json.loads(project.settings) if project.settings else {}
@@ -274,6 +292,14 @@ def _get_request_identity(request, project_uuid):
             'is_anonymous': False,
         }, None
 
+    external_username = get_portal_external_username(request, project_uuid)
+    if external_username:
+        return {
+            'username': external_username,
+            'is_external_user': True,
+            'is_anonymous': False,
+        }, None
+
     user = getattr(request, 'user', None)
     if user and getattr(user, 'is_authenticated', False):
         project = getattr(request, 'project', None) or Projects.objects.get_project_by_uuid(project_uuid)
@@ -284,14 +310,6 @@ def _get_request_identity(request, project_uuid):
                 'is_external_user': False,
                 'is_anonymous': False,
             }, None
-
-    external_username = get_portal_external_username(request, project_uuid)
-    if external_username:
-        return {
-            'username': external_username,
-            'is_external_user': True,
-            'is_anonymous': False,
-        }, None
 
     visitor_session = load_visitor_session(request)
     if visitor_session.get('status') != 'active':

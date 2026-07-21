@@ -63,14 +63,14 @@ class PortalKnowledgeBasePermission(BasePermission):
         if is_portal_mode and _is_portal_preview_user(request, project_uuid):
             return True
 
+        if is_portal_mode and _is_external_member(request, project_uuid):
+            return True
+
         if _is_same_org_user(request, project):
             return True
 
         if not is_portal_mode:
             return False
-
-        if _is_external_member(request, project_uuid):
-            return True
         
         allow_anonymous = bool(portal_settings.get('allow_anonymous', False))
         enable_password_protection = bool(portal_settings.get('enable_password_protection', False))
@@ -97,14 +97,14 @@ class PortalAnonymousAccessPermission(BasePermission):
         if is_portal_mode and _is_portal_preview_user(request, project_uuid):
             return True
 
+        if is_portal_mode and _is_external_member(request, project_uuid):
+            return True
+
         if _is_same_org_user(request, project):
             return True
 
         if not is_portal_mode:
             return False
-
-        if _is_external_member(request, project_uuid):
-            return True
         
         allow_anonymous = bool(portal_settings.get('allow_anonymous', False))
         enable_password_protection = bool(portal_settings.get('enable_password_protection', False))
@@ -131,14 +131,14 @@ class PortalIssuePermission(BasePermission):
         if is_portal_mode and _is_portal_preview_user(request, project_uuid):
             return True
 
+        if is_portal_mode and _is_external_member(request, project_uuid):
+            return True
+
         if _is_same_org_user(request, project):
             return True
 
         if not is_portal_mode:
             return False
-
-        if _is_external_member(request, project_uuid):
-            return True
 
         return False
 
@@ -158,14 +158,14 @@ class PortalChatPermission(BasePermission):
         if is_portal_mode and _is_portal_preview_user(request, project_uuid):
             return True
 
+        if is_portal_mode and _is_external_member(request, project_uuid):
+            return True
+
         if _is_same_org_user(request, project):
             return True
 
         if not is_portal_mode:
             return False
-
-        if _is_external_member(request, project_uuid):
-            return True
 
         allow_anonymous = bool(portal_settings.get('allow_anonymous', False))
         enable_password_protection = bool(portal_settings.get('enable_password_protection', False))

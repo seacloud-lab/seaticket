@@ -8,6 +8,7 @@ from django.contrib.sessions.middleware import SessionMiddleware
 from django.http import HttpResponse
 from django.test import RequestFactory, override_settings
 
+from seahub.base.accounts import User
 from seahub.portal.middleware import PortalDomainMiddleware
 from seahub.portal.models import PortalCustomDomain, PortalDomainAlias, ProjectExternalUser
 from seahub.portal.permissions import PortalAnonymousAccessPermission, PortalIssuePermission
@@ -68,7 +69,8 @@ def test_portal_accounts_login_hides_main_site_entry_points():
 
 
 @pytest.mark.django_db
-def test_portal_view_treats_cross_org_authenticated_external_user_as_external(factory, real_project):
+@pytest.mark.parametrize('authenticated_org_id', [1, 999])
+def test_portal_external_session_takes_priority_over_authenticated_user(factory, real_project, authenticated_org_id):
     ext_username = 'virtual-ext-user'
     ProjectExternalUser.objects.create(
         email='external@example.com',
@@ -79,9 +81,9 @@ def test_portal_view_treats_cross_org_authenticated_external_user_as_external(fa
 
     request = factory.get(f'/portal/{real_project.uuid}/')
     request.user = SimpleNamespace(
-        username='other-org@example.com',
+        username='authenticated-user@example.com',
         is_authenticated=True,
-        org=SimpleNamespace(org_id=999),
+        org=SimpleNamespace(org_id=authenticated_org_id),
     )
     request.session[PORTAL_EXTERNAL_SESSION_USERNAME_KEY] = ext_username
     request.session[PORTAL_EXTERNAL_SESSION_PROJECT_KEY] = str(real_project.uuid)
@@ -110,7 +112,7 @@ def test_portal_view_treats_cross_org_authenticated_external_user_as_external(fa
 
 
 @pytest.mark.django_db
-def test_portal_external_logout_clears_external_session_for_authenticated_user(factory, real_project):
+def test_portal_external_logout_clears_external_session_for_authenticated_user(real_project):
     ext_username = 'virtual-ext-user'
     ProjectExternalUser.objects.create(
         email='external@example.com',
@@ -119,7 +121,7 @@ def test_portal_external_logout_clears_external_session_for_authenticated_user(f
         activated=True,
     )
 
-    request = factory.get(f'/portal-external/logout/{real_project.uuid}/')
+    request = build_session_request(f'/portal-external/logout/{real_project.uuid}/')
     request.user = SimpleNamespace(
         username='other-org@example.com',
         is_authenticated=True,
@@ -139,18 +141,19 @@ def test_portal_external_logout_clears_external_session_for_authenticated_user(f
 @pytest.mark.django_db
 @override_settings(IS_PORTAL_MODE=True)
 def test_portal_issue_permission_prefers_sso_team_user_session(factory, real_project, project_creator):
-    team_username = 'sso-team-user@example.com'
+    team_user = User.objects.create_user('sso-team-user@example.com', password='!', is_active=True)
+    team_username = team_user.username
     OrgUser.objects.create(org_id=real_project.workspace.org_id, email=team_username)
     request = factory.get(f'/api/v1/portal/{real_project.uuid}/issues/1/')
     request.user = project_creator
-    set_portal_login_session(request, str(real_project.uuid), team_username)
+    set_portal_login_session(request, str(real_project.uuid), team_username, is_external_user=True)
     view = SimpleNamespace(kwargs={'project_uuid': str(real_project.uuid)})
 
     allowed = PortalIssuePermission().has_permission(request, view)
 
     assert allowed is True
     assert request.user.username == team_username
-    assert not hasattr(request, 'portal_external_username')
+    assert request.portal_external_username == team_username
 
 
 @pytest.mark.django_db
