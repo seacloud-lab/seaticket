@@ -120,7 +120,7 @@ def build_linked_record_titles_map_for_keys(seadb_api, project_uuid, lcr_keys):
     if portal_issue_ids:
         try:
             ids_str = ','.join([str(i) for i in portal_issue_ids])
-            sql = f"SELECT _pk, title FROM `{SchemaTables.PORTAL_ISSUES.table_name()}` WHERE `_pk` IN ({ids_str})"
+            sql = f"SELECT _pk, title FROM `{SchemaTables.PORTAL_ISSUES.table_name()}` WHERE `_pk` IN ({ids_str}) LIMIT 0, {len(portal_issue_ids)}"
             res = seadb_api.query_rows(project_uuid, sql)
             for row in (res.get('results') or []):
                 _pk = row.get('_pk')

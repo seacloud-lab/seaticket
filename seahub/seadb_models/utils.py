@@ -1004,7 +1004,7 @@ def get_connection_records_by_pks(seadb_api, project_uuid, connection_id, connec
     sql = ''
     if connection_type == ConnectionType.GITHUB_ISSUE.value:
         table_name = SchemaTables.GITHUB_ISSUES.table_name(connection_id)
-        sql = f"SELECT _pk, title, state FROM `{table_name}` WHERE _pk IN ({pks_str})"
+        sql = f"SELECT _pk, title, state FROM `{table_name}` WHERE _pk IN ({pks_str}) LIMIT 0, {len(pks)}"
     elif connection_type == ConnectionType.DISCOURSE_FORUM.value:
         table_name = SchemaTables.DISCOURSE_TOPICS.table_name(connection_id)
     elif connection_type == ConnectionType.SITE.value:
@@ -1021,7 +1021,7 @@ def get_connection_records_by_pks(seadb_api, project_uuid, connection_id, connec
         return []
 
     if not sql:
-        sql = f"SELECT _pk, title FROM `{table_name}` WHERE _pk IN ({pks_str})"
+        sql = f"SELECT _pk, title FROM `{table_name}` WHERE _pk IN ({pks_str}) LIMIT 0, {len(pks)}"
     try:
         res = seadb_api.query_rows(project_uuid, sql)
         records = res.get('results', [])
