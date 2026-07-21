@@ -54,6 +54,10 @@ DEFAULT_PROJECT_SETTINGS = {
         },
         'auto_confirm': DEFAULT_AGENT_AUTO_CONFIRM,
     },
+    'search': {
+        # null means unlimited; positive int means only issues updated within N years
+        'issues_recent_years': None,
+    },
 }
 
 
@@ -73,6 +77,30 @@ def _deep_update(target, source):
         else:
             target[key] = value
     return target
+
+
+def validate_issues_recent_years(value):
+    """Return None if valid; otherwise an error message.
+
+    Accepts only None/null or a positive int. Explicitly rejects bool, float,
+    zero, negative numbers, and numeric strings.
+    """
+    if value is None:
+        return None
+    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+        return 'search.issues_recent_years must be null or a positive integer.'
+    return None
+
+
+def validate_search_settings(search_settings):
+    """Validate project settings.search payload. Return error message or None."""
+    if search_settings is None:
+        return None
+    if not isinstance(search_settings, dict):
+        return 'search must be an object.'
+    if 'issues_recent_years' in search_settings:
+        return validate_issues_recent_years(search_settings.get('issues_recent_years'))
+    return None
 
 # connection types
 class ConnectionType(Enum):

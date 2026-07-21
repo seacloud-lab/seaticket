@@ -6,6 +6,7 @@ import { gettext } from '@/constants';
 import PromptSettings from './prompt-settings';
 import GitHubIssueTypeMappingSettings from './github-issue-type-mapping';
 import AgentAutoConfirmSettings from './agent-auto-confirm-settings';
+import IssueSearchYearsSettings from './issue-search-years-settings';
 
 const Settings = ({
   title,
@@ -22,6 +23,13 @@ const Settings = ({
         value={settings.prompt}
         onChange={(value, callback) => modifySettings({ prompt: value }, callback)}
         className="mb-4"
+      />
+      <IssueSearchYearsSettings
+        className="mb-4"
+        value={settings.search?.issues_recent_years ?? null}
+        onChange={(value, callback) => modifySettings({
+          search: Object.assign({}, settings.search, { issues_recent_years: value }),
+        }, callback)}
       />
       <SwitchSettingsItem
         title={gettext('Agent')}
