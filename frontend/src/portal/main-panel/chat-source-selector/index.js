@@ -63,7 +63,7 @@ const PortalChatSourceItem = ({ source, selected, disabled, onToggle }) => {
     <div className="portal-chat-source-item">
       <Switch
         className="portal-chat-source-item-switch"
-        size="small"
+        size="large"
         disabled={disabled}
         checked={selected}
         placeholder={<span className="text-truncate">{source.name}</span>}
