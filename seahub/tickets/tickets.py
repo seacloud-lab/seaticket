@@ -43,7 +43,8 @@ from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     build_tag_id_to_name_map, validate_linked_connection_records, \
     build_linked_github_issue_state_map, \
     collect_open_linked_github_issues_for_tickets, close_linked_github_issues, \
-    build_ticket_close_payloads_from_client, validate_ticket_state_substate_relation
+    build_ticket_close_payloads_from_client, validate_ticket_state_substate_relation, \
+    encode_ticket_due_date, decode_ticket_due_date, normalize_ticket_due_date
 from seahub.notifications.signal_handler import MSG_TYPE_TICKET_COMMENTED, MSG_TYPE_TICKET_ASSIGNEE_ADDED
 from seahub.tickets.signals import ticket_assignees_added, ticket_commented
 from seahub.utils.decorators import require_org_context
@@ -67,6 +68,8 @@ TICKET_EVENT_IGNORED_FIELDS = frozenset({
 
 
 def _format_ticket_event_value(field_name, field_value, tag_id_to_name=None):
+    if field_name == SchemaTables.TICKETS.column.due_date.name:
+        return decode_ticket_due_date(field_value)
     if field_name == SchemaTables.TICKETS.column.tags.name and isinstance(field_value, list):
         return [
             tag_id_to_name.get(str(tag_id), tag_id)
@@ -97,11 +100,12 @@ def build_ticket_data_event(event_type, old_row=None, new_row=None, seadb_api=No
     for field_name, field_value in new_row.items():
         if field_name in TICKET_EVENT_IGNORED_FIELDS:
             continue
-        old_field_value = old_row.get(field_name)
-        if old_field_value == field_value:
+        old_field_value = _format_ticket_event_value(field_name, old_row.get(field_name), tag_id_to_name)
+        new_field_value = _format_ticket_event_value(field_name, field_value, tag_id_to_name)
+        if old_field_value == new_field_value:
             continue
-        old_value[field_name] = _format_ticket_event_value(field_name, old_field_value, tag_id_to_name)
-        new_value[field_name] = _format_ticket_event_value(field_name, field_value, tag_id_to_name)
+        old_value[field_name] = old_field_value
+        new_value[field_name] = new_field_value
 
     return {
         'type': event_type,
@@ -195,6 +199,8 @@ class TicketsAPIView(APIView):
         linked_github_issue_state_map = build_linked_github_issue_state_map(
             seadb_api, project_uuid, tickets, columns
         )
+        for ticket in tickets:
+            normalize_ticket_due_date(ticket, columns)
         return Response({
             'tickets': tickets,
             'columns': columns,
@@ -250,11 +256,11 @@ class TicketsAPIView(APIView):
         assignees = list(set(assignees))
 
         due_date = request.POST.get('due_date', '')
-        if due_date:
-            try:
-                datetime.datetime.strptime(due_date, '%Y-%m-%d')
-            except ValueError:
-                return api_error(status.HTTP_400_BAD_REQUEST, 'due_date invalid.')
+        try:
+            stored_due_date = encode_ticket_due_date(due_date)
+        except ValueError:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'due_date invalid.')
+
         username = request.user.username
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -354,7 +360,7 @@ class TicketsAPIView(APIView):
                 SchemaTables.TICKETS.column.created_time.name: now_datetime,
                 SchemaTables.TICKETS.column.modified_time.name: now_datetime,
                 SchemaTables.TICKETS.column.deleted.name: False,
-                SchemaTables.TICKETS.column.due_date.name: due_date,
+                SchemaTables.TICKETS.column.due_date.name: stored_due_date,
             }
             if linked_connection_records is not None:
                 # keep stored value as list[str]
@@ -432,7 +438,8 @@ class TicketsAPIView(APIView):
                 event=added_event,
             )
 
-        return Response({'ticket': row},status=status.HTTP_201_CREATED)
+        response_ticket = normalize_ticket_due_date(row.copy())
+        return Response({'ticket': response_ticket}, status=status.HTTP_201_CREATED)
 
     @require_org_context
     def put(self, request, project_uuid):
@@ -477,7 +484,7 @@ class TicketsAPIView(APIView):
             ticket_ids = ticket_id_to_row.keys()
             ticket_ids_str = ','.join(ticket_ids)
             sql = f"""
-            SELECT `_pk`, `assignees`, `title`, `state`, `substate`, `type`, `tags`, `priority`, `linked_connection_records`
+            SELECT `_pk`, `assignees`, `title`, `state`, `substate`, `type`, `tags`, `priority`, `due_date`, `linked_connection_records`
             FROM `tickets`
             WHERE `_pk` IN ({ticket_ids_str})
             """
@@ -567,8 +574,15 @@ class TicketsAPIView(APIView):
                 added_items = list(new_set - old_set)
                 removed_items = list(old_set - new_set)
                 ticket_link_diff[ticket_pk] = (added_items, removed_items)
+            if 'due_date' in row_data:
+                try:
+                    updated_row[SchemaTables.TICKETS.column.due_date.name] = encode_ticket_due_date(
+                        row_data.get('due_date')
+                    )
+                except ValueError:
+                    return api_error(status.HTTP_400_BAD_REQUEST, 'due_date invalid.')
             for key, value in row_data.items():
-                if key in ('substate', 'tags', 'type', '_pk', 'modified_time', 'content', 'state', 'linked_connection_records'):
+                if key in ('substate', 'tags', 'type', '_pk', 'modified_time', 'content', 'state', 'linked_connection_records', 'due_date'):
                     continue
                 updated_row[key] = value
 
@@ -844,6 +858,7 @@ class TicketAPIView(APIView):
             ticket_comments = get_ticket_comments(seadb_api, project_uuid, ticket_id, start, end)
 
             ticket['comments'] = ticket_comments
+            normalize_ticket_due_date(ticket)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -960,6 +975,11 @@ class TicketAPIView(APIView):
 
         is_update_due_date = 'due_date' in request.data
         due_date = request.data.get('due_date')
+        if is_update_due_date:
+            try:
+                stored_due_date = encode_ticket_due_date(due_date)
+            except ValueError:
+                return api_error(status.HTTP_400_BAD_REQUEST, 'due_date invalid.')
 
         is_update_tags = 'tags' in request.data
         tags = request.data.get('tags')
@@ -1057,7 +1077,7 @@ class TicketAPIView(APIView):
             if is_update_assignees:
                 update_row[SchemaTables.TICKETS.column.assignees.name] = assignees
             if is_update_due_date:
-                update_row[SchemaTables.TICKETS.column.due_date.name] = due_date or ''
+                update_row[SchemaTables.TICKETS.column.due_date.name] = stored_due_date
             if is_update_linked_connection_records:
                 update_row[SchemaTables.TICKETS.column.linked_connection_records.name] = new_linked_connection_records
             if not is_update_participants:
@@ -1220,7 +1240,7 @@ class TicketAPIView(APIView):
             activity.pop('field_name', None)
 
         return_dict = {
-            'row': update_row,
+            'row': normalize_ticket_due_date(update_row),
             'activities': new_activities
         }
         return Response(return_dict)
@@ -1944,6 +1964,8 @@ class MyTicketAPIView(APIView):
         linked_github_issue_state_map = build_linked_github_issue_state_map(
             seadb_api, project_uuid, tickets, columns
         )
+        for ticket in tickets:
+            normalize_ticket_due_date(ticket, columns)
         return Response({
             'tickets': tickets,
             'columns': columns,
@@ -2043,6 +2065,8 @@ class TicketTrashAPIView(APIView):
         linked_github_issue_state_map = build_linked_github_issue_state_map(
             seadb_api, project_uuid, tickets, columns
         )
+        for ticket in tickets:
+            normalize_ticket_due_date(ticket, columns)
         return Response({
             'tickets': tickets,
             'columns': columns,

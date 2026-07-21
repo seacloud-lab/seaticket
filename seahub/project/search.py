@@ -15,7 +15,7 @@ from seahub.project.models import Projects, ProjectConnections
 from seahub.project.utils import check_project_permission
 from seahub.seadb_models.utils import list_tickets_by_search, list_documents_by_search, list_tickets_by_link_search
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.tickets.ticket_utils import build_linked_record_titles_map
+from seahub.tickets.ticket_utils import build_linked_record_titles_map, normalize_ticket_due_date
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +63,8 @@ class SearchTicketsView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         linked_record_titles = build_linked_record_titles_map(seadb_api, project_uuid, tickets, columns)
+        for ticket in tickets:
+            normalize_ticket_due_date(ticket, columns)
         return Response({
             'tickets': tickets,
             'columns': columns,

@@ -2,7 +2,7 @@ import json
 import logging
 import random
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import date, datetime, time, timezone as datetime_timezone
 from typing import Dict, List
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
@@ -47,6 +47,52 @@ TICKET_SUBSTATE_TO_GITHUB_STATE_REASON = {
     'not planned': 'not_planned',
     'duplicate': 'duplicate',
 }
+
+
+def encode_ticket_due_date(value):
+    """Store a date-only due date as UTC midnight in SeaDB's datetime column."""
+    if value in (None, ''):
+        return ''
+    try:
+        due_date = date.fromisoformat(value)
+    except ValueError as error:
+        raise ValueError('due_date invalid.') from error
+    if due_date.isoformat() != value:
+        raise ValueError('due_date invalid.')
+
+    due_datetime = datetime.combine(due_date, time.min, tzinfo=datetime_timezone.utc)
+    return due_datetime.isoformat(timespec='milliseconds')
+
+
+def decode_ticket_due_date(value):
+    """Return the canonical UTC date without exposing the storage time to clients."""
+    if value in (None, ''):
+        return ''
+
+    try:
+        datetime_value = f'{value[:-1]}+00:00' if value.endswith('Z') else value
+        due_datetime = datetime.fromisoformat(datetime_value)
+    except ValueError as error:
+        raise ValueError('due_date invalid.') from error
+
+    if due_datetime.tzinfo is None:
+        raise ValueError('due_date invalid.')
+
+    due_datetime = due_datetime.astimezone(datetime_timezone.utc)
+    return due_datetime.date().isoformat()
+
+
+def normalize_ticket_due_date(ticket, columns=None):
+    due_date_name = SchemaTables.TICKETS.column.due_date.name
+    due_date_fields = [due_date_name]
+    due_date_column = get_column_from_columns_by_name(columns, due_date_name) if columns else None
+    if due_date_column and due_date_column.get('key'):
+        due_date_fields.append(due_date_column['key'])
+
+    for due_date_field in due_date_fields:
+        if due_date_field in ticket:
+            ticket[due_date_field] = decode_ticket_due_date(ticket.get(due_date_field))
+    return ticket
 
 
 def validate_linked_connection_records(linked_connection_records):
@@ -747,8 +793,10 @@ def filter_tickets_by_select(seadb_api, project_uuid, column_name, names):
         f"WHERE `{column_name}` IN ({names_str}) AND (`deleted` = False OR `deleted` is NULL)"
     )
     res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
-    tickets = res.get('results')
+    tickets = res.get('results') or []
     columns = res.get('metadata') or []
+    for ticket in tickets:
+        normalize_ticket_due_date(ticket, columns)
     return tickets, columns
 
 
