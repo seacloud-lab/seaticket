@@ -54,7 +54,7 @@ DEFAULT_PROJECT_SETTINGS = {
         },
         'auto_confirm': DEFAULT_AGENT_AUTO_CONFIRM,
     },
-    'search': {
+    'ai_search': {
         # null means unlimited; positive int means only issues updated within N years
         'issues_recent_years': None,
     },
@@ -88,18 +88,18 @@ def validate_issues_recent_years(value):
     if value is None:
         return None
     if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
-        return 'search.issues_recent_years must be null or a positive integer.'
+        return 'ai_search.issues_recent_years must be null or a positive integer.'
     return None
 
 
-def validate_search_settings(search_settings):
-    """Validate project settings.search payload. Return error message or None."""
-    if search_settings is None:
+def validate_ai_search_settings(ai_search_settings):
+    """Validate project settings.ai_search payload. Return error message or None."""
+    if ai_search_settings is None:
         return None
-    if not isinstance(search_settings, dict):
-        return 'search must be an object.'
-    if 'issues_recent_years' in search_settings:
-        return validate_issues_recent_years(search_settings.get('issues_recent_years'))
+    if not isinstance(ai_search_settings, dict):
+        return 'ai_search must be an object.'
+    if 'issues_recent_years' in ai_search_settings:
+        return validate_issues_recent_years(ai_search_settings.get('issues_recent_years'))
     return None
 
 # connection types

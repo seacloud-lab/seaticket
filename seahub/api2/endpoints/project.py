@@ -37,7 +37,7 @@ from seahub.portal.models import PortalDomainAlias
 from seahub.seadb_models.models import SchemaTables
 from seahub.seadb_models.utils import get_discourse_topic_by_topic_id, get_issue_record_by_issue_number, get_connection_record_by_pk
 from seahub.project.constants import ConnectionType, REF_URL_CONNECTION_CACHE_PREFIX, \
-    REF_URL_CONNECTION_CACHE_TIMEOUT, merge_project_settings_defaults, validate_search_settings
+    REF_URL_CONNECTION_CACHE_TIMEOUT, merge_project_settings_defaults, validate_ai_search_settings
 from seahub.constants import PERMISSION_READ
 
 logger = logging.getLogger(__name__)
@@ -470,8 +470,8 @@ class ProjectView(APIView):
                     if not is_safe_prompt(ticket_rules):
                         error_msg = _('Ticket processing rules must be text, and cannot contain tag-like content.')
                         return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-                if 'search' in update_settings:
-                    search_error = validate_search_settings(update_settings.get('search'))
+                if 'ai_search' in update_settings:
+                    search_error = validate_ai_search_settings(update_settings.get('ai_search'))
                     if search_error:
                         return api_error(status.HTTP_400_BAD_REQUEST, search_error)
                 old_enable_portal = bool((project_settings.get('portal') or {}).get('enable_portal', False))

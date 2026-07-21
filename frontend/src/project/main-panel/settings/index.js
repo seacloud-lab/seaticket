@@ -26,9 +26,9 @@ const Settings = ({
       />
       <IssueSearchYearsSettings
         className="mb-4"
-        value={settings.search?.issues_recent_years ?? null}
+        value={settings.ai_search?.issues_recent_years ?? null}
         onChange={(value, callback) => modifySettings({
-          search: Object.assign({}, settings.search, { issues_recent_years: value }),
+          ai_search: Object.assign({}, settings.ai_search, { issues_recent_years: value }),
         }, callback)}
       />
       <SwitchSettingsItem
