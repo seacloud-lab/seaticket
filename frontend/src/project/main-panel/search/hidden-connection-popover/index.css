@@ -133,6 +133,7 @@
   flex: 1;
   color: var(--bs-body-color);
   transition: .3s color;
+  font-size: 14px;
 }
 
 .seaqa-hide-popover .hide-column-item .custom-switch .custom-switch-indicator {
