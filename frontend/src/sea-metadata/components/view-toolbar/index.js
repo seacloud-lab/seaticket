@@ -9,7 +9,7 @@ import { getRowsByIds } from '@/sea-metadata/utils/row';
 
 import './index.css';
 
-const ViewToolBar = ({ fixedColumnCount, tools = VIEW_TOOLS, createRowsTools, toggleView }) => {
+const ViewToolBar = ({ fixedColumnCount, tools = VIEW_TOOLS, createRowsTools, toggleView, isMobileView = false }) => {
 
   const { collaborators } = useCollaborators();
   const { metadata, modifyFilters, modifySorts, modifyGroupbys, modifyRowColor, modifyRowHeight, modifyHiddenColumns, modifyColumnOrder,
@@ -68,6 +68,7 @@ const ViewToolBar = ({ fixedColumnCount, tools = VIEW_TOOLS, createRowsTools, to
                 readOnly={readOnly}
                 tools={tools}
                 fixedColumnCount={fixedColumnCount}
+                isMobileView={isMobileView}
                 view={view}
                 collaborators={collaborators}
                 modifyFilters={modifyFilters}

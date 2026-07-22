@@ -1,14 +1,18 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
+import { Dropdown } from 'reactstrap';
 import { FilterSetter, GroupbySetter, SortSetter, HideColumnSetter, RowColorSetter, RowHeightSetter, ManageSetter } from '../../data-process-setter';
 import Searcher from '../../searcher';
 import { VIEW_TOOL, VIEW_TOOLS } from '../../../constants';
+import { CustomizeDropdownMenu, CustomizeDropdownMoreToggle } from '@/components';
+import { gettext } from '@/constants';
 
 const TableViewToolbar = ({
   tools = VIEW_TOOLS,
-  readOnly, view, collaborators, fixedColumnCount,
+  readOnly, view, collaborators, fixedColumnCount, isMobileView = false,
   modifyFilters, modifySorts, modifyGroupbys, modifyRowColor, modifyRowHeight, modifyHiddenColumns, modifyColumnOrder, modifyViewLock, searchRows
 }) => {
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const viewType = useMemo(() => view.type, [view]);
   const viewId = useMemo(() => view._id, [view._id]);
   const viewColumns = useMemo(() => {
@@ -24,11 +28,18 @@ const TableViewToolbar = ({
   const isViewLocked = view.is_locked;
   const isReadOnly = readOnly || isViewLocked;
 
-  return (
+  const toggleMoreMenu = useCallback((event) => {
+    const target = event?.target;
+    if (target?.closest?.('.popover, .option-group, .seaqa-select')) return;
+    setIsMoreMenuOpen(prev => !prev);
+  }, []);
+
+  const searchContent = tools.includes(VIEW_TOOL.SEARCH) && (
+    <Searcher viewId={viewId} onChange={searchRows} />
+  );
+
+  const operationContent = (
     <>
-      {tools.includes(VIEW_TOOL.SEARCH) && (
-        <Searcher viewId={viewId} onChange={searchRows} />
-      )}
       {tools.includes(VIEW_TOOL.FILTERS) && (
         <FilterSetter
           wrapperClass="sea-metadata-view-tool-filter"
@@ -55,7 +66,7 @@ const TableViewToolbar = ({
           modifySorts={modifySorts}
         />
       )}
-      {tools.includes(VIEW_TOOL.GROUPBYS) && (
+      {tools.includes(VIEW_TOOL.GROUPBYS) && !isMobileView && (
         <GroupbySetter
           wrapperClass="sea-metadata-view-tool-groupby"
           target="sea-metadata-groupby-popover"
@@ -65,7 +76,7 @@ const TableViewToolbar = ({
           modifyGroupbys={modifyGroupbys}
         />
       )}
-      {tools.includes(VIEW_TOOL.ROW_HEIGHT) && (
+      {tools.includes(VIEW_TOOL.ROW_HEIGHT) && !isMobileView && (
         <RowHeightSetter
           wrapperClass="sea-metadata-view-tool-row-height"
           target="sea-metadata-row-height-popover"
@@ -74,7 +85,7 @@ const TableViewToolbar = ({
           modifyRowHeight={modifyRowHeight}
         />
       )}
-      {tools.includes(VIEW_TOOL.ORDER_HIDDEN) && (
+      {tools.includes(VIEW_TOOL.ORDER_HIDDEN) && !isMobileView && (
         <HideColumnSetter
           wrapperClass="sea-metadata-view-tool-hide-column"
           target="sea-metadata-hide-column-popover"
@@ -85,7 +96,7 @@ const TableViewToolbar = ({
           modifyColumnOrder={modifyColumnOrder}
         />
       )}
-      {tools.includes(VIEW_TOOL.ROW_COLOR) && (
+      {tools.includes(VIEW_TOOL.ROW_COLOR) && !isMobileView && (
         <RowColorSetter
           wrapperClass="sea-metadata-view-tool-row-color"
           target="seaqa-row-color-popover"
@@ -105,12 +116,36 @@ const TableViewToolbar = ({
       )}
     </>
   );
+
+  if (isMobileView) {
+    return (
+      <>
+        {searchContent}
+        <Dropdown
+          isOpen={isMoreMenuOpen}
+          toggle={toggleMoreMenu}
+          className="sea-metadata-mobile-view-tools-dropdown"
+        >
+          <CustomizeDropdownMoreToggle
+            isOpen={isMoreMenuOpen}
+            title={gettext('More')}
+          />
+          <CustomizeDropdownMenu className="sea-metadata-mobile-view-tools-menu" end persist>
+            <div className="sea-metadata-mobile-view-tools-list">{operationContent}</div>
+          </CustomizeDropdownMenu>
+        </Dropdown>
+      </>
+    );
+  }
+
+  return <>{searchContent}{operationContent}</>;
 };
 
 TableViewToolbar.propTypes = {
   readOnly: PropTypes.bool,
   view: PropTypes.object.isRequired,
   collaborators: PropTypes.array,
+  isMobileView: PropTypes.bool,
   modifyFilters: PropTypes.func,
   modifySorts: PropTypes.func,
   modifyGroupbys: PropTypes.func,

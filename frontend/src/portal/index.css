@@ -363,6 +363,14 @@ body {
     font-size: 13px;
   }
 
+  .seaqa-portal-main-panel .seaqa-portal-content .seaqa-portal-issue-card-state-wrapper {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    overflow: hidden;
+  }
+
   .seaqa-portal-main-panel .seaqa-portal-content .seaqa-portal-issue-card-meta-label {
     color: var(--bs-body-secondary-color);
     flex-shrink: 0;

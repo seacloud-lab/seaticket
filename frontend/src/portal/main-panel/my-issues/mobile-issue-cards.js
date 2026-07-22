@@ -5,6 +5,8 @@ import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { getColumnByName, getOption } from '@/sea-metadata/utils/column';
 import { gettext } from '@/constants';
 import { Icon, Option } from '@/components';
+import { useTypesData } from '@/sea-metadata/hooks';
+import { getRowById } from '@/sea-metadata/utils/row';
 import {
   PORTAL_ISSUE_STATE_CONFIG,
   PREDEFINED_PORTAL_ISSUE_COLUMN_NAME,
@@ -29,6 +31,7 @@ const getStateOption = (column, value) => {
 };
 
 const MobileIssueCards = ({ metadata, onRowClick }) => {
+  const { typesData } = useTypesData();
   const columns = useMemo(() => ({
     title: getColumnByName(metadata.columns, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.TITLE),
     priority: getColumnByName(metadata.columns, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.PRIORITY),
@@ -52,7 +55,8 @@ const MobileIssueCards = ({ metadata, onRowClick }) => {
         const priority = Number(getCellValueByColumn(issue, columns.priority) || 0);
         const state = getCellValueByColumn(issue, columns.state);
         const { option: stateOption, name: normalizedState } = getStateOption(columns.state, state);
-        const typeOption = getSelectOption(columns.type, getCellValueByColumn(issue, columns.type));
+        const typeValue = getCellValueByColumn(issue, columns.type);
+        const typeOption = getRowById(typesData, typeValue) || getSelectOption(columns.type, typeValue);
 
         return (
           <div
@@ -65,13 +69,11 @@ const MobileIssueCards = ({ metadata, onRowClick }) => {
               <div className="seaqa-portal-issue-card-meta-item">
                 <PriorityFormatter value={priority} />
               </div>
-              <div className="seaqa-portal-issue-card-meta-item">
+              <div className="seaqa-portal-issue-card-state-wrapper">
                 <span className={classnames('seaqa-portal-issue-card-state', normalizedState)}>
                   {stateOption?.icon && <Icon symbol={stateOption.icon} />}
                   <span>{stateOption?.statusName || normalizedState || '-'}</span>
                 </span>
-              </div>
-              <div className="seaqa-portal-issue-card-meta-item">
                 {typeOption && <Option option={typeOption} />}
               </div>
             </div>

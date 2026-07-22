@@ -140,16 +140,18 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID }) => {
   if (expandIssueID) {
     return (
       <>
-        <TopBar className="seaqa-portal-issue-header" >
-          <>
-            <IconButton
-              icon="arrow-down"
-              className="rotate-icon-90 seaqa-portal-toggle-knowledge-btn"
-              onClick={closeIssue}
-            />
-            <span className="text-truncate" title={gettext('My issues')}>{gettext('My issues')}</span>
-          </>
-        </TopBar>
+        {!isMobile && (
+          <TopBar className="seaqa-portal-issue-header" >
+            <>
+              <IconButton
+                icon="arrow-down"
+                className="rotate-icon-90 seaqa-portal-toggle-knowledge-btn"
+                onClick={closeIssue}
+              />
+              <span className="text-truncate" title={gettext('My issues')}>{gettext('My issues')}</span>
+            </>
+          </TopBar>
+        )}
         <Issue
           editorAPI={longTextAPI}
           projectUuid={projectUuid}
@@ -160,6 +162,7 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID }) => {
           workspaceID={workspaceID}
           togglePageSlugId={closeIssue}
           generatorIssuesContextMenuOptions={() => []}
+          isMobile={isMobile}
         />
       </>
     );
@@ -184,6 +187,7 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID }) => {
       togglePageSlugId={openIssue}
       CustomView={isMobile ? MobileIssueCards : null}
       onCustomViewRowClick={openIssue}
+      isMobileView={isMobile}
     />
   );
 };

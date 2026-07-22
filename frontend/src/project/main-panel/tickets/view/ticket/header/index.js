@@ -18,6 +18,7 @@ const Header = forwardRef(({
   id,
   stateOption,
   typeOption,
+  titlePrefix,
   createMoreOptions,
   modifyTitle,
 }, ref) => {
@@ -83,6 +84,7 @@ const Header = forwardRef(({
       <div className="seaqa-project-ticket-title-wrapper">
         <div className={classnames('seaqa-project-ticket-title-wrapper-left', { 'o-hidden': !isRenaming })}>
           <div className={classnames('seaqa-project-ticket-title-number', { 'w-100': isRenaming, 'o-hidden': !isRenaming })}>
+            {titlePrefix && <div className="seaqa-project-ticket-title-prefix">{titlePrefix}</div>}
             {isRenaming ? (
               <Input value={title} autoFocus={true} className="seaqa-project-ticket-title-input" onChange={onChange} onKeyDown={onKeyDown} />
             ) : (

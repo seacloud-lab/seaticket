@@ -5,27 +5,27 @@ import Card from './card';
 import { useMetadata } from '../hooks';
 import { VIEW_TYPE } from '../constants';
 
-const View = ({ CustomView, expandRow, onCustomViewRowClick, ...props }) => {
+const View = ({ CustomView, onCustomViewRowClick, ...props }) => {
   const { isLoading, metadata, errorMessage } = useMetadata();
 
   const renderView = useCallback((metadata) => {
     if (!metadata) return null;
     if (CustomView) {
-      return <CustomView metadata={metadata} onRowClick={onCustomViewRowClick || expandRow} />;
+      return <CustomView metadata={metadata} onRowClick={onCustomViewRowClick} />;
     }
     const viewType = metadata?.view?.type;
     switch (viewType) {
       case VIEW_TYPE.TABLE: {
-        return (<Table { ...props } expandRow={expandRow} />);
+        return (<Table { ...props } />);
       }
       case VIEW_TYPE.CARD: {
-        return (<Card { ...props } expandRow={expandRow} metadata={metadata} />);
+        return (<Card { ...props } />);
       }
       default: {
-        return (<Table { ...props } expandRow={expandRow} />);
+        return (<Table { ...props } />);
       }
     }
-  }, [CustomView, expandRow, onCustomViewRowClick, props]);
+  }, [CustomView, onCustomViewRowClick, props]);
 
   if (isLoading) return (<CenteredLoading />);
 

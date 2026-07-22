@@ -33,6 +33,7 @@ const Main = forwardRef(({
   createRowsTools,
   CustomView,
   onCustomViewRowClick,
+  isMobileView = false,
   children,
   ...params
 }, ref) => {
@@ -70,6 +71,7 @@ const Main = forwardRef(({
                   tools={viewTools}
                   createRowsTools={createRowsTools}
                   toggleView={toggleView}
+                  isMobileView={isMobileView}
                 />
                 <View
                   fixedColumnCount={fixedColumnCount}

@@ -4,7 +4,7 @@ import classnames from 'classnames';
 import deepCopy from 'deep-copy';
 import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
-import { CenteredLoading, toaster, EmptyTip } from '@/components';
+import { CenteredLoading, toaster, EmptyTip, IconButton } from '@/components';
 import {
   PORTAL_ISSUE_STATE_CONFIG, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME, PORTAL_ISSUE_TABLE_NAME, PORTAL_ISSUE_CHILDREN_PAGE_SLUG_ID,
 } from '../../constants';
@@ -37,12 +37,12 @@ import { getColumnByName } from '@/sea-metadata/utils/column';
 import { hasOwnProperty } from '@/utils/object-utils';
 import { canCheckSeafileEditorBrowser } from '@/utils/seafile-editor-browser';
 
-
 import '@/project/main-panel/tickets/view/ticket/index.css';
 
 const Issue = ({
   editorAPI, projectUuid, issueID, permission, isAdmin, projectName, workspaceID,
   canChatWithAI = false,
+  isMobile = false,
   toggleBar = () => {},
   togglePageSlugId = () => {},
   generatorIssuesContextMenuOptions: customGeneratorIssuesContextMenuOptions,
@@ -446,6 +446,16 @@ const Issue = ({
   const isSmallScreen = containerWidth < 904;
   const comments = Array.isArray(issue.comments) ? issue.comments : [];
 
+  const renderBackButton = () => isMobile ? (
+    <IconButton
+      icon="arrow-down"
+      className="rotate-icon-90 seaqa-project-ticket-title-back-btn"
+      title={gettext('Back')}
+      aria-label={gettext('Back')}
+      onClick={togglePageSlugId}
+    />
+  ) : null;
+
   return (
     <div
       className={classnames('seaqa-project-ticket', { 's': isSmallScreen })}
@@ -459,6 +469,7 @@ const Issue = ({
         id={id}
         stateOption={stateOption}
         typeOption={typeOption}
+        titlePrefix={renderBackButton()}
         createMoreOptions={createMoreOptions}
         modifyTitle={onTitleChange}
       />
@@ -468,6 +479,7 @@ const Issue = ({
         id={id}
         stateOption={stateOption}
         typeOption={typeOption}
+        titlePrefix={renderBackButton()}
       />
       <div className="seaqa-project-ticket-content-wrapper" ref={containerRef}>
         <div className="seaqa-project-ticket-comment-container-wrapper">
