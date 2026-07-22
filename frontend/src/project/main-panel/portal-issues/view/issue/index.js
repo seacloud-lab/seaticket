@@ -35,6 +35,8 @@ import CreateTicketDialog from '@/project/main-panel/connections/components/crea
 import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { hasOwnProperty } from '@/utils/object-utils';
+import { canCheckSeafileEditorBrowser } from '@/utils/seafile-editor-browser';
+
 
 import '@/project/main-panel/tickets/view/ticket/index.css';
 
@@ -72,6 +74,8 @@ const Issue = ({
       avatar_url: avatarURL
     };
   }, []);
+
+  const canCheckEditorBrowser = useMemo(() => canCheckSeafileEditorBrowser(), []);
 
   const issueRef = useRef(null);
   const commentEditorRef = useRef(null);
@@ -507,7 +511,7 @@ const Issue = ({
               value={comment || ''}
               autoSave={false}
               saveDelay={20 * 1000}
-              isCheckBrowser={true}
+              isCheckBrowser={canCheckEditorBrowser}
               isImageUploadOnly={false}
               isSupportMultipleFiles={true}
               editorApi={editorAPI}

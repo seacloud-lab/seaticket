@@ -2,18 +2,30 @@ import React, { useMemo } from 'react';
 import classnames from 'classnames';
 import PriorityFormatter from '@/sea-metadata/components/cell-formatter/priority';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
-import { getColumnByName } from '@/sea-metadata/utils/column';
+import { getColumnByName, getOption } from '@/sea-metadata/utils/column';
 import { gettext } from '@/constants';
+import { Icon, Option } from '@/components';
 import {
   PORTAL_ISSUE_STATE_CONFIG,
   PREDEFINED_PORTAL_ISSUE_COLUMN_NAME,
 } from '@/project/main-panel/portal-issues/constants';
 
-const getSelectDisplayValue = (column, value) => {
-  if (!value) return '';
+const getSelectOption = (column, value) => {
+  if (!value) return null;
   const options = column?.data?.options || [];
-  const option = options.find(item => item.id === value || item.name === value);
-  return option?.name || value;
+  return getOption(options, value);
+};
+
+const getStateOption = (column, value) => {
+  if (!value) return {};
+  const options = column?.data?.options || [];
+  const option = getOption(options, value);
+  const stateId = option?.id || value;
+  const stateName = (option?.name || value || '').toLowerCase();
+  return {
+    option: PORTAL_ISSUE_STATE_CONFIG[stateId],
+    name: stateName,
+  };
 };
 
 const MobileIssueCards = ({ metadata, onRowClick }) => {
@@ -38,14 +50,12 @@ const MobileIssueCards = ({ metadata, onRowClick }) => {
       {issues.map(issue => {
         const title = getCellValueByColumn(issue, columns.title) || '';
         const priority = Number(getCellValueByColumn(issue, columns.priority) || 0);
-        const state = getSelectDisplayValue(columns.state, getCellValueByColumn(issue, columns.state));
-        const type = getSelectDisplayValue(columns.type, getCellValueByColumn(issue, columns.type));
-        const normalizedState = state.toLowerCase();
-        const stateOption = PORTAL_ISSUE_STATE_CONFIG[normalizedState];
+        const state = getCellValueByColumn(issue, columns.state);
+        const { option: stateOption, name: normalizedState } = getStateOption(columns.state, state);
+        const typeOption = getSelectOption(columns.type, getCellValueByColumn(issue, columns.type));
 
         return (
-          <button
-            type="button"
+          <div
             className="seaqa-portal-issue-card"
             key={issue._id}
             onClick={() => onRowClick(issue._id)}
@@ -53,23 +63,19 @@ const MobileIssueCards = ({ metadata, onRowClick }) => {
             <div className="seaqa-portal-issue-card-title">{title}</div>
             <div className="seaqa-portal-issue-card-meta">
               <div className="seaqa-portal-issue-card-meta-item">
-                <span className="seaqa-portal-issue-card-meta-label">{gettext('Priority')}</span>
-                <PriorityFormatter value={priority} showName={true}>
-                  <span>-</span>
-                </PriorityFormatter>
+                <PriorityFormatter value={priority} />
               </div>
               <div className="seaqa-portal-issue-card-meta-item">
-                <span className="seaqa-portal-issue-card-meta-label">{gettext('State')}</span>
                 <span className={classnames('seaqa-portal-issue-card-state', normalizedState)}>
-                  {stateOption?.statusName || state || '-'}
+                  {stateOption?.icon && <Icon symbol={stateOption.icon} />}
+                  <span>{stateOption?.statusName || normalizedState || '-'}</span>
                 </span>
               </div>
               <div className="seaqa-portal-issue-card-meta-item">
-                <span className="seaqa-portal-issue-card-meta-label">{gettext('Type')}</span>
-                <span className="seaqa-portal-issue-card-meta-value">{type || '-'}</span>
+                {typeOption && <Option option={typeOption} />}
               </div>
             </div>
-          </button>
+          </div>
         );
       })}
     </div>
