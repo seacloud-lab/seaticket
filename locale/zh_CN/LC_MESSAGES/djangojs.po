@@ -1068,7 +1068,7 @@ msgstr "转让群组"
 
 #: frontend/src/home/dialog/transfer-group-dialog.js:54
 msgid "Transfer group to"
-msgstr "转换群组给"
+msgstr "将群组转让给"
 
 #: frontend/src/home/dialog/workspace-member-dialog/index.js:81
 #: frontend/src/home/dialog/workspace-member-dialog/index.js:90
@@ -3402,7 +3402,7 @@ msgstr "用时"
 #: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:250
 #: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:366
 msgid "Token usage"
-msgstr "Token 使用量"
+msgstr "令牌使用量"
 
 #: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:253
 #: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:369
@@ -3439,7 +3439,7 @@ msgstr "答案生成"
 
 #: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:389
 msgid "Token usages"
-msgstr "Token 使用量"
+msgstr "令牌使用量"
 
 #: frontend/src/project/main-panel/ask/chat-input/attachments-selector/index.js:72
 msgid "Add attachments"
@@ -4029,7 +4029,7 @@ msgstr "名称（可选）"
 
 #: frontend/src/project/main-panel/connections/constants.js:158
 msgid "The display name is an arbitrary description prepended to an email address. When a display name is used, the email address is enclosed in angle brackets. Example: 'Bill Smith <william.smith@example.com>'"
-msgstr "显示名称是附加在电子邮件地址前的任意描述。使用显示名称时，电子邮件地址将括在尖括号中。示例：比尔·史密斯<william.smith@example.com>'"
+msgstr "显示名称是附加在电子邮件地址前的任意描述。使用显示名称时，电子邮件地址将括在尖括号中。示例：'Bill Smith <william.smith@example.com>'"
 
 #: frontend/src/project/main-panel/connections/constants.js:161
 msgid "\"From\" address (optional)"
@@ -5289,7 +5289,7 @@ msgstr "标题是必填项"
 #: frontend/src/project/main-panel/tickets/view/substates/index.js:32
 #: frontend/src/project/main-panel/tickets/view/types/index.js:25
 msgid "Tickets count"
-msgstr "Tickets 数量"
+msgstr "工单数量"
 
 #: frontend/src/project/main-panel/tickets/view/substates/index.js:97
 msgid "substates"
@@ -6677,4 +6677,3 @@ msgstr "名称不能包含斜杠"
 #: frontend/src/utils/validate/name.js:15
 msgid "Name cannot contain backslash"
 msgstr "名称不能包含反斜杠"
-
