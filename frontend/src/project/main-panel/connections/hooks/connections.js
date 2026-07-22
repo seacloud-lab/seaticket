@@ -14,7 +14,8 @@ import { getTableName, initConnectionStatus } from '../utils';
 import { CONNECTION_SYNC_STATUS } from '../constants';
 import ObjectUtils from '@/utils/object-utils';
 import { isFunction } from '@/utils/type-detection';
-import WebSocketClient from '@/utils/websocket-service';
+import sharedWsClient from '@/utils/websocket-service';
+import { MSG_TYPE_WS_PROJECT, MSG_TYPE_WS_USER_LOGOUT_NOTIFICATION } from '@/components/common/notification/constants';
 
 const ConnectionsContext = React.createContext(null);
 
@@ -108,7 +109,7 @@ export const ConnectionsProvider = ({
       if (ObjectUtils.isSameObject(newConnection, connection)) return connection;
       if (status?.last_sync_status === CONNECTION_SYNC_STATUS.COMPLETED) {
         const tableName = getTableName(newConnection);
-        markTablesViewExpired([tableName], () => callback(newConnection));
+        markTablesViewExpired([tableName], () => isFunction(callback) && callback(newConnection));
       }
       return newConnection;
     }));
@@ -271,8 +272,9 @@ export const ConnectionsProvider = ({
 
   useEffect(() => {
     if (!isSubscribeConnectionsSyncStatus) return;
-    const socket = new WebSocketClient(projectUuid, (noticeData) => {
-      if (noticeData.type === 'connection-sync') {
+    const handleNotice = (noticeData) => {
+      const noticeType = noticeData?.type;
+      if (noticeType === MSG_TYPE_WS_PROJECT) {
         const { connection_id, status } = noticeData.content;
         if (status === CONNECTION_SYNC_STATUS.CRAWLING) {
           modifyLocalConnectionsSyncStatus({
@@ -286,17 +288,28 @@ export const ConnectionsProvider = ({
           modifyLocalConnectionsSyncStatus(res.data, (connection) => {
             if (status === CONNECTION_SYNC_STATUS.COMPLETED) {
               toaster.success(gettext('Connection {name} synced').replace('{name}', connection.name));
+              return;
             }
             if (status === CONNECTION_SYNC_STATUS.FAILED) {
               toaster.danger(gettext('Connection {name} sync failed').replace('{name}', connection.name));
+              return;
             }
           });
         });
+        return;
       }
-    });
+      if (noticeType === MSG_TYPE_WS_USER_LOGOUT_NOTIFICATION && noticeData?.content?.session_id) {
+        sharedWsClient.close();
+        return;
+      }
+    };
+
+    sharedWsClient.addMessageListener(handleNotice);
+    sharedWsClient.subscribe(projectUuid);
 
     return () => {
-      socket.close();
+      sharedWsClient.removeMessageListener(handleNotice);
+      sharedWsClient.unsubscribe(projectUuid);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectUuid, isSubscribeConnectionsSyncStatus]);

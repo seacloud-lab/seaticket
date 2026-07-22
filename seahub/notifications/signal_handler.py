@@ -2,6 +2,7 @@ import logging
 import json
 from django.dispatch import receiver
 
+from seahub.utils import mq
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.group.models import Group
 from seahub.group.signals import add_user_to_group
@@ -21,6 +22,16 @@ MSG_TYPE_AGENT_NOTIFY_ASSIGNEE = 'agent_notify_assignee'
 MSG_TYPE_TICKET_COMMENTED = 'ticket_commented'
 MSG_TYPE_ADD_USER_TO_GROUP = 'add_user_to_group'
 MSG_TYPE_ORG_MEMBER_INVITE_ACCEPTED = 'org_member_invite_accepted'
+NOTIFICATION_REDIS_CHANNEL = 'web_notifications'
+
+
+def _publish_realtime_notification(payload: dict) -> None:
+    try:
+        if mq is None:
+            return
+        mq.publish(NOTIFICATION_REDIS_CHANNEL, json.dumps(payload, default=str))
+    except Exception as e:
+        logger.error('publish realtime notification failed: %s', e)
 
 
 @receiver(org_member_invite_accepted)
@@ -35,11 +46,17 @@ def org_member_invite_accepted_msg_cb(sender, **kwargs):
     }
 
     try:
-        UserNotification.objects.create(
+        notification = UserNotification.objects.create(
                 to_user=inv_obj.inviter,
                 msg_type=MSG_TYPE_ORG_MEMBER_INVITE_ACCEPTED,
                 detail=json.dumps(detail),
             )
+        
+        _publish_realtime_notification({
+            'type': 'user_notification',
+            'to_user': inv_obj.inviter,
+            'content': notification.to_dict(),
+        })
     except Exception as e:
         logger.error(e)
 
@@ -72,11 +89,16 @@ def add_user_to_group_msg_cb(sender, **kwargs):
     }
 
     try:
-        UserNotification.objects.create(
+        notification = UserNotification.objects.create(
             to_user=added_user,
             msg_type=MSG_TYPE_ADD_USER_TO_GROUP,
             detail=json.dumps(detail),
         )
+        _publish_realtime_notification({
+            'type': 'user_notification',
+            'to_user': added_user,
+            'content': notification.to_dict(),
+        })
     except Exception as e:
         logger.error(e)
 
@@ -89,6 +111,8 @@ def add_ticket_assignees_added_project_msg_cb(sender, **kwargs):
     from_user_id = kwargs.get('from_user_id', None)
     workspace_id = kwargs.get('workspace_id', None)
     project_name = kwargs.get('project_name', None)
+    project_icon = kwargs.get('project_icon', None)
+    project_color = kwargs.get('project_color', None)
     ticket_id = kwargs.get('ticket_id', None)
     ticket_title = kwargs.get('ticket_title', None)
 
@@ -99,23 +123,34 @@ def add_ticket_assignees_added_project_msg_cb(sender, **kwargs):
     need_send_notification_users = set(assignees) - set([from_user_id])
     if not need_send_notification_users:
         return
-
-    try:
-        detail = ticket_assignee_added_msg_to_json(
-            ticket_id, ticket_title, from_user_id,
-            workspace_id=workspace_id, project_name=project_name
-        )
-        ProjectNotification.objects.bulk_create([
-            ProjectNotification(
+    
+    detail = ticket_assignee_added_msg_to_json(
+        ticket_id, ticket_title, from_user_id,
+        workspace_id=workspace_id, project_name=project_name
+    )
+    for to_user in need_send_notification_users:
+        try:
+            notification = ProjectNotification.objects.create(
                 project_uuid=project_uuid,
                 to_user=to_user,
                 msg_type=msg_type,
                 detail=detail,
             )
-            for to_user in need_send_notification_users
-        ])
-    except Exception as e:
-        logger.error(e)
+            _publish_realtime_notification({
+                    'type': 'user_notification',
+                    'to_user': to_user,
+                    'content': {
+                        'last_timestamp': notification.timestamp,
+                        'msg_type': msg_type,
+                        'project_color': project_color,
+                        'project_icon': project_icon,
+                        'project_name': project_name,
+                        'project_uuid': project_uuid,
+                        'workspace_id': workspace_id
+                    },
+                })
+        except Exception as e:
+            logger.error(e)
 
 
 @receiver(agent_notify_assignees)
@@ -126,6 +161,8 @@ def add_agent_notify_assignees_project_msg_cb(sender, **kwargs):
     from_user_id = kwargs.get('from_user_id', None)
     workspace_id = kwargs.get('workspace_id', None)
     project_name = kwargs.get('project_name', None)
+    project_icon = kwargs.get('project_icon', None)
+    project_color = kwargs.get('project_color', None)
     ticket_id = kwargs.get('ticket_id', None)
     ticket_title = kwargs.get('ticket_title', None)
     message = kwargs.get('message', None)
@@ -137,23 +174,35 @@ def add_agent_notify_assignees_project_msg_cb(sender, **kwargs):
     need_send_notification_users = set(assignees) - set([from_user_id])
     if not need_send_notification_users:
         return
+    
+    detail = agent_notify_assignee_msg_to_json(
+        ticket_id, ticket_title, from_user_id, message=message,
+        workspace_id=workspace_id, project_name=project_name
+    )
 
-    try:
-        detail = agent_notify_assignee_msg_to_json(
-            ticket_id, ticket_title, from_user_id, message=message,
-            workspace_id=workspace_id, project_name=project_name
-        )
-        ProjectNotification.objects.bulk_create([
-            ProjectNotification(
+    for to_user in need_send_notification_users:
+        try:
+            notification = ProjectNotification.objects.create(
                 project_uuid=project_uuid,
                 to_user=to_user,
                 msg_type=msg_type,
                 detail=detail,
             )
-            for to_user in need_send_notification_users
-        ])
-    except Exception as e:
-        logger.error(e)
+            _publish_realtime_notification({
+                    'type': 'user_notification',
+                    'to_user': to_user,
+                    'content': {
+                        'last_timestamp': notification.timestamp,
+                        'msg_type': msg_type,
+                        'project_color': project_color,
+                        'project_icon': project_icon,
+                        'project_name': project_name,
+                        'project_uuid': project_uuid,
+                        'workspace_id': workspace_id
+                    },
+                })
+        except Exception as e:
+            logger.error(e)
 
 
 @receiver(ticket_commented)
@@ -168,6 +217,8 @@ def add_ticket_commented_project_msg_cb(sender, **kwargs):
     comment_content = kwargs.get('comment_content')
     workspace_id = kwargs.get('workspace_id')
     project_name = kwargs.get('project_name')
+    project_icon = kwargs.get('project_icon', None)
+    project_color = kwargs.get('project_color', None)
 
     if any([not project_uuid, not msg_type, not from_user_id,
             not ticket_title, not ticket_id, not comment_id, not comment_content]):
@@ -178,20 +229,32 @@ def add_ticket_commented_project_msg_cb(sender, **kwargs):
         related_users.remove(from_user_id)
     if not related_users:
         return
+    
+    detail = ticket_comment_msg_to_json(
+        ticket_id, ticket_title, from_user_id, comment_id=comment_id,
+        comment_content=comment_content,
+        workspace_id=workspace_id, project_name=project_name)
 
-    try:
-        detail = ticket_comment_msg_to_json(
-            ticket_id, ticket_title, from_user_id, comment_id=comment_id,
-            comment_content=comment_content,
-            workspace_id=workspace_id, project_name=project_name)
-        ProjectNotification.objects.bulk_create([
-            ProjectNotification(
+    for to_user in related_users:
+        try:
+            notification = ProjectNotification.objects.create(
                 project_uuid=project_uuid,
                 to_user=to_user,
                 msg_type=msg_type,
                 detail=detail,
             )
-            for to_user in related_users
-        ])
-    except Exception as e:
-        logger.error(e)
+            _publish_realtime_notification({
+                    'type': 'user_notification',
+                    'to_user': to_user,
+                    'content': {
+                        'last_timestamp': notification.timestamp,
+                        'msg_type': msg_type,
+                        'project_color': project_color,
+                        'project_icon': project_icon,
+                        'project_name': project_name,
+                        'project_uuid': project_uuid,
+                        'workspace_id': workspace_id
+                    },
+                })
+        except Exception as e:
+            logger.error(e)

@@ -2,8 +2,12 @@ import React, { createContext, useContext, useState, useCallback, useRef, useEff
 import { notificationAPI } from '@/project/api';
 import { toaster } from '@/components';
 import { Utils } from '@/utils/utils';
-import { NOTIFICATION_TYPE, TICKET_MSG_TYPES } from '@/components/common/notification/constants';
+import {
+  NOTIFICATION_TYPE, TICKET_MSG_TYPES, MSG_TYPE_PROJECTS, MSG_TYPE_WS_USER_NOTIFICATION,
+  MSG_TYPE_WS_USER_LOGOUT_NOTIFICATION,
+} from '../constants';
 import { siteRoot } from '@/constants';
+import sharedWsClient from '@/utils/websocket-service';
 
 const NotificationContext = createContext();
 
@@ -29,7 +33,7 @@ export const NotificationProvider = ({ children, projectUuid }) => {
         return {
           ...item,
           id: item.project_uuid,
-          msg_type: 'project_notifications',
+          msg_type: MSG_TYPE_PROJECTS,
         };
       });
     }
@@ -257,6 +261,49 @@ export const NotificationProvider = ({ children, projectUuid }) => {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (projectUuid) return;
+
+    const handleNotice = (notice) => {
+      if (!notice) return;
+      const noticeType = notice.type;
+      const notificationContent = notice.content || {};
+      const noticeProjectUuid = notificationContent.project_uuid;
+      if (noticeType === MSG_TYPE_WS_USER_NOTIFICATION) {
+        setUnseen(prev => prev + 1);
+        const updateKey = noticeProjectUuid ? NOTIFICATION_TYPE.PROJECT : NOTIFICATION_TYPE.GENERAL;
+        setUnseenByType(prev => ({ ...prev, [updateKey]: prev[updateKey] + 1 }));
+        setNotificationList((notifications) => {
+          if (noticeProjectUuid) {
+            const noticeProjectUuidIndex = notifications.findIndex(notification => notification.project_uuid === noticeProjectUuid);
+            if (noticeProjectUuidIndex === -1) {
+              const newNotification = { ...notificationContent, id: noticeProjectUuid, count: 1, unseen_count: 1, msg_type: MSG_TYPE_PROJECTS };
+              return [newNotification, ...notifications];
+            }
+            let newNotifications = notifications.slice(0);
+            const notification = newNotifications[noticeProjectUuidIndex];
+            newNotifications[noticeProjectUuidIndex] = { ...notification, count: notification.count + 1, unseen_count: notification.unseen_count + 1 };
+            return newNotifications;
+          }
+          const newNotification = { ...notificationContent, seen: false };
+          return [newNotification, ...notifications];
+        });
+        return;
+      }
+
+      if (noticeType === MSG_TYPE_WS_USER_LOGOUT_NOTIFICATION && notice?.content?.session_id) {
+        sharedWsClient.close();
+        return;
+      }
+    };
+
+    sharedWsClient.addMessageListener(handleNotice);
+
+    return () => {
+      sharedWsClient.removeMessageListener(handleNotice);
+    };
+  }, [projectUuid]);
 
   const value = {
     notificationList,

@@ -15,8 +15,6 @@ export const faviconNotificationPath = window.app.config.faviconNotificationPath
 export const loginBGPath = window.app.config.loginBGPath;
 
 
-export const enableNotificationServer = window.app.config.enableNotificationServer;
-
 // pageOptions
 export const server = window.app.pageOptions.server;
 export const name = window.app.pageOptions.name;

@@ -1280,6 +1280,8 @@ class AgentActionExecutor:
             message=message,
             workspace_id=project.workspace_id,
             project_name=project.project_name,
+            project_color=project.color,
+            project_icon=project.icon,
         )
 
         logger.info(f'Agent notified assignees for ticket #{ticket_id}')

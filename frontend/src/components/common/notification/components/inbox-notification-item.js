@@ -14,7 +14,7 @@ import {
   MSG_TYPE_TICKET_COMMENTED,
   MSG_TYPE_ADD_USER_TO_GROUP,
   MSG_TYPE_ORG_MEMBER_INVITE_ACCEPTED,
-  MSG_TYPE_PROJECT
+  MSG_TYPE_PROJECTS
 } from '../constants';
 import InboxCount from './inbox-count';
 
@@ -156,7 +156,7 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
 
   const renderHead = useCallback(() => {
     const noticeType = noticeItem.msg_type;
-    if (noticeType === MSG_TYPE_PROJECT) {
+    if (noticeType === MSG_TYPE_PROJECTS) {
       const iconClass = noticeItem.project_icon || 'icon-worksheet';
       const iconColor = noticeItem.project_color || DEFAULT_COLOR;
       return (

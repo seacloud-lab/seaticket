@@ -214,9 +214,9 @@ class ProjectNotificationJwtTokenView(APIView):
 
         try:
             payload = {
-                'username': username,
+                'user_id': username,
                 'project_uuid': uuid_str_to_36_chars(project_uuid),
-                'exp': int(time.time()) + NOTIFICATION_JWT_TOKEN_EXPIRATION_TIME  # default by three days
+                'exp': int(time.time()) + NOTIFICATION_JWT_TOKEN_EXPIRATION_TIME
             }
             jwt_token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
         except Exception as e:

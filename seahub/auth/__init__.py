@@ -110,6 +110,20 @@ def logout(request):
     session data.
     Also remove all passwords used to decrypt repos.
     """
+    try:
+        if getattr(request, 'user', None) and getattr(request.user, 'is_authenticated', False):
+            from seahub.notifications.signal_handler import _publish_realtime_notification
+            session_id = getattr(request.session, 'session_key', None)
+
+            _publish_realtime_notification({
+                'type': 'user_logout',
+                'user_id': request.user.username,
+                'session_id': session_id,
+            })
+    except Exception:
+        # Logout must continue even if realtime notification publish fails.
+        pass
+
     request.session.flush()
     if hasattr(request, 'user'):
         from seahub.base.accounts import User

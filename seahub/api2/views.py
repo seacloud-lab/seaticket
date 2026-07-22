@@ -60,6 +60,20 @@ class AuthPing(APIView):
     def get(self, request, format=None):
         return Response('pong')
 
+
+class SessionCheck(APIView):
+    """
+    Returns the current authenticated session identity for internal services.
+    """
+    authentication_classes = (SessionAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, format=None):
+        return Response({
+            'user_id': request.user.username,
+            'session_id': request.session.session_key,
+        })
+
 ########## Token
 class ObtainAuthToken(APIView):
     """
