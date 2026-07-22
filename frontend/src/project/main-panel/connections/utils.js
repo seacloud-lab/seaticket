@@ -165,10 +165,10 @@ const getLinearOriginalPageUrl = (connection, row, columns) => {
 
 const getDiscordOriginalPageUrl = (connection, row, columns) => {
   const { guild_id, channel_id } = connection.config;
-  const messageIdColumn = getColumnByName(columns, 'message_id');
-  const messageId = getCellValueByColumn(row, messageIdColumn);
-  if (!guild_id || !channel_id || !messageId) return '';
-  return `https://discord.com/channels/${guild_id}/${channel_id}/${messageId}`;
+  const threadIdColumn = getColumnByName(columns, 'thread_id');
+  const threadId = getCellValueByColumn(row, threadIdColumn);
+  if (!guild_id || !channel_id || !threadId) return '';
+  return `https://discord.com/channels/${guild_id}/${threadId}`;
 };
 
 export const getOriginalPageUrl = (connection, row, columns) => {

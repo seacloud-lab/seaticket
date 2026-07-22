@@ -166,6 +166,36 @@ class ConvertRecordToTicket(APIView):
                     Title: {title}
                     Body: {body_content}
                 """
+            case ConnectionType.DISCORD.value:
+                seadb_api = SeaDBAPI()
+                threads_table = SchemaTables.DISCORD_THREADS.table_name(connection_id)
+                messages_table = SchemaTables.DISCORD_THREAD_MESSAGES.table_name(connection_id)
+                thread_sql = f"SELECT `thread_id`, `title` FROM `{threads_table}` WHERE _pk = {record_id}"
+                thread_res = seadb_api.query_rows(project_uuid, thread_sql)
+                thread = thread_res.get('results', [{}])[0] if thread_res.get('results') else {}
+                title = thread.get('title', '')
+                default_title = title
+                thread_id = thread.get('thread_id')
+
+                body_content = ''
+                if thread_id:
+                    messages_sql = f"SELECT `author`, `content` FROM `{messages_table}` WHERE thread_id = '{thread_id}' ORDER BY created_time ASC"
+                    messages_res = seadb_api.query_rows(project_uuid, messages_sql)
+                    for msg in (messages_res.get('results') or []):
+                        if not msg.get('content'):
+                            continue
+                        content_to_add = msg.get('content')
+                        if body_content:
+                            content_to_add = '\n\n' + content_to_add
+                        if len(body_content) + len(content_to_add) > MAX_LENGTH:
+                            break
+                        body_content += content_to_add
+
+                record_detail = f"""
+                    **Ticket Information:**
+                    Title: {title}
+                    Body: {body_content}
+                """
         if not record_detail:
             error_msg = 'Record detail not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
