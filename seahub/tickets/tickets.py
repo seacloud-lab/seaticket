@@ -1240,7 +1240,7 @@ class TicketAPIView(APIView):
             activity.pop('field_name', None)
 
         return_dict = {
-            'row': normalize_ticket_due_date(update_row),
+            'row': normalize_ticket_due_date(update_row.copy()),
             'activities': new_activities
         }
         return Response(return_dict)
