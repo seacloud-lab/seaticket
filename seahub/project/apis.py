@@ -103,7 +103,7 @@ class ProjectGithubRepositories(APIView):
         workspace = project.workspace
 
         username = request.user.username
-        if not check_project_permission(username, workspace.owner):
+        if not check_project_admin_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
@@ -303,7 +303,7 @@ class ProjectDiscordChannels(APIView):
 
         # permission check
         username = request.user.username
-        if not check_project_permission(username, workspace.owner):
+        if not check_project_admin_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
