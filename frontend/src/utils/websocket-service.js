@@ -1,4 +1,4 @@
-import { enableNotificationServer, server } from './../constants';
+import { server } from './../constants';
 import projectAPI from '@/project/api/project-api';
 
 const getNotificationServerUrl = () => {
@@ -17,9 +17,7 @@ class WebSocketClient {
     this.listeners = new Set();
     this.subscriptions = new Map();
 
-    if (enableNotificationServer) {
-      this.connect();
-    }
+    this.connect();
   }
 
   _formatSubscriptionMsg(projectUuid) {
@@ -64,7 +62,6 @@ class WebSocketClient {
   }
 
   connect() {
-    if (!enableNotificationServer) return;
 
     if (this.socket) return;
 
