@@ -21,7 +21,7 @@ import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import { useData, useMetadata } from '@/project/hooks';
 
 // utils
-import { formatSources, transformMDFileToLink, transformKBToLink, transformReferencesToMarkdown, transformContentForCopy, } from './utils';
+import { formatSources, transformMDFileToLink, transformKBToLink, transformTicketToLink, transformReferencesToMarkdown, transformContentForCopy, } from './utils';
 import {
   generateAIOptions, generateCreateRelatedTicketOption, generateFindRelatedIssuesOption,
   generateLinkAnExistingTicketOption, generateOpenOriginalPageOption,
@@ -77,6 +77,7 @@ const AIReply = forwardRef(({
     let mdFiles = [];
     value = transformMDFileToLink(value, mdFiles, messageId);
     value = transformKBToLink(value, { workspaceID, projectName });
+    value = transformTicketToLink(value, { workspaceID, projectName });
 
     if (value && messageId === 'typing') {
       const referenceXRegex = /<reference_(\d+)>/g;
