@@ -21,7 +21,7 @@ msgstr ""
 #: seahub/api2/endpoints/admin/account.py:130 seahub/api2/endpoints/user.py:107
 #: seahub/api2/views.py:191
 msgid "Name is too long (maximum is 64 characters)"
-msgstr "名称太长（最多 64 个字）"
+msgstr "名称太长（最多 64 个字符）"
 
 #: seahub/api2/endpoints/admin/account.py:134 seahub/api2/endpoints/user.py:111
 #: seahub/api2/views.py:195 seahub/forms.py:34 seahub/profile/forms.py:27
@@ -47,7 +47,7 @@ msgstr "登录 ID %s 已存在。"
 #: seahub/api2/endpoints/org_admin/groups.py:669
 #: seahub/api2/endpoints/org_admin/groups.py:717
 msgid "Workspace not found"
-msgstr "Workspace 不存在"
+msgstr "工作区不存在"
 
 #: seahub/api2/endpoints/admin/group_members.py:173
 #: seahub/api2/endpoints/group_members.py:139
@@ -72,14 +72,14 @@ msgstr "未找到项目"
 #: seahub/api2/endpoints/org_admin/groups.py:101
 #: seahub/api2/endpoints/org_admin/groups.py:291
 msgid "Group name can only contain letters, numbers, blank, hyphen, dot, single quote or underscore"
-msgstr "群组名称只能包含字母、数字、空格、中划线、单引号、下划线或中文"
+msgstr "群组名称只能包含字母、数字、空格、中划线、点、单引号或下划线"
 
 #: seahub/api2/endpoints/admin/groups.py:124
 #: seahub/api2/endpoints/groups.py:117 seahub/api2/endpoints/groups.py:231
 #: seahub/api2/endpoints/org_admin/groups.py:129
 #: seahub/api2/endpoints/org_admin/groups.py:296
 msgid "There is already a group with that name."
-msgstr "已有同名群组"
+msgstr "已有同名群组。"
 
 #: seahub/api2/endpoints/admin/groups.py:208
 #: seahub/api2/endpoints/groups.py:259
@@ -98,7 +98,7 @@ msgstr "无法删除包含项目的群组"
 #: seahub/api2/endpoints/admin/users.py:328
 #, python-format
 msgid "Successfully added user %(user)s."
-msgstr "成功添加用户 %(user)s"
+msgstr "成功添加用户 %(user)s。"
 
 #: seahub/api2/endpoints/admin/users.py:332 seahub/views/sysadmin.py:74
 #, python-format
@@ -113,7 +113,7 @@ msgstr "成功添加用户 %(user)s。一封通知邮件已发送。"
 #: seahub/api2/endpoints/admin/users.py:339
 #, python-format
 msgid "Successfully added user %(user)s. But email notification can not be sent, because email service is not properly configured."
-msgstr "成功添加用户 user %(user)s 。但由于邮件服务未正确配置，通知邮件无法发送。"
+msgstr "成功添加用户 %(user)s。但由于邮件服务未正确配置，通知邮件无法发送。"
 
 #: seahub/api2/endpoints/admin/users.py:475
 #: seahub/api2/endpoints/org_admin/users.py:387
@@ -128,7 +128,7 @@ msgstr "修改成功。"
 #: seahub/api2/endpoints/org_admin/users.py:405
 #, python-format
 msgid "Your account on %s is activated"
-msgstr "您在 %s 上的帐户已激活"
+msgstr "你在 %s 上的帐户已激活"
 
 #: seahub/api2/endpoints/admin/users.py:513
 msgid "Edit succeeded, an email has been sent."
@@ -136,7 +136,7 @@ msgstr "编辑成功，已发送电子邮件。"
 
 #: seahub/api2/endpoints/admin/users.py:517
 msgid "Edit succeeded, but failed to send email, please check your email configuration."
-msgstr "编辑成功，但电子邮件发送失败，请检查您的电子邮件配置。"
+msgstr "编辑成功，但电子邮件发送失败，请检查你的电子邮件配置。"
 
 #: seahub/api2/endpoints/admin/users.py:670 seahub/auth/views.py:377
 msgid "Unable to reset password."
@@ -155,7 +155,7 @@ msgstr "已成功将密码重置为 %(passwd)s，电子邮件已发送至 %(user
 #: seahub/api2/endpoints/admin/users.py:707
 #, python-format
 msgid "Successfully reset password to %(passwd)s, but failed to send email to %(user)s, please check your email configuration."
-msgstr "已成功将密码重置为 %(passwd)s，但未能向 %(user)s 发送电子邮件，请检查您的电子邮件配置。"
+msgstr "已成功将密码重置为 %(passwd)s，但未能向 %(user)s 发送电子邮件，请检查你的电子邮件配置。"
 
 #: seahub/api2/endpoints/admin/users.py:710
 #, python-format
@@ -165,7 +165,7 @@ msgstr "成功将用户 %(user)s 的密码重置为 %(passwd)s。"
 #: seahub/api2/endpoints/admin/users.py:714
 #, python-format
 msgid "Successfully reset password to %(passwd)s for user %(user)s But email notification can not be sent, because email service is not properly configured."
-msgstr "成功将用户 %(user)s 的密码重置为 %(passwd)s。但未能向 %(user)s 发送电子邮件，请检查您的电子邮件配置。"
+msgstr "成功将用户 %(user)s 的密码重置为 %(passwd)s。但未能向 %(user)s 发送电子邮件，请检查你的电子邮件配置。"
 
 #: seahub/api2/endpoints/group_members.py:128
 #: seahub/api2/endpoints/group_members.py:340
@@ -203,27 +203,27 @@ msgstr "功能未启用。"
 #: seahub/api2/endpoints/user_avatar.py:39 seahub/utils/error_msg.py:8
 #, python-format
 msgid "%(ext)s is an invalid file extension. Authorized extensions are : %(valid_exts_list)s"
-msgstr "%(ext)s 是一个无效文件扩展名，已认证的文件扩展名为: %(valid_exts_list)s"
+msgstr "%(ext)s 是一个无效文件扩展名，允许的文件扩展名为：%(valid_exts_list)s"
 
 #: seahub/api2/endpoints/org_admin/settings.py:91
 #: seahub/api2/endpoints/user_avatar.py:43 seahub/portal/apis.py:135
 #: seahub/utils/error_msg.py:13
 #, python-format
 msgid "Your file is too big (%(size)s), the maximum allowed size is %(max_valid_size)s"
-msgstr "文件过大 (%(size)s), 最大允许文件大小为 %(max_valid_size)s"
+msgstr "文件过大 (%(size)s)，最大允许文件大小为 %(max_valid_size)s。"
 
 #: seahub/api2/endpoints/org_admin/users.py:192
 #: seahub/api2/endpoints/org_admin/users.py:198
 #: seahub/api2/endpoints/org_admin/users.py:607
 #, python-format
 msgid "User %s already exists."
-msgstr "应用用户 %s 已存在。"
+msgstr "用户 %s 已存在。"
 
 #: seahub/api2/endpoints/org_admin/users.py:580
 #: seahub/api2/endpoints/org_admin/users.py:622 seahub/auth/forms.py:135
 #: seahub/portal/apis.py:1867
 msgid "Failed to send email, email service is not properly configured, please contact administrator."
-msgstr "邮件发送失败， 邮箱服务没配置好，请联系管理员。"
+msgstr "邮件发送失败，邮箱服务未正确配置，请联系管理员。"
 
 #: seahub/api2/endpoints/project.py:189 seahub/portal/views.py:66
 #: seahub/portal/views.py:153 seahub/portal/views.py:167
@@ -235,7 +235,7 @@ msgstr "项目不存在"
 #: seahub/api2/endpoints/project.py:323 seahub/api2/endpoints/project.py:341
 #, python-format
 msgid "Project %s already exists in this workspace."
-msgstr "这个 Workspace 中已经有项目 %s 了。"
+msgstr "此工作区中已经有项目 %s 了。"
 
 #: seahub/api2/endpoints/project.py:338 seahub/api2/endpoints/project.py:488
 msgid "Project name contains illegal characters"
@@ -248,12 +248,12 @@ msgstr "项目名称无效"
 #: seahub/api2/endpoints/project.py:402
 #, python-brace-format
 msgid "Project {project_name} not found."
-msgstr "未找到项目 {project_name} 。"
+msgstr "未找到项目 {project_name}。"
 
 #: seahub/api2/endpoints/project.py:406
 #, python-brace-format
 msgid "{new_project_name} exists."
-msgstr "{new_project_name} 已存在."
+msgstr "{new_project_name} 已存在。"
 
 #: seahub/api2/endpoints/project.py:442
 #, python-brace-format
@@ -532,7 +532,7 @@ msgstr "你好，"
 #: seahub/invitations/templates/invitations/invitation_email.html:12
 #, python-format
 msgid "%(inviter_name)s invited you to join %(site_name)s. Please click the link below:"
-msgstr "%(inviter_name)s 邀请您加入 %(site_name)s。请点击下方链接："
+msgstr "%(inviter_name)s 邀请你加入 %(site_name)s。请点击下方链接："
 
 #: seahub/invitations/templates/invitations/invitation_revoke_email.html:12
 #, python-format
@@ -610,17 +610,17 @@ msgstr "全部"
 #: seahub/notifications/management/commands/send_email_notices.py:132
 #, python-format
 msgid "User %(user)s has added you to group %(group_name)s."
-msgstr "用户 %(user)s 已将您添加到群组 %(group_name)s。"
+msgstr "用户 %(user)s 已将你添加到群组 %(group_name)s。"
 
 #: seahub/notifications/management/commands/send_email_notices.py:154
 #, python-format
 msgid "%(user)s assigned you a ticket: <a href=\"%(ticket_url)s\">%(title)s</a>."
-msgstr "%(user)s 分配给您一个工单：<a href=\"%(ticket_url)s\">%(title)s</a>。"
+msgstr "%(user)s 分配给你一个工单：<a href=\"%(ticket_url)s\">%(title)s</a>。"
 
 #: seahub/notifications/management/commands/send_email_notices.py:159
 #, python-format
 msgid "%(user)s assigned you a ticket: %(title)s."
-msgstr "%(user)s 分配给您一个工单：%(title)s。"
+msgstr "%(user)s 分配给你一个工单：%(title)s。"
 
 #: seahub/notifications/management/commands/send_email_notices.py:183
 #, python-format
@@ -635,12 +635,12 @@ msgstr "%(user)s 在工单 %(title)s 上发表了评论。"
 #: seahub/notifications/management/commands/send_email_notices.py:217
 #, python-format
 msgid "%(user)s sent you a reminder on ticket <a href=\"%(ticket_url)s\">%(title)s</a>."
-msgstr "%(user)s 向您发送了工单 <a href=\"%(ticket_url)s\">%(title)s</a> 的提醒。"
+msgstr "%(user)s 向你发送了工单 <a href=\"%(ticket_url)s\">%(title)s</a> 的提醒。"
 
 #: seahub/notifications/management/commands/send_email_notices.py:223
 #, python-format
 msgid "%(user)s sent you a reminder on ticket %(title)s."
-msgstr "%(user)s 向您发送了工单 %(title)s 的提醒。"
+msgstr "%(user)s 向你发送了工单 %(title)s 的提醒。"
 
 #: seahub/notifications/management/commands/send_email_notices.py:404
 #, python-format
@@ -650,7 +650,7 @@ msgstr "%s 上的新通知"
 #: seahub/notifications/templates/notifications/notice_email.html:7
 #, python-format
 msgid "Hi, %(name)s"
-msgstr "您好，%(name)s"
+msgstr "你好，%(name)s"
 
 #: seahub/notifications/templates/notifications/notice_email.html:9
 #, python-format
@@ -710,7 +710,7 @@ msgstr "服务器内部错误"
 
 #: seahub/portal/apis.py:1863
 msgid "The user is already a member of your team. Cannot invite the user to the portal."
-msgstr "该用户已是您团队的成员。无法邀请该用户加入门户。"
+msgstr "该用户已是你团队的成员。无法邀请该用户加入门户。"
 
 #: seahub/portal/apis.py:1893
 msgid "Support Portal Invitation"
@@ -722,7 +722,7 @@ msgstr "如果邮箱符合条件，登录码已发送。"
 
 #: seahub/portal/apis.py:2041 seahub/templates/portal/email_login_code.html:4
 msgid "Your login code"
-msgstr "您的登录码"
+msgstr "你的登录码"
 
 #: seahub/portal/views.py:74 seahub/portal/views.py:155
 #: seahub/portal/views.py:169 seahub/portal/views.py:198
@@ -870,7 +870,7 @@ msgstr "绑定 SAML 失败，请先登录。"
 
 #: seahub/saml/views.py:357
 msgid "This email address is already used by an existing account.You can connect both accounts from the personal settings of your local account."
-msgstr "此电子邮件地址已被现有帐户使用。您可以在本地帐户的个人设置中连接这两个帐户。"
+msgstr "此电子邮件地址已被现有帐户使用。你可以在本地帐户的个人设置中连接这两个帐户。"
 
 #: seahub/saml/views.py:375
 msgid "Failed to create new user: the number of users exceeds the organization quota. Please report to your organization (company) administrator."
@@ -902,7 +902,7 @@ msgstr "SeaTicket - 利用 AI 解决问题"
 #: seahub/templates/base_for_react.html:23 seahub/templates/home.html:17
 #: seahub/templates/project_view_react.html:17
 msgid "File, Collaboration, Team, Organization"
-msgstr "文件 合作 团队 团体"
+msgstr "文件、协作、团队、组织"
 
 #: seahub/templates/base.html:41
 msgid "Side nav menu"
@@ -966,7 +966,7 @@ msgstr "团队名称"
 
 #: seahub/templates/organizations/org_register.html:18
 msgid "Admin name"
-msgstr "管理员邮箱"
+msgstr "管理员名称"
 
 #: seahub/templates/organizations/org_register.html:22
 msgid "Admin email"
@@ -1029,7 +1029,7 @@ msgstr "该代码有效期为10分钟。"
 #: seahub/templates/portal/external_invitation_email.html:9
 #, python-format
 msgid "%(inviter_name)s invited you to the support portal. Please click the link below to start:"
-msgstr "%(inviter_name)s 邀请您加入支持门户。请点击下方链接开始："
+msgstr "%(inviter_name)s 邀请你加入支持门户。请点击下方链接开始："
 
 #: seahub/templates/portal_login.html:4
 msgid "Portal Login"
@@ -1046,7 +1046,7 @@ msgstr "输入邮箱"
 
 #: seahub/templates/portal_login.html:20
 msgid "We will send a login code to the email that you were invited with."
-msgstr "我们将向您受邀时使用的邮箱发送登录码。"
+msgstr "我们将向你受邀时使用的邮箱发送登录码。"
 
 #: seahub/templates/portal_login.html:21
 msgid "Login code"
@@ -1123,7 +1123,7 @@ msgstr "重新发送"
 
 #: seahub/templates/registration/activate.html:24
 msgid "Your account has already been activated."
-msgstr "您的账户已激活。"
+msgstr "你的账户已激活。"
 
 #: seahub/templates/registration/activate.html:27
 msgid "The activation link is invalid."
@@ -1131,7 +1131,7 @@ msgstr "激活链接无效。"
 
 #: seahub/templates/registration/activate.html:49
 msgid "Activation email has been resent. Please check your email."
-msgstr "激活邮件已重新发送。请检查您的邮箱。"
+msgstr "激活邮件已重新发送。请检查你的邮箱。"
 
 #: seahub/templates/registration/activate.html:52
 #: seahub/templates/registration/activate.html:58
@@ -1151,7 +1151,7 @@ msgstr "请在 %(expiration_days)s 天内，点击以下链接激活你的账号
 #: seahub/templates/registration/logged_out.html:8
 #: seahub/templates/registration/logout.html:8
 msgid "Thanks for your participation! "
-msgstr "感谢参与！"
+msgstr "感谢你的参与！"
 
 #: seahub/templates/registration/logged_out.html:8
 #: seahub/templates/registration/logout.html:8
@@ -1230,7 +1230,7 @@ msgstr "密码重置"
 
 #: seahub/templates/registration/password_reset_complete.html:35
 msgid "Your password has been set. You can go ahead and log in now."
-msgstr "您的密码已设置。现在可以登录了。"
+msgstr "你的密码已设置。现在可以登录了。"
 
 #: seahub/templates/registration/password_reset_complete.html:36
 #: seahub/templates/registration/password_reset_done.html:42
@@ -1412,7 +1412,7 @@ msgstr "验证码"
 #: seahub/two_factor/templates/two_factor/core/backup_tokens.html:32
 #: seahub/two_factor/templates/two_factor/profile/disable.html:10
 msgid "Cancel"
-msgstr "取校"
+msgstr "取消"
 
 #: seahub/two_factor/templates/two_factor/_wizard_actions.html:5
 msgid "Next"
@@ -1428,17 +1428,17 @@ msgid "Backup tokens can be used when your primary and backup\n"
 "    for login verification. If you've used up all your backup tokens, you\n"
 "    can generate a new set of backup tokens. Only the backup tokens shown\n"
 "    below will be valid."
-msgstr "当您的主电话号码和备用电话号码不可用时，可以使用备份令牌。以下备份令牌可用于\n"
-"    登录验证。如果您已用完所有备份令牌，可以生成一组新的备份令牌。只有下面显示的\n"
+msgstr "当你的主电话号码和备用电话号码不可用时，可以使用备份令牌。以下备份令牌可用于\n"
+"    登录验证。如果你已用完所有备份令牌，可以生成一组新的备份令牌。只有下面显示的\n"
 "    备份令牌才有效。"
 
 #: seahub/two_factor/templates/two_factor/core/backup_tokens.html:23
 msgid "Print these tokens and keep them somewhere safe."
-msgstr "打印这些验证码并将它们保存在安全的地方。"
+msgstr "打印这些备用令牌并将它们保存在安全的地方。"
 
 #: seahub/two_factor/templates/two_factor/core/backup_tokens.html:26
 msgid "You don't have any backup codes yet."
-msgstr "你还没有任何备用验证码。"
+msgstr "你还没有任何备用令牌。"
 
 #: seahub/two_factor/templates/two_factor/core/backup_tokens.html:33
 msgid "Generate Tokens"
@@ -1491,7 +1491,7 @@ msgid "To start using a token generator, please use your\n"
 "    smartphone to scan the QR code below. For example, use Google\n"
 "    Authenticator. Then, enter the token generated by the app.\n"
 "    "
-msgstr "要开始使用令牌生成器，请使用您的\n"
+msgstr "要开始使用令牌生成器，请使用你的\n"
 "    智能手机扫描下方的二维码。例如，使用 Google\n"
 "    Authenticator。然后，输入应用生成的令牌。\n"
 "    "
@@ -1502,7 +1502,7 @@ msgstr "关闭两步验证"
 
 #: seahub/two_factor/templates/two_factor/profile/disable.html:8
 msgid "You are about to disable two-factor authentication. This compromises your account security, are you sure?"
-msgstr "您即将禁用双因素认证。这会影响您的账户安全，确定要继续吗？"
+msgstr "你即将禁用双因素认证。这会影响你的账户安全，确定要继续吗？"
 
 #: seahub/two_factor/templates/two_factor/profile/disable.html:11
 msgid "Disable"
@@ -1514,5 +1514,4 @@ msgstr "权限错误"
 
 #: seahub/utils/http.py:82
 msgid "Too many requests"
-msgstr "请求太多"
-
+msgstr "请求过多"
