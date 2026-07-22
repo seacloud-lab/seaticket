@@ -43,8 +43,15 @@
   margin-right: 8px;
 }
 
-.seaqa-project-ticket .seaqa-project-ticket-title-back-btn {
+.seaqa-project-ticket .seaqa-project-ticket-title-prefix .seaqa-project-ticket-title-back-btn {
   flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+}
+
+.seaqa-project-ticket .seaqa-project-ticket-title-prefix .seaqa-project-ticket-title-back-btn .seaqa-icon-svg {
+  width: 16px !important;
+  height: 16px !important;
 }
 
 .seaqa-project-ticket .seaqa-project-ticket-title {

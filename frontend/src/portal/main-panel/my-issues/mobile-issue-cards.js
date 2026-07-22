@@ -66,15 +66,15 @@ const MobileIssueCards = ({ metadata, onRowClick }) => {
           >
             <div className="seaqa-portal-issue-card-title">{title}</div>
             <div className="seaqa-portal-issue-card-meta">
-              <div className="seaqa-portal-issue-card-meta-item">
-                <PriorityFormatter value={priority} />
-              </div>
               <div className="seaqa-portal-issue-card-state-wrapper">
                 <span className={classnames('seaqa-portal-issue-card-state', normalizedState)}>
                   {stateOption?.icon && <Icon symbol={stateOption.icon} />}
                   <span>{stateOption?.statusName || normalizedState || '-'}</span>
                 </span>
                 {typeOption && <Option option={typeOption} />}
+              </div>
+              <div className="seaqa-portal-issue-card-priority">
+                <PriorityFormatter value={priority} />
               </div>
             </div>
           </div>

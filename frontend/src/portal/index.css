@@ -354,7 +354,7 @@ body {
     overflow: hidden;
   }
 
-  .seaqa-portal-main-panel .seaqa-portal-content .seaqa-portal-issue-card-meta-item {
+  .seaqa-portal-main-panel .seaqa-portal-content .seaqa-portal-issue-card-priority {
     min-width: 0;
     display: flex;
     flex-direction: column;

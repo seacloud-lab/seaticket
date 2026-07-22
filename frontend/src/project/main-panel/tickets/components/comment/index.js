@@ -8,6 +8,7 @@ import { useCollaborators } from '@/sea-metadata';
 import { downloadFile } from '@/utils/download';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { isModEnter } from '@/utils/hotkey';
+import { canCheckSeafileEditorBrowser } from '@/utils/seafile-editor-browser';
 import UploadFilesButton from '../upload-files-btn';
 import { isObject } from '@/utils/type-detection';
 
@@ -34,6 +35,7 @@ const Comment = ({
   const [isShowCommentLoading, setIsShowCommentLoading] = useState(false);
   const { getCollaborator, queryUser } = useCollaborators();
   const [content, setContent] = useState(comment.content);
+  const canCheckEditorBrowser = canCheckSeafileEditorBrowser();
 
   const commentRef = useRef(null);
   const commentEditorRef = useRef(null);
@@ -229,7 +231,7 @@ const Comment = ({
                     value={content || ''}
                     autoSave={false}
                     saveDelay={20 * 1000}
-                    isCheckBrowser={true}
+                    isCheckBrowser={canCheckEditorBrowser}
                     isImageUploadOnly={false}
                     isSupportMultipleFiles={true}
                     editorApi={editorAPI}

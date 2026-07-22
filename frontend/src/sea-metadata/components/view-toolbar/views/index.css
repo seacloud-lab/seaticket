@@ -15,3 +15,7 @@
   scrollbar-width: none;
   display: inline-flex;
 }
+
+.sea-metadata-views .sea-metadata-views-nav-container.no-scroll {
+  overflow-x: hidden;
+}
