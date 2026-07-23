@@ -146,6 +146,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       if (c.is_required) return Boolean(config[c.key]);
       return true;
     }) : true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name, config, customColumns, isLinear, isLinearOauthConnected, isConfluence, isConfluenceOauthConnected, isDiscord]);
 
   const callbackUrl = useMemo(() => {
@@ -415,11 +416,11 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       const channels = (res && res.data && res.data.channels) || [];
       return {
         data: {
-          options: channels.map(c => ({ value: c.id, label: '#' + c.name, name: c.name })),
+          options: channels.map(c => ({ value: c.id, label: c.name, name: c.name })),
         }
       };
     });
-  }, [config.guild_id, config.bot_token, projectUuid]);
+  }, [config.guild_id, config.bot_token]);
 
   const typeOption = availableConnectionTypes.find(i => i.type === type) || availableConnectionTypes[0];
   const connectionSections = useMemo(() => {
@@ -579,7 +580,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   }, [
     config, isSubmitting, isGithub, isConfluence, isConfluenceOauthConnected, isLinear,
     onConfigChange, listGitHubRepositories, listConfluenceWorkspaces, listLinearTeams,
-      isDiscord, listDiscordChannels
+    isDiscord, listDiscordChannels
   ]);
 
   return (
