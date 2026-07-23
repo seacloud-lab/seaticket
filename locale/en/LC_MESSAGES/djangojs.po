@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: seahub\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-20 15:53+0800\n"
+"POT-Creation-Date: 2026-07-23 11:18+0800\n"
 "PO-Revision-Date: 2015-05-09 05:28+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: English (http://app.transifex.com/haiwen/seahub/language/"
@@ -129,21 +129,21 @@ msgstr ""
 msgid "Daily credit consumption trend this month"
 msgstr ""
 
-#: frontend/src/components/chart/token-credit-used/index.js:17
-#: frontend/src/components/chart/token-credit-used/index.js:403
+#: frontend/src/components/chart/token-credit-used/index.js:15
+#: frontend/src/components/chart/token-credit-used/index.js:401
 #: frontend/src/project/main-panel/agent/run-logs/run-statistics-dialog.js:177
 msgid "Input tokens"
 msgstr ""
 
-#: frontend/src/components/chart/token-credit-used/index.js:18
-#: frontend/src/components/chart/token-credit-used/index.js:420
+#: frontend/src/components/chart/token-credit-used/index.js:16
+#: frontend/src/components/chart/token-credit-used/index.js:418
 #: frontend/src/project/main-panel/agent/run-logs/run-statistics-dialog.js:178
 msgid "Output tokens"
 msgstr ""
 
-#: frontend/src/components/chart/token-credit-used/index.js:19
-#: frontend/src/components/chart/token-credit-used/index.js:139
-#: frontend/src/components/chart/token-credit-used/index.js:445
+#: frontend/src/components/chart/token-credit-used/index.js:17
+#: frontend/src/components/chart/token-credit-used/index.js:137
+#: frontend/src/components/chart/token-credit-used/index.js:443
 #: frontend/src/components/chart/token-credit-used/tooltip/index.js:48
 #: frontend/src/org-admin/statistics/statistic-list.js:21
 #: frontend/src/org-admin/statistics/statistic-list.js:29
@@ -155,11 +155,11 @@ msgstr ""
 msgid "Credit used"
 msgstr ""
 
-#: frontend/src/components/chart/token-credit-used/index.js:119
+#: frontend/src/components/chart/token-credit-used/index.js:117
 msgid "Tokens"
 msgstr ""
 
-#: frontend/src/components/chart/token-credit-used/index.js:167
+#: frontend/src/components/chart/token-credit-used/index.js:165
 #: frontend/src/org-admin/statistics/index.js:52
 #: frontend/src/org-admin/statistics/index.js:62
 #: frontend/src/org-admin/statistics/index.js:74
@@ -175,7 +175,7 @@ msgstr ""
 msgid "Date"
 msgstr ""
 
-#: frontend/src/components/chart/token-credit-used/index.js:384
+#: frontend/src/components/chart/token-credit-used/index.js:382
 msgid "Comprehensive infomation"
 msgstr ""
 
@@ -236,8 +236,8 @@ msgstr ""
 
 #: frontend/src/components/copy-input.js:10
 #: frontend/src/project/main-panel/connections/components/configure-webhook-dialog/index.js:37
-#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:180
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:313
+#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:189
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:321
 msgid "Connection URL has been copied to clipboard"
 msgstr ""
 
@@ -251,7 +251,7 @@ msgid "More operations"
 msgstr ""
 
 #: frontend/src/components/customize-name-dialog/index.js:42
-#: frontend/src/project/main-panel/connections/constants.js:576
+#: frontend/src/project/main-panel/connections/constants.js:620
 #: frontend/src/project/main-panel/tickets/constants.js:54
 #: frontend/src/project/main-panel/tickets/constants.js:55
 msgid "New"
@@ -287,8 +287,8 @@ msgstr ""
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/main/discourse-details/reply-discourse/index.js:79
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/main/email-details/reply-email/index.js:78
 #: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:215
-#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:222
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:800
+#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:231
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:830
 #: frontend/src/project/main-panel/connections/view/connection/record/rename/index.js:56
 #: frontend/src/project/main-panel/knowledge-base/view/knowledge/edit/index.js:108
 #: frontend/src/project/main-panel/knowledge-base/view/new-knowledge/index.js:123
@@ -344,8 +344,8 @@ msgstr ""
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/main/discourse-details/reply-discourse/index.js:81
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/main/email-details/reply-email/index.js:80
 #: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:217
-#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:223
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:814
+#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:232
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:844
 #: frontend/src/project/main-panel/connections/view/connection/record/rename/index.js:59
 #: frontend/src/project/main-panel/knowledge-base/view/knowledge/edit/index.js:109
 #: frontend/src/project/main-panel/knowledge-base/view/new-knowledge/index.js:124
@@ -436,8 +436,8 @@ msgstr ""
 #: frontend/src/project/main-panel/ask/sessions/session/index.js:130
 #: frontend/src/project/main-panel/connections/components/cell-formatter/op-formatter/index.js:26
 #: frontend/src/project/main-panel/connections/components/cell-formatter/op-formatter/index.js:43
-#: frontend/src/project/main-panel/connections/hooks/connections.js:332
-#: frontend/src/project/main-panel/connections/hooks/connections.js:335
+#: frontend/src/project/main-panel/connections/hooks/connections.js:351
+#: frontend/src/project/main-panel/connections/hooks/connections.js:354
 #: frontend/src/project/main-panel/portal-issues/view/trash-issues/clean-portal-issues.js:27
 #: frontend/src/project/main-panel/tickets/components/comment/index.js:214
 #: frontend/src/project/main-panel/tickets/components/comment/index.js:264
@@ -526,7 +526,7 @@ msgstr ""
 #: frontend/src/components/dialog/project-api-token-dialog.js:243
 #: frontend/src/components/dialog/project-api-token-dialog.js:270
 #: frontend/src/home/workspace/body/project-item-dropdown-menu/index.js:57
-#: frontend/src/project/main-panel/connections/constants.js:448
+#: frontend/src/project/main-panel/connections/constants.js:451
 msgid "API token"
 msgstr ""
 
@@ -574,7 +574,7 @@ msgid "Creating..."
 msgstr ""
 
 #: frontend/src/components/dialog/project-api-token-dialog.js:323
-#: frontend/src/project/main-panel/connections/constants.js:400
+#: frontend/src/project/main-panel/connections/constants.js:403
 msgid "Token"
 msgstr ""
 
@@ -896,13 +896,14 @@ msgstr ""
 #: frontend/src/org-admin/users/org-admin-list.js:17
 #: frontend/src/org-admin/users/users.js:16
 #: frontend/src/project/components/option-dialog/index.js:188
-#: frontend/src/project/main-panel/connections/constants.js:292
-#: frontend/src/project/main-panel/connections/constants.js:310
-#: frontend/src/project/main-panel/connections/constants.js:347
-#: frontend/src/project/main-panel/connections/constants.js:370
-#: frontend/src/project/main-panel/connections/constants.js:394
-#: frontend/src/project/main-panel/connections/constants.js:410
-#: frontend/src/project/main-panel/connections/constants.js:435
+#: frontend/src/project/main-panel/connections/constants.js:295
+#: frontend/src/project/main-panel/connections/constants.js:313
+#: frontend/src/project/main-panel/connections/constants.js:350
+#: frontend/src/project/main-panel/connections/constants.js:373
+#: frontend/src/project/main-panel/connections/constants.js:397
+#: frontend/src/project/main-panel/connections/constants.js:413
+#: frontend/src/project/main-panel/connections/constants.js:438
+#: frontend/src/project/main-panel/connections/constants.js:472
 #: frontend/src/sys-admin/dialog/sysadmin-add-org-dialog.js:111
 #: frontend/src/sys-admin/dialog/sysadmin-create-group-dialog.js:64
 #: frontend/src/sys-admin/group/group-members.js:45
@@ -1242,7 +1243,7 @@ msgid "Change name and icon"
 msgstr ""
 
 #: frontend/src/home/mobile/rename-project-view.js:115
-#: frontend/src/project/main-panel/connections/constants.js:579
+#: frontend/src/project/main-panel/connections/constants.js:623
 msgid "Done"
 msgstr ""
 
@@ -1319,7 +1320,7 @@ msgid "Side panel"
 msgstr ""
 
 #: frontend/src/home/side-panel/index.js:186
-#: frontend/src/project/main-panel/connections/constants.js:416
+#: frontend/src/project/main-panel/connections/constants.js:419
 msgid "Workspace"
 msgstr ""
 
@@ -1479,7 +1480,7 @@ msgstr ""
 #: frontend/src/org-admin/projects/trash-projects.js:33
 #: frontend/src/portal/constants.js:24
 #: frontend/src/portal/main-panel/chat-source-selector/index.js:110
-#: frontend/src/project/main-panel/connections/constants.js:473
+#: frontend/src/project/main-panel/connections/constants.js:509
 #: frontend/src/project/main-panel/portal-issues/components/issues.js:189
 #: frontend/src/project/main-panel/search/hidden-connection-popover/hidden-connections/index.js:92
 msgid "Issues"
@@ -1533,8 +1534,8 @@ msgstr ""
 #: frontend/src/portal/main-panel/user-management.js:173
 #: frontend/src/project/main-panel/ask/chat-history/message-operations/index.js:18
 #: frontend/src/project/main-panel/ask/documents/index.js:111
-#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:202
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:655
+#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:211
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:684
 msgid "Copy"
 msgstr ""
 
@@ -1592,7 +1593,7 @@ msgstr ""
 
 #: frontend/src/org-admin/settings/index.js:95
 #: frontend/src/project/main-panel/ask/sessions/index.js:12
-#: frontend/src/project/main-panel/connections/constants.js:458
+#: frontend/src/project/main-panel/connections/constants.js:461
 #: frontend/src/sys-admin/statistics/statistic-list.js:20
 #: frontend/src/sys-admin/statistics/statistic-list.js:29
 #: frontend/src/sys-admin/statistics/statistic-list.js:38
@@ -1805,7 +1806,7 @@ msgstr ""
 #: frontend/src/org-admin/users/invite-user-dialog.js:54
 #: frontend/src/portal/main-panel/user-management.js:153
 #: frontend/src/project/main-panel/agent/run-logs/run-card.js:67
-#: frontend/src/project/main-panel/ask/models/attachment-object.js:30
+#: frontend/src/project/main-panel/ask/models/attachment-object.js:35
 #: frontend/src/sys-admin/dialog/sysadmin-add-user-dialog.js:143
 msgid "Email"
 msgstr ""
@@ -1818,7 +1819,7 @@ msgstr ""
 #: frontend/src/profile-settings/index.js:61
 #: frontend/src/profile-settings/index.js:210
 #: frontend/src/profile-settings/password-widgets/user-set-password-dialog.js:57
-#: frontend/src/project/main-panel/connections/constants.js:269
+#: frontend/src/project/main-panel/connections/constants.js:272
 #: frontend/src/sys-admin/dialog/sysadmin-add-org-dialog.js:127
 #: frontend/src/sys-admin/dialog/sysadmin-add-user-dialog.js:171
 msgid "Password"
@@ -1906,7 +1907,7 @@ msgstr ""
 #: frontend/src/portal/main-panel/user-management.js:100
 #: frontend/src/project/main-panel/analyze/components/filter-panel/index.js:166
 #: frontend/src/project/main-panel/connections/components/cell-formatter/op-formatter/index.js:50
-#: frontend/src/project/main-panel/connections/constants.js:881
+#: frontend/src/project/main-panel/connections/constants.js:927
 #: frontend/src/sys-admin/org/org-admin-users.js:31
 #: frontend/src/sys-admin/org/org-users.js:74
 #: frontend/src/sys-admin/users/users-table/index.js:58
@@ -2052,7 +2053,7 @@ msgstr ""
 
 #: frontend/src/portal/main-panel/chat-source-selector/index.js:85
 #: frontend/src/project/main-panel/agent/run-logs/run-card.js:64
-#: frontend/src/project/main-panel/ask/models/attachment-object.js:28
+#: frontend/src/project/main-panel/ask/models/attachment-object.js:33
 #: frontend/src/project/main-panel/search/hidden-connection-popover/index.js:19
 #: frontend/src/project/main-panel/tickets/components/related-issues-dialog/index.js:72
 #: frontend/src/project/main-panel/tickets/components/tickets.js:268
@@ -2060,7 +2061,7 @@ msgid "Ticket"
 msgstr ""
 
 #: frontend/src/portal/main-panel/chat-source-selector/index.js:109
-#: frontend/src/project/main-panel/connections/constants.js:477
+#: frontend/src/project/main-panel/connections/constants.js:513
 #: frontend/src/project/main-panel/search/hidden-connection-popover/hidden-connections/index.js:66
 #: frontend/src/project/side-panel/index.js:58
 msgid "Documents"
@@ -2068,8 +2069,8 @@ msgstr ""
 
 #: frontend/src/portal/main-panel/chat-source-selector/index.js:111
 #: frontend/src/project/main-panel/search/hidden-connection-popover/hidden-connections/index.js:118
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:526
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:543
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:525
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:542
 msgid "Task"
 msgstr ""
 
@@ -2116,13 +2117,14 @@ msgstr ""
 #: frontend/src/portal/main-panel/submit-issue.js:181
 #: frontend/src/project/components/import-dialog/index.js:141
 #: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:135
-#: frontend/src/project/main-panel/connections/constants.js:688
-#: frontend/src/project/main-panel/connections/constants.js:745
-#: frontend/src/project/main-panel/connections/constants.js:765
-#: frontend/src/project/main-panel/connections/constants.js:813
-#: frontend/src/project/main-panel/connections/constants.js:841
-#: frontend/src/project/main-panel/connections/constants.js:874
-#: frontend/src/project/main-panel/connections/constants.js:924
+#: frontend/src/project/main-panel/connections/constants.js:734
+#: frontend/src/project/main-panel/connections/constants.js:791
+#: frontend/src/project/main-panel/connections/constants.js:811
+#: frontend/src/project/main-panel/connections/constants.js:859
+#: frontend/src/project/main-panel/connections/constants.js:887
+#: frontend/src/project/main-panel/connections/constants.js:920
+#: frontend/src/project/main-panel/connections/constants.js:970
+#: frontend/src/project/main-panel/connections/constants.js:1018
 #: frontend/src/project/main-panel/knowledge-base/constants.js:19
 #: frontend/src/project/main-panel/knowledge-base/view/knowledge/edit/index.js:124
 #: frontend/src/project/main-panel/knowledge-base/view/new-knowledge/index.js:145
@@ -2135,7 +2137,7 @@ msgstr ""
 
 #: frontend/src/portal/main-panel/knowledge-base/constants.js:24
 #: frontend/src/project/constants/bar.js:111
-#: frontend/src/project/main-panel/connections/constants.js:804
+#: frontend/src/project/main-panel/connections/constants.js:850
 #: frontend/src/project/main-panel/knowledge-base/constants.js:24
 #: frontend/src/project/main-panel/tags/tags-settings/index.js:111
 #: frontend/src/project/main-panel/tags/view/tags.js:196
@@ -2145,21 +2147,21 @@ msgid "Tags"
 msgstr ""
 
 #: frontend/src/portal/main-panel/knowledge-base/constants.js:29
-#: frontend/src/project/main-panel/connections/constants.js:661
+#: frontend/src/project/main-panel/connections/constants.js:707
 #: frontend/src/project/main-panel/knowledge-base/constants.js:29
 msgid "AI summary"
 msgstr ""
 
 #: frontend/src/portal/main-panel/knowledge-base/constants.js:34
-#: frontend/src/project/main-panel/connections/constants.js:666
+#: frontend/src/project/main-panel/connections/constants.js:712
 #: frontend/src/project/main-panel/knowledge-base/constants.js:34
 #: frontend/src/project/main-panel/tickets/constants.js:174
 msgid "AI processed time"
 msgstr ""
 
 #: frontend/src/portal/main-panel/knowledge-base/constants.js:39
-#: frontend/src/project/main-panel/connections/constants.js:826
-#: frontend/src/project/main-panel/connections/constants.js:859
+#: frontend/src/project/main-panel/connections/constants.js:872
+#: frontend/src/project/main-panel/connections/constants.js:905
 #: frontend/src/project/main-panel/knowledge-base/constants.js:39
 #: frontend/src/project/main-panel/tickets/constants.js:213
 #: frontend/src/sea-metadata/constants/column/icon.js:28
@@ -2168,28 +2170,29 @@ msgid "Creator"
 msgstr ""
 
 #: frontend/src/portal/main-panel/knowledge-base/constants.js:43
-#: frontend/src/project/main-panel/connections/constants.js:737
-#: frontend/src/project/main-panel/connections/constants.js:754
-#: frontend/src/project/main-panel/connections/constants.js:818
-#: frontend/src/project/main-panel/connections/constants.js:851
-#: frontend/src/project/main-panel/connections/constants.js:917
-#: frontend/src/project/main-panel/connections/constants.js:953
+#: frontend/src/project/main-panel/connections/constants.js:783
+#: frontend/src/project/main-panel/connections/constants.js:800
+#: frontend/src/project/main-panel/connections/constants.js:864
+#: frontend/src/project/main-panel/connections/constants.js:897
+#: frontend/src/project/main-panel/connections/constants.js:963
+#: frontend/src/project/main-panel/connections/constants.js:999
+#: frontend/src/project/main-panel/connections/constants.js:1026
 #: frontend/src/project/main-panel/knowledge-base/constants.js:43
 #: frontend/src/project/main-panel/tickets/constants.js:198
 msgid "Created time"
 msgstr ""
 
 #: frontend/src/portal/main-panel/knowledge-base/constants.js:47
-#: frontend/src/project/main-panel/connections/constants.js:830
-#: frontend/src/project/main-panel/connections/constants.js:863
+#: frontend/src/project/main-panel/connections/constants.js:876
+#: frontend/src/project/main-panel/connections/constants.js:909
 #: frontend/src/project/main-panel/knowledge-base/constants.js:47
 #: frontend/src/sea-metadata/constants/column/icon.js:29
 msgid "Last modifier"
 msgstr ""
 
 #: frontend/src/portal/main-panel/knowledge-base/constants.js:51
-#: frontend/src/project/main-panel/connections/constants.js:654
-#: frontend/src/project/main-panel/connections/constants.js:957
+#: frontend/src/project/main-panel/connections/constants.js:700
+#: frontend/src/project/main-panel/connections/constants.js:1003
 #: frontend/src/project/main-panel/knowledge-base/constants.js:51
 #: frontend/src/project/main-panel/search/filter-by-date.js:145
 #: frontend/src/project/main-panel/search/filter-by-date.js:146
@@ -2244,29 +2247,6 @@ msgstr ""
 #: frontend/src/project/main-panel/knowledge-base/view/trash-knowledge/index.js:50
 #: frontend/src/project/main-panel/tags/view/tag-knowledge/index.js:93
 msgid "Records"
-msgstr ""
-
-#: frontend/src/portal/main-panel/my-issues/index.js:35
-#: frontend/src/project/main-panel/analyze/components/filter-panel/index.js:12
-#: frontend/src/project/main-panel/connections/constants.js:564
-#: frontend/src/project/main-panel/portal-issues/constants.js:20
-#: frontend/src/project/main-panel/portal-issues/constants.js:21
-#: frontend/src/project/main-panel/tickets/components/close-linked-github-issues-warning-dialog/index.js:57
-#: frontend/src/project/main-panel/tickets/components/ticket-settings/link-settings/index.js:96
-#: frontend/src/project/main-panel/tickets/constants.js:36
-#: frontend/src/project/main-panel/tickets/constants.js:37
-#: frontend/src/project/main-panel/tickets/constants.js:48
-#: frontend/src/project/main-panel/tickets/view/my-tickets/index.js:25
-msgid "Open"
-msgstr ""
-
-#: frontend/src/portal/main-panel/my-issues/index.js:38
-#: frontend/src/project/main-panel/analyze/components/filter-panel/index.js:13
-#: frontend/src/project/main-panel/connections/constants.js:565
-#: frontend/src/project/main-panel/tickets/components/ticket-settings/link-settings/index.js:97
-#: frontend/src/project/main-panel/tickets/constants.js:49
-#: frontend/src/project/main-panel/tickets/view/my-tickets/index.js:28
-msgid "Closed"
 msgstr ""
 
 #: frontend/src/portal/main-panel/settings/constants.js:14
@@ -2503,7 +2483,7 @@ msgstr ""
 
 #: frontend/src/portal/main-panel/submit-issue.js:47
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/others/github-issues-details/type-settings.js:67
-#: frontend/src/project/main-panel/connections/constants.js:716
+#: frontend/src/project/main-panel/connections/constants.js:762
 #: frontend/src/project/main-panel/portal-issues/view/types/index.js:13
 #: frontend/src/project/main-panel/tickets/components/ticket-settings/type-settings/index.js:71
 #: frontend/src/project/main-panel/tickets/constants.js:154
@@ -2553,9 +2533,9 @@ msgstr ""
 #: frontend/src/project/components/option-dialog/index.js:237
 #: frontend/src/project/main-panel/connections/components/connection-config-editor/index.js:14
 #: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:136
-#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:190
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:643
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:785
+#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:199
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:672
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:815
 #: frontend/src/project/main-panel/knowledge-base/view/knowledge/edit/index.js:125
 #: frontend/src/project/main-panel/knowledge-base/view/knowledge/edit/index.js:132
 #: frontend/src/project/main-panel/knowledge-base/view/new-knowledge/index.js:146
@@ -2604,7 +2584,7 @@ msgid "Invite users"
 msgstr ""
 
 #: frontend/src/portal/main-panel/user-management.js:114
-#: frontend/src/project/main-panel/connections/hooks/connections.js:116
+#: frontend/src/project/main-panel/connections/hooks/connections.js:122
 msgid "Activated"
 msgstr ""
 
@@ -3165,42 +3145,42 @@ msgstr ""
 msgid "Discourse Forum"
 msgstr ""
 
-#: frontend/src/project/main-panel/agent/run-logs/run-card.js:407
+#: frontend/src/project/main-panel/agent/run-logs/run-card.js:410
 msgid "Run"
 msgstr ""
 
-#: frontend/src/project/main-panel/agent/run-logs/run-card.js:419
+#: frontend/src/project/main-panel/agent/run-logs/run-card.js:422
 msgid "No action needed"
 msgstr ""
 
-#: frontend/src/project/main-panel/agent/run-logs/run-card.js:432
+#: frontend/src/project/main-panel/agent/run-logs/run-card.js:435
 #: frontend/src/project/main-panel/ask/components/attachments/attachment/index.js:85
-#: frontend/src/project/main-panel/connections/constants.js:603
+#: frontend/src/project/main-panel/connections/constants.js:647
 msgid "Failed"
 msgstr ""
 
-#: frontend/src/project/main-panel/agent/run-logs/run-card.js:439
+#: frontend/src/project/main-panel/agent/run-logs/run-card.js:442
 msgid "More options"
 msgstr ""
 
-#: frontend/src/project/main-panel/agent/run-logs/run-card.js:447
+#: frontend/src/project/main-panel/agent/run-logs/run-card.js:450
 #: frontend/src/project/main-panel/agent/run-logs/run-statistics-dialog.js:145
 msgid "Running log details"
 msgstr ""
 
-#: frontend/src/project/main-panel/agent/run-logs/run-card.js:451
+#: frontend/src/project/main-panel/agent/run-logs/run-card.js:454
 #: frontend/src/project/main-panel/agent/run-logs/thought-process-dialog.js:252
 #: frontend/src/project/main-panel/ask/chat-history/thought-process/index.js:25
 #: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:409
 msgid "Thought process"
 msgstr ""
 
-#: frontend/src/project/main-panel/agent/run-logs/run-card.js:458
+#: frontend/src/project/main-panel/agent/run-logs/run-card.js:461
 #: frontend/src/project/main-panel/ask/documents/index.js:113
 msgid "Collapse"
 msgstr ""
 
-#: frontend/src/project/main-panel/agent/run-logs/run-card.js:458
+#: frontend/src/project/main-panel/agent/run-logs/run-card.js:461
 #: frontend/src/project/main-panel/ask/documents/index.js:113
 #: frontend/src/sea-metadata/view/table/table-main/rows/row/actions-cell/index.js:88
 msgid "Expand"
@@ -3335,6 +3315,25 @@ msgstr ""
 msgid "1 year"
 msgstr ""
 
+#: frontend/src/project/main-panel/analyze/components/filter-panel/index.js:12
+#: frontend/src/project/main-panel/connections/constants.js:608
+#: frontend/src/project/main-panel/portal-issues/constants.js:20
+#: frontend/src/project/main-panel/portal-issues/constants.js:21
+#: frontend/src/project/main-panel/tickets/components/close-linked-github-issues-warning-dialog/index.js:57
+#: frontend/src/project/main-panel/tickets/components/ticket-settings/link-settings/index.js:96
+#: frontend/src/project/main-panel/tickets/constants.js:36
+#: frontend/src/project/main-panel/tickets/constants.js:37
+#: frontend/src/project/main-panel/tickets/constants.js:48
+msgid "Open"
+msgstr ""
+
+#: frontend/src/project/main-panel/analyze/components/filter-panel/index.js:13
+#: frontend/src/project/main-panel/connections/constants.js:609
+#: frontend/src/project/main-panel/tickets/components/ticket-settings/link-settings/index.js:97
+#: frontend/src/project/main-panel/tickets/constants.js:49
+msgid "Closed"
+msgstr ""
+
 #: frontend/src/project/main-panel/analyze/components/filter-panel/utils.js:8
 msgid "Date range"
 msgstr ""
@@ -3348,8 +3347,8 @@ msgstr ""
 #: frontend/src/project/main-panel/analyze/components/settings-panel/index.js:29
 #: frontend/src/project/main-panel/analyze/index.js:89
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/others/github-issues-details/state-settings.js:133
-#: frontend/src/project/main-panel/connections/constants.js:704
-#: frontend/src/project/main-panel/connections/constants.js:935
+#: frontend/src/project/main-panel/connections/constants.js:750
+#: frontend/src/project/main-panel/connections/constants.js:981
 #: frontend/src/project/main-panel/tickets/components/ticket-settings/state-settings/index.js:97
 #: frontend/src/project/main-panel/tickets/constants.js:136
 #: frontend/src/sea-metadata/components/popover/filter-popover/basic-filters/state-filter.js:38
@@ -3465,7 +3464,7 @@ msgstr ""
 
 #: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:263
 #: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:300
-#: frontend/src/project/main-panel/connections/constants.js:782
+#: frontend/src/project/main-panel/connections/constants.js:828
 msgid "File name"
 msgstr ""
 
@@ -3534,6 +3533,7 @@ msgid "Start a new chat from this conversation"
 msgstr ""
 
 #: frontend/src/project/main-panel/ask/components/attachments/attachment/index.js:65
+#: frontend/src/project/main-panel/ask/models/attachment-object.js:49
 msgid "Image"
 msgstr ""
 
@@ -3565,39 +3565,43 @@ msgstr ""
 msgid "Started a new chat from this conversation"
 msgstr ""
 
-#: frontend/src/project/main-panel/ask/models/attachment-object.js:32
+#: frontend/src/project/main-panel/ask/models/attachment-object.js:37
 #: frontend/src/project/main-panel/connections/view/connection/records/index.js:79
 #: frontend/src/project/main-panel/connections/view/connection/records/index.js:81
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:552
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:556
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:566
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:579
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:551
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:555
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:565
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:578
 msgid "GitHub issue"
 msgstr ""
 
-#: frontend/src/project/main-panel/ask/models/attachment-object.js:34
+#: frontend/src/project/main-panel/ask/models/attachment-object.js:39
 msgid "Seafile library"
 msgstr ""
 
-#: frontend/src/project/main-panel/ask/models/attachment-object.js:36
-#: frontend/src/project/main-panel/connections/constants.js:524
+#: frontend/src/project/main-panel/ask/models/attachment-object.js:41
+#: frontend/src/project/main-panel/connections/constants.js:560
 msgid "Notion"
 msgstr ""
 
-#: frontend/src/project/main-panel/ask/models/attachment-object.js:38
+#: frontend/src/project/main-panel/ask/models/attachment-object.js:43
 #: frontend/src/project/main-panel/connections/view/connection/records/index.js:73
 msgid "Site"
 msgstr ""
 
-#: frontend/src/project/main-panel/ask/models/attachment-object.js:40
-#: frontend/src/project/main-panel/connections/constants.js:538
+#: frontend/src/project/main-panel/ask/models/attachment-object.js:45
+#: frontend/src/project/main-panel/connections/constants.js:574
 #: frontend/src/project/main-panel/connections/view/connection/records/index.js:98
 msgid "General tasks"
 msgstr ""
 
-#: frontend/src/project/main-panel/ask/models/attachment-object.js:42
+#: frontend/src/project/main-panel/ask/models/attachment-object.js:47
 #: frontend/src/project/main-panel/connections/view/connection/records/index.js:89
 msgid "Discourse forum"
+msgstr ""
+
+#: frontend/src/project/main-panel/ask/models/attachment-object.js:51
+msgid "Page content"
 msgstr ""
 
 #: frontend/src/project/main-panel/ask/sessions/index.js:61
@@ -3698,7 +3702,7 @@ msgid "more"
 msgstr ""
 
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/main/email-details/index.js:38
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:622
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:621
 msgid "messages"
 msgstr ""
 
@@ -3725,19 +3729,19 @@ msgstr ""
 
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/others/discourse-forum-details/index.js:25
 #: frontend/src/project/main-panel/connections/components/related-issues-dialog/resolved-tag.js:13
-#: frontend/src/project/main-panel/connections/constants.js:758
+#: frontend/src/project/main-panel/connections/constants.js:804
 msgid "Resolved"
 msgstr ""
 
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/others/email-details/index.js:35
-#: frontend/src/project/main-panel/connections/constants.js:799
+#: frontend/src/project/main-panel/connections/constants.js:845
 msgid "unread"
 msgstr ""
 
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/others/general-task-details/index.js:67
 #: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:166
-#: frontend/src/project/main-panel/connections/constants.js:895
-#: frontend/src/project/main-panel/connections/constants.js:932
+#: frontend/src/project/main-panel/connections/constants.js:941
+#: frontend/src/project/main-panel/connections/constants.js:978
 #: frontend/src/project/main-panel/tickets/components/create-task-dialog/index.js:237
 #: frontend/src/project/main-panel/tickets/components/ticket-in-dialog/index.js:316
 #: frontend/src/project/main-panel/tickets/constants.js:180
@@ -3757,7 +3761,7 @@ msgstr ""
 
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/others/general-task-details/index.js:75
 #: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:204
-#: frontend/src/project/main-panel/connections/constants.js:900
+#: frontend/src/project/main-panel/connections/constants.js:946
 #: frontend/src/project/main-panel/tickets/components/ticket-in-dialog/index.js:346
 #: frontend/src/project/main-panel/tickets/constants.js:193
 #: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:260
@@ -3775,8 +3779,8 @@ msgid "No participants"
 msgstr ""
 
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/others/github-issues-details/labels-settings.js:97
-#: frontend/src/project/main-panel/connections/constants.js:721
-#: frontend/src/project/main-panel/connections/constants.js:941
+#: frontend/src/project/main-panel/connections/constants.js:767
+#: frontend/src/project/main-panel/connections/constants.js:987
 msgid "Labels"
 msgstr ""
 
@@ -3790,8 +3794,8 @@ msgid "Search labels"
 msgstr ""
 
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/others/github-issues-details/state-reason-settings.js:74
-#: frontend/src/project/main-panel/connections/constants.js:710
-#: frontend/src/project/main-panel/connections/constants.js:938
+#: frontend/src/project/main-panel/connections/constants.js:756
+#: frontend/src/project/main-panel/connections/constants.js:984
 msgid "State reason"
 msgstr ""
 
@@ -3807,7 +3811,7 @@ msgid "Close as %s"
 msgstr ""
 
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/others/linked-ticket/index.js:27
-#: frontend/src/project/main-panel/connections/constants.js:676
+#: frontend/src/project/main-panel/connections/constants.js:722
 #: frontend/src/project/main-panel/portal-issues/constants.js:58
 msgid "Linked ticket"
 msgstr ""
@@ -3887,152 +3891,152 @@ msgid "Linked record"
 msgstr ""
 
 #: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:125
-#: frontend/src/project/main-panel/connections/utils.js:419
+#: frontend/src/project/main-panel/connections/utils.js:434
 msgid "Create related ticket"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:185
+#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:194
 msgid "Edit connection"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:189
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:642
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:784
+#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:198
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:671
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:814
 msgid "Connection name"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:197
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:650
+#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:206
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:679
 msgid "OAuth callback URL"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:198
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:651
+#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:207
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:680
 msgid ""
 "Use this callback URL in your email provider OAuth app configuration. It is "
 "read-only and must match exactly."
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:213
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:666
+#: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:222
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:695
 msgid "Advanced options"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:217
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:219
 msgid "Failed to check Confluence authorization status."
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:267
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:269
 msgid "Failed to fetch authorization url"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:456
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:478
 msgid "Failed to check Linear authorization status."
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:565
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:594
 #: frontend/src/project/main-panel/connections/components/top-bar/index.js:142
 #: frontend/src/project/main-panel/connections/view/all-connections/index.js:172
 msgid "New connection"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:571
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:600
 msgid "Help Docs"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:583
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:612
 msgid "Manage GitHub app"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:603
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:632
 msgid "Expand section"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:603
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:632
 msgid "Collapse section"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:674
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:699
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:703
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:729
 msgid "Authorization"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:677
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:705
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:707
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:735
 msgid "Connected"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:677
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:705
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:707
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:735
 msgid "Not connected"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:685
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:715
 msgid "Reconnect Confluence"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:685
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:715
 msgid "Connect Confluence"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:694
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:724
 msgid "Waiting for OAuth authorization to complete..."
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:712
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:742
 msgid "Reconnect Linear"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:712
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:742
 msgid "Connect Linear"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:721
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:751
 msgid "Waiting for Confluence authorization to complete..."
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:726
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:756
 msgid "Spaces (optional)"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:728
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:758
 msgid ""
 "Select specific spaces to sync. Leave empty to sync all spaces in the "
 "workspace."
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:732
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:762
 msgid "Loading spaces..."
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:735
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:765
 msgid "No spaces found in this workspace."
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:767
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:797
 msgid "Checking GitHub App installation status..."
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:768
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:775
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:798
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:805
 msgid ""
 "Install GitHub app to your repositories to enable SeaTicket to sync issues "
 "from these repositories"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:774
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:804
 msgid "GitHub app not installed"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:776
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:806
 msgid "Install GitHub app"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:807
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:837
 msgid "Next"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:813
+#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:843
 msgid "Previous"
 msgstr ""
 
@@ -4068,19 +4072,19 @@ msgstr ""
 msgid "Syncing"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:139
+#: frontend/src/project/main-panel/connections/constants.js:142
 msgid "Server provider"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:145
+#: frontend/src/project/main-panel/connections/constants.js:148
 msgid "General email provider"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:146
+#: frontend/src/project/main-panel/connections/constants.js:149
 msgid "Microsoft (Microsoft 365 and Outlook)"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:149
+#: frontend/src/project/main-panel/connections/constants.js:152
 msgid ""
 "The authentication type for third-party account login via email service "
 "provider. For most email service providers, you can use \"General Email "
@@ -4091,426 +4095,469 @@ msgid ""
 "Outlook)\" mode can be selected for account authentication via OAuth2."
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:152
+#: frontend/src/project/main-panel/connections/constants.js:155
 msgid "\"From\" display name (optional)"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:158
+#: frontend/src/project/main-panel/connections/constants.js:161
 msgid ""
 "The display name is an arbitrary description prepended to an email address. "
 "When a display name is used, the email address is enclosed in angle "
 "brackets. Example: 'Bill Smith <william.smith@example.com>'"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:161
+#: frontend/src/project/main-panel/connections/constants.js:164
 msgid "\"From\" address (optional)"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:167
+#: frontend/src/project/main-panel/connections/constants.js:170
 msgid ""
 "The address is the full email address of the sender. It need not be "
 "identical to the username of the account."
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:170
+#: frontend/src/project/main-panel/connections/constants.js:173
 msgid "Client ID"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:179
+#: frontend/src/project/main-panel/connections/constants.js:182
 msgid "Client secret"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:188
+#: frontend/src/project/main-panel/connections/constants.js:191
 msgid "Authority URL"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:198
+#: frontend/src/project/main-panel/connections/constants.js:201
 msgid "Token URL"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:213
+#: frontend/src/project/main-panel/connections/constants.js:216
 msgid "SMTP host"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:221
+#: frontend/src/project/main-panel/connections/constants.js:224
 msgid "SMTP port"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:237
+#: frontend/src/project/main-panel/connections/constants.js:240
 msgid "IMAP host"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:245
+#: frontend/src/project/main-panel/connections/constants.js:248
 msgid "IMAP port"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:261
+#: frontend/src/project/main-panel/connections/constants.js:264
 #: frontend/src/sys-admin/user/user-info.js:101
 msgid "Username"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:266
+#: frontend/src/project/main-panel/connections/constants.js:269
 msgid "The username is the email address of the account."
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:275
+#: frontend/src/project/main-panel/connections/constants.js:278
 msgid ""
 "The password for your email account. For some email providers, you may need "
 "to create an app password and use that app password here."
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:280
+#: frontend/src/project/main-panel/connections/constants.js:283
 msgid "Only sync email sent within following number of years"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:298
+#: frontend/src/project/main-panel/connections/constants.js:301
 msgid "Repository"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:299
+#: frontend/src/project/main-panel/connections/constants.js:302
 msgid "Select a repository"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:316
-#: frontend/src/project/main-panel/connections/constants.js:353
-#: frontend/src/project/main-panel/connections/constants.js:775
+#: frontend/src/project/main-panel/connections/constants.js:319
+#: frontend/src/project/main-panel/connections/constants.js:356
+#: frontend/src/project/main-panel/connections/constants.js:821
 #: frontend/src/sea-metadata/constants/column/icon.js:45
 msgid "URL"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:321
+#: frontend/src/project/main-panel/connections/constants.js:324
 msgid "The URL is the URL of the forum."
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:324
+#: frontend/src/project/main-panel/connections/constants.js:327
 msgid "API key"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:330
+#: frontend/src/project/main-panel/connections/constants.js:333
 msgid "API username"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:336
+#: frontend/src/project/main-panel/connections/constants.js:339
 msgid "Only sync topics updated within following number of years"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:358
+#: frontend/src/project/main-panel/connections/constants.js:361
 msgid "The URL is the URL of the site. Example: 'https://www.example.com'"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:361
+#: frontend/src/project/main-panel/connections/constants.js:364
 msgid "Sitemap URL"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:364
+#: frontend/src/project/main-panel/connections/constants.js:367
 msgid ""
 "The sitemap URL is the URL of the sitemap. Example: 'https://www.example.com/"
 "sitemap.xml'"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:376
+#: frontend/src/project/main-panel/connections/constants.js:379
 msgid "Seafile server URL"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:383
+#: frontend/src/project/main-panel/connections/constants.js:386
 msgid "Library API token"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:388
+#: frontend/src/project/main-panel/connections/constants.js:391
 msgid "The API token is the API token of the Seafile library."
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:417
+#: frontend/src/project/main-panel/connections/constants.js:420
 msgid "Select a workspace"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:424
+#: frontend/src/project/main-panel/connections/constants.js:427
 msgid "Spaces"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:441
+#: frontend/src/project/main-panel/connections/constants.js:444
 msgid "API base URL"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:459
+#: frontend/src/project/main-panel/connections/constants.js:462
 msgid "Select a team"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:481
+#: frontend/src/project/main-panel/connections/constants.js:478
+msgid "Server ID"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:479
+msgid "Paste your server (guild) ID here"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:484
+msgid ""
+"Enable Developer Mode in Discord (Settings → Advanced), then right-click "
+"your server → Copy Server ID."
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:487
+msgid "Bot token"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:491
+msgid ""
+"Create a bot at https://discord.com/developers/applications and copy its "
+"token."
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:494
+msgid "Channel"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:495
+msgid "Select a channel"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:517
 msgid "Tasks"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:489
+#: frontend/src/project/main-panel/connections/constants.js:525
 msgid "Emails"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:490
+#: frontend/src/project/main-panel/connections/constants.js:526
 msgid ""
 "The connection requires an App Password generated by your email provider. Do "
 "not use your regular account password. If any problem occurs, check the"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:496
+#: frontend/src/project/main-panel/connections/constants.js:532
 msgid "GitHub"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:497
+#: frontend/src/project/main-panel/connections/constants.js:533
 msgid ""
 "Only GitHub organization or repository Admin/Owner accounts can be "
 "connected. If any problem occurs, check the"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:503
+#: frontend/src/project/main-panel/connections/constants.js:539
 #: frontend/src/project/main-panel/connections/view/connection/records/index.js:90
 msgid "Discourse forums"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:504
+#: frontend/src/project/main-panel/connections/constants.js:540
 msgid ""
 "Before connecting, please prepare Discourse admin access, forum URL, API-"
 "linked username and admin-generated API key. If any problem occurs, check the"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:510
+#: frontend/src/project/main-panel/connections/constants.js:546
 #: frontend/src/project/main-panel/connections/view/connection/records/index.js:74
 msgid "Sites"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:511
+#: frontend/src/project/main-panel/connections/constants.js:547
 msgid ""
 "Make sure to prepare the full publicly accessible website URL and its "
 "sitemap URL, which lists all site pages. If any problem occurs, check the"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:517
+#: frontend/src/project/main-panel/connections/constants.js:553
 msgid "Seafile libraries"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:518
+#: frontend/src/project/main-panel/connections/constants.js:554
 msgid ""
 "Please provide your Seafile server URL and the API token of the library to "
 "be connected. If any problem occurs, check the"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:525
+#: frontend/src/project/main-panel/connections/constants.js:561
 msgid ""
 "Before connecting, prepare your Notion integration token and ensure you have "
 "workspace admin/owner access, plus read permissions for target pages and "
 "databases. If any problem occurs, check the"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:531
+#: frontend/src/project/main-panel/connections/constants.js:567
 msgid "Confluence"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:532
+#: frontend/src/project/main-panel/connections/constants.js:568
 msgid ""
 "Authorize SeaTicket with your Atlassian account, then choose the workspace "
 "to sync all pages from that workspace. If any problem occurs, check the"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:539
+#: frontend/src/project/main-panel/connections/constants.js:575
 msgid ""
 "Provide the base URL of your API endpoint that list tasks, create a task and "
 "so on. If any problem occurs, check the"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:546
+#: frontend/src/project/main-panel/connections/constants.js:582
 msgid "Linear"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:547
+#: frontend/src/project/main-panel/connections/constants.js:583
 msgid ""
 "Make sure to prepare connection name and complete Linear OAuth "
 "authorization. If any problem occurs, check the"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:569
+#: frontend/src/project/main-panel/connections/constants.js:589
+msgid "Discord"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:590
+msgid ""
+"Connect your Discord server by authorizing the SeaTicket bot. The bot will "
+"sync messages from the selected channel. If any problem occurs, check the"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/constants.js:613
 msgid "Reopen"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:570
-#: frontend/src/project/main-panel/connections/constants.js:602
+#: frontend/src/project/main-panel/connections/constants.js:614
+#: frontend/src/project/main-panel/connections/constants.js:646
 #: frontend/src/project/main-panel/tickets/constants.js:82
 msgid "Completed"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:571
+#: frontend/src/project/main-panel/connections/constants.js:615
 #: frontend/src/project/main-panel/tickets/constants.js:89
 msgid "Not planned"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:572
+#: frontend/src/project/main-panel/connections/constants.js:616
 #: frontend/src/project/main-panel/tickets/constants.js:96
 msgid "Duplicate"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:577
+#: frontend/src/project/main-panel/connections/constants.js:621
 #: frontend/src/project/main-panel/tickets/constants.js:62
 msgid "In progress"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:578
+#: frontend/src/project/main-panel/connections/constants.js:622
 msgid "Canceled"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:583
+#: frontend/src/project/main-panel/connections/constants.js:627
 msgid "Large"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:584
-#: frontend/src/project/main-panel/connections/constants.js:590
+#: frontend/src/project/main-panel/connections/constants.js:628
+#: frontend/src/project/main-panel/connections/constants.js:634
 #: frontend/src/sea-metadata/constants/column/priority.js:24
 msgid "Medium"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:585
+#: frontend/src/project/main-panel/connections/constants.js:629
 msgid "Small"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:589
+#: frontend/src/project/main-panel/connections/constants.js:633
 #: frontend/src/sea-metadata/constants/column/priority.js:18
 msgid "High"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:591
+#: frontend/src/project/main-panel/connections/constants.js:635
 #: frontend/src/sea-metadata/constants/column/priority.js:30
 msgid "Low"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:604
+#: frontend/src/project/main-panel/connections/constants.js:648
 msgid "Crawling"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:605
+#: frontend/src/project/main-panel/connections/constants.js:649
 msgid "Pending"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:671
-#: frontend/src/project/main-panel/connections/constants.js:834
-#: frontend/src/project/main-panel/connections/constants.js:867
+#: frontend/src/project/main-panel/connections/constants.js:717
+#: frontend/src/project/main-panel/connections/constants.js:880
+#: frontend/src/project/main-panel/connections/constants.js:913
 #: frontend/src/project/main-panel/connections/view/connection/record/index.js:349
 msgid "Outdated"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:700
-#: frontend/src/project/main-panel/connections/constants.js:929
+#: frontend/src/project/main-panel/connections/constants.js:746
+#: frontend/src/project/main-panel/connections/constants.js:975
+#: frontend/src/project/main-panel/connections/constants.js:1023
 msgid "Author"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:726
+#: frontend/src/project/main-panel/connections/constants.js:772
 msgid "Total comments"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:731
-#: frontend/src/project/main-panel/connections/constants.js:964
+#: frontend/src/project/main-panel/connections/constants.js:777
+#: frontend/src/project/main-panel/connections/constants.js:1010
 #: frontend/src/project/main-panel/tickets/constants.js:208
 msgid "Closed time"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:750
+#: frontend/src/project/main-panel/connections/constants.js:796
 msgid "Views count"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:787
+#: frontend/src/project/main-panel/connections/constants.js:833
 msgid "Parent folder"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:794
+#: frontend/src/project/main-panel/connections/constants.js:840
 msgid "Subject"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:822
-#: frontend/src/project/main-panel/connections/constants.js:855
+#: frontend/src/project/main-panel/connections/constants.js:868
+#: frontend/src/project/main-panel/connections/constants.js:901
 msgid "Modified time"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:886
+#: frontend/src/project/main-panel/connections/constants.js:932
 msgid "Size"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:890
-#: frontend/src/project/main-panel/connections/constants.js:944
+#: frontend/src/project/main-panel/connections/constants.js:936
+#: frontend/src/project/main-panel/connections/constants.js:990
 #: frontend/src/project/main-panel/tickets/components/ticket-settings/priority-settings/index.js:87
 #: frontend/src/project/main-panel/tickets/constants.js:118
 #: frontend/src/sea-metadata/constants/column/icon.js:46
 msgid "Priority"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:903
+#: frontend/src/project/main-panel/connections/constants.js:949
 msgid "Version"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:908
+#: frontend/src/project/main-panel/connections/constants.js:954
 msgid "Others"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/constants.js:912
-#: frontend/src/project/main-panel/connections/constants.js:948
-#: frontend/src/project/main-panel/connections/utils.js:481
+#: frontend/src/project/main-panel/connections/constants.js:958
+#: frontend/src/project/main-panel/connections/constants.js:994
+#: frontend/src/project/main-panel/connections/utils.js:496
 #: frontend/src/project/main-panel/tickets/components/ticket-settings/due-date-settings/index.js:46
 #: frontend/src/project/main-panel/tickets/constants.js:223
 msgid "Due date"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/hooks/connections.js:116
+#: frontend/src/project/main-panel/connections/hooks/connections.js:122
 msgid "Deactivated"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/hooks/connections.js:282
+#: frontend/src/project/main-panel/connections/hooks/connections.js:290
 msgid "Connection {name} synced"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/hooks/connections.js:285
+#: frontend/src/project/main-panel/connections/hooks/connections.js:294
 msgid "Connection {name} sync failed"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/hooks/connections.js:333
+#: frontend/src/project/main-panel/connections/hooks/connections.js:352
 #: frontend/src/sys-admin/orgs/orgs-content.js:138
 msgid "Are you sure you want to delete {placeholder} ?"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/utils.js:300
+#: frontend/src/project/main-panel/connections/utils.js:315
 msgid "Chat task"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/utils.js:300
+#: frontend/src/project/main-panel/connections/utils.js:315
 msgid "Chat issue"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/utils.js:300
+#: frontend/src/project/main-panel/connections/utils.js:315
 msgid "Chat tasks"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/utils.js:300
+#: frontend/src/project/main-panel/connections/utils.js:315
 msgid "Chat issues"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/utils.js:345
+#: frontend/src/project/main-panel/connections/utils.js:360
 msgid "Mark as active"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/utils.js:363
+#: frontend/src/project/main-panel/connections/utils.js:378
 msgid "Mark as outdated"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/utils.js:387
+#: frontend/src/project/main-panel/connections/utils.js:402
 msgid "Find related issues"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/utils.js:403
+#: frontend/src/project/main-panel/connections/utils.js:418
 msgid "Link an existing ticket"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/utils.js:428
+#: frontend/src/project/main-panel/connections/utils.js:443
 msgid "Open original page"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/utils.js:438
+#: frontend/src/project/main-panel/connections/utils.js:453
 msgid "Copy original link"
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/utils.js:443
+#: frontend/src/project/main-panel/connections/utils.js:458
 msgid "The original link has been copied"
 msgstr ""
 
@@ -5086,145 +5133,145 @@ msgid "Issue not found"
 msgstr ""
 
 #: frontend/src/project/main-panel/tickets/components/ticket-log/add-log.js:7
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:254
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:526
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:581
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:610
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:622
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:253
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:525
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:580
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:609
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:621
 msgid "added"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:240
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:239
 msgid "yes"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:240
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:239
 msgid "no"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:255
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:254
 #: frontend/src/project/main-panel/tickets/components/ticket-log/remove-log.js:7
 msgid "removed"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:256
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:255
 msgid "changed from"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:308
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:307
 msgid "added the substate"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:312
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:311
 msgid "removed the substate"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:331
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:330
 msgid "added the type"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:335
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:334
 msgid "removed the type"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:378
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:377
 msgid "added state"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:380
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:379
 msgid "Removed state"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:385
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:384
 msgid "added substate"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:387
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:386
 msgid "Removed substate"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:394
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:441
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:507
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:393
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:440
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:506
 #: frontend/src/project/main-panel/tickets/components/ticket-log/modify-log.js:13
 msgid "and"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:406
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:444
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:405
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:443
 msgid "assigned"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:418
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:433
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:417
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:432
 msgid "unassigned"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:461
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:510
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:460
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:509
 msgid "added tags"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:478
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:499
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:477
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:498
 msgid "removed tags"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:539
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:538
 msgid "updated general task"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:552
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:551
 msgid "closed"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:556
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:555
 msgid "reopened"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:562
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:561
 msgid "updated GitHub issue"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:580
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:579
 msgid "comment"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:580
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:579
 msgid "comments"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:582
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:611
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:581
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:610
 msgid "by"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:591
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:590
 msgid "updated Discourse topic"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:595
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:608
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:594
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:607
 msgid "Discourse topic"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:609
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:608
 msgid "reply"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:609
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:608
 msgid "replies"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:619
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:618
 msgid "Email thread"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:622
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:621
 msgid "message"
 msgstr ""
 
-#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:627
+#: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:626
 msgid "made changes"
 msgstr ""
 
@@ -5298,7 +5345,6 @@ msgid "Open type panel"
 msgstr ""
 
 #: frontend/src/project/main-panel/tickets/components/tickets.js:266
-#: frontend/src/translation.js:16
 msgid "ticket"
 msgstr ""
 
@@ -6731,7 +6777,7 @@ msgstr ""
 msgid "Current browser"
 msgstr ""
 
-#: frontend/src/translation.js:17
+#: frontend/src/translation.js:16
 msgid ""
 "Support portal allows external users to self-service and obtain support "
 "information, including documentation, knowledge base articles, and ticket "
@@ -6739,32 +6785,52 @@ msgid ""
 "services."
 msgstr ""
 
-#: frontend/src/translation.js:18
+#: frontend/src/translation.js:17
 msgid "How can I help you?"
 msgstr ""
 
-#: frontend/src/translation.js:19
+#: frontend/src/translation.js:18
 msgid "Total issues"
 msgstr ""
 
-#: frontend/src/translation.js:20
+#: frontend/src/translation.js:19
 msgid "Included Al credits"
 msgstr ""
 
-#: frontend/src/translation.js:21
+#: frontend/src/translation.js:20
 msgid "Additional credits"
 msgstr ""
 
-#: frontend/src/translation.js:22
+#: frontend/src/translation.js:21
 msgid "GitHub issue type"
 msgstr ""
 
-#: frontend/src/translation.js:23
+#: frontend/src/translation.js:22
 msgid "Agent issue type"
 msgstr ""
 
-#: frontend/src/translation.js:24
+#: frontend/src/translation.js:23
 msgid "Agent issue type to GitHub issue type"
+msgstr ""
+
+#: frontend/src/translation.js:24
+msgid "Please connect a GitHub repository first."
+msgstr ""
+
+#: frontend/src/translation.js:25
+msgid "Current GitHub connection is invalid."
+msgstr ""
+
+#: frontend/src/translation.js:26
+msgid "GitHub App missing \"Issue Types\" permission."
+msgstr ""
+
+#: frontend/src/translation.js:27
+msgid "Failed to load GitHub issue types."
+msgstr ""
+
+#: frontend/src/translation.js:28
+msgid "GitHub issue types are only available for organizations."
 msgstr ""
 
 #: frontend/src/utils/role-status-utils.js:32
