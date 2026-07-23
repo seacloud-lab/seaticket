@@ -531,8 +531,9 @@ const Issue = ({
             />
           </Comment>
           <div className="seaqa-project-ticket-footer">
-            <UploadFilesButton className="mt-4" onChange={handleFiles} />
+            {!isMobile && <UploadFilesButton className="mt-4" onChange={handleFiles} />}
             <div className="seaqa-project-ticket-submit-btns ml-2">
+              {isMobile && <UploadFilesButton className="mobile mr-auto" isShowText={false} onChange={handleFiles} />}
               <StatusToggleButton
                 state={state}
                 substate={substate}
@@ -552,26 +553,28 @@ const Issue = ({
             </div>
           </div>
         </div>
-        <div className="seaqa-project-ticket-other-settings">
-          <PrioritySettings isReadonly={!editable} value={priority} onChange={onPriorityChange} />
-          <TagsSettings
-            id="tags-editor-popover"
-            isReadonly={!editable}
-            value={tags}
-            tagsData={tagsData}
-            createTag={createTag}
-            onChange={onTagsChange}
-          />
-          <StateSettings isReadonly={!editable} state={state} substate={substate} useMetadataContext={usePortalIssuesMetadata} onChange={onStateChange} />
-          <SubStateSettings isReadonly={!editable} state={state} substate={substate} useMetadataContext={usePortalIssuesMetadata} onChange={onSubstateChange} />
-          <TypeSettings id="type-editor-popover" isReadonly={!editable} value={type} useMetadataContext={usePortalIssuesMetadata} onChange={onTypeChange} />
-          <LinkSettings value={[linked_ticket]} linkedRecords={linkedRecords} />
-        </div>
+        {!isMobile && (
+          <div className="seaqa-project-ticket-other-settings">
+            <PrioritySettings isReadonly={!editable} value={priority} onChange={onPriorityChange} />
+            <TagsSettings
+              id="tags-editor-popover"
+              isReadonly={!editable}
+              value={tags}
+              tagsData={tagsData}
+              createTag={createTag}
+              onChange={onTagsChange}
+            />
+            <StateSettings isReadonly={!editable} state={state} substate={substate} useMetadataContext={usePortalIssuesMetadata} onChange={onStateChange} />
+            <SubStateSettings isReadonly={!editable} state={state} substate={substate} useMetadataContext={usePortalIssuesMetadata} onChange={onSubstateChange} />
+            <TypeSettings id="type-editor-popover" isReadonly={!editable} value={type} useMetadataContext={usePortalIssuesMetadata} onChange={onTypeChange} />
+            <LinkSettings value={[linked_ticket]} linkedRecords={linkedRecords} />
+          </div>
+        )}
       </div>
       {isShowKeyboardShortcuts && (
         <KeyboardShortcuts toggle={() => setIsShowKeyboardShortcuts(false)} />
       )}
-      {isShowCreateTicketDialog && (
+      {!isMobile && isShowCreateTicketDialog && (
         <CreateTicketDialog
           projectUuid={projectUuid}
           row={{ _id: issueID }}
@@ -584,7 +587,7 @@ const Issue = ({
           onSubmitCallback={(ticket) => createTicketCallback(ticket, issue)}
         />
       )}
-      {isShowTicketsDialog && (
+      {!isMobile && isShowTicketsDialog && (
         <TicketsDialog
           projectUuid={projectUuid}
           onSubmit={linkAnExistingTicket}

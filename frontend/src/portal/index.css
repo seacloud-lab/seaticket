@@ -309,6 +309,10 @@ body {
     padding: 0px 16px;
   }
 
+  .seaqa-portal-main-panel .seaqa-portal-content .sea-metadata.seaqa-issues-metadata .sea-metadata-search-input-wrapper .seaqa-search-input {
+    width: 100%;
+  }
+
   .seaqa-portal-main-panel .seaqa-portal-content .seaqa-portal-issue-cards {
     width: 100%;
     height: 100%;

@@ -5,7 +5,7 @@ import { Icon } from '@/components';
 
 import './index.css';
 
-const UploadFilesButton = forwardRef(({ className, onChange }, ref) => {
+const UploadFilesButton = forwardRef(({ className, onChange, isShowText = true }, ref) => {
 
   const uploadInputRef = useRef(null);
 
@@ -23,9 +23,14 @@ const UploadFilesButton = forwardRef(({ className, onChange }, ref) => {
   }, []);
 
   return (
-    <div className={classnames('seaqa-ticket-upload-files-btn seaqa-icon-btn', className)} onClick={onUploadBtnClick}>
-      <Icon symbol="paperclip" className="mr-2" />
-      {gettext('Paste, drop, or click to add files')}
+    <div
+      className={classnames('seaqa-ticket-upload-files-btn seaqa-icon-btn', className)}
+      title={gettext('Paste, drop, or click to add files')}
+      aria-label={gettext('Paste, drop, or click to add files')}
+      onClick={onUploadBtnClick}
+    >
+      <Icon symbol="paperclip" className={classnames({ 'mr-2': isShowText })} />
+      {isShowText && gettext('Paste, drop, or click to add files')}
       <input type="file" className="d-none" ref={uploadInputRef} onClick={onInputFile} onChange={uploadFilesChange} value="" multiple />
     </div>
   );

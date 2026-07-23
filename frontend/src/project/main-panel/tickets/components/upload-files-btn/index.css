@@ -3,3 +3,9 @@
   max-width: 300px;
   padding: 0 8px;
 }
+
+.seaqa-ticket-upload-files-btn.mobile {
+  height: 38px;
+  width: 38px;
+  border: 1px solid rgba(0, 40, 100, 0.12);
+}
