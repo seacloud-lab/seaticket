@@ -26,6 +26,8 @@ class SchemaTables:
     LINEAR_ISSUES = SCHEMA.LinearIssuesTable
     LINEAR_ISSUE_COMMENTS = SCHEMA.LinearIssueCommentsTable
     CONFLUENCE = SCHEMA.ConfluenceTable
+    DISCORD_THREADS = SCHEMA.DiscordThreadsTable
+    DISCORD_THREAD_MESSAGES = SCHEMA.DiscordThreadMessagesTable
 
 
 class FormulaResultType(object):

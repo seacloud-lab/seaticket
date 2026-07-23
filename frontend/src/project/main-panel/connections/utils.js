@@ -163,6 +163,14 @@ const getLinearOriginalPageUrl = (connection, row, columns) => {
   return `https://linear.app/${workspaceName}/issue/${identifier}/${slug}`;
 };
 
+const getDiscordOriginalPageUrl = (connection, row, columns) => {
+  const { guild_id, channel_id } = connection.config;
+  const threadIdColumn = getColumnByName(columns, 'thread_id');
+  const threadId = getCellValueByColumn(row, threadIdColumn);
+  if (!guild_id || !channel_id || !threadId) return '';
+  return `https://discord.com/channels/${guild_id}/${threadId}`;
+};
+
 export const getOriginalPageUrl = (connection, row, columns) => {
   if (!connection || !row || !columns) return '';
   switch (connection.type) {
@@ -190,6 +198,9 @@ export const getOriginalPageUrl = (connection, row, columns) => {
     }
     case CONNECTION_TYPE.LINEAR: {
       return getLinearOriginalPageUrl(connection, row, columns);
+    }
+    case CONNECTION_TYPE.DISCORD: {
+      return getDiscordOriginalPageUrl(connection, row, columns);
     }
     default: {
       return '';
@@ -236,6 +247,10 @@ export const initConnectionResourceDetails = (type, record) => {
   if (type === CONNECTION_TYPE.EMAIL) {
     const { emails } = record;
     return Array.isArray(emails) ? emails : [];
+  }
+  if (type === CONNECTION_TYPE.DISCORD) {
+    const { replies } = record;
+    return Array.isArray(replies) ? replies : [];
   }
 };
 
@@ -490,6 +505,8 @@ export const formatColumns = (connection, sourceColumns, { collaborators = [] } 
     CONNECTION_PREDEFINED_COLUMN_NAME.URL,
     CONNECTION_PREDEFINED_COLUMN_NAME.PAGE_ID,
     CONNECTION_PREDEFINED_COLUMN_NAME.IDENTIFIER,
+    CONNECTION_PREDEFINED_COLUMN_NAME.MESSAGE_ID,
+    CONNECTION_PREDEFINED_COLUMN_NAME.THREAD_ID,
   ];
   let targetColumns = sourceColumns.slice(0);
   targetColumns = targetColumns

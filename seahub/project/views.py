@@ -366,3 +366,4 @@ def confluence_oauth_callback(request):
     request.session.pop('confluence_oauth_return_to', None)
 
     return redirect(return_to)
+

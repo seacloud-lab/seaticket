@@ -103,7 +103,7 @@ class ProjectGithubRepositories(APIView):
         workspace = project.workspace
 
         username = request.user.username
-        if not check_project_permission(username, workspace.owner):
+        if not check_project_admin_permission(username, workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
@@ -277,3 +277,56 @@ class ProjectConfluenceSpaces(APIView):
 
         all_spaces.sort(key=lambda item: item['name'].lower())
         return Response({'spaces': all_spaces})
+
+
+class ProjectDiscordChannels(APIView):
+    """List text channels in a Discord guild using the configured bot token."""
+
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def post(self, request, project_uuid):
+        """List text channels for the given Discord guild.
+
+        Body params:
+            guild_id: Discord guild (server) ID
+            bot_token: Discord bot token
+        """
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check
+        username = request.user.username
+        if not check_project_admin_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        guild_id = (request.data.get('guild_id') or '').strip()
+        bot_token = (request.data.get('bot_token') or '').strip()
+
+        if not guild_id:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'guild_id is required.')
+
+        if not bot_token:
+            from seahub.settings import DISCORD_BOT_TOKEN
+            bot_token = DISCORD_BOT_TOKEN
+
+        if not bot_token:
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Discord bot token is not configured.')
+
+        from seahub.project.discord_api import DiscordAPI
+        discord_api = DiscordAPI(bot_token)
+
+        try:
+            channels = discord_api.list_guild_channels(guild_id)
+        except Exception as e:
+            logger.error('Failed to list Discord channels for guild %s: %s', guild_id, e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to fetch Discord channels.')
+
+        return Response({'channels': channels})

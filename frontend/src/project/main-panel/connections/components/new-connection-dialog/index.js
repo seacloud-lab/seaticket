@@ -110,6 +110,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const isEmail = useMemo(() => type === CONNECTION_TYPE.EMAIL, [type]);
   const isLinear = useMemo(() => type === CONNECTION_TYPE.LINEAR, [type]);
   const isConfluence = useMemo(() => type === CONNECTION_TYPE.CONFLUENCE, [type]);
+  const isDiscord = useMemo(() => type === CONNECTION_TYPE.DISCORD, [type]);
 
   const isMicrosoftEmailProvider = useMemo(() => {
     return isEmail && getEmailProvider(config) === EMAIL_SERVER_PROVIDER.MICROSOFT;
@@ -145,7 +146,8 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       if (c.is_required) return Boolean(config[c.key]);
       return true;
     }) : true;
-  }, [name, config, customColumns, isLinear, isLinearOauthConnected, isConfluence, isConfluenceOauthConnected]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [name, config, customColumns, isLinear, isLinearOauthConnected, isConfluence, isConfluenceOauthConnected, isDiscord]);
 
   const callbackUrl = useMemo(() => {
     return getEmailOAuthCallbackUrl(projectUuid);
@@ -301,12 +303,18 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         _config['workspace_name'] = team.team.workspace_name;
       }
     }
+    if (isDiscord) {
+      const channel = _config.channel_id;
+      if (channel && channel.value) {
+        _config['channel_id'] = channel.value;
+      }
+    }
 
     onSubmit({ type, name: name.trim(), config: _config }, () => {
       setSubmitting(false);
     });
     return;
-  }, [name, type, config, isLinear, onSubmit, stopEmailOAuthPolling, isConfluence, isGithub, selectedSpaceKeys]);
+  }, [name, type, config, isLinear, onSubmit, stopEmailOAuthPolling, isConfluence, isGithub, selectedSpaceKeys, isDiscord]);
 
   const onCopyCallbackUrl = useCallback(() => {
     copy(callbackUrl);
@@ -399,6 +407,20 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       });
     }, 2000);
   }, [stopConfluenceOAuthPolling]);
+
+  const listDiscordChannels = useCallback(() => {
+    const guildId = config.guild_id;
+    const botToken = config.bot_token;
+    if (!guildId || !botToken) return Promise.resolve({ data: { channels: [] } });
+    return connectionsAPI.listDiscordChannels(projectUuid, guildId, botToken).then(res => {
+      const channels = (res && res.data && res.data.channels) || [];
+      return {
+        data: {
+          options: channels.map(c => ({ value: c.id, label: c.name, name: c.name })),
+        }
+      };
+    });
+  }, [config.guild_id, config.bot_token]);
 
   const typeOption = availableConnectionTypes.find(i => i.type === type) || availableConnectionTypes[0];
   const connectionSections = useMemo(() => {
@@ -537,6 +559,12 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         row[key] = row[key].value || row[key];
       }
     }
+    if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && column.key === 'channel_id' && isDiscord) {
+      api = listDiscordChannels;
+      if (row[key]) {
+        row[key] = row[key].value || row[key];
+      }
+    }
 
     return (
       <ConnectionConfigEditor
@@ -552,6 +580,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   }, [
     config, isSubmitting, isGithub, isConfluence, isConfluenceOauthConnected, isLinear,
     onConfigChange, listGitHubRepositories, listConfluenceWorkspaces, listLinearTeams,
+    isDiscord, listDiscordChannels
   ]);
 
   return (

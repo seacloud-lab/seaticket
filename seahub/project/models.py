@@ -67,7 +67,7 @@ def generate_views_unique_id(length, folders_views_ids=None):
     return id
 
 
-ENCRYPT_KEYS = ['api_token', 'access_token', 'webhook_secret', 'api_key', 'password', 'integration_secret', 'client_secret', 'refresh_token']
+ENCRYPT_KEYS = ['api_token', 'access_token', 'webhook_secret', 'api_key', 'password', 'integration_secret', 'client_secret', 'refresh_token', 'bot_token']
 
 
 def encrypt_config(config):
@@ -1131,3 +1131,5 @@ class ProjectLinearOauth(models.Model):
 
     class Meta:
         db_table = 'project_linear_oauth'
+
+

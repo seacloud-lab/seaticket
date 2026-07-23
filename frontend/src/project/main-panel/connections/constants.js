@@ -96,6 +96,7 @@ export const CONNECTION_TYPE = {
   NOTION: 'notion',
   LINEAR: 'linear',
   CONFLUENCE: 'confluence',
+  DISCORD: 'discord',
 };
 
 export const DOCUMENT_CONNECTION_TYPE_MAP = {
@@ -109,6 +110,7 @@ export const ISSUE_CONNECTION_TYPE_MAP = {
   [CONNECTION_TYPE.EMAIL]: true,
   [CONNECTION_TYPE.GITHUB_ISSUE]: true,
   [CONNECTION_TYPE.DISCOURSE_FORUM]: true,
+  [CONNECTION_TYPE.DISCORD]: true,
 };
 
 export const TASK_CONNECTION_TYPE_MAP = {
@@ -463,7 +465,40 @@ export const CONNECTION_FIELDS = {
       is_display: true,
       is_custom: true,
     }
-  ]
+  ],
+  [CONNECTION_TYPE.DISCORD]: [
+    {
+      key: 'name',
+      name: gettext('Name'),
+      type: CONNECTION_FIELD_TYPE.TEXT,
+      is_required: true,
+      is_display: true,
+    }, {
+      key: 'guild_id',
+      name: gettext('Server ID'),
+      placeholder: gettext('Paste your server (guild) ID here'),
+      type: CONNECTION_FIELD_TYPE.TEXT,
+      is_required: true,
+      is_display: true,
+      is_custom: true,
+      tip: gettext('Enable Developer Mode in Discord (Settings → Advanced), then right-click your server → Copy Server ID.'),
+    }, {
+      key: 'bot_token',
+      name: gettext('Bot token'),
+      type: CONNECTION_FIELD_TYPE.PASSWORD,
+      is_required: true,
+      is_custom: true,
+      tip: gettext('Create a bot at https://discord.com/developers/applications and copy its token.'),
+    }, {
+      key: 'channel_id',
+      name: gettext('Channel'),
+      placeholder: gettext('Select a channel'),
+      type: CONNECTION_FIELD_TYPE.SYNC_SELECT,
+      is_required: true,
+      is_display: true,
+      is_custom: true,
+    },
+  ],
 };
 
 const HELP_WEB_URL = 'https://user-docs.seaticket.ai/Connect-';
@@ -548,6 +583,14 @@ export const CONNECTION_TYPES = [
     help_text: gettext('Make sure to prepare connection name and complete Linear OAuth authorization. If any problem occurs, check the'),
     help_link: HELP_WEB_URL + 'Linear',
     sub_types: CONNECTION_SUB_TYPE_MAP.tasks,
+  }, {
+    type: CONNECTION_TYPE.DISCORD,
+    icon: 'discord-logo',
+    name: gettext('Discord'),
+    help_text: gettext('Connect your Discord server by authorizing the SeaTicket bot. The bot will sync messages from the selected channel. If any problem occurs, check the'),
+    // TODO: add Discord help document
+    help_link: HELP_WEB_URL + 'Discord',
+    sub_types: CONNECTION_SUB_TYPE_MAP.issues,
   }
 ];
 
@@ -648,6 +691,8 @@ export const CONNECTION_PREDEFINED_COLUMN_NAME = {
   ISSUE_ID: 'issue_id',
   IDENTIFIER: 'identifier',
   DUE_DATE: 'due_date',
+  MESSAGE_ID: 'message_id',
+  THREAD_ID: 'thread_id',
 };
 
 const CONNECTION_PREDEFINED_COLUMN = {
@@ -967,6 +1012,21 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       data: { format: 'YYYY-MM-DD HH:mm:ss' },
     },
     ...CONNECTION_PREDEFINED_COLUMN,
+  },
+  [CONNECTION_TYPE.DISCORD]: {
+    [CONNECTION_PREDEFINED_COLUMN_NAME.TITLE]: {
+      display_name: gettext('Title'),
+      is_name_column: true,
+      frozen: true,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.AUTHOR]: {
+      display_name: gettext('Author'),
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.CREATED_TIME]: {
+      display_name: gettext('Created time'),
+      type: CellType.CTIME,
+    },
+    ...CONNECTION_PREDEFINED_COLUMN,
   }
 };
 
@@ -984,6 +1044,7 @@ export const SUPPORT_ROW_DETAILS_CONNECTION_TYPES = [
   CONNECTION_TYPE.NOTION,
   CONNECTION_TYPE.GENERAL_TASK,
   CONNECTION_TYPE.CONFLUENCE,
+  CONNECTION_TYPE.DISCORD,
 ];
 
 export const SUPPORT_ROW_DETAILS_SETTINGS_CONNECTION_TYPES = [
@@ -991,6 +1052,7 @@ export const SUPPORT_ROW_DETAILS_SETTINGS_CONNECTION_TYPES = [
   CONNECTION_TYPE.DISCOURSE_FORUM,
   CONNECTION_TYPE.EMAIL,
   CONNECTION_TYPE.GENERAL_TASK,
+  CONNECTION_TYPE.DISCORD,
 ];
 
 export const SUPPORT_OPEN_ORIGINAL_PAGE_CONNECTION_TYPES = [
@@ -1001,12 +1063,14 @@ export const SUPPORT_OPEN_ORIGINAL_PAGE_CONNECTION_TYPES = [
   CONNECTION_TYPE.LINEAR,
   CONNECTION_TYPE.NOTION,
   CONNECTION_TYPE.CONFLUENCE,
+  CONNECTION_TYPE.DISCORD,
 ];
 
 export const SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES = [
   CONNECTION_TYPE.DISCOURSE_FORUM,
   CONNECTION_TYPE.GITHUB_ISSUE,
   CONNECTION_TYPE.EMAIL,
+  CONNECTION_TYPE.DISCORD,
 ];
 
 export const SUPPORT_LINK_EXISTING_TICKET_CONNECTION_TYPES = [
@@ -1015,6 +1079,7 @@ export const SUPPORT_LINK_EXISTING_TICKET_CONNECTION_TYPES = [
   CONNECTION_TYPE.EMAIL,
   CONNECTION_TYPE.GENERAL_TASK,
   CONNECTION_TYPE.LINEAR,
+  CONNECTION_TYPE.DISCORD,
 ];
 
 export const SUPPORT_AI_CONNECTION_TYPES = [
@@ -1027,12 +1092,14 @@ export const SUPPORT_AI_CONNECTION_TYPES = [
   // CONNECTION_TYPE.CONFLUENCE,
   CONNECTION_TYPE.GENERAL_TASK,
   CONNECTION_TYPE.LINEAR,
+  CONNECTION_TYPE.DISCORD,
 ];
 
 export const SUPPORT_FIND_RELATED_ISSUES_CONNECTION_TYPES = [
   CONNECTION_TYPE.EMAIL,
   CONNECTION_TYPE.DISCOURSE_FORUM,
   CONNECTION_TYPE.GITHUB_ISSUE,
+  CONNECTION_TYPE.DISCORD,
 ];
 
 export const SUPPORT_MARK_OUTDATED_CONNECTION_TYPES = [
@@ -1043,6 +1110,7 @@ export const SUPPORT_MARK_OUTDATED_CONNECTION_TYPES = [
   CONNECTION_TYPE.EMAIL,
   CONNECTION_TYPE.NOTION,
   CONNECTION_TYPE.CONFLUENCE,
+  CONNECTION_TYPE.DISCORD,
 ];
 
 export const SUPPORT_MODIFY_CONNECTION_RECORDS_TYPES = [
@@ -1055,4 +1123,5 @@ export const SUPPORT_MODIFY_CONNECTION_RECORDS_TYPES = [
   CONNECTION_TYPE.CONFLUENCE,
   CONNECTION_TYPE.GENERAL_TASK,
   CONNECTION_TYPE.LINEAR,
+  CONNECTION_TYPE.DISCORD,
 ];
