@@ -44,7 +44,15 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
   const columns = useMemo(() => {
     const _columns = CONNECTION_FIELDS[type] || [];
     if (type === CONNECTION_TYPE.GITHUB_ISSUE) return withEditReadonlyDefaults(_columns.filter(c => c.key !== 'repository'));
-    if (type === CONNECTION_TYPE.DISCORD) return withEditReadonlyDefaults(_columns.filter(c => c.key !== 'channel_id' && c.key !== 'guild_id'));
+    if (type === CONNECTION_TYPE.DISCORD) {
+      return withEditReadonlyDefaults(_columns.filter(c => c.key !== 'channel_id')).map((field) => {
+        if (field.key !== 'guild_id') return field;
+        return {
+          ...field,
+          is_edit_readonly: true,
+        };
+      });
+    }
     if (type === CONNECTION_TYPE.EMAIL) return withEditReadonlyDefaults(getVisibleEmailFields(_columns, getEmailProvider(config), showEmailAdvancedOptions));
     return withEditReadonlyDefaults(_columns);
   }, [type, config, showEmailAdvancedOptions]);
