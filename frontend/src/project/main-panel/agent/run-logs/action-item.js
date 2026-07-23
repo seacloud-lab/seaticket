@@ -1,11 +1,11 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import classnames from 'classnames';
 import { Button } from 'reactstrap';
 import { gettext } from '@/constants';
 import { ACTION_STATUS, ACTION_TYPE, SUGGESTION_TOOL_NAME_MAP, ACTION_ICON_MAPPER } from './constants';
 import { Icon, IconButton, IconTooltip, CustomizeMarkdownViewer } from '@/components';
 import AIReply from '@/project/components/ai-reply';
-import { formatTicketSuggestionPreview } from '../ticket-draft-utils';
+import SuggestionPreview from './suggestion-preview';
 
 const { projectUuid, projectName } = window?.app?.pageOptions || {};
 
@@ -52,14 +52,9 @@ const ActionItem = React.memo(({
   onViewContent,
 }) => {
   const { id, type, status, result, tool_name, sources, suggestion_text, suggestion_content } = action;
-  const displaySuggestionContent = tool_name === 'suggest_create_ticket'
-    ? formatTicketSuggestionPreview(suggestion_content)
-    : suggestion_content;
   const [isExpanded, setIsExpanded] = useState(false);
   const [isThoughtExpanded, setIsThoughtExpanded] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
-  const [showPreviewMask, setShowPreviewMask] = useState(false);
-  const previewRef = useRef(null);
 
   useEffect(() => {
     if (status !== ACTION_STATUS.PENDING) {
@@ -101,18 +96,6 @@ const ActionItem = React.memo(({
     e.stopPropagation();
     onViewContent && onViewContent(action, runId, 'view');
   }, [action, runId, onViewContent]);
-
-  const updatePreviewMask = useCallback(() => {
-    const el = previewRef.current;
-    if (!el) return;
-    const isOverflow = el.scrollHeight > el.clientHeight;
-    const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight <= 1;
-    setShowPreviewMask(isOverflow && !isAtBottom);
-  }, []);
-
-  useEffect(() => {
-    updatePreviewMask();
-  }, [displaySuggestionContent, status, updatePreviewMask]);
 
   const formatErrorMessage = (errorContent) => {
     errorContent = formatResultText(errorContent);
@@ -284,7 +267,7 @@ const ActionItem = React.memo(({
         );
       case ACTION_TYPE.SUGGESTION: {
         const hasEditableContent = SUGGESTION_TOOL_NAME_MAP[tool_name];
-        const hasContent = !!displaySuggestionContent;
+        const hasContent = !!suggestion_content;
         const isCancelled = status === ACTION_STATUS.CANCELLED;
         const canEdit = hasEditableContent && status === ACTION_STATUS.PENDING;
         const showHeaderActions = !isCancelled && (canEdit || hasContent);
@@ -337,16 +320,7 @@ const ActionItem = React.memo(({
                 </div>
               )}
               {hasContent && !isCancelled && (
-                <div className="suggestion-content-preview">
-                  <div
-                    className="suggestion-content-preview-scroll"
-                    ref={previewRef}
-                    onScroll={updatePreviewMask}
-                  >
-                    {displaySuggestionContent}
-                  </div>
-                  {showPreviewMask && <div className="suggestion-content-preview-mask" />}
-                </div>
+                <SuggestionPreview type={tool_name} value={suggestion_content} />
               )}
               {status === ACTION_STATUS.PENDING && (
                 <div className="action-buttons">

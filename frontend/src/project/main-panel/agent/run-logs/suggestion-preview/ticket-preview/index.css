@@ -1,0 +1,25 @@
+
+.suggestion-create-ticket-content-preview-wrapper.has-others-content .suggestion-content-preview {
+  max-height: 116px;
+}
+
+.suggestion-create-ticket-preview-title {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  color: var(--bs-body-color);
+  margin-bottom: 8px;
+}
+
+.suggestion-create-ticket-preview-content {
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--bs-body-secondary-color);
+}
+
+.suggestion-create-ticket-others-preview {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px 16px;
+  gap: 8px;
+}
