@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: seaqa-web\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-20 15:53+0800\n"
-"PO-Revision-Date: 2026-07-20 08:05\n"
+"POT-Creation-Date: 2026-07-23 11:18+0800\n"
+"PO-Revision-Date: 2026-07-23 03:22\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Language: zh\n"
@@ -19,12 +19,12 @@ msgstr ""
 "X-Crowdin-File-ID: 4\n"
 
 #: seahub/api2/endpoints/admin/account.py:130 seahub/api2/endpoints/user.py:107
-#: seahub/api2/views.py:191
+#: seahub/api2/views.py:205
 msgid "Name is too long (maximum is 64 characters)"
 msgstr "名称太长（最多 64 个字符）"
 
 #: seahub/api2/endpoints/admin/account.py:134 seahub/api2/endpoints/user.py:111
-#: seahub/api2/views.py:195 seahub/forms.py:34 seahub/profile/forms.py:27
+#: seahub/api2/views.py:209 seahub/forms.py:34 seahub/profile/forms.py:27
 msgid "Name should not include '/'."
 msgstr "名称不能包含 \"/\"。"
 
@@ -599,11 +599,11 @@ msgstr "邀请链接无效或已过期。"
 msgid "There are errors with the filters. Please correct them."
 msgstr "筛选器存在错误。请更正。"
 
-#: seahub/knowledge_base/models.py:89 seahub/project/constants.py:288
-#: seahub/project/constants.py:307 seahub/project/constants.py:326
-#: seahub/project/constants.py:345 seahub/project/constants.py:364
-#: seahub/project/constants.py:383 seahub/project/constants.py:402
-#: seahub/project/constants.py:421
+#: seahub/knowledge_base/models.py:89 seahub/project/constants.py:297
+#: seahub/project/constants.py:316 seahub/project/constants.py:335
+#: seahub/project/constants.py:354 seahub/project/constants.py:373
+#: seahub/project/constants.py:392 seahub/project/constants.py:411
+#: seahub/project/constants.py:430 seahub/project/constants.py:449
 msgid "All"
 msgstr "全部"
 
@@ -790,16 +790,6 @@ msgstr "联系邮箱已更新。"
 #: seahub/project/connections.py:380
 msgid "Request not found"
 msgstr "请求未找到"
-
-#: seahub/project/constants.py:210 seahub/project/constants.py:251
-#: seahub/project/constants.py:575
-msgid "Open"
-msgstr "打开"
-
-#: seahub/project/constants.py:225 seahub/project/constants.py:265
-#: seahub/project/constants.py:590
-msgid "Closed"
-msgstr "已关闭"
 
 #: seahub/project/views.py:106 seahub/project/views.py:110
 #: seahub/project/views.py:138 seahub/project/views.py:142
@@ -1515,3 +1505,4 @@ msgstr "权限错误"
 #: seahub/utils/http.py:82
 msgid "Too many requests"
 msgstr "请求过多"
+
