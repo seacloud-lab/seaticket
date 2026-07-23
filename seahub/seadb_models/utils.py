@@ -877,6 +877,10 @@ def get_title_and_ai_summary_by_pks(seadb_api, project_uuid, source_type, pks, c
         table_name = SchemaTables.GENERAL_TASK.table_name(connection_id)
     elif source_type == ConnectionType.LINEAR.value:
         table_name = SchemaTables.LINEAR_ISSUES.table_name(connection_id)
+    elif source_type == ConnectionType.CONFLUENCE.value:
+        table_name = SchemaTables.CONFLUENCE.table_name(connection_id)
+    elif source_type == ConnectionType.DISCORD.value:
+        table_name = SchemaTables.DISCORD_THREADS.table_name(connection_id)
     elif source_type == ExtraSourceType.KNOWLEDGE_BASE.value:
         table_name = SchemaTables.KNOWLEDGE_BASE.table_name()
     elif source_type == ExtraSourceType.TICKET.value:
