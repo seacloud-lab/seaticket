@@ -16,47 +16,31 @@ from seahub.tickets.tickets import (
     build_ticket_data_event,
 )
 from seahub.tickets.ticket_utils import (
-    decode_ticket_due_date, encode_ticket_due_date, filter_tickets_by_select,
-    normalize_ticket_due_date,
+    filter_tickets_by_select,
 )
+from seahub.utils.date_utils import normalize_date
 
 
 class TestTicketDueDate:
-    def test_encode_date_as_utc_midnight(self):
-        assert encode_ticket_due_date('2026-08-01') == '2026-08-01T00:00:00.000+00:00'
+    @pytest.mark.parametrize('value', [None, ''])
+    def test_empty_value_stays_empty(self, value):
+        assert normalize_date(value) == value
 
-    def test_decode_utc_datetime_as_date_only(self):
-        assert decode_ticket_due_date('2026-08-01T00:00:00Z') == '2026-08-01'
-
-    def test_decode_negative_timezone_datetime_in_utc(self):
-        assert decode_ticket_due_date('2026-07-31T16:00:00-08:00') == '2026-08-01'
+    def test_normalize_timezone_datetime_as_its_calendar_date(self):
+        assert normalize_date('2026-07-31T16:00:00-08:00') == '2026-07-31'
 
     @pytest.mark.parametrize('value', [
         '2026-08-01',
         '2026-08-01T00:00:00',
     ])
-    def test_decode_rejects_datetime_without_timezone(self, value):
-        with pytest.raises(ValueError, match='due_date invalid.'):
-            decode_ticket_due_date(value)
+    def test_normalize_date_like_values_as_calendar_date(self, value):
+        assert normalize_date(value) == '2026-08-01'
 
-    def test_reject_invalid_date(self):
-        with pytest.raises(ValueError, match='due_date invalid.'):
-            encode_ticket_due_date('2026-02-30')
-
-    def test_normalize_keyed_list_value_using_column_metadata(self):
-        due_date_key = 'k_due_date'
-        ticket = {due_date_key: '2026-08-01T00:00:00Z'}
-        columns = [{'key': due_date_key, 'name': 'due_date'}]
-
-        normalize_ticket_due_date(ticket, columns)
-
-        assert ticket[due_date_key] == '2026-08-01'
-
-    def test_filter_tickets_normalizes_column_keyed_due_date(self):
+    def test_filter_tickets_uses_normalized_query_result(self):
         due_date_key = 'k_due_date'
         seadb_api = Mock()
         seadb_api.query_rows.return_value = {
-            'results': [{'_pk': 1, due_date_key: '2026-08-01T00:00:00Z'}],
+            'results': [{'_pk': 1, due_date_key: '2026-08-01'}],
             'metadata': [{'key': due_date_key, 'name': 'due_date'}],
         }
 
@@ -75,15 +59,15 @@ class TestBuildTicketDataEvent:
 
         assert event['new_value'] == {'due_date': '2026-08-01'}
 
-    def test_equivalent_due_date_datetimes_do_not_emit_a_change(self):
+    def test_different_calendar_due_dates_emit_a_change(self):
         event = build_ticket_data_event(
             'ticket_updated',
             old_row={'due_date': '2026-08-01T00:00:00Z'},
             new_row={'due_date': '2026-07-31T16:00:00-08:00'},
         )
 
-        assert event['old_value'] is None
-        assert event['new_value'] is None
+        assert event['old_value'] == {'due_date': '2026-08-01'}
+        assert event['new_value'] == {'due_date': '2026-07-31'}
 
     def test_tags_are_rendered_as_readable_names(self):
         seadb_api = Mock()
@@ -205,7 +189,7 @@ class TestTicketsAPIView:
             list_mock.return_value = ([{
                 '_pk': 1,
                 'k_title': 'test_ticket',
-                due_date_key: '2026-08-01T00:00:00Z',
+                due_date_key: '2026-08-01',
             }], [
                 {'key': 'k_title', 'name': 'title'},
                 {'key': due_date_key, 'name': 'due_date'},
@@ -287,7 +271,29 @@ class TestTicketsAPIView:
         assert resp.data['ticket']['priority'] == 5
         assert resp.data['ticket']['due_date'] == '2026-08-01'
         inserted_row = seadb_api.insert_rows.call_args[0][2][0]
-        assert inserted_row['due_date'] == '2026-08-01T00:00:00.000+00:00'
+        assert inserted_row['due_date'] == '2026-08-01'
+
+    def test_post_without_due_date_stores_and_returns_empty(self, factory, project_creator, real_project):
+        project = real_project
+        data = {
+            'title': 't',
+            'content': json.dumps({'text': 'c'}),
+            'tags': '[]',
+            'assignees': '[]',
+        }
+        request = factory.post(f"/api/v1/projects/{project.uuid}/tickets/", data=data)
+        request.user = project_creator
+        seadb_api = Mock()
+        seadb_api.insert_rows.return_value = {'pks': [1]}
+        seadb_api.get_base_metadata.return_value = self.get_ticket_base_metadata()
+        with patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.tickets.tickets.check_ticket_creation_interval', return_value=True):
+            resp = TicketsAPIView.as_view()(request, project_uuid=project.uuid)
+
+        assert resp.status_code == 201
+        assert resp.data['ticket']['due_date'] == ''
+        inserted_row = seadb_api.insert_rows.call_args[0][2][0]
+        assert inserted_row['due_date'] == ''
 
     def test_post_uses_requested_state_and_substate(self, factory, project_creator, real_project):
         project = real_project
@@ -380,7 +386,7 @@ class TestTicketsAPIView:
         update_rows = seadb_api.update_rows.call_args[0][2]
         assert update_rows[0]['row']['state'] == 'closed'
         assert 'closed_time' in update_rows[0]['row']
-        assert update_rows[0]['row']['due_date'] == '2026-08-01T00:00:00.000+00:00'
+        assert update_rows[0]['row']['due_date'] == '2026-08-01'
 
     def test_delete_missing_ticket_ids(self, factory, project_creator, real_project):
         project = real_project
@@ -414,14 +420,18 @@ class TestTicketAPIView:
             resp = TicketAPIView.as_view()(request, project_uuid=project.uuid, ticket_id='1')
         assert resp.status_code == 404
 
-    def test_get_success(self, factory, project_creator, real_project):
+    @pytest.mark.parametrize(('query_due_date', 'expected_due_date'), [
+        ('2026-08-01', '2026-08-01'),
+        ('', ''),
+    ])
+    def test_get_success(self, factory, project_creator, real_project, query_due_date, expected_due_date):
         project = real_project
         request = factory.get(f"/api/v1/projects/{project.uuid}/tickets/1/")
         request.user = project_creator
         ticket = {
             '_pk': 1,
             'title': 'test_ticket',
-            'due_date': '2026-08-01T00:00:00Z',
+            'due_date': query_due_date,
         }
         metadata = {'columns': []}
         with patch('seahub.tickets.tickets.SeaDBAPI') as seadb_cls_mock, \
@@ -432,7 +442,7 @@ class TestTicketAPIView:
             resp = TicketAPIView.as_view()(request, project_uuid=project.uuid, ticket_id='1')
         assert resp.status_code == 200
         assert 'ticket' in resp.data
-        assert resp.data['ticket']['due_date'] == '2026-08-01'
+        assert resp.data['ticket']['due_date'] == expected_due_date
 
     def test_put_ticket_not_found(self, factory, project_creator, real_project):
         project = real_project
@@ -498,7 +508,7 @@ class TestTicketAPIView:
         assert 'closed_time' in update_row
         assert project_creator.username in update_row['participants']
         assert update_row['priority'] == 5
-        assert update_row['due_date'] == '2026-08-01T00:00:00.000+00:00'
+        assert update_row['due_date'] == '2026-08-01'
         assert resp.data['row']['due_date'] == '2026-08-01'
 
     def test_delete_ticket_not_found(self, factory, project_creator, real_project):
@@ -550,7 +560,7 @@ class TestMyTicketAPIView:
         request = factory.post(f"/api/v1/projects/{project.uuid}/tickets/my/")
         request.user = project_creator
         due_date_key = 'k_due_date'
-        tickets = [{'_pk': 1, due_date_key: '2026-08-01T00:00:00Z'}]
+        tickets = [{'_pk': 1, due_date_key: '2026-08-01'}]
         columns = [{'key': due_date_key, 'name': 'due_date'}]
         with patch('seahub.tickets.tickets.SeaDBAPI'), \
                 patch('seahub.tickets.tickets.list_my_tickets', return_value=(tickets, columns)):
@@ -612,7 +622,7 @@ class TestTicketTrashAPIView:
         request = factory.get(f"/api/v1/projects/{project.uuid}/tickets/trash/")
         request.user = project_creator
         due_date_key = 'k_due_date'
-        tickets = [{'_pk': 1, due_date_key: '2026-08-01T00:00:00Z'}]
+        tickets = [{'_pk': 1, due_date_key: '2026-08-01'}]
         columns = [{'key': due_date_key, 'name': 'due_date'}]
         with patch('seahub.tickets.tickets.SeaDBAPI'), \
                 patch('seahub.tickets.tickets.list_trash_tickets', return_value=(tickets, columns)):
