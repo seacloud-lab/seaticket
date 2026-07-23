@@ -101,7 +101,9 @@ const GroupTitle = ({ column, cellValue, originalCellValue }) => {
   return (
     <div className="group-title">
       <div className="color-gray font-size-12 line-height-16">{column.display_name}</div>
-      <div className="group-cell-value font-size-14 font-weight-500 line-height-20 d-flex">{renderGroupCellVal()}</div>
+      <div className={`group-cell-value font-size-14 font-weight-500 line-height-20 ${column.type === CellType.TEXT ? 'group-cell-value--text text-truncate d-block' : 'd-flex'}`}>
+        {renderGroupCellVal()}
+      </div>
     </div>
   );
 };

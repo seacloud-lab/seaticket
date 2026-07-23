@@ -3,3 +3,8 @@
   overflow: auto;
   padding: 0 8px;
 }
+
+.option-editor-content.empty .empty-tip,
+.option-editor-content.empty {
+  min-height: 100px;
+}

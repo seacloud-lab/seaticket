@@ -8,7 +8,6 @@ const Tip = ({ isSearchEnabled, hasAvailableOptions, searchValue, tip }) => {
   if (!hasAvailableOptions || !isSearchEnabled) {
     return (
       <EmptyTip
-        src={`${mediaUrl}img/no-results.png`}
         text={tip}
         className="option-editor-empty-tip option-editor-no-results-tip"
       />
@@ -18,7 +17,6 @@ const Tip = ({ isSearchEnabled, hasAvailableOptions, searchValue, tip }) => {
   if (searchValue) {
     return (
       <EmptyTip
-        src={`${mediaUrl}img/no-results.png`}
         text={gettext('No results')}
         className="option-editor-empty-tip option-editor-no-results-tip"
       />
