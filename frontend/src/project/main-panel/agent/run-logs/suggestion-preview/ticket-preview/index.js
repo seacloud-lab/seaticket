@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useState, useRef } from 'react';
 import classnames from 'classnames';
 import { getRowById } from '@/sea-metadata/utils/row';
 import { useMetadata } from '@/project/hooks';
@@ -9,6 +9,8 @@ import { TICKET_STATE_CONFIG, TICKET_STATE, TICKET } from '@/project/main-panel/
 import './index.css';
 
 const TicketPreview = ({ value }) => {
+  const [displayMask, setDisplayMask] = useState(false);
+
   const { title, content, priority, type, state } = useMemo(() => {
     try {
       const valueObject = JSON.parse(value);
@@ -18,7 +20,15 @@ const TicketPreview = ({ value }) => {
     }
   }, [value]);
 
+  const previewRef = useRef(null);
+
   const { typesData } = useMetadata();
+
+  useEffect(() => {
+    const dom = previewRef.current;
+    if (!dom) return;
+    setDisplayMask(dom.scrollHeight > dom.clientHeight);
+  }, [value]);
 
   const typeOption = getRowById(typesData, type);
   const stateOption = TICKET_STATE_CONFIG[state];
@@ -28,13 +38,13 @@ const TicketPreview = ({ value }) => {
     <div className={classnames('suggestion-content-preview-wrapper suggestion-create-ticket-content-preview-wrapper', {
       'has-others-content': isValidOthersContent
     })}>
-      <div className="suggestion-content-preview">
+      <div ref={previewRef} className={classnames('suggestion-content-preview', { 'display-mask': displayMask })}>
         {title && (<div className="suggestion-create-ticket-preview-title">{title}</div>)}
-        <div className="suggestion-create-ticket-preview-content">{content}</div>
+        {content && (<div className="suggestion-create-ticket-preview-content">{content}</div>)}
       </div>
       {isValidOthersContent && (
         <div className="suggestion-create-ticket-others-preview">
-          {priority !== 0 && priority && (<PriorityFormatter value={priority} className="suggestion-create-ticket-priority-preview" />)}
+          {!!priority && (<PriorityFormatter value={priority} className="suggestion-create-ticket-priority-preview" />)}
           <div className={classnames('seaqa-project-ticket-status', { 'open': state === TICKET_STATE.OPEN })}>
             <Icon symbol={stateOption?.icon} />
             <span>{stateOption?.statusName}</span>

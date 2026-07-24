@@ -8,7 +8,7 @@ const SuggestionPreview = ({ type, value }) => {
   if (type === 'suggest_create_ticket') return (<TicketPreview value={value} />);
   return (
     <div className={classnames('suggestion-content-preview-wrapper', type)}>
-      <div className="suggestion-content-preview">
+      <div className="suggestion-content-preview display-mask">
         {value}
       </div>
     </div>

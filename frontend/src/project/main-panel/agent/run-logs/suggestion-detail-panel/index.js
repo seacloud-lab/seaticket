@@ -18,7 +18,7 @@ const SuggestionDetailPanel = ({
   width = DEFAULT_WIDTH,
   onWidthChange,
 }) => {
-  const [value, setValue] = useState(suggestionDetail?.action.suggestion_content || '');
+  const [value, setValue] = useState(suggestionDetail?.action?.suggestion_content || '');
 
   const title = useMemo(
     () => suggestionDetail?.action?.suggestion_text || suggestionDetail?.action?.result || '',
@@ -26,7 +26,7 @@ const SuggestionDetailPanel = ({
   );
   const isEdit = useMemo(() => suggestionDetail?.mode === 'edit', [suggestionDetail?.mode]);
   const initValue = useMemo(
-    () => suggestionDetail?.action.suggestion_content || '',
+    () => suggestionDetail?.action?.suggestion_content || '',
     [suggestionDetail?.action?.suggestion_content]
   );
   const canSave = useMemo(() => {
@@ -74,7 +74,7 @@ const SuggestionDetailPanel = ({
   }, [value, onSave]);
 
   useEffect(() => {
-    setValue(suggestionDetail?.action.suggestion_content || '');
+    setValue(suggestionDetail?.action?.suggestion_content || '');
   }, [suggestionDetail?.action?.suggestion_content]);
 
   return (

@@ -23,7 +23,7 @@ const TicketDetail = ({ isEdit, isSaving, value, onChange }) => {
   const handleChange = useCallback((update) => {
     const newTicket = { ...ticket, ...update };
     setTicket(newTicket);
-    onChange(JSON.stringify(newTicket));
+    onChange && onChange(JSON.stringify(newTicket));
   }, [ticket, onChange]);
 
   useEffect(() => {
@@ -52,8 +52,7 @@ const TicketDetail = ({ isEdit, isSaving, value, onChange }) => {
         [PREDEFINED_TICKET_COLUMN_NAME.SUB_STATE]: firstSubstate?._id || '',
       });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
+  }, [value, substatesData]);
 
   const { title, content, assignees, participants, state, substate, type, tags, priority, due_date } = ticket;
 
@@ -74,7 +73,7 @@ const TicketDetail = ({ isEdit, isSaving, value, onChange }) => {
             id="ticketTitle"
             value={title}
             readOnly={isReadonly}
-            onChange={(e) => handleChange(PREDEFINED_TICKET_COLUMN_NAME.TITLE, e.target.value)}
+            onChange={(e) => handleChange({ [PREDEFINED_TICKET_COLUMN_NAME.TITLE]: e.target.value })}
           />
         </FormGroup>
         <FormGroup className="mb-4">

@@ -1,4 +1,3 @@
-
 .suggestion-create-ticket-content-preview-wrapper.has-others-content .suggestion-content-preview {
   max-height: 116px;
 }
@@ -22,4 +21,8 @@
   align-items: center;
   padding: 8px 16px 16px;
   gap: 8px;
+}
+
+.suggestion-create-ticket-content-preview-wrapper .suggestion-content-preview:not(.display-mask) {
+  padding-bottom: 0;
 }
