@@ -17,6 +17,7 @@ const { projectUuid } = window.app.pageOptions;
 const Agent = ({ title, settings, modifySettings }) => {
   const [pendingMapping, setPendingMapping] = useState(null);
   const [suggestionDetail, setSuggestionDetail] = useState(null);
+  const [isSavingContent, setIsSavingContent] = useState(false);
   const [suggestionDetailPanelWidth, setSuggestionDetailPanelWidth] = useState(400);
   const [runCardsExpansionCommand, setRunCardsExpansionCommand] = useState(null);
   const { openCloseLinkedGitHubIssuesWarningDialog } = useCloseLinkedIssues();
@@ -152,11 +153,16 @@ const Agent = ({ title, settings, modifySettings }) => {
   }, []);
 
   const handleSaveContent = useCallback((value) => {
-    if (!suggestionDetail) return Promise.resolve();
+    if (!suggestionDetail) return;
     const { action, runId } = suggestionDetail;
-    return handleUpdateContent(runId, action.id, value).then(() => {
-      closeSuggestionDetailPanel();
-    });
+    setIsSavingContent(true);
+    handleUpdateContent(runId, action.id, value)
+      .then(() => {
+        closeSuggestionDetailPanel();
+      })
+      .finally(() => {
+        setIsSavingContent(false);
+      });
   }, [suggestionDetail, handleUpdateContent, closeSuggestionDetailPanel]);
 
   const handleCancelAction = useCallback((actionId) => {
@@ -298,6 +304,7 @@ const Agent = ({ title, settings, modifySettings }) => {
         {suggestionDetail && (
           <SuggestionDetailPanel
             suggestionDetail={suggestionDetail}
+            isSaving={isSavingContent}
             onSave={handleSaveContent}
             onClose={closeSuggestionDetailPanel}
             width={suggestionDetailPanelWidth}
