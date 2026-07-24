@@ -123,7 +123,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
           // Resolve Confluence account IDs → display names in-place
           if (connection.type === CONNECTION_TYPE.CONFLUENCE && relatedUsers.length > 0) {
             const userMap = {};
-            relatedUsers.forEach(u => { if (u.account_id) userMap[u.account_id] = u.name; });
+            relatedUsers.forEach(u => { if (u.user_id) userMap[u.user_id] = u.name; });
             const creatorCol = columns.find(c => c.name === 'creator_id');
             const modifierCol = columns.find(c => c.name === 'last_modifier_id');
             rows.forEach(row => {
