@@ -14,7 +14,6 @@ import { useTags } from '@/project/hooks';
 import { Utils } from '@/utils/utils';
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
 import { useCollaborators } from '@/sea-metadata';
-import { appendLinkedRecord } from '@/project/main-panel/connections/utils';
 
 import './index.css';
 
@@ -105,8 +104,10 @@ const CreateTicketDialog = ({
     setLoading(true);
     convertToTicket(projectUuid, row._id).then(res => {
       let { title, content, assignees, type, tags, priority, related_url } = { title: '', content: '', assignees: [], type: '', tags: [], priority: 0, related_url: '', ...res?.data };
+      const suffix = `${gettext('Linked record')}: ${related_url || ''}`;
+      const initContent = content ? `${content}\n\n${suffix}` : suffix;
       setTitle(title || '');
-      setContent(appendLinkedRecord(content, related_url));
+      setContent(initContent || '');
       setAssignees(assignees || []);
       setType(type || '');
       setTags(tags || []);

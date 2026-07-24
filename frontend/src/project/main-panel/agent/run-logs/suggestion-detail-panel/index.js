@@ -86,7 +86,6 @@ const SuggestionDetailPanel = ({
           isEdit={isEdit}
           isSaving={isSaving}
           value={value}
-          relatedUrl={suggestionDetail?.action?.related_url}
           onChange={setValue}
         />
       </div>

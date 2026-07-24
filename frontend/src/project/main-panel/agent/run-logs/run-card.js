@@ -21,7 +21,7 @@ import { useData, useMetadata } from '@/project/hooks';
 import { AttachmentObject } from '@/project/main-panel/ask/models';
 
 // utils
-import { normalizeContextMenuOptions, getResourceIconURL, getInternalNetworkAddress } from '@/project/utils';
+import { normalizeContextMenuOptions, getResourceIconURL } from '@/project/utils';
 import DateFormatter from '@/project/main-panel/connections/components/cell-formatter/date-formatter';
 import {
   generateAIOptions, generateCreateRelatedTicketOption, generateFindRelatedIssuesOption,
@@ -39,7 +39,7 @@ import { CONNECTION_PREDEFINED_COLUMN_NAME, CONNECTION_TYPE } from '@/project/ma
 import { TICKET_TYPE, TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
 import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE, FROM_NOW } from '@/sea-metadata/constants';
 
-const { projectUuid, workspaceID, projectName } = window.app.pageOptions;
+const { projectUuid } = window.app.pageOptions;
 const thoughtProcessEnabled = window.app.pageOptions.thoughtProcessEnabled;
 
 const getResourceFromItem = (item) => {
@@ -57,16 +57,6 @@ const getResourceFromItem = (item) => {
     connection_id: connectionId ? Number(connectionId) : null,
     icon: [CONNECTION_TYPE.GITHUB_ISSUE, CONNECTION_TYPE.DISCOURSE_FORUM, CONNECTION_TYPE.EMAIL].includes(source_type) ? icon : getResourceIconURL(TICKET_TYPE),
   };
-};
-
-const getRelatedUrlFromItem = (item) => {
-  const resource = getResourceFromItem(item);
-  if (!resource.connection_id) return '';
-  return getInternalNetworkAddress(resource.type, resource._id, {
-    workspaceID,
-    projectName,
-    connectionID: resource.connection_id,
-  });
 };
 
 const getResourceTitleTip = (resource) => {
@@ -492,7 +482,6 @@ const RunCard = ({
                     key={action.id || actionIndex}
                     action={action}
                     runId={id}
-                    relatedUrl={getRelatedUrlFromItem(item)}
                     onConfirm={onConfirmAction}
                     onCancel={onCancelAction}
                     onViewContent={onViewContent}
@@ -514,7 +503,6 @@ const RunCard = ({
                   key={action.id || actionIndex}
                   action={action}
                   runId={id}
-                  relatedUrl=""
                   onConfirm={onConfirmAction}
                   onCancel={onCancelAction}
                   onViewContent={onViewContent}

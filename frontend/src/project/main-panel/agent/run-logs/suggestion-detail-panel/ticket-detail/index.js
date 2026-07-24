@@ -8,11 +8,10 @@ import {
   StateSettings, SubStateSettings, DueDateSettings,
 } from '@/project/main-panel/tickets/components/ticket-settings';
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
-import { appendLinkedRecord } from '@/project/main-panel/connections/utils';
 
 import './index.css';
 
-const TicketDetail = ({ isEdit, isSaving, value, relatedUrl, onChange }) => {
+const TicketDetail = ({ isEdit, isSaving, value, onChange }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [assignees, setAssignees] = useState([]);
@@ -37,7 +36,7 @@ const TicketDetail = ({ isEdit, isSaving, value, relatedUrl, onChange }) => {
       const { title, content, assignees, participants, state, substate, type, tags, priority, due_date } = initValue;
       const initState = state || '0001';
       setTitle(title || '');
-      setContent(appendLinkedRecord(content, relatedUrl));
+      setContent(content || '');
       setAssignees(Array.isArray(assignees) ? assignees : []);
       setParticipants(Array.isArray(participants) ? participants : []);
       setState(initState);
@@ -64,7 +63,7 @@ const TicketDetail = ({ isEdit, isSaving, value, relatedUrl, onChange }) => {
       setIsInit(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, relatedUrl]);
+  }, [value]);
 
   useEffect(() => {
     if (isInit) return;

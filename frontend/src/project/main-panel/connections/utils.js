@@ -16,14 +16,6 @@ import { isString } from '@/utils/type-detection';
 import { toaster } from '@/components';
 import { CellType } from '@/sea-metadata/constants';
 
-export const appendLinkedRecord = (content, relatedUrl) => {
-  const normalizedContent = content || '';
-  if (!relatedUrl || normalizedContent.includes(relatedUrl)) return normalizedContent;
-
-  const suffix = `${gettext('Linked record')}: ${relatedUrl}`;
-  return normalizedContent ? `${normalizedContent}\n\n${suffix}` : suffix;
-};
-
 export const shouldDisplayEmailField = (field, provider, showAdvancedOptions) => {
   if (field.providers && !field.providers.includes(provider)) return false;
   if (field.is_advanced_option && !showAdvancedOptions) return false;
