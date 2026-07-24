@@ -15,6 +15,7 @@ from copy import deepcopy
 
 from seahub.project.constants import PORTAL_ISSUES_DEFAULT_DETAILS
 from seahub.utils import get_no_duplicate_obj_name, uuid_str_to_32_chars
+from seahub.utils.hasher import AESPasswordHasher
 from seahub.portal.custom_domain import CUSTOM_DOMAIN_TXT_RECORD_PREFIX, CUSTOM_DOMAIN_VERIFICATION_VALUE_PREFIX, \
     PORTAL_RESERVED_SUBDOMAIN_PREFIXES, get_portal_subdomain_prefix, normalize_portal_custom_domain, \
     normalize_portal_subdomain_prefix
@@ -136,6 +137,36 @@ class ProjectExternalUser(models.Model):
     class Meta:
         unique_together = (('email', 'project_uuid'),)
         db_table = 'project_external_users'
+
+
+class PortalExternalSSOProvider(models.Model):
+    project_uuid = models.CharField(max_length=36)
+    provider_id = models.CharField(max_length=64)
+    name = models.CharField(max_length=128)
+    secret = models.CharField(max_length=255)
+    enabled = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = (('project_uuid', 'provider_id'),)
+        db_table = 'portal_external_sso_providers'
+
+    def save(self, *args, **kwargs):
+        self.project_uuid = str(self.project_uuid)
+        self.name = (self.name or '').strip()
+        return super().save(*args, **kwargs)
+
+    def set_secret(self, raw_secret):
+        self.secret = AESPasswordHasher().encode(raw_secret)
+
+    def get_secret(self):
+        return AESPasswordHasher().decode(self.secret)
+
+    def reset_secret(self, raw_secret=None):
+        raw_secret = raw_secret or token_hex(32)
+        self.set_secret(raw_secret)
+        return raw_secret
 
 
 class PortalDomainAliasManager(models.Manager):

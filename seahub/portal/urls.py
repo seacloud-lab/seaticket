@@ -7,7 +7,8 @@ from .apis import PortalTagsView, PortalKnowledgeBaseViewsView, PortalKnowledgeB
     PortalSettingsView, PortalExternalInvitationsView, PortalIssueViewsView, PortalIssueViewView, PortalExternalUsersView, PortalUserListView, \
     PortalIssueViewsMoveView, PortalIssueViewsDuplicateView, PortalIssuesView, PortalMyIssuesView, PortalIssueView, PortalIssueCommentsView, \
     PortalIssueCommentView, PortalIssueTrashAPIView, PortalCustomDomainView, PortalCustomDomainVerificationView, PortalDomainAliasView, \
-    PortalPreviewTokenView, PortalLogoView
+    PortalPreviewTokenView, PortalLogoView, PortalExternalSSOProvidersView, PortalExternalSSOProviderView, \
+    PortalExternalSSOProviderResetSecretView
 from .portal_issue_types import PortalIssueTypesAPIView, PortalIssueTypeAPIView
 from .portal_issue_substates import PortalIssueSubstatesAPIView, PortalIssueSubstateAPIView
 from .chat.apis import (
@@ -47,6 +48,9 @@ urlpatterns = [
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/external-invitations/$', PortalExternalInvitationsView.as_view(), name='api-v1-portal-external-invitations'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/external-invitations/(?P<token>[a-f0-9]{32})/$', PortalExternalInvitationsView.as_view(), name='api-v1-portal-external-invitations-detail'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/external-users/$', PortalExternalUsersView.as_view(), name='api-v1-portal-external-users'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/external-sso-providers/$', PortalExternalSSOProvidersView.as_view(), name='api-v1-portal-external-sso-providers'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/external-sso-providers/(?P<provider_id>[a-z0-9]+(?:-[a-z0-9]+)*)/$', PortalExternalSSOProviderView.as_view(), name='api-v1-portal-external-sso-provider'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/external-sso-providers/(?P<provider_id>[a-z0-9]+(?:-[a-z0-9]+)*)/reset-secret/$', PortalExternalSSOProviderResetSecretView.as_view(), name='api-v1-portal-external-sso-provider-reset-secret'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/settings/$', PortalSettingsView.as_view(), name='api-v1-portal-settings'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/preview-token/$', PortalPreviewTokenView.as_view(), name='api-v1-portal-preview-token'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/domain-alias/$', PortalDomainAliasView.as_view(), name='api-v1-portal-domain-alias'),

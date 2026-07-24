@@ -11,6 +11,7 @@ import PortalChatSourceSelector from '../chat-source-selector';
 import { SETTING_TAB, SETTING_TABS, EMPTY_CHAT_ALLOWED_SOURCES } from './constants';
 import { normalizeChatAllowedSources, isConnectionActive } from './utils';
 import CustomizationSettings from './customization-settings';
+import ExternalSSOProviders from './external-sso-providers';
 
 import './index.css';
 
@@ -669,6 +670,9 @@ const Settings = () => {
               </p>
             )}
           </div>
+        </TabPane>
+        <TabPane tabId={SETTING_TAB.SSO_PROVIDERS}>
+          <ExternalSSOProviders projectUuid={projectUuid} />
         </TabPane>
         <TabPane tabId={SETTING_TAB.KNOWLEDGE_BASE}>
           <div className="portal-settings-content">

@@ -2,6 +2,7 @@
 import datetime
 import logging
 import json
+import re
 from urllib.parse import quote
 
 from dateutil.relativedelta import relativedelta
@@ -40,13 +41,14 @@ from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.utils.decorators import require_org_context
 from seahub.utils.timeutils import datetime_to_isoformat_timestr
 from seahub.portal.permissions import PortalKnowledgeBasePermission, PortalIssuePermission, PortalAnonymousAccessPermission
-from seahub.portal.models import ProjectExternalUser, PortalCustomDomain, PortalDomainAlias, get_portal_tls_ask_cache_key,\
-    PORTAL_TLS_ASK_CACHE_TIMEOUT, get_preferred_portal_domain, get_service_portal_domain
+from seahub.portal.models import ProjectExternalUser, PortalCustomDomain, PortalDomainAlias, PortalExternalSSOProvider, \
+    get_portal_tls_ask_cache_key, PORTAL_TLS_ASK_CACHE_TIMEOUT, get_preferred_portal_domain, get_service_portal_domain
 from seahub.portal.utils import PORTAL_EXTERNAL_LOGIN_CODE_TTL, PORTAL_EXTERNAL_LOGIN_SEND_COOLDOWN, PORTAL_EXTERNAL_LOGIN_VERIFY_FAIL_LIMIT, \
     PORTAL_EXTERNAL_LOGIN_VERIFY_LOCK_TTL, PORTAL_PREVIEW_TOKEN_SALT, clear_portal_external_login_code, clear_portal_external_login_state, \
     get_portal_external_login_cooldown_key, get_portal_external_login_fail_key, get_portal_external_login_lock_key, incr_portal_external_login_fail, \
     is_user_in_the_same_team, is_portal_external_login_locked, normalize_external_login_email, portal_path, get_portal_external_login_code_key, \
-    get_portal_settings, build_absolute_portal_url, can_preview_portal
+    get_portal_settings, build_absolute_portal_url, can_preview_portal, external_user_can_access_issue, set_portal_login_session, \
+    get_portal_external_username
 from seahub.portal.custom_domain import normalize_portal_custom_domain, query_dns_txt_values, validate_portal_subdomain_prefix_available, \
     CUSTOM_DOMAIN_TXT_RECORD_PREFIX, CUSTOM_DOMAIN_VERIFICATION_VALUE_PREFIX
 from seahub.utils.verify import get_random_code
@@ -67,6 +69,24 @@ logger = logging.getLogger(__name__)
 
 
 MAX_LENGTH = 10000
+PORTAL_EXTERNAL_SSO_SECRET_MIN_LENGTH = 32
+PORTAL_EXTERNAL_SSO_SECRET_MAX_LENGTH = 128
+
+
+def _serialize_portal_external_sso_provider(request, provider, include_secret=None):
+    domain = get_preferred_portal_domain(provider.project_uuid, ensure_alias=True)
+    login_path = '/external/sso/%s/' % provider.provider_id
+    data = {
+        'provider_id': provider.provider_id,
+        'name': provider.name,
+        'enabled': bool(provider.enabled),
+        'login_url': build_absolute_portal_url(request, domain, login_path),
+        'created_at': provider.created_at,
+        'updated_at': provider.updated_at,
+    }
+    if include_secret is not None:
+        data['secret'] = include_secret
+    return data
 
 
 def _replace_kb_file_urls_for_portal(project_uuid, value):
@@ -639,6 +659,8 @@ class PortalIssueView(APIView):
             if not issue:
                 error_msg = 'Issue not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            if not external_user_can_access_issue(request, issue):
+                return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
             convert_select_field_names_to_option_ids(columns, issue)
         except Exception as e:
             logger.error(e)
@@ -730,6 +752,8 @@ class PortalIssueView(APIView):
         substate_option_name = request.data.get('substate') or None
 
         is_update_linked_ticket = 'linked_ticket' in request.data
+        if is_update_linked_ticket and getattr(request, 'portal_external_username', ''):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
         linked_ticket = request.data.get('linked_ticket')
         if is_update_linked_ticket and linked_ticket:
             try:
@@ -873,7 +897,7 @@ class PortalIssueView(APIView):
 
 class PortalIssueCommentsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (PortalAnonymousAccessPermission, )
+    permission_classes = (PortalAnonymousAccessPermission,)
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request, project_uuid, issue_id):
@@ -898,6 +922,8 @@ class PortalIssueCommentsView(APIView):
             if not portal_issue:
                 error_msg = 'Issue not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            if not external_user_can_access_issue(request, portal_issue):
+                return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
             comments = get_portal_issue_comments(seadb_api, project_uuid, issue_id, start, end)
         except Exception as e:
             logger.error(e)
@@ -941,6 +967,8 @@ class PortalIssueCommentsView(APIView):
             issue, metadata = get_portal_issue(seadb_api, project_uuid, issue_id)
             if not issue:
                 return api_error(status.HTTP_404_NOT_FOUND, 'Issue not found.')
+            if not external_user_can_access_issue(request, issue):
+                return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -1041,6 +1069,8 @@ class PortalIssueCommentView(APIView):
             if not issue:
                 error_msg = 'Issue not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            if not external_user_can_access_issue(request, issue):
+                return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
             comment_data = get_portal_issue_comment_by_pk(seadb_api, project_uuid, issue.get('_pk'), comment_id)
             if not comment_data:
@@ -1116,6 +1146,8 @@ class PortalIssueCommentView(APIView):
             if not issue:
                 error_msg = 'Issue not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            if not external_user_can_access_issue(request, issue):
+                return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
             issue_comment_data = get_portal_issue_comment_by_pk(seadb_api, project_uuid, issue_id, comment_id)
             if not issue_comment_data:
@@ -1315,13 +1347,7 @@ class PortalUserListView(APIView):
 
         is_authenticated = bool(getattr(request.user, 'is_authenticated', False))
 
-        ext_username = request.session.get('portal_external_username')
-        ext_project_uuid = request.session.get('portal_external_project_uuid')
-        is_external = False
-        if ext_username and ext_project_uuid == project_uuid:
-            is_external = ProjectExternalUser.objects.filter(
-                project_uuid=project_uuid, username=ext_username, activated=True
-            ).exists()
+        is_external = bool(get_portal_external_username(request, project_uuid))
 
         if not is_authenticated and not is_external:
             return Response({'user_list': []})
@@ -1986,6 +2012,194 @@ class PortalExternalUsersView(APIView):
         return Response({'success': True})
 
 
+class PortalExternalSSOProvidersView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def get(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
+
+        if not get_portal_settings(project).get('enable_portal'):
+            return api_error(status.HTTP_404_NOT_FOUND, 'Portal is not enabled.')
+
+        if not check_project_admin_permission(request.user.username, project.workspace.owner):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+        providers = PortalExternalSSOProvider.objects.filter(project_uuid=project_uuid).order_by('name', 'provider_id')
+        provider_info_list = []
+        for provider in providers:
+            provider_info_list.append(_serialize_portal_external_sso_provider(request, provider))
+
+        return Response({'providers': provider_info_list})
+
+    @require_org_context
+    def post(self, request, project_uuid):
+        raw_secret = request.data.get('secret') or None
+        if raw_secret and (len(raw_secret) < PORTAL_EXTERNAL_SSO_SECRET_MIN_LENGTH or
+                           len(raw_secret) > PORTAL_EXTERNAL_SSO_SECRET_MAX_LENGTH or
+                           not raw_secret.isascii()):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'secret must contain 32 to 128 ASCII characters.')
+
+        provider_id = request.data.get('provider_id')
+        if not isinstance(provider_id, str):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'provider_id invalid.')
+        provider_id = provider_id.strip().lower()
+        if len(provider_id) > 64 or not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*', provider_id):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'provider_id invalid.')
+
+        enabled = bool(int(request.data.get('enabled', 1)))
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
+
+        if not get_portal_settings(project).get('enable_portal'):
+            return api_error(status.HTTP_404_NOT_FOUND, 'Portal is not enabled.')
+
+        if not check_project_admin_permission(request.user.username, project.workspace.owner):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        provider_name = request.data.get('name')
+        if not provider_name:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'name invalid.')
+
+        provider = PortalExternalSSOProvider.objects.filter(project_uuid=project_uuid, provider_id=provider_id).first()
+        if provider:
+            return api_error(status.HTTP_409_CONFLICT, 'Provider already exists.')
+
+        try:
+            provider = PortalExternalSSOProvider(
+                project_uuid=project_uuid,
+                provider_id=provider_id,
+                name=provider_name,
+                enabled=enabled,
+            )
+            raw_secret = provider.reset_secret(raw_secret)
+            provider.save()
+        except IntegrityError:
+            return api_error(status.HTTP_409_CONFLICT, 'Provider already exists.')
+        except Exception as e:
+            logger.exception('Failed to create portal external SSO provider: project=%s provider=%s',project_uuid, provider_id)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        return Response(
+            _serialize_portal_external_sso_provider(request, provider, include_secret=raw_secret),
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class PortalExternalSSOProviderView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def put(self, request, project_uuid, provider_id):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
+
+        if not get_portal_settings(project).get('enable_portal'):
+            return api_error(status.HTTP_404_NOT_FOUND, 'Portal is not enabled.')
+
+        if not check_project_admin_permission(request.user.username, project.workspace.owner):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        provider = PortalExternalSSOProvider.objects.filter(project_uuid=project_uuid, provider_id=provider_id).first()
+        if not provider:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Provider not found.')
+
+        name = request.data.get('name')
+        if name is not None and (not isinstance(name, str) or not name.strip() or len(name.strip()) > 128):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'name invalid.')
+
+        enabled = request.data.get('enabled')
+        if enabled is not None:
+            enabled = bool(int(enabled))
+
+        if name is None and enabled is None:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'No changes provided.')
+
+        if name is not None:
+            provider.name = name.strip()
+        if enabled is not None:
+            provider.enabled = enabled
+
+        try:
+            provider.save()
+        except Exception as e:
+            logger.exception('Failed to update portal external SSO provider: project=%s provider=%s',project_uuid, provider.provider_id)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        return Response(_serialize_portal_external_sso_provider(request, provider))
+
+    @require_org_context
+    def delete(self, request, project_uuid, provider_id):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
+
+        if not get_portal_settings(project).get('enable_portal'):
+            return api_error(status.HTTP_404_NOT_FOUND, 'Portal is not enabled.')
+
+        if not check_project_admin_permission(request.user.username, project.workspace.owner):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        provider = PortalExternalSSOProvider.objects.filter(project_uuid=project_uuid, provider_id=provider_id).first()
+        if not provider:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Provider not found.')
+
+        try:
+            provider.delete()
+        except Exception as e:
+            logger.exception('Failed to delete portal external SSO provider: project=%s provider=%s',
+                             project_uuid, provider.provider_id)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        return Response({'success': True})
+
+
+class PortalExternalSSOProviderResetSecretView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def post(self, request, project_uuid, provider_id):
+        raw_secret = request.data.get('secret') or None
+        if raw_secret and (len(raw_secret) < PORTAL_EXTERNAL_SSO_SECRET_MIN_LENGTH or
+                           len(raw_secret) > PORTAL_EXTERNAL_SSO_SECRET_MAX_LENGTH or
+                           not raw_secret.isascii()):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'secret must contain 32 to 128 ASCII characters.')
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
+
+        if not get_portal_settings(project).get('enable_portal'):
+            return api_error(status.HTTP_404_NOT_FOUND, 'Portal is not enabled.')
+
+        if not check_project_admin_permission(request.user.username, project.workspace.owner):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        provider = PortalExternalSSOProvider.objects.filter(project_uuid=project_uuid, provider_id=provider_id).first()
+        if not provider:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Provider not found.')
+
+        try:
+            raw_secret = provider.reset_secret(raw_secret)
+            provider.save()
+        except Exception as e:
+            logger.exception('Failed to reset portal external SSO provider secret: project=%s provider=%s',
+                             project_uuid, provider.provider_id)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        return Response(_serialize_portal_external_sso_provider(request, provider, include_secret=raw_secret))
+
+
 class PortalExternalLoginSendCodeView(APIView):
     authentication_classes = (SessionAuthentication,)
     permission_classes = ()
@@ -2091,8 +2305,7 @@ class PortalExternalLoginVerifyCodeView(APIView):
 
         # Set session to log the user in as an external collaborator
         clear_portal_external_login_state(project_uuid, email)
-        request.session['portal_external_username'] = ext_user.username
-        request.session['portal_external_project_uuid'] = project_uuid
+        set_portal_login_session(request, project_uuid, ext_user.username, is_external_user=True)
         return Response({
             'success': True,
             'redirect_url': portal_path(request, project_uuid),

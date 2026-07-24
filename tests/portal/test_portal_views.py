@@ -8,15 +8,19 @@ from django.contrib.sessions.middleware import SessionMiddleware
 from django.http import HttpResponse
 from django.test import RequestFactory, override_settings
 
+from seahub.base.accounts import User
 from seahub.portal.middleware import PortalDomainMiddleware
 from seahub.portal.models import PortalCustomDomain, PortalDomainAlias, ProjectExternalUser
-from seahub.portal.permissions import PortalAnonymousAccessPermission
+from seahub.portal.permissions import PortalAnonymousAccessPermission, PortalIssuePermission
 from seahub.portal.utils import (
     PORTAL_DOMAIN_TYPE_CUSTOM,
     PORTAL_DOMAIN_TYPE_SERVICE_ALIAS,
-    set_portal_preview_session,
+    PORTAL_EXTERNAL_SESSION_PROJECT_KEY,
+    PORTAL_EXTERNAL_SESSION_USERNAME_KEY,
+    set_portal_login_session,
 )
 from seahub.portal.views import portal_accounts_login_view, portal_external_logout_view, portal_view
+from seahub.organizations.models import OrgUser
 
 
 def process_portal_domain_request(request):
@@ -65,7 +69,8 @@ def test_portal_accounts_login_hides_main_site_entry_points():
 
 
 @pytest.mark.django_db
-def test_portal_view_treats_cross_org_authenticated_external_user_as_external(factory, real_project):
+@pytest.mark.parametrize('authenticated_org_id', [1, 999])
+def test_portal_external_session_takes_priority_over_authenticated_user(factory, real_project, authenticated_org_id):
     ext_username = 'virtual-ext-user'
     ProjectExternalUser.objects.create(
         email='external@example.com',
@@ -76,12 +81,12 @@ def test_portal_view_treats_cross_org_authenticated_external_user_as_external(fa
 
     request = factory.get(f'/portal/{real_project.uuid}/')
     request.user = SimpleNamespace(
-        username='other-org@example.com',
+        username='authenticated-user@example.com',
         is_authenticated=True,
-        org=SimpleNamespace(org_id=999),
+        org=SimpleNamespace(org_id=authenticated_org_id),
     )
-    request.session['portal_external_username'] = ext_username
-    request.session['portal_external_project_uuid'] = str(real_project.uuid)
+    request.session[PORTAL_EXTERNAL_SESSION_USERNAME_KEY] = ext_username
+    request.session[PORTAL_EXTERNAL_SESSION_PROJECT_KEY] = str(real_project.uuid)
 
     captured = {}
 
@@ -107,7 +112,7 @@ def test_portal_view_treats_cross_org_authenticated_external_user_as_external(fa
 
 
 @pytest.mark.django_db
-def test_portal_external_logout_clears_external_session_for_authenticated_user(factory, real_project):
+def test_portal_external_logout_clears_external_session_for_authenticated_user(real_project):
     ext_username = 'virtual-ext-user'
     ProjectExternalUser.objects.create(
         email='external@example.com',
@@ -116,21 +121,39 @@ def test_portal_external_logout_clears_external_session_for_authenticated_user(f
         activated=True,
     )
 
-    request = factory.get(f'/portal-external/logout/{real_project.uuid}/')
+    request = build_session_request(f'/portal-external/logout/{real_project.uuid}/')
     request.user = SimpleNamespace(
         username='other-org@example.com',
         is_authenticated=True,
         org=SimpleNamespace(org_id=999),
     )
-    request.session['portal_external_username'] = ext_username
-    request.session['portal_external_project_uuid'] = str(real_project.uuid)
+    request.session[PORTAL_EXTERNAL_SESSION_USERNAME_KEY] = ext_username
+    request.session[PORTAL_EXTERNAL_SESSION_PROJECT_KEY] = str(real_project.uuid)
 
     response = portal_external_logout_view(request, str(real_project.uuid))
 
     assert response.status_code == 302
     assert response['Location'] == f'/portal/{real_project.uuid}/'
-    assert 'portal_external_username' not in request.session
-    assert 'portal_external_project_uuid' not in request.session
+    assert PORTAL_EXTERNAL_SESSION_USERNAME_KEY not in request.session
+    assert PORTAL_EXTERNAL_SESSION_PROJECT_KEY not in request.session
+
+
+@pytest.mark.django_db
+@override_settings(IS_PORTAL_MODE=True)
+def test_portal_issue_permission_prefers_sso_team_user_session(factory, real_project, project_creator):
+    team_user = User.objects.create_user('sso-team-user@example.com', password='!', is_active=True)
+    team_username = team_user.username
+    OrgUser.objects.create(org_id=real_project.workspace.org_id, email=team_username)
+    request = factory.get(f'/api/v1/portal/{real_project.uuid}/issues/1/')
+    request.user = project_creator
+    set_portal_login_session(request, str(real_project.uuid), team_username, is_external_user=True)
+    view = SimpleNamespace(kwargs={'project_uuid': str(real_project.uuid)})
+
+    allowed = PortalIssuePermission().has_permission(request, view)
+
+    assert allowed is True
+    assert request.user.username == team_username
+    assert request.portal_external_username == team_username
 
 
 @pytest.mark.django_db
@@ -139,7 +162,7 @@ def test_portal_view_allows_preview_session_when_anonymous_disabled(factory, rea
     request = factory.get(f'/portal/{real_project.uuid}/')
     request.session = {}
     request.user = SimpleNamespace(username='', is_authenticated=False)
-    set_portal_preview_session(request, str(real_project.uuid), project_creator.username)
+    set_portal_login_session(request, str(real_project.uuid), project_creator.username)
 
     captured = {}
 
@@ -180,7 +203,7 @@ def test_portal_view_allows_preview_session_when_password_protected(factory, rea
     request = factory.get(f'/portal/{real_project.uuid}/')
     request.session = {}
     request.user = SimpleNamespace(username='', is_authenticated=False)
-    set_portal_preview_session(request, str(real_project.uuid), project_creator.username)
+    set_portal_login_session(request, str(real_project.uuid), project_creator.username)
 
     captured = {}
 
@@ -212,7 +235,7 @@ def test_portal_anonymous_permission_allows_preview_session(factory, real_projec
     request = factory.get(f'/api/v1/portal/{real_project.uuid}/tags/')
     request.session = {}
     request.user = SimpleNamespace(username='', is_authenticated=False)
-    set_portal_preview_session(request, str(real_project.uuid), project_creator.username)
+    set_portal_login_session(request, str(real_project.uuid), project_creator.username)
     view = SimpleNamespace(kwargs={'project_uuid': str(real_project.uuid)})
 
     assert PortalAnonymousAccessPermission().has_permission(request, view) is True
@@ -289,6 +312,24 @@ def test_custom_domain_external_accept_path_rewrites_to_bound_invitation(factory
 
 
 @pytest.mark.django_db
+def test_custom_domain_external_sso_path_rewrites_to_bound_provider(factory, real_project):
+    PortalCustomDomain.objects.create(
+        domain='support.local.test',
+        project_uuid=str(real_project.uuid),
+        verified=True,
+    )
+    request = factory.get('/external/sso/plus/?token=jwt', HTTP_HOST='support.local.test')
+
+    response = process_portal_domain_request(request)
+
+    assert response is None
+    assert request.path_info == f'/portal-external/sso/plus/{real_project.uuid}/'
+    assert request.GET['token'] == 'jwt'
+    assert request.portal_domain.domain_type == PORTAL_DOMAIN_TYPE_CUSTOM
+    assert request.portal_domain.binding.project_uuid == str(real_project.uuid)
+
+
+@pytest.mark.django_db
 def test_custom_domain_portal_chat_image_path_passes_through(factory, real_project):
     PortalCustomDomain.objects.create(
         domain='support.local.test',
@@ -349,3 +390,29 @@ def test_service_domain_alias_redirects_to_verified_custom_domain(factory, real_
         'project_uuid': project_uuid,
         'verified': True,
     }
+
+
+@pytest.mark.django_db
+def test_service_domain_alias_sso_redirect_disables_referrer_and_cache(factory, real_project, settings):
+    settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
+    project_uuid = str(real_project.uuid)
+    PortalDomainAlias.objects.create(
+        prefix='my-brand',
+        project_uuid=project_uuid,
+    )
+    PortalCustomDomain.objects.create(
+        domain='support.local.test',
+        project_uuid=project_uuid,
+        verified=True,
+    )
+    request = factory.get(
+        '/external/sso/plus/?token=jwt',
+        HTTP_HOST='my-brand.seaticket-portal.test',
+    )
+
+    response = process_portal_domain_request(request)
+
+    assert response.status_code == 302
+    assert response['Location'] == 'http://support.local.test/external/sso/plus/?token=jwt'
+    assert response['Cache-Control'] == 'no-store'
+    assert response['Referrer-Policy'] == 'no-referrer'

@@ -16,9 +16,8 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import uuid_str_to_32_chars
 from seahub.utils.storage import upload_portal_files_to_s3
-from seahub.project.models import Projects
 from seahub.project.constants import AIScenario
-from seahub.project.utils import check_ai_limit, check_same_org_permission, delete_portal_sessions
+from seahub.project.utils import check_ai_limit, delete_portal_sessions
 from seahub.utils.ip import get_remote_ip
 from seahub.portal.chat.utils import (
     build_portal_message_result,
@@ -29,7 +28,6 @@ from seahub.portal.chat.utils import (
     gen_portal_chat_task_id,
     gen_portal_message_id,
     get_portal_chat_settings,
-    get_portal_external_username,
     get_project_portal_chat_credit_used,
     is_portal_chat_proxy_image_file_path,
     mark_anonymous_chat_rate_limit,
