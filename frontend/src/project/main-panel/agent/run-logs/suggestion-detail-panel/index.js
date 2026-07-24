@@ -12,13 +12,13 @@ const DEFAULT_WIDTH = 400;
 
 const SuggestionDetailPanel = ({
   suggestionDetail,
-  isSaving,
   onSave,
   onClose,
   width = DEFAULT_WIDTH,
   onWidthChange,
 }) => {
   const [value, setValue] = useState(suggestionDetail?.action.suggestion_content || '');
+  const [isSaving, setIsSaving] = useState(false);
 
   const title = useMemo(
     () => suggestionDetail?.action?.suggestion_text || suggestionDetail?.action?.result || '',
@@ -65,8 +65,13 @@ const SuggestionDetailPanel = ({
     document.addEventListener('mouseup', handleMouseUp);
   }, [onWidthChange]);
 
-  const handleSave = useCallback(() => {
-    onSave && onSave(value);
+  const handleSave = useCallback(async () => {
+    setIsSaving(true);
+    try {
+      await onSave?.(value);
+    } finally {
+      setIsSaving(false);
+    }
   }, [value, onSave]);
 
   useEffect(() => {
