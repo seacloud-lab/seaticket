@@ -648,11 +648,12 @@ class AgentActionCancelView(APIView):
             # Update action status to cancelled
             now = timezone.now().isoformat()
             nickname = email2nickname(username)
+            result_message = f'Cancelled by {nickname}'
             update_data = [{
                 'pk': int(action_id),
                 'row': {
                     'status': 'cancelled',
-                    'result': f'Cancelled by {nickname}',
+                    'result': result_message,
                     'executed_at': now,
                 }
             }]
@@ -661,6 +662,7 @@ class AgentActionCancelView(APIView):
                 'success': True,
                 'action_id': action_id,
                 'status': 'cancelled',
+                'result': result_message,
             })
 
         except Exception as e:
