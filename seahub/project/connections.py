@@ -62,7 +62,7 @@ from seahub.utils.mailbox_manager import move_emails_to_trash
 from seahub.project.discourse_api import DiscourseForumAPI, DiscourseForumAPIException
 from seahub.utils.io import zip_email_attachments, query_io_task_status
 from seahub.project.task_utils import create_general_task_via_adapter, update_general_task_via_adapter, \
-    prepare_image_data_for_adapter, build_general_task_change_values, normalize_general_task_due_date
+    prepare_image_data_for_adapter, build_general_task_change_values
 
 from seahub.seadb_models.models import SchemaTables
 
@@ -1331,14 +1331,6 @@ class ProjectConnectionRecordView(APIView):
                 if field in row_data
             }
             if changed_task_fields:
-                if 'due_date' in changed_task_fields:
-                    try:
-                        row_data = {
-                            **row_data,
-                            'due_date': normalize_general_task_due_date(row_data.get('due_date')),
-                        }
-                    except ValueError as e:
-                        return api_error(status.HTTP_400_BAD_REQUEST, str(e))
                 source_task_id = current_record.get('source_task_id')
                 if not source_task_id:
                     return api_error(status.HTTP_400_BAD_REQUEST, 'Task source_task_id is missing.')
@@ -1471,10 +1463,14 @@ class ProjectConnectionRecordsView(APIView):
         task_payload['status'] = task_payload.get('status') or 'new'
         task_payload['priority'] = task_payload.get('priority') or 'medium'
         task_payload['size'] = task_payload.get('size') or 'medium'
-        try:
-            task_payload['due_date'] = normalize_general_task_due_date(task_payload.get('due_date'))
-        except ValueError as e:
-            return api_error(status.HTTP_400_BAD_REQUEST, str(e))
+        due_date = task_payload.get('due_date')
+        if due_date:
+            try:
+                if datetime.date.fromisoformat(due_date).isoformat() != due_date:
+                    raise ValueError
+            except (TypeError, ValueError):
+                return api_error(status.HTTP_400_BAD_REQUEST, 'due_date invalid.')
+        task_payload['due_date'] = due_date
 
         linked_ticket = request.data.get('linked_ticket')
         if linked_ticket in ('', None):
@@ -1644,14 +1640,6 @@ class ProjectConnectionRecordsView(APIView):
                     if field in row_data
                 }
                 if changed_task_fields:
-                    if 'due_date' in changed_task_fields:
-                        try:
-                            row_data = {
-                                **row_data,
-                                'due_date': normalize_general_task_due_date(row_data.get('due_date')),
-                            }
-                        except ValueError as e:
-                            return api_error(status.HTTP_400_BAD_REQUEST, str(e))
                     source_task_id = current_record.get('source_task_id')
                     if not source_task_id:
                         continue

@@ -1,25 +1,11 @@
 import base64
-import datetime
 
 import requests
 
 from seahub.utils.storage import get_project_file_from_s3
+from seahub.utils.date_utils import normalize_date
 
 GENERAL_TASK_ACTIVITY_FIELDS = ('title', 'status', 'size', 'priority', 'assignees', 'version', 'due_date')
-
-
-# general task utils
-def normalize_general_task_due_date(value):
-    if value in (None, ''):
-        return value
-
-    try:
-        due_date = datetime.date.fromisoformat(value)
-    except (TypeError, ValueError):
-        raise ValueError('due_date invalid.')
-
-    local_midnight = datetime.datetime.combine(due_date, datetime.time.min).astimezone()
-    return local_midnight.astimezone(datetime.UTC).isoformat(timespec='milliseconds')
 
 
 def build_general_task_endpoint(base_url, task_id=None):
@@ -94,6 +80,9 @@ def build_general_task_change_values(current_record, row_data, changed_fields):
             continue
         old_field_value = current_record.get(field)
         new_field_value = row_data.get(field)
+        if field == 'due_date':
+            old_field_value = normalize_date(old_field_value)
+            new_field_value = normalize_date(new_field_value)
         if old_field_value != new_field_value:
             old_value[field] = old_field_value
             new_value[field] = new_field_value

@@ -747,7 +747,7 @@ def filter_tickets_by_select(seadb_api, project_uuid, column_name, names):
         f"WHERE `{column_name}` IN ({names_str}) AND (`deleted` = False OR `deleted` is NULL)"
     )
     res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
-    tickets = res.get('results')
+    tickets = res.get('results') or []
     columns = res.get('metadata') or []
     return tickets, columns
 

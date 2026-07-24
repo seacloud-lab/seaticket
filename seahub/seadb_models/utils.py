@@ -620,7 +620,7 @@ def list_github_issue_record_details(seadb_api, project_uuid, connection_id, _pk
 def get_linear_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
     from seahub.tickets.ticket_utils import get_ticket_title
     issue_table_name = SchemaTables.LINEAR_ISSUES.table_name(connection_id)
-    issue_sql = f"SELECT `_pk`, `title`, `author`, `content`, `created_time`, `issue_id`, `identifier`, `state`, `labels`, `linked_ticket` FROM `{issue_table_name}` WHERE _pk = {_pk}"
+    issue_sql = f"SELECT `_pk`, `title`, `author`, `content`, `created_time`, `due_date`, `issue_id`, `identifier`, `state`, `labels`, `linked_ticket` FROM `{issue_table_name}` WHERE _pk = {_pk}"
     try:
         issue_res = seadb_api.query_rows(project_uuid, issue_sql)
         issue_record = issue_res.get('results')[0] if issue_res.get('results') else {}

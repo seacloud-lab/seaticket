@@ -81,4 +81,3 @@ class GeneralTaskSeaDBAPI:
                 for task in tasks
             ]
         return result
-

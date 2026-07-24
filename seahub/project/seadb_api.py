@@ -3,6 +3,7 @@ import base64
 
 from seahub.settings import SEADB_SERVER_URL, SEADB_USER, SEADB_PASSWORD
 from seahub.utils import uuid_str_to_36_chars
+from seahub.utils.date_utils import normalize_query_date_fields
 
 
 def parse_response(response):
@@ -113,7 +114,7 @@ class SeaDBAPI:
             post_data['params'] = params
         url = f'{self.server_url}/api/v1/{base_id}/query'
         response = requests.post(url, json=post_data, headers=self.headers, timeout=self.timeout)
-        return parse_response(response)
+        return normalize_query_date_fields(parse_response(response))
 
     # columns
     def add_column(self, base_id, table_id, column):

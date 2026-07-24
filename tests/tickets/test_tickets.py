@@ -2,6 +2,8 @@ import datetime
 import json
 from unittest.mock import Mock, patch
 
+import pytest
+
 from seahub.tickets.tickets import (
     TicketsAPIView,
     TicketAPIView,
@@ -13,9 +15,60 @@ from seahub.tickets.tickets import (
     TicketTrashAPIView,
     build_ticket_data_event,
 )
+from seahub.tickets.ticket_utils import (
+    filter_tickets_by_select,
+)
+from seahub.utils.date_utils import normalize_date
+
+
+class TestTicketDueDate:
+    @pytest.mark.parametrize('value', [None, ''])
+    def test_empty_value_stays_empty(self, value):
+        assert normalize_date(value) == value
+
+    def test_normalize_timezone_datetime_as_its_calendar_date(self):
+        assert normalize_date('2026-07-31T16:00:00-08:00') == '2026-07-31'
+
+    @pytest.mark.parametrize('value', [
+        '2026-08-01',
+        '2026-08-01T00:00:00',
+    ])
+    def test_normalize_date_like_values_as_calendar_date(self, value):
+        assert normalize_date(value) == '2026-08-01'
+
+    def test_filter_tickets_uses_normalized_query_result(self):
+        due_date_key = 'k_due_date'
+        seadb_api = Mock()
+        seadb_api.query_rows.return_value = {
+            'results': [{'_pk': 1, due_date_key: '2026-08-01'}],
+            'metadata': [{'key': due_date_key, 'name': 'due_date'}],
+        }
+
+        tickets, _ = filter_tickets_by_select(seadb_api, 'project-id', 'type', ['Bug'])
+
+        assert tickets[0][due_date_key] == '2026-08-01'
 
 
 class TestBuildTicketDataEvent:
+    def test_due_date_is_rendered_as_date_only(self):
+        event = build_ticket_data_event(
+            'ticket_updated',
+            old_row={'due_date': ''},
+            new_row={'due_date': '2026-08-01T00:00:00.000+00:00'},
+        )
+
+        assert event['new_value'] == {'due_date': '2026-08-01'}
+
+    def test_different_calendar_due_dates_emit_a_change(self):
+        event = build_ticket_data_event(
+            'ticket_updated',
+            old_row={'due_date': '2026-08-01T00:00:00Z'},
+            new_row={'due_date': '2026-07-31T16:00:00-08:00'},
+        )
+
+        assert event['old_value'] == {'due_date': '2026-08-01'}
+        assert event['new_value'] == {'due_date': '2026-07-31'}
+
     def test_tags_are_rendered_as_readable_names(self):
         seadb_api = Mock()
         with patch('seahub.tickets.tickets.build_tag_id_to_name_map', return_value={'1': 'bug', '2': 'frontend'}):
@@ -132,11 +185,20 @@ class TestTicketsAPIView:
         with patch('seahub.tickets.tickets.SeaDBAPI') as seadb_cls_mock, \
                 patch('seahub.tickets.tickets.list_tickets_view_records') as list_mock:
             seadb_cls_mock.return_value = Mock()
-            list_mock.return_value = ([{'_pk': 1, 'title': 'test_ticket'}], [])
+            due_date_key = 'k_due_date'
+            list_mock.return_value = ([{
+                '_pk': 1,
+                'k_title': 'test_ticket',
+                due_date_key: '2026-08-01',
+            }], [
+                {'key': 'k_title', 'name': 'title'},
+                {'key': due_date_key, 'name': 'due_date'},
+            ])
             response = TicketsAPIView.as_view()(request, project_uuid=str(project.uuid))
         assert response.status_code == 200
         assert 'tickets' in response.data
         assert len(response.data['tickets']) == 1
+        assert response.data['tickets'][0][due_date_key] == '2026-08-01'
 
     def test_get_internal_server_error(self, factory, project_creator, real_project):
         project = real_project
@@ -194,6 +256,7 @@ class TestTicketsAPIView:
             'priority': '7',
             'tags': '[]',
             'assignees': '[]',
+            'due_date': '2026-08-01',
         }
         request = factory.post(f"/api/v1/projects/{project.uuid}/tickets/", data=data)
         request.user = project_creator
@@ -206,6 +269,31 @@ class TestTicketsAPIView:
         assert resp.status_code == 201
         assert resp.data['ticket']['_pk'] == 1
         assert resp.data['ticket']['priority'] == 5
+        assert resp.data['ticket']['due_date'] == '2026-08-01'
+        inserted_row = seadb_api.insert_rows.call_args[0][2][0]
+        assert inserted_row['due_date'] == '2026-08-01'
+
+    def test_post_without_due_date_stores_and_returns_empty(self, factory, project_creator, real_project):
+        project = real_project
+        data = {
+            'title': 't',
+            'content': json.dumps({'text': 'c'}),
+            'tags': '[]',
+            'assignees': '[]',
+        }
+        request = factory.post(f"/api/v1/projects/{project.uuid}/tickets/", data=data)
+        request.user = project_creator
+        seadb_api = Mock()
+        seadb_api.insert_rows.return_value = {'pks': [1]}
+        seadb_api.get_base_metadata.return_value = self.get_ticket_base_metadata()
+        with patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.tickets.tickets.check_ticket_creation_interval', return_value=True):
+            resp = TicketsAPIView.as_view()(request, project_uuid=project.uuid)
+
+        assert resp.status_code == 201
+        assert resp.data['ticket']['due_date'] == ''
+        inserted_row = seadb_api.insert_rows.call_args[0][2][0]
+        assert inserted_row['due_date'] == ''
 
     def test_post_uses_requested_state_and_substate(self, factory, project_creator, real_project):
         project = real_project
@@ -282,7 +370,10 @@ class TestTicketsAPIView:
 
     def test_put_success_update_state_closed(self, factory, project_creator, real_project):
         project = real_project
-        data = {'tickets_data': [{'row_id': '1', 'row': {'state': 'Closed'}}]}
+        data = {'tickets_data': [{
+            'row_id': '1',
+            'row': {'state': 'Closed', 'due_date': '2026-08-01'},
+        }]}
         request = factory.put(f"/api/v1/projects/{project.uuid}/tickets/", data=data, format='json')
         request.user = project_creator
         seadb_api = Mock()
@@ -295,6 +386,7 @@ class TestTicketsAPIView:
         update_rows = seadb_api.update_rows.call_args[0][2]
         assert update_rows[0]['row']['state'] == 'closed'
         assert 'closed_time' in update_rows[0]['row']
+        assert update_rows[0]['row']['due_date'] == '2026-08-01'
 
     def test_delete_missing_ticket_ids(self, factory, project_creator, real_project):
         project = real_project
@@ -328,11 +420,19 @@ class TestTicketAPIView:
             resp = TicketAPIView.as_view()(request, project_uuid=project.uuid, ticket_id='1')
         assert resp.status_code == 404
 
-    def test_get_success(self, factory, project_creator, real_project):
+    @pytest.mark.parametrize(('query_due_date', 'expected_due_date'), [
+        ('2026-08-01', '2026-08-01'),
+        ('', ''),
+    ])
+    def test_get_success(self, factory, project_creator, real_project, query_due_date, expected_due_date):
         project = real_project
         request = factory.get(f"/api/v1/projects/{project.uuid}/tickets/1/")
         request.user = project_creator
-        ticket = {'_pk': 1, 'title': 'test_ticket'}
+        ticket = {
+            '_pk': 1,
+            'title': 'test_ticket',
+            'due_date': query_due_date,
+        }
         metadata = {'columns': []}
         with patch('seahub.tickets.tickets.SeaDBAPI') as seadb_cls_mock, \
                 patch('seahub.tickets.tickets.get_ticket', return_value=(ticket, metadata)), \
@@ -342,6 +442,7 @@ class TestTicketAPIView:
             resp = TicketAPIView.as_view()(request, project_uuid=project.uuid, ticket_id='1')
         assert resp.status_code == 200
         assert 'ticket' in resp.data
+        assert resp.data['ticket']['due_date'] == expected_due_date
 
     def test_put_ticket_not_found(self, factory, project_creator, real_project):
         project = real_project
@@ -374,9 +475,24 @@ class TestTicketAPIView:
             resp = TicketAPIView.as_view()(request, project_uuid=project.uuid, ticket_id='1')
         assert resp.status_code == 400
 
+    def test_put_due_date_invalid(self, factory, project_creator, real_project):
+        project = real_project
+        request = factory.put(
+            f"/api/v1/projects/{project.uuid}/tickets/1/",
+            data={'due_date': '2026-02-30'},
+            format='json',
+        )
+        request.user = project_creator
+        ticket = {'_pk': 1}
+        with patch('seahub.tickets.tickets.SeaDBAPI', return_value=Mock()), \
+                patch('seahub.tickets.tickets.get_ticket', return_value=(ticket, {})), \
+                patch('seahub.tickets.tickets.check_ticket_permission', return_value=True):
+            resp = TicketAPIView.as_view()(request, project_uuid=project.uuid, ticket_id='1')
+        assert resp.status_code == 400
+
     def test_put_success_state_closed_and_participants(self, factory, project_creator, real_project):
         project = real_project
-        data = {'state': 'CLOSED', 'priority': '7'}
+        data = {'state': 'CLOSED', 'priority': '7', 'due_date': '2026-08-01'}
         request = factory.put(f"/api/v1/projects/{project.uuid}/tickets/1/", data=data, format='json')
         request.user = project_creator
         ticket = {'_pk': 1, 'participants': []}
@@ -392,6 +508,8 @@ class TestTicketAPIView:
         assert 'closed_time' in update_row
         assert project_creator.username in update_row['participants']
         assert update_row['priority'] == 5
+        assert update_row['due_date'] == '2026-08-01'
+        assert resp.data['row']['due_date'] == '2026-08-01'
 
     def test_delete_ticket_not_found(self, factory, project_creator, real_project):
         project = real_project
@@ -441,11 +559,14 @@ class TestMyTicketAPIView:
         project = real_project
         request = factory.post(f"/api/v1/projects/{project.uuid}/tickets/my/")
         request.user = project_creator
+        due_date_key = 'k_due_date'
+        tickets = [{'_pk': 1, due_date_key: '2026-08-01'}]
+        columns = [{'key': due_date_key, 'name': 'due_date'}]
         with patch('seahub.tickets.tickets.SeaDBAPI'), \
-                patch('seahub.tickets.tickets.list_my_tickets', return_value=([{'_pk': 1}], ['title'])):
+                patch('seahub.tickets.tickets.list_my_tickets', return_value=(tickets, columns)):
             resp = MyTicketAPIView.as_view()(request, project_uuid=project.uuid)
         assert resp.status_code == 200
-        assert 'tickets' in resp.data
+        assert resp.data['tickets'][0][due_date_key] == '2026-08-01'
 
     def test_post_invalid_view_id_default_open(self, factory, project_creator, real_project):
         project = real_project
@@ -500,11 +621,14 @@ class TestTicketTrashAPIView:
         project = real_project
         request = factory.get(f"/api/v1/projects/{project.uuid}/tickets/trash/")
         request.user = project_creator
+        due_date_key = 'k_due_date'
+        tickets = [{'_pk': 1, due_date_key: '2026-08-01'}]
+        columns = [{'key': due_date_key, 'name': 'due_date'}]
         with patch('seahub.tickets.tickets.SeaDBAPI'), \
-                patch('seahub.tickets.tickets.list_trash_tickets', return_value=([{'_pk': 1}], ['title'])):
+                patch('seahub.tickets.tickets.list_trash_tickets', return_value=(tickets, columns)):
             resp = TicketTrashAPIView.as_view()(request, project_uuid=project.uuid)
         assert resp.status_code == 200
-        assert 'tickets' in resp.data
+        assert resp.data['tickets'][0][due_date_key] == '2026-08-01'
 
     def test_delete_no_deleted_tickets(self, factory, project_creator, real_project):
         project = real_project
