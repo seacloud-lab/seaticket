@@ -19,9 +19,11 @@ from seahub.tickets.ticket_utils import (
     collect_open_linked_github_issues_for_tickets,
     close_linked_github_issues,
     get_ticket_table_columns,
+    get_column_from_columns_by_name,
     map_ticket_substate_to_github_state_reason,
     record_ticket_activities,
     build_ticket_close_payloads_from_client,
+    convert_select_field_option_ids_to_names,
 )
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
@@ -747,13 +749,10 @@ class AgentActionExecutor:
                 'assignees': parsed.get('assignees') if isinstance(parsed.get('assignees'), list) else [],
                 'participants': parsed.get('participants') if isinstance(parsed.get('participants'), list) else [],
                 'type': str(parsed.get('type') or '').strip(),
-                'type_name': str(parsed.get('type_name') or '').strip(),
                 'tags': parsed.get('tags') if isinstance(parsed.get('tags'), list) else [],
                 'priority': parsed.get('priority'),
                 'state': str(parsed.get('state') or '').strip(),
-                'state_name': str(parsed.get('state_name') or '').strip(),
                 'substate': str(parsed.get('substate') or '').strip(),
-                'substate_name': str(parsed.get('substate_name') or '').strip(),
                 'due_date': str(parsed.get('due_date') or '').strip(),
             }
         return None
@@ -776,11 +775,11 @@ class AgentActionExecutor:
             ticket_content = draft['content']
             ticket_assignees = draft.get('assignees') or []
             ticket_participants = draft.get('participants') or []
-            ticket_type = draft.get('type_name') or draft.get('type') or ''
+            ticket_type = draft.get('type') or ''
             ticket_tags = draft.get('tags') or []
             ticket_priority = draft.get('priority')
-            ticket_state = (draft.get('state_name') or draft.get('state') or '').strip().lower()
-            ticket_substate = draft.get('substate_name') or draft.get('substate') or ''
+            ticket_state = (draft.get('state') or '').strip().lower()
+            ticket_substate = draft.get('substate') or ''
             ticket_due_date = draft.get('due_date') or ''
         else:
             ticket_title = backup_title
@@ -804,12 +803,30 @@ class AgentActionExecutor:
             ticket_priority = 0
         ticket_priority = max(0, ticket_priority)
 
-        ticket_state = 'closed' if ticket_state in ('closed', '0002') else 'open'
-        if not ticket_substate:
-            ticket_substate = 'Completed' if ticket_state == 'closed' else 'New'
-        closed_time = now = timezone.now().isoformat()
-        if ticket_state != 'closed':
-            closed_time = ''
+        try:
+            ticket_columns = get_ticket_table_columns(seadb_api, project_uuid)
+            select_fields = {
+                SchemaTables.TICKETS.column.state.name: ticket_state,
+                SchemaTables.TICKETS.column.substate.name: ticket_substate,
+                SchemaTables.TICKETS.column.type.name: ticket_type,
+            }
+            convert_select_field_option_ids_to_names(ticket_columns, select_fields)
+
+            ticket_type = select_fields[SchemaTables.TICKETS.column.type.name] or ''
+            ticket_state = select_fields[SchemaTables.TICKETS.column.state.name] or 'open'
+            ticket_substate = select_fields[SchemaTables.TICKETS.column.substate.name] or ''
+            if not ticket_substate:
+                substate_column = get_column_from_columns_by_name(
+                    ticket_columns, SchemaTables.TICKETS.column.substate.name
+                ) or {}
+                substate_options = ((substate_column.get('data') or {}).get('options') or [])
+                if substate_options:
+                    ticket_substate = substate_options[0].get('name') or ''
+        except Exception as e:
+            logger.error(f'Failed to resolve ticket select options for source_id {source_id}: {e}')
+            return None, f'Failed to create ticket: {e}'
+
+        now = timezone.now().isoformat()
 
         ticket_creator = AUTO_TICKET_CREATOR if auto_executed else username
         ticket_row = {
@@ -825,7 +842,6 @@ class AgentActionExecutor:
             SchemaTables.TICKETS.column.creator.name: ticket_creator,
             SchemaTables.TICKETS.column.created_time.name: now,
             SchemaTables.TICKETS.column.modified_time.name: now,
-            SchemaTables.TICKETS.column.closed_time.name: closed_time,
             SchemaTables.TICKETS.column.due_date.name: ticket_due_date,
             SchemaTables.TICKETS.column.deleted.name: False,
             SchemaTables.TICKETS.column.linked_connection_records.name: [source_id],
