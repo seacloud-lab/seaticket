@@ -4,19 +4,17 @@ import { getRowById } from '@/sea-metadata/utils/row';
 import { useMetadata } from '@/project/hooks';
 import PriorityFormatter from '@/sea-metadata/components/cell-formatter/priority';
 import { Option, Icon } from '@/components';
-import { TICKET_STATE_CONFIG, TICKET_STATE } from '@/project/main-panel/tickets/constants';
+import { TICKET_STATE_CONFIG, TICKET_STATE, TICKET } from '@/project/main-panel/tickets/constants';
 
 import './index.css';
-
-const initValue = { title: '', content: '', priority: 0, type: '', state: '0001' };
 
 const TicketPreview = ({ value }) => {
   const { title, content, priority, type, state } = useMemo(() => {
     try {
       const valueObject = JSON.parse(value);
-      return { ...initValue, ...valueObject };
+      return { ...TICKET, ...valueObject };
     } catch {
-      return initValue;
+      return TICKET;
     }
   }, [value]);
 

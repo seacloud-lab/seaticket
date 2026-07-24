@@ -32,11 +32,15 @@ const SuggestionDetailPanel = ({
   const canSave = useMemo(() => {
     if (isSaving) return false;
     if (initValue === value) return false;
-    if (suggestionDetail?.action?.tool_name === '') {
-      const validValue = JSON.parse(value);
-      if (!validValue.title) return false;
-      const validTitle = validValue.title.trim();
-      return !!validTitle;
+    if (suggestionDetail?.action?.tool_name === 'suggest_create_ticket') {
+      try {
+        const validValue = JSON.parse(value);
+        if (!validValue.title) return false;
+        const validTitle = validValue.title.trim();
+        return !!validTitle;
+      } catch {
+        return false;
+      }
     }
     return true;
   }, [isSaving, initValue, value, suggestionDetail]);
@@ -85,7 +89,7 @@ const SuggestionDetailPanel = ({
           type={suggestionDetail?.action?.tool_name}
           isEdit={isEdit}
           isSaving={isSaving}
-          value={value}
+          value={initValue}
           onChange={setValue}
         />
       </div>
