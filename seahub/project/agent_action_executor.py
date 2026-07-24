@@ -33,6 +33,7 @@ from seahub.project.utils import (
     collect_github_issue_type_options,
     collect_github_issue_label_options,
     persist_project_connection_config,
+    build_connection_record_related_url,
     build_ticket_related_url,
 )
 from seahub.notifications.signal_handler import (
@@ -802,6 +803,20 @@ class AgentActionExecutor:
         except (TypeError, ValueError):
             ticket_priority = 0
         ticket_priority = max(0, ticket_priority)
+
+        # The frontend normally appends the linked-record URL while previewing or
+        # editing a suggestion. Auto-executed actions bypass that step, so append it again here.
+        connection_id, record_id = self._parse_connection_source_id(source_id, 'connection record')
+        if connection_id is not None and record_id is not None:
+            related_url = build_connection_record_related_url(
+                request, project, connection_id, record_id
+            )
+            if related_url and related_url not in ticket_content:
+                linked_record_suffix = f'Linked record: {related_url}'
+                ticket_content = (
+                    f'{ticket_content}\n\n{linked_record_suffix}'
+                    if ticket_content else linked_record_suffix
+                )
 
         try:
             ticket_columns = get_ticket_table_columns(seadb_api, project_uuid)

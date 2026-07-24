@@ -47,6 +47,7 @@ const parseActionResult = (result) => {
 const ActionItem = React.memo(({
   action,
   runId,
+  relatedUrl,
   onConfirm,
   onCancel,
   onViewContent,
@@ -89,13 +90,13 @@ const ActionItem = React.memo(({
 
   const handleEditContent = useCallback((e) => {
     e.stopPropagation();
-    onViewContent && onViewContent(action, runId, 'edit');
-  }, [action, runId, onViewContent]);
+    onViewContent && onViewContent({ ...action, related_url: relatedUrl }, runId, 'edit');
+  }, [action, runId, relatedUrl, onViewContent]);
 
   const handleViewDetails = useCallback((e) => {
     e.stopPropagation();
-    onViewContent && onViewContent(action, runId, 'view');
-  }, [action, runId, onViewContent]);
+    onViewContent && onViewContent({ ...action, related_url: relatedUrl }, runId, 'view');
+  }, [action, runId, relatedUrl, onViewContent]);
 
   const formatErrorMessage = (errorContent) => {
     errorContent = formatResultText(errorContent);
@@ -320,7 +321,7 @@ const ActionItem = React.memo(({
                 </div>
               )}
               {hasContent && !isCancelled && (
-                <SuggestionPreview type={tool_name} value={suggestion_content} />
+                <SuggestionPreview type={tool_name} value={suggestion_content} relatedUrl={relatedUrl} />
               )}
               {status === ACTION_STATUS.PENDING && (
                 <div className="action-buttons">

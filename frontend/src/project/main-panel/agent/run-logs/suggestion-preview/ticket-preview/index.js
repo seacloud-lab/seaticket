@@ -5,12 +5,13 @@ import { useMetadata } from '@/project/hooks';
 import PriorityFormatter from '@/sea-metadata/components/cell-formatter/priority';
 import { Option, Icon } from '@/components';
 import { TICKET_STATE_CONFIG, TICKET_STATE } from '@/project/main-panel/tickets/constants';
+import { appendLinkedRecord } from '@/project/main-panel/connections/utils';
 
 import './index.css';
 
 const initValue = { title: '', content: '', priority: 0, type: '', state: '0001' };
 
-const TicketPreview = ({ value }) => {
+const TicketPreview = ({ value, relatedUrl }) => {
   const { title, content, priority, type, state } = useMemo(() => {
     try {
       const valueObject = JSON.parse(value);
@@ -32,7 +33,7 @@ const TicketPreview = ({ value }) => {
     })}>
       <div className="suggestion-content-preview">
         {title && (<div className="suggestion-create-ticket-preview-title">{title}</div>)}
-        <div className="suggestion-create-ticket-preview-content">{content}</div>
+        <div className="suggestion-create-ticket-preview-content">{appendLinkedRecord(content, relatedUrl)}</div>
       </div>
       {isValidOthersContent && (
         <div className="suggestion-create-ticket-others-preview">
