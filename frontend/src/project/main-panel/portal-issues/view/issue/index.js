@@ -464,7 +464,7 @@ const Issue = ({
     >
       <Header
         ref={headerRef}
-        readonly={!editable}
+        readonly={isMobile ? true : !editable}
         title={title}
         id={id}
         stateOption={stateOption}
