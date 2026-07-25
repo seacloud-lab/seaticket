@@ -427,6 +427,13 @@ body {
     text-align: center;
   }
 
+  .seaqa-portal-main-panel .seaqa-portal-content .seaqa-portal-issue-cards-loading {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   /* side panel */
   .seaqa-portal-side-panel {
     position: relative;

@@ -1,16 +1,18 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import classnames from 'classnames';
 import PriorityFormatter from '@/sea-metadata/components/cell-formatter/priority';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { getColumnByName, getOption } from '@/sea-metadata/utils/column';
 import { gettext } from '@/constants';
-import { Icon, Option } from '@/components';
+import { Icon, Loading, Option } from '@/components';
 import { useTypesData } from '@/sea-metadata/hooks';
 import { getRowById } from '@/sea-metadata/utils/row';
 import {
   PORTAL_ISSUE_STATE_CONFIG,
   PREDEFINED_PORTAL_ISSUE_COLUMN_NAME,
 } from '@/project/main-panel/portal-issues/constants';
+
+const LOAD_MORE_THRESHOLD = 80;
 
 const getSelectOption = (column, value) => {
   if (!value) return null;
@@ -30,8 +32,9 @@ const getStateOption = (column, value) => {
   };
 };
 
-const MobileIssueCards = ({ metadata, onRowClick }) => {
+const MobileIssueCards = ({ metadata, hasMore, isLoadingMore, loadMore, onRowClick }) => {
   const { typesData } = useTypesData();
+  const cardsRef = useRef(null);
   const columns = useMemo(() => ({
     title: getColumnByName(metadata.columns, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.TITLE),
     priority: getColumnByName(metadata.columns, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.PRIORITY),
@@ -39,17 +42,28 @@ const MobileIssueCards = ({ metadata, onRowClick }) => {
     type: getColumnByName(metadata.columns, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.TYPE),
   }), [metadata.columns]);
 
-  const issues = useMemo(() => {
-    const rowIds = metadata.view?.rows || [];
-    return rowIds.map(rowId => metadata.id_row_map?.[rowId]).filter(Boolean);
-  }, [metadata]);
+  const rowIds = metadata.view?.rows || [];
+  const issues = rowIds.map(rowId => metadata.id_row_map?.[rowId]).filter(Boolean);
+
+  const handleScroll = useCallback((event) => {
+    if (!hasMore || isLoadingMore || !loadMore) return;
+    const { clientHeight, scrollHeight, scrollTop } = event.currentTarget;
+    const isNearBottom = clientHeight + scrollTop + LOAD_MORE_THRESHOLD >= scrollHeight;
+    if (isNearBottom) loadMore();
+  }, [hasMore, isLoadingMore, loadMore]);
+
+  useEffect(() => {
+    const cards = cardsRef.current;
+    if (!cards || !hasMore || isLoadingMore || !loadMore) return;
+    if (cards.scrollHeight <= cards.clientHeight + LOAD_MORE_THRESHOLD) loadMore();
+  }, [hasMore, isLoadingMore, issues.length, loadMore]);
 
   if (issues.length === 0) {
     return <div className="seaqa-portal-issue-cards-empty">{gettext('No issues')}</div>;
   }
 
   return (
-    <div className="seaqa-portal-issue-cards">
+    <div className="seaqa-portal-issue-cards" ref={cardsRef} onScroll={handleScroll}>
       {issues.map(issue => {
         const title = getCellValueByColumn(issue, columns.title) || '';
         const priority = Number(getCellValueByColumn(issue, columns.priority) || 0);
@@ -80,6 +94,11 @@ const MobileIssueCards = ({ metadata, onRowClick }) => {
           </div>
         );
       })}
+      {isLoadingMore && (
+        <div className="seaqa-portal-issue-cards-loading">
+          <Loading />
+        </div>
+      )}
     </div>
   );
 };
