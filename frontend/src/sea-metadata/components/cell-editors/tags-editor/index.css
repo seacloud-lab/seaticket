@@ -7,7 +7,6 @@
   position: absolute;
 }
 
-
 .seaqa-tags-selector-popover.option-editor-popover .option-editor-container {
   min-height: 100px;
 }
@@ -32,4 +31,8 @@
   border-radius: 11px;
   padding: 0 8px 0 4px;
   background-color: #FFFFFF;
+}
+
+.sea-metadata-tags-selector-popover .option-editor-container.selected-value-display.search-enabled.small-size-option .option-editor-search-wrapper {
+  padding-top: 8px;
 }
