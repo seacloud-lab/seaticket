@@ -177,10 +177,9 @@
   background-color: rgba(0, 0, 0, 0.04);
 }
 
-.canvas-groups-rows .group-toggle-btn .seaqa-icon-svg-drop-down {
-  font-size: 12px;
-  fill: #666666;
-  transition: all .3s;
+.canvas-groups-rows .group-toggle-btn .seaqa-icon-svg-arrow-down {
+  height: 16px !important;
+  width: 16px !important;
 }
 
 /* group title */
