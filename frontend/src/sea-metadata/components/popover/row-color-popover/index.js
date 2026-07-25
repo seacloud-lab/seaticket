@@ -170,7 +170,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
         { name: 'offset', options: { offset: [0, 8] } }
       ]}
     >
-      <div className="seaqa-row-color-body px-2 pt-2 pb-0" style={{ minWidth: rules.length === 0 ? '450px' : '550px' }}>
+      <div className="seaqa-row-color-body px-2 pt-2 pb-0" style={{ minWidth: rules.length === 0 ? '450px' : '550px', maxHeight: 'calc(100vh - 200px)', overflowY: 'auto' }}>
         {rules.length === 0 &&
           <div className="seaqa-row-color-empty d-flex justify-content-center align-items-center">{gettext('No rules')}</div>
         }

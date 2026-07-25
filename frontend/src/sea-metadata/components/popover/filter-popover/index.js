@@ -155,7 +155,7 @@ class FilterPopover extends Component {
         boundariesElement={document.body}
       >
         {({ update: scheduleUpdate }) => (
-          <div ref={ref => this.popoverRef = ref} onClick={this.onPopoverInsideClick} className={filtersClassName}>
+          <div ref={ref => this.popoverRef = ref} onClick={this.onPopoverInsideClick} className={filtersClassName} style={{ maxHeight: 'calc(100vh - 100px)', overflowY: 'auto' }}>
             {isValidBasicFilters && (
               <BasicFilters readOnly={readOnly} columns={columns} filters={basicFilters} onChange={this.onBasicFilterChange} viewType={viewType}/>
             )}

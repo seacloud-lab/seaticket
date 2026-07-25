@@ -244,7 +244,7 @@ class SortPopover extends Component {
         className="sea-metadata-sort-popover"
         boundariesElement={document.body}
       >
-        <div ref={ref => this.sortPopoverRef = ref} onClick={this.onPopoverInsideClick}>
+        <div ref={ref => this.sortPopoverRef = ref} onClick={this.onPopoverInsideClick} style={{ maxHeight: 'calc(100vh - 100px)', overflowY: 'auto' }}>
           <div className={`sorts-list${isEmpty ? ' d-flex align-items-center justify-content-center' : ''}`} >
             {isEmpty ?
               <div className="seaqa-tip-large">{gettext('No sorts')}</div> :
