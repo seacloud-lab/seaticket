@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import CustomizePopover from '@/components/customize-popover';
@@ -30,6 +30,8 @@ const getValidRules = (rules = []) => {
 const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = [], hidePopover, modifyRowColor }) => {
   const [editingRuleIndex, setEditingRuleIndex] = useState(null);
   const [colorSelectorIndex, setColorSelectorIndex] = useState(null);
+  const bodyRef = useRef(null);
+  const [shouldScroll, setShouldScroll] = useState(false);
 
   const excludedColumnKeys = useMemo(() => {
     return new Set([
@@ -54,6 +56,28 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
   useEffect(() => {
     setRules(colorRules);
   }, [colorRules]);
+
+  const syncPopoverScrollState = useCallback(() => {
+    if (!bodyRef.current) return;
+
+    const availableHeight = window.innerHeight - 200;
+    const nextShouldScroll = bodyRef.current.scrollHeight > availableHeight;
+
+    setShouldScroll((prevShouldScroll) => prevShouldScroll === nextShouldScroll ? prevShouldScroll : nextShouldScroll);
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('resize', syncPopoverScrollState);
+    window.requestAnimationFrame(syncPopoverScrollState);
+
+    return () => {
+      window.removeEventListener('resize', syncPopoverScrollState);
+    };
+  }, [syncPopoverScrollState]);
+
+  useEffect(() => {
+    window.requestAnimationFrame(syncPopoverScrollState);
+  }, [syncPopoverScrollState, rules, editingRuleIndex, colorSelectorIndex]);
 
   const canAddRule = useMemo(() => {
     if (validColumns.length === 0) return false;
@@ -170,7 +194,15 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
         { name: 'offset', options: { offset: [0, 8] } }
       ]}
     >
-      <div className="seaqa-row-color-body px-2 pt-2 pb-0" style={{ minWidth: rules.length === 0 ? '450px' : '550px', maxHeight: 'calc(100vh - 200px)', overflowY: 'auto' }}>
+      <div
+        ref={bodyRef}
+        className="seaqa-row-color-body px-2 pt-2 pb-0"
+        style={{
+          minWidth: rules.length === 0 ? '450px' : '550px',
+          overflowY: shouldScroll ? 'auto' : 'visible',
+          maxHeight: shouldScroll ? 'calc(100vh - 200px)' : 'none',
+        }}
+      >
         {rules.length === 0 &&
           <div className="seaqa-row-color-empty d-flex justify-content-center align-items-center">{gettext('No rules')}</div>
         }
@@ -195,7 +227,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
                     }}
                     icon="arrow-down-b"
                     onMouseDown={(e) => e.stopPropagation()}
-                    onClick={(e) => {e.stopPropagation(); setColorSelectorIndex(colorSelectorIndex === ruleIndex ? null : ruleIndex);}}
+                    onClick={(e) => { e.stopPropagation(); setColorSelectorIndex(colorSelectorIndex === ruleIndex ? null : ruleIndex); }}
                   />
                   {colorSelectorIndex === ruleIndex && (
                     <ColorSelectorPopover
@@ -211,7 +243,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
                   <IconButton
                     className="seaqa-row-color-rule-remove"
                     icon="delete"
-                    onClick={(e) => {e.stopPropagation(); deleteRule(ruleIndex);}}
+                    onClick={(e) => { e.stopPropagation(); deleteRule(ruleIndex); }}
                   />
                 )}
               </div>

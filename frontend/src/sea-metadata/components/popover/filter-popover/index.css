@@ -39,7 +39,7 @@
   width: fit-content;
   max-width: 100%;
   font-weight: 400;
-  padding-left: 12px;
+  padding: 0 12px;
 }
 
 .sea-metadata-filter-popover .customize-add-tool.popover-add-tool:hover {

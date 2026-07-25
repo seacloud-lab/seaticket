@@ -49,6 +49,7 @@ class SortPopover extends Component {
     this.initSorts = getDisplaySorts(sorts, columns);
     this.state = {
       sorts: [...this.initSorts],
+      shouldScroll: false,
     };
     this.isSelectOpen = false;
   }
@@ -57,12 +58,19 @@ class SortPopover extends Component {
     document.addEventListener('click', this.hideDTablePopover, true);
     document.addEventListener('keydown', this.onHotKey);
     this.unsubscribeOpenSelect = context.eventBus.subscribe(EVENT_BUS_TYPE.OPEN_SELECT, this.setSelectStatus);
+    window.addEventListener('resize', this.syncPopoverScrollState);
+    window.requestAnimationFrame(this.syncPopoverScrollState);
   }
 
   componentWillUnmount() {
     document.removeEventListener('click', this.hideDTablePopover, true);
     document.removeEventListener('keydown', this.onHotKey);
+    window.removeEventListener('resize', this.syncPopoverScrollState);
     this.unsubscribeOpenSelect();
+  }
+
+  componentDidUpdate() {
+    this.syncPopoverScrollState();
   }
 
   hideDTablePopover = (e) => {
@@ -230,10 +238,22 @@ class SortPopover extends Component {
     e.stopPropagation();
   };
 
+  syncPopoverScrollState = () => {
+    if (!this.sortPopoverRef) return;
+
+    const availableHeight = window.innerHeight - 100;
+    const shouldScroll = this.sortPopoverRef.scrollHeight > availableHeight;
+
+    if (shouldScroll !== this.state.shouldScroll) {
+      this.setState({ shouldScroll });
+    }
+  };
+
   render() {
     const { target, readOnly = false } = this.props;
-    const { sorts } = this.state;
+    const { sorts, shouldScroll } = this.state;
     const isEmpty = isSortsEmpty(sorts);
+    const popoverStyle = shouldScroll ? { maxHeight: 'calc(100vh - 100px)', overflowY: 'auto' } : { overflowY: 'visible' };
     return (
       <UncontrolledPopover
         placement="bottom-end"
@@ -244,7 +264,7 @@ class SortPopover extends Component {
         className="sea-metadata-sort-popover"
         boundariesElement={document.body}
       >
-        <div ref={ref => this.sortPopoverRef = ref} onClick={this.onPopoverInsideClick} style={{ maxHeight: 'calc(100vh - 100px)', overflowY: 'auto' }}>
+        <div ref={ref => this.sortPopoverRef = ref} onClick={this.onPopoverInsideClick} style={popoverStyle}>
           <div className={`sorts-list${isEmpty ? ' d-flex align-items-center justify-content-center' : ''}`} >
             {isEmpty ?
               <div className="seaqa-tip-large">{gettext('No sorts')}</div> :

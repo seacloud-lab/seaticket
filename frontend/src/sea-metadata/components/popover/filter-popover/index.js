@@ -39,6 +39,7 @@ class FilterPopover extends Component {
       basicFilters: initData.basicFilters,
       filters: initData.filters,
       filterConjunction: initData.filterConjunction,
+      shouldScroll: false,
     };
     this.isSelectOpen = false;
   }
@@ -48,12 +49,19 @@ class FilterPopover extends Component {
     document.addEventListener('click', this.hideDTablePopover, true);
     document.addEventListener('keydown', this.onHotKey);
     this.unsubscribeOpenSelect = context.eventBus.subscribe(EVENT_BUS_TYPE.OPEN_SELECT, this.setSelectStatus);
+    window.addEventListener('resize', this.syncPopoverScrollState);
+    window.requestAnimationFrame(this.syncPopoverScrollState);
   }
 
   componentWillUnmount() {
     document.removeEventListener('click', this.hideDTablePopover, true);
     document.removeEventListener('keydown', this.onHotKey);
+    window.removeEventListener('resize', this.syncPopoverScrollState);
     this.unsubscribeOpenSelect();
+  }
+
+  componentDidUpdate() {
+    this.syncPopoverScrollState();
   }
 
   onClosePopover = () => {
@@ -137,12 +145,24 @@ class FilterPopover extends Component {
     this.setState({ basicFilters: value });
   };
 
+  syncPopoverScrollState = () => {
+    if (!this.popoverRef) return;
+
+    const availableHeight = window.innerHeight - 100;
+    const shouldScroll = this.popoverRef.scrollHeight > availableHeight;
+
+    if (shouldScroll !== this.state.shouldScroll) {
+      this.setState({ shouldScroll });
+    }
+  };
+
   render() {
     const { readOnly, target, columns, placement = 'auto-start', viewType, filtersClassName = '' } = this.props;
-    const { filters, filterConjunction, basicFilters } = this.state;
+    const { filters, filterConjunction, basicFilters, shouldScroll } = this.state;
     const canAddFilter = columns.length > 0;
     const advancedFilterColumns = columns.filter(c => !basicFilters.find(basicFilter => basicFilter.column_key === c.key));
     const isValidBasicFilters = basicFilters.length > 0;
+    const popoverStyle = shouldScroll ? { maxHeight: 'calc(100vh - 100px)', overflowY: 'auto' } : { overflowY: 'visible' };
 
     return (
       <UncontrolledPopover
@@ -155,7 +175,7 @@ class FilterPopover extends Component {
         boundariesElement={document.body}
       >
         {({ update: scheduleUpdate }) => (
-          <div ref={ref => this.popoverRef = ref} onClick={this.onPopoverInsideClick} className={filtersClassName} style={{ maxHeight: 'calc(100vh - 100px)', overflowY: 'auto' }}>
+          <div ref={ref => this.popoverRef = ref} onClick={this.onPopoverInsideClick} className={filtersClassName} style={popoverStyle}>
             {isValidBasicFilters && (
               <BasicFilters readOnly={readOnly} columns={columns} filters={basicFilters} onChange={this.onBasicFilterChange} viewType={viewType}/>
             )}
