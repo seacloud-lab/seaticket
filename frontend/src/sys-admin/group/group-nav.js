@@ -45,7 +45,7 @@ class GroupNav extends React.Component {
             <SearchInput
               autoFocus={false}
               placeholder={gettext('Search member')}
-              size={30}
+              size={28}
               value={searchValue}
               onChange={onChangeSearchValue}
             />

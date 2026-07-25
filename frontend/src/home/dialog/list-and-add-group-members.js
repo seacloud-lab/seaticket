@@ -162,7 +162,7 @@ class ListAndAddGroupMembers extends React.Component {
             value={searchValue}
             autoFocus={false}
             onChange={this.onSearchGroupMembers}
-            size={30}
+            size={28}
             className="search-group-members-input-wrapper"
             placeholder={gettext('Search group members')}
             onClear={this.clearValue}
