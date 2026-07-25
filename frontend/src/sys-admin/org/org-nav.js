@@ -49,7 +49,7 @@ class Nav extends React.Component {
             <SearchInput
               autoFocus={false}
               placeholder={gettext('Search member')}
-              size={30}
+              size={28}
               onChange={onChangeSearchValue}
             />
           </div>

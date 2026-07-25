@@ -176,7 +176,7 @@ const Main = forwardRef(({
   return (
     <div className="collaborator-editor-container" id={id}>
       {isMultiple && isShowDeleteArea && (
-        <div className="collaborator-editor-selected-container">
+        <div className="collaborator-editor-selected-container p-2">
           {Array.isArray(value) && value.map(email => {
             const collaborator = collaboratorsMap[email];
             if (!collaborator) return null;
@@ -192,10 +192,10 @@ const Main = forwardRef(({
         <div className="collaborator-editor-search-wrapper">
           <SearchInput
             isShowSearchIcon={false}
-            isShowClearIcon={true}
+            isShowClearIcon={searchValue.length > 0 ? true : false}
             autoFocus={true}
             value={searchValue}
-            size={30}
+            size={28}
             placeholder={placeholder}
             onClear={() => setSearchValue('')}
             onKeyDown={onKeyDown}
