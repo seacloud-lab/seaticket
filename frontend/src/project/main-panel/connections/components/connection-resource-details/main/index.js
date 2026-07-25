@@ -99,22 +99,21 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
 
   const getAutoReadEmailState = useCallback((record, details, permission) => {
     if (permission !== PERMISSION_TYPES.READ_WRITE || !Array.isArray(details) || details.length === 0) {
-      return { record, details, target: null };
+      return { record, details, shouldMarkThreadRead: false };
     }
 
-    const lastDetailIndex = details.length - 1;
-    const lastDetail = details[lastDetailIndex];
-    if (!lastDetail?.unread) return { record, details, target: null };
+    const shouldMarkThreadRead = Boolean(record?.unread) || isEmailThreadUnread(details);
+    if (!shouldMarkThreadRead) return { record, details, shouldMarkThreadRead: false };
 
-    const nextDetails = details.map((item, index) => {
-      if (index !== lastDetailIndex) return item;
+    const nextDetails = details.map((item) => {
+      if (!item?.unread) return item;
       return { ...item, unread: false };
     });
 
     return {
       details: nextDetails,
-      record: { ...record, unread: isEmailThreadUnread(nextDetails) },
-      target: lastDetail._pk,
+      record: { ...record, unread: false },
+      shouldMarkThreadRead,
     };
   }, [isEmailThreadUnread]);
 
@@ -136,19 +135,18 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
       const initialDetails = initConnectionResourceDetails(type, record);
       const autoReadState = type === CONNECTION_TYPE.EMAIL
         ? getAutoReadEmailState(record, initialDetails, permission)
-        : { record, details: initialDetails, target: null };
+        : { record, details: initialDetails, shouldMarkThreadRead: false };
       const nextDetails = autoReadState.details;
       const nextRecord = autoReadState.record;
-      const autoReadTarget = autoReadState.target;
+      const shouldMarkThreadRead = autoReadState.shouldMarkThreadRead;
 
       setDetails(nextDetails);
       updateResourceRef.current({ record: nextRecord, columns, linked_ticket_title, related_users });
-      if (autoReadTarget) onThreadUnreadChangeRef.current?.(nextRecord.unread);
+      if (shouldMarkThreadRead) onThreadUnreadChangeRef.current?.(nextRecord.unread);
       setStatus('loaded');
 
-      if (!autoReadTarget) return;
-      connectionsAPI.unreadConnectionEmail(projectUuid, connection_id, {
-        record_id: autoReadTarget,
+      if (!shouldMarkThreadRead) return;
+      connectionsAPI.modifyConnectionRecord(projectUuid, connection_id, _id, {
         unread: false,
       }).catch((error) => {
         setDetails(initialDetails);
