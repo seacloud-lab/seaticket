@@ -779,6 +779,32 @@ def convert_select_field_names_to_option_ids(columns, record, field_names=None):
     return record
 
 
+def convert_select_field_option_ids_to_names(columns, record, field_names=None):
+    """In-place convert select field values from option ids to option names."""
+
+    if not record:
+        return record
+
+    field_names = field_names or ('state', 'type', 'substate')
+    for field_name in field_names:
+        field_value = record.get(field_name)
+        if not field_value:
+            continue
+
+        column = get_column_from_columns_by_name(columns, field_name)
+        if not column:
+            continue
+
+        column_data = column.get('data') or {}
+        options = column_data.get('options', []) or []
+        for option in options:
+            if str(option.get('id')) == str(field_value):
+                record[field_name] = option.get('name')
+                break
+
+    return record
+
+
 def get_tickets_by_ids(seadb_api, project_uuid, ticket_ids):
     ticket_ids_str = ", ".join([
         str(ticket_id)

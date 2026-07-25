@@ -6,6 +6,7 @@ from email.utils import make_msgid
 from urllib.parse import urlparse
 
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from seahub.utils import uuid_str_to_36_chars
 from seahub.utils.ai_client import (
@@ -19,9 +20,11 @@ from seahub.tickets.ticket_utils import (
     collect_open_linked_github_issues_for_tickets,
     close_linked_github_issues,
     get_ticket_table_columns,
+    get_column_from_columns_by_name,
     map_ticket_substate_to_github_state_reason,
     record_ticket_activities,
     build_ticket_close_payloads_from_client,
+    convert_select_field_option_ids_to_names,
 )
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
@@ -32,6 +35,7 @@ from seahub.project.utils import (
     collect_github_issue_label_options,
     persist_project_connection_config,
     build_ticket_related_url,
+    build_connection_record_related_url,
 )
 from seahub.notifications.signal_handler import (
     MSG_TYPE_AGENT_NOTIFY_ASSIGNEE
@@ -198,7 +202,7 @@ class AgentActionExecutor:
                 seadb_api, project_uuid, source_id, suggestion_text
             )
         if tool_name == 'suggest_create_ticket':
-            return self._execute_github_create_ticket(seadb_api, project, project_uuid, source_id, operator, request=request, auto_executed=auto_executed)
+            return self._execute_github_create_ticket(seadb_api, project, project_uuid, source_id, suggestion_content, operator, request=request, auto_executed=auto_executed)
         logger.warning('Unknown github_issue tool_name: %r', tool_name)
         return self._failed_execution(f'Unknown tool_name: {tool_name}')
 
@@ -219,7 +223,7 @@ class AgentActionExecutor:
                 seadb_api, project, project_uuid, source_id, suggestion_content, operator
             )
         if tool_name == 'suggest_create_ticket':
-            return self._execute_discourse_create_ticket(seadb_api, project, project_uuid, source_id, operator, request=request, auto_executed=auto_executed)
+            return self._execute_discourse_create_ticket(seadb_api, project, project_uuid, source_id, suggestion_content, operator, request=request, auto_executed=auto_executed)
         logger.warning('Unknown discourse_topic tool_name: %r', tool_name)
         return self._failed_execution(f'Unknown tool_name: {tool_name}')
 
@@ -238,7 +242,7 @@ class AgentActionExecutor:
         if tool_name == 'suggest_reply':
             return self._execute_email_suggest_reply(seadb_api, project_uuid, source_id, suggestion_content)
         if tool_name == 'suggest_create_ticket':
-            return self._execute_email_create_ticket(seadb_api, project, project_uuid, source_id, operator, request=request, auto_executed=auto_executed)
+            return self._execute_email_create_ticket(seadb_api, project, project_uuid, source_id, suggestion_content, operator, request=request, auto_executed=auto_executed)
         if tool_name == 'suggest_move_to_spam':
             return self._execute_email_move_to_spam(seadb_api, project_uuid, source_id)
         logger.warning('Unknown email tool_name: %r', tool_name)
@@ -727,47 +731,132 @@ class AgentActionExecutor:
             f'Issue type updated to "{new_type}" for GitHub issue {ctx["record_id"]}.'
         )
 
-    def _create_ticket_from_record_detail(
+    @staticmethod
+    def _parse_ticket_suggestion_content(suggestion_content):
+        if not isinstance(suggestion_content, str):
+            return None
+
+        normalized = suggestion_content.replace('\r\n', '\n').strip()
+        if not normalized:
+            return None
+
+        try:
+            parsed = json.loads(normalized)
+        except Exception:
+            parsed = None
+        if isinstance(parsed, dict):
+            return {
+                'title': str(parsed.get('title') or '').strip(),
+                'content': str(parsed.get('content') or '').strip(),
+                'assignees': parsed.get('assignees') if isinstance(parsed.get('assignees'), list) else [],
+                'participants': parsed.get('participants') if isinstance(parsed.get('participants'), list) else [],
+                'type': str(parsed.get('type') or '').strip(),
+                'tags': parsed.get('tags') if isinstance(parsed.get('tags'), list) else [],
+                'priority': parsed.get('priority'),
+                'state': str(parsed.get('state') or '').strip(),
+                'substate': str(parsed.get('substate') or '').strip(),
+                'due_date': str(parsed.get('due_date') or '').strip(),
+            }
+        return None
+
+    def _create_ticket(
         self,
         seadb_api,
         project,
         project_uuid,
         source_id,
         username,
-        record_detail,
-        title,
-        source_label,
+        backup_title,
+        suggestion_content,
         request=None,
         auto_executed=False,
     ):
-        org_id = getattr(getattr(project, 'workspace', None), 'org_id', -1) or -1
-        params = {
-            'username': 'agent',
-            'record_detail': record_detail,
-            'project_uuid': project_uuid,
-            'org_id': org_id,
-            'scenario': AIScenario.RECORD_GENERATION.value,
-        }
-        try:
-            ai_title, ai_content = ai_convert_record_to_ticket(params)
-        except Exception as e:
-            logger.error(f'AI service error when creating ticket from {source_label} {source_id}: {e}')
-            return None, f'AI service error: {e}'
+        draft = self._parse_ticket_suggestion_content(suggestion_content)
+        if draft:
+            ticket_title = draft['title'] or backup_title
+            ticket_content = draft['content']
+            ticket_assignees = draft.get('assignees') or []
+            ticket_participants = draft.get('participants') or []
+            ticket_type = draft.get('type') or ''
+            ticket_tags = draft.get('tags') or []
+            ticket_priority = draft.get('priority')
+            ticket_state = (draft.get('state') or '').strip().lower()
+            ticket_substate = draft.get('substate') or ''
+            ticket_due_date = draft.get('due_date') or ''
+        else:
+            ticket_title = backup_title
+            ticket_content = suggestion_content
+            ticket_assignees = []
+            ticket_participants = []
+            ticket_type = ''
+            ticket_tags = []
+            ticket_priority = None
+            ticket_state = ''
+            ticket_substate = ''
+            ticket_due_date = ''
 
-        ticket_title = ai_title or title
-        ticket_content = ai_content or ''
+        ticket_title = (ticket_title or '').strip()
+        ticket_content = (ticket_content or '').strip()
+        if not ticket_title:
+            ticket_title = 'Untitled'
+        try:
+            ticket_priority = int(ticket_priority)
+        except (TypeError, ValueError):
+            ticket_priority = 0
+        ticket_priority = max(0, ticket_priority)
+
+        connection_id, record_id = self._parse_connection_source_id(source_id, 'connection record')
+        if connection_id is not None and record_id is not None:
+            related_url = build_connection_record_related_url(
+                request, project, connection_id, record_id
+            )
+            if related_url and related_url not in ticket_content:
+                linked_record_suffix = f'{_('Linked record')}: {related_url}'
+                ticket_content = (
+                    f'{ticket_content}\n\n{linked_record_suffix}'
+                    if ticket_content else linked_record_suffix
+                )
+
+        try:
+            ticket_columns = get_ticket_table_columns(seadb_api, project_uuid)
+            select_fields = {
+                SchemaTables.TICKETS.column.state.name: ticket_state,
+                SchemaTables.TICKETS.column.substate.name: ticket_substate,
+                SchemaTables.TICKETS.column.type.name: ticket_type,
+            }
+            convert_select_field_option_ids_to_names(ticket_columns, select_fields)
+
+            ticket_type = select_fields[SchemaTables.TICKETS.column.type.name] or ''
+            ticket_state = select_fields[SchemaTables.TICKETS.column.state.name] or 'open'
+            ticket_substate = select_fields[SchemaTables.TICKETS.column.substate.name] or ''
+            if not ticket_substate:
+                substate_column = get_column_from_columns_by_name(
+                    ticket_columns, SchemaTables.TICKETS.column.substate.name
+                ) or {}
+                substate_options = ((substate_column.get('data') or {}).get('options') or [])
+                if substate_options:
+                    ticket_substate = substate_options[0].get('name') or ''
+        except Exception as e:
+            logger.error(f'Failed to resolve ticket select options for source_id {source_id}: {e}')
+            return None, f'Failed to create ticket: {e}'
 
         now = timezone.now().isoformat()
+
         ticket_creator = AUTO_TICKET_CREATOR if auto_executed else username
         ticket_row = {
             SchemaTables.TICKETS.column.title.name: ticket_title,
             SchemaTables.TICKETS.column.content.name: ticket_content,
-            SchemaTables.TICKETS.column.state.name: 'open',
-            SchemaTables.TICKETS.column.substate.name: 'New',
-            SchemaTables.TICKETS.column.priority.name: 0,
+            SchemaTables.TICKETS.column.state.name: ticket_state,
+            SchemaTables.TICKETS.column.substate.name: ticket_substate,
+            SchemaTables.TICKETS.column.type.name: ticket_type,
+            SchemaTables.TICKETS.column.priority.name: ticket_priority,
+            SchemaTables.TICKETS.column.assignees.name: ticket_assignees,
+            SchemaTables.TICKETS.column.participants.name: ticket_participants,
+            SchemaTables.TICKETS.column.tags.name: ticket_tags,
             SchemaTables.TICKETS.column.creator.name: ticket_creator,
             SchemaTables.TICKETS.column.created_time.name: now,
             SchemaTables.TICKETS.column.modified_time.name: now,
+            SchemaTables.TICKETS.column.due_date.name: ticket_due_date,
             SchemaTables.TICKETS.column.deleted.name: False,
             SchemaTables.TICKETS.column.linked_connection_records.name: [source_id],
         }
@@ -778,7 +867,7 @@ class AgentActionExecutor:
                 raise RuntimeError('insert_rows returned no PKs')
             ticket_pk = pks[0]
         except Exception as e:
-            logger.error(f'Failed to insert ticket for {source_label} {source_id}: {e}')
+            logger.error(f'Failed to insert ticket for source_id {source_id}: {e}')
             return None, f'Failed to create ticket: {e}'
 
         ticket = {
@@ -795,7 +884,7 @@ class AgentActionExecutor:
         }, ensure_ascii=False))
 
     def _execute_github_create_ticket(
-        self, seadb_api, project, project_uuid, source_id, username, request=None, auto_executed=False
+        self, seadb_api, project, project_uuid, source_id, suggestion_content, username, request=None, auto_executed=False
     ):
         connection_id, record_id = self._parse_connection_source_id(source_id, ConnectionType.GITHUB_ISSUE.value)
         if connection_id is None or record_id is None:
@@ -815,23 +904,15 @@ class AgentActionExecutor:
             return self._failed_execution(f'GitHub issue #{record_id} is already linked to ticket #{linked_ticket}.')
 
         title = issue.get('title', '')
-        body_content = (issue.get('content') or '').strip()
 
-        record_detail = (
-            f"**GitHub Issue Information:**\n"
-            f"Title: {title}\n"
-            f"Body: {body_content[:3000]}..."
-        )
-
-        ticket, error = self._create_ticket_from_record_detail(
+        ticket, error = self._create_ticket(
             seadb_api=seadb_api,
             project=project,
             project_uuid=project_uuid,
             source_id=source_id,
             username=username,
-            record_detail=record_detail,
-            title=title,
-            source_label=ConnectionType.GITHUB_ISSUE.value,
+            backup_title=title,
+            suggestion_content=suggestion_content,
             request=request,
             auto_executed=auto_executed,
         )
@@ -993,88 +1074,6 @@ class AgentActionExecutor:
 
         return self._successful_execution(f'Reply email sent for thread #{thread_id} (email record ID: {reply_pk}).')
 
-    def _build_email_thread_record_detail(self, thread, emails):
-        lines = [
-            '**Email Thread Information:**',
-            f"Subject: {thread.get('title', '')}",
-            '',
-        ]
-
-        for index, email in enumerate(emails[-10:], start=1):
-            lines.extend([
-                f'Email #{index}:',
-                f"From: {email.get('email_from', '')}",
-                f"To: {email.get('email_to', '')}",
-                f"CC: {email.get('cc', '')}",
-                f"Time: {email.get('modified_time', '')}",
-                f"Is Sender: {bool(email.get('is_sender'))}",
-                f"Content: {(email.get('content') or '')[:2000]}",
-                '',
-            ])
-
-        return '\n'.join(lines).strip()
-
-    def _build_discourse_topic_record_detail(self, project_connection, topic, replies):
-        topic_id = topic.get('topic_id')
-        slug = topic.get('slug', '')
-        topic_url = ''
-        try:
-            config = decrypt_config(json.loads(project_connection.config))
-            discourse_forum_url = config.get('url', '').rstrip('/')
-            if discourse_forum_url and topic_id:
-                topic_url = f'{discourse_forum_url}/t/{slug}/{topic_id}'
-        except Exception as e:
-            logger.warning(
-                'Failed to parse discourse connection config for %s when building record detail: %s',
-                project_connection.id, e
-            )
-
-        ordered_replies = sorted(
-            replies or [],
-            key=lambda reply: (reply.get('post_number') is None, reply.get('post_number', 0))
-        )
-
-        lines = [
-            '**Discourse Topic Information:**',
-            f"Title: {topic.get('title', '')}",
-            f"Topic ID: {topic_id or ''}",
-            f"Slug: {slug}",
-            f"Created Time: {topic.get('created_time', '')}",
-            f"Resolved: {bool(topic.get('resolved'))}",
-        ]
-        if topic_url:
-            lines.append(f'Topic URL: {topic_url}')
-        lines.append('')
-
-        # The first reply is the topic's original post and serves
-        # as the topic content, so always include it separately from later replies.
-        original_post = ordered_replies[0] if ordered_replies else None
-        subsequent_replies = ordered_replies[1:] if ordered_replies else []
-
-        if original_post:
-            lines.extend([
-                'Original Post:',
-                f"Author: {original_post.get('author', '')}",
-                f"Post Number: {original_post.get('post_number', '')}",
-                f"Time: {original_post.get('modified_time', '')}",
-                f"Accepted Answer: {bool(original_post.get('accepted_answer'))}",
-                f"Content: {(original_post.get('content') or '')[:2000]}",
-                '',
-            ])
-
-        for index, reply in enumerate(subsequent_replies[-10:], start=1):
-            lines.extend([
-                f'Reply #{index}:',
-                f"Author: {reply.get('author', '')}",
-                f"Post Number: {reply.get('post_number', '')}",
-                f"Time: {reply.get('modified_time', '')}",
-                f"Accepted Answer: {bool(reply.get('accepted_answer'))}",
-                f"Content: {(reply.get('content') or '')[:2000]}",
-                '',
-            ])
-
-        return '\n'.join(lines).strip()
-
     def _execute_email_move_to_spam(self, seadb_api, project_uuid, source_id):
         connection_id, thread_id = self._parse_connection_source_id(source_id, ConnectionType.EMAIL.value)
         if connection_id is None or thread_id is None:
@@ -1152,7 +1151,7 @@ class AgentActionExecutor:
             f'Email thread #{thread_id} moved to the spam folder.'
         )
 
-    def _execute_email_create_ticket(self, seadb_api, project, project_uuid, source_id, username, request=None, auto_executed=False):
+    def _execute_email_create_ticket(self, seadb_api, project, project_uuid, source_id, suggestion_content, username, request=None, auto_executed=False):
         connection_id, thread_id = self._parse_connection_source_id(source_id, ConnectionType.EMAIL.value)
         if connection_id is None or thread_id is None:
             return self._failed_execution(f'Invalid source_id format: {source_id}')
@@ -1167,19 +1166,17 @@ class AgentActionExecutor:
         if linked_ticket:
             return self._failed_execution(f'Email thread #{thread_id} is already linked to ticket #{linked_ticket}.')
 
-        record_detail = self._build_email_thread_record_detail(thread, emails)
         thread_table = SchemaTables.THREAD.table_name(project_connection.id)
         thread_id = thread.get('_pk')
 
-        ticket, error = self._create_ticket_from_record_detail(
+        ticket, error = self._create_ticket(
             seadb_api=seadb_api,
             project=project,
             project_uuid=project_uuid,
             source_id=source_id,
             username=username,
-            record_detail=record_detail,
-            title=thread.get('title', ''),
-            source_label=ConnectionType.EMAIL.value,
+            backup_title=thread.get('title', ''),
+            suggestion_content=suggestion_content,
             request=request,
             auto_executed=auto_executed,
         )
@@ -1204,7 +1201,7 @@ class AgentActionExecutor:
             ticket,
         )
 
-    def _execute_discourse_create_ticket(self, seadb_api, project, project_uuid, source_id, username, request=None, auto_executed=False):
+    def _execute_discourse_create_ticket(self, seadb_api, project, project_uuid, source_id, suggestion_content, username, request=None, auto_executed=False):
         connection_id, topic_pk = self._parse_connection_source_id(source_id, ConnectionType.DISCOURSE_FORUM.value)
         if connection_id is None or topic_pk is None:
             return self._failed_execution(f'Invalid source_id format: {source_id}')
@@ -1219,19 +1216,17 @@ class AgentActionExecutor:
         if linked_ticket:
             return self._failed_execution(f'Discourse topic #{topic_pk} is already linked to ticket #{linked_ticket}.')
 
-        record_detail = self._build_discourse_topic_record_detail(project_connection, topic, replies)
         topic_table = SchemaTables.DISCOURSE_TOPICS.table_name(project_connection.id)
         topic_pk = topic.get('_pk')
 
-        ticket, error = self._create_ticket_from_record_detail(
+        ticket, error = self._create_ticket(
             seadb_api=seadb_api,
             project=project,
             project_uuid=project_uuid,
             source_id=source_id,
             username=username,
-            record_detail=record_detail,
-            title=topic.get('title', ''),
-            source_label=ConnectionType.DISCOURSE_FORUM.value,
+            backup_title=topic.get('title', ''),
+            suggestion_content=suggestion_content,
             request=request,
             auto_executed=auto_executed,
         )

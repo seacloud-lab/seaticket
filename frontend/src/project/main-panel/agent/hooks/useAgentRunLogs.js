@@ -42,12 +42,22 @@ export const useAgentRunLogs = () => {
     loadRunLogs(1);
   }, [loadRunLogs]);
 
-  const updateRunLog = useCallback((runId) => {
-    return agentAPI.getAgentRunDetails(projectUuid, runId).then(res => {
-      setRunLogs(prev => prev.map(run => run.id === runId ? res.data : run));
-    }).catch(err => {
-      console.error('Failed to refresh run log:', err);
-    });
+  const updateRunAction = useCallback((runId, actionId, actionUpdates) => {
+    const updateActions = (actions = []) => actions.map(action => (
+      action.id === actionId ? { ...action, ...actionUpdates } : action
+    ));
+
+    setRunLogs(prev => prev.map(run => {
+      if (run.id !== runId) return run;
+
+      return {
+        ...run,
+        items: (run.items || []).map(item => ({
+          ...item,
+          actions: updateActions(item.actions),
+        })),
+      };
+    }));
   }, []);
 
   return {
@@ -56,6 +66,6 @@ export const useAgentRunLogs = () => {
     hasMore,
     loadMore,
     refresh,
-    updateRunLog,
+    updateRunAction,
   };
 };

@@ -128,7 +128,7 @@
   align-items: center;
 }
 
-.seaqa-project-ticket .seaqa-project-ticket-header .seaqa-project-ticket-status {
+.seaqa-project-ticket-status {
   height: 20px;
   display: flex;
   align-items: center;
@@ -141,11 +141,6 @@
   line-height: 1;
 }
 
-.seaqa-project-ticket .seaqa-project-ticket-header .seaqa-project-ticket-status.open {
+.seaqa-project-ticket-status.open {
   background-color: var(--ticket-open-color);
-}
-
-.seaqa-project-ticket .seaqa-project-ticket-header .seaqa-project-ticket-status.not_planned,
-.seaqa-project-ticket .seaqa-project-ticket-header .seaqa-project-ticket-status.duplicate {
-  background-color: var(--ticket-invalid-color);
 }

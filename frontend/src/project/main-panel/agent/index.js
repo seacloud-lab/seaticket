@@ -16,7 +16,7 @@ const { projectUuid } = window.app.pageOptions;
 
 const Agent = ({ title, settings, modifySettings }) => {
   const [pendingMapping, setPendingMapping] = useState(null);
-  const [suggestionDetailPanel, setSuggestionDetailPanel] = useState(null);
+  const [suggestionDetail, setSuggestionDetail] = useState(null);
   const [isSavingContent, setIsSavingContent] = useState(false);
   const [suggestionDetailPanelWidth, setSuggestionDetailPanelWidth] = useState(400);
   const [runCardsExpansionCommand, setRunCardsExpansionCommand] = useState(null);
@@ -27,7 +27,7 @@ const Agent = ({ title, settings, modifySettings }) => {
     hasMore,
     loadMore,
     refresh,
-    updateRunLog,
+    updateRunAction,
   } = useAgentRunLogs();
 
   const enabledAgent = useMemo(() => settings?.agent.enabled, [settings?.agent]);
@@ -53,9 +53,12 @@ const Agent = ({ title, settings, modifySettings }) => {
     const { runId, item, action } = actionContext;
 
     const executeConfirm = (options = null) => {
-      return agentAPI.confirmAgentAction(projectUuid, runId, actionId, options || {}).then(() => {
-        updateRunLog(runId);
-        return { success: true };
+      return agentAPI.confirmAgentAction(projectUuid, runId, actionId, options || {}).then((res) => {
+        updateRunAction(runId, actionId, {
+          status: res.data.status,
+          result: res.data.result,
+        });
+        return { success: res.data.success };
       }).catch((err) => {
         const payload = err?.response?.data;
         if (payload?.error_code === 'mapping_required') {
@@ -122,36 +125,36 @@ const Agent = ({ title, settings, modifySettings }) => {
       const payload = err?.response?.data || {};
       toaster.danger(payload?.detail || gettext('Failed to check linked GitHub issues'));
     });
-  }, [findActionContext, openCloseLinkedGitHubIssuesWarningDialog, updateRunLog]);
+  }, [findActionContext, openCloseLinkedGitHubIssuesWarningDialog, updateRunAction]);
 
   const handleUpdateContent = useCallback((runId, actionId, suggestionContent) => {
-    return agentAPI.updateAgentAction(projectUuid, runId, actionId, { suggestion_content: suggestionContent }).then(() => {
+    return agentAPI.updateAgentAction(projectUuid, runId, actionId, { suggestion_content: suggestionContent }).then((res) => {
       toaster.success(gettext('Content updated'));
-      updateRunLog(runId);
+      updateRunAction(runId, actionId, {
+        suggestion_content: res.data.suggestion_content,
+      });
     }).catch(err => {
       console.error('Failed to update action content:', err);
       toaster.danger(gettext('Failed to update content'));
       throw err;
     });
-  }, [updateRunLog]);
+  }, [updateRunAction]);
 
   const openSuggestionDetailPanel = useCallback((action, runId, mode = 'view') => {
-    setSuggestionDetailPanel({
+    setSuggestionDetail({
       action,
       runId,
       mode,
-      title: action.suggestion_text || action.result || '',
-      content: action.suggestion_content || '',
     });
   }, []);
 
   const closeSuggestionDetailPanel = useCallback(() => {
-    setSuggestionDetailPanel(null);
+    setSuggestionDetail(null);
   }, []);
 
   const handleSaveContent = useCallback((value) => {
-    if (!suggestionDetailPanel) return;
-    const { action, runId } = suggestionDetailPanel;
+    if (!suggestionDetail) return;
+    const { action, runId } = suggestionDetail;
     setIsSavingContent(true);
     handleUpdateContent(runId, action.id, value)
       .then(() => {
@@ -160,7 +163,7 @@ const Agent = ({ title, settings, modifySettings }) => {
       .finally(() => {
         setIsSavingContent(false);
       });
-  }, [suggestionDetailPanel, handleUpdateContent, closeSuggestionDetailPanel]);
+  }, [suggestionDetail, handleUpdateContent, closeSuggestionDetailPanel]);
 
   const handleCancelAction = useCallback((actionId) => {
     for (const run of runLogs) {
@@ -169,21 +172,27 @@ const Agent = ({ title, settings, modifySettings }) => {
         const actions = item.actions || [];
         const action = actions.find(a => a.id === actionId);
         if (action) {
-          return agentAPI.cancelAgentAction(projectUuid, run.id, actionId).then(() => {
-            updateRunLog(run.id);
+          return agentAPI.cancelAgentAction(projectUuid, run.id, actionId).then((res) => {
+            updateRunAction(run.id, actionId, {
+              status: res.data.status,
+              result: res.data.result,
+            });
           });
         }
       }
       const directActions = run.actions || [];
       const directAction = directActions.find(a => a.id === actionId);
       if (directAction) {
-        return agentAPI.cancelAgentAction(projectUuid, run.id, actionId).then(() => {
-          updateRunLog(run.id);
+        return agentAPI.cancelAgentAction(projectUuid, run.id, actionId).then((res) => {
+          updateRunAction(run.id, actionId, {
+            status: res.data.status,
+            result: res.data.result,
+          });
         });
       }
     }
     return Promise.resolve();
-  }, [runLogs, updateRunLog]);
+  }, [runLogs, updateRunAction]);
 
   const dismissMapping = useCallback(() => {
     setPendingMapping(null);
@@ -200,20 +209,28 @@ const Agent = ({ title, settings, modifySettings }) => {
         [agentType]: selectedGithubType,
       },
     };
-    modifySettings({ agent: newAgentSettings }).then((res) => {
+    modifySettings({ agent: newAgentSettings }).then(() => {
       setPendingMapping(null);
       return agentAPI.confirmAgentAction(projectUuid, runId, actionId);
-    }).then(() => {
-      updateRunLog(runId);
-      toaster.success(gettext('Action confirmed'));
-      callback && callback();
+    }).then((res) => {
+      updateRunAction(runId, actionId, {
+        status: res.data.status,
+        result: res.data.result,
+      });
+      if (res.data.success) {
+        toaster.success(gettext('Action confirmed'));
+        callback && callback();
+      } else {
+        toaster.danger(gettext('Failed to confirm action'));
+        callback && callback(true);
+      }
     }).catch((err) => {
       console.error('Failed to save mapping and confirm action:', err);
       toaster.danger(gettext('Failed to confirm action'));
       callback && callback(true);
       throw err;
     });
-  }, [pendingMapping, settings, updateRunLog, modifySettings]);
+  }, [pendingMapping, settings, updateRunAction, modifySettings]);
 
   const handleExpandAllRunCards = useCallback(() => {
     setRunCardsExpansionCommand(prev => ({
@@ -239,7 +256,7 @@ const Agent = ({ title, settings, modifySettings }) => {
       <div className="agent-container">
         <div
           className="agent-run-logs-section"
-          style={suggestionDetailPanel ? {
+          style={suggestionDetail ? {
             flex: `1 1 calc(100% - ${suggestionDetailPanelWidth}px)`,
             width: `calc(100% - ${suggestionDetailPanelWidth}px)`,
           } : undefined}
@@ -284,11 +301,9 @@ const Agent = ({ title, settings, modifySettings }) => {
             enabledAgent={enabledAgent}
           />
         </div>
-        {suggestionDetailPanel && (
+        {suggestionDetail && (
           <SuggestionDetailPanel
-            title={suggestionDetailPanel.title}
-            content={suggestionDetailPanel.content}
-            mode={suggestionDetailPanel.mode}
+            suggestionDetail={suggestionDetail}
             isSaving={isSavingContent}
             onSave={handleSaveContent}
             onClose={closeSuggestionDetailPanel}
