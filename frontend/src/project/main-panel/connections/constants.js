@@ -843,8 +843,12 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
     },
     [CONNECTION_PREDEFINED_COLUMN_NAME.UNREAD]: {
       display_name: gettext('unread'),
-      type: CellType.CHECKBOX,
-      editable: true,
+      type: CellType.UNREAD_STATUS,
+      editable: false,
+      is_width_fixed: true,
+      // Saved views sort frozen columns by this value; keep unread before title.
+      frozen: 2,
+      width: 33,
     },
     [CONNECTION_PREDEFINED_COLUMN_NAME.TAGS]: {
       display_name: gettext('Tags'),
@@ -1031,7 +1035,15 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
 };
 
 export const CONNECTION_COLUMNS_WIDTH_CONFIG = {
+  'unread': 33,
   'title': 400,
+};
+
+export const CONNECTION_COLUMNS_ORDER_CONFIG = {
+  [CONNECTION_TYPE.EMAIL]: {
+    'unread': 1,
+    'title': 2,
+  },
 };
 
 export const SUPPORT_ROW_DETAILS_CONNECTION_TYPES = [

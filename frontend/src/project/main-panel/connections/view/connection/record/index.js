@@ -62,7 +62,6 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
 
   const recordRef = useRef(null);
   const linkedTicketTitle = useRef('');
-  const autoMarkedReadRecordIdRef = useRef(childrenPageSlugId);
 
   const connection = useMemo(() => connections.find(c => c.id === pageSlugId), [pageSlugId, connections]);
   const resource = useMemo(() => ({ type: connection?.type, connection_id: pageSlugId, _id: childrenPageSlugId }), [connection, pageSlugId, childrenPageSlugId]);
@@ -278,16 +277,26 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
     return getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.UNREAD);
   }, [columns, permission]);
 
-  useEffect(() => {
-    if (connection?.type !== CONNECTION_TYPE.EMAIL || !record || !unreadColumn || autoMarkedReadRecordIdRef.current === null) return;
+  const handleThreadUnreadChange = useCallback((nextUnread) => {
+    if (connection?.type !== CONNECTION_TYPE.EMAIL || !unreadColumn) return;
 
-    const isUnread = getCellValueByColumn(record, unreadColumn);
-    if (!isUnread) return;
-
-    handleOthersChange({ [unreadColumn.name]: false }, () => {
-      autoMarkedReadRecordIdRef.current = null;
+    setRecord((prevRecord) => {
+      if (!prevRecord) return prevRecord;
+      const currentUnread = Boolean(getCellValueByColumn(prevRecord, unreadColumn));
+      if (currentUnread === nextUnread) return prevRecord;
+      return { ...prevRecord, [unreadColumn.name]: nextUnread };
     });
-  }, [connection?.type, handleOthersChange, record, unreadColumn, connectionTableName, modifyLocalRow]);
+  }, [connection?.type, unreadColumn]);
+
+  useEffect(() => {
+    if (connection?.type !== CONNECTION_TYPE.EMAIL || !record || !cacheRecord || !unreadColumn) return;
+
+    const recordUnread = Boolean(getCellValueByColumn(record, unreadColumn));
+    const cacheUnread = Boolean(getCellValueByColumn(cacheRecord, unreadColumn));
+    if (recordUnread === cacheUnread) return;
+
+    modifyLocalRow(connectionTableName, childrenPageSlugId, { [unreadColumn.key]: recordUnread });
+  }, [connection?.type, record, cacheRecord, unreadColumn, modifyLocalRow, connectionTableName, childrenPageSlugId]);
 
   const createTicketCallback = useCallback((ticket) => {
     const linkedUpdateRecord = {
@@ -400,6 +409,7 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
               projectUuid={projectUuid}
               permission={permission}
               updateResource={updateResource}
+              onThreadUnreadChange={handleThreadUnreadChange}
             />
           </div>
           {record && (

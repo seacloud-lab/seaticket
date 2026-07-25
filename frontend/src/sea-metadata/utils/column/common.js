@@ -233,7 +233,7 @@ export const normalizeColumns = (columns, columnsWidth, columnOrderRules) => {
   }
 
   return displayColumns.map(c => {
-    if (columnsWidth[c.key]) {
+    if (columnsWidth[c.key] && !c.is_width_fixed) {
       c.width = columnsWidth[c.key];
     }
     return c;

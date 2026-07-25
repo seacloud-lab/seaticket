@@ -63,6 +63,7 @@ const NOT_SUPPORT_EDIT_COLUMN_TYPE_MAP = {
 const NOT_SUPPORT_OPEN_EDITOR_COLUMN_TYPES = {
   ...NOT_SUPPORT_EDIT_COLUMN_TYPE_MAP,
   [CellType.CHECKBOX]: true,
+  [CellType.UNREAD_STATUS]: true,
 };
 
 const MULTIPLE_CELL_VALUE_COLUMN_TYPE_MAP = {
@@ -77,6 +78,7 @@ const SINGLE_CELL_VALUE_COLUMN_TYPE_MAP = {
   [CellType.CREATOR]: true,
   [CellType.LAST_MODIFIER]: true,
   [CellType.CHECKBOX]: true,
+  [CellType.UNREAD_STATUS]: true,
   [CellType.DATE]: true,
   [CellType.LONG_TEXT]: true,
   [CellType.SINGLE_SELECT]: true,

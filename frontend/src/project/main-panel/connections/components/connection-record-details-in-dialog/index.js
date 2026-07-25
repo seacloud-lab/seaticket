@@ -36,7 +36,7 @@ const ConnectionRecordDetailsInDialog = ({ projectUuid, resource, columns, permi
   const [containerWidth, setContainerWidth] = useState(0);
 
   const { connections } = useConnections();
-  const { modifyRow, modifyRowLink, insertRowByLink } = useData();
+  const { modifyRow, modifyRowLink, modifyLocalRow, insertRowByLink } = useData();
   const { tagsData } = useTags();
 
   const detailsRef = useRef(null);
@@ -74,6 +74,25 @@ const ConnectionRecordDetailsInDialog = ({ projectUuid, resource, columns, permi
       return nextDetails;
     });
   }, [onUpdateResourceDetails]);
+
+  const handleThreadUnreadChange = useCallback((nextUnread) => {
+    if (!connection || connection.type !== CONNECTION_TYPE.EMAIL) return;
+
+    const availableColumns = targetColumns.length > 0 ? targetColumns : columns;
+    const unreadColumn = getColumnByName(availableColumns, CONNECTION_PREDEFINED_COLUMN_NAME.UNREAD);
+    if (!unreadColumn) return;
+
+    if (connectionDetails?.record) {
+      const currentUnread = Boolean(getCellValueByColumn(connectionDetails.record, unreadColumn));
+      if (currentUnread === nextUnread) return;
+    }
+
+    const rowId = resource._id;
+    const localRowUpdate = { [unreadColumn.key]: nextUnread };
+    modifyLocalRow(connectionTableName, rowId, localRowUpdate);
+    context.eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, localRowUpdate);
+    syncRecordDetails({ [unreadColumn.name]: nextUnread });
+  }, [connection, connectionDetails, targetColumns, columns, resource?._id, modifyLocalRow, connectionTableName, syncRecordDetails]);
 
   const handleOthersChange = useCallback((update, callback) => {
     if (!connection || !connectionDetails?.record || targetColumns.length === 0) return;
@@ -236,6 +255,7 @@ const ConnectionRecordDetailsInDialog = ({ projectUuid, resource, columns, permi
             permission={permission}
             isSmallScreen={isSmallSize}
             updateResource={updateResourceDetails}
+            onThreadUnreadChange={handleThreadUnreadChange}
           />
         </div>
         {SUPPORT_ROW_DETAILS_SETTINGS_CONNECTION_TYPES.includes(resource?.type) && connectionDetails?.record && (

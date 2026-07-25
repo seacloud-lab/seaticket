@@ -23,6 +23,7 @@ const SUPPORT_GROUP_COLUMN_TYPES = [
   CellType.CTIME,
   CellType.MTIME,
   CellType.CHECKBOX,
+  CellType.UNREAD_STATUS,
   CellType.SINGLE_SELECT,
   CellType.TYPE,
   CellType.MULTIPLE_SELECT,

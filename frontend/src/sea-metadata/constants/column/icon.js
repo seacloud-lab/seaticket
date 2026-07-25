@@ -21,6 +21,7 @@ const COLUMNS_ICON_CONFIG = {
   [CellType.TAG]: 'tag-filled',
   [CellType.URL]: 'url',
   [CellType.PRIORITY]: 'flag',
+  [CellType.UNREAD_STATUS]: 'read-state',
   [CellType.LINK]: 'link',
 };
 
@@ -44,6 +45,7 @@ const COLUMNS_ICON_NAME = {
   [CellType.TAG]: gettext('Tag'),
   [CellType.URL]: gettext('URL'),
   [CellType.PRIORITY]: gettext('Priority'),
+  [CellType.UNREAD_STATUS]: gettext('Read status'),
   [CellType.LINK]: gettext('Link'),
 };
 

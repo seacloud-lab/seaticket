@@ -12,8 +12,7 @@ from .connections import ProjectConnectionsView, ProjectConnectionView, ProjectC
     ProjectConnectionReplyEmailView, ProjectConnectionDeleteEmailView, ProjectConnectionReplyDiscourseView, \
     ConnectionFileView, GithubIssueView, \
     ProjectEmailOAuthLoginView, ProjectEmailOAuthQueryView, ProjectEmailOAuthCallbackView, \
-    DownloadEmailAttachments, ZipEmailAttachments, QueryIOStatus, ProjectLinearOauthStatusView, \
-    ProjectConfluenceOauthStatusView
+    DownloadEmailAttachments, ZipEmailAttachments, QueryIOStatus, ProjectLinearOauthStatusView, ProjectConfluenceOauthStatusView, ProjectConnectionUnreadEmailView
 from .files import ProjectUploadFileAPIView, GetProjectUploadFileView, \
     ProjectFileAPIView, GetProjectFileView
 from .connections_views import ConnectionViewsAPI, ConnectionViewAPI, \
@@ -101,6 +100,7 @@ urlpatterns = [
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/records/$', ProjectConnectionRecordsView.as_view(), name='api-v1-connection-records'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/records/(?P<record_id>\d+)/$', ProjectConnectionRecordView.as_view(), name='api-v1-connection-record'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/reply-email/$', ProjectConnectionReplyEmailView.as_view(), name='api-v1-connection-reply-email'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/unread-email/$', ProjectConnectionUnreadEmailView.as_view(), name='api-v1-connection-unread-email'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/delete-email/$', ProjectConnectionDeleteEmailView.as_view(), name='api-v1-connection-delete-email'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/github-issue/$', GithubIssueView.as_view(), name='api-v1-connection-github-issue'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/reply-discourse/$', ProjectConnectionReplyDiscourseView.as_view(), name='api-v1-connection-reply-discourse'),

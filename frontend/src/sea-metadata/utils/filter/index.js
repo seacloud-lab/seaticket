@@ -213,7 +213,7 @@ export const getUpdatedFilterByColumn = (filters, filterIndex, column) => {
 export const getUpdatedFilterByPredicate = (filter, column, filterPredicate) => {
   let updatedFilter = Object.assign({}, filter, { filter_predicate: filterPredicate });
   let { type: columnType } = column;
-  if (columnType === CellType.CHECKBOX) {
+  if (columnType === CellType.CHECKBOX || columnType === CellType.UNREAD_STATUS) {
     updatedFilter.filter_term = false;
     return updatedFilter;
   }
@@ -264,7 +264,7 @@ export const getUpdatedFilterByTermModifier = (filter, filterTermModifier) => {
 
 export const getUpdatedFilterByNormalTerm = (filter, column, filterIndex, event) => {
   let filterTerm;
-  if (column.type === CellType.CHECKBOX) {
+  if (column.type === CellType.CHECKBOX || column.type === CellType.UNREAD_STATUS) {
     filterTerm = event.target.checked;
   } else {
     filterTerm = event.target.value;

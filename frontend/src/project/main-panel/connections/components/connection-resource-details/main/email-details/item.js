@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import classnames from 'classnames';
 import dayjs from '@/utils/dayjs';
 import { gettext, mediaUrl, PERMISSION_TYPES } from '@/constants';
-import { CustomizeMarkdownViewer, IconTextBtn, toaster } from '@/components';
+import { CustomizeMarkdownViewer, IconTextBtn, IconTooltip, toaster } from '@/components';
 import DateFormatter from '../../../cell-formatter/date-formatter';
 import { generatorConnectionAssetURLPrefix, getInfoByEmailFrom } from '../../../../utils';
 import HTMLContentWrapper from './html-content';
@@ -12,9 +13,14 @@ import { isString } from '@/utils/type-detection';
 
 import './index.css';
 
-const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastExpanded, recordId, permission, handleReplyEmailSuccess }) => {
+const Item = ({
+  isLast, isExpand,
+  detail, projectUuid, connection_id, setIsLastExpanded, recordId, permission,
+  handleReplyEmailSuccess, onUnreadChange
+}) => {
   const [isExpanded, setIsExpanded] = useState(isExpand);
   const [isShowReply, setIsShowReply] = useState(false);
+  const [isUpdatingUnread, setIsUpdatingUnread] = useState(false);
 
   const ref = useRef(null);
   const replySendTo = useRef('');
@@ -24,6 +30,7 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
   const isHTMLContent = useMemo(() => HTMLContent ? true : false, [HTMLContent]);
   const { sender, email } = useMemo(() => getInfoByEmailFrom(detail['email_from']), [detail]);
   const isReadonly = useMemo(() => permission === PERMISSION_TYPES.READ_ONLY, [permission]);
+  const isUnread = Boolean(detail.unread);
 
   const contentStart = useMemo(() => {
     const hrefReg = /\[.+\]\(\S+\)|<img( width=[\\|/]?"(\d)+[\\|/|]?")? src="(\S+)" .?\/>|!\[\]\(\S+\)|!\[\]\((\S+)\)|<\S+>/g;
@@ -97,6 +104,28 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
     replySendTo.current = sendTo;
     setIsShowReply(true);
   }, []);
+
+  const updateUnread = useCallback((nextUnread) => {
+    if (isReadonly || isUpdatingUnread) return;
+
+    onUnreadChange?.(detail._pk, nextUnread);
+    setIsUpdatingUnread(true);
+    connectionsAPI.unreadConnectionEmail(projectUuid, connection_id, {
+      record_id: detail._pk,
+      unread: nextUnread,
+    }).catch((error) => {
+      onUnreadChange?.(detail._pk, !nextUnread);
+      toaster.danger(Utils.getErrorMsg(error));
+    }).finally(() => {
+      setIsUpdatingUnread(false);
+    });
+  }, [projectUuid, connection_id, detail._pk, isReadonly, isUpdatingUnread, onUnreadChange]);
+
+  const toggleUnread = useCallback((event) => {
+    event.stopPropagation();
+    event.nativeEvent?.stopImmediatePropagation?.();
+    updateUnread(!isUnread);
+  }, [isUnread, updateUnread]);
 
   const onSubmit = useCallback(({ to, cc, content }, callback) => {
     const payload = {
@@ -205,6 +234,7 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
             <div className="email-record-info-container">
               <span className="email-record-info-sender text-truncate" title={sender}>{sender}</span>
               <span className="email-record-info-content text-truncate" title={contentStart}>{contentStart}</span>
+              {isUnread && <div className="read-status unread" />}
               <DateFormatter value={detail.modified_time} className="email-record-info-time" />
             </div>
             <div className="email-record-info-to-container">
@@ -238,6 +268,16 @@ const Item = ({ isLast, isExpand, detail, projectUuid, connection_id, setIsLastE
             <div className="email-record-info-to">
               {gettext('To')}: {emailTo}
             </div>
+            <IconTooltip
+              className={classnames('email-record-read-status-wrapper', { disabled: isReadonly || isUpdatingUnread })}
+              placement="bottom"
+              icon=""
+              hoverBackground={true}
+              tip={isUnread ? gettext('Mark Read') : gettext('Mark unread')}
+              onClick={toggleUnread}
+            >
+              <div className={classnames('read-status', { unread: isUnread })}/>
+            </IconTooltip>
             {!isReadonly && !isShowReply && (
               <IconTextBtn icon="reply" color="default" text={gettext('Reply')} className="h-5" onClick={openReply} />
             )}

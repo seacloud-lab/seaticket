@@ -16,6 +16,7 @@ const SORT_COLUMN_OPTIONS = [
   CellType.TAGS,
   CellType.COLLABORATOR,
   CellType.CHECKBOX,
+  CellType.UNREAD_STATUS,
   CellType.NUMBER,
   CellType.RATE,
   CellType.TAG,
