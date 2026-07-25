@@ -4,7 +4,7 @@ import classnames from 'classnames';
 import deepCopy from 'deep-copy';
 import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
-import { CenteredLoading, toaster, EmptyTip } from '@/components';
+import { CenteredLoading, toaster, EmptyTip, IconButton } from '@/components';
 import {
   PORTAL_ISSUE_STATE_CONFIG, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME, PORTAL_ISSUE_TABLE_NAME, PORTAL_ISSUE_CHILDREN_PAGE_SLUG_ID,
 } from '../../constants';
@@ -35,12 +35,14 @@ import CreateTicketDialog from '@/project/main-panel/connections/components/crea
 import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { hasOwnProperty } from '@/utils/object-utils';
+import { canCheckSeafileEditorBrowser } from '@/utils/seafile-editor-browser';
 
 import '@/project/main-panel/tickets/view/ticket/index.css';
 
 const Issue = ({
   editorAPI, projectUuid, issueID, permission, isAdmin, projectName, workspaceID,
   canChatWithAI = false,
+  isMobile = false,
   toggleBar = () => {},
   togglePageSlugId = () => {},
   generatorIssuesContextMenuOptions: customGeneratorIssuesContextMenuOptions,
@@ -72,6 +74,8 @@ const Issue = ({
       avatar_url: avatarURL
     };
   }, []);
+
+  const canCheckEditorBrowser = useMemo(() => canCheckSeafileEditorBrowser(), []);
 
   const issueRef = useRef(null);
   const commentEditorRef = useRef(null);
@@ -442,6 +446,16 @@ const Issue = ({
   const isSmallScreen = containerWidth < 904;
   const comments = Array.isArray(issue.comments) ? issue.comments : [];
 
+  const renderBackButton = () => isMobile ? (
+    <IconButton
+      icon="arrow-down"
+      className="rotate-icon-90 seaqa-project-ticket-title-back-btn"
+      title={gettext('Back')}
+      aria-label={gettext('Back')}
+      onClick={togglePageSlugId}
+    />
+  ) : null;
+
   return (
     <div
       className={classnames('seaqa-project-ticket', { 's': isSmallScreen })}
@@ -450,11 +464,12 @@ const Issue = ({
     >
       <Header
         ref={headerRef}
-        readonly={!editable}
+        readonly={isMobile ? true : !editable}
         title={title}
         id={id}
         stateOption={stateOption}
         typeOption={typeOption}
+        titlePrefix={renderBackButton()}
         createMoreOptions={createMoreOptions}
         modifyTitle={onTitleChange}
       />
@@ -464,6 +479,7 @@ const Issue = ({
         id={id}
         stateOption={stateOption}
         typeOption={typeOption}
+        titlePrefix={renderBackButton()}
       />
       <div className="seaqa-project-ticket-content-wrapper" ref={containerRef}>
         <div className="seaqa-project-ticket-comment-container-wrapper">
@@ -507,7 +523,7 @@ const Issue = ({
               value={comment || ''}
               autoSave={false}
               saveDelay={20 * 1000}
-              isCheckBrowser={true}
+              isCheckBrowser={canCheckEditorBrowser}
               isImageUploadOnly={false}
               isSupportMultipleFiles={true}
               editorApi={editorAPI}
@@ -515,8 +531,9 @@ const Issue = ({
             />
           </Comment>
           <div className="seaqa-project-ticket-footer">
-            <UploadFilesButton className="mt-4" onChange={handleFiles} />
+            {!isMobile && <UploadFilesButton className="mt-4" onChange={handleFiles} />}
             <div className="seaqa-project-ticket-submit-btns ml-2">
+              {isMobile && <UploadFilesButton className="mobile mr-auto" isShowText={false} onChange={handleFiles} />}
               <StatusToggleButton
                 state={state}
                 substate={substate}
@@ -536,26 +553,28 @@ const Issue = ({
             </div>
           </div>
         </div>
-        <div className="seaqa-project-ticket-other-settings">
-          <PrioritySettings isReadonly={!editable} value={priority} onChange={onPriorityChange} />
-          <TagsSettings
-            id="tags-editor-popover"
-            isReadonly={!editable}
-            value={tags}
-            tagsData={tagsData}
-            createTag={createTag}
-            onChange={onTagsChange}
-          />
-          <StateSettings isReadonly={!editable} state={state} substate={substate} useMetadataContext={usePortalIssuesMetadata} onChange={onStateChange} />
-          <SubStateSettings isReadonly={!editable} state={state} substate={substate} useMetadataContext={usePortalIssuesMetadata} onChange={onSubstateChange} />
-          <TypeSettings id="type-editor-popover" isReadonly={!editable} value={type} useMetadataContext={usePortalIssuesMetadata} onChange={onTypeChange} />
-          <LinkSettings value={[linked_ticket]} linkedRecords={linkedRecords} />
-        </div>
+        {!isMobile && (
+          <div className="seaqa-project-ticket-other-settings">
+            <PrioritySettings isReadonly={!editable} value={priority} onChange={onPriorityChange} />
+            <TagsSettings
+              id="tags-editor-popover"
+              isReadonly={!editable}
+              value={tags}
+              tagsData={tagsData}
+              createTag={createTag}
+              onChange={onTagsChange}
+            />
+            <StateSettings isReadonly={!editable} state={state} substate={substate} useMetadataContext={usePortalIssuesMetadata} onChange={onStateChange} />
+            <SubStateSettings isReadonly={!editable} state={state} substate={substate} useMetadataContext={usePortalIssuesMetadata} onChange={onSubstateChange} />
+            <TypeSettings id="type-editor-popover" isReadonly={!editable} value={type} useMetadataContext={usePortalIssuesMetadata} onChange={onTypeChange} />
+            <LinkSettings value={[linked_ticket]} linkedRecords={linkedRecords} />
+          </div>
+        )}
       </div>
       {isShowKeyboardShortcuts && (
         <KeyboardShortcuts toggle={() => setIsShowKeyboardShortcuts(false)} />
       )}
-      {isShowCreateTicketDialog && (
+      {!isMobile && isShowCreateTicketDialog && (
         <CreateTicketDialog
           projectUuid={projectUuid}
           row={{ _id: issueID }}
@@ -568,7 +587,7 @@ const Issue = ({
           onSubmitCallback={(ticket) => createTicketCallback(ticket, issue)}
         />
       )}
-      {isShowTicketsDialog && (
+      {!isMobile && isShowTicketsDialog && (
         <TicketsDialog
           projectUuid={projectUuid}
           onSubmit={linkAnExistingTicket}

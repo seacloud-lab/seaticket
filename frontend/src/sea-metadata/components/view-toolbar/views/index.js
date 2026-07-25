@@ -11,7 +11,7 @@ import { isFunction } from '@/utils/type-detection';
 import './index.css';
 import './view-buttons.css';
 
-const Views = ({ view, toggleView }) => {
+const Views = ({ view, toggleView, hideScrollControls = false }) => {
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
   const [canViewsScroll, setViewsScroll] = useState(true);
@@ -75,6 +75,7 @@ const Views = ({ view, toggleView }) => {
   }, [checkAvailableScrollType]);
 
   const onWheel = useCallback((event) => {
+    if (hideScrollControls) return;
     const { wheelDeltaX, wheelDeltaY } = event.nativeEvent;
     // Mouse wheel scrolls, wheelDeltaY is not 0, wheelDeltaX is 0 (scroll up and down)
     if (wheelDeltaY !== 0 && wheelDeltaX === 0) {
@@ -87,7 +88,7 @@ const Views = ({ view, toggleView }) => {
         viewsNavContainerRef.current.scrollLeft = tablesScrollLeft;
       }
     }
-  }, []);
+  }, [hideScrollControls]);
 
   const onScrollControlClick = useCallback((type) => {
     const { offsetWidth, scrollWidth, scrollLeft } = viewsNavContainerRef.current;
@@ -191,7 +192,7 @@ const Views = ({ view, toggleView }) => {
   return (
     <>
       <div className="sea-metadata-views">
-        {canViewsScroll && canScrollPrev && (
+        {!hideScrollControls && canViewsScroll && canScrollPrev && (
           <div className="sea-metadata-views-nav-scroll-btns sea-metadata-views-nav-scroll-btns-left">
             <IconButton
               icon="arrow-left"
@@ -206,7 +207,7 @@ const Views = ({ view, toggleView }) => {
           ref={viewsNavContainerRef}
           onScroll={onScroll}
           onWheel={onWheel}
-          className={classNames('sea-metadata-views-nav-container', canViewsScroll ? 'mr-2' : '')}
+          className={classNames('sea-metadata-views-nav-container', { 'no-scroll': hideScrollControls }, canViewsScroll ? 'mr-2' : '')}
         >
           {allViews.map(v => {
             const isSelect = isFunction(toggleView) && v._id === viewID;
@@ -230,7 +231,7 @@ const Views = ({ view, toggleView }) => {
         </div>
         {canViewsScroll && (
           <>
-            {canScrollNext &&
+            {!hideScrollControls && canScrollNext &&
               <div className="sea-metadata-views-nav-scroll-btns sea-metadata-views-nav-scroll-btns-right">
                 <IconButton
                   icon="arrow-right"

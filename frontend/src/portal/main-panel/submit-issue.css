@@ -8,6 +8,8 @@
 
 .seaqa-portal-new-issue {
   width: 800px;
+  max-width: 100%;
+  min-width: 0;
   height: fit-content;
   padding: 0px 50px;
   margin: 60px 0px;
@@ -17,20 +19,27 @@
 }
 
 .seaqa-portal-new-issue.s {
-  width: calc(100% - 20px);
+  width: 100%;
   padding: 0px 16px;
-  min-width: 562px; /* comment min-width(542) + 20 */
+  min-width: 0;
 }
 
 .seaqa-portal-new-issue .seaqa-portal-ticket-settings {
   padding-top: 0px;
   flex: 1;
+  min-width: 0;
+}
+
+.seaqa-portal-new-issue .seaqa-portal-ticket-settings-container {
+  width: 100%;
+  min-width: 0;
 }
 
 .seaqa-portal-new-issue .seaqa-portal-ticket-content-settings {
   display: flex;
   flex-direction: column;
   width: 100%;
+  min-width: 0;
   gap: 30px;
 }
 
@@ -38,6 +47,7 @@
   display: flex;
   flex-direction: column;
   height: fit-content;
+  min-width: 0;
 }
 
 .seaqa-portal-new-issue .seaqa-portal-ticket-settings-item .ticket-types-formatter {
@@ -58,14 +68,19 @@
 
 /* Long text editor container */
 .seaqa-portal-content .sf-long-text-inline-editor-container {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   min-height: 300px;
   display: flex;
   flex-direction: column;
-  overflow-x: auto;
+  overflow: hidden;
 }
 
 .seaqa-portal-content .sf-long-text-inline-editor-container .sf-simple-slate-editor-container {
-  min-width: 540px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .seaqa-portal-content .sf-long-text-inline-editor-container .sf-slate-editor-content,
@@ -80,4 +95,49 @@
 
 .seaqa-portal-content .sf-long-text-inline-editor-container .sf-slate-editor-content .article>div:first-child {
   flex: 1;
+}
+
+@media (max-width: 768px) {
+  .seaqa-portal-new-issue {
+    margin: 24px 0;
+    padding: 0 16px;
+  }
+
+  .seaqa-portal-new-issue .seaqa-portal-ticket-content-settings {
+    gap: 20px;
+  }
+
+  .seaqa-portal-new-issue .seaqa-portal-ticket-footer > div,
+  .seaqa-portal-new-issue .seaqa-portal-ticket-footer .btn {
+    width: 100%;
+  }
+
+  .seaqa-portal-content .sf-long-text-inline-editor-container {
+    min-height: 240px;
+  }
+
+  .seaqa-portal-content .sf-long-text-inline-editor-container .sf-slate-editor-toolbar {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+  }
+
+  .seaqa-portal-content .sf-long-text-inline-editor-container .sf-slate-editor-toolbar .sf-menu-group {
+    flex-shrink: 0;
+  }
+
+  .seaqa-portal-content .sf-long-text-inline-editor-container .sf-slate-editor-content,
+  .seaqa-portal-content .sf-long-text-inline-editor-container .sf-slate-scroll-container,
+  .seaqa-portal-content .sf-long-text-inline-editor-container .sf-slate-article-container,
+  .seaqa-portal-content .sf-long-text-inline-editor-container .article {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .seaqa-portal-content .sf-long-text-inline-editor-container .article {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
 }

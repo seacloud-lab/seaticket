@@ -55,3 +55,63 @@
 .seaqa-icon-btn.sea-metadata-rows-tool-btn {
   width: auto;
 }
+
+.sea-metadata-mobile-view-tools-dropdown {
+  display: flex;
+  align-items: center;
+}
+
+.sea-metadata-mobile-view-tools-menu {
+  min-width: 190px;
+  padding: 8px;
+}
+
+.sea-metadata-mobile-view-tools-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sea-metadata-mobile-view-tools-list > .seaqa-icon-btn {
+  width: 100% !important;
+  height: 32px !important;
+  justify-content: flex-start;
+  padding: 0 8px;
+  gap: 8px;
+}
+
+.sea-metadata-mobile-view-tools-list > .seaqa-icon-btn::after {
+  content: attr(aria-label);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sea-metadata-mobile-view-tools-list .sea-metadata-view-tool-filter.active,
+.sea-metadata-mobile-view-tools-list .sea-metadata-view-tool-sort.active,
+.sea-metadata-mobile-view-tools-list .sea-metadata-view-tool-groupby.active,
+.sea-metadata-mobile-view-tools-list .sea-metadata-view-tool-row-color.active,
+.sea-metadata-mobile-view-tools-list .sea-metadata-view-tool-hide-column.active {
+  box-shadow: inset 0 0 0 2px #0000001a;
+}
+
+.sea-metadata-mobile-view-tools-list .sea-metadata-view-tool-filter.active {
+  background-color: #d1f7c4 !important;
+}
+
+.sea-metadata-mobile-view-tools-list .sea-metadata-view-tool-sort.active {
+  background-color: #f5d9bc !important;
+}
+
+.sea-metadata-mobile-view-tools-list .sea-metadata-view-tool-groupby.active {
+  background-color: #dad7ff !important;
+}
+
+.sea-metadata-mobile-view-tools-list .sea-metadata-view-tool-row-color.active {
+  background-color: #fffcb5 !important;
+}
+
+.sea-metadata-mobile-view-tools-list .sea-metadata-view-tool-hide-column.active {
+  background-color: #d7e8ff !important;
+}

@@ -36,6 +36,34 @@
   align-items: center;
 }
 
+.seaqa-project-ticket .seaqa-project-ticket-title-prefix {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  margin-right: 8px;
+}
+
+.seaqa-project-ticket .seaqa-project-ticket-header:has(.seaqa-project-ticket-title-prefix):not(.seaqa-project-ticket-simple-info-wrapper-sticky) {
+  height: auto;
+  min-height: 86px;
+}
+
+.seaqa-project-ticket .seaqa-project-ticket-header:has(.seaqa-project-ticket-title-prefix):not(.seaqa-project-ticket-simple-info-wrapper-sticky) .seaqa-project-ticket-title-wrapper {
+  height: auto;
+  min-height: 28px;
+}
+
+.seaqa-project-ticket .seaqa-project-ticket-title-prefix .seaqa-project-ticket-title-back-btn {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+}
+
+.seaqa-project-ticket .seaqa-project-ticket-title-prefix .seaqa-project-ticket-title-back-btn .seaqa-icon-svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+
 .seaqa-project-ticket .seaqa-project-ticket-title {
   flex: 1;
   width: fit-content;
@@ -47,6 +75,21 @@
   line-height: 24px;
   font-weight: 500;
   margin-right: 8px;
+}
+
+.seaqa-project-ticket .seaqa-project-ticket-header:not(.seaqa-project-ticket-simple-info-wrapper-sticky) .seaqa-project-ticket-title-prefix ~ .seaqa-project-ticket-title {
+  min-width: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+.seaqa-project-ticket .seaqa-project-ticket-header:not(.seaqa-project-ticket-simple-info-wrapper-sticky) .seaqa-project-ticket-title-prefix ~ .seaqa-project-ticket-number {
+  align-self: flex-end;
+  line-height: 24px;
 }
 
 .seaqa-project-ticket .seaqa-project-ticket-number {

@@ -10,6 +10,7 @@ import { PORTAL_PAGE } from '../../constants';
 import TopBar from '@/project/main-panel/top-bar';
 import { IconButton, CenteredLoading } from '@/components';
 import { buildPortalPath, getPortalPathSegments } from '../../path-utils';
+import MobileIssueCards from './mobile-issue-cards';
 
 import './index.css';
 
@@ -21,6 +22,7 @@ const viewTools = [
 const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID }) => {
   const [expandIssueID, setExpandIssueId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   const listQueryStringRef = useRef('');
 
@@ -116,6 +118,12 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID }) => {
   }, []);
 
   useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
     const pathSegments = getPortalPathSegments();
     if (pathSegments.length <= 1) {
       setIsLoading(false);
@@ -132,16 +140,18 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID }) => {
   if (expandIssueID) {
     return (
       <>
-        <TopBar className="seaqa-portal-issue-header" >
-          <>
-            <IconButton
-              icon="arrow-down"
-              className="rotate-icon-90 seaqa-portal-toggle-knowledge-btn"
-              onClick={closeIssue}
-            />
-            <span className="text-truncate" title={gettext('My issues')}>{gettext('My issues')}</span>
-          </>
-        </TopBar>
+        {!isMobile && (
+          <TopBar className="seaqa-portal-issue-header" >
+            <>
+              <IconButton
+                icon="arrow-down"
+                className="rotate-icon-90 seaqa-portal-toggle-knowledge-btn"
+                onClick={closeIssue}
+              />
+              <span className="text-truncate" title={gettext('My issues')}>{gettext('My issues')}</span>
+            </>
+          </TopBar>
+        )}
         <Issue
           editorAPI={longTextAPI}
           projectUuid={projectUuid}
@@ -152,6 +162,7 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID }) => {
           workspaceID={workspaceID}
           togglePageSlugId={closeIssue}
           generatorIssuesContextMenuOptions={() => []}
+          isMobile={isMobile}
         />
       </>
     );
@@ -159,6 +170,7 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID }) => {
 
   return (
     <Issues
+      key={isMobile ? 'mobile-card-view' : 'desktop-table-view'}
       projectUuid={projectUuid}
       workspaceID={workspaceID}
       projectName={projectName}
@@ -173,6 +185,9 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID }) => {
       canOpenIssue={false}
       createContextMenuOptions={() => []}
       togglePageSlugId={openIssue}
+      CustomView={isMobile ? MobileIssueCards : null}
+      onCustomViewRowClick={openIssue}
+      isMobileView={isMobile}
     />
   );
 };

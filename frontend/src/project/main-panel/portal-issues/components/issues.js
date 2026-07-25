@@ -45,6 +45,7 @@ const Issues = ({
   settings = {},
   getIssue = (uuid, issueNumber) => portalAPI.getPortalIssue(uuid, issueNumber),
   onRefresh,
+  onCustomViewRowClick,
   ...props
 }) => {
   const { updateAttachments } = useAIChatTools();
@@ -358,6 +359,7 @@ const Issues = ({
         createContextMenuOptions={createContextMenuOptions}
         createRowsTools={createRowsTools}
         expandRow={handleExpandRow}
+        onCustomViewRowClick={onCustomViewRowClick}
         cascadeUpdateCells={cascadeUpdate}
         columnOrderRules={PORTAL_ISSUE_COLUMNS_ORDER_CONFIG}
         columnWidthRules={PORTAL_ISSUE_COLUMNS_WIDTH_CONFIG}

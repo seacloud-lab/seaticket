@@ -9,7 +9,7 @@ import { getRowsByIds } from '@/sea-metadata/utils/row';
 
 import './index.css';
 
-const ViewToolBar = ({ fixedColumnCount, tools = VIEW_TOOLS, createRowsTools, toggleView }) => {
+const ViewToolBar = ({ fixedColumnCount, tools = VIEW_TOOLS, createRowsTools, toggleView, isMobileView = false }) => {
 
   const { collaborators } = useCollaborators();
   const { metadata, modifyFilters, modifySorts, modifyGroupbys, modifyRowColor, modifyRowHeight, modifyHiddenColumns, modifyColumnOrder,
@@ -46,10 +46,10 @@ const ViewToolBar = ({ fixedColumnCount, tools = VIEW_TOOLS, createRowsTools, to
       );
     }
     if (tools.includes(VIEW_TOOL.VIEWS)) {
-      return (<Views view={view} toggleView={toggleView} />);
+      return (<Views view={view} toggleView={toggleView} hideScrollControls={isMobileView} />);
     }
     return (<div className="sea-metadata-views"></div>);
-  }, [selectedRowIds, tools, metadata, createRowsTools, toggleView, deleteRows, modifyRows, deleteLocalRows, deleteRow, selectNone, updateLocalRow]);
+  }, [selectedRowIds, tools, metadata, createRowsTools, toggleView, isMobileView, deleteRows, modifyRows, deleteLocalRows, deleteRow, selectNone, updateLocalRow]);
 
   const view = metadata?.view;
   const viewType = view?.type;
@@ -68,6 +68,7 @@ const ViewToolBar = ({ fixedColumnCount, tools = VIEW_TOOLS, createRowsTools, to
                 readOnly={readOnly}
                 tools={tools}
                 fixedColumnCount={fixedColumnCount}
+                isMobileView={isMobileView}
                 view={view}
                 collaborators={collaborators}
                 modifyFilters={modifyFilters}
