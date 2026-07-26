@@ -76,7 +76,11 @@ const TagsEditor = forwardRef(({
         editorRef.current.style.bottom = editorPosition.top + rowHeight - window.innerHeight + 'px';
       }
       if (right > window.innerWidth) {
-        editorRef.current.style.right = right - window.innerWidth - 10 + 'px';
+        const parentNode = editorRef.current.parentElement;
+        if (parentNode) {
+          const overflow = right - window.innerWidth + 10;
+          parentNode.style.left = `${parentNode.offsetLeft - overflow}px`;
+        }
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
