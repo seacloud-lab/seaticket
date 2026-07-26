@@ -23,6 +23,7 @@
   padding-bottom: 0;
   height: 33px;
   padding-left: 8px;
+  padding-right: 7px;
 }
 
 .sea-metadata-sort-popover .sorts-list .option-group .seaqa-search-input-wrapper .seaqa-search-input {
@@ -95,4 +96,8 @@
   margin-right: 8px;
   width: 14px;
   height: 14px;
+}
+
+.sea-metadata-sort-popover .sorts-list .option-group .option-editor-empty-tip {
+  height: 32px;
 }

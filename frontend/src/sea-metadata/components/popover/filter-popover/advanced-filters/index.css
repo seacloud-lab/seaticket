@@ -311,6 +311,7 @@
 .sea-metadata-filters-list .option-group .option-editor-no-results-tip {
   padding: 0 8px;
   min-width: 140px;
+  height: 32px;
 }
 
 .sea-metadata-filters-list .filter-term-modifier .option-group {
