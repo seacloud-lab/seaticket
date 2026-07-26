@@ -41,10 +41,17 @@ const TypeEditor = forwardRef(({
 
   useEffect(() => {
     if (editorRef.current) {
-      const { bottom } = editorRef.current.getBoundingClientRect();
+      const { bottom, right } = editorRef.current.getBoundingClientRect();
       if (bottom > window.innerHeight) {
         editorRef.current.style.top = 'unset';
         editorRef.current.style.bottom = editorPosition.top + rowHeight - window.innerHeight + 'px';
+      }
+      if (right > window.innerWidth) {
+        const parentNode = editorRef.current.parentElement;
+        if (parentNode) {
+          const overflow = right - window.innerWidth + 10;
+          parentNode.style.left = `${parentNode.offsetLeft - overflow}px`;
+        }
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
