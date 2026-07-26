@@ -72,7 +72,9 @@ class OptionGroup extends Component {
     }
     if (height + top > window.innerHeight) {
       const borderWidth = 2;
-      this.optionGroupRef.style.top = -1 * (height + borderWidth) + 'px';
+      // 4px is indent of the option group and select box
+      const indent = 4;
+      this.optionGroupRef.style.top = -1 * (height + borderWidth + indent * 2) + 'px';
       setTimeout(() => {
         const { top } = this.optionGroupRef.getBoundingClientRect();
         if (top < 0) {

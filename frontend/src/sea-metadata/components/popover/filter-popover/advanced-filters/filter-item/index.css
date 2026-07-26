@@ -56,6 +56,8 @@
 .sea-metadata-filters .sea-metadata-filters-list .sea-metadata-selector-multiple-select .option-group {
   margin-top: 0px;
   padding-top: 0px;
+  top: 41px !important;
+  left: -1px !important;
 }
 
 .sea-metadata-filters .sea-metadata-selector-single-select .option-group .option-group-search,
@@ -69,7 +71,13 @@
   border-left: none;
   border-right: none;
   border-radius: 0px;
-  border-color: var(--bs-border-color);
+  border-color: #eee;
+  padding-left: 16px !important;
+}
+
+.sea-metadata-filters .sea-metadata-selector-single-select .option-group .option-group-search .seaqa-clear-icon-button.seaqa-icon-btn,
+.sea-metadata-filters .sea-metadata-selector-multiple-select .option-group .option-group-search .seaqa-clear-icon-button.seaqa-icon-btn {
+  right: 12px !important;
 }
 
 .sea-metadata-selector-single-select .select-option-name .single-check-icon,
@@ -175,4 +183,9 @@
   border: none;
   border-bottom: 1px solid #eee;
   border-radius: 0;
+  padding-left: 16px !important;
+}
+
+.sea-metadata-filters-list .filter-column .option-group .seaqa-search-input-wrapper .seaqa-clear-icon-button.seaqa-icon-btn {
+  right: 12px !important;
 }
