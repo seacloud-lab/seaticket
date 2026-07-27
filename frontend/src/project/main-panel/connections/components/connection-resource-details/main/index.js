@@ -236,10 +236,10 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
   }
 
   if (details) {
-    if (!isContentEmpty) setIsContentEmpty(true);
+    if (isContentEmpty) setIsContentEmpty(false);
     return (<CustomizeMarkdownViewer className={`seaqa-connection-${type}-resource-details`} value={details} showTOC={false} />);
   } else {
-    if (isContentEmpty) setIsContentEmpty(false);
+    if (!isContentEmpty) setIsContentEmpty(true);
     return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No content')} />);
   }
 };
