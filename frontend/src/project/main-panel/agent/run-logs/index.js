@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from 'reactstrap';
 import RunCard from './run-card';
 import { CenteredLoading, EmptyTip } from '@/components';
-import { gettext } from '@/constants';
+import { gettext, mediaUrl } from '@/constants';
 
 import './index.css';
 
@@ -29,6 +29,7 @@ const RunLogs = ({
     return (
       <div className="agent-run-logs-empty">
         <EmptyTip
+          src={`${mediaUrl}img/no-items-tip.png`}
           title={gettext('No agent runs')}
           text={!enabledAgent && gettext('Enable the agent in settings to start')}
         />
