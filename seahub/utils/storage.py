@@ -1,17 +1,30 @@
 import os
+import json
 import logging
 from datetime import datetime, timezone
 
 from botocore.exceptions import ClientError
 from django.utils.http import parse_etags
 
-from seahub.utils import s3_client
+from seahub.utils import mq, s3_client
 from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET
 from seahub.utils import uuid_str_to_32_chars, uuid_str_to_36_chars
 
 logger = logging.getLogger(__name__)
 PORTAL_LOGO_FILE_PATH = 'portal/logo'
 PORTAL_BACKGROUND_IMAGE_FILE_PATH = 'portal/background-image'
+PROJECT_STORAGE_UPDATE_CHANNEL = 'project_storage_update'
+
+
+def publish_project_storage_update(project_uuid):
+    if mq is None:
+        logger.warning('Redis is unavailable; project storage update was not published')
+        return
+    try:
+        payload = json.dumps({'project_uuid': uuid_str_to_32_chars(project_uuid)})
+        mq.publish(PROJECT_STORAGE_UPDATE_CHANNEL, payload)
+    except Exception as e:
+        logger.warning('Failed to publish project storage update for project %s: %s', project_uuid, e)
 
 
 def if_none_match_hit(request, etag):
@@ -52,12 +65,12 @@ def gen_record_file_path(entity_type, record_id, filename=''):
     return f'{parent_dir}/{entity_type}/{record_id}/{filename}'
 
 def gen_tmp_upload_file_path(project_uuid, file_path):
-    s3_file_path = gen_s3_project_file_path(project_uuid, file_path)
-    file_name = os.path.basename(file_path)
-    tmp_dir = f'/tmp{s3_file_path.replace(file_name, "")}'
+    project_uuid = uuid_str_to_36_chars(project_uuid)
+    tmp_upload_file_path = os.path.join('/tmp', 'projects', project_uuid, file_path)
+    tmp_dir = os.path.dirname(tmp_upload_file_path)
     if not os.path.exists(tmp_dir):
         os.makedirs(tmp_dir, exist_ok=True)
-    return os.path.join(tmp_dir, file_name)
+    return tmp_upload_file_path
 
 
 def upload_file_to_tmp_dir(project_uuid, file, subdir=''):
@@ -89,6 +102,7 @@ def upload_files_to_s3(project_uuid, file_urls, username, entity_type, record_id
             continue
 
         s3_client.upload_file(tmp_upload_file_path, S3_FILE_BUCKET, s3_file_path, ExtraArgs={'Metadata': {'username': username}})
+        publish_project_storage_update(project_uuid)
 
         new_file_url = f'/file/project/{project_uuid}/{final_file_path}'
         new_file_urls_dict[new_file_url] = file_url
@@ -122,6 +136,7 @@ def upload_portal_files_to_s3(project_uuid, file_urls, username, entity_type, re
 
         s3_client.upload_file(tmp_upload_file_path, S3_FILE_BUCKET, s3_file_path,
                               ExtraArgs={'Metadata': {'username': username}})
+        publish_project_storage_update(project_uuid)
 
         new_file_url = f'/file/portal/{project_uuid}/{final_file_path}'
         new_file_urls_dict[new_file_url] = file_url
@@ -151,6 +166,7 @@ def upload_portal_logo_file_to_s3(project_uuid, file):
             s3_file_path,
             ExtraArgs={'ContentType': content_type}
         )
+        publish_project_storage_update(project_uuid)
     finally:
         if os.path.exists(tmp_upload_file_path):
             try:
@@ -239,14 +255,13 @@ def get_connection_file_from_s3(project_uuid, connection_id, filename):
 def delete_file_from_s3(project_uuid, file_path):
     s3_file_path = gen_s3_project_file_path(project_uuid, file_path)
     s3_client.delete_object(Bucket=S3_FILE_BUCKET, Key=s3_file_path)
+    publish_project_storage_update(project_uuid)
     return s3_file_path
 
 
 def _delete_s3_prefix(prefix):
     continuation_token = None
     while True:
-        if prefix.startswith('/'):
-            prefix = prefix.lstrip('/')
         kwargs = {'Bucket': S3_FILE_BUCKET, 'Prefix': prefix}
         if continuation_token:
             kwargs['ContinuationToken'] = continuation_token
@@ -266,11 +281,13 @@ def _delete_s3_prefix(prefix):
 def delete_record_attachments_from_s3(project_uuid, entity_type, record_id):
     prefix = gen_s3_project_file_path(project_uuid, gen_record_file_path(entity_type, record_id))
     _delete_s3_prefix(prefix)
+    publish_project_storage_update(project_uuid)
     return prefix
 
 
 def delete_project_dir_from_s3(project_uuid):
     s3_dir_path = gen_s3_project_file_path(project_uuid, '')
     _delete_s3_prefix(s3_dir_path)
+    publish_project_storage_update(project_uuid)
     logger.info(f'Deleted {project_uuid} s3 files.')
     return s3_dir_path

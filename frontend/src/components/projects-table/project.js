@@ -11,6 +11,7 @@ import ProjectIcon from '../project-icon';
 import CustomizeDropdownMoreToggle from '../customize-dropdown-more-toggle';
 import CustomizeDropdownMenu from '../customize-dropdown-menu';
 import CustomizeDropdownItem from '../customize-dropdown-item';
+import { Utils } from '@/utils/utils';
 
 const Project = ({
   type = 'org',
@@ -100,6 +101,14 @@ const Project = ({
             return (
               <td title={formatWithTimezone(value)} key={key}>
                 {dayjs(value).format('YYYY-MM-DD HH:mm:ss')}
+              </td>
+            );
+          }
+          if (type === 'storage') {
+            const storageUsage = project[key];
+            return (
+              <td title={storageUsage?.calculated_at ? formatWithTimezone(storageUsage.calculated_at) : ''} key={key}>
+                {storageUsage ? Utils.bytesToSize(storageUsage.total_size) : '--'}
               </td>
             );
           }

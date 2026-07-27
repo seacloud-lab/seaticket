@@ -512,6 +512,20 @@ CREATE TABLE `deleted_projects`  (
   UNIQUE KEY `project_uuid`(`project_uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+CREATE TABLE `project_storage_statistics` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `project_uuid` char(32) NOT NULL,
+  `org_id` int(11) NOT NULL DEFAULT -1,
+  `file_size` bigint unsigned NOT NULL DEFAULT 0,
+  `crawl_data_size` bigint unsigned NOT NULL DEFAULT 0,
+  `total_size` bigint unsigned NOT NULL DEFAULT 0,
+  `calculated_at` datetime(6) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `project_storage_statistics_project_uuid_uniq` (`project_uuid`),
+  KEY `project_storage_statistics_org_id_idx` (`org_id`),
+  KEY `project_storage_statistics_calculated_at_idx` (`calculated_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 CREATE TABLE `org_saml_config` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `org_id` int(11) NOT NULL,
