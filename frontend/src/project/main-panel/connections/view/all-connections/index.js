@@ -19,6 +19,7 @@ import { areArraysEqual } from '@/utils/array-utils';
 import './index.css';
 
 const { isProjectAdmin } = window.app.pageOptions;
+const { mediaUrl } = window.app.config;
 
 const AllConnections = ({ projectUuid, modifyLocalBar }) => {
   const [isShowStatusDialog, setIsShowStatusDialog] = useState(false);
@@ -164,6 +165,7 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
         rows={connections}
         emptyTip={
           <EmptyTip
+            src={`${mediaUrl}img/no-items-tip.png`}
             title={gettext('No connections')}
             text={gettext('Connections enable you to sync contents from third party applications and search them')}
           >
