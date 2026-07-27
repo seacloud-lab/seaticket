@@ -2,6 +2,7 @@ import React from 'react';
 import { PORTAL_PAGE, TICKETS_TAB, TICKET_SECONDARY_TABS } from '../constants';
 import SubmitIssue from './submit-issue';
 import MyIssues from './my-issues';
+import PortalHome from './home';
 import PortalKnowledgeBase from './knowledge-base/index';
 import { useMetadata, useTags } from '@/project/hooks';
 import { CenteredLoading, CustomizeTabs } from '@/components';
@@ -33,6 +34,8 @@ const MainPanel = ({ activePage, onPageChange, isAnonymous, ...props }) => {
         return <PortalKnowledgeBase { ...props } />;
       case PORTAL_PAGE.CHAT:
         return <PortalChat projectUuid={props.projectUuid} />;
+      case PORTAL_PAGE.HOME:
+        return <PortalHome { ...props } />;
       default:
         return null;
     }
@@ -40,9 +43,10 @@ const MainPanel = ({ activePage, onPageChange, isAnonymous, ...props }) => {
 
   const isIssuesPage = activePage === PORTAL_PAGE.SUBMIT_ISSUE || activePage === PORTAL_PAGE.MY_ISSUES;
   const activePrimaryTab = isIssuesPage ? TICKETS_TAB : activePage;
+  const isHomePage = activePage === PORTAL_PAGE.HOME;
 
   return (
-    <div className="seaqa-portal-main-panel">
+    <div className="seaqa-portal-main-panel" style={isHomePage ? { margin: 0, borderRadius: 0 } : {}}>
       {!isAnonymous && activePrimaryTab === TICKETS_TAB && (
         <div className="seaqa-portal-sub-navigation">
           <CustomizeTabs

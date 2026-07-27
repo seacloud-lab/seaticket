@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 import logging
 
 from django.shortcuts import render, redirect
@@ -125,7 +126,9 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
             'streaming_response': streaming_response,
             'portal_name': portal_settings.get('portal_name', ''),
             'portal_logo': portal_settings.get('portal_logo', ''),
+            'portal_home_setting': portal_settings.get('portal_home_setting', {}),
         },
+        'portal_home_setting_json': json.dumps(portal_settings.get('portal_home_setting', {})),
         'is_portal_domain': is_request_using_portal_domain(request, project_uuid),
         'portal_base_url': portal_path(request, project_uuid).rstrip('/') or '/',
     }
@@ -221,7 +224,9 @@ def portal_anonymous_validate(request, project_uuid):
                 'enable_password_protection': enable_password_protection,
                 'portal_name': portal_settings.get('portal_name', ''),
                 'portal_logo': portal_settings.get('portal_logo', ''),
+                'portal_home_setting': portal_settings.get('portal_home_setting', {}),
             },
+            'portal_home_setting_json': json.dumps(portal_settings.get('portal_home_setting', {})),
             'need_password': True,
             'is_portal_domain': is_request_using_portal_domain(request, project_uuid),
             'portal_base_url': portal_path(request, project_uuid).rstrip('/') or '/',
@@ -319,7 +324,9 @@ def portal_edit_view(request, project_uuid, page=None, children_id=None, session
             'streaming_response': streaming_response,
             'portal_name': portal_settings.get('portal_name', ''),
             'portal_logo': portal_settings.get('portal_logo', ''),
+            'portal_home_setting': portal_settings.get('portal_home_setting', {}),
         },
+        'portal_home_setting_json': json.dumps(portal_settings.get('portal_home_setting', {})),
         'is_portal_domain': False,
         'portal_base_url': portal_path(request, project_uuid, is_edit_mode=True).rstrip('/'),
     }

@@ -1,6 +1,7 @@
 import { gettext } from '@/constants';
 
 export const PORTAL_PAGE = {
+  HOME: 'home',
   SUBMIT_ISSUE: 'submit-issue',
   MY_ISSUES: 'my-issues',
   KNOWLEDGE_BASE: 'knowledge-base',
@@ -19,12 +20,32 @@ export const SOURCE_TYPE_OPTIONS = [
 
 export const TICKETS_TAB = 'tickets';
 
-export const BASE_PRIMARY_TABS = [
-  { value: PORTAL_PAGE.CHAT, label: gettext('Chat') },
-  { value: TICKETS_TAB, label: gettext('Issues') },
-];
+export const HOME_TAB = {
+  value: PORTAL_PAGE.HOME,
+  label: gettext('Home'),
+};
+
+export const CHAT_TAB = {
+  value: PORTAL_PAGE.CHAT,
+  label: gettext('Chat'),
+};
+
+export const ISSUES_TAB = {
+  value: TICKETS_TAB,
+  label: gettext('Issues'),
+};
+
+export const KNOWLEDGE_BASE_TAB = {
+  value: PORTAL_PAGE.KNOWLEDGE_BASE,
+  label: gettext('Knowledge base'),
+};
 
 export const TICKET_SECONDARY_TABS = [
   { value: PORTAL_PAGE.SUBMIT_ISSUE, label: gettext('Submit issue') },
   { value: PORTAL_PAGE.MY_ISSUES, label: gettext('My issues') },
 ];
+
+export const getPrimaryTabs = ({ isAnonymous, enableKB }) => {
+  const tabs = isAnonymous ? [HOME_TAB, CHAT_TAB] : [HOME_TAB, CHAT_TAB, ISSUES_TAB];
+  return enableKB ? [...tabs, KNOWLEDGE_BASE_TAB] : tabs;
+};

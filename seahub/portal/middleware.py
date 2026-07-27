@@ -14,7 +14,7 @@ PASS_THROUGH_PREFIXES = ('/accounts/', '/captcha/', '/custom-css/', '/i18n/', '/
 
 # Existing Portal APIs and file routes handled by normal URLConf.
 PORTAL_PASS_THROUGH_PREFIXES = ('/api/v1/portal/', '/file/portal/', '/file/portal-chat-image/', '/upload-file/portal/', '/portal/', '/portal-external/')
-PORTAL_ROOT_PAGES = ('submit-issue', 'my-issues', 'knowledge-base', 'chat', 'login', 'anonymous-validate')
+PORTAL_ROOT_PAGES = ('submit-issue', 'my-issues', 'knowledge-base', 'chat', 'login', 'anonymous-validate', 'home')
 PORTAL_DETAIL_PAGES = ('my-issues', 'knowledge-base')
 
 
