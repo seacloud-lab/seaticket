@@ -9,6 +9,7 @@ import ExternalUserAccount from '@/components/account/external-user-account';
 import { usePortalSettings } from '../hooks';
 import { isMobile } from '@/utils/utils';
 import { getPortalLoginPath } from '../path-utils';
+import LanguageSelector from './language-selector';
 
 const SidePanel = ({ isEditMode, activePage, onPageChange, enableKB, isAnonymous }) => {
   const { logo, name } = usePortalSettings();
@@ -79,6 +80,7 @@ const SidePanel = ({ isEditMode, activePage, onPageChange, enableKB, isAnonymous
               className="seaqa-portal-mobile-side-panel-more-btn no-hover-bg"
               size={{ btn: 32, icon: 16 }}
             />
+            <LanguageSelector />
             {isAnonymous && (
               <Button
                 color="outline-primary"

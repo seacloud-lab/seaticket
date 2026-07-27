@@ -58,6 +58,17 @@
             isAnonymous: {% if is_anonymous %}true{% else %}false{% endif %},
             isExternalUser: {% if is_external_user %}true{% else %}false{% endif %},
             isPreviewUser: {% if is_preview_user %}true{% else %}false{% endif %},
+            i18nUrl: "{% url 'i18n' %}",
+            langList: (function() {
+                var list = [];
+                {% for LANG in LANGUAGES %}
+                list.push({
+                    langCode: '{{ LANG.0|escapejs }}',
+                    langName: '{{ LANG.1|escapejs }}',
+                });
+                {% endfor %}
+                return list;
+            })(),
             portalName: '{{ portal.portal_name|escapejs }}',
             portalLogo: '{{ portal.portal_logo|escapejs }}',
             isPortalDomain: {% if is_portal_domain %}true{% else %}false{% endif %},
