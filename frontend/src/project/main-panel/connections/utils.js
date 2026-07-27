@@ -68,7 +68,7 @@ export const sanitizeEmailConfigByProvider = (config = {}) => {
   const provider = getEmailProvider(config);
   const nextConfig = { ...config, server_provider: provider };
 
-  if (provider === EMAIL_SERVER_PROVIDER.MICROSOFT) {
+  if (isOAuthEmailProvider(provider)) {
     delete nextConfig.sender_name;
     delete nextConfig.sender_email;
     delete nextConfig.smtp_host;
@@ -87,6 +87,17 @@ export const sanitizeEmailConfigByProvider = (config = {}) => {
   delete nextConfig.authority_args;
   delete nextConfig.scopes;
   return nextConfig;
+};
+
+export const switchEmailProvider = (config = {}, provider = EMAIL_SERVER_PROVIDER.GENERAL) => {
+  if (getEmailProvider(config) === provider) return config;
+
+  const nextConfig = { ...config, server_provider: provider };
+  [
+    'client_id', 'client_secret', 'authority_url', 'token_url', 'authority_args', 'scopes',
+    'access_token', 'expires_at', 'refresh_token',
+  ].forEach(key => delete nextConfig[key]);
+  return sanitizeEmailConfigByProvider(nextConfig);
 };
 
 export const getConnectionIcon = (type) => {

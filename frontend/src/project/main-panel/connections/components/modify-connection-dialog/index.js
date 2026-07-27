@@ -5,7 +5,7 @@ import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Alert, 
 import { gettext } from '@/constants';
 import { validateName } from '@/utils/validate';
 import { CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, EMAIL_SERVER_PROVIDER } from '../../constants';
-import { getVisibleEmailFields, getEmailProvider, populateEmailOAuthDefaults, sanitizeEmailConfigByProvider, getEmailOAuthCallbackUrl, isOAuthEmailProvider } from '../../utils';
+import { getVisibleEmailFields, getEmailProvider, sanitizeEmailConfigByProvider, switchEmailProvider, getEmailOAuthCallbackUrl, isOAuthEmailProvider } from '../../utils';
 import { ModalHeader, toaster, Switch } from '@/components';
 import ConnectionConfigEditor from '../connection-config-editor';
 
@@ -62,10 +62,6 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
     return c.is_custom;
   }), [columns]);
 
-  const isMicrosoftEmailProvider = useMemo(() => {
-    return type === CONNECTION_TYPE.EMAIL && getEmailProvider(config) === EMAIL_SERVER_PROVIDER.MICROSOFT;
-  }, [type, config]);
-
   const basicCustomColumns = useMemo(() => {
     return customColumns.filter(column => !column.is_advanced_option);
   }, [customColumns]);
@@ -106,7 +102,7 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
 
     if (key === 'server_provider') {
       const nextProvider = value || EMAIL_SERVER_PROVIDER.GENERAL;
-      setConfig(populateEmailOAuthDefaults({ ...config, [key]: nextProvider }, nextProvider));
+      setConfig(switchEmailProvider(config, nextProvider));
       setShowEmailAdvancedOptions(false);
       setChanged(true);
       return;
@@ -214,7 +210,7 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
           </FormGroup>
         )}
         {isOAuthEmail ? basicCustomColumns.slice(1, 4).map(renderConnectionField) : null}
-        {isMicrosoftEmailProvider && (
+        {isOAuthEmail && (
           <div className="seaqa-project-connection-advanced-options mb-3">
             <Switch
               checked={showEmailAdvancedOptions}

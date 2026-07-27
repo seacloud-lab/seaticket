@@ -5,7 +5,7 @@ import copy from 'copy-to-clipboard';
 import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Row } from 'reactstrap';
 import { gettext } from '@/constants';
 import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, CONNECTION_SUB_TYPE_MAP, STEP, STEPS, EMAIL_SERVER_PROVIDER, getAvailableConnectionTypes } from '../../constants';
-import { getVisibleEmailFields, getEmailProvider, populateEmailOAuthDefaults, sanitizeEmailConfigByProvider, getConnectionIcon, isOAuthEmailProvider, getEmailOAuthCallbackUrl } from '../../utils';
+import { getVisibleEmailFields, getEmailProvider, populateEmailOAuthDefaults, sanitizeEmailConfigByProvider, switchEmailProvider, getConnectionIcon, isOAuthEmailProvider, getEmailOAuthCallbackUrl } from '../../utils';
 import { ModalHeader, Loading, SecondaryBtn, toaster, IconButton, Icon } from '@/components';
 import ConnectionConfigEditor from '../connection-config-editor';
 import { connectionsAPI } from '@/project/api';
@@ -111,10 +111,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const isLinear = useMemo(() => type === CONNECTION_TYPE.LINEAR, [type]);
   const isConfluence = useMemo(() => type === CONNECTION_TYPE.CONFLUENCE, [type]);
   const isDiscord = useMemo(() => type === CONNECTION_TYPE.DISCORD, [type]);
-
-  const isMicrosoftEmailProvider = useMemo(() => {
-    return isEmail && getEmailProvider(config) === EMAIL_SERVER_PROVIDER.MICROSOFT;
-  }, [isEmail, config]);
 
   const isOAuthEmail = useMemo(() => {
     return isEmail && isOAuthEmailProvider(getEmailProvider(config));
@@ -232,7 +228,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
 
     if (key === 'server_provider') {
       const nextProvider = value || EMAIL_SERVER_PROVIDER.GENERAL;
-      setConfig(populateEmailOAuthDefaults({ ...config, [key]: nextProvider }, nextProvider));
+      setConfig(switchEmailProvider(config, nextProvider));
       setShowEmailAdvancedOptions(false);
       return;
     }
@@ -687,7 +683,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
               </FormGroup>
             )}
             {isOAuthEmail ? basicCustomColumns.slice(1, 4).map(renderConnectionField) : null}
-            {isMicrosoftEmailProvider && (
+            {isOAuthEmail && (
               <div className="seaqa-project-connection-advanced-options mb-3">
                 <Switch
                   checked={showEmailAdvancedOptions}
