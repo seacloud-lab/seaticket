@@ -333,6 +333,7 @@ class Projects(models.Model):
     ticket_ai_indexed_at = models.DateTimeField(null=True)
     last_ticket_active_time = models.DateTimeField(null=True)
     last_agent_scanned_at = models.DateTimeField(null=True)
+    next_privacy_report_at = models.DateTimeField(null=True)
 
     objects = ProjectsManager()
 
@@ -586,7 +587,6 @@ class ProjectConnections(models.Model):
     content_vector_indexed_at = models.DateTimeField(null=True)
     content_vector_status = models.TextField(null=True)
     last_cleaned_at = models.DateTimeField(null=True)
-    last_privacy_reported_at = models.DateTimeField(null=True)
 
     objects = ProjectConnectionsManager()
 
