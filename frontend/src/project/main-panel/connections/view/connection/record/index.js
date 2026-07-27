@@ -59,6 +59,7 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
   const [isShowTicketsDialog, setIsShowTicketsDialog] = useState(false);
   const [isTicketDialogOpen, setTicketDialogOpen] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
+  const [isContentEmpty, setIsContentEmpty] = useState(false);
 
   const recordRef = useRef(null);
   const linkedTicketTitle = useRef('');
@@ -401,7 +402,7 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
             </>
           )}
         </div>
-        <div className={classnames('seaqa-connection-record-details-body', { 'empty': !record })}>
+        <div className={classnames('seaqa-connection-record-details-body', { 'empty': !record || isContentEmpty })}>
           <div className="seaqa-connection-record-details-container">
             <ConnectionResourceDetails
               resource={resource}
@@ -410,9 +411,11 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
               permission={permission}
               updateResource={updateResource}
               onThreadUnreadChange={handleThreadUnreadChange}
+              isContentEmpty={isContentEmpty}
+              setIsContentEmpty={setIsContentEmpty}
             />
           </div>
-          {record && (
+          {record && !isContentEmpty && (
             <div className="seaqa-connection-record-details-others">
               <ConnectionResourceOtherDetails
                 connection={connection}

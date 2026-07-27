@@ -12,7 +12,7 @@ import { connectionsAPI } from '@/project/api';
 
 import './index.css';
 
-const ConnectionResourceDetails = ({ resource, projectUuid, permission, connection, isSmallScreen, updateResource, onThreadUnreadChange }) => {
+const ConnectionResourceDetails = ({ resource, projectUuid, permission, connection, isSmallScreen, updateResource, onThreadUnreadChange, setIsContentEmpty, isContentEmpty }) => {
   const [status, setStatus] = useState('loading'); // loading / error / loaded
   const [errorMessage, setErrorMessage] = useState('');
   const [details, setDetails] = useState(null);
@@ -166,20 +166,23 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
 
   if (type === CONNECTION_TYPE.EMAIL) {
     if (mergedDetails.length === 0) {
+      if (!isContentEmpty) setIsContentEmpty(true);
       return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No content')} />);
+    } else {
+      if (isContentEmpty) setIsContentEmpty(false);
+      return (
+        <EmailDetails
+          className={`seaqa-connection-resource-details seaqa-connection-${type}-resource-details pt-4 pb-4`}
+          details={mergedDetails}
+          projectUuid={projectUuid}
+          connection_id={resource.connection_id}
+          recordId={resource._id}
+          permission={permission}
+          handleReplyEmailSuccess={handleReplyEmailSuccess}
+          onUnreadChange={handleEmailUnreadChange}
+        />
+      );
     }
-    return (
-      <EmailDetails
-        className={`seaqa-connection-resource-details seaqa-connection-${type}-resource-details pt-4 pb-4`}
-        details={mergedDetails}
-        projectUuid={projectUuid}
-        connection_id={resource.connection_id}
-        recordId={resource._id}
-        permission={permission}
-        handleReplyEmailSuccess={handleReplyEmailSuccess}
-        onUnreadChange={handleEmailUnreadChange}
-      />
-    );
   }
 
   if (type === CONNECTION_TYPE.GITHUB_ISSUE || type === CONNECTION_TYPE.LINEAR) {
@@ -196,40 +199,49 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
     const discourseDetails = Array.isArray(details) ? details : [];
     const mergedDiscourseDetails = [...discourseDetails, ...localDiscourseDetails];
     if (mergedDiscourseDetails.length === 0) {
+      if (!isContentEmpty) setIsContentEmpty(true);
       return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No content')} />);
+    } else {
+      if (isContentEmpty) setIsContentEmpty(false);
+      return (
+        <DiscourseDetails
+          className={`seaqa-connection-resource-details seaqa-connection-${type}-resource-details pt-4 pb-4`}
+          details={mergedDiscourseDetails}
+          projectUuid={projectUuid}
+          connection_id={resource.connection_id}
+          recordId={resource._id}
+          permission={permission}
+          handleReplyDiscourseSuccess={handleReplyDiscourseSuccess}
+        />
+      );
     }
-    return (
-      <DiscourseDetails
-        className={`seaqa-connection-resource-details seaqa-connection-${type}-resource-details pt-4 pb-4`}
-        details={mergedDiscourseDetails}
-        projectUuid={projectUuid}
-        connection_id={resource.connection_id}
-        recordId={resource._id}
-        permission={permission}
-        handleReplyDiscourseSuccess={handleReplyDiscourseSuccess}
-      />
-    );
   }
 
   if (Array.isArray(details)) {
     if (details.length === 0) {
+      if (!isContentEmpty) setIsContentEmpty(true);
       return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No content')} />);
+    } else {
+      if (isContentEmpty) setIsContentEmpty(false);
+      return (
+        <div className={`seaqa-connection-resource-details seaqa-connection-${type}-resource-details`}>
+          {details.map((detail, index) => {
+            return (
+              <CommonDetailItem detail={detail} type={type} key={index} />
+            );
+          })}
+        </div>
+      );
     }
-    return (
-      <div className={`seaqa-connection-resource-details seaqa-connection-${type}-resource-details`}>
-        {details.map((detail, index) => {
-          return (
-            <CommonDetailItem detail={detail} type={type} key={index} />
-          );
-        })}
-      </div>
-    );
   }
 
   if (details) {
+    if (!isContentEmpty) setIsContentEmpty(true);
     return (<CustomizeMarkdownViewer className={`seaqa-connection-${type}-resource-details`} value={details} showTOC={false} />);
+  } else {
+    if (isContentEmpty) setIsContentEmpty(false);
+    return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No content')} />);
   }
-  return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No content')} />);
 };
 
 export default ConnectionResourceDetails;
