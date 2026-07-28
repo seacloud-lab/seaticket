@@ -53,6 +53,13 @@ const Portal = () => {
     history.replaceState(null, null, buildPortalPath(page));
   }, [enableKB]);
 
+  const onHomeChatSend = useCallback((query) => {
+    setActivePage(PORTAL_PAGE.CHAT);
+    const chatPath = buildPortalPath(PORTAL_PAGE.CHAT);
+    const searchParams = new URLSearchParams({ query });
+    history.replaceState(null, null, `${chatPath}?${searchParams.toString()}`);
+  }, []);
+
   useEffect(() => {
     const pathSegments = getPortalPathSegments();
     if (pathSegments.length > 0) {
@@ -227,6 +234,7 @@ const Portal = () => {
                 workspaceID={workspaceID}
                 isAnonymous={isAnonymous}
                 onPageChange={onPageChange}
+                onHomeChatSend={onHomeChatSend}
               />
             </div>
           </DataProvider>

@@ -290,10 +290,11 @@ const ChatInput = forwardRef(({
     inputFocus();
   }, [readOnly, inputFocus, closeSkillCommandSelector]);
 
-  const onSendMessage = useCallback((event) => {
+  const onSendMessage = useCallback((event, initialMessage) => {
     event && event.stopPropagation();
     event && event.nativeEvent.stopImmediatePropagation();
-    const messageText = enableSkills ? getMessageWithoutLeadingSkillCommand(value) : value.trim();
+    const messageValue = typeof initialMessage === 'string' ? initialMessage : value;
+    const messageText = enableSkills ? getMessageWithoutLeadingSkillCommand(messageValue) : messageValue.trim();
     if (!messageText) {
       inputRef.current?.focus();
       return;
@@ -301,7 +302,7 @@ const ChatInput = forwardRef(({
     const isUploadingAttachment = attachments.some(att => att.type === CHAT_ATTACHMENT_TYPE.IMAGE && att.status === 'uploading');
     if (isUploadingAttachment) return;
     sendMessage({
-      message: value,
+      message: messageValue,
       attachments: attachments,
       model: selectedModel,
       clearContext
@@ -444,6 +445,18 @@ const ChatInput = forwardRef(({
 
   useEffect(() => {
     inputRef.current && inputRef.current.focus();
+  }, []);
+
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search).get('query')?.trim();
+    if (!query || readOnly) return;
+
+    setValue(query);
+    closeSkillCommandSelector();
+    const timer = setTimeout(() => onSendMessage(null, query), 1000);
+    return () => clearTimeout(timer);
+  // Only consume the initial URL query when the input is mounted.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

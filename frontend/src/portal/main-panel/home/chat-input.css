@@ -1,0 +1,60 @@
+.portal-home-chat-input {
+  position: relative;
+  max-width: 760px;
+  min-height: 78px;
+  margin: 28px auto 0;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 16px 40px rgba(74, 56, 23, 0.08);
+  border: 1px solid rgba(228, 214, 191, 0.85);
+}
+
+.portal-home-chat-textarea {
+  width: 100%;
+  min-height: 78px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  padding: 24px 72px 24px 28px;
+  resize: none;
+  color: #171717;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.portal-home-chat-textarea::placeholder {
+  color: #a8a8a8;
+}
+
+.portal-home-chat-placeholder {
+  position: absolute;
+  left: 28px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #a8a8a8;
+  font-size: 16px;
+}
+
+.portal-home-chat-send-btn {
+  position: absolute;
+  border: none;
+  color: #7b7b7b;
+  background: #f2f2f2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  right: 18px;
+  bottom: 24px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: 16px;
+  line-height: 1;
+}
+
+@media (max-width: 768px) {
+  .portal-home-chat-input {
+    min-height: 72px;
+  }
+}

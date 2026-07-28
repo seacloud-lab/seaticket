@@ -7,30 +7,38 @@ import CustomizeSelect from '@/components/customize-select';
 
 import './edit-panel.css';
 
-const TITLE_SIZE_OPTIONS = [18, 20, 24, 28, 32, 36].map((size) => ({
+const TITLE_SIZE_OPTIONS = [32, 40, 48, 56, 64, 72].map((size) => ({
   value: size,
   name: `${size}px`,
   label: <span>{`${size}px`}</span>,
 }));
 
-const COLOR_PRESET_OPTIONS = [
-  { value: '#f8f1e3', name: '#f8f1e3', label: <span>#f8f1e3</span> },
-  { value: '#fff5ea', name: '#fff5ea', label: <span>#fff5ea</span> },
-  { value: '#eef7ff', name: '#eef7ff', label: <span>#eef7ff</span> },
-  { value: '#f7f0ff', name: '#f7f0ff', label: <span>#f7f0ff</span> },
-  { value: '#f6fbf5', name: '#f6fbf5', label: <span>#f6fbf5</span> },
-];
+const COLOR_PRESETS = ['#f8f1e3', '#fff5ea', '#eef7ff', '#f7f0ff', '#f6fbf5', '#fef7f2', '#f9f7ff', '#f4fbfa'];
 
-const PortalHomeEditPanel = ({ homePageStyle = {}, setHomePageStyle, onClose }) => {
-  const { titleText = gettext('Hey 👋, how can we help?'), descriptionText = gettext('Chat with AI'), titleSize = 24, backgroundColor = '#f8f1e3' } = homePageStyle;
+const CARD_LAYOUT_OPTIONS = [2, 3, 4, 5, 6].map((count) => ({
+  value: count,
+  name: `${count}`,
+  label: <span>{`${count}`}</span>,
+}));
+
+const PortalHomeEditPanel = ({ homePageStyle = {}, setHomePageStyle, updateHomeSetting, onClose }) => {
+  const { titleText = gettext('Hey 👋, how can we help?'), descriptionText = gettext('Chat with AI'), titleSize = 48, backgroundColor = '#f8f1e3', cardLayout = 3 } = homePageStyle;
   const [showColorPicker, setShowColorPicker] = useState(false);
 
   const titleSizeValue = useMemo(() => {
-    return TITLE_SIZE_OPTIONS.find(option => option.value === titleSize) || TITLE_SIZE_OPTIONS[2];
+    return TITLE_SIZE_OPTIONS.find(option => option.value === titleSize) || TITLE_SIZE_OPTIONS[0];
   }, [titleSize]);
 
+  const cardLayoutValue = useMemo(() => {
+    return CARD_LAYOUT_OPTIONS.find(option => option.value === cardLayout) || CARD_LAYOUT_OPTIONS[1];
+  }, [cardLayout]);
+
   const updateHomePageStyle = (patch) => {
-    setHomePageStyle((prev) => ({ ...prev, ...patch }));
+    setHomePageStyle((prev) => {
+      const next = { ...prev, ...patch };
+      updateHomeSetting(JSON.stringify(next));
+      return next;
+    });
   };
 
   return (
@@ -59,7 +67,7 @@ const PortalHomeEditPanel = ({ homePageStyle = {}, setHomePageStyle, onClose }) 
         <CustomizeSelect
           value={titleSizeValue}
           options={TITLE_SIZE_OPTIONS}
-          onChange={(option) => updateHomePageStyle({ titleSize: option.value })}
+          onChange={(value) => updateHomePageStyle({ titleSize: value })}
           placeholder={gettext('Select size')}
         />
       </div>
@@ -77,13 +85,6 @@ const PortalHomeEditPanel = ({ homePageStyle = {}, setHomePageStyle, onClose }) 
 
       <div className="portal-home-edit-panel-section">
         <Label>{gettext('Background color')}</Label>
-        <CustomizeSelect
-          value={{ value: backgroundColor, name: backgroundColor, label: <span>{backgroundColor}</span> }}
-          options={COLOR_PRESET_OPTIONS}
-          onChange={(option) => updateHomePageStyle({ backgroundColor: option.value })}
-          placeholder={gettext('Select color')}
-          searchable={false}
-        />
         <div className="portal-home-edit-panel-color-preview-wrap">
           <div
             className="portal-home-edit-panel-color-preview"
@@ -96,12 +97,26 @@ const PortalHomeEditPanel = ({ homePageStyle = {}, setHomePageStyle, onClose }) 
           <div className="portal-home-edit-panel-color-picker">
             <SketchPicker
               color={backgroundColor}
-              presetColors={['#f8f1e3', '#fff5ea', '#eef7ff', '#f7f0ff', '#f6fbf5']}
+              presetColors={COLOR_PRESETS}
               disableAlpha={true}
-              onChangeComplete={(color) => updateHomePageStyle({ backgroundColor: color.hex })}
+              onChangeComplete={(color) => {
+                updateHomePageStyle({ backgroundColor: color.hex });
+                setShowColorPicker(!showColorPicker);
+              }}
             />
           </div>
         )}
+      </div>
+
+      <div className="portal-home-edit-panel-section">
+        <Label>{gettext('Card layout')}</Label>
+        <CustomizeSelect
+          value={cardLayoutValue}
+          options={CARD_LAYOUT_OPTIONS}
+          onChange={(value) => updateHomePageStyle({ cardLayout: value })}
+          placeholder={gettext('Select layout')}
+          searchable={false}
+        />
       </div>
     </aside>
   );

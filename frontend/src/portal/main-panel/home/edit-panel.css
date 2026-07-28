@@ -89,3 +89,8 @@
 .portal-home-edit-panel-color-picker {
   margin-top: 12px;
 }
+
+.portal-home-edit-panel-card .seaqa-customize-select .option-group,
+.portal-home-edit-panel .seaqa-customize-select .option-group {
+  padding: 0;
+}

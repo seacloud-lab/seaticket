@@ -1,5 +1,5 @@
 import React from 'react';
-import { Label, Input } from 'reactstrap';
+import { Button, Label, Input } from 'reactstrap';
 import Icon from '@/components/icon';
 import { gettext } from '@/constants';
 import CustomizeSelect from '@/components/customize-select';
@@ -7,12 +7,12 @@ import CustomizeSelect from '@/components/customize-select';
 import './card-edit-panel.css';
 
 const ICON_OPTIONS = [
-  { value: '👥', name: '👥 Team', label: <span>👥 Team</span> },
-  { value: '🤖', name: '🤖 AI', label: <span>🤖 AI</span> },
-  { value: '🗂️', name: '🗂️ Ticket', label: <span>🗂️ Ticket</span> },
-  { value: '💬', name: '💬 Chat', label: <span>💬 Chat</span> },
-  { value: '🔄', name: '🔄 Sync', label: <span>🔄 Sync</span> },
-  { value: '🧩', name: '🧩 Link', label: <span>🧩 Link</span> },
+  { value: '👥', name: '👥 Team', label: <span>👥</span> },
+  { value: '🤖', name: '🤖 AI', label: <span>🤖</span> },
+  { value: '🗂️', name: '🗂️ Ticket', label: <span>🗂️</span> },
+  { value: '💬', name: '💬 Chat', label: <span>💬</span> },
+  { value: '🔄', name: '🔄 Sync', label: <span>🔄</span> },
+  { value: '🧩', name: '🧩 Link', label: <span>🧩</span> },
 ];
 
 const DEFAULT_CARD = {
@@ -52,6 +52,15 @@ const PortalHomeCardEditPanel = ({ homePageStyle = {}, activeCard, setActiveCard
     setActiveCard(activeCard);
   };
 
+  const deleteCard = (cardId) => {
+    const nextCards = cards.filter(card => card.id !== cardId);
+    setHomePageStyle((prev) => ({
+      ...prev,
+      cards: nextCards,
+    }));
+    setActiveCard('');
+  };
+
   return (
     <aside className="portal-home-edit-panel-card" aria-label={gettext('Edit panel')}>
       <div className="portal-home-edit-panel-header">
@@ -63,7 +72,7 @@ const PortalHomeCardEditPanel = ({ homePageStyle = {}, activeCard, setActiveCard
       </div>
 
       <div className="portal-home-edit-panel-section">
-        <Label>{gettext('Title')}</Label>
+        <Label>{gettext('Card title')}</Label>
         <Input
           className="portal-home-edit-panel-input"
           type="text"
@@ -74,7 +83,7 @@ const PortalHomeCardEditPanel = ({ homePageStyle = {}, activeCard, setActiveCard
       </div>
 
       <div className="portal-home-edit-panel-section">
-        <Label>{gettext('Description')}</Label>
+        <Label>{gettext('Card description')}</Label>
         <Input
           className="portal-home-edit-panel-input"
           type="textarea"
@@ -87,7 +96,7 @@ const PortalHomeCardEditPanel = ({ homePageStyle = {}, activeCard, setActiveCard
       </div>
 
       <div className="portal-home-edit-panel-section">
-        <Label>{gettext('Link')}</Label>
+        <Label>{gettext('Card link')}</Label>
         <Input
           className="portal-home-edit-panel-input"
           type="text"
@@ -98,13 +107,19 @@ const PortalHomeCardEditPanel = ({ homePageStyle = {}, activeCard, setActiveCard
       </div>
 
       <div className="portal-home-edit-panel-section">
-        <Label>{gettext('Icon')}</Label>
+        <Label>{gettext('Card icon')}</Label>
         <CustomizeSelect
           value={iconValue}
           options={ICON_OPTIONS}
-          onChange={(option) => updateCardStyle({ icon: option.value })}
+          onChange={(value) => updateCardStyle({ icon: value })}
           placeholder={gettext('Select icon')}
         />
+      </div>
+
+      <div className="portal-home-edit-panel-delete-wrap">
+        <Button color="danger" onClick={() => deleteCard(activeCard)}>
+          {gettext('Delete card')}
+        </Button>
       </div>
     </aside>
   );

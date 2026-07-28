@@ -1,28 +1,55 @@
 import React, { useState } from 'react';
 import classnames from 'classnames';
-import { IconButton } from '@/components';
+import slugid from 'slugid';
+import { Icon, IconButton } from '@/components';
 import { gettext } from '@/constants';
 import { usePortalSettings } from '@/portal/hooks/settings';
 import PortalHomeEditPanel from './edit-panel';
 import PortalCardEditPanel from './card-edit-panel';
+import PortalHomeChatInput from './chat-input';
 import { normalizeHomePageStyle } from './utils';
 
 import './index.css';
 
 const { isEditMode, portalHomeSetting } = window.app.pageOptions;
 
-const PortalHome = () => {
+const CARD_LAYOUT_OPTIONS = [2, 3, 4, 5, 6];
+
+const DEFAULT_NEW_CARD = {
+  icon: '💬',
+  title: gettext('New card'),
+  description: gettext('Enter card description'),
+  subtitle: '',
+  note: '',
+  link: '',
+};
+
+const PortalHome = ({ onHomeChatSend }) => {
   const [isEdit, setIsEdit] = useState(false);
   const [homePageStyle, setHomePageStyle] = useState(() => normalizeHomePageStyle(portalHomeSetting));
   const [activeCard, setActiveCard] = useState('');
   const { updateHomeSetting } = usePortalSettings();
 
-  const { titleText, descriptionText, titleSize, backgroundColor, cards } = homePageStyle;
+  const { titleText, descriptionText, titleSize, backgroundColor, cardLayout, cards } = homePageStyle;
 
   const closeEditPanel = () => {
     updateHomeSetting(JSON.stringify(homePageStyle));
     setIsEdit(false);
     setActiveCard('');
+  };
+
+  const addCard = () => {
+    const newCard = {
+      ...DEFAULT_NEW_CARD,
+      id: slugid.nice(4),
+    };
+
+    setHomePageStyle((prev) => ({
+      ...prev,
+      cards: [...(Array.isArray(prev.cards) ? prev.cards : []), newCard],
+    }));
+    setIsEdit(true);
+    setActiveCard(newCard.id);
   };
 
   return (
@@ -45,17 +72,11 @@ const PortalHome = () => {
           <section className="portal-home-hero">
             <div className="portal-home-hero-content">
               <h1 className="portal-home-title" style={{ fontSize: `${titleSize}px` }}>{titleText}</h1>
-
-              <div className="portal-home-chat-input" aria-label={gettext('Chat with AI')}>
-                <div className="portal-home-chat-placeholder">{descriptionText}</div>
-                <button type="button" className="portal-home-action-btn portal-home-action-btn-send" aria-label={gettext('Send')}>
-                  <span>↑</span>
-                </button>
-              </div>
+              <PortalHomeChatInput descriptionText={descriptionText} onHomeChatSend={onHomeChatSend} />
             </div>
           </section>
 
-          <section className="portal-home-cards" aria-label={gettext('Portal features')}>
+          <section className="portal-home-cards" aria-label={gettext('Portal features')} style={{ gridTemplateColumns: `repeat(${CARD_LAYOUT_OPTIONS.includes(Number(cardLayout)) ? Number(cardLayout) : 3}, minmax(0, 1fr))` }}>
             {cards.map((card) => (
               <article
                 className={classnames('portal-home-card', { active: activeCard === card.id })}
@@ -65,15 +86,21 @@ const PortalHome = () => {
               >
                 <div className="portal-home-card-icon" aria-hidden="true">{card.icon}</div>
                 <div className="portal-home-card-body">
-                  <h2 className="portal-home-card-title">
-                    {card.title}
-                    <span className="portal-home-card-title-sub">{card.subtitle}</span>
-                  </h2>
+                  <h2 className="portal-home-card-title">{card.title}</h2>
                   <p className="portal-home-card-description">{card.description}</p>
-                  <p className="portal-home-card-note">{card.note}</p>
                 </div>
               </article>
             ))}
+            {isEditMode && (
+              <article
+                className={classnames('portal-home-card', 'portal-home-card-add', { active: false })}
+                key="portal-home-card-add"
+                onClick={addCard}
+              >
+                <Icon symbol="narrow" className="portal-home-card-add-icon" />
+                <span className="portal-home-card-add-text">{gettext('Add card')}</span>
+              </article>
+            )}
           </section>
         </main>
 
@@ -81,6 +108,7 @@ const PortalHome = () => {
           <PortalHomeEditPanel
             homePageStyle={homePageStyle}
             setHomePageStyle={setHomePageStyle}
+            updateHomeSetting={updateHomeSetting}
             onClose={closeEditPanel}
           />
         )}

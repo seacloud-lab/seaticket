@@ -68,7 +68,7 @@ export const normalizeHomePageStyle = (style) => {
   return {
     ...DEFAULT_HOME_PAGE_STYLE,
     ...parsedStyle,
+    cardLayout: [2, 3, 4, 5, 6].includes(Number(parsedStyle.cardLayout)) ? Number(parsedStyle.cardLayout) : DEFAULT_HOME_PAGE_STYLE.cardLayout,
     cards: Array.isArray(parsedStyle.cards) ? parsedStyle.cards : DEFAULT_HOME_PAGE_STYLE.cards,
   };
 };
-

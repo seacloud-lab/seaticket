@@ -8,7 +8,7 @@ import { useMetadata, useTags } from '@/project/hooks';
 import { CenteredLoading, CustomizeTabs } from '@/components';
 import PortalChat from './chat';
 
-const MainPanel = ({ activePage, onPageChange, isAnonymous, ...props }) => {
+const MainPanel = ({ activePage, onPageChange, onHomeChatSend, isAnonymous, ...props }) => {
 
   const { isLoading: isMetadataLoading } = useMetadata();
   const { isLoading: isTagsDataLoading } = useTags();
@@ -35,7 +35,7 @@ const MainPanel = ({ activePage, onPageChange, isAnonymous, ...props }) => {
       case PORTAL_PAGE.CHAT:
         return <PortalChat projectUuid={props.projectUuid} />;
       case PORTAL_PAGE.HOME:
-        return <PortalHome { ...props } />;
+        return <PortalHome { ...props } onHomeChatSend={onHomeChatSend} />;
       default:
         return null;
     }
