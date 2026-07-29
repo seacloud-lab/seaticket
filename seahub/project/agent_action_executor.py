@@ -498,7 +498,7 @@ class AgentActionExecutor:
     def _parse_suggested_type(result_text):
         if not result_text:
             return ''
-        match = re.search(r'to "(.+?)" for this GitHub issue\.', result_text)
+        match = re.search(r'to "(.+?)" for this GitHub issue', result_text)
         if match:
             return match.group(1).strip()
         return ''
@@ -507,7 +507,7 @@ class AgentActionExecutor:
     def _parse_suggested_labels(result_text):
         if not result_text:
             return []
-        suggest_assign_labels_re = re.compile(r'Suggest assigning labels (\[.*?\]) to this GitHub issue\.$')
+        suggest_assign_labels_re = re.compile(r'labels (\[.*?\]) to this GitHub issue$')
         match = suggest_assign_labels_re.search(result_text.strip())
         if not match:
             return []
