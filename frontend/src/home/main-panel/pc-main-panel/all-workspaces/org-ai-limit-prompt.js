@@ -12,7 +12,7 @@ const OrgAiLimitPrompt = (props) => {
 
   if (!show) return null;
 
-  const limitText = gettext('AI credits over limit — You are %s credits over your limit. Replenish your credits now to resume full service.').replace('%s', aiCreditExceededAmount);
+  const limitText = gettext('AI credit limit exceeded — You’ve used %s credits beyond your limit. Add credits now to restore full access.').replace('%s', aiCreditExceededAmount);
 
   return (
     <div className={`org-ai-limit-wrapper d-flex justify-content-between align-items-center ${isDesktop ? '' : 'mobile-org-ai-limit-wrapper'}`}>
