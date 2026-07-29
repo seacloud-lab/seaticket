@@ -1,6 +1,7 @@
 import { gettext } from '@/constants';
 import { getResourceIconURL, getInternalNetworkAddress } from '@/project/utils';
 import { generatorKnowledgeBaseURL } from '@/project/main-panel/knowledge-base/utils';
+import { generatorTicketURL } from '@/project/main-panel/tickets/utils';
 
 export const formatSources = (sources, { workspaceID, projectName }) => {
   if (!Array.isArray(sources) || sources.length === 0) return [];
@@ -50,6 +51,29 @@ export const transformKBToLink = (value, { workspaceID, projectName }) => {
   return value.replace(kbEntryRegex, (match, kbId, title) => {
     const kbUrl = generatorKnowledgeBaseURL({ kb: { _id: kbId }, workspaceID, projectName });
     return `[${title}](${kbUrl})`;
+  });
+};
+
+const decodeHtmlEntities = (value = '') => {
+  if (!value || typeof document === 'undefined') return value;
+  const textArea = document.createElement('textarea');
+  textArea.innerHTML = value;
+  return textArea.value;
+};
+
+const escapeMarkdownLinkTitle = (value = '') => {
+  return value.replaceAll('\\', '\\\\').replaceAll('[', '\\[').replaceAll(']', '\\]');
+};
+
+// Render seaqa-ticket as a direct link to the created ticket
+export const transformTicketToLink = (value, { workspaceID, projectName }) => {
+  if (!value) return value;
+  const ticketEntryRegex = /<seaqa-ticket\s+id=(?:["'])(\d+)(?:["'])\s+title=(?:["'])(.*?)(?:["'])\s*\/>/g;
+  return value.replace(ticketEntryRegex, (match, ticketId, title) => {
+    const ticketUrl = generatorTicketURL({ ticket: { _id: ticketId }, workspaceID, projectName });
+    const decodedTitle = decodeHtmlEntities(title);
+    const safeTitle = escapeMarkdownLinkTitle(decodedTitle);
+    return `[${safeTitle}](${ticketUrl})`;
   });
 };
 

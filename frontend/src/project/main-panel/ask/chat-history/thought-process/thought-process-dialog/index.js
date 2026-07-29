@@ -123,6 +123,61 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
   useEffect(() => {
     let value = [];
     const customizeMDProps = { ...props, projectUuid, canPreviewLinkedFile: false, chatId: 'thought-process' };
+    const getStructuredToolArguments = (toolCall = {}, fallbackContent = '') => {
+      if (toolCall.name === 'generate_markdown') {
+        return [
+          {
+            name: gettext('File name'),
+            value: toolCall?.arguments?.file_name,
+          }, {
+            name: gettext('Content'),
+            children: [
+              {
+                value: toolCall?.arguments?.content ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: toolCall.arguments.content } : null,
+                formatter: ({ className, value }) => (<AIReply message={value} className={className} { ...customizeMDProps } />),
+              }
+            ]
+          },
+        ];
+      }
+      if (toolCall.name === 'create_knowledge_base_entry') {
+        return [
+          {
+            name: gettext('Title'),
+            value: toolCall?.arguments?.title,
+          }, {
+            name: gettext('Content'),
+            children: [
+              {
+                value: toolCall?.arguments?.content ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: toolCall.arguments.content } : null,
+                formatter: ({ className, value }) => (<AIReply message={value} className={className} { ...customizeMDProps } />),
+              }
+            ]
+          },
+        ];
+      }
+      if (toolCall.name === 'create_ticket') {
+        const contentValue = toolCall?.arguments?.content || fallbackContent;
+        return [
+          `${gettext('Title')}: ${toolCall?.arguments?.title || ''}`,
+          `${gettext('Type')}: ${toolCall?.arguments?.type || ''}`,
+          `${gettext('Priority')}: ${toolCall?.arguments?.priority ?? ''}`,
+          `${gettext('State')}: ${toolCall?.arguments?.state || ''}`,
+          {
+            name: gettext('Content'),
+            children: [
+              {
+                value: contentValue ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: contentValue } : null,
+                formatter: ({ className, value }) => (<AIReply message={value} className={className} { ...customizeMDProps } />),
+              }
+            ]
+          },
+        ];
+      }
+      return Object.entries(toolCall?.arguments || {}).map(([argumentKey, argumentValue]) => {
+        return `${argumentKey}: ${argumentValue}`;
+      });
+    };
 
     // task
     if (hasOwnProperty(propsValue, 'task') && propsValue.task) {
@@ -258,22 +313,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
           if (tool_calls?.length === 1) {
             let executionInfo = [{
               name: gettext('Arguments'),
-              children: tool_calls?.[0].name === 'generate_markdown' || tool_calls?.[0].name === 'create_knowledge_base_entry' ? [
-                {
-                  name: gettext('File name'),
-                  value: tool_calls?.[0]?.arguments.file_name,
-                }, {
-                  name: gettext('Content'),
-                  children: [
-                    {
-                      value: tool_calls?.[0]?.arguments.content ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: tool_calls?.[0]?.arguments.content } : null,
-                      formatter: ({ className, value }) => (<AIReply message={value} className={className} { ...customizeMDProps } />),
-                    }
-                  ]
-                },
-              ] : Object.entries(tool_calls?.[0]?.arguments || {}).map(([argumentKey, argumentValue]) => {
-                return `${argumentKey}: ${argumentValue}`;
-              })
+              children: getStructuredToolArguments(tool_calls?.[0]),
             }];
             if (tool_calls?.[0]?.execution_detail) {
               executionInfo.push({
@@ -295,22 +335,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
               children: action.tool_calls.map((too_call, toolIndex) => {
                 let SubstepExecutionInfo = [{
                   name: gettext('Arguments'),
-                  children: too_call.name === 'generate_markdown' || too_call.name === 'create_knowledge_base_entry' ? [
-                    {
-                      name: gettext('File name'),
-                      value: too_call.arguments.file_name,
-                    }, {
-                      name: gettext('Content'),
-                      children: [
-                        {
-                          value: too_call.arguments.content ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: tool_calls?.[0]?.arguments.content } : null,
-                          formatter: ({ className, value }) => (<AIReply message={value} className={className} { ...customizeMDProps } />),
-                        }
-                      ]
-                    },
-                  ] : Object.entries(too_call.arguments || {}).map(([argumentKey, argumentValue]) => {
-                    return `${argumentKey}: ${argumentValue}`;
-                  })
+                  children: getStructuredToolArguments(too_call, tool_calls?.[0]?.arguments?.content || ''),
                 }];
                 if (too_call.execution_detail) {
                   SubstepExecutionInfo.push({
