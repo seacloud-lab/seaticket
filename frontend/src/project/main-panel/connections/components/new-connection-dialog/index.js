@@ -74,9 +74,9 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const confluenceOauthIntervalRef = useRef(null);
   const confluenceOauthWindowRef = useRef(null);
   const [isWaitingJiraOAuth, setWaitingJiraOAuth] = useState(false);
+  const [isJiraOauthConnected, setJiraOauthConnected] = useState(false);
   const [jiraSitesVersion, setJiraSitesVersion] = useState(0);
   const [jiraProjectsVersion, setJiraProjectsVersion] = useState(0);
-  const [isJiraOauthConnected, setJiraOauthConnected] = useState(false);
   const [isCheckingJiraOauth, setCheckingJiraOauth] = useState(false);
   const [jiraOauthError, setJiraOauthError] = useState('');
 
@@ -359,7 +359,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       setSubmitting(false);
     });
     return;
-  }, [name, type, config, isLinear, onSubmit, stopEmailOAuthPolling, isConfluence, isGithub, selectedSpaceKeys, isDiscord]);
+  }, [name, type, config, isJira, isLinear, onSubmit, stopEmailOAuthPolling, isConfluence, isGithub, selectedSpaceKeys, isDiscord]);
 
   const onCopyCallbackUrl = useCallback(() => {
     copy(callbackUrl);
@@ -567,12 +567,13 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         // Silently retry on next interval
       });
     }, 2000);
-  }, [projectUuid]);
+  }, []);
 
   const listJiraSites = useCallback(() => {
     if (!isJiraOauthConnected) {
       return Promise.resolve({ data: { options: [] } });
     }
+    void jiraSitesVersion;
     return connectionsAPI.listJiraSites(projectUuid).then(res => {
       const sites = res?.data?.sites || [];
       return {
@@ -586,7 +587,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         }
       };
     });
-  }, [projectUuid, jiraSitesVersion, isJiraOauthConnected]);
+  }, [jiraSitesVersion, isJiraOauthConnected]);
 
   const listJiraProjects = useCallback(() => {
     const siteId = config.site_id;
@@ -594,6 +595,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     if (!isJiraOauthConnected || !actualSiteId) {
       return Promise.resolve({ data: { options: [] } });
     }
+    void jiraProjectsVersion;
     return connectionsAPI.listJiraProjects(projectUuid, actualSiteId).then(res => {
       const projects = res?.data?.projects || [];
       return {
@@ -607,7 +609,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         }
       };
     });
-  }, [projectUuid, config.site_id, isJiraOauthConnected, jiraProjectsVersion]);
+  }, [config.site_id, isJiraOauthConnected, jiraProjectsVersion]);
 
   useEffect(() => {
     if (!isJira) return;
@@ -621,11 +623,14 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     if (siteId && (siteId.site || siteId.id)) {
       setJiraProjectsVersion(v => v + 1);
       // Clear previous project selection when site changes
-      if (config.project_key) {
-        setConfig(prev => ({ ...prev, project_key: undefined }));
-      }
+      setConfig(prev => {
+        if (prev.project_key) {
+          return { ...prev, project_key: undefined };
+        }
+        return prev;
+      });
     }
-  }, [isJira, isJiraOauthConnected, config.site_id?.id]);
+  }, [isJira, isJiraOauthConnected, config.site_id]);
 
   // Cleanup polling and popup on unmount or when Linear type changes
   useEffect(() => {
@@ -725,9 +730,9 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
 
     return editor;
   }, [
-    config, isSubmitting, isGithub, isConfluence, isConfluenceOauthConnected, isLinear,
-    onConfigChange, listGitHubRepositories, listConfluenceWorkspaces, listLinearTeams,
-    isDiscord, listDiscordChannels, isLinearOauthConnected, listJiraProjects
+    config, isJira, isSubmitting, isGithub, isConfluence, isConfluenceOauthConnected, isLinear,
+    onConfigChange, isJiraOauthConnected, listGitHubRepositories, listConfluenceWorkspaces, listLinearTeams,
+    isDiscord, listDiscordChannels, isLinearOauthConnected, listJiraProjects, listJiraSites,
   ]);
 
   return (

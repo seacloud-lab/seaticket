@@ -710,7 +710,6 @@ export const CONNECTION_PREDEFINED_COLUMN_NAME = {
   OTHERS: 'others',
   ISSUE_ID: 'issue_id',
   IDENTIFIER: 'identifier',
-  DUE_DATE: 'due_date',
   MESSAGE_ID: 'message_id',
   THREAD_ID: 'thread_id',
 };

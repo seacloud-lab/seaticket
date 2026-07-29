@@ -264,17 +264,18 @@ export const initConnectionResourceDetails = (type, record) => {
     const { replies } = record;
     return Array.isArray(replies) ? replies : [];
   }
-};
   if (type === CONNECTION_TYPE.JIRA_ISSUE) {
     const { author, created_time, comments } = record;
     const mainPost = {
       author: author || gettext('Unassigned'),
       created_time,
+      modified_time: created_time,
       content: content || '',
     };
     const initComments = Array.isArray(comments) && comments.length > 0 ? comments.map(detail => ({
       ...detail,
       time: detail.created_time,
+      modified_time: detail.created_time || detail.modified_time,
       body: detail.content || '',
     })) : [];
     return [mainPost, ...initComments];
