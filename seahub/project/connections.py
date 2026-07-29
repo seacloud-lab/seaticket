@@ -313,7 +313,7 @@ class ProjectEmailOAuthLoginView(APIView):
         if ProjectConnections.objects.filter(project_uuid=project.uuid, name=name, deleted=False).exists():
             return api_error(status.HTTP_400_BAD_REQUEST, f'Connection name {name} already exists.')
 
-        callback_url = get_email_oauth_callback_url(project_uuid)
+        callback_url = get_email_oauth_callback_url()
         try:
             session = OAuth2Session(
                 client_id=config.get('client_id'),
@@ -327,15 +327,17 @@ class ProjectEmailOAuthLoginView(APIView):
             logger.exception(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to fetch authorization url')
 
-        EmailOAuthUtils.set_oauth_session(request, {
+        EmailOAuthUtils.set_oauth_session(request, state, {
             'oauth_state': state,
+            'project_uuid': project_uuid,
+            'created_at': timezone.now().timestamp(),
             'status': 'in-progress',
             'name': name,
             'config': config,
             'connection_id': None,
             'error_msg': '',
         })
-        return Response({'auth_url': authorization_url})
+        return Response({'auth_url': authorization_url, 'state': state})
 
 
 class ProjectEmailOAuthQueryView(APIView):
@@ -355,8 +357,15 @@ class ProjectEmailOAuthQueryView(APIView):
         if not check_project_admin_permission(username, workspace.owner):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
-        oauth_data = EmailOAuthUtils.get_oauth_session(request)
+        oauth_state = request.GET.get('state')
+        if not oauth_state:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'OAuth state is required.')
+
+        oauth_data = EmailOAuthUtils.get_oauth_session(request, oauth_state)
         if not oauth_data:
+            return api_error(status.HTTP_404_NOT_FOUND, 'OAuth request not found.')
+
+        if oauth_data.get('project_uuid') != project_uuid:
             return api_error(status.HTTP_404_NOT_FOUND, 'OAuth request not found.')
 
         status_value = oauth_data.get('status')
@@ -378,40 +387,48 @@ class ProjectEmailOAuthCallbackView(APIView):
     throttle_classes = (UserRateThrottle,)
 
     @require_org_context
-    def get(self, request, project_uuid):
-        oauth_data = EmailOAuthUtils.get_oauth_session(request)
+    def get(self, request):
+        request_state = request.GET.get('state')
+        if not request_state:
+            return render(request, 'error.html', {'error_msg': _('Request not found')})
+
+        oauth_data = EmailOAuthUtils.get_oauth_session(request, request_state)
         if not oauth_data:
             return render(request, 'error.html', {'error_msg': _('Request not found')})
 
         if oauth_data.get('status') == 'success':
             return render(request, 'authorization_success.html')
 
+        project_uuid = oauth_data.get('project_uuid')
+        if not project_uuid:
+            EmailOAuthUtils.set_oauth_failure(request, request_state, 'Project not found.')
+            return render(request, 'error.html', {'error_msg': _('Project not found.')})
+
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
-            EmailOAuthUtils.set_oauth_failure(request, 'Project not found.')
+            EmailOAuthUtils.set_oauth_failure(request, request_state, 'Project not found.')
             return render(request, 'error.html', {'error_msg': _('Project not found.')})
 
         workspace = project.workspace
         username = request.user.username
         if not check_project_admin_permission(username, workspace.owner):
-            EmailOAuthUtils.set_oauth_failure(request, 'Permission denied.')
+            EmailOAuthUtils.set_oauth_failure(request, request_state, 'Permission denied.')
             return render(request, 'error.html', {'error_msg': _('Permission denied.')})
 
         config = oauth_data.get('config') or {}
         name = oauth_data.get('name')
         if not all([config, name, oauth_data.get('oauth_state')]):
             error_msg = 'Invalid request, please try again later'
-            EmailOAuthUtils.set_oauth_failure(request, error_msg)
+            EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
             return render(request, 'error.html', {'error_msg': _(error_msg)})
 
-        request_state = request.GET.get('state')
         if not request_state or request_state != oauth_data.get('oauth_state'):
             error_msg = 'OAuth request is expired or has been replaced by a newer authorization.'
-            EmailOAuthUtils.set_oauth_failure(request, error_msg)
+            EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
             return render(request, 'error.html', {'error_msg': _(error_msg)})
 
-        callback_url = get_email_oauth_callback_url(project_uuid)
-        authorization_response_url = settings.SERVICE_URL.rstrip('/') + request.get_full_path()
+        callback_url = get_email_oauth_callback_url()
+        authorization_response_url = callback_url + '?' + request.META.get('QUERY_STRING', '')
 
         try:
             session = OAuth2Session(
@@ -423,7 +440,7 @@ class ProjectEmailOAuthCallbackView(APIView):
         except Exception as e:
             logger.error(e)
             error_msg = 'OAuth verification failed, please check your connection configurations'
-            EmailOAuthUtils.set_oauth_failure(request, error_msg)
+            EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
             return render(request, 'error.html', {'error_msg': _(error_msg)})
 
         try:
@@ -435,13 +452,13 @@ class ProjectEmailOAuthCallbackView(APIView):
         except Exception as e:
             logger.error(e)
             error_msg = 'Failed to request token, please check your connection configurations'
-            EmailOAuthUtils.set_oauth_failure(request, error_msg)
+            EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
             return render(request, 'error.html', {'error_msg': _(error_msg)})
 
         refresh_token = token.get('refresh_token')
         if not refresh_token:
             error_msg = 'Failed to request token'
-            EmailOAuthUtils.set_oauth_failure(request, error_msg)
+            EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
             return render(request, 'error.html', {'error_msg': _(error_msg)})
 
         final_config = dict(config)
@@ -456,20 +473,20 @@ class ProjectEmailOAuthCallbackView(APIView):
         except EmailOAuthProfileError as e:
             logger.error(e)
             error_msg = 'Failed to fetch sender profile, please check your connection configurations'
-            EmailOAuthUtils.set_oauth_failure(request, error_msg)
+            EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
             return render(request, 'error.html', {'error_msg': _(error_msg)})
 
         record, error_response = create_connection(project, username, ConnectionType.EMAIL.value, name, final_config)
         if error_response:
             error_msg = 'Internal Server Error'
-            EmailOAuthUtils.set_oauth_failure(request, error_msg)
+            EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
             return render(request, 'error.html', {'error_msg': _(error_msg)})
 
         oauth_data['status'] = 'success'
         oauth_data['connection_id'] = record.id
         oauth_data['config'] = final_config
         oauth_data['error_msg'] = ''
-        EmailOAuthUtils.set_oauth_session(request, oauth_data)
+        EmailOAuthUtils.set_oauth_session(request, request_state, oauth_data)
 
         return render(request, 'authorization_success.html', {
             'name': name,

@@ -19,8 +19,11 @@ from seahub.project.connections import (
     GithubWebhookView,
     DiscourseWebhookView,
     ConnectionFileView,
+    ProjectEmailOAuthLoginView,
+    ProjectEmailOAuthQueryView,
     ProjectEmailOAuthCallbackView,
 )
+from seahub.project.utils import get_email_oauth_callback_url
 from seahub.project.agent import AgentActionConfirmView
 from seahub.project.models import ProjectConnectionOauth
 from seahub.project.constants import ConnectionType
@@ -374,26 +377,34 @@ class TestProjectConnectionView:
 
 class TestProjectEmailOAuthCallbackView:
 
+    @staticmethod
+    def _oauth_transaction(project_uuid, state='state-1'):
+        return {
+            'oauth_state': state,
+            'project_uuid': project_uuid,
+            'created_at': datetime.datetime.now().timestamp(),
+            'status': 'in-progress',
+            'name': 'mail-conn',
+            'config': {
+                'server_provider': 'Microsoft',
+                'client_id': 'cid',
+                'client_secret': 'secret',
+                'token_url': 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
+                'scopes': ['User.Read', 'Mail.Read', 'Mail.Send', 'offline_access'],
+            },
+            'connection_id': None,
+            'error_msg': '',
+        }
+
     def test_callback_fetches_sender_profile_for_microsoft(self, factory, project_creator, real_project):
         project = real_project
         session = DummySession({
             'oauth_email_connection': {
-                'oauth_state': 'state-1',
-                'status': 'in-progress',
-                'name': 'mail-conn',
-                'config': {
-                    'server_provider': 'Microsoft',
-                    'client_id': 'cid',
-                    'client_secret': 'secret',
-                    'token_url': 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
-                    'scopes': ['User.Read', 'Mail.Read', 'Mail.Send', 'offline_access'],
-                },
-                'connection_id': None,
-                'error_msg': '',
+                'state-1': self._oauth_transaction(project.uuid),
             }
         })
         request = factory.get(
-            f"/api/v1/project/{project.uuid}/connections/email/oauth/callback/?state=state-1"
+            '/api/v1/connections/email/oauth/callback/?state=state-1'
         )
         request.user = project_creator
         request.session = session
@@ -415,15 +426,108 @@ class TestProjectEmailOAuthCallbackView:
                     'username': 'adele@example.com',
                 }) as fetch_sender_mock, \
                 patch('seahub.project.connections.create_connection', return_value=(record, None)):
-            resp = ProjectEmailOAuthCallbackView.as_view()(request, project_uuid=project.uuid)
+            resp = ProjectEmailOAuthCallbackView.as_view()(request)
 
         assert resp.status_code == 200
-        final_config = request.session['oauth_email_connection']['config']
+        final_config = request.session['oauth_email_connection']['state-1']['config']
         assert final_config['sender_name'] == 'Adele Vance'
         assert final_config['sender_email'] == 'adele@example.com'
         assert final_config['username'] == 'adele@example.com'
         assert request.session.modified is True
         fetch_sender_mock.assert_called_once()
+        assert oauth_session.fetch_token.call_args.kwargs['authorization_response'] == \
+            get_email_oauth_callback_url() + '?state=state-1'
+
+    def test_callback_failure_is_saved_without_type_error(self, factory, project_creator, real_project):
+        session = DummySession({
+            'oauth_email_connection': {
+                'state-1': self._oauth_transaction(real_project.uuid),
+            }
+        })
+        request = factory.get('/api/v1/connections/email/oauth/callback/?state=state-1')
+        request.user = project_creator
+        request.session = session
+        request.is_mobile = False
+        request.is_tablet = False
+
+        oauth_session = Mock()
+        oauth_session.fetch_token.side_effect = Exception('token request failed')
+
+        with patch('seahub.project.connections.OAuth2Session', return_value=oauth_session):
+            resp = ProjectEmailOAuthCallbackView.as_view()(request)
+
+        assert resp.status_code == 200
+        oauth_data = request.session['oauth_email_connection']['state-1']
+        assert oauth_data['status'] == 'failure'
+        assert oauth_data['error_msg'] == 'Failed to request token, please check your connection configurations'
+
+    def test_callback_only_updates_transaction_for_its_state(self, factory, project_creator, real_project):
+        session = DummySession({
+            'oauth_email_connection': {
+                'state-1': self._oauth_transaction(real_project.uuid),
+                'state-2': self._oauth_transaction('missing-project', state='state-2'),
+            }
+        })
+        request = factory.get('/api/v1/connections/email/oauth/callback/?state=state-2')
+        request.user = project_creator
+        request.session = session
+        request.is_mobile = False
+        request.is_tablet = False
+
+        resp = ProjectEmailOAuthCallbackView.as_view()(request)
+
+        assert resp.status_code == 200
+        assert request.session['oauth_email_connection']['state-1']['status'] == 'in-progress'
+        assert request.session['oauth_email_connection']['state-2']['status'] == 'failure'
+
+
+class TestProjectEmailOAuthViews:
+
+    def test_login_uses_shared_callback_and_returns_state(self, factory, project_creator, real_project):
+        request = factory.post(
+            f'/api/v1/project/{real_project.uuid}/connections/email/oauth/login/',
+            data={
+                'name': 'mail-conn',
+                'config': {
+                    'server_provider': 'Microsoft',
+                    'client_id': 'cid',
+                    'client_secret': 'secret',
+                    'authority_url': 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
+                    'token_url': 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
+                    'scopes': ['User.Read'],
+                    'authority_args': {'prompt': 'consent'},
+                },
+            },
+            format='json',
+        )
+        request.user = project_creator
+        request.session = DummySession()
+
+        oauth_session = Mock()
+        oauth_session.authorization_url.return_value = ('https://provider.example/authorize?state=state-1', 'state-1')
+
+        with patch('seahub.project.connections.OAuth2Session', return_value=oauth_session) as oauth_session_cls:
+            resp = ProjectEmailOAuthLoginView.as_view()(request, project_uuid=real_project.uuid)
+
+        assert resp.status_code == 200
+        assert resp.data['state'] == 'state-1'
+        assert request.session['oauth_email_connection']['state-1']['project_uuid'] == real_project.uuid
+        assert oauth_session_cls.call_args.kwargs['redirect_uri'] == get_email_oauth_callback_url()
+
+    def test_query_requires_matching_transaction_project(self, factory, project_creator, real_project):
+        request = factory.get(
+            f'/api/v1/project/{real_project.uuid}/connections/email/oauth/query/?state=state-1'
+        )
+        request.user = project_creator
+        request.session = DummySession({
+            'oauth_email_connection': {
+                'state-1': TestProjectEmailOAuthCallbackView._oauth_transaction('another-project'),
+            }
+        })
+
+        resp = ProjectEmailOAuthQueryView.as_view()(request, project_uuid=real_project.uuid)
+
+        assert resp.status_code == 404
 
 
 class TestProjectConnectionReplyEmailView:

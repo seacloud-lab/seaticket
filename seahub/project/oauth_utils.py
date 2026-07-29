@@ -1,7 +1,9 @@
+import time
+
 from rest_framework import status
 
 from seahub.api2.utils import api_error
-from seahub.project.constants import EMAIL_OAUTH_SESSION_KEY
+from seahub.project.constants import EMAIL_OAUTH_SESSION_KEY, EMAIL_OAUTH_SESSION_TIMEOUT
 from seahub.project.utils import is_oauth_email_provider
 
 
@@ -20,25 +22,50 @@ class CommonOAuthUtils:
 
     @classmethod
     def set_oauth_failure(cls, key, request, error_msg):
-        oauth_data = cls.get_oauth_session(key, request) or {}
+        oauth_data = CommonOAuthUtils.get_oauth_session(key, request) or {}
         oauth_data['status'] = 'failure'
         oauth_data['error_msg'] = error_msg
-        cls.set_oauth_session(key, request, oauth_data)
+        CommonOAuthUtils.set_oauth_session(key, request, oauth_data)
 
 
 class EmailOAuthUtils(CommonOAuthUtils):
     @classmethod
-    def get_oauth_session(cls, request):
-        return super().get_oauth_session(EMAIL_OAUTH_SESSION_KEY, request)
-    
+    def _get_oauth_transactions(cls, request):
+        transactions = super().get_oauth_session(EMAIL_OAUTH_SESSION_KEY, request)
+        return transactions if isinstance(transactions, dict) else {}
+
     @classmethod
-    def set_oauth_session(cls, request, data):
-        return super().set_oauth_session(EMAIL_OAUTH_SESSION_KEY, request, data)
-    
+    def _set_oauth_transactions(cls, request, transactions):
+        super().set_oauth_session(EMAIL_OAUTH_SESSION_KEY, request, transactions)
+
     @classmethod
-    def set_oauth_failure(cls, request, error_msg):
-        return super().set_oauth_failure(EMAIL_OAUTH_SESSION_KEY, request, error_msg)
-    
+    def _remove_expired_transactions(cls, transactions):
+        expires_before = time.time() - EMAIL_OAUTH_SESSION_TIMEOUT
+        return {
+            state: transaction for state, transaction in transactions.items()
+            if isinstance(transaction, dict) and transaction.get('created_at', 0) >= expires_before
+        }
+
+    @classmethod
+    def get_oauth_session(cls, request, state):
+        transactions = cls._remove_expired_transactions(cls._get_oauth_transactions(request))
+        return transactions.get(state)
+
+    @classmethod
+    def set_oauth_session(cls, request, state, data):
+        transactions = cls._remove_expired_transactions(cls._get_oauth_transactions(request))
+        transactions[state] = data
+        cls._set_oauth_transactions(request, transactions)
+
+    @classmethod
+    def set_oauth_failure(cls, request, state, error_msg):
+        oauth_data = cls.get_oauth_session(request, state)
+        if not oauth_data:
+            return
+        oauth_data['status'] = 'failure'
+        oauth_data['error_msg'] = error_msg
+        cls.set_oauth_session(request, state, oauth_data)
+
     @classmethod
     def build_email_oauth_config(cls, request):
         name = (request.data.get('name') or '').strip()

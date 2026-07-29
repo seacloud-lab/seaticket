@@ -73,7 +73,7 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
     return customColumns.filter(column => column.is_advanced_option);
   }, [customColumns]);
 
-  const callbackUrl = useMemo(() => getEmailOAuthCallbackUrl(window.app.pageOptions.projectUuid), []);
+  const callbackUrl = useMemo(() => getEmailOAuthCallbackUrl(), []);
 
   const isOAuthEmail = useMemo(() => {
     return type === CONNECTION_TYPE.EMAIL && isOAuthEmailProvider(getEmailProvider(config));

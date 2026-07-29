@@ -83,9 +83,9 @@ class ConnectionsAPI {
     return this.req.post(url, { name, config });
   }
 
-  queryEmailOAuth(projectUuid) {
+  queryEmailOAuth(projectUuid, state) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/connections/email/oauth/query/';
-    return this.req.get(url);
+    return this.req.get(url, { params: { state } });
   }
 
   getConfluenceOauthStatus(projectUuid) {

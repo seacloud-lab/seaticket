@@ -182,7 +182,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   }, []);
 
   const callbackUrl = useMemo(() => {
-    return getEmailOAuthCallbackUrl(projectUuid);
+    return getEmailOAuthCallbackUrl();
   }, []);
 
   const stopEmailOAuthPolling = useCallback(() => {
@@ -296,7 +296,8 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     if (type === CONNECTION_TYPE.EMAIL && isOAuthEmailProvider(_config.server_provider)) {
       connectionsAPI.startEmailOAuth(projectUuid, { name: name.trim(), config: _config }).then((res) => {
         const authorizationUrl = res.data?.auth_url;
-        if (!authorizationUrl) {
+        const oauthState = res.data?.state;
+        if (!authorizationUrl || !oauthState) {
           setSubmitting(false);
           toaster.danger(gettext('Failed to fetch authorization url'));
           return;
@@ -306,7 +307,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         setWaitingEmailOAuth(true);
         stopEmailOAuthPolling();
         emailOAuthIntervalRef.current = window.setInterval(() => {
-          connectionsAPI.queryEmailOAuth(projectUuid).then((progressRes) => {
+          connectionsAPI.queryEmailOAuth(projectUuid, oauthState).then((progressRes) => {
             if (progressRes.data?.status !== 'success') return;
             stopEmailOAuthPolling();
             setWaitingEmailOAuth(false);

@@ -46,8 +46,8 @@ export const isOAuthEmailProvider = (provider) => {
   return provider === EMAIL_SERVER_PROVIDER.MICROSOFT || provider === EMAIL_SERVER_PROVIDER.GMAIL;
 };
 
-export const getEmailOAuthCallbackUrl = (projectUuid) => {
-  return `${server}/api/v1/project/${projectUuid}/connections/email/oauth/callback/`;
+export const getEmailOAuthCallbackUrl = () => {
+  return `${server}/api/v1/connections/email/oauth/callback/`;
 };
 
 export const populateEmailOAuthDefaults = (config = {}, provider) => {
