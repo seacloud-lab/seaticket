@@ -19,6 +19,7 @@ const CustomizeSelectSync = ({
   const [errorMessage, setErrorMessage] = useState('');
   const [allOptions, setAllOptions] = useState([]);
   const [isShowSelector, setIShowSelector] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   const ref = useRef(null);
 
@@ -27,6 +28,7 @@ const CustomizeSelectSync = ({
       setIsLoading(false);
       return;
     }
+    setIsLoading(true);
     api().then(res => {
       const { options } = res.data || {};
       setAllOptions(Array.isArray(options) ? options : []);
@@ -37,7 +39,12 @@ const CustomizeSelectSync = ({
     }).finally(() => {
       setIsLoading(false);
     });
-  }, [api]);
+  }, [api, retryCount]);
+
+  const handleRetry = useCallback((e) => {
+    e.stopPropagation();
+    setRetryCount(c => c + 1);
+  }, []);
 
   const openEditor = useCallback(() => {
     if (isLoading || errorMessage) return;
@@ -62,19 +69,29 @@ const CustomizeSelectSync = ({
 
   return (
     <>
-      <div
-        ref={ref}
-        className={classnames('seaqa-select custom-select seaqa-customize-select',
-          { 'focus': isShowSelector },
-          { 'disabled': disabled || errorMessage },
-          className
-        )}
-        onClick={openEditor}
-      >
-        <div className='selected-option'>
-          {renderSelected()}
-          {!disabled && !isLoading && !errorMessage && (<Icon symbol="arrow-down" />)}
+      <div className="d-flex align-items-center">
+        <div
+          ref={ref}
+          className={classnames('seaqa-select custom-select seaqa-customize-select',
+            { 'focus': isShowSelector },
+            { 'disabled': disabled || !!errorMessage },
+            className
+          )}
+          onClick={openEditor}
+        >
+          <div className='selected-option'>
+            {renderSelected()}
+            {!disabled && !isLoading && !errorMessage && (<Icon symbol="arrow-down" />)}
+          </div>
         </div>
+        {errorMessage && (
+          <Icon
+            symbol="refresh"
+            className="ml-2 cursor-pointer"
+            title={gettext('Retry')}
+            onClick={handleRetry}
+          />
+        )}
       </div>
       {!disabled && isShowSelector && (
         <OptionEditor
