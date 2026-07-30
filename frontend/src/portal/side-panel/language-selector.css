@@ -9,10 +9,6 @@
   border: 1px solid rgba(0, 40, 100, 0.12);
 }
 
-.seaqa-portal-language-btn:hover {
-  background-color: transparent !important;
-}
-
 .seaqa-portal-language-popover .popover {
   width: 180px;
 }
