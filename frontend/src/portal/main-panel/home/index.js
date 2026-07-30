@@ -20,6 +20,7 @@ const PortalHome = ({ onHomeChatSend }) => {
   const { updateHomeSetting } = usePortalSettings();
 
   const { titleText, descriptionText, titleSize, backgroundColor, cardLayout, cards, themeType, themeBackgroundImageURL } = homePageStyle;
+  const validCards = Array.isArray(cards) ? cards.filter(Boolean) : [];
 
   const heroStyle = themeType === 'image' && themeBackgroundImageURL
     ? { backgroundImage: `url(${themeBackgroundImageURL})` }
@@ -82,7 +83,7 @@ const PortalHome = ({ onHomeChatSend }) => {
           </section>
 
           <section className="portal-home-cards" aria-label={gettext('Portal features')} style={{ gridTemplateColumns: `repeat(${CARD_LAYOUT_OPTIONS.includes(Number(cardLayout)) ? Number(cardLayout) : 3}, minmax(0, 1fr))` }}>
-            {cards.map((card) => (
+            {validCards.map((card) => (
               <article
                 className={classnames('portal-home-card', { active: activeCard === card.id })}
                 key={card.id}
