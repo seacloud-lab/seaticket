@@ -50,6 +50,9 @@
   position: relative;
   overflow: hidden;
   padding: 56px 24px 48px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .portal-home-hero-content {
