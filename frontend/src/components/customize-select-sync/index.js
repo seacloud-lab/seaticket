@@ -43,6 +43,7 @@ const CustomizeSelectSync = ({
 
   const handleRetry = useCallback((e) => {
     e.stopPropagation();
+    setIsLoading(true);
     setRetryCount(c => c + 1);
   }, []);
 
@@ -87,9 +88,9 @@ const CustomizeSelectSync = ({
         {errorMessage && (
           <Icon
             symbol="refresh"
-            className="ml-2 cursor-pointer"
+            className={classnames('ml-2', { 'cursor-pointer': !isLoading, 'text-muted': isLoading })}
             title={gettext('Retry')}
-            onClick={handleRetry}
+            onClick={isLoading ? undefined : handleRetry}
           />
         )}
       </div>
