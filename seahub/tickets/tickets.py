@@ -28,7 +28,7 @@ from seahub.project.utils import check_project_permission, \
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.utils.storage import upload_files_to_s3, delete_record_attachments_from_s3
 from seahub.project.constants import GITHUB_ISSUE_ACTIVITY_TYPES, DISCOURSE_TOPIC_ACTIVITY_TYPES, EMAIL_ACTIVITY_TYPES, \
-    GENERAL_TASK_ACTIVITY_TYPES
+    GENERAL_TASK_ACTIVITY_TYPES, DISCORD_THREAD_ACTIVITY_TYPES
 from seahub.seadb_models.utils import list_tickets_view_records, list_tickets_by_search, \
     list_trash_tickets, list_my_tickets
 from seahub.project.seadb_api import SeaDBAPI
@@ -1814,6 +1814,11 @@ class TicketActivitiesAPIView(APIView):
                 field_key = activity_type
                 topic_id = detail.get('topic_id')
                 topic_url = detail.get('topic_url', '')
+            elif activity_type in DISCORD_THREAD_ACTIVITY_TYPES:
+                field_key = activity_type
+                thread_id = detail.get('thread_id')
+                thread_title = detail.get('thread_title', '')
+                thread_url = detail.get('thread_url', '')
             elif activity_type in EMAIL_ACTIVITY_TYPES:
                 field_key = activity_type
                 thread_id = detail.get('thread_id')
@@ -1869,6 +1874,7 @@ class TicketActivitiesAPIView(APIView):
                     ]
             if activity_type not in GITHUB_ISSUE_ACTIVITY_TYPES and \
                     activity_type not in DISCOURSE_TOPIC_ACTIVITY_TYPES and \
+                    activity_type not in DISCORD_THREAD_ACTIVITY_TYPES and \
                     activity_type not in EMAIL_ACTIVITY_TYPES and \
                     activity_type not in GENERAL_TASK_ACTIVITY_TYPES:
                 if field_name == 'state_substate':
@@ -1899,6 +1905,11 @@ class TicketActivitiesAPIView(APIView):
             elif activity_type in DISCOURSE_TOPIC_ACTIVITY_TYPES:
                 activity_item['topic_id'] = topic_id
                 activity_item['topic_url'] = topic_url
+            elif activity_type in DISCORD_THREAD_ACTIVITY_TYPES:
+                activity_item['record_id'] = detail.get('record_id')
+                activity_item['thread_id'] = thread_id
+                activity_item['thread_title'] = thread_title
+                activity_item['thread_url'] = thread_url
             elif activity_type in EMAIL_ACTIVITY_TYPES:
                 activity_item['thread_id'] = thread_id
                 activity_item['thread_title'] = thread_title
