@@ -3,7 +3,7 @@
   width: 14px;
   margin-left: 8px;
   margin-right: 8px;
-  display: inline-block;
+  display: inline-flex;
   cursor: pointer;
   line-height: 1;
 }
@@ -11,9 +11,4 @@
 .seaqa-tooltip-icon-btn .seaqa-icon-svg {
   height: 14px;
   width: 14px;
-  color: #bdbdbd;
-}
-
-.seaqa-tooltip-icon-btn:hover .seaqa-icon-svg {
-  color: #888;
 }
