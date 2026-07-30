@@ -1,0 +1,53 @@
+.seaqa-portal-language-selector {
+  display: flex;
+  align-items: center;
+  margin-right: 8px;
+}
+
+.seaqa-portal-language-btn {
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 40, 100, 0.12);
+}
+
+.seaqa-portal-language-popover .popover {
+  width: 180px;
+}
+
+.seaqa-portal-language-popover .popover .popover-inner {
+  padding: 0;
+}
+
+.seaqa-portal-language-list {
+  padding: 8px;
+}
+
+.seaqa-portal-language-item {
+  width: 100%;
+  height: 32px;
+  line-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--bs-body-color);
+  cursor: pointer;
+  font-size: 14px;
+  text-align: left;
+  gap: 12px;
+}
+
+.seaqa-portal-language-item:hover,
+.seaqa-portal-language-item:focus {
+  background-color: var(--option-bg-color);
+  outline: none;
+}
+
+.seaqa-portal-language-item .seaqa-icon-svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: var(--bs-icon-color);
+}
