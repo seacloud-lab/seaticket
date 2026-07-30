@@ -44,6 +44,9 @@ const LOG_TYPE = {
   DISCOURSE_TOPIC_UPDATED: 'discourse_topic_updated',
   DISCOURSE_TOPIC_COMMENT_ADDED: 'discourse_topic_comment_added',
 
+  DISCORD_THREAD_UPDATED: 'discord_thread_updated',
+  DISCORD_THREAD_MESSAGE_ADDED: 'discord_thread_message_added',
+
   EMAIL_MESSAGE_ADDED: 'email_message_added',
 };
 
@@ -73,6 +76,9 @@ const LOG_ICONS = {
 
   [LOG_TYPE.DISCOURSE_TOPIC_UPDATED]: 'dot-circle-stroked',
   [LOG_TYPE.DISCOURSE_TOPIC_COMMENT_ADDED]: 'dot-circle-stroked',
+
+  [LOG_TYPE.DISCORD_THREAD_UPDATED]: 'dot-circle-stroked',
+  [LOG_TYPE.DISCORD_THREAD_MESSAGE_ADDED]: 'dot-circle-stroked',
 
   [LOG_TYPE.EMAIL_MESSAGE_ADDED]: 'dot-circle-stroked',
 };
@@ -120,6 +126,24 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
       );
     }
     return <span>#{topic_id}</span>;
+  }, [projectUuid, permission]);
+
+  const renderDiscordThreadRef = useCallback(({
+    connection_id, record_id, thread_id, thread_title, thread_url
+  } = {}) => {
+    if (!thread_id) return null;
+    if (thread_url && record_id) {
+      return (
+        <LinkedRecord
+          record={{ type: CONNECTION_TYPE.DISCORD, title: '', _id: record_id, connection_id }}
+          projectUuid={projectUuid}
+          permission={permission}
+        >
+          <>#{thread_id}</>
+        </LinkedRecord>
+      );
+    }
+    return <span>#{thread_id}</span>;
   }, [projectUuid, permission]);
 
   const renderEmailThreadRef = useCallback(({ connection_id, thread_id, thread_title } = {}) => {
@@ -186,6 +210,9 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
       title: gettext('title'),
       category_id: gettext('category'),
       resolved: gettext('resolved'),
+    };
+    const discordLabelMap = {
+      title: gettext('title'),
     };
     const generalTaskLabelMap = {
       title: gettext('title'),
@@ -611,6 +638,34 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
           </span>
         );
       }
+      case LOG_TYPE.DISCORD_THREAD_UPDATED: {
+        const ref = renderDiscordThreadRef(activity);
+        const changeNodes = renderChangeNodes(old_value, new_value, discordLabelMap);
+        if (changeNodes.length === 0) {
+          return <span>{gettext('updated Discord thread')}{ref ? <>{' '}{ref}</> : null}</span>;
+        }
+        return (
+          <>
+            {gettext('Discord thread')}{ref ? <>{' '}{ref}</> : null}
+            {changeNodes}
+          </>
+        );
+      }
+      case LOG_TYPE.DISCORD_THREAD_MESSAGE_ADDED: {
+        const ref = renderDiscordThreadRef(activity);
+        const isLegacyNumber = typeof new_value === 'number';
+        const isObjectValue = !isLegacyNumber && new_value && typeof new_value === 'object';
+        const count = isLegacyNumber ? new_value : (isObjectValue ? (new_value.count || 1) : 1);
+        const author = isObjectValue ? new_value.author : '';
+        return (
+          <span>
+            {gettext('Discord thread')}{ref ? <>{' '}{ref}</> : null}{' '}
+            {count}{' '}{count === 1 ? gettext('message') : gettext('messages')}{' '}
+            {gettext('added')}
+            {author ? <>{' '}{gettext('by')}{' '}<span>{author}</span></> : null}
+          </span>
+        );
+      }
       case LOG_TYPE.EMAIL_MESSAGE_ADDED: {
         const count = typeof new_value === 'number' ? new_value : 1;
         return (
@@ -627,7 +682,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
     }
   }, [
     activity, collaborators, collaboratorsCache, queryUser, statesData, tagsData, substatesData, typesData, updateCollaboratorsCache,
-    renderGeneralTaskRef, renderDiscourseTopicRef, renderEmailThreadRef, renderGithubIssueRef,
+    renderGeneralTaskRef, renderDiscordThreadRef, renderDiscourseTopicRef, renderEmailThreadRef, renderGithubIssueRef,
   ]);
 
   const iconSymbol = LOG_ICONS[activity.activity_type] || 'info';
@@ -642,7 +697,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
           <IconButton size={{ btn: 24, icon: 14 }} className="seaqa-log-btn no-hover-bg" icon={iconSymbol} />
         </div>
         <div className="seaqa-log-content">
-          {activity.activity_type && !activity.activity_type.startsWith('github_issue_') && !activity.activity_type.startsWith('discourse_topic_') && !activity.activity_type.startsWith('email_') && !activity.activity_type.startsWith('general_task_') && (
+          {activity.activity_type && !activity.activity_type.startsWith('github_issue_') && !activity.activity_type.startsWith('discourse_topic_') && !activity.activity_type.startsWith('discord_thread_') && !activity.activity_type.startsWith('email_') && !activity.activity_type.startsWith('general_task_') && (
             <AsyncCollaborator
               value={activity.creator}
               className="seaqa-log-creator"
