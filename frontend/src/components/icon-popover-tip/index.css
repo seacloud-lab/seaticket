@@ -1,0 +1,22 @@
+.seaqa-tip-popover .popover {
+  max-width: 448px;
+  min-width: 60px;
+}
+
+.seaqa-tip-popover .popover.bs-popover-auto[data-popper-placement^=bottom-start] {
+  margin-top: -4px;
+  margin-left: -8px;
+}
+
+.seaqa-tip-popover .popover.bs-popover-auto[data-popper-placement^=top-start] {
+  margin-left: -8px;
+  margin-bottom: -4px;
+}
+
+.seaqa-tip-popover .seaqa-tip-popover-container {
+  padding: 16px;
+  font-size: 13px;
+  line-height: 20px;
+  max-height: 242px;
+  overflow-y: auto;
+}

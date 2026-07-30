@@ -3,7 +3,7 @@ import classnames from 'classnames';
 import { Button } from 'reactstrap';
 import { gettext } from '@/constants';
 import { ACTION_STATUS, ACTION_TYPE, SUGGESTION_TOOL_NAME_MAP, ACTION_ICON_MAPPER } from './constants';
-import { Icon, IconButton, IconTooltip, CustomizeMarkdownViewer } from '@/components';
+import { Icon, IconButton, IconTooltip, CustomizeMarkdownViewer, IconPopoverTip } from '@/components';
 import AIReply from '@/project/components/ai-reply';
 import SuggestionPreview from './suggestion-preview';
 
@@ -235,11 +235,10 @@ const ActionItem = React.memo(({
     if (!suggestion_reason) return null;
 
     return (
-      <IconTooltip
+      <IconPopoverTip
         icon="question-circle-stroked"
         tip={suggestion_reason}
         className="suggestion-reason-tooltip mx-0"
-        placement="bottom"
         onClick={(e) => e.stopPropagation()}
       />
     );
