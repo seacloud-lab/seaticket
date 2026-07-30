@@ -1,6 +1,29 @@
 import slugid from 'slugid';
 import { gettext } from '@/constants';
 
+export const CARD_LAYOUT_OPTIONS = [2, 3, 4, 5, 6];
+
+export const DEFAULT_NEW_CARD = {
+  icon: '💬',
+  title: gettext('New card'),
+  description: gettext('Enter card description'),
+  subtitle: '',
+  note: '',
+  link: '',
+};
+
+export const getSafeCardLink = (link) => {
+  if (typeof link !== 'string' || !link.trim()) return null;
+
+  try {
+    const url = new URL(link.trim(), window.location.origin);
+    if (!['http:', 'https:'].includes(url.protocol)) return null;
+    return url.href;
+  } catch (error) {
+    return null;
+  }
+};
+
 const CARDS = [
   {
     icon: '👥',

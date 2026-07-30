@@ -7,22 +7,11 @@ import { usePortalSettings } from '@/portal/hooks/settings';
 import PortalHomeEditPanel from './edit-panel';
 import PortalCardEditPanel from './card-edit-panel';
 import PortalHomeChatInput from './chat-input';
-import { normalizeHomePageStyle } from './utils';
+import { CARD_LAYOUT_OPTIONS, DEFAULT_NEW_CARD, getSafeCardLink, normalizeHomePageStyle } from './utils';
 
 import './index.css';
 
 const { isEditMode, portalHomeSetting } = window.app.pageOptions;
-
-const CARD_LAYOUT_OPTIONS = [2, 3, 4, 5, 6];
-
-const DEFAULT_NEW_CARD = {
-  icon: '💬',
-  title: gettext('New card'),
-  description: gettext('Enter card description'),
-  subtitle: '',
-  note: '',
-  link: '',
-};
 
 const PortalHome = ({ onHomeChatSend }) => {
   const [isEdit, setIsEdit] = useState(false);
@@ -56,6 +45,18 @@ const PortalHome = ({ onHomeChatSend }) => {
     setActiveCard(newCard.id);
   };
 
+  const handleCardClick = (card) => {
+    if (isEditMode) {
+      setIsEdit(true);
+      setActiveCard(card.id);
+      return;
+    }
+    const safeLink = getSafeCardLink(card.link);
+    if (safeLink) {
+      window.open(safeLink, '_blank', 'noopener,noreferrer');
+    }
+  };
+
   return (
     <div className={`portal-home-page${isEdit ? ' is-edit' : ''}`}>
       {isEditMode && !isEdit && (
@@ -86,7 +87,7 @@ const PortalHome = ({ onHomeChatSend }) => {
                 className={classnames('portal-home-card', { active: activeCard === card.id })}
                 key={card.id}
                 id={card.id}
-                onClick={isEditMode ? () => { setIsEdit(true); setActiveCard(card.id); } : () => { card.link && window.open(card.link); }}
+                onClick={() => handleCardClick(card)}
               >
                 <div className="portal-home-card-icon" aria-hidden="true">{card.icon}</div>
                 <div className="portal-home-card-body">
