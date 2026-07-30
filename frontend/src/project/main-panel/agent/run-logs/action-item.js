@@ -236,11 +236,10 @@ const ActionItem = React.memo(({
 
     return (
       <IconTooltip
+        icon="question-circle-stroked"
         tip={suggestion_reason}
-        tooltipClassName="action-item-edit-content-tooltip"
-        className="suggestion-reason-tooltip"
-        placement="top"
-        size={{ btn: 16, icon: 14 }}
+        className="suggestion-reason-tooltip mx-0"
+        placement="bottom"
         onClick={(e) => e.stopPropagation()}
       />
     );
@@ -295,63 +294,48 @@ const ActionItem = React.memo(({
         const hasContent = !!suggestion_content;
         const isCancelled = status === ACTION_STATUS.CANCELLED;
         const canEdit = hasEditableContent && hasContent && status === ACTION_STATUS.PENDING;
-        const showHeaderActions = !isCancelled && (canEdit || hasContent);
+        const showActions = !isCancelled && (canEdit || hasContent);
         const parsedResult = parseActionResult(result);
         return (
           <div className="action-content action-content-suggestion">
             <div className="action-label">{gettext('Suggestion')}</div>
             <div className={classnames('action-card', { 'action-card-cancelled': isCancelled })}>
-              {isCancelled && (
-                <div className="suggestion-cancelled-result d-flex align-items-center">
-                  <Icon symbol={renderSuggestionIcon()} className="mr-2" />
-                  {suggestion_text && (
-                    <span className="suggestion-text-with-reason suggestion-text-with-reason-cancelled">
-                      <span className="suggestion-cancelled-text">{suggestion_text}</span>
-                      {renderSuggestionReasonTooltip()}
-                    </span>
-                  )}
-                  <span className="suggestion-cancelled-by">{parsedResult.message}</span>
-                </div>
-              )}
-              {!isCancelled && (
-                <div className="action-card-header d-flex align-items-center">
-                  <Icon symbol={renderSuggestionIcon() } className="mr-2" />
-                  {suggestion_text && (
-                    <span className="suggestion-text-with-reason">
-                      <span>{suggestion_text}</span>
-                      {renderSuggestionReasonTooltip()}
-                    </span>
-                  )}
-                  {showHeaderActions && (
-                    <div className="suggestion-header-actions ml-auto d-flex align-items-center">
-                      {canEdit && (
-                        <IconTooltip
-                          icon="edit"
-                          tip={gettext('Edit')}
-                          tooltipClassName='action-item-edit-content-tooltip'
-                          className='suggestion-header-action-btn'
-                          placement="bottom"
-                          hoverBackground={true}
-                          size={{ btn: 24, icon: 16 }}
-                          onClick={handleEditContent}
-                        />
-                      )}
-                      {hasContent && (
-                        <IconTooltip
-                          icon="view-issue"
-                          tip={gettext('Details')}
-                          tooltipClassName='action-item-edit-content-tooltip'
-                          className='suggestion-header-action-btn'
-                          placement="bottom"
-                          hoverBackground={true}
-                          size={{ btn: 24, icon: 16 }}
-                          onClick={handleViewDetails}
-                        />
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
+              <div className="action-card-header d-flex align-items-center">
+                <Icon symbol={renderSuggestionIcon()} />
+                {suggestion_text && (
+                  <div className="action-suggestion-text-container">
+                    <span className="text-truncate action-suggestion-text" title={suggestion_text}>{suggestion_text}</span>
+                    {!isCancelled && (<>{renderSuggestionReasonTooltip()}</>)}
+                  </div>
+                )}
+                {isCancelled && (<span className="flex-shrink-0">{parsedResult.message}</span>)}
+                {showActions && (
+                  <div className="action-suggestion-ops-container ml-auto d-flex align-items-center">
+                    {canEdit && (
+                      <IconTooltip
+                        icon="edit"
+                        tip={gettext('Edit')}
+                        className="action-suggestion-op-btn"
+                        placement="bottom"
+                        hoverBackground={true}
+                        size={{ btn: 24, icon: 16 }}
+                        onClick={handleEditContent}
+                      />
+                    )}
+                    {hasContent && (
+                      <IconTooltip
+                        icon="view-issue"
+                        tip={gettext('Details')}
+                        className="action-suggestion-op-btn"
+                        placement="bottom"
+                        hoverBackground={true}
+                        size={{ btn: 24, icon: 16 }}
+                        onClick={handleViewDetails}
+                      />
+                    )}
+                  </div>
+                )}
+              </div>
               {hasContent && !isCancelled && (
                 <SuggestionPreview type={tool_name} value={suggestion_content} />
               )}
