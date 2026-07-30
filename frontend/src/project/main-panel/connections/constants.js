@@ -481,7 +481,7 @@ export const CONNECTION_FIELDS = {
       is_required: true,
       is_display: true,
       is_custom: true,
-      tip: gettext('Enable Developer Mode in Discord (Settings → Advanced), then right-click your server → Copy Server ID.'),
+      tip: gettext('Enable Developer Mode in Discord, then right-click your server → Copy Server Info → Copy Server ID.'),
     }, {
       key: 'bot_token',
       name: gettext('Bot token'),
