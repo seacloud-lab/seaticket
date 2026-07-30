@@ -1,8 +1,10 @@
 import React from 'react';
 import { FormGroup, Label } from 'reactstrap';
+import classnames from 'classnames';
 import { gettext } from '@/constants';
 import { IconTooltip } from '@/components';
 import Editor from './editor';
+
 import './index.css';
 
 const ConnectionConfigEditor = ({ column, className, ...props }) => {
@@ -12,7 +14,11 @@ const ConnectionConfigEditor = ({ column, className, ...props }) => {
       <Label>
         {name}
         {is_required && (<span className="required-tip" title={gettext('Required')}>{'*'}</span>)}
-        {tip && (<IconTooltip tip={tip} className={is_required ? 'ml-0' : ''} />)}
+        {tip && (
+          <IconTooltip
+            tip={tip}
+            className={classnames('connection-config-tip-btn', { 'ml-0': is_required })}
+          />)}
       </Label>
       <Editor { ...props } column={column} />
     </FormGroup>
