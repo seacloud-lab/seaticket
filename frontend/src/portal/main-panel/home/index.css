@@ -1,8 +1,6 @@
 .portal-home-page {
   position: relative;
   min-height: 100%;
-  background: #f8f1e3;
-  padding: 16px;
   height: 100%;
   overflow: hidden;
 }
@@ -41,7 +39,6 @@
   width: calc(100% - 340px);
   min-width: 0;
   min-height: 0;
-  padding: 0 8px;
   overflow-y: auto;
 }
 
@@ -52,7 +49,6 @@
 .portal-home-hero {
   position: relative;
   overflow: hidden;
-  border-radius: 28px;
   padding: 56px 24px 48px;
 }
 

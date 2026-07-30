@@ -45,6 +45,8 @@ const DEFAULT_HOME_PAGE_STYLE = {
   descriptionText: gettext('Chat with AI'),
   titleSize: 56,
   backgroundColor: '#f8f1e3',
+  themeType: 'color',
+  themeBackgroundImageURL: '',
   cards: CARDS_WITH_ID,
 };
 

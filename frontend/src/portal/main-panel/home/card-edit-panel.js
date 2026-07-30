@@ -1,8 +1,8 @@
 import React from 'react';
 import { Button, Label, Input } from 'reactstrap';
-import Icon from '@/components/icon';
 import { gettext } from '@/constants';
 import CustomizeSelect from '@/components/customize-select';
+import { IconButton } from '@/components';
 
 import './card-edit-panel.css';
 
@@ -66,9 +66,12 @@ const PortalHomeCardEditPanel = ({ homePageStyle = {}, activeCard, setActiveCard
       <div className="portal-home-edit-panel-header">
         <div className="portal-home-edit-panel-header-left" />
         <div className="portal-home-edit-panel-title">{gettext('Card settings')}</div>
-        <span className="portal-home-edit-panel-close" onClick={onClose} role="button" tabIndex={0}>
-          <Icon symbol="close" className="portal-home-edit-panel-close-icon" />
-        </span>
+        <IconButton
+          icon="close"
+          onClick={onClose}
+          title={gettext('Close')}
+          aria-label={gettext('Close')}
+        />
       </div>
 
       <div className="portal-home-edit-panel-section">

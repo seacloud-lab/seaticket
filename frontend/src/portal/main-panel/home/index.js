@@ -30,7 +30,11 @@ const PortalHome = ({ onHomeChatSend }) => {
   const [activeCard, setActiveCard] = useState('');
   const { updateHomeSetting } = usePortalSettings();
 
-  const { titleText, descriptionText, titleSize, backgroundColor, cardLayout, cards } = homePageStyle;
+  const { titleText, descriptionText, titleSize, backgroundColor, cardLayout, cards, themeType, themeBackgroundImageURL } = homePageStyle;
+
+  const heroStyle = themeType === 'image' && themeBackgroundImageURL
+    ? { backgroundImage: `url(${themeBackgroundImageURL})` }
+    : { backgroundColor };
 
   const closeEditPanel = () => {
     updateHomeSetting(JSON.stringify(homePageStyle));
@@ -53,7 +57,7 @@ const PortalHome = ({ onHomeChatSend }) => {
   };
 
   return (
-    <div className={`portal-home-page${isEdit ? ' is-edit' : ''}`} style={{ backgroundColor }}>
+    <div className={`portal-home-page${isEdit ? ' is-edit' : ''}`}>
       {isEditMode && !isEdit && (
         <div className="portal-home-edit-btn-wrap">
           <IconButton
@@ -69,7 +73,7 @@ const PortalHome = ({ onHomeChatSend }) => {
       <div className="portal-home-layout">
 
         <main className="portal-home-main">
-          <section className="portal-home-hero">
+          <section className="portal-home-hero" style={heroStyle}>
             <div className="portal-home-hero-content">
               <h1 className="portal-home-title" style={{ fontSize: `${titleSize}px` }}>{titleText}</h1>
               <PortalHomeChatInput descriptionText={descriptionText} onHomeChatSend={onHomeChatSend} />
