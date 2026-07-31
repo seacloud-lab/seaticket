@@ -62,6 +62,10 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
     return c.is_custom;
   }), [columns]);
 
+  const isMicrosoftEmailProvider = useMemo(() => {
+    return type === CONNECTION_TYPE.EMAIL && getEmailProvider(config) === EMAIL_SERVER_PROVIDER.MICROSOFT;
+  }, [type, config]);
+
   const basicCustomColumns = useMemo(() => {
     return customColumns.filter(column => !column.is_advanced_option);
   }, [customColumns]);
@@ -210,7 +214,7 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
           </FormGroup>
         )}
         {isOAuthEmail ? basicCustomColumns.slice(1, 4).map(renderConnectionField) : null}
-        {isOAuthEmail && (
+        {isMicrosoftEmailProvider && (
           <div className="seaqa-project-connection-advanced-options mb-3">
             <Switch
               checked={showEmailAdvancedOptions}

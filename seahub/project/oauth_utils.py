@@ -37,7 +37,10 @@ class EmailOAuthUtils(CommonOAuthUtils):
     
     @classmethod
     def set_oauth_failure(cls, request, error_msg):
-        return super().set_oauth_failure(EMAIL_OAUTH_SESSION_KEY, request, error_msg)
+        oauth_data = cls.get_oauth_session(request) or {}
+        oauth_data['status'] = 'failure'
+        oauth_data['error_msg'] = error_msg
+        cls.set_oauth_session(request, oauth_data)
     
     @classmethod
     def build_email_oauth_config(cls, request):

@@ -112,6 +112,10 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const isConfluence = useMemo(() => type === CONNECTION_TYPE.CONFLUENCE, [type]);
   const isDiscord = useMemo(() => type === CONNECTION_TYPE.DISCORD, [type]);
 
+  const isMicrosoftEmailProvider = useMemo(() => {
+    return isEmail && getEmailProvider(config) === EMAIL_SERVER_PROVIDER.MICROSOFT;
+  }, [isEmail, config]);
+
   const isOAuthEmail = useMemo(() => {
     return isEmail && isOAuthEmailProvider(getEmailProvider(config));
   }, [isEmail, config]);
@@ -683,7 +687,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
               </FormGroup>
             )}
             {isOAuthEmail ? basicCustomColumns.slice(1, 4).map(renderConnectionField) : null}
-            {isOAuthEmail && (
+            {isMicrosoftEmailProvider && (
               <div className="seaqa-project-connection-advanced-options mb-3">
                 <Switch
                   checked={showEmailAdvancedOptions}

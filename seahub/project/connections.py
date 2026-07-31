@@ -407,7 +407,8 @@ class ProjectEmailOAuthCallbackView(APIView):
             return render(request, 'error.html', {'error_msg': _(error_msg)})
 
         callback_url = get_email_oauth_callback_url(project_uuid)
-        authorization_response_url = settings.SERVICE_URL.rstrip('/') + request.get_full_path()
+        query_string = request.META.get('QUERY_STRING')
+        authorization_response_url = f'{callback_url}?{query_string}' if query_string else callback_url
 
         try:
             session = OAuth2Session(
@@ -1964,6 +1965,7 @@ class ProjectConnectionReplyEmailView(APIView):
             'subject': subject,
             'in_reply_to': target_message_id,
             'message_id': message_id,
+            'origin_thread_id': target_email.get('origin_thread_id'),
         }
 
         try:

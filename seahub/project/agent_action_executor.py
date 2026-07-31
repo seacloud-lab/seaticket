@@ -1036,6 +1036,7 @@ class AgentActionExecutor:
             'subject': subject,
             'in_reply_to': target_message_id,
             'message_id': message_id,
+            'origin_thread_id': target_email.get('origin_thread_id'),
         }
 
         try:

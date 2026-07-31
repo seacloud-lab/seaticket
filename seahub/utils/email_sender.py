@@ -348,7 +348,7 @@ class _OAuthEmailSender(OAuthTokenClient, _EmailSenderBase):
                         self.client_id, self.token_url)
             raise EmailConfigError('OAuth email configuration is incomplete')
 
-    def _do_send_email(self, msg_obj):
+    def _do_send_email(self, msg_obj, send_info):
         """Subclasses implement this to send email via their API"""
         raise NotImplementedError
 
@@ -362,7 +362,7 @@ class _OAuthEmailSender(OAuthTokenClient, _EmailSenderBase):
             raise EmailConfigError('Failed to build email message')
 
         self._request_access_token()
-        response = self._do_send_email(msg_obj)
+        response = self._do_send_email(msg_obj, send_info)
 
         success = False
         message_id = None
@@ -377,17 +377,20 @@ class _OAuthEmailSender(OAuthTokenClient, _EmailSenderBase):
             logger.info('Email sending success!')
 
         email_id = None
+        origin_thread_id = None
         try:
             response_data = response.json()
         except Exception:
             response_data = {}
         if isinstance(response_data, dict):
             email_id = response_data.get('id')
+            origin_thread_id = response_data.get('threadId')
 
         return {
             'success': success,
             'message_id': message_id,
             'email_id': email_id,
+            'origin_thread_id': origin_thread_id,
             'config_updated': self.config_updated,
         }
 
@@ -397,10 +400,13 @@ class GmailSender(_OAuthEmailSender):
 
     EMAIL_SENDING_ENDPOINT = 'https://gmail.googleapis.com/upload/gmail/v1/users/me/messages/send?uploadType=multipart'
 
-    def _do_send_email(self, msg_obj):
+    def _do_send_email(self, msg_obj, send_info):
         msg_string = msg_obj.as_string()
 
         metadata = {}
+        origin_thread_id = send_info.get('origin_thread_id')
+        if origin_thread_id:
+            metadata['threadId'] = origin_thread_id
 
         boundary = 'mail_boundary'
 
@@ -434,7 +440,7 @@ class MicrosoftSender(_OAuthEmailSender):
 
     EMAIL_SENDING_ENDPOINT = 'https://graph.microsoft.com/v1.0/me/sendMail'
 
-    def _do_send_email(self, msg_obj):
+    def _do_send_email(self, msg_obj, _send_info):
         msg_bytes = msg_obj.as_bytes()
         msg_base64 = base64.b64encode(msg_bytes).decode()
 
