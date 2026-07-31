@@ -48,7 +48,7 @@ from seahub.notifications.signal_handler import MSG_TYPE_TICKET_COMMENTED, MSG_T
 from seahub.tickets.signals import ticket_assignees_added, ticket_commented
 from seahub.utils.decorators import require_org_context
 from seahub.seadb_models.utils import get_connection_table_name
-from seahub.project.constants import DataEventType
+from seahub.project.constants import ConnectionType, DataEventType
 from seahub.utils.date_utils import normalize_date
 
 from seahub.seadb_models.models import SchemaTables
@@ -1830,7 +1830,7 @@ class TicketActivitiesAPIView(APIView):
                 connection_id = detail.get('connection_id')
                 if connection_id and connection_id not in general_task_related_users:
                     general_task_related_users[connection_id] = get_connection_related_users(
-                        project_uuid, connection_id
+                        project_uuid, connection_id, ConnectionType.GENERAL_TASK.value
                     )
             elif field_name == 'state_substate':
                 state_column = get_column_from_columns_by_name(metadata, SchemaTables.TICKETS.column.state.name)

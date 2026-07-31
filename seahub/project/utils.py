@@ -312,7 +312,7 @@ def get_project_related_users(owner):
         return [get_user_common_info(owner)]
 
 
-def get_connection_related_users(project_uuid, connection_id):
+def get_connection_related_users(project_uuid, connection_id, connection_type=None):
     cache_key = f'related_users_{project_uuid}_{connection_id}'
     cached = cache.get(cache_key)
     if cached is not None:
@@ -321,8 +321,9 @@ def get_connection_related_users(project_uuid, connection_id):
     related_users = {}
     default_avatar_url = get_default_avatar_url()
     table_name = SchemaTables.CONNECTION_USER.table_name()
+    type_filter = f" AND connection_type='{connection_type}'" if connection_type else ''
     try:
-        sql = f"SELECT `user_id`, `name` FROM `{table_name}` WHERE {connection_id} IN connection_id"
+        sql = f"SELECT `user_id`, `name` FROM `{table_name}` WHERE {connection_id} IN connection_ids{type_filter}"
         results = seadb_api.query_rows(project_uuid, sql).get('results', [])
     except Exception as e:
         logger.error(f'get connection related users error: {e}')

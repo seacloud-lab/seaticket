@@ -820,7 +820,7 @@ class ProjectConnectionDetailsView(APIView):
             ticket_pk_to_ticket_title = build_linked_ticket_titles_map(
                 seadb_api, project_uuid, records, columns, 'linked_ticket'
             )
-        related_users = get_connection_related_users(project_uuid, connection_id)
+        related_users = get_connection_related_users(project_uuid, connection_id, project_connection.type)
 
         return Response({
             'records': records,
@@ -862,7 +862,7 @@ class ProjectConnectionMetaView(APIView):
         try:
             seadb_api = SeaDBAPI()
             columns = get_connection_columns(seadb_api, project_uuid, project_connection)
-            related_users = get_connection_related_users(project_uuid, connection_id)
+            related_users = get_connection_related_users(project_uuid, connection_id, project_connection.type)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -1235,7 +1235,7 @@ class ProjectConnectionRecordView(APIView):
             error_msg = 'type invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        related_users = get_connection_related_users(project_uuid, connection_id)
+        related_users = get_connection_related_users(project_uuid, connection_id, project_connection.type)
 
         return Response({
             'record': record,
