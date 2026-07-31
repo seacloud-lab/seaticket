@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from 'react';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { getColumnByKey } from '@/sea-metadata/utils/column';
 import CellFormatter from '@/sea-metadata/components/cell-formatter';
@@ -24,11 +24,7 @@ const RowCard = forwardRef(({
   const rowBodyRef = useRef(null);
   const scrollActiveRef = useRef(false);
 
-  const selectedIcon = useMemo(() => {
-    if (mode === 'add') return 'check-circle';
-    if (mode === 'remove') return 'close-circle-filled';
-    return '';
-  }, [mode]);
+  const selectedIcon = mode === 'remove' ? 'close-circle-filled' : '';
 
   const onScroll = useCallback((event) => {
     event.stopPropagation();
@@ -68,7 +64,10 @@ const RowCard = forwardRef(({
 
   return (
     <div
-      className={classNames('sea-metadata-card-row', { 'sea-metadata-card-row-highlight': highlight })}
+      className={classNames('sea-metadata-card-row', {
+        'sea-metadata-card-row-highlight': highlight,
+        'sea-metadata-card-row-selected': isSelected,
+      })}
       onClick={() => onClick(row)}
     >
       <div className="sea-metadata-card-row-container">

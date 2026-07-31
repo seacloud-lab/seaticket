@@ -1,25 +1,26 @@
 .sea-metadata-card-row {
   align-items: flex-start;
   background-color: #fff;
-  border: 1px solid #0000001a;
-  border-radius: 4px;
+  border: 1px solid #0028641f;
+  border-radius: 8px;
   display: flex;
   flex-direction: column;
   font-size: 14px;
-  height: 88px;
+  height: 98px;
   justify-content: space-between;
   margin-bottom: 10px;
   position: relative;
   overflow: hidden;
 }
 
-.sea-metadata-card-row.sea-metadata-card-row-highlight,
-.sea-metadata-card-row:hover {
-  border-color: #0000004d;
-}
 
 .sea-metadata-card-row:hover {
   cursor: pointer;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.sea-metadata-card-row.sea-metadata-card-row-selected {
+  border-color: var(--bs-orange);
 }
 
 .sea-metadata-card-row .sea-metadata-card-row-container {
@@ -31,13 +32,14 @@
 }
 
 .sea-metadata-card-row .sea-metadata-card-row-header {
-  padding: 0 12px;
+  padding: 0 16px;
   pointer-events: none;
   position: absolute;
-  top: 12px;
+  top: 16px;
   align-items: center;
   display: inline-flex;
   height: 24px;
+  line-height: 24px;
   justify-content: space-between;
   width: 100%;
   z-index: 1;
@@ -54,13 +56,9 @@
   white-space: nowrap;
 }
 
-.sea-metadata-card-row .sea-metadata-card-row-header .sea-metadata-card-row-header-status-icon-btn .seaqa-icon-svg-check-circle {
-  color: #59cb74;
-}
-
 .sea-metadata-card-row .sea-metadata-card-row-body {
   height: 100%;
-  padding: 40px 12px 0;
+  padding: 40px 16px 0;
   overflow-x: auto;
   width: 100%;
   scrollbar-width: none;

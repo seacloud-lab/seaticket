@@ -5,6 +5,7 @@ import Main from './main';
 const Card = ({
   expandRow,
   isMultipleSelect = false,
+  isShowHeader = true,
   mode = 'add',
   metadata,
   insertRow,
@@ -40,6 +41,7 @@ const Card = ({
         onRowClick={onRowClick}
         activeRow={expandRowRef.current}
         isMultipleSelect={isMultipleSelect}
+        isShowHeader={isShowHeader}
         mode={mode}
       />
       {isShowRowExpand && isValidElement(children) && (

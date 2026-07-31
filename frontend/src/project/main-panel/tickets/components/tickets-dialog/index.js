@@ -119,7 +119,7 @@ const Main = ({
       <TagsDataProvider tagsData={tagsData}>
         <TypesDataProvider typesData={typesData} >
           <SubstatesDataProvider substatesData={substatesData}>
-            <Card metadata={metadata.current} />
+            <Card metadata={metadata.current} isShowHeader={false} />
           </SubstatesDataProvider>
         </TypesDataProvider>
       </TagsDataProvider>
@@ -171,7 +171,7 @@ const Main = ({
   }, []);
 
   return (
-    <Modal className="seaqa-tickets-dialog" isOpen={true} toggle={onToggle} style={{ minWidth: 1100 }}>
+    <Modal className="seaqa-tickets-dialog" isOpen={true} toggle={onToggle} style={{ minWidth: 900 }}>
       <ModalHeader toggle={onToggle}>{gettext('Tickets')}</ModalHeader>
       <ModalBody>
         <div className="seaqa-tickets-search-wrapper">
@@ -180,6 +180,7 @@ const Main = ({
             value={searchValue}
             size={38}
             placeholder={gettext('Search')}
+            isShowClearIcon={Boolean(searchValue)}
             onKeyDown={onKeyDown}
             onChange={onSearchValueChange}
             onClear={() => onSearchValueChange('')}
