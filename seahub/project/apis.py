@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import requests
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -325,8 +326,20 @@ class ProjectDiscordChannels(APIView):
 
         try:
             channels = discord_api.list_guild_channels(guild_id)
-        except Exception as e:
-            logger.error('Failed to list Discord channels for guild %s: %s', guild_id, e)
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to fetch Discord channels.')
+        except requests.HTTPError as e:
+            discord_status = e.response.status_code
+            logger.error('Discord API error listing channels for guild %s (HTTP %s): %s', guild_id, discord_status, e)
+            if discord_status == 401:
+                return api_error(status.HTTP_401_UNAUTHORIZED, 'Invalid Discord bot token')
+            if discord_status == 403:
+                return api_error(status.HTTP_403_FORBIDDEN, 'Bot does not have access to this guild')
+            if discord_status == 404:
+                return api_error(status.HTTP_404_NOT_FOUND, 'Guild not found')
+            if discord_status == 429:
+                return api_error(status.HTTP_429_TOO_MANY_REQUESTS, 'Discord API rate limited. Please try again later')
+            return api_error(discord_status, 'Discord API error.')
+        except requests.RequestException as e:
+            logger.error('Failed to connect to Discord API for guild %s: %s', guild_id, e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
         return Response({'channels': channels})
