@@ -84,6 +84,7 @@ class _EmailSenderBase:
 
         if in_reply_to:
             msg_obj['In-Reply-To'] = in_reply_to
+            msg_obj['References'] = in_reply_to
 
         if msg:
             plain_content_body = MIMEText(msg)
