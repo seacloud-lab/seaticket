@@ -110,6 +110,12 @@ const Main = ({
     updateSelectedRowIds(newSelectedRowIds);
   }, [selectedRowIds, updateSelectedRowIds]);
 
+  const handleCardBodyClick = useCallback((event) => {
+    if (event.target.closest('.sea-metadata-card-row')) return;
+    if (selectedRowIds.length === 0) return;
+    updateSelectedRowIds([]);
+  }, [selectedRowIds, updateSelectedRowIds]);
+
   useEffect(() => {
     const onHotKey = (event) => {
       switch (event.keyCode) {
@@ -171,7 +177,7 @@ const Main = ({
           modifyColumnWidth={modifyColumnWidth}
         />
       )}
-      <div className="sea-metadata-card-body" ref={rowsContainer} onScroll={onScroll}>
+      <div className="sea-metadata-card-body" ref={rowsContainer} onClick={handleCardBodyClick} onScroll={onScroll}>
         <div className="sea-metadata-card-rows">
           {startRenderIndex > 0 && (<div style={{ height: startRenderIndex * CARD_ITEM_HEIGHT }}></div>)}
           {rows.slice(startRenderIndex, endRenderIndex).map((row, index) => {
