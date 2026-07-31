@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import classnames from 'classnames';
 import slugid from 'slugid';
 import { Icon, IconButton } from '@/components';
-import { gettext } from '@/constants';
+import { gettext, PROJECT_ICON_LIST } from '@/constants';
 import { isMobile } from '@/utils/utils';
 import { usePortalSettings } from '@/portal/hooks/settings';
 import PortalHomeEditPanel from './edit-panel';
@@ -92,7 +92,14 @@ const PortalHome = ({ onHomeChatSend }) => {
                 id={card.id}
                 onClick={() => handleCardClick(card)}
               >
-                <div className="portal-home-card-icon" aria-hidden="true">{card.icon}</div>
+                <div className="portal-home-card-icon" aria-hidden="true">
+                  <i
+                    className={classnames('project-icon project-icon-style', {
+                      [PROJECT_ICON_LIST.includes(card.icon) ? card.icon : PROJECT_ICON_LIST[0]]: true,
+                    })}
+                    style={{ color: '#FF8000' }}
+                  />
+                </div>
                 <div className="portal-home-card-body">
                   <h2 className="portal-home-card-title">{card.title}</h2>
                   <p className="portal-home-card-description">{card.description}</p>

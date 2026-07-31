@@ -1,25 +1,16 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { Button, Label, Input } from 'reactstrap';
-import { gettext } from '@/constants';
-import CustomizeSelect from '@/components/customize-select';
-import { IconButton } from '@/components';
+import classnames from 'classnames';
+import { gettext, PROJECT_ICON_COLORS, PROJECT_ICON_LIST } from '@/constants';
+import { CustomizePopover, IconButton } from '@/components';
 
 import './card-edit-panel.css';
-
-const ICON_OPTIONS = [
-  { value: '👥', name: '👥 Team', label: <span>👥</span> },
-  { value: '🤖', name: '🤖 AI', label: <span>🤖</span> },
-  { value: '🗂️', name: '🗂️ Ticket', label: <span>🗂️</span> },
-  { value: '💬', name: '💬 Chat', label: <span>💬</span> },
-  { value: '🔄', name: '🔄 Sync', label: <span>🔄</span> },
-  { value: '🧩', name: '🧩 Link', label: <span>🧩</span> },
-];
 
 const DEFAULT_CARD = {
   title: '',
   description: '',
   link: '',
-  icon: ICON_OPTIONS[0].value,
+  icon: PROJECT_ICON_LIST[0],
 };
 
 const PortalHomeCardEditPanel = ({ homePageStyle = {}, activeCard, setActiveCard, setHomePageStyle, onClose }) => {
@@ -30,10 +21,11 @@ const PortalHomeCardEditPanel = ({ homePageStyle = {}, activeCard, setActiveCard
     title = '',
     description = '',
     link = '',
-    icon = ICON_OPTIONS[0].value,
+    icon = PROJECT_ICON_LIST[0],
   } = cardStyle;
-
-  const iconValue = ICON_OPTIONS.find(option => option.value === icon) || ICON_OPTIONS[0];
+  const [isIconPopoverOpen, setIsIconPopoverOpen] = useState(false);
+  const iconSelectorRef = useRef(null);
+  const selectedIcon = PROJECT_ICON_LIST.includes(icon) ? icon : PROJECT_ICON_LIST[0];
 
   const updateCardStyle = (patch) => {
     const nextCards = cards.map((card) => {
@@ -111,12 +103,62 @@ const PortalHomeCardEditPanel = ({ homePageStyle = {}, activeCard, setActiveCard
 
       <div className="portal-home-edit-panel-section">
         <Label>{gettext('Card icon')}</Label>
-        <CustomizeSelect
-          value={iconValue}
-          options={ICON_OPTIONS}
-          onChange={(value) => updateCardStyle({ icon: value })}
-          placeholder={gettext('Select icon')}
-        />
+        <div ref={iconSelectorRef}>
+          <div
+            className="portal-home-edit-panel-input portal-home-card-icon-selector"
+            onClick={() => setIsIconPopoverOpen(true)}
+            role="button"
+            tabIndex={0}
+            aria-label={gettext('Select icon')}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                setIsIconPopoverOpen(true);
+              }
+            }}
+          >
+            <i className={`project-icon project-icon-style ${selectedIcon}`} aria-hidden="true" />
+          </div>
+          {isIconPopoverOpen && (
+            <CustomizePopover
+              target={iconSelectorRef.current}
+              hidePopover={() => setIsIconPopoverOpen(false)}
+              hidePopoverWithEsc={() => setIsIconPopoverOpen(false)}
+              className="portal-home-card-icon-popover"
+            >
+              <div className="portal-home-card-icon-content">
+                {PROJECT_ICON_LIST.map((iconItem) => {
+                  const isSelected = iconItem === selectedIcon;
+                  return (
+                    <div
+                      key={iconItem}
+                      className="portal-home-card-icon-item"
+                      onClick={() => {
+                        updateCardStyle({ icon: iconItem });
+                        setIsIconPopoverOpen(false);
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      style={{ backgroundColor: isSelected ? PROJECT_ICON_COLORS[0] : '' }}
+                      title={`${gettext('Icon')} ${iconItem}`}
+                      aria-label={`${gettext('Icon')} ${iconItem}`}
+                    >
+                      <span className="portal-home-card-icon-input" aria-selected={isSelected}>
+                        <i
+                          aria-hidden="true"
+                          className={classnames('project-icon project-icon-style', {
+                            [iconItem]: iconItem,
+                            'icon-color-white': isSelected,
+                          })}
+                        />
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </CustomizePopover>
+          )}
+        </div>
       </div>
 
       <div className="portal-home-edit-panel-delete-wrap">
