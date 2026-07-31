@@ -74,7 +74,8 @@
 
 .portal-home-cards {
   max-width: 1240px;
-  margin: 26px auto 0;
+  width: calc(100% - 32px);
+  margin: 26px auto;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
@@ -199,6 +200,10 @@
 
   .portal-home-cards {
     grid-template-columns: 1fr;
+  }
+
+  .portal-home-page:not(.is-edit) .portal-home-cards {
+    width: 100%;
   }
 
   .portal-home-card {

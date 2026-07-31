@@ -3,6 +3,7 @@ import classnames from 'classnames';
 import slugid from 'slugid';
 import { Icon, IconButton } from '@/components';
 import { gettext } from '@/constants';
+import { isMobile } from '@/utils/utils';
 import { usePortalSettings } from '@/portal/hooks/settings';
 import PortalHomeEditPanel from './edit-panel';
 import PortalCardEditPanel from './card-edit-panel';
@@ -21,6 +22,7 @@ const PortalHome = ({ onHomeChatSend }) => {
 
   const { titleText, descriptionText, titleSize, backgroundColor, cardLayout, cards, themeType, themeBackgroundImageURL } = homePageStyle;
   const validCards = Array.isArray(cards) ? cards.filter(Boolean) : [];
+  const cardColumnCount = isMobile ? 1 : (CARD_LAYOUT_OPTIONS.includes(Number(cardLayout)) ? Number(cardLayout) : 3);
 
   const heroStyle = themeType === 'image' && themeBackgroundImageURL
     ? { backgroundImage: `url(${themeBackgroundImageURL})` }
@@ -82,7 +84,7 @@ const PortalHome = ({ onHomeChatSend }) => {
             </div>
           </section>
 
-          <section className="portal-home-cards" aria-label={gettext('Portal features')} style={{ gridTemplateColumns: `repeat(${CARD_LAYOUT_OPTIONS.includes(Number(cardLayout)) ? Number(cardLayout) : 3}, minmax(0, 1fr))` }}>
+          <section className="portal-home-cards" aria-label={gettext('Portal features')} style={{ gridTemplateColumns: `repeat(${cardColumnCount}, minmax(0, 1fr))` }}>
             {validCards.map((card) => (
               <article
                 className={classnames('portal-home-card', { active: activeCard === card.id })}
