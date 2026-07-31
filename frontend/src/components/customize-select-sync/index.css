@@ -14,3 +14,7 @@
   height: 16px;
   color: #666 !important;
 }
+
+.seaqa-customize-select-sync-error {
+  color: #ff0000;
+}

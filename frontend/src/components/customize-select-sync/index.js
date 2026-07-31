@@ -107,7 +107,7 @@ const CustomizeSelectSync = ({
         )}
       </div>
       {errorMessage && (
-        <div className="seaqa-customize-select-sync-error text-danger">{errorMessage}</div>
+        <div className="seaqa-customize-select-sync-error mt-2">{errorMessage}</div>
       )}
       {!disabled && isShowSelector && (
         <OptionEditor
