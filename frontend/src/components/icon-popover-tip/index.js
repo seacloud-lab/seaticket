@@ -27,11 +27,11 @@ const IconPopoverTip = ({
   useEffect(() => {
     if (!isShowPopover) return;
     const handleScroll = (event) => {
-      if (event.target.className === 'seaqa-tip-popover-container') return;
+      if (event.target.closest('.seaqa-tip-popover-container')) return;
       setIsShowPopover(false);
     };
 
-    document.addEventListener('scroll', handleScroll, { capture: true });
+    document.addEventListener('scroll', handleScroll, { passive: true, capture: true });
     return () => {
       document.removeEventListener('scroll', handleScroll, { capture: true });
     };
