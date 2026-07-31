@@ -52,7 +52,7 @@ class CustomizePopover extends React.Component {
   };
 
   render() {
-    const { target, innerClassName, className, hideArrow = true, placement = 'bottom-start' } = this.props;
+    const { target, innerClassName, className, containerClassName, hideArrow = true, placement = 'bottom-start' } = this.props;
     return (
       <Popover
         placement={placement}
@@ -64,7 +64,7 @@ class CustomizePopover extends React.Component {
         className={className}
         modifiers={generatorModifiers(this.props)}
       >
-        <div ref={ref => this.popoverRef = ref} onClick={this.onPopoverInsideClick}>
+        <div className={containerClassName} ref={ref => this.popoverRef = ref} onClick={this.onPopoverInsideClick}>
           {this.props.children}
         </div>
       </Popover>

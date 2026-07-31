@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import classnames from 'classnames';
 import IconButton from '../icon-button';
 import CustomizePopover from '../customize-popover';
@@ -17,12 +17,26 @@ const IconPopoverTip = ({
 }) => {
   const [isShowPopover, setIsShowPopover] = useState(false);
 
+  const ref = useRef(null);
+
   const handleClick = useCallback((event) => {
     setIsShowPopover(true);
     onClick && onClick(event);
   }, [onClick]);
 
-  const ref = useRef(null);
+  useEffect(() => {
+    if (!isShowPopover) return;
+    const handleScroll = (event) => {
+      if (event.target.className === 'seaqa-tip-popover-container') return;
+      setIsShowPopover(false);
+    };
+
+    document.addEventListener('scroll', handleScroll, { capture: true });
+    return () => {
+      document.removeEventListener('scroll', handleScroll, { capture: true });
+    };
+  }, [isShowPopover]);
+
   return (
     <>
       <IconButton
@@ -37,10 +51,11 @@ const IconPopoverTip = ({
           target={ref}
           placement={placement}
           className={classnames('seaqa-tip-popover', popoverClassName)}
+          containerClassName="seaqa-tip-popover-container"
           hidePopover={() => setIsShowPopover(false)}
           hidePopoverWithEsc={() => setIsShowPopover(false)}
         >
-          <div className="seaqa-tip-popover-container">{tip}</div>
+          {tip}
         </CustomizePopover>
       )}
     </>
