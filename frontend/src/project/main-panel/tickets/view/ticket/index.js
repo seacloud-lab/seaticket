@@ -105,8 +105,8 @@ const Ticket = ({
   const handleScroll = useCallback((event) => {
     if (!event) return;
     const dom = headerRef.current.getDom();
-    const { height } = dom.getBoundingClientRect();
-    setIsShowStickyHeader(event.target.scrollTop > height);
+    const height = dom.offsetHeight;
+    setIsShowStickyHeader(event.target.scrollTop >= height);
   }, [headerRef]);
 
   const handleUpdateRowsCacheData = useCallback((ticketID, update) => {
