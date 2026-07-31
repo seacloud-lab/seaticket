@@ -255,6 +255,7 @@
   color: #666;
   line-height: 1.5;
   position: relative;
+  overflow: hidden;
 }
 
 .action-content.action-content-event .action-label,
@@ -312,29 +313,6 @@
   border-color: #EEEEEE;
 }
 
-.suggestion-cancelled-result svg {
-  width: 14px;
-  height: 14px;
-  fill: #999;
-  flex-shrink: 0;
-}
-
-.suggestion-cancelled-text {
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 22px;
-  color: #999999;
-  text-decoration: line-through;
-  margin-right: 8px;
-}
-
-.suggestion-cancelled-by {
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 22px;
-  color: #212529;
-}
-
 .suggestion-result-resolved .result-text {
   font-size: 14px;
   line-height: 22px;
@@ -357,6 +335,7 @@
   font-weight: 500;
   line-height: 22px;
   color: #212529;
+  gap: 8px;
 }
 
 .action-card-header > svg {
@@ -365,12 +344,25 @@
   fill: #999;
 }
 
-/* Suggestion header actions (edit / details) */
-.suggestion-header-actions {
+.action-suggestion-text-container {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  gap: 12px;
+}
+
+.action-card.action-card-cancelled .action-suggestion-text-container .action-suggestion-text {
+  color: #999;
+  text-decoration: line-through;
+}
+
+/* Suggestion ops (edit / details) */
+.action-suggestion-ops-container {
   gap: 8px;
 }
 
-.suggestion-header-action-btn.seaqa-tooltip-icon-btn {
+.action-suggestion-op-btn.seaqa-tooltip-icon-btn {
   width: 24px;
   height: 24px;
   margin: 0;
@@ -380,20 +372,8 @@
   justify-content: center;
 }
 
-.suggestion-header-action-btn.seaqa-tooltip-icon-btn .seaqa-icon-svg {
-  width: 16px;
-  height: 16px;
-  fill: #666;
-  color: #666;
-}
-
-.suggestion-header-action-btn.seaqa-tooltip-icon-btn:hover {
+.action-suggestion-op-btn.seaqa-tooltip-icon-btn:hover {
   background: #F2F2F2;
-}
-
-.suggestion-header-action-btn.seaqa-tooltip-icon-btn:hover .seaqa-icon-svg {
-  fill: #666;
-  color: #666;
 }
 
 .action-text {
@@ -426,11 +406,6 @@
 
 .action-text.action-text-thought::after {
   left: 8px;
-}
-
-/* Default tooltip padding is 6px, in this special case padding-bottom use 4px */
-.seaqa-tooltip.action-item-edit-content-tooltip .tooltip {
-  padding-bottom: 4px;
 }
 
 .error-list {

@@ -64,6 +64,7 @@ import CustomizeLabel from './customize-label';
 import { IconTextBtn, SecondaryBtn, CustomizeBtn } from './btn';
 import CopyInput from './copy-input';
 import ImagePreviewer from './image-previewer';
+import IconPopoverTip from './icon-popover-tip';
 
 export {
   FixedWidthTable,
@@ -135,4 +136,5 @@ export {
   CustomizeBtn,
   CopyInput,
   ImagePreviewer,
+  IconPopoverTip,
 };

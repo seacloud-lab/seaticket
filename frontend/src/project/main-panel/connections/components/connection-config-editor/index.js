@@ -17,6 +17,7 @@ const ConnectionConfigEditor = ({ column, className, ...props }) => {
         {tip && (
           <IconTooltip
             tip={tip}
+            icon="question-circle-stroked"
             className={classnames('connection-config-tip-btn', { 'ml-0': is_required })}
           />)}
       </Label>

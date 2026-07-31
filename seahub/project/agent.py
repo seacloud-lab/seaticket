@@ -86,6 +86,7 @@ def _build_items_map_from_actions(actions, include_details=False):
             'tool_name': action.get('tool_name', ''),
             'result': action.get('result', ''),
             'status': action.get('status', ''),
+            'suggestion_reason': action.get('suggestion_reason', ''),
             'suggestion_text': action.get('suggestion_text', ''),
             'suggestion_content': action.get('suggestion_content', ''),
             'sources': _parse_action_sources(action.get('sources')),
@@ -130,7 +131,7 @@ def list_agent_runs(seadb_api, project_uuid, page=1, per_page=50, include_detail
             if include_details:
                 details_field = ', `phase`, `prompt`, `input`, `step`, `tool_arguments`, `observation`'
             actions_sql = "SELECT `_pk`, `run_id`, `source_type`, `source_id`, `source_title`, " \
-                f"`action_type`, `tool_name`, `result`, `status`, `suggestion_text`, `suggestion_content`, " \
+                f"`action_type`, `tool_name`, `result`, `status`, `suggestion_reason`, `suggestion_text`, `suggestion_content`, " \
                 f"`statistics`, `created_at`, `executed_at`, `sources`{details_field} FROM `{SchemaTables.AGENT_ACTIONS.table_name()}` " \
                 f"WHERE `run_id` IN ({run_ids_str}) ORDER BY `run_id` DESC, `created_at` ASC " \
                 f"LIMIT 0, {actions_limit}"
@@ -182,7 +183,7 @@ def get_agent_run_detail(seadb_api, project_uuid, run_id, include_details=False)
         if include_details:
             details_field = ', `phase`, `prompt`, `input`, `step`, `tool_arguments`, `observation`'
         actions_sql = "SELECT `_pk`, `run_id`, `source_type`, `source_id`, `source_title`, " \
-            f"`action_type`, `tool_name`, `result`, `status`, `suggestion_text`, `suggestion_content`, " \
+            f"`action_type`, `tool_name`, `result`, `status`, `suggestion_reason`, `suggestion_text`, `suggestion_content`, " \
             f"`statistics`, `created_at`, `executed_at`, `sources`{details_field} FROM `{SchemaTables.AGENT_ACTIONS.table_name()}` " \
             f"WHERE `run_id` = {run_id} ORDER BY `created_at` ASC"
         actions_result = seadb_api.query_rows(project_uuid, actions_sql)

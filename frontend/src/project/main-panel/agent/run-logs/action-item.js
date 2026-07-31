@@ -3,7 +3,7 @@ import classnames from 'classnames';
 import { Button } from 'reactstrap';
 import { gettext } from '@/constants';
 import { ACTION_STATUS, ACTION_TYPE, SUGGESTION_TOOL_NAME_MAP, ACTION_ICON_MAPPER } from './constants';
-import { Icon, IconButton, IconTooltip, CustomizeMarkdownViewer } from '@/components';
+import { Icon, IconButton, IconTooltip, CustomizeMarkdownViewer, IconPopoverTip } from '@/components';
 import AIReply from '@/project/components/ai-reply';
 import SuggestionPreview from './suggestion-preview';
 
@@ -51,7 +51,17 @@ const ActionItem = React.memo(({
   onCancel,
   onViewContent,
 }) => {
-  const { id, type, status, result, tool_name, sources, suggestion_text, suggestion_content } = action;
+  const {
+    id,
+    type,
+    status,
+    result,
+    tool_name,
+    sources,
+    suggestion_text,
+    suggestion_content,
+    suggestion_reason,
+  } = action;
   const [isExpanded, setIsExpanded] = useState(false);
   const [isThoughtExpanded, setIsThoughtExpanded] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
@@ -221,6 +231,19 @@ const ActionItem = React.memo(({
     }
   };
 
+  const renderSuggestionReasonTooltip = () => {
+    if (!suggestion_reason) return null;
+
+    return (
+      <IconPopoverTip
+        icon="question-circle-stroked"
+        tip={suggestion_reason}
+        className="suggestion-reason-tooltip mx-0"
+        onClick={(e) => e.stopPropagation()}
+      />
+    );
+  };
+
   const renderContent = () => {
     const isCompletedStatus = [ACTION_STATUS.COMPLETED, ACTION_STATUS.EXECUTED].includes(status);
     const isFailedStatus = status === ACTION_STATUS.FAILED;
@@ -269,56 +292,49 @@ const ActionItem = React.memo(({
         const hasEditableContent = SUGGESTION_TOOL_NAME_MAP[tool_name];
         const hasContent = !!suggestion_content;
         const isCancelled = status === ACTION_STATUS.CANCELLED;
-        const canEdit = hasEditableContent && status === ACTION_STATUS.PENDING;
-        const showHeaderActions = !isCancelled && (canEdit || hasContent);
+        const canEdit = hasEditableContent && hasContent && status === ACTION_STATUS.PENDING;
+        const showActions = !isCancelled && (canEdit || hasContent);
         const parsedResult = parseActionResult(result);
         return (
           <div className="action-content action-content-suggestion">
             <div className="action-label">{gettext('Suggestion')}</div>
             <div className={classnames('action-card', { 'action-card-cancelled': isCancelled })}>
-              {isCancelled && (
-                <div className="suggestion-cancelled-result d-flex align-items-center">
-                  <Icon symbol={renderSuggestionIcon()} className="mr-2" />
-                  {suggestion_text && (
-                    <span className="suggestion-cancelled-text">{suggestion_text}</span>
-                  )}
-                  <span className="suggestion-cancelled-by">{parsedResult.message}</span>
-                </div>
-              )}
-              {!isCancelled && (
-                <div className="action-card-header d-flex align-items-center">
-                  <Icon symbol={renderSuggestionIcon() } className="mr-2" />
-                  <span>{suggestion_text}</span>
-                  {showHeaderActions && (
-                    <div className="suggestion-header-actions ml-auto d-flex align-items-center">
-                      {canEdit && (
-                        <IconTooltip
-                          icon="edit"
-                          tip={gettext('Edit')}
-                          tooltipClassName='action-item-edit-content-tooltip'
-                          className='suggestion-header-action-btn'
-                          placement="bottom"
-                          hoverBackground={true}
-                          size={{ btn: 24, icon: 16 }}
-                          onClick={handleEditContent}
-                        />
-                      )}
-                      {hasContent && (
-                        <IconTooltip
-                          icon="view-issue"
-                          tip={gettext('Details')}
-                          tooltipClassName='action-item-edit-content-tooltip'
-                          className='suggestion-header-action-btn'
-                          placement="bottom"
-                          hoverBackground={true}
-                          size={{ btn: 24, icon: 16 }}
-                          onClick={handleViewDetails}
-                        />
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
+              <div className="action-card-header d-flex align-items-center">
+                <Icon symbol={renderSuggestionIcon()} />
+                {suggestion_text && (
+                  <div className="action-suggestion-text-container">
+                    <span className="text-truncate action-suggestion-text" title={suggestion_text}>{suggestion_text}</span>
+                    {!isCancelled && (<>{renderSuggestionReasonTooltip()}</>)}
+                  </div>
+                )}
+                {isCancelled && (<span className="flex-shrink-0">{parsedResult.message}</span>)}
+                {showActions && (
+                  <div className="action-suggestion-ops-container ml-auto d-flex align-items-center">
+                    {canEdit && (
+                      <IconTooltip
+                        icon="edit"
+                        tip={gettext('Edit')}
+                        className="action-suggestion-op-btn"
+                        placement="bottom"
+                        hoverBackground={true}
+                        size={{ btn: 24, icon: 16 }}
+                        onClick={handleEditContent}
+                      />
+                    )}
+                    {hasContent && (
+                      <IconTooltip
+                        icon="view-issue"
+                        tip={gettext('Details')}
+                        className="action-suggestion-op-btn"
+                        placement="bottom"
+                        hoverBackground={true}
+                        size={{ btn: 24, icon: 16 }}
+                        onClick={handleViewDetails}
+                      />
+                    )}
+                  </div>
+                )}
+              </div>
               {hasContent && !isCancelled && (
                 <SuggestionPreview type={tool_name} value={suggestion_content} />
               )}
