@@ -6,7 +6,10 @@ import { useSelectedRows } from '@/sea-metadata/hooks';
 
 import './index.css';
 
-const CARD_ITEM_HEIGHT = 98;
+// Keep these values in sync with the row height and margin-bottom in row/index.css.
+const CARD_ROW_HEIGHT = 98;
+const CARD_ROW_GAP = 10;
+const CARD_ITEM_HEIGHT = CARD_ROW_HEIGHT + CARD_ROW_GAP;
 const RENDER_MORE_NUMBER = 20;
 
 const Main = ({
@@ -202,7 +205,7 @@ const Main = ({
             );
           })}
           {(rowsCount - endRenderIndex) > 0 && (
-            <div style={{ height: (rowsCount - endRenderIndex) * CARD_ITEM_HEIGHT - 10 }}></div>
+            <div style={{ height: (rowsCount - endRenderIndex) * CARD_ITEM_HEIGHT - CARD_ROW_GAP }}></div>
           )}
         </div>
       </div>
