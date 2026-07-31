@@ -365,6 +365,14 @@ export const CONNECTION_FIELDS = {
       type: CONNECTION_FIELD_TYPE.URL,
       is_custom: true,
       tip: gettext('The sitemap URL is the URL of the sitemap. Example: \'https://www.example.com/sitemap.xml\''),
+    }, {
+      key: 'exclude_paths',
+      name: gettext('Exclude paths'),
+      type: CONNECTION_FIELD_TYPE.LONG_TEXT,
+      is_custom: true,
+      is_path_list: true,
+      placeholder: '/wiki/\n/private/',
+      tip: gettext('Optional paths to exclude from crawling, one path per line.'),
     },
   ],
   [CONNECTION_TYPE.SEAFILE]: [

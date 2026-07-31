@@ -160,6 +160,7 @@ CONNECTION_FIELDS = {
     ConnectionType.SITE.value: [
         ConnectionField('url', True, False).to_dict(),
         ConnectionField('sitemap_url', False, False).to_dict(),
+        ConnectionField('exclude_paths', False, False).to_dict(),
     ],
     ConnectionType.SEAFILE.value: [
         ConnectionField('server_url', True, False).to_dict(),

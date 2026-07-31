@@ -142,6 +142,8 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
         validConfig[key] = validConfig[key] ? parseInt(validConfig[key], 10) : '';
       } else if (fieldType === CONNECTION_FIELD_TYPE.SELECT) {
         validConfig[key] = validConfig[key] || '';
+      } else if (key === 'exclude_paths' && typeof validConfig[key] === 'string') {
+        validConfig[key] = validConfig[key].split(/\r?\n/).map(path => path.trim()).filter(Boolean);
       } else if (typeof validConfig[key] === 'string') {
         validConfig[key] = validConfig[key] ? validConfig[key].trim() : '';
       }
