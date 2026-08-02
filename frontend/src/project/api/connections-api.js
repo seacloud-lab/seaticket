@@ -312,9 +312,9 @@ class ConnectionsAPI {
     return this.req.get(url);
   }
 
-  listDiscordChannels(projectUuid, guildId, botToken) {
+  listDiscordChannels(projectUuid, guildId) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/discord-channels/';
-    const data = { guild_id: guildId, bot_token: botToken };
+    const data = { guild_id: guildId };
     return this.req.post(url, data);
   }
 

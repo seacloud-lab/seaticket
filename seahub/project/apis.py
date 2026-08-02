@@ -293,7 +293,6 @@ class ProjectDiscordChannels(APIView):
 
         Body params:
             guild_id: Discord guild (server) ID
-            bot_token: Discord bot token
         """
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
@@ -309,20 +308,12 @@ class ProjectDiscordChannels(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         guild_id = (request.data.get('guild_id') or '').strip()
-        bot_token = (request.data.get('bot_token') or '').strip()
 
         if not guild_id:
             return api_error(status.HTTP_400_BAD_REQUEST, 'guild_id is required.')
 
-        if not bot_token:
-            from seahub.settings import DISCORD_BOT_TOKEN
-            bot_token = DISCORD_BOT_TOKEN
-
-        if not bot_token:
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Discord bot token is not configured.')
-
         from seahub.project.discord_api import DiscordAPI
-        discord_api = DiscordAPI(bot_token)
+        discord_api = DiscordAPI(settings.DISCORD_BOT_TOKEN)
 
         try:
             channels = discord_api.list_guild_channels(guild_id)

@@ -136,6 +136,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     if (!name.trim()) return false;
     if (isLinear && !isLinearOauthConnected) return false;
     if (isConfluence && !isConfluenceOauthConnected) return false;
+    if (isDiscord && !config.guild_id) return false;
     return customColumns.length > 0 ? customColumns.every(c => {
       if (c.type === CONNECTION_FIELD_TYPE.GROUP) {
         return c.children.every(child => {
@@ -148,6 +149,27 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     }) : true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name, config, customColumns, isLinear, isLinearOauthConnected, isConfluence, isConfluenceOauthConnected, isDiscord]);
+
+  useEffect(() => {
+    const handleDiscordOAuthMessage = (event) => {
+      if (event.origin !== window.location.origin) return
+      console.log(event)
+      const data = event.data || {};
+      if (data.type !== 'discord-oauth-success' || !data.guild_id) return;
+
+      setConfig(prevConfig => ({
+        ...prevConfig,
+        guild_id: String(data.guild_id),
+        guild_name: data.guild_name || '',
+      }));
+      if (oauthWindowRef.current && !oauthWindowRef.current.closed) {
+        oauthWindowRef.current.close();
+      }
+    };
+
+    window.addEventListener('message', handleDiscordOAuthMessage);
+    return () => window.removeEventListener('message', handleDiscordOAuthMessage);
+  }, []);
 
   const callbackUrl = useMemo(() => {
     return getEmailOAuthCallbackUrl(projectUuid);
@@ -410,9 +432,8 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
 
   const listDiscordChannels = useCallback(() => {
     const guildId = config.guild_id;
-    const botToken = config.bot_token;
-    if (!guildId || !botToken) return Promise.resolve({ data: { channels: [] } });
-    return connectionsAPI.listDiscordChannels(projectUuid, guildId, botToken).then(res => {
+    if (!guildId) return Promise.resolve({ data: { channels: [] } });
+    return connectionsAPI.listDiscordChannels(projectUuid, guildId).then(res => {
       const channels = (res && res.data && res.data.channels) || [];
       return {
         data: {
@@ -420,7 +441,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         }
       };
     });
-  }, [config.guild_id, config.bot_token]);
+  }, [config.guild_id]);
 
   const typeOption = availableConnectionTypes.find(i => i.type === type) || availableConnectionTypes[0];
   const connectionSections = useMemo(() => {
@@ -504,6 +525,13 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       });
     }, 2000);
   }, []);
+
+  const handleConnectDiscord = useCallback(() => {
+    const next = window.location.href;
+    const oauthUrl = `${server}/discord/oauth/?project_uuid=${projectUuid}&next=${encodeURIComponent(next)}`;
+    oauthWindowRef.current = window.open(oauthUrl, 'discord-oauth', 'width=800,height=700');
+
+  }, [projectUuid]);
 
   useEffect(() => {
     if (!isLinear) return;
@@ -742,6 +770,26 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
                     {isLinearOauthConnected ? gettext('Reconnect Linear') : gettext('Connect Linear')}
                   </Button>
                   {linearOauthError && (<div className="text-danger mt-2">{linearOauthError}</div>)}
+                </div>
+              </FormGroup>
+            )}
+            {isDiscord && (
+              <FormGroup>
+                <Label>{gettext('Authorization')}</Label>
+                <div className="seaqa-project-discord-oauth">
+                  {config.guild_id && (
+                    <span className="oauth-status-text mr-3">
+                      {config.guild_name || config.guild_id}
+                    </span>
+                  )}
+                  <Button
+                    color={'primary'}
+                    className="ml-4"
+                    disabled={isSubmitting}
+                    onClick={handleConnectDiscord}
+                  >
+                    {config.guild_id ? gettext('Reconnect Discord') : gettext('Connect Discord')}
+                  </Button>
                 </div>
               </FormGroup>
             )}
