@@ -333,7 +333,6 @@ class Projects(models.Model):
     ticket_ai_indexed_at = models.DateTimeField(null=True)
     last_ticket_active_time = models.DateTimeField(null=True)
     last_agent_scanned_at = models.DateTimeField(null=True)
-    next_privacy_report_at = models.DateTimeField(null=True)
 
     objects = ProjectsManager()
 

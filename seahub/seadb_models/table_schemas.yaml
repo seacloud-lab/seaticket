@@ -1071,6 +1071,8 @@ tables:
         column_type: datetime
       connection_type:
         column_type: text
+      next_privacy_report_at:
+        column_type: datetime
     indexes:
     - - user_id
     - - connection_type
