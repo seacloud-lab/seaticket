@@ -1,12 +1,3 @@
-.prompt-settings-option-header {
-  border-bottom: 1px solid #eee;
-  font-size: .9375rem;
-  font-weight: 400;
-  margin-bottom: .7rem;
-  padding-bottom: .3rem;
-  padding-top: 14px;
-}
-
 .prompt-settings-option-body .tip {
   font-size: 12px;
 }
@@ -34,7 +25,7 @@
   min-width: 60px;
 }
 
-.ticket-agent-rules-settings .prompt-settings-option-header {
+.ticket-agent-rules-settings .settings-item-header {
   border-bottom: none;
   margin-bottom: 0.35rem;
   padding-top: 0;

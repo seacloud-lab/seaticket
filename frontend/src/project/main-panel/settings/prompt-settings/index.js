@@ -48,8 +48,8 @@ const PromptSettings = ({
 
   return (
     <>
-      <div className={classnames('prompt-settings-option w-100 pl-4 pr-4', className)}>
-        <div className="prompt-settings-option-header text-truncate">{title}</div>
+      <div className={classnames('prompt-settings-option w-100 pl-4 pr-4 mb-4', className)}>
+        <div className="settings-item-header text-truncate">{title}</div>
         <div className="prompt-settings-option-body">
           <p className="seaqa-tip-default tip m-0 mb-2">
             {tip}

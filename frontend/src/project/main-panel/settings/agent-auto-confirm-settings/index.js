@@ -39,7 +39,7 @@ const AgentAutoConfirmSettings = ({ value = {}, onChange }) => {
 
   return (
     <div className='w-100 pl-4 pr-4 pt-2 mb-4'>
-      <div className="agent-auto-confirm-header text-truncate mb-2">
+      <div className="settings-item-header text-truncate mb-2">
         {gettext('Auto-approve actions')}
       </div>
       <p className="seaqa-tip-default tip m-0 mb-3">
