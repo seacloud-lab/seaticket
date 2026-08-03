@@ -1,23 +1,22 @@
 .portal-home-chat-input {
   position: relative;
-  max-width: 760px;
-  min-height: 78px;
-  margin: 28px auto 0;
-  border-radius: 999px;
+  width: 640px;
+  height: 50px;
+  margin: 32px auto 0;
+  border-radius: 25px;
   background: #ffffff;
-  box-shadow: 0 16px 40px rgba(74, 56, 23, 0.08);
-  border: 1px solid rgba(228, 214, 191, 0.85);
+  border: 1px solid #EEEEEE;
 }
 
 .portal-home-chat-textarea {
   width: 100%;
-  min-height: 78px;
+  height: 50px;
   border: 0;
   outline: none;
   background: transparent;
-  padding: 24px 72px 24px 28px;
+  padding: 13px 72px 13px 28px;
   resize: none;
-  color: #171717;
+  color: #212529;
   font-size: 16px;
   line-height: 1.5;
 }
@@ -38,18 +37,19 @@
 .portal-home-chat-send-btn {
   position: absolute;
   border: none;
-  color: #7b7b7b;
-  background: #f2f2f2;
+  color: #FFFFFF;
+  background: #FF8000;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0;
-  right: 18px;
-  bottom: 24px;
-  width: 30px;
-  height: 30px;
+  right: 8px;
+  bottom: 6px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  font-size: 16px;
+  font-size: 24px;
+  font-weight: 600;
   line-height: 1;
 }
 

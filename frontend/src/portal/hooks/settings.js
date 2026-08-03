@@ -59,7 +59,7 @@ export const PortalSettingsProvider = ({
   }, [projectUuid, isUploadingLogo, isUpdatingNameOrLogo]);
 
   const updateHomeSetting = useCallback((newSetting) => {
-    return portalAPI.updateSettings(projectUuid, { 'portal_home_setting': newSetting });
+    return portalAPI.updateSettings(projectUuid, { 'portal_home_settings': newSetting });
   }, [projectUuid]);
 
   useEffect(() => {

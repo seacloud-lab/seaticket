@@ -12,21 +12,24 @@ import { CARD_LAYOUT_OPTIONS, DEFAULT_NEW_CARD, getSafeCardLink, normalizeHomePa
 
 import './index.css';
 
-const { isEditMode, portalHomeSetting } = window.app.pageOptions;
+const { isEditMode, portalHomeSettings } = window.app.pageOptions;
 
 const PortalHome = ({ onHomeChatSend }) => {
   const [isEdit, setIsEdit] = useState(false);
-  const [homePageStyle, setHomePageStyle] = useState(() => normalizeHomePageStyle(portalHomeSetting));
+  const [homePageStyle, setHomePageStyle] = useState(() => normalizeHomePageStyle(portalHomeSettings));
   const [activeCard, setActiveCard] = useState('');
   const { updateHomeSetting } = usePortalSettings();
 
-  const { titleText, descriptionText, titleSize, backgroundColor, cardLayout, cards, themeType, themeBackgroundImageURL } = homePageStyle;
+  const heroSection = homePageStyle['portal_home_hero_section'];
+  const cardsSection = homePageStyle['portal_home_cards_section'];
+  const { title_text, description_text, title_size, background_color, theme_type, theme_background_image_URL } = heroSection;
+  const { card_layout, cards } = cardsSection;
   const validCards = Array.isArray(cards) ? cards.filter(Boolean) : [];
-  const cardColumnCount = isMobile ? 1 : (CARD_LAYOUT_OPTIONS.includes(Number(cardLayout)) ? Number(cardLayout) : 3);
+  const cardColumnCount = isMobile ? 1 : (CARD_LAYOUT_OPTIONS.includes(Number(card_layout)) ? Number(card_layout) : 3);
 
-  const heroStyle = themeType === 'image' && themeBackgroundImageURL
-    ? { backgroundImage: `url(${themeBackgroundImageURL})` }
-    : { backgroundColor };
+  const heroStyle = theme_type === 'image' && theme_background_image_URL
+    ? { backgroundImage: `url(${theme_background_image_URL})` }
+    : { backgroundColor: background_color };
 
   const closeEditPanel = () => {
     updateHomeSetting(JSON.stringify(homePageStyle));
@@ -42,7 +45,10 @@ const PortalHome = ({ onHomeChatSend }) => {
 
     setHomePageStyle((prev) => ({
       ...prev,
-      cards: [...(Array.isArray(prev.cards) ? prev.cards : []), newCard],
+      'portal_home_cards_section': {
+        ...prev['portal_home_cards_section'],
+        cards: [...(Array.isArray(prev['portal_home_cards_section']?.cards) ? prev['portal_home_cards_section'].cards : []), newCard],
+      },
     }));
     setIsEdit(true);
     setActiveCard(newCard.id);
@@ -79,8 +85,8 @@ const PortalHome = ({ onHomeChatSend }) => {
         <main className="portal-home-main">
           <section className="portal-home-hero" style={heroStyle}>
             <div className="portal-home-hero-content">
-              <h1 className="portal-home-title" style={{ fontSize: `${titleSize}px` }}>{titleText}</h1>
-              <PortalHomeChatInput descriptionText={descriptionText} onHomeChatSend={onHomeChatSend} />
+              <h1 className="portal-home-title" style={{ fontSize: `${title_size}px` }}>{title_text}</h1>
+              <PortalHomeChatInput description_text={description_text} onHomeChatSend={onHomeChatSend} />
             </div>
           </section>
 

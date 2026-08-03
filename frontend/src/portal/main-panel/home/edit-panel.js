@@ -26,25 +26,48 @@ const MAX_BACKGROUND_IMAGE_SIZE = 5 * 1024 * 1024;
 const BACKGROUND_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png'];
 
 const PortalHomeEditPanel = ({ homePageStyle = {}, setHomePageStyle, updateHomeSetting, onClose }) => {
-  const { titleText = gettext('Hey 👋, how can we help?'), descriptionText = gettext('Chat with AI'), titleSize = 48, backgroundColor = '#f8f1e3', cardLayout = 3, themeType = 'color', themeBackgroundImageURL = '' } = homePageStyle;
+  const heroSection = homePageStyle['portal_home_hero_section'] || {};
+  const cardsSection = homePageStyle['portal_home_cards_section'] || {};
+  const { title_text = gettext('Hey 👋, how can we help?'), description_text = gettext('Chat with AI'), title_size = 48, background_color = '#f8f1e3', theme_type = 'color', theme_background_image_URL = '' } = heroSection;
+  const { card_layout = 3 } = cardsSection;
   const [showColorPicker, setShowColorPicker] = useState(false);
   const uploadBackgroundImageRef = useRef(null);
 
-  const titleSizeValue = useMemo(() => {
-    return TITLE_SIZE_OPTIONS.find(option => option.value === titleSize) || TITLE_SIZE_OPTIONS[0];
-  }, [titleSize]);
+  const title_sizeValue = useMemo(() => {
+    return TITLE_SIZE_OPTIONS.find(option => option.value === title_size) || TITLE_SIZE_OPTIONS[0];
+  }, [title_size]);
 
   const cardLayoutValue = useMemo(() => {
-    return CARD_LAYOUT_OPTIONS.find(option => option.value === cardLayout) || CARD_LAYOUT_OPTIONS[1];
-  }, [cardLayout]);
+    return CARD_LAYOUT_OPTIONS.find(option => option.value === card_layout) || CARD_LAYOUT_OPTIONS[1];
+  }, [card_layout]);
 
   const updateHomePageStyle = useCallback((patch) => {
     setHomePageStyle((prev) => {
-      const next = { ...prev, ...patch };
+      const next = {
+        ...prev,
+        'portal_home_hero_section': {
+          ...prev['portal_home_hero_section'],
+          ...patch,
+        },
+      };
       updateHomeSetting(JSON.stringify(next));
       return next;
     });
   }, [setHomePageStyle, updateHomeSetting]);
+
+  const updateCardsSection = (patch) => {
+    setHomePageStyle((prev) => {
+      const next = {
+        ...prev,
+        'portal_home_cards_section': {
+          ...prev['portal_home_cards_section'],
+          ...patch,
+        },
+      };
+      updateHomeSetting(JSON.stringify(next));
+      return next;
+    });
+  };
 
   const onBackgroundImageUpload = useCallback((image, imageBase64) => {
     if (!image) return;
@@ -56,7 +79,7 @@ const PortalHomeEditPanel = ({ homePageStyle = {}, setHomePageStyle, updateHomeS
       toaster.danger(gettext('The image type must be PNG or JPG.'));
       return;
     }
-    updateHomePageStyle({ themeBackgroundImageURL: imageBase64, themeType: 'image' });
+    updateHomePageStyle({ theme_background_image_URL: imageBase64, theme_type: 'image' });
   }, [updateHomePageStyle]);
 
   const showBackgroundImageUpload = useCallback(() => {
@@ -64,7 +87,7 @@ const PortalHomeEditPanel = ({ homePageStyle = {}, setHomePageStyle, updateHomeS
   }, []);
 
   const clearBackgroundImage = useCallback(() => {
-    updateHomePageStyle({ themeBackgroundImageURL: '' });
+    updateHomePageStyle({ theme_background_image_URL: '' });
   }, [updateHomePageStyle]);
 
   return (
@@ -85,8 +108,8 @@ const PortalHomeEditPanel = ({ homePageStyle = {}, setHomePageStyle, updateHomeS
         <Input
           className="portal-home-edit-panel-input"
           type="text"
-          value={titleText}
-          onChange={(e) => updateHomePageStyle({ titleText: e.target.value })}
+          value={title_text}
+          onChange={(e) => updateHomePageStyle({ title_text: e.target.value })}
           placeholder={gettext('Enter title')}
         />
       </div>
@@ -94,9 +117,9 @@ const PortalHomeEditPanel = ({ homePageStyle = {}, setHomePageStyle, updateHomeS
       <div className="portal-home-edit-panel-section">
         <Label>{gettext('Title size')}</Label>
         <CustomizeSelect
-          value={titleSizeValue}
+          value={title_sizeValue}
           options={TITLE_SIZE_OPTIONS}
-          onChange={(value) => updateHomePageStyle({ titleSize: value })}
+          onChange={(value) => updateHomePageStyle({ title_size: value })}
           placeholder={gettext('Select size')}
         />
       </div>
@@ -106,8 +129,8 @@ const PortalHomeEditPanel = ({ homePageStyle = {}, setHomePageStyle, updateHomeS
         <Input
           className="portal-home-edit-panel-input"
           type="text"
-          value={descriptionText}
-          onChange={(e) => updateHomePageStyle({ descriptionText: e.target.value })}
+          value={description_text}
+          onChange={(e) => updateHomePageStyle({ description_text: e.target.value })}
           placeholder={gettext('Enter description')}
         />
       </div>
@@ -115,29 +138,29 @@ const PortalHomeEditPanel = ({ homePageStyle = {}, setHomePageStyle, updateHomeS
       <div className="portal-home-edit-panel-section">
         <Label>{gettext('Header background')}</Label>
         <Radio
-          isChecked={themeType === 'color'}
+          isChecked={theme_type === 'color'}
           label={gettext('Use solid color')}
-          name="themeType"
-          onCheckedChange={() => updateHomePageStyle({ themeType: 'color', themeBackgroundImageURL: '' })}
+          name="theme_type"
+          onCheckedChange={() => updateHomePageStyle({ theme_type: 'color', theme_background_image_URL: '' })}
         />
-        {themeType === 'color' &&
+        {theme_type === 'color' &&
           <div className="portal-home-edit-panel-section">
             <div className="portal-home-edit-panel-color-preview-wrap">
               <div
                 className="portal-home-edit-panel-color-preview"
-                style={{ backgroundColor }}
+                style={{ backgroundColor: background_color }}
                 onClick={() => setShowColorPicker(!showColorPicker)}
               />
-              <span className="portal-home-edit-panel-color-value">{backgroundColor}</span>
+              <span className="portal-home-edit-panel-color-value">{background_color}</span>
             </div>
             {showColorPicker && (
               <div className="portal-home-edit-panel-color-picker">
                 <SketchPicker
-                  color={backgroundColor}
+                  color={background_color}
                   presetColors={COLOR_PRESETS}
                   disableAlpha={true}
                   onChangeComplete={(color) => {
-                    updateHomePageStyle({ backgroundColor: color.hex });
+                    updateHomePageStyle({ background_color: color.hex });
                     setShowColorPicker(!showColorPicker);
                   }}
                 />
@@ -146,17 +169,17 @@ const PortalHomeEditPanel = ({ homePageStyle = {}, setHomePageStyle, updateHomeS
           </div>
         }
         <Radio
-          isChecked={themeType === 'image'}
+          isChecked={theme_type === 'image'}
           label={gettext('Use cover image')}
-          name="themeType"
-          onCheckedChange={() => updateHomePageStyle({ themeType: 'image' })}
+          name="theme_type"
+          onCheckedChange={() => updateHomePageStyle({ theme_type: 'image' })}
         />
-        {themeType === 'image' &&
+        {theme_type === 'image' &&
           <div className="portal-home-edit-panel-image-settings">
-            {themeBackgroundImageURL && (
+            {theme_background_image_URL && (
               <div
                 className="portal-home-edit-panel-image-preview"
-                style={{ backgroundImage: `url(${themeBackgroundImageURL})` }}
+                style={{ backgroundImage: `url(${theme_background_image_URL})` }}
                 role="img"
                 aria-label={gettext('Background image preview')}
               />
@@ -167,9 +190,9 @@ const PortalHomeEditPanel = ({ homePageStyle = {}, setHomePageStyle, updateHomeS
               ref={uploadBackgroundImageRef}
             />
             <Button color="primary" outline size="sm" onClick={showBackgroundImageUpload}>
-              {themeBackgroundImageURL ? gettext('Change image') : gettext('Upload custom image')}
+              {theme_background_image_URL ? gettext('Change image') : gettext('Upload custom image')}
             </Button>
-            {themeBackgroundImageURL && (
+            {theme_background_image_URL && (
               <Button color="link" className="portal-home-edit-panel-image-remove" onClick={clearBackgroundImage}>
                 {gettext('Remove image')}
               </Button>
@@ -186,7 +209,7 @@ const PortalHomeEditPanel = ({ homePageStyle = {}, setHomePageStyle, updateHomeS
         <CustomizeSelect
           value={cardLayoutValue}
           options={CARD_LAYOUT_OPTIONS}
-          onChange={(value) => updateHomePageStyle({ cardLayout: value })}
+          onChange={(value) => updateCardsSection({ card_layout: value })}
           placeholder={gettext('Select layout')}
           searchable={false}
         />

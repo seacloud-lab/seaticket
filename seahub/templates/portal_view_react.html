@@ -60,7 +60,7 @@
             isPreviewUser: {% if is_preview_user %}true{% else %}false{% endif %},
             portalName: '{{ portal.portal_name|escapejs }}',
             portalLogo: '{{ portal.portal_logo|escapejs }}',
-            portalHomeSetting: '{{ portal_home_setting_json|default:"{}"|escapejs }}',
+            portalHomeSettings: '{{ portal_home_settings_json|default:"{}"|escapejs }}',
             isPortalDomain: {% if is_portal_domain %}true{% else %}false{% endif %},
             portalBaseUrl: '{{ portal_base_url|escapejs }}',
         }

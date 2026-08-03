@@ -1386,9 +1386,9 @@ class PortalSettingsView(APIView):
         allow_anonymous = bool(portal_settings.get('allow_anonymous', False))
         enable_password_protection = bool(portal_settings.get('enable_password_protection', False))
         show_knowledge_base = bool(portal_settings.get('show_knowledge_base', False))
-        portal_home_setting = portal_settings.get('portal_home_setting', {})
-        if not isinstance(portal_home_setting, dict):
-            portal_home_setting = {}
+        portal_home_settings = portal_settings.get('portal_home_settings', {})
+        if not isinstance(portal_home_settings, dict):
+            portal_home_settings = {}
 
         chat_allowed_sources = portal_settings.get('chat_allowed_sources')
         if not isinstance(chat_allowed_sources, dict):
@@ -1410,7 +1410,7 @@ class PortalSettingsView(APIView):
             'show_knowledge_base': show_knowledge_base,
             'chat_allowed_sources': chat_allowed_sources,
             'daily_chat_credit_limit': daily_chat_credit_limit,
-            'portal_home_setting': portal_home_setting,
+            'portal_home_settings': portal_home_settings,
         })
 
     @require_org_context
@@ -1431,7 +1431,7 @@ class PortalSettingsView(APIView):
         password = request.data.get('password', '')
         portal_name = request.data.get('portal_name')
         portal_logo = request.data.get('portal_logo')
-        portal_home_setting = request.data.get('portal_home_setting')
+        portal_home_settings = request.data.get('portal_home_settings')
         chat_allowed_sources = request.data.get('chat_allowed_sources')
 
         bool_field_mapping = {
@@ -1462,17 +1462,17 @@ class PortalSettingsView(APIView):
             error_msg = 'chat_allowed_sources invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        if portal_home_setting is not None:
-            if not isinstance(portal_home_setting, str):
-                error_msg = 'portal_home_setting invalid.'
+        if portal_home_settings is not None:
+            if not isinstance(portal_home_settings, str):
+                error_msg = 'portal_home_settings invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
             try:
-                portal_home_setting = json.loads(portal_home_setting)
+                portal_home_settings = json.loads(portal_home_settings)
             except Exception:
-                error_msg = 'portal_home_setting invalid.'
+                error_msg = 'portal_home_settings invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-            if not isinstance(portal_home_setting, dict):
-                error_msg = 'portal_home_setting invalid.'
+            if not isinstance(portal_home_settings, dict):
+                error_msg = 'portal_home_settings invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         try:
@@ -1492,8 +1492,8 @@ class PortalSettingsView(APIView):
             portal_settings['portal_name'] = portal_name
         if portal_logo is not None:
             portal_settings['portal_logo'] = portal_logo
-        if portal_home_setting is not None:
-            portal_settings['portal_home_setting'] = portal_home_setting
+        if portal_home_settings is not None:
+            portal_settings['portal_home_settings'] = portal_home_settings
 
         if enable_password_protection is True:
             if password:

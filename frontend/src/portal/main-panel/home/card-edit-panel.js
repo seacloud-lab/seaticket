@@ -14,7 +14,8 @@ const DEFAULT_CARD = {
 };
 
 const PortalHomeCardEditPanel = ({ homePageStyle = {}, activeCard, setActiveCard, setHomePageStyle, onClose }) => {
-  const cards = Array.isArray(homePageStyle.cards) ? homePageStyle.cards : [];
+  const cardsSection = homePageStyle['portal_home_cards_section'] || {};
+  const cards = Array.isArray(cardsSection.cards) ? cardsSection.cards : [];
   const cardStyle = cards.find(card => card.id === activeCard) || DEFAULT_CARD;
 
   const {
@@ -38,7 +39,10 @@ const PortalHomeCardEditPanel = ({ homePageStyle = {}, activeCard, setActiveCard
 
     setHomePageStyle((prev) => ({
       ...prev,
-      cards: nextCards,
+      'portal_home_cards_section': {
+        ...prev['portal_home_cards_section'],
+        cards: nextCards,
+      },
     }));
 
     setActiveCard(activeCard);
@@ -48,7 +52,10 @@ const PortalHomeCardEditPanel = ({ homePageStyle = {}, activeCard, setActiveCard
     const nextCards = cards.filter(card => card.id !== cardId);
     setHomePageStyle((prev) => ({
       ...prev,
-      cards: nextCards,
+      'portal_home_cards_section': {
+        ...prev['portal_home_cards_section'],
+        cards: nextCards,
+      },
     }));
     setActiveCard('');
   };
