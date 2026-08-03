@@ -5,8 +5,12 @@ import { gettext } from '@/constants';
 import CustomizeSelect from '@/components/customize-select';
 import Radio from '@/components/radio';
 import { IconButton, toaster, UploadFile } from '@/components';
+import { portalAPI } from '@/portal/api';
+import { Utils } from '@/utils/utils';
 
 import './edit-panel.css';
+
+const { projectUuid } = window.app.pageOptions;
 
 const TITLE_SIZE_OPTIONS = [32, 40, 48, 56, 64, 72].map((size) => ({
   value: size,
@@ -31,6 +35,7 @@ const PortalHomeEditPanel = ({ homePageStyle = {}, setHomePageStyle, updateHomeS
   const { title_text = gettext('Hey 👋, how can we help?'), description_text = gettext('Chat with AI'), title_size = 48, background_color = '#f8f1e3', theme_type = 'color', theme_background_image_URL = '' } = heroSection;
   const { card_layout = 3 } = cardsSection;
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [isUploadingBackgroundImage, setIsUploadingBackgroundImage] = useState(false);
   const uploadBackgroundImageRef = useRef(null);
 
   const title_sizeValue = useMemo(() => {
@@ -69,7 +74,7 @@ const PortalHomeEditPanel = ({ homePageStyle = {}, setHomePageStyle, updateHomeS
     });
   };
 
-  const onBackgroundImageUpload = useCallback((image, imageBase64) => {
+  const onBackgroundImageUpload = useCallback((image) => {
     if (!image) return;
     if (image.size > MAX_BACKGROUND_IMAGE_SIZE) {
       toaster.danger(gettext('The image is too large. Allowed maximum size is 5MB.'));
@@ -79,8 +84,22 @@ const PortalHomeEditPanel = ({ homePageStyle = {}, setHomePageStyle, updateHomeS
       toaster.danger(gettext('The image type must be PNG or JPG.'));
       return;
     }
-    updateHomePageStyle({ theme_background_image_URL: imageBase64, theme_type: 'image' });
-  }, [updateHomePageStyle]);
+    setIsUploadingBackgroundImage(true);
+    portalAPI.uploadFile(projectUuid, image)
+      .then((res) => {
+        const imageURL = res.data?.file_url || res.data?.url;
+        if (!imageURL) {
+          throw new Error(gettext('Failed to get uploaded image URL'));
+        }
+        updateHomePageStyle({ theme_background_image_URL: imageURL, theme_type: 'image' });
+      })
+      .catch((error) => {
+        toaster.danger(Utils.getErrorMsg(error));
+      })
+      .finally(() => {
+        setIsUploadingBackgroundImage(false);
+      });
+  }, [projectUuid, updateHomePageStyle]);
 
   const showBackgroundImageUpload = useCallback(() => {
     uploadBackgroundImageRef.current?.onClick();
@@ -189,10 +208,12 @@ const PortalHomeEditPanel = ({ homePageStyle = {}, setHomePageStyle, updateHomeS
               onUpload={onBackgroundImageUpload}
               ref={uploadBackgroundImageRef}
             />
-            <Button color="primary" outline size="sm" onClick={showBackgroundImageUpload}>
-              {theme_background_image_URL ? gettext('Change image') : gettext('Upload custom image')}
+            <Button color="primary" outline size="sm" onClick={showBackgroundImageUpload} disabled={isUploadingBackgroundImage}>
+              {isUploadingBackgroundImage
+                ? gettext('Uploading...')
+                : (theme_background_image_URL ? gettext('Change image') : gettext('Upload custom image'))}
             </Button>
-            {theme_background_image_URL && (
+            {theme_background_image_URL && !isUploadingBackgroundImage && (
               <Button color="link" className="portal-home-edit-panel-image-remove" onClick={clearBackgroundImage}>
                 {gettext('Remove image')}
               </Button>
