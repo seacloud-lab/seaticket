@@ -99,7 +99,7 @@ const PortalHomeEditPanel = ({ homePageStyle = {}, setHomePageStyle, updateHomeS
       .finally(() => {
         setIsUploadingBackgroundImage(false);
       });
-  }, [projectUuid, updateHomePageStyle]);
+  }, [updateHomePageStyle]);
 
   const showBackgroundImageUpload = useCallback(() => {
     uploadBackgroundImageRef.current?.onClick();
