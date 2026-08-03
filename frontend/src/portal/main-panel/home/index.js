@@ -118,7 +118,7 @@ const PortalHome = ({ onHomeChatSend }) => {
                 key="portal-home-card-add"
                 onClick={addCard}
               >
-                <Icon symbol="narrow" className="portal-home-card-add-icon" />
+                <Icon symbol="plus" className="portal-home-card-add-icon" />
                 <span className="portal-home-card-add-text">{gettext('Add card')}</span>
               </article>
             )}
