@@ -1,5 +1,4 @@
-import time
-
+from django.utils import timezone
 from rest_framework import status
 
 from seahub.api2.utils import api_error
@@ -40,7 +39,7 @@ class EmailOAuthUtils(CommonOAuthUtils):
 
     @classmethod
     def _remove_expired_transactions(cls, transactions):
-        expires_before = time.time() - EMAIL_OAUTH_SESSION_TIMEOUT
+        expires_before = timezone.now().timestamp() - EMAIL_OAUTH_SESSION_TIMEOUT
         return {
             state: transaction for state, transaction in transactions.items()
             if isinstance(transaction, dict) and transaction.get('created_at', 0) >= expires_before
@@ -48,7 +47,10 @@ class EmailOAuthUtils(CommonOAuthUtils):
 
     @classmethod
     def get_oauth_session(cls, request, state):
-        transactions = cls._remove_expired_transactions(cls._get_oauth_transactions(request))
+        stored_transactions = cls._get_oauth_transactions(request)
+        transactions = cls._remove_expired_transactions(stored_transactions)
+        if transactions != stored_transactions:
+            cls._set_oauth_transactions(request, transactions)
         return transactions.get(state)
 
     @classmethod

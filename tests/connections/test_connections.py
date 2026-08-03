@@ -23,6 +23,7 @@ from seahub.project.connections import (
     ProjectEmailOAuthQueryView,
     ProjectEmailOAuthCallbackView,
 )
+from seahub.project.oauth_utils import EmailOAuthUtils
 from seahub.project.utils import get_email_oauth_callback_url
 from seahub.project.agent import AgentActionConfirmView
 from seahub.project.models import ProjectConnectionOauth
@@ -33,6 +34,28 @@ from seahub.settings import GITHUB_WEBHOOK_SECRET
 
 class DummySession(dict):
     modified = False
+
+
+class TestEmailOAuthUtils:
+
+    def test_get_oauth_session_removes_expired_transactions(self):
+        now = datetime.datetime(2026, 8, 3, tzinfo=datetime.timezone.utc)
+        current_timestamp = now.timestamp()
+        request = SimpleNamespace(session=DummySession({
+            'oauth_email_connection': {
+                'expired-state': {'created_at': current_timestamp - 601},
+                'active-state': {'created_at': current_timestamp},
+            }
+        }))
+
+        with patch('seahub.project.oauth_utils.timezone.now', return_value=now):
+            oauth_data = EmailOAuthUtils.get_oauth_session(request, 'active-state')
+
+        assert oauth_data == {'created_at': current_timestamp}
+        assert request.session['oauth_email_connection'] == {
+            'active-state': {'created_at': current_timestamp},
+        }
+        assert request.session.modified is True
 
 
 

@@ -64,6 +64,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const { updateUrlParams } = useConnections();
   const prevStepIndexRef = useRef(stepIndex);
   const emailOAuthIntervalRef = useRef(null);
+  const emailOauthWindowRef = useRef(null);
   const oauthWindowRef = useRef(null);
   const pollingIntervalRef = useRef(null);
   // eslint-disable-next-line no-unused-vars
@@ -203,6 +204,9 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     return () => {
       stopEmailOAuthPolling();
       stopConfluenceOAuthPolling();
+      if (emailOauthWindowRef.current && !emailOauthWindowRef.current.closed) {
+        emailOauthWindowRef.current.close();
+      }
       if (confluenceOauthWindowRef.current && !confluenceOauthWindowRef.current.closed) {
         confluenceOauthWindowRef.current.close();
       }
@@ -303,22 +307,44 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
           return;
         }
 
-        window.open(authorizationUrl, '_blank', 'width=600,height=700');
+        emailOauthWindowRef.current = window.open(authorizationUrl, '_blank', 'width=600,height=700');
+        if (!emailOauthWindowRef.current) {
+          setSubmitting(false);
+          toaster.danger(gettext('Failed to open authorization window. Please allow pop-ups and try again.'));
+          return;
+        }
+
         setWaitingEmailOAuth(true);
         stopEmailOAuthPolling();
         emailOAuthIntervalRef.current = window.setInterval(() => {
           connectionsAPI.queryEmailOAuth(projectUuid, oauthState).then((progressRes) => {
-            if (progressRes.data?.status !== 'success') return;
+            const oauthStatus = progressRes.data?.status;
+            if (oauthStatus === 'in-progress') {
+              if (!emailOauthWindowRef.current.closed) return;
+              stopEmailOAuthPolling();
+              setWaitingEmailOAuth(false);
+              setSubmitting(false);
+              toaster.danger(gettext('OAuth authorization was cancelled.'));
+              return;
+            }
+
             stopEmailOAuthPolling();
             setWaitingEmailOAuth(false);
             setSubmitting(false);
+            if (oauthStatus !== 'success' || !progressRes.data?.record) {
+              toaster.danger(progressRes.data?.error_msg || gettext('OAuth authorization failed.'));
+              return;
+            }
+
             const connection = new Connection(progressRes.data.record);
             onSubmit({ type, name: name.trim(), config: _config }, null, false, null, connection);
           }).catch((error) => {
             stopEmailOAuthPolling();
             setWaitingEmailOAuth(false);
             setSubmitting(false);
-            toaster.danger(Utils.getErrorMsg(error));
+            toaster.danger(emailOauthWindowRef.current?.closed
+              ? gettext('OAuth authorization was cancelled.')
+              : Utils.getErrorMsg(error));
           });
         }, 2000);
       }).catch((error) => {
