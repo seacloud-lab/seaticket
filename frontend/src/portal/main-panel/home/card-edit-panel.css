@@ -1,0 +1,116 @@
+.portal-home-edit-panel-card {
+  flex: 0 0 340px;
+  width: 340px;
+  min-width: 340px;
+  background: rgba(255, 255, 255, 0.68);
+  border-left: 1px solid #EEEEEE;
+  height: 100%;
+  padding: 8px 16px;
+  overflow-y: auto;
+}
+
+.portal-home-edit-panel-card .portal-home-edit-panel-section + .portal-home-edit-panel-section {
+  margin-top: 20px;
+}
+
+.portal-home-edit-panel-card .portal-home-edit-panel-header {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #EEEEEE;
+}
+
+.portal-home-edit-panel-card .portal-home-edit-panel-header-left {
+  width: 20px;
+  flex: 0 0 20px;
+}
+
+.portal-home-edit-panel-card .portal-home-edit-panel-title {
+  flex: 1 1 auto;
+  text-align: center;
+  color: #212529;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.portal-home-edit-panel-card .portal-home-edit-panel-input {
+  width: 100%;
+  height: 40px;
+  border: 1px solid var(--bs-border-color);
+  background: #ffffff;
+  color: #212529;
+  padding: 0 12px;
+  outline: none;
+}
+
+.portal-home-edit-panel-card textarea.portal-home-edit-panel-input {
+  padding: 6px 12px;
+}
+
+.portal-home-edit-panel-card .portal-home-edit-panel-input:focus {
+  background-color: #fff;
+  border-color: #3e84f7;
+  outline: 0;
+}
+
+.portal-home-card-icon-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 11px;
+  padding: 8px;
+  max-width: 307px;
+}
+
+.portal-home-card-icon-selector {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.portal-home-card-icon-selector .project-icon-style {
+  color: #999;
+  font-size: 20px;
+  width: 20px;
+}
+
+.portal-home-card-icon-popover .popover {
+  max-width: 320px;
+}
+
+.portal-home-card-icon-item {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.portal-home-card-icon-item:hover {
+  background-color: #f5f5f5;
+}
+
+.portal-home-card-icon-input {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.portal-home-card-icon-item .project-icon-style {
+  color: #999;
+  font-size: 20px;
+}
+
+.portal-home-card-icon-item .icon-color-white {
+  color: #ffffff;
+}
+
+.portal-home-edit-panel-delete-wrap {
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-end;
+}

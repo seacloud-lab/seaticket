@@ -1,0 +1,226 @@
+.portal-home-page {
+  position: relative;
+  min-height: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.portal-home-page.is-edit {
+  padding: 0;
+}
+
+.portal-home-page.is-edit .portal-home-layout {
+  height: 100%;
+}
+
+.portal-home-layout {
+  display: flex;
+  align-items: stretch;
+  min-height: 0;
+  height: 100%;
+  background-color: #F7F7F5;
+}
+
+.portal-home-edit-btn-wrap {
+  position: absolute;
+  right: 32px;
+  top: 24px;
+  z-index: 2;
+}
+
+.portal-home-edit-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.portal-home-main {
+  flex: 1 1 auto;
+  width: calc(100% - 340px);
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  margin: 16px;
+  margin-bottom: 0;
+  border: 1px solid #fff;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.portal-home-page:not(.is-edit) .portal-home-main {
+  width: 100%;
+}
+
+.portal-home-hero {
+  height: 300px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.portal-home-hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 100%;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.portal-home-title {
+  margin: 0;
+  color: #212529;
+  font-size: 48px;
+  font-weight: 600;
+}
+
+.portal-home-cards {
+  width: auto;
+  margin: 32px 60px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.portal-home-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, 0.02);
+  border: 1px solid #EEEEEE;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.portal-home-card.active {
+  border-color: rgba(240, 160, 90, 0.75);
+  box-shadow: 0 14px 34px rgba(240, 160, 90, 0.14);
+  transform: translateY(-1px);
+}
+
+.portal-home-card:hover {
+  box-shadow: 0px 4px 16px 0px rgba(0, 0, 0, 0.05);
+}
+
+.portal-home-card-add {
+  justify-content: center;
+  min-height: 180px;
+  background: rgba(255, 255, 255, 0.72);
+  gap: 8px;
+  border: 1.5px dashed rgba(0, 40, 100, 0.12);
+}
+
+.portal-home-card-add:hover {
+  border: 1.5px dashed rgba(0, 40, 100, 0.12);
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.portal-home-card-add .portal-home-card-add-icon {
+  width: 32px;
+  height: 32px;
+  fill: #999;
+}
+
+.portal-home-card-add .portal-home-card-add-text {
+  color: #666;
+  font-size: 14px;
+}
+
+.portal-home-card-icon {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  border-radius: 12px;
+  background: #fff3e3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.portal-home-card-icon .project-icon-style {
+  color: #FF8000;
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+.portal-home-card-body {
+  min-width: 0;
+  width: 100%;
+}
+
+.portal-home-card-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.portal-home-card-description {
+  margin-top: 12px;
+  font-size: 14px;
+  color: #666666;
+  line-height: 1.6;
+}
+
+@media (max-width: 1100px) {
+  .portal-home-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .portal-home-layout {
+    flex-direction: column;
+  }
+
+  .portal-home-edit-btn-wrap {
+    right: 16px;
+    top: 16px;
+  }
+
+  .portal-home-edit-panel,
+  .portal-home-main {
+    width: 100%;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .portal-home-main {
+    margin: 8px;
+    width: calc(100% - 16px) !important;
+  }
+
+  .portal-home-edit-panel-card {
+    width: 100%;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .portal-home-hero {
+    padding: 44px 16px 34px;
+    border-radius: 22px;
+  }
+
+  .portal-home-cards {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .portal-home-page:not(.is-edit) .portal-home-cards {
+    width: 100%;
+    margin: 0px;
+  }
+
+  .portal-home-card {
+    padding: 18px;
+  }
+}

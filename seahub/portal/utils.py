@@ -202,6 +202,7 @@ def get_portal_settings(project):
         'streaming_response': streaming_response,
         'portal_name': portal_settings.get('portal_name', ''),
         'portal_logo': portal_settings.get('portal_logo', ''),
+        'portal_home_settings': portal_settings.get('portal_home_settings', {}),
     }
 
 

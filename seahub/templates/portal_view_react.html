@@ -71,6 +71,7 @@
             })(),
             portalName: '{{ portal.portal_name|escapejs }}',
             portalLogo: '{{ portal.portal_logo|escapejs }}',
+            portalHomeSettings: '{{ portal_home_settings_json|default:"{}"|escapejs }}',
             isPortalDomain: {% if is_portal_domain %}true{% else %}false{% endif %},
             portalBaseUrl: '{{ portal_base_url|escapejs }}',
         }

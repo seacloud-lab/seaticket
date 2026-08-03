@@ -26,12 +26,6 @@ const {
   isAnonymous, workspaceID, isExternalUser, isPreviewUser, portalName, portalLogo,
 } = window.app.pageOptions;
 
-const getDefaultPage = (kbEnabled, anonymous) => {
-  if (anonymous) return PORTAL_PAGE.CHAT;
-  if (kbEnabled) return PORTAL_PAGE.KNOWLEDGE_BASE;
-  return PORTAL_PAGE.SUBMIT_ISSUE;
-};
-
 const initSettings = {
   name: portalName || gettext('Support portal'),
   logo: portalLogo || `${mediaUrl}img/portal-logo.png`,
@@ -39,7 +33,7 @@ const initSettings = {
 
 const Portal = () => {
   const [isLoading, setLoading] = useState(true);
-  const [activePage, setActivePage] = useState(getDefaultPage(showKBInPortal, isAnonymous));
+  const [activePage, setActivePage] = useState(PORTAL_PAGE.HOME);
   const [enableKB, setEnableKB] = useState(showKBInPortal === true);
   const APIRef = useRef(portalAPI);
   const [needPasswordState] = useState(!!needPassword);
@@ -59,6 +53,13 @@ const Portal = () => {
     history.replaceState(null, null, buildPortalPath(page));
   }, [enableKB]);
 
+  const onHomeChatSend = useCallback((query) => {
+    setActivePage(PORTAL_PAGE.CHAT);
+    const chatPath = buildPortalPath(PORTAL_PAGE.CHAT);
+    const searchParams = new URLSearchParams({ query });
+    history.replaceState(null, null, `${chatPath}?${searchParams.toString()}`);
+  }, []);
+
   useEffect(() => {
     const pathSegments = getPortalPathSegments();
     if (pathSegments.length > 0) {
@@ -66,13 +67,17 @@ const Portal = () => {
       if (Object.values(PORTAL_PAGE).includes(pageKey)) {
         const isRestrictedPage = pageKey === PORTAL_PAGE.SUBMIT_ISSUE || pageKey === PORTAL_PAGE.MY_ISSUES;
         if (isAnonymous && isRestrictedPage) {
-          setActivePage(getDefaultPage(showKBInPortal, isAnonymous));
+          setActivePage(PORTAL_PAGE.HOME);
         } else if (!enableKB && pageKey === PORTAL_PAGE.KNOWLEDGE_BASE) {
-          setActivePage(getDefaultPage(showKBInPortal, isAnonymous));
+          setActivePage(PORTAL_PAGE.HOME);
         } else {
           setActivePage(pageKey);
         }
+      } else {
+        setActivePage(PORTAL_PAGE.HOME);
       }
+    } else {
+      history.replaceState(null, null, buildPortalPath(PORTAL_PAGE.HOME));
     }
 
     if (!isEditMode && (isAnonymous || isExternalUser || isPreviewUser)) {
@@ -229,6 +234,7 @@ const Portal = () => {
                 workspaceID={workspaceID}
                 isAnonymous={isAnonymous}
                 onPageChange={onPageChange}
+                onHomeChatSend={onHomeChatSend}
               />
             </div>
           </DataProvider>

@@ -95,10 +95,15 @@ const Ask = ({ title = gettext('Chat') }) => {
   }, []);
 
   const resetURL = useCallback((pageSlugId) => {
+    const chatPath = pageSlugId === ASK_PAGE_SLUG_ID.NEW
+      ? buildPortalPath('chat')
+      : buildPortalPath('chat', pageSlugId);
+    const queryString = pageSlugId === ASK_PAGE_SLUG_ID.NEW ? window.location.search : '';
+
     history.replaceState(
       null,
       null,
-      pageSlugId === ASK_PAGE_SLUG_ID.NEW ? buildPortalPath('chat') : buildPortalPath('chat', pageSlugId),
+      `${chatPath}${queryString}`,
     );
   }, []);
 

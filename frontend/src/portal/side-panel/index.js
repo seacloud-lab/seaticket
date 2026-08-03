@@ -3,7 +3,7 @@ import { Button } from 'reactstrap';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
 import { CustomizeTabs, IconButton } from '@/components';
-import { PORTAL_PAGE, TICKETS_TAB, BASE_PRIMARY_TABS } from '../constants';
+import { PORTAL_PAGE, TICKETS_TAB, getPrimaryTabs } from '../constants';
 import Account from '@/components/account';
 import ExternalUserAccount from '@/components/account/external-user-account';
 import { usePortalSettings } from '../hooks';
@@ -11,18 +11,13 @@ import { isMobile } from '@/utils/utils';
 import { getPortalLoginPath } from '../path-utils';
 import LanguageSelector from './language-selector';
 
+const { isExternalUser, isPortalDomain } = window.app.pageOptions;
+
 const SidePanel = ({ isEditMode, activePage, onPageChange, enableKB, isAnonymous }) => {
   const { logo, name } = usePortalSettings();
   const [isShowMobileMenu, setIsShowMobileMenu] = useState(false);
   const sideRef = useRef(null);
-
-  const primaryTabs = isAnonymous
-    ? (enableKB
-      ? [{ value: PORTAL_PAGE.CHAT, label: gettext('Chat') }, { value: PORTAL_PAGE.KNOWLEDGE_BASE, label: gettext('Knowledge base') }]
-      : [{ value: PORTAL_PAGE.CHAT, label: gettext('Chat') }])
-    : (enableKB
-      ? [...BASE_PRIMARY_TABS, { value: PORTAL_PAGE.KNOWLEDGE_BASE, label: gettext('Knowledge base') }]
-      : BASE_PRIMARY_TABS);
+  const primaryTabs = getPrimaryTabs({ isAnonymous, enableKB });
 
   const isIssuesPage = activePage === PORTAL_PAGE.SUBMIT_ISSUE || activePage === PORTAL_PAGE.MY_ISSUES;
   const activePrimaryTab = isIssuesPage ? TICKETS_TAB : activePage;
@@ -54,8 +49,6 @@ const SidePanel = ({ isEditMode, activePage, onPageChange, enableKB, isAnonymous
       document.removeEventListener('click', handleClickOutside);
     };
   }, []);
-
-  const { isExternalUser, isPortalDomain } = window.app.pageOptions;
 
   return (
     <>
