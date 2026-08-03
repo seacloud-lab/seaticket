@@ -54,7 +54,6 @@ const Settings = ({
             validationMessage={gettext('Ticket processing rules cannot contain tag-like content such as <system-reminder>.')}
           />
           <AgentAutoConfirmSettings
-            className="mb-4"
             value={settings?.agent?.auto_confirm || {}}
             onChange={(value, callback) => modifySettings({
               agent: Object.assign({}, settings.agent, { auto_confirm: value }),
