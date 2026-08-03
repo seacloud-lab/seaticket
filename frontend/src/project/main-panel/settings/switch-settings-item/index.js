@@ -1,5 +1,4 @@
 import React, { useCallback, useState } from 'react';
-import classnames from 'classnames';
 import { Switch } from '@/components';
 
 import './index.css';
@@ -8,7 +7,6 @@ const SwitchSettingsItem = ({
   title,
   tip,
   placeholder,
-  className,
   value: oldValue = true,
   onChange,
 }) => {
@@ -21,8 +19,8 @@ const SwitchSettingsItem = ({
   }, [value, onChange]);
 
   return (
-    <div className={classnames('switch-settings-option w-100 pl-4 pr-4', className)}>
-      <div className="switch-settings-option-header text-truncate">{title}</div>
+    <div className='switch-settings-option w-100 pl-4 pr-4 mb-4'>
+      <div className="settings-item-header text-truncate">{title}</div>
       <div className="switch-settings-option-body">
         <Switch
           checked={value}

@@ -7,6 +7,8 @@ import PromptSettings from './prompt-settings';
 import GitHubIssueTypeMappingSettings from './github-issue-type-mapping';
 import AgentAutoConfirmSettings from './agent-auto-confirm-settings';
 
+import './index.css';
+
 const Settings = ({
   title,
   settings,
@@ -21,13 +23,11 @@ const Settings = ({
       <PromptSettings
         value={settings.prompt}
         onChange={(value, callback) => modifySettings({ prompt: value }, callback)}
-        className="mb-4"
       />
       <SwitchSettingsItem
         title={gettext('Agent')}
         placeholder={gettext('Enable Agent')}
         tip={gettext('Enable agent to automatically analyze and process tickets, GitHub issues, etc.')}
-        className="mb-4"
         value={settings.agent?.enabled}
         onChange={(value, callback) => modifySettings({ agent: Object.assign({}, settings.agent, { enabled: value }) }, callback)}
       />
@@ -45,7 +45,7 @@ const Settings = ({
             onChange={(value, callback) => modifySettings({
               agent: Object.assign({}, settings.agent, { ticket_rules: value }),
             }, callback)}
-            className='mb-4 ticket-agent-rules-settings'
+            className='ticket-agent-rules-settings'
             title={gettext('Ticket processing rules')}
             tip={gettext('Define your own additional rules for ticket processing in natural-language.')}
             dialogTitle={gettext('Edit Ticket Processing Rules')}
@@ -65,13 +65,10 @@ const Settings = ({
         title={gettext('Support portal')}
         placeholder={gettext('Support portal')}
         tip={gettext('Enable support portal')}
-        className="mb-4"
         value={settings.portal?.enable_portal || false}
         onChange={(value, callback) => modifySettings({ portal: Object.assign({}, settings.portal, { 'enable_portal': value }) }, callback)}
       />
       <LanguageSettings
-        className="mb-4"
-        title={gettext('Language for AI summary')}
         value={settings.lang || 'en'}
         onChange={(value, callback) => modifySettings({ lang: value }, callback)}
       />
