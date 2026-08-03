@@ -152,8 +152,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
 
   useEffect(() => {
     const handleDiscordOAuthMessage = (event) => {
-      if (event.origin !== window.location.origin) return
-      console.log(event)
+      if (event.origin !== window.location.origin) return;
       const data = event.data || {};
       if (data.type !== 'discord-oauth-success' || !data.guild_id) return;
 
@@ -531,7 +530,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     const oauthUrl = `${server}/discord/oauth/?project_uuid=${projectUuid}&next=${encodeURIComponent(next)}`;
     oauthWindowRef.current = window.open(oauthUrl, 'discord-oauth', 'width=800,height=700');
 
-  }, [projectUuid]);
+  }, []);
 
   useEffect(() => {
     if (!isLinear) return;

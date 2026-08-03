@@ -19,6 +19,7 @@ from seahub.project.utils import check_project_permission, check_project_admin_p
     query_items, check_project_admin_permission
 from seahub.project.constants import ITEMS_SEARCH_QUERY_TYPES_SUPPORT
 from seahub.project.github_issues_api import GitHubAPI
+from seahub.project.discord_api import DiscordAPI
 
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
@@ -312,7 +313,6 @@ class ProjectDiscordChannels(APIView):
         if not guild_id:
             return api_error(status.HTTP_400_BAD_REQUEST, 'guild_id is required.')
 
-        from seahub.project.discord_api import DiscordAPI
         discord_api = DiscordAPI(settings.DISCORD_BOT_TOKEN)
 
         try:

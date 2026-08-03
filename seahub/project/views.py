@@ -433,6 +433,9 @@ def discord_oauth_callback(request):
 
     if not code or not state or state != session_state:
         return render_error(request, _('Invalid Discord OAuth state.'))
+    
+    if not guild_id:
+        return render_error(request, _('Discord server information was not returned.'))
 
     if not project_uuid:
         return render_error(request, _('Please install through the address provided by sea-ticket.'))
@@ -471,16 +474,14 @@ def discord_oauth_callback(request):
     token_json = resp.json()
 
     # Try to get guild from the token response (bot scope may include guild)
+    guild_name = ''
     guild = token_json.get('guild')
-    guild_id = guild.get('id', '')
-    guild_name = guild.get('name', '')
+    if guild:
+        guild_name = guild.get('name', '')
 
     request.session.pop('discord_oauth_state', None)
     request.session.pop('discord_oauth_project_uuid', None)
     request.session.pop('discord_oauth_return_to', None)
-
-    if not guild_id:
-        return render_error(request, _('Discord server information was not returned.'))
 
     message = json.dumps({
         'type': 'discord-oauth-success',
