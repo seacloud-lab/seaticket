@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react';
-import classnames from 'classnames';
 import { Switch } from '@/components';
 import { gettext } from '@/constants';
 
@@ -22,7 +21,7 @@ const AUTO_CONFIRM_ITEMS = [
   },
 ];
 
-const AgentAutoConfirmSettings = ({ className, value = {}, onChange }) => {
+const AgentAutoConfirmSettings = ({ value = {}, onChange }) => {
   const autoConfirm = useMemo(() => {
     return AUTO_CONFIRM_ITEMS.reduce((acc, item) => {
       const configured = value[item.key];
@@ -39,7 +38,7 @@ const AgentAutoConfirmSettings = ({ className, value = {}, onChange }) => {
   };
 
   return (
-    <div className={classnames('agent-auto-confirm-settings w-100 pl-4 pr-4 pt-2', className)}>
+    <div className='w-100 pl-4 pr-4 pt-2 mb-4'>
       <div className="agent-auto-confirm-header text-truncate mb-2">
         {gettext('Auto-approve actions')}
       </div>
