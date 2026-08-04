@@ -700,6 +700,7 @@ export const CONNECTION_PREDEFINED_COLUMN_NAME = {
   URL: 'url',
   PATH: 'path',
   UNREAD: 'unread',
+  IS_ANSWERED: 'is_answered',
   OUTDATED: 'outdated',
   SLUG: 'slug',
   TOPIC_ID: 'topic_id',
@@ -931,6 +932,14 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       frozen: 2,
       width: 33,
     },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.IS_ANSWERED]: {
+      display_name: gettext('Replied'),
+      type: CellType.REPLY_STATUS,
+      editable: false,
+      is_width_fixed: true,
+      frozen: 3,
+      width: 33,
+    },
     [CONNECTION_PREDEFINED_COLUMN_NAME.TAGS]: {
       display_name: gettext('Tags'),
       type: CellType.TAGS,
@@ -1117,13 +1126,15 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
 
 export const CONNECTION_COLUMNS_WIDTH_CONFIG = {
   'unread': 33,
+  'is_answered': 33,
   'title': 400,
 };
 
 export const CONNECTION_COLUMNS_ORDER_CONFIG = {
   [CONNECTION_TYPE.EMAIL]: {
     'unread': 1,
-    'title': 2,
+    'is_answered': 2,
+    'title': 3,
   },
 };
 

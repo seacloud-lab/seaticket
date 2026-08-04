@@ -19,6 +19,7 @@ const CellType = {
   TYPE: 'type',
   PRIORITY: 'priority',
   UNREAD_STATUS: 'unread-status',
+  REPLY_STATUS: 'reply-status',
   LINK: 'link',
 };
 

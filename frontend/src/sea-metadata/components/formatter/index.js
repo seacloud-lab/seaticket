@@ -17,6 +17,7 @@ import TagFormatter from '../cell-formatter/tag';
 import TypeFormatter from '../cell-formatter/type';
 import PriorityFormatter from '../cell-formatter/priority';
 import UnreadStatusFormatter from '../cell-formatter/unread-status';
+import ReplyStatusFormatter from '../cell-formatter/reply-status';
 import LinkFormat from '../cell-formatter/link';
 import { CellType } from '../../constants';
 
@@ -122,6 +123,9 @@ const Formatter = ({ column, value, isSample, queryUserAPI, emptyTip, onClick, r
     }
     case CellType.UNREAD_STATUS: {
       return (<UnreadStatusFormatter value={value} className={className} />);
+    }
+    case CellType.REPLY_STATUS: {
+      return (<ReplyStatusFormatter value={value} className={className} />);
     }
     case CellType.RATE: {
       return (

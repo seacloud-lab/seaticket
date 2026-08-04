@@ -63,6 +63,17 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
       _pk: payload._pk,
     };
     setLocalEmailDetails(prev => [...prev, nextDetail]);
+
+    // Mark the replied-to email as answered for immediate visual feedback
+    const replyToPk = payload.reply_to_pk;
+    if (replyToPk && details) {
+      setDetails(prev => {
+        if (!Array.isArray(prev)) return prev;
+        return prev.map(item =>
+          item._pk === replyToPk ? { ...item, answered: true } : item
+        );
+      });
+    }
   }, [details]);
 
   const handleReplyDiscourseSuccess = useCallback((payload) => {
