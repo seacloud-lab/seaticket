@@ -24,11 +24,11 @@ export const getSafeCardLink = (link) => {
   }
 };
 
-const CARDS = [
+const DEFAULT_CARDS = [
   {
     icon: 'icon-worksheet',
     title: 'Team Collaboration',
-    description: 'Work together with all your team members to solve issues faster and more effectively',
+    description: 'Work together with all your team members to solve issues faster and more effectively.',
   },
   {
     icon: 'icon-task-management',
@@ -40,28 +40,7 @@ const CARDS = [
     title: 'Smart Ticket Recording',
     description: 'AI automatically creates structured tickets from forum threads and emails, saving you hours of manual work.',
   },
-  {
-    icon: 'icon-design-assignment',
-    title: 'Chat',
-    description: 'Work together with all your team members to solve issues faster and more effectively',
-  },
-  {
-    icon: 'icon-video-production',
-    title: 'Sync Multiple Sources',
-    description: 'Let AI analyze and resolve issues automatically, providing intelligent suggestions and solutions.',
-  },
-  {
-    icon: 'icon-market-analysis',
-    title: 'Data linking',
-    description: 'AI automatically creates structured tickets from forum threads and emails, saving you hours of manual work.',
-  },
 ];
-
-const CARDS_WITH_ID = CARDS.map(card => ({
-  ...card,
-  id: slugid.nice(4),
-  link: '',
-}));
 
 const DEFAULT_HOME_PAGE_STYLE = {
   'portal_home_hero_section': {
@@ -74,7 +53,11 @@ const DEFAULT_HOME_PAGE_STYLE = {
   },
   'portal_home_cards_section': {
     card_layout: 3,
-    cards: CARDS_WITH_ID,
+    cards: DEFAULT_CARDS.map(card => ({
+      ...card,
+      id: slugid.nice(4),
+      link: '',
+    })),
   },
 };
 
