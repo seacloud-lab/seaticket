@@ -715,8 +715,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
                     </span>
                   )}
                   <Button
-                    color={'primary'}
-                    className="ml-4"
+                    color='primary'
                     disabled={isSubmitting}
                     onClick={handleConnectDiscord}
                   >
