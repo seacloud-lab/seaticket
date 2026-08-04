@@ -700,7 +700,31 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
               </Label>
               <Input value={name} onChange={onNameChange} disabled={isSubmitting} />
             </FormGroup>
-            {isOAuthEmail ? basicCustomColumns.slice(0, 1).map(renderConnectionField) : basicCustomColumns.map(renderConnectionField)}
+            {isOAuthEmail ? basicCustomColumns.slice(0, 1).map(renderConnectionField) : (
+              isDiscord
+                ? basicCustomColumns.filter(column => column.key !== 'channel_id').map(renderConnectionField)
+                : basicCustomColumns.map(renderConnectionField)
+            )}
+            {isDiscord && (
+              <FormGroup>
+                <Label>{gettext('Authorization')}</Label>
+                <div className="seaqa-project-discord-oauth">
+                  {config.guild_id && (
+                    <span className="oauth-status-text mr-3">
+                      {config.guild_name || config.guild_id}
+                    </span>
+                  )}
+                  <Button
+                    color='primary'
+                    disabled={isSubmitting}
+                    onClick={handleConnectDiscord}
+                  >
+                    {config.guild_id ? gettext('Reinstall Discord') : gettext('Install Discord Bot')}
+                  </Button>
+                </div>
+              </FormGroup>
+            )}
+            {isDiscord && basicCustomColumns.filter(column => column.key === 'channel_id').map(renderConnectionField)}
             {isOAuthEmail && (
               <FormGroup>
                 <Label>{gettext('OAuth callback URL')}</Label>
@@ -769,26 +793,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
                     {isLinearOauthConnected ? gettext('Reconnect Linear') : gettext('Connect Linear')}
                   </Button>
                   {linearOauthError && (<div className="text-danger mt-2">{linearOauthError}</div>)}
-                </div>
-              </FormGroup>
-            )}
-            {isDiscord && (
-              <FormGroup>
-                <Label>{gettext('Authorization')}</Label>
-                <div className="seaqa-project-discord-oauth">
-                  {config.guild_id && (
-                    <span className="oauth-status-text mr-3">
-                      {config.guild_name || config.guild_id}
-                    </span>
-                  )}
-                  <Button
-                    color={'primary'}
-                    className="ml-4"
-                    disabled={isSubmitting}
-                    onClick={handleConnectDiscord}
-                  >
-                    {config.guild_id ? gettext('Reconnect Discord') : gettext('Connect Discord')}
-                  </Button>
                 </div>
               </FormGroup>
             )}
