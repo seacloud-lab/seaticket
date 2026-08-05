@@ -53,7 +53,7 @@
   function showMsg(el, text, isError) {
     if (!el) return;
     el.textContent = text || '';
-    el.style.color = isError ? '#ff0000' : '#666';
+    el.style.color = isError ? 'var(--bs-text-danger)' : 'var(--bs-icon-color)';
   }
 
   function getErrorMessage(error, fallback) {

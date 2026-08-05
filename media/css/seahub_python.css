@@ -865,7 +865,7 @@ input.short-input {
   margin-top: .25rem;
   font-size: 12px;
   line-height: 20px;
-  color: #ff0000;
+  color: var(--bs-text-danger);
 }
 
 .password-reset-panel-wrapper .login-form-wrapper .btn-block {
@@ -942,7 +942,7 @@ input.short-input {
   margin-top: -8px;
   font-size: 12px;
   line-height: 20px;
-  color: #ff0000;
+  color: var(--bs-text-danger);
 }
 
 .org-register-panel-wrapper .login-form-wrapper > ul:last-of-type li {
@@ -1023,7 +1023,7 @@ input.short-input {
   margin-top: -8px;
   font-size: 12px;
   line-height: 20px;
-  color: #ff0000;
+  color: var(--bs-text-danger);
 }
 
 .individual-register-panel-wrapper .login-form-wrapper .btn-block {
@@ -1098,7 +1098,7 @@ input.short-input {
   margin: 0px;
   font-size: 12px;
   line-height: 20px;
-  color: #ff0000;
+  color: var(--bs-text-danger);
 }
 
 /* login-panel, multi-saml-sso-panel, --login-form-pass-member style */
