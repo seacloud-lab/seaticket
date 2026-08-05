@@ -35,7 +35,7 @@ from seahub.project.agent_action_executor import (
     AUTO_EXECUTION_USER,
     MappingRequiredError,
 )
-from seahub.project.constants import ConnectionType
+from seahub.project.constants import ConnectionType, ExtraSourceType
 
 from seahub.seadb_models.models import SchemaTables
 from rest_framework.permissions import AllowAny
@@ -235,6 +235,17 @@ def _build_item_action(action):
         'source_title': action.get('source_title', ''),
     }
 
+
+def _get_run_ids(rows):
+    run_ids = {
+        int(row['run_id']) for row in rows
+        if row.get('run_id') is not None
+    }
+    if not run_ids:
+        raise ValueError('Item not found.')
+    return sorted(run_ids)
+
+
 def list_agent_items(seadb_api, project_uuid, page=1, per_page=20):
     offset = (page - 1) * per_page
     actions_table = SchemaTables.AGENT_ACTIONS.table_name()
@@ -247,7 +258,7 @@ def list_agent_items(seadb_api, project_uuid, page=1, per_page=20):
         f"FROM `{actions_table}` AS `actions` " \
         f"JOIN `{runs_table}` AS `runs` ON `actions`.`run_id` = `runs`.`_pk` " \
         "GROUP BY `actions`.`source_id`, `actions`.`source_type`, `actions`.`source_title` " \
-        "ORDER BY `last_active_at` DESC, `actions`.`source_id` ASC " \
+        "ORDER BY `last_active_at` DESC, `actions`.`source_type` DESC " \
         f"LIMIT {offset}, {per_page + 1}"
     items_result = seadb_api.query_rows(project_uuid, items_sql)
     items = items_result.get('results', [])
@@ -271,40 +282,53 @@ def list_agent_items(seadb_api, project_uuid, page=1, per_page=20):
 def get_agent_item_runs(seadb_api, project_uuid, source_id, source_type):
     actions_table = SchemaTables.AGENT_ACTIONS.table_name()
     runs_table = SchemaTables.AGENT_RUNS.table_name()
+    is_ticket = source_type == ExtraSourceType.TICKET.value
+    item_filter = f"`source_id` = '{source_id}' AND `source_type` = '{source_type}'"
 
-    run_ids_sql = \
-        f"SELECT DISTINCT `run_id` FROM `{actions_table}` " \
-        f"WHERE `source_id` = '{source_id}' AND `source_type` = '{source_type}' " \
-        "ORDER BY `run_id` ASC"
-    run_ids_result = seadb_api.query_rows(project_uuid, run_ids_sql)
-    run_ids = [
-        row.get('run_id') for row in run_ids_result.get('results', [])
-        if row.get('run_id') is not None
-    ]
-    if not run_ids:
+    # A ticket run may contain actions for different source types. For example,
+    # processing a ticket can generate both a ticket suggestion and a reply
+    # suggestion for an externally linked GitHub issue. Runs for other source
+    # types do not contain actions belonging to different source types.
+    if is_ticket:
+        run_ids_sql = (
+            f"SELECT DISTINCT `run_id` FROM `{actions_table}` "
+            f"WHERE {item_filter} "
+            "ORDER BY `run_id` ASC"
+        )
+        result = seadb_api.query_rows(project_uuid, run_ids_sql)
+        run_ids = _get_run_ids(result.get('results', []))
+        action_filter = f"`run_id` IN ({','.join(map(str, run_ids))})"
+    else:
+        action_filter = item_filter
+
+    actions_sql = (
+        "SELECT `_pk`, `run_id`, `action_type`, `tool_name`, `result`, `status`, "
+        "`suggestion_reason`, `suggestion_text`, `suggestion_content`, `sources`, "
+        "`statistics`, `source_type`, `source_id`, `source_title`, `created_at`, "
+        f"`executed_at` FROM `{actions_table}` WHERE {action_filter} "
+        "ORDER BY `run_id` ASC, `_pk` ASC"
+    )
+    result = seadb_api.query_rows(project_uuid, actions_sql)
+    actions = result.get('results', [])
+    if not actions:
         raise ValueError('Item not found.')
 
-    run_ids_str = ','.join(str(int(run_id)) for run_id in run_ids)
-    actions_sql = \
-        "SELECT `_pk`, `run_id`, " \
-        "`action_type`, `tool_name`, `result`, `status`, `suggestion_reason`, " \
-        "`suggestion_text`, `suggestion_content`, `sources`, `statistics`, " \
-        "`source_type`, `source_id`, `source_title`, " \
-        f"`created_at`, `executed_at` FROM `{actions_table}` " \
-        f"WHERE `run_id` IN ({run_ids_str}) ORDER BY `run_id` ASC, `_pk` ASC"
-    actions_result = seadb_api.query_rows(project_uuid, actions_sql)
-    actions = actions_result.get('results', [])
+    if not is_ticket:
+        run_ids = _get_run_ids(actions)
 
     actions_by_run = {}
     for action in actions:
         run_id = action.get('run_id')
         actions_by_run.setdefault(run_id, []).append(_build_item_action(action))
 
-    runs_sql = \
-        "SELECT `_pk`, `status`, `started_at`, `finished_at`, `error_message`, `events` " \
-        f"FROM `{runs_table}` WHERE `_pk` IN ({run_ids_str}) ORDER BY `_pk` ASC"
-    runs_result = seadb_api.query_rows(project_uuid, runs_sql)
-    runs = runs_result.get('results', [])
+    run_ids_str = ','.join(map(str, run_ids))
+    runs_sql = (
+        "SELECT `_pk`, `status`, `started_at`, `finished_at`, `error_message`, `events` "
+        f"FROM `{runs_table}` WHERE `_pk` IN ({run_ids_str}) "
+        "ORDER BY `_pk` ASC"
+    )
+    result = seadb_api.query_rows(project_uuid, runs_sql)
+    runs = result.get('results', [])
 
     return {
         'runs': [{
