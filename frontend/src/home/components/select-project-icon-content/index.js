@@ -7,6 +7,18 @@ import { parseColorToRGB } from '@/utils/color-utils';
 
 import './index.css';
 
+const PROJECT_ICON_CATEGORY_NAMES = {
+  common: gettext('Common Icons'),
+  'system-devices': gettext('System & Devices Icons'),
+  'transport-location': gettext('Transport & Location Icons'),
+  'entertainment-games': gettext('Entertainment & Games Icons'),
+  'medical-health': gettext('Medical & Health Icons'),
+  'design-geometry': gettext('Design & Geometry Icons'),
+  'objects-daily-life': gettext('Objects & Daily Life Icons'),
+  'nature-science': gettext('Nature & Science Icons'),
+  'business-finance': gettext('Business & Finance Icons'),
+};
+
 const propTypes = {
   bgColor: PropTypes.string,
   currentIcon: PropTypes.string,
@@ -79,7 +91,9 @@ class SelectProjectIconContent extends React.Component {
           <div className="select-project-icon-content-categories">
             {categories.map((category) => (
               <section className="select-project-icon-content-category" key={category.id}>
-                <div className="select-project-icon-content-category-title">{category.name}</div>
+                <div className="select-project-icon-content-category-title">
+                  {PROJECT_ICON_CATEGORY_NAMES[category.id] || category.name}
+                </div>
                 <div className="select-project-icon-content-list">
                   {category.icons.map((icon) => {
                     const isSelected = icon === selectedIcon;

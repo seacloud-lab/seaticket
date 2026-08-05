@@ -1,10 +1,10 @@
 import slugid from 'slugid';
-import { gettext } from '@/constants';
+import { DEFAULT_PROJECT_ICON, gettext } from '@/constants';
 
 export const CARD_LAYOUT_OPTIONS = [2, 3, 4, 5, 6];
 
 export const DEFAULT_NEW_CARD = {
-  icon: 'icon-worksheet',
+  icon: DEFAULT_PROJECT_ICON,
   title: gettext('New card'),
   description: gettext('Enter card description'),
   subtitle: '',
@@ -26,17 +26,17 @@ export const getSafeCardLink = (link) => {
 
 const DEFAULT_CARDS = [
   {
-    icon: 'icon-worksheet',
+    icon: 'haiwen-users-three-fill',
     title: 'Team Collaboration',
     description: 'Work together with all your team members to solve issues faster and more effectively.',
   },
   {
-    icon: 'icon-task-management',
+    icon: 'haiwen-robot-fill',
     title: 'AI Agent Assistant',
     description: 'Let AI analyze and resolve issues automatically, providing intelligent suggestions and solutions.',
   },
   {
-    icon: 'icon-software-test-management',
+    icon: 'haiwen-list-checks-fill',
     title: 'Smart Ticket Recording',
     description: 'AI automatically creates structured tickets from forum threads and emails, saving you hours of manual work.',
   },
