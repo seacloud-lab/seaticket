@@ -1,11 +1,13 @@
-import { mediaUrl, siteRoot } from '@/constants';
+import { mediaUrl, siteRoot, gettext } from '@/constants';
 import { KNOWLEDGE_BASE_TYPE } from './main-panel/knowledge-base/constants';
 import { generatorKnowledgeBaseURL } from './main-panel/knowledge-base/utils';
 import { TICKET_TYPE } from './main-panel/tickets/constants';
 import { PORTAL_ISSUE_TYPE } from './main-panel/portal-issues/constants';
+import { CONNECTION_TYPES } from './main-panel/connections/constants';
 import { getConnectionIcon, getOriginalPageUrl } from './main-panel/connections/utils';
 import { generatorTicketURL } from './main-panel/tickets/utils';
 import { generatorIssueURL } from './main-panel/portal-issues/utils';
+
 
 export const getResourceIconURL = (type) => {
   const root = `${siteRoot}${mediaUrl}`.replaceAll('//', '/');
@@ -24,6 +26,12 @@ export const getResourceIconURL = (type) => {
       return getConnectionIcon(type);
     }
   }
+};
+
+export const getResourceTypeName = (type) => {
+  if (type === TICKET_TYPE) return gettext('Ticket');
+  if (type === PORTAL_ISSUE_TYPE) return gettext('Portal issue');
+  return CONNECTION_TYPES.find(c => c.type === type)?.name || type;
 };
 
 export const getInternalNetworkAddress = (type, resourceID, { workspaceID, projectName, connectionID }) => {

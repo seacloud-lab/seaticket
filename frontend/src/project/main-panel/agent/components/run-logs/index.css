@@ -1,0 +1,26 @@
+.seaqa-agent-run-logs-container {
+  border-right: 1px solid var(--bs-border-secondary-color);
+}
+
+.seaqa-agent-run-logs-header {
+  height: 40px;
+  border-bottom: 1px solid var(--bs-border-secondary-color);
+}
+
+.seaqa-agent-run-logs-body {
+  overflow-y: auto;
+}
+
+.seaqa-agent-run-logs-container .resize-bar {
+  top: 0;
+  height: 100%;
+  margin-left: -6px;
+}
+
+.seaqa-agent-run-logs-container .resize-bar-content {
+  background-color: inherit;
+}
+
+.seaqa-agent-run-logs-container .seaqa-agent-run-log-load-more {
+  height: 40px;
+}

@@ -1,8 +1,9 @@
 import React, { useRef, useCallback, useEffect, useState, useMemo } from 'react';
 import { Button } from 'reactstrap';
 import { gettext } from '@/constants';
-import { IconButton } from '@/components';
+import { IconButton, ResizeBar } from '@/components';
 import Detail from './detail';
+import { isFunction } from '@/utils/type-detection';
 
 import './index.css';
 
@@ -12,13 +13,11 @@ const DEFAULT_WIDTH = 400;
 
 const SuggestionDetailPanel = ({
   suggestionDetail,
-  isSaving,
   onSave,
   onClose,
-  width = DEFAULT_WIDTH,
-  onWidthChange,
 }) => {
   const [value, setValue] = useState(suggestionDetail?.action?.suggestion_content || '');
+  const [isSaving, setIsSaving] = useState(false);
 
   const title = useMemo(
     () => suggestionDetail?.action?.suggestion_text || suggestionDetail?.action?.result || '',
@@ -44,47 +43,51 @@ const SuggestionDetailPanel = ({
     }
     return true;
   }, [isSaving, initValue, value, suggestionDetail]);
+  const suggestionKey = useMemo(() => {
+    const { action, runId } = suggestionDetail;
+    return `${runId}_${action.id}`;
+  }, [suggestionDetail]);
 
-  const resizingRef = useRef(false);
-
-  const handleResizeStart = useCallback((e) => {
-    e.preventDefault();
-    resizingRef.current = true;
-
-    const handleMouseMove = (ev) => {
-      if (!resizingRef.current) return;
-      const nextWidth = window.innerWidth - ev.clientX;
-      const nextPanelWidth = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, nextWidth));
-      onWidthChange && onWidthChange(nextPanelWidth);
-    };
-    const handleMouseUp = () => {
-      resizingRef.current = false;
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-      document.body.style.userSelect = '';
-    };
-
-    document.body.style.userSelect = 'none';
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-  }, [onWidthChange]);
+  const ref = useRef(null);
 
   const handleSave = useCallback(() => {
-    onSave && onSave(value);
-  }, [value, onSave]);
+    const { action, runId } = suggestionDetail;
+    if (!isFunction(onSave)) return;
+    setIsSaving(true);
+    onSave(runId, action.id, value).then((key) => {
+      if (key !== suggestionKey) return;
+      setIsSaving(false);
+    }).catch(key => {
+      if (key !== suggestionKey) return;
+      setIsSaving(false);
+    });
+  }, [suggestionDetail, value, suggestionKey, onSave]);
+
+  const onResize = useCallback((width) => {
+    localStorage.setItem('project_agent_action_suggestion_panel_width', window.innerWidth - width - 8);
+    ref.current.style.width = `${window.innerWidth - width - 8}px`;
+  }, []);
+
+  useEffect(() => {
+    const width = parseFloat(localStorage.getItem('project_agent_action_suggestion_panel_width') || DEFAULT_WIDTH);
+    ref.current.style.width = `${width}px`;
+  }, []);
 
   useEffect(() => {
     setValue(suggestionDetail?.action?.suggestion_content || '');
   }, [suggestionDetail?.action?.suggestion_content]);
 
+  useEffect(() => {
+    setIsSaving(false);
+  }, [suggestionKey]);
+
   return (
-    <div className="suggestion-detail-panel" style={{ width }}>
-      <div className="suggestion-detail-panel-resize" onMouseDown={handleResizeStart} />
-      <div className="suggestion-detail-panel-header">
-        <span className="suggestion-detail-panel-title text-truncate" title={title}>{title}</span>
-        <IconButton icon="close" className="suggestion-detail-panel-close" onClick={onClose}/>
+    <div className="seaqa-agent-tool-suggestion-panel" ref={ref}>
+      <div className="seaqa-agent-tool-suggestion-panel-header">
+        <span className="seaqa-agent-tool-suggestion-panel-title text-truncate" title={title}>{title}</span>
+        <IconButton icon="close" className="seaqa-agent-tool-suggestion-panel-close" onClick={onClose}/>
       </div>
-      <div className="suggestion-detail-panel-body">
+      <div className="seaqa-agent-tool-suggestion-panel-body">
         <Detail
           type={suggestionDetail?.action?.tool_name}
           isEdit={isEdit}
@@ -94,13 +97,19 @@ const SuggestionDetailPanel = ({
         />
       </div>
       {isEdit && (
-        <div className="suggestion-detail-panel-footer">
+        <div className="seaqa-agent-tool-suggestion-panel-footer">
           <Button color="secondary" onClick={onClose}>{gettext('Cancel')}</Button>
           <Button color="primary" onClick={handleSave} disabled={!canSave}>
             {isSaving ? gettext('Saving...') : gettext('Save')}
           </Button>
         </div>
       )}
+      <ResizeBar
+        min={window.innerWidth - MAX_WIDTH - 8}
+        max={window.innerWidth - MIN_WIDTH - 8}
+        onResize={onResize}
+        className="position-absolute h-100"
+      />
     </div>
   );
 };

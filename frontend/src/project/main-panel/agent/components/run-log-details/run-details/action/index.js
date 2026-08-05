@@ -2,10 +2,12 @@ import React, { useState, useCallback, useEffect } from 'react';
 import classnames from 'classnames';
 import { Button } from 'reactstrap';
 import { gettext } from '@/constants';
-import { ACTION_STATUS, ACTION_TYPE, SUGGESTION_TOOL_NAME_MAP, ACTION_ICON_MAPPER } from './constants';
+import { ACTION_STATUS, ACTION_TYPE, SUGGESTION_TOOL_NAME_MAP, ACTION_ICON_MAPPER } from '../constants';
 import { Icon, IconButton, IconTooltip, CustomizeMarkdownViewer, IconPopoverTip } from '@/components';
 import AIReply from '@/project/components/ai-reply';
-import SuggestionPreview from './suggestion-preview';
+import SuggestionPreview from '../suggestion-preview';
+
+import './index.css';
 
 const { projectUuid, projectName } = window?.app?.pageOptions || {};
 
@@ -62,7 +64,6 @@ const ActionItem = React.memo(({
     suggestion_content,
     suggestion_reason,
   } = action;
-  const [isExpanded, setIsExpanded] = useState(false);
   const [isThoughtExpanded, setIsThoughtExpanded] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
 
@@ -71,10 +72,6 @@ const ActionItem = React.memo(({
       setIsConfirming(false);
     }
   }, [status]);
-
-  const toggleExpand = useCallback(() => {
-    setIsExpanded(prev => !prev);
-  }, []);
 
   const toggleThoughtExpand = useCallback((e) => {
     e.stopPropagation();
@@ -118,7 +115,7 @@ const ActionItem = React.memo(({
       const errorData = JSON.parse(jsonStr)?.error;
       if (errorData) {
         return (
-          <ul className="error-list mb-0">
+          <ul className="seaqa-agent-action-errors mb-0">
             <li>
               <strong>{gettext('Error code')}:</strong> {errorData.code}
             </li>
@@ -197,12 +194,15 @@ const ActionItem = React.memo(({
   if (type === ACTION_TYPE.SUMMARY || type === ACTION_TYPE.TOOL_CALL) return null;
 
   const renderIcon = () => {
-    let symbol = ACTION_ICON_MAPPER[type];
-    if (!symbol) return null;
+    let icon = ACTION_ICON_MAPPER[type];
+    if (!icon) return null;
     return (
-      <span className="action-item-icon">
-        <Icon symbol={symbol} style={type === ACTION_TYPE.ERROR ? { fill: 'var(--bs-text-danger)' } : {}} />
-      </span>
+      <IconButton
+        icon={icon}
+        className="no-hover-bg"
+        iconClassName={type === ACTION_TYPE.ERROR ? 'text-danger' : ''}
+        size={{ btn: 22 }}
+      />
     );
   };
 
@@ -252,15 +252,15 @@ const ActionItem = React.memo(({
     switch (type) {
       case ACTION_TYPE.EVENT:
         return (
-          <div className="action-content action-content-event">
-            <div className="action-label">{gettext('Event')}</div>
+          <div className="seaqa-agent-action-content seaqa-agent-action-content-event">
+            <div className="seaqa-agent-action-label">{gettext('Event')}</div>
             {result && <CustomizeMarkdownViewer value={result} showTOC={false} />}
           </div>
         );
       case ACTION_TYPE.ANALYSIS:
         return (
-          <div className="action-content action-content-analysis">
-            <div className="action-label">{gettext('Analysis')}</div>
+          <div className="seaqa-agent-action-content seaqa-agent-action-content-analysis">
+            <div className="seaqa-agent-action-label">{gettext('Analysis')}</div>
             {result && (
               <AIReply
                 message={{ ai_reply: result, sources: Array.isArray(sources) ? sources : [] }}
@@ -272,18 +272,18 @@ const ActionItem = React.memo(({
         );
       case ACTION_TYPE.TOOL_CALL:
         return (
-          <div className="action-content">
-            <div className="tool-call-header">
-              <div className="action-label">{gettext('Tool call')}: {tool_name}</div>
+          <div className="seaqa-agent-action-content">
+            <div className="seaqa-agent-action-tool-header">
+              <div className="seaqa-agent-action-label">{gettext('Tool call')}: {tool_name}</div>
             </div>
             {result && (
-              <div className="tool-result tool-call">
+              <div className="seaqa-agent-action-tool">
                 {isCompletedStatus && (
-                  <span className="status-completed">
+                  <span className="seaqa-agent-action-tool-status-completed">
                     <Icon symbol="check-mark" />
                   </span>
                 )}
-                <span className="tool-call-content">{result}</span>
+                <span className="seaqa-agent-action-tool-content">{result}</span>
               </div>
             )}
           </div>
@@ -296,25 +296,25 @@ const ActionItem = React.memo(({
         const showActions = !isCancelled && (canEdit || hasContent);
         const parsedResult = parseActionResult(result);
         return (
-          <div className="action-content action-content-suggestion">
-            <div className="action-label">{gettext('Suggestion')}</div>
-            <div className={classnames('action-card', { 'action-card-cancelled': isCancelled })}>
-              <div className="action-card-header d-flex align-items-center">
+          <div className="seaqa-agent-action-content seaqa-agent-action-content-suggestion">
+            <div className="seaqa-agent-action-label">{gettext('Suggestion')}</div>
+            <div className={classnames('seaqa-agent-action-card', { 'seaqa-agent-action-card-cancelled': isCancelled })}>
+              <div className="seaqa-agent-action-card-header d-flex align-items-center">
                 <Icon symbol={renderSuggestionIcon()} />
                 {suggestion_text && (
-                  <div className="action-suggestion-text-container">
-                    <span className="text-truncate action-suggestion-text" title={suggestion_text}>{suggestion_text}</span>
+                  <div className="seaqa-agent-action-suggestion-text-container">
+                    <span className="text-truncate seaqa-agent-action-suggestion-text" title={suggestion_text}>{suggestion_text}</span>
                     {!isCancelled && (<>{renderSuggestionReasonTooltip()}</>)}
                   </div>
                 )}
                 {isCancelled && (<span className="flex-shrink-0">{parsedResult.message}</span>)}
                 {showActions && (
-                  <div className="action-suggestion-ops-container ml-auto d-flex align-items-center">
+                  <div className="seaqa-agent-action-suggestion-ops-container ml-auto d-flex align-items-center">
                     {canEdit && (
                       <IconTooltip
                         icon="edit"
                         tip={gettext('Edit')}
-                        className="action-suggestion-op-btn"
+                        className="seaqa-agent-action-suggestion-op-btn"
                         placement="bottom"
                         hoverBackground={true}
                         size={{ btn: 24, icon: 16 }}
@@ -325,7 +325,7 @@ const ActionItem = React.memo(({
                       <IconTooltip
                         icon="view-issue"
                         tip={gettext('Details')}
-                        className="action-suggestion-op-btn"
+                        className="seaqa-agent-action-suggestion-op-btn"
                         placement="bottom"
                         hoverBackground={true}
                         size={{ btn: 24, icon: 16 }}
@@ -339,7 +339,7 @@ const ActionItem = React.memo(({
                 <SuggestionPreview type={tool_name} value={suggestion_content} />
               )}
               {status === ACTION_STATUS.PENDING && (
-                <div className="action-buttons">
+                <div className="seaqa-agent-action-buttons">
                   <Button color="secondary" onClick={handleConfirm} size="sm" disabled={isConfirming}>
                     <Icon symbol="approve" className="mr-1" />
                     {gettext('Approve')}
@@ -351,16 +351,16 @@ const ActionItem = React.memo(({
                 </div>
               )}
               {isExecutingStatus && (
-                <div className="suggestion-result-resolved d-flex align-items-center">
-                  <span className="result-text">{gettext('Executing...')}</span>
+                <div className="seaqa-agent-action-suggestion-resolved d-flex align-items-center">
+                  <span className="seaqa-agent-action-tool-result-text">{gettext('Executing...')}</span>
                 </div>
               )}
               {isCompletedStatus && (
-                <div className="suggestion-result-resolved d-flex align-items-center">
-                  <span className="status-completed">
+                <div className="seaqa-agent-action-suggestion-resolved d-flex align-items-center">
+                  <span className="seaqa-agent-action-tool-status-completed">
                     <Icon symbol="check-circle-filled" />
                   </span>
-                  <span className="result-text">
+                  <span className="seaqa-agent-action-tool-result-text">
                     {parsedResult.ticket ? (
                       renderCompletedTicketMessage(parsedResult.ticket, parsedResult.message)
                     ) : (
@@ -371,13 +371,13 @@ const ActionItem = React.memo(({
               )}
               {isFailedStatus && (
                 <div
-                  className="tool-result suggestion-tool-result suggestion-tool-result-failed"
+                  className="seaqa-agent-suggestion-action-result seaqa-agent-suggestion-action-result-failed"
                   style={{ marginLeft: '22px' }}
                 >
-                  <span className="status-failed">
+                  <span className="seaqa-agent-action-tool-status-failed">
                     <Icon symbol="close" />
                   </span>
-                  <span className="result-text">
+                  <span className="seaqa-agent-action-tool-result-text">
                     {parsedResult.message}
                   </span>
                 </div>
@@ -388,53 +388,51 @@ const ActionItem = React.memo(({
       }
       case ACTION_TYPE.ERROR:
         return (
-          <div className="action-content">
-            <div className="action-label">{gettext('Error')}</div>
-            <div className="action-text">
+          <div className="seaqa-agent-action-content">
+            <div className="seaqa-agent-action-label">
+              {gettext('Error')}
+            </div>
+            <div className="seaqa-agent-action-text">
               {formatErrorMessage(result)}
             </div>
           </div>
         );
       case ACTION_TYPE.THOUGHT:
         return (
-          <div className="action-content">
+          <div className="seaqa-agent-action-content">
             <div className={classnames('d-flex align-items-center justify-content-between', { 'mb-1': isThoughtExpanded })}>
               <IconButton
                 icon="arrow-down"
                 className={classnames('seaqa-project-refresh-btn seaqa-project-refresh-btn-thought', { 'seaqa-project-refresh-btn-expanded': isThoughtExpanded })}
                 onClick={toggleThoughtExpand}
               >
-                <div className="action-label action-label-thought">{gettext('Thought')}</div>
+                <div className="seaqa-agent-action-label seaqa-agent-action-label-thought">{gettext('Thought')}</div>
               </IconButton>
             </div>
             {isThoughtExpanded &&
-              <div className="action-text action-text-thought">
+              <div className="seaqa-agent-action-text seaqa-agent-action-text-thought">
                 {result && <CustomizeMarkdownViewer value={result} showTOC={false} />}
               </div>
             }
           </div>
         );
       default:
-        return <div className="action-content">{result}</div>;
+        return <div className="seaqa-agent-action-content">{result}</div>;
     }
   };
 
   return (
     <div
-      className={classnames('agent-action-item', `action-type-${type}`, {
-        'action-expanded': isExpanded,
-        'action-pending': status === ACTION_STATUS.PENDING,
-        'action-executing': status === ACTION_STATUS.EXECUTING,
-        'action-completed': status === ACTION_STATUS.COMPLETED,
-        'action-failed': status === ACTION_STATUS.FAILED,
-        'action-cancelled': status === ACTION_STATUS.CANCELLED,
+      className={classnames('seaqa-agent-action', `seaqa-agent-action-type-${type}`, {
+        'seaqa-agent-action-pending': status === ACTION_STATUS.PENDING,
+        'seaqa-agent-action-executing': status === ACTION_STATUS.EXECUTING,
+        'seaqa-agent-action-completed': status === ACTION_STATUS.COMPLETED,
+        'seaqa-agent-action-failed': status === ACTION_STATUS.FAILED,
+        'seaqa-agent-action-cancelled': status === ACTION_STATUS.CANCELLED,
       })}
     >
-      <div className="action-tree-line"></div>
-      <div className="action-header" onClick={toggleExpand}>
-        {renderIcon()}
-        {renderContent()}
-      </div>
+      {renderIcon()}
+      {renderContent()}
     </div>
   );
 });

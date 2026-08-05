@@ -1,8 +1,15 @@
 .seaqa-project-main-panel .seaqa-project-main-panel-header,
 .seaqa-portal-main-panel .seaqa-project-main-panel-header {
   height: 40px !important;
-  padding: 0 16px !important;
   flex-shrink: 0;
+}
+
+.seaqa-project-main-panel .seaqa-project-main-panel-header {
+  padding: 0 !important;
+}
+
+.seaqa-portal-main-panel .seaqa-project-main-panel-header {
+  padding: 0 16px !important;
 }
 
 .seaqa-project-main-panel .seaqa-project-main-panel-header-content,
@@ -13,6 +20,10 @@
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--bs-border-secondary-color);
+}
+
+.seaqa-project-main-panel .seaqa-project-main-panel-header-content {
+  padding: 0 16px;
 }
 
 .seaqa-project-main-panel .seaqa-project-main-panel-header .seaqa-project-main-panel-header-left,

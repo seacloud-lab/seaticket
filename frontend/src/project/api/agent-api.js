@@ -55,6 +55,16 @@ class AgentAPI {
   }
 
   // Agent run logs
+  testListAgentRunLogs(projectUuid, page = 1, perPage = 20) {
+    const url = this.server + `/api/v1/project/${projectUuid}/agent/items/?page=${page}&per_page=${perPage}`;
+    return this.req.get(url);
+  }
+
+  testListAgentItemLogs(projectUuid, source_id, source_type) {
+    const url = this.server + `/api/v1/project/${projectUuid}/agent/item/runs/?source_id=${source_id}&source_type=${source_type}`;
+    return this.req.get(url);
+  }
+
   listAgentRunLogs(projectUuid, page = 1, perPage = 20) {
     const url = this.server + `/api/v1/project/${projectUuid}/agent/runs/?page=${page}&per_page=${perPage}`;
     return this.req.get(url);

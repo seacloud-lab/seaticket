@@ -166,10 +166,10 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
 
   if (type === CONNECTION_TYPE.EMAIL) {
     if (mergedDetails.length === 0) {
-      if (!isContentEmpty) setIsContentEmpty(true);
+      if (!isContentEmpty) setIsContentEmpty && setIsContentEmpty(true);
       return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No content')} />);
     } else {
-      if (isContentEmpty) setIsContentEmpty(false);
+      if (isContentEmpty) setIsContentEmpty && setIsContentEmpty(false);
       return (
         <EmailDetails
           className={`seaqa-connection-resource-details seaqa-connection-${type}-resource-details pt-4 pb-4`}

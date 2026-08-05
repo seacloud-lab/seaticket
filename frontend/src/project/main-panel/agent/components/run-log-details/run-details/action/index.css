@@ -1,0 +1,312 @@
+.seaqa-agent-action {
+  position: relative;
+  display: flex;
+  gap: 8px;
+}
+
+.seaqa-agent-action::after {
+  content: '';
+  position: absolute;
+  top: 26px;
+  left: 11px;
+  height: calc(100% - 26px);
+  width: 1px;
+  border-left: 1px solid var(--bs-border-secondary-color);
+}
+
+.seaqa-agent-action:last-child::after {
+  display: none;
+}
+
+.seaqa-agent-action-content {
+  flex: 1;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.5;
+  position: relative;
+  overflow: hidden;
+}
+
+.seaqa-agent-action-content.seaqa-agent-action-content-event .seaqa-agent-action-label,
+.seaqa-agent-action-content.seaqa-agent-action-content-analysis .seaqa-agent-action-label,
+.seaqa-agent-action-content.seaqa-agent-action-content-suggestion .seaqa-agent-action-label {
+  font-size: 16px;
+}
+
+.seaqa-agent-action-content.seaqa-agent-action-content-suggestion .seaqa-agent-action-card {
+  background-color: #FBFBFA;
+}
+
+.seaqa-agent-action-content.seaqa-agent-action-content-event .longtext-preview-container .sf-slate-viewer-article-container .article {
+  margin: 0;
+  padding: 0 !important;
+}
+
+.seaqa-agent-action-content.seaqa-agent-action-content-event .sf-slate-viewer-scroll-container .article {
+  max-width: 100%;
+}
+
+.seaqa-agent-action-content.seaqa-agent-action-content-analysis .longtext-preview-container .sf-slate-viewer-article-container .article {
+  margin: 0;
+  padding: 0 !important;
+}
+
+.seaqa-agent-action-content.seaqa-agent-action-content-analysis .sf-slate-viewer-scroll-container .article {
+  max-width: 100%;
+}
+
+.seaqa-agent-action-content .longtext-preview-container .article :last-child {
+  margin-bottom: 0;
+}
+
+.seaqa-agent-action-label {
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 500;
+  color: #212925;
+  margin-bottom: 8px;
+}
+
+.seaqa-agent-action-label-thought {
+  margin-bottom: 0;
+  margin-right: 4px;
+  color: #666;
+  font-weight: 400;
+}
+
+.seaqa-agent-action-card {
+  padding: 8px 16px;
+  background: #FFFFFF;
+  border: 1px solid #EEEEEE;
+  border-radius: 8px;
+}
+
+.seaqa-agent-action-card.seaqa-agent-action-card-cancelled {
+  background: #F7F8FA;
+  border-color: #EEEEEE;
+}
+
+
+.seaqa-agent-action-card-header {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22px;
+  color: #212529;
+  gap: 8px;
+}
+
+.seaqa-agent-action-card-header > svg {
+  width: 14px;
+  height: 14px;
+  color: #999;
+}
+
+.seaqa-agent-action-suggestion-text-container {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  gap: 12px;
+}
+
+.seaqa-agent-action-card.seaqa-agent-action-card-cancelled .seaqa-agent-action-suggestion-text-container .seaqa-agent-action-suggestion-text {
+  color: #999;
+  text-decoration: line-through;
+}
+
+/* Suggestion ops (edit / details) */
+.seaqa-agent-action-suggestion-ops-container {
+  gap: 8px;
+}
+
+.seaqa-agent-action-suggestion-op-btn.seaqa-tooltip-icon-btn {
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.seaqa-agent-action-suggestion-op-btn.seaqa-tooltip-icon-btn:hover {
+  background: #F2F2F2;
+}
+
+.seaqa-agent-action-text {
+  color: #666;
+  font-size: 14px;
+  line-height: 22px;
+  position: relative;
+  white-space: pre-line;
+}
+
+.seaqa-agent-action-text-thought p {
+  color: #666;
+  font-weight: 400;
+  font-style: Italic;
+  font-size: 13px;
+  line-height: 20px;
+  margin-left: 28px;
+  margin-bottom: 0px;
+}
+
+.seaqa-agent-action-text::after {
+  content: '';
+  position: absolute;
+  left: -20px;
+  height: 100%;
+  width: 1px;
+  top: 0;
+  background: #eee;
+}
+
+.seaqa-agent-action-text.seaqa-agent-action-text-thought::after {
+  left: 8px;
+}
+
+.seaqa-agent-action-suggestion-resolved .seaqa-agent-action-tool-result-text {
+  font-size: 14px;
+  line-height: 22px;
+  color: #212529;
+}
+
+.seaqa-agent-action-suggestion-resolved .seaqa-agent-action-tool-status-completed svg {
+  width: 16px;
+  height: 16px;
+}
+
+.seaqa-agent-action-suggestion-resolved {
+  gap: 8px;
+  padding-top: 8px;
+  height: 42px;
+}
+
+.seaqa-agent-action-errors {
+  line-height: 22px;
+}
+
+/* tool */
+.seaqa-agent-action-tool {
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 20px;
+  color: #666;
+}
+
+.seaqa-agent-action-tool .seaqa-agent-action-tool-content {
+  height: 24px;
+  line-height: 24px;
+  padding: 0px 6px;
+  border-radius: 4px;
+  background: #f7f7f5;
+  color: #212529;
+}
+
+.seaqa-agent-action-tool::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  height: 32px;
+  width: 1px;
+  top: 38px;
+  background: #eee;
+}
+
+.seaqa-agent-action-tool-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.seaqa-agent-suggestion-action-result {
+  padding: 4px 8px;
+  align-items: baseline;
+  display: inline-flex;
+  gap: 8px;
+  margin: 12px 22px 12px 0;
+  color: #666;
+  border-radius: 4px;
+}
+
+.seaqa-agent-suggestion-action-result.success {
+  background: #EDF8E2;
+}
+
+.seaqa-agent-suggestion-action-result.failed {
+  background: #FDECEC;
+}
+
+.seaqa-agent-suggestion-action-result .seaqa-agent-action-tool-result-text {
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: 400;
+  color: #212529;
+}
+
+.seaqa-agent-suggestion-action-result .agent-ticket-result-link {
+  color: #ff8000;
+}
+
+/* active buttons */
+.seaqa-agent-action-buttons {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0px 4px 0px;
+}
+
+.seaqa-agent-action-buttons button {
+  display: flex;
+  align-items: center;
+  border: 1px solid #0028641F;
+  font-size: 12px;
+  line-height: 20px;
+  padding: 3px 8px;
+  font-weight: 400;
+  border-radius: 4px;
+  vertical-align: middle;
+}
+
+.seaqa-agent-action-buttons button svg {
+  width: 12px;
+  height: 12px;
+  fill: #666;
+}
+
+/* tool status */
+.seaqa-agent-action-tool-status-completed svg {
+  color: #5EBA00;
+  width: 12px;
+  height: 12px;
+}
+
+.seaqa-agent-action-tool-status-failed svg {
+  color: #D93025;
+  width: 12px;
+  height: 12px;
+}
+
+.seaqa-agent-action-tool-result-text {
+  color: #666;
+}
+
+/* to do */
+/* Ticket section */
+.run-ticket-section {
+  margin-bottom: 16px;
+}
+
+.run-ticket-section:last-child {
+  margin-bottom: 0;
+}
+
+/* Ticket actions tree */
+.ticket-actions {
+  margin-left: 12px;
+  padding-left: 12px;
+  padding-top: 4px;
+}
+

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { agentAPI } from '@/project/api';
 
 const { projectUuid } = window.app.pageOptions;
@@ -6,20 +6,17 @@ const { projectUuid } = window.app.pageOptions;
 export const useAgentRunLogs = () => {
   const [runLogs, setRunLogs] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
-  const loadRunLogs = useCallback((pageNum = 1, append = false) => {
+  const pageRef = useRef(1);
+
+  const loadRunLogs = useCallback((pageNum = 1) => {
     setIsLoading(true);
-    agentAPI.listAgentRunLogs(projectUuid, pageNum).then(res => {
-      const { runs, has_more } = res.data;
-      if (append) {
-        setRunLogs(prev => [...prev, ...runs]);
-      } else {
-        setRunLogs(runs);
-      }
+    agentAPI.testListAgentRunLogs(projectUuid, pageNum).then(res => {
+      const { items, has_more } = res.data;
+      setRunLogs(prev => pageNum === 1 ? items : [...(prev || []), ...items]);
       setHasMore(has_more);
-      setPage(pageNum);
+      pageRef.current = pageNum;
       setIsLoading(false);
     }).catch(err => {
       console.error('Failed to load agent run logs:', err);
@@ -29,36 +26,18 @@ export const useAgentRunLogs = () => {
 
   useEffect(() => {
     loadRunLogs(1);
-  }, [loadRunLogs]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const loadMore = useCallback(() => {
-    if (!isLoading && hasMore) {
-      loadRunLogs(page + 1, true);
-    }
-  }, [isLoading, hasMore, page, loadRunLogs]);
+    if (isLoading || !hasMore) return;
+    loadRunLogs(pageRef.current + 1);
+  }, [isLoading, hasMore, loadRunLogs]);
 
   const refresh = useCallback(() => {
     setRunLogs([]);
     loadRunLogs(1);
   }, [loadRunLogs]);
-
-  const updateRunAction = useCallback((runId, actionId, actionUpdates) => {
-    const updateActions = (actions = []) => actions.map(action => (
-      action.id === actionId ? { ...action, ...actionUpdates } : action
-    ));
-
-    setRunLogs(prev => prev.map(run => {
-      if (run.id !== runId) return run;
-
-      return {
-        ...run,
-        items: (run.items || []).map(item => ({
-          ...item,
-          actions: updateActions(item.actions),
-        })),
-      };
-    }));
-  }, []);
 
   return {
     runLogs,
@@ -66,6 +45,5 @@ export const useAgentRunLogs = () => {
     hasMore,
     loadMore,
     refresh,
-    updateRunAction,
   };
 };

@@ -1,28 +1,17 @@
-import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useRef } from 'react';
 import classnames from 'classnames';
 import { connectionsAPI } from '@/project/api';
 import context from '@/sea-metadata/context';
-
-// components
-import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import ActionItem from './action-item';
-import RunStatisticsDialog from './run-statistics-dialog';
-import ThoughtProcessDialog from './thought-process-dialog';
-import { IconTooltip, Icon, toaster } from '@/components';
+import { toaster } from '@/components';
 import { ResourceDetailsDialog } from '@/project/components';
 import RelatedIssuesDialog from '@/project/main-panel/connections/components/related-issues-dialog';
 import CreateTicketDialog from '@/project/main-panel/connections/components/create-ticket-dialog';
 import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
-
-// hooks
 import { useConnections } from '@/project/main-panel/connections/hooks';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import { useData, useMetadata } from '@/project/hooks';
 import { AttachmentObject } from '@/project/main-panel/ask/models';
-
-// utils
 import { normalizeContextMenuOptions, getResourceIconURL } from '@/project/utils';
-import DateFormatter from '@/project/main-panel/connections/components/cell-formatter/date-formatter';
 import {
   generateAIOptions, generateCreateRelatedTicketOption, generateFindRelatedIssuesOption,
   generateLinkAnExistingTicketOption, generateOpenOriginalPageOption,
@@ -31,19 +20,16 @@ import {
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { Utils } from '@/utils/utils';
-
-// constants
-import { gettext } from '@/constants';
-import { ACTION_STATUS, ACTION_TYPE, RUN_STATUS } from './constants';
-import { CONNECTION_PREDEFINED_COLUMN_NAME, CONNECTION_TYPE } from '@/project/main-panel/connections/constants';
+import { CONNECTION_PREDEFINED_COLUMN_NAME } from '@/project/main-panel/connections/constants';
 import { TICKET_TYPE, TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
-import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE, FROM_NOW } from '@/sea-metadata/constants';
+import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
+
+import './index.css';
 
 const { projectUuid } = window.app.pageOptions;
-const thoughtProcessEnabled = window.app.pageOptions.thoughtProcessEnabled;
 
-const getResourceFromItem = (item) => {
-  const { source_type, source_id, source_title } = item;
+const getResourceFromLog = (log) => {
+  const { source_type, source_id, source_title } = log;
   const icon = getResourceIconURL(source_type);
   if (source_type === TICKET_TYPE) return { type: TICKET_TYPE, title: source_title, _id: source_id, icon };
 
@@ -55,20 +41,11 @@ const getResourceFromItem = (item) => {
     _id: recordId || source_id,
     title: source_title,
     connection_id: connectionId ? Number(connectionId) : null,
-    icon: [CONNECTION_TYPE.GITHUB_ISSUE, CONNECTION_TYPE.DISCOURSE_FORUM, CONNECTION_TYPE.EMAIL].includes(source_type) ? icon : getResourceIconURL(TICKET_TYPE),
+    icon,
   };
 };
 
-const getResourceTitleTip = (resource) => {
-  const { type, _id } = resource;
-  if (type === TICKET_TYPE) return `${gettext('Ticket')} #${_id}`;
-  if (type === CONNECTION_TYPE.GITHUB_ISSUE) return `${gettext('Github issue')} #${_id}`;
-  if (type === CONNECTION_TYPE.DISCOURSE_FORUM) return `${gettext('Discourse Forum')} #${_id}`;
-  if (type === CONNECTION_TYPE.EMAIL) return `${gettext('Email')} #${_id}`;
-  return `${gettext(type)} #${_id}:`;
-};
-
-const RunCardHeader = ({ item }) => {
+const RunLogTitle = ({ runLog, className }) => {
   const [isShowDetails, setIsShowDetails] = useState(false);
   const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
   const [isTicketDialogOpen, setTicketDialogOpen] = useState(false);
@@ -80,11 +57,11 @@ const RunCardHeader = ({ item }) => {
   const { updateAttachments } = useAIChatTools();
   const { modifyRow, modifyRowLink, insertRowByLink } = useData();
 
-  const resource = useMemo(() => getResourceFromItem(item), [item]);
+  const resource = useMemo(() => getResourceFromLog(runLog), [runLog]);
 
-  const titleTip = useMemo(() => getResourceTitleTip(resource), [resource]);
-
-  const openDetails = useCallback(() => {
+  const openDetails = useCallback((event) => {
+    event.stopPropagation();
+    event.nativeEvent.stopImmediatePropagation();
     setIsShowDetails(true);
   }, []);
 
@@ -239,17 +216,12 @@ const RunCardHeader = ({ item }) => {
 
   return (
     <>
-      <div className="ticket-header">
-        <span className="ticket-icon">
-          <img src={resource.icon} alt="Ticket" width={16} height={16} />
-        </span>
-        <span
-          className={classnames('ticket-title text-truncate', { 'cursor-pointer': hasDetails })}
-          onClick={hasDetails ? openDetails : () => {}}
-        >
-          <span>{titleTip}</span>
-          <span className="seaqa-text-orange ml-1" title={resource.title}>{resource.title}</span>
-        </span>
+      <div
+        className={classnames('seaqa-agent-run-log-title', className)}
+        title={resource?.title}
+        onClick={hasDetails ? openDetails : () => {}}
+      >
+        {resource?.title}
       </div>
       {isShowDetails && (
         <ResourceDetailsDialog
@@ -289,246 +261,5 @@ const RunCardHeader = ({ item }) => {
   );
 };
 
-const normalizeRunEvents = (Events) => {
-  if (Array.isArray(Events)) return Events.filter(Boolean);
-  if (!Events || typeof Events !== 'object') return [];
 
-  // New schema: bare event object
-  if (typeof Events.type === 'string') {
-    return [Events];
-  }
-
-  return [];
-};
-
-const getUniqueEventTypes = (Events) => {
-  const normalizedEvents = normalizeRunEvents(Events);
-  if (normalizedEvents.length === 0) return [];
-  const seen = new Set();
-  return normalizedEvents.reduce((acc, e) => {
-    const type = e && e.type;
-    if (type && !seen.has(type)) {
-      seen.add(type);
-      acc.push(type);
-    }
-    return acc;
-  }, []);
-};
-
-const collectRunActions = (run) => {
-  const { items = [], actions = [] } = run;
-  const fromItems = items.flatMap(item => item.actions || []);
-  return [...fromItems, ...actions];
-};
-
-const runHasSuggestionAction = (run) =>
-  collectRunActions(run).some(a => a && a.type === ACTION_TYPE.SUGGESTION);
-
-const RunCard = ({
-  run,
-  expansionCommand,
-  onConfirmAction,
-  onCancelAction,
-  onViewContent,
-}) => {
-  const { id, started_at, items = [], actions = [], events } = run;
-  const eventTypes = getUniqueEventTypes(events);
-
-  let isShowDone;
-  let isShowNoActionNeeded;
-  let isCardExpanded;
-  if (run.status === RUN_STATUS.FAILED) {
-    isShowDone = false;
-    isShowNoActionNeeded = false;
-    isCardExpanded = false;
-  }
-  else if (run.status === RUN_STATUS.RUNNING) {
-    isShowDone = false;
-    isShowNoActionNeeded = false;
-    isCardExpanded = true;
-  }
-  else if (run.status === RUN_STATUS.COMPLETED) {
-    const allActions = collectRunActions(run);
-    const hasPending = allActions.some(action =>
-      [ACTION_STATUS.PENDING, ACTION_STATUS.EXECUTING].includes(action?.status)
-    );
-    const hasFailed = allActions.some(action => action?.status === ACTION_STATUS.FAILED);
-    const hasSuggestion = runHasSuggestionAction(run);
-    const noPending = !hasPending;
-    isShowDone = noPending && !hasFailed && hasSuggestion;
-    isShowNoActionNeeded = noPending && !hasFailed && !hasSuggestion;
-    isCardExpanded = hasFailed || !noPending;
-  }
-
-  const [isExpanded, setIsExpanded] = useState(
-    expansionCommand?.expanded ?? isCardExpanded,
-  );
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [showStatisticsDialog, setShowStatisticsDialog] = useState(false);
-  const [showThoughtProcessDialog, setShowThoughtProcessDialog] = useState(false);
-
-  useEffect(() => {
-    if (!expansionCommand) return;
-    setIsExpanded(expansionCommand.expanded);
-  }, [expansionCommand]);
-
-  const toggleExpand = useCallback(() => {
-    setIsExpanded(prev => !prev);
-  }, []);
-
-  const toggleDropdown = useCallback((e) => {
-    if (showStatisticsDialog) return;
-    if (e) e.stopPropagation();
-    setDropdownOpen(prev => !prev);
-  }, [showStatisticsDialog]);
-
-  const handleShowStatistics = useCallback((e) => {
-    e.stopPropagation();
-    setShowStatisticsDialog(true);
-    setDropdownOpen(false);
-  }, []);
-
-  const handleCloseStatistics = useCallback(() => {
-    setShowStatisticsDialog(false);
-  }, []);
-
-  const handleShowThoughtProcess = useCallback((e) => {
-    e.stopPropagation();
-    setShowThoughtProcessDialog(true);
-    setDropdownOpen(false);
-  }, []);
-
-  const handleCloseThoughtProcess = useCallback(() => {
-    setShowThoughtProcessDialog(false);
-  }, []);
-
-  return (
-    <div className={classnames('agent-run-card', { 'run-card-collapsed': !isExpanded })}>
-      <div className="run-card-header" >
-        <div className="run-card-header-left">
-          <DateFormatter className="run-time" value={started_at} column={{ data: { format: FROM_NOW } }} />
-          <span className="run-id">{gettext('Run')} #{id}</span>
-          {eventTypes.map(type => (
-            <span key={type} className="run-event-type-badge">{type}</span>
-          ))}
-          {isShowDone &&
-            <span className="run-card-done">
-              <Icon symbol="check-circle" className="mr-1" />
-              {gettext('Done')}
-            </span>
-          }
-          {isShowNoActionNeeded &&
-            <span className="run-card-no-action-needed">
-              {gettext('No action needed')}
-            </span>
-          }
-        </div>
-        <div className="run-card-header-right">
-          {run.status === RUN_STATUS.RUNNING &&
-            <span className="run-card-running mr-4">
-              <Icon symbol="spinner" className="mr-1" />
-              {gettext('Running')}
-            </span>
-          }
-          {run.status === RUN_STATUS.FAILED &&
-            <span className="run-card-failed mr-4">
-              {gettext('Failed')}
-            </span>
-          }
-          <Dropdown isOpen={dropdownOpen} toggle={toggleDropdown} className="run-card-more-dropdown">
-            <DropdownToggle tag="span" className="run-card-more-toggle">
-              <IconTooltip
-                icon="more"
-                tip={dropdownOpen ? null : gettext('More options')}
-                className="seaqa-project-refresh-btn"
-                placement="bottom"
-                hoverBackground={true}
-              />
-            </DropdownToggle>
-            <DropdownMenu end className="seaqa-dropdown-menu">
-              <DropdownItem onClick={handleShowStatistics}>
-                {gettext('Running log details')}
-              </DropdownItem>
-              {thoughtProcessEnabled && (
-                <DropdownItem onClick={handleShowThoughtProcess}>
-                  {gettext('Thought process')}
-                </DropdownItem>
-              )}
-            </DropdownMenu>
-          </Dropdown>
-          <IconTooltip
-            icon="arrow-down"
-            tip={isExpanded ? gettext('Collapse') : gettext('Expand')}
-            className={classnames('seaqa-project-refresh-btn m-0', { 'rotate-180': isExpanded })}
-            placement="bottom"
-            hoverBackground={true}
-            onClick={toggleExpand}
-          />
-        </div>
-      </div>
-
-      {isExpanded ? (
-        <div className="run-card-body">
-          {items.map((item, index) => (
-            <div key={`${item.source_type}-${item.source_id}-${index}`} className="run-ticket-section">
-              <RunCardHeader item={item} />
-              <div className="ticket-actions">
-                {(item.actions || []).filter((action, actionIndex, arr) => {
-                  if (action.type !== ACTION_TYPE.THOUGHT) return true;
-                  const nextAction = arr[actionIndex + 1];
-                  return !(nextAction && nextAction.type === ACTION_TYPE.SUMMARY);
-                }).map((action, actionIndex) => (
-                  <ActionItem
-                    key={action.id || actionIndex}
-                    action={action}
-                    runId={id}
-                    onConfirm={onConfirmAction}
-                    onCancel={onCancelAction}
-                    onViewContent={onViewContent}
-                  />
-                ))}
-              </div>
-            </div>
-          ))}
-
-          {/* Fallback: if no items but has top-level direct actions */}
-          {items.length === 0 && actions.length > 0 && (
-            <div className="run-actions-direct">
-              {actions.filter((action, actionIndex, arr) => {
-                if (action.type !== ACTION_TYPE.THOUGHT) return true;
-                const nextAction = arr[actionIndex + 1];
-                return !(nextAction && nextAction.type === ACTION_TYPE.SUMMARY);
-              }).map((action, actionIndex) => (
-                <ActionItem
-                  key={action.id || actionIndex}
-                  action={action}
-                  runId={id}
-                  onConfirm={onConfirmAction}
-                  onCancel={onCancelAction}
-                  onViewContent={onViewContent}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      )
-        :
-        <div className="run-card-body">
-          {items.map((item, index) => (
-            <div key={`${item.source_type}-${item.source_id}-${index}`} className="run-ticket-section">
-              <RunCardHeader item={item} />
-            </div>
-          ))}
-        </div>
-      }
-      {showStatisticsDialog && (
-        <RunStatisticsDialog run={run} runId={id} onToggle={handleCloseStatistics} />
-      )}
-      {showThoughtProcessDialog && (
-        <ThoughtProcessDialog runId={id} onToggle={handleCloseThoughtProcess} />
-      )}
-    </div>
-  );
-};
-
-export default RunCard;
+export default RunLogTitle;
