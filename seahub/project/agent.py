@@ -218,7 +218,7 @@ def _parse_run_event(raw_events):
 
 def _build_item_action(action):
     return {
-        'action_id': action['_pk'],
+        'id': action['_pk'],
         'type': action.get('action_type', ''),
         'tool_name': action.get('tool_name', ''),
         'result': action.get('result'),
