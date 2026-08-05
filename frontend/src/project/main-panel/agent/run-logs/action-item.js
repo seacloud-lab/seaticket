@@ -201,7 +201,7 @@ const ActionItem = React.memo(({
     if (!symbol) return null;
     return (
       <span className="action-item-icon">
-        <Icon symbol={symbol} style={type === ACTION_TYPE.ERROR ? { fill: '#FF0000' } : {}} />
+        <Icon symbol={symbol} style={type === ACTION_TYPE.ERROR ? { fill: 'var(--bs-text-danger)' } : {}} />
       </span>
     );
   };
