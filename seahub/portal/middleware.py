@@ -1,7 +1,7 @@
 from urllib.parse import urlsplit
 
 from django.conf import settings
-from django.http import Http404, HttpResponseRedirect
+from django.http import HttpResponseNotFound, HttpResponseRedirect
 from django.urls import Resolver404, resolve
 from django.utils.deprecation import MiddlewareMixin
 
@@ -89,7 +89,7 @@ class PortalDomainMiddleware(MiddlewareMixin):
         request.portal_domain = portal_domain
         requested_project_uuid = _get_project_uuid_from_origin_path(normalized_path)
         if requested_project_uuid and requested_project_uuid != project_uuid:
-            raise Http404
+            return HttpResponseNotFound()
 
         if portal_domain.domain_type == PORTAL_DOMAIN_TYPE_SERVICE_ALIAS:
             custom_domain = PortalCustomDomain.objects.get_verified_by_project_uuid(project_uuid)
@@ -107,7 +107,7 @@ class PortalDomainMiddleware(MiddlewareMixin):
 
         internal_path = _get_internal_path_for_portal_domain(project_uuid, normalized_path)
         if not internal_path:
-            raise Http404
+            return HttpResponseNotFound()
 
         request.META['ORIGINAL_PATH_INFO'] = path
         request.META['PATH_INFO'] = internal_path
