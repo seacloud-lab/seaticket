@@ -2,8 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { toaster, List, InputItem, MobileCommonHeader, Icon } from '../../components';
-import { gettext, PROJECT_ICON_LIST, PROJECT_ICON_COLORS } from '../../constants';
+import { gettext, DEFAULT_PROJECT_ICON, PROJECT_ICON_LIST, PROJECT_ICON_COLORS } from '../../constants';
 import { validateName } from '@/utils/validate';
+
+import './rename-project-view.css';
 
 const propTypes = {
   currentItem: PropTypes.object.isRequired,
@@ -17,7 +19,7 @@ class RenameProjectView extends React.Component {
     super(props);
     const { currentItem } = props;
     this.state = {
-      itemIcon: currentItem.icon || PROJECT_ICON_LIST[0],
+      itemIcon: currentItem.icon || DEFAULT_PROJECT_ICON,
       itemColor: currentItem.color || PROJECT_ICON_COLORS[0],
       itemName: currentItem.name || '',
     };
@@ -119,7 +121,7 @@ class RenameProjectView extends React.Component {
         <List>
           <InputItem className="create-table-input" clear value={this.state.itemName} onChange={this.handleChange} />
         </List>
-        <div className="selected-table-container project-icon-settings-popover">
+        <div className="selected-table-container rename-project-view-settings">
           <span>{gettext('Choose icon and color')}</span>
           <div className="create-project-settings">
             {this.renderColorSettings()}

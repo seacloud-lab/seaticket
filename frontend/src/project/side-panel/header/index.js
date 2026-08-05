@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { PROJECT_ICON_COLORS, PROJECT_ICON_LIST, siteRoot } from '../../../constants';
+import { DEFAULT_PROJECT_ICON, PROJECT_ICON_COLORS, siteRoot } from '../../../constants';
 import Icon from '../../../components/icon';
 
 import './index.css';
@@ -12,7 +12,7 @@ const Header = () => {
     return {
       ...info,
       bg_color: info.bg_color || PROJECT_ICON_COLORS[0],
-      name: info.name || PROJECT_ICON_LIST[0]
+      name: info.name || DEFAULT_PROJECT_ICON
     };
   }, []);
 

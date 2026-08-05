@@ -1,88 +1,22 @@
-.project-icon-settings-popover .project-icon-style {
-  color: #999;
-  font-size: 20px;
+.project-setting-popover .popover {
+  width: 500px;
+  max-width: calc(100vw - 32px);
 }
 
-.project-icon-settings-popover .popover {
-  max-width: 311px;
-  width: 311px;
+.project-setting-popover .popover-body {
+  color: var(--bs-body-color);
 }
 
-.project-icon-settings-popover .seaqa-color-content {
+.project-setting-popover .project-setting-popover-footer {
+  padding: 12px 16px;
+  border-top: 1px solid var(--bs-popover-border-color);
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  margin: 0 0 12px 0;
-  --bs-gutter-x: 0;
-  --bs-gutter-y: 0;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
-.project-icon-settings-popover .project-icon-content {
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 3px;
-}
-
-.project-icon-settings-popover .seaqa-color-item:first-child,
-.project-icon-settings-popover .seaqa-color-item:nth-child(13) {
-  margin-left: 0;
-}
-
-.project-icon-settings-popover .seaqa-color-item:nth-child(12),
-.project-icon-settings-popover .seaqa-color-item:last-child {
-  margin-right: 0;
-}
-
-.project-icon-settings-popover .seaqa-color-item {
-  height: 20px;
-  width: 20px;
-  padding: 0;
-  display: flex;
-}
-
-.project-icon-settings-popover .seaqa-color-item .colorinput-color {
-  height: 20px;
-  width: 20px;
-  border-radius: 10px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border: unset;
-}
-
-.project-icon-settings-popover .seaqa-color-item .colorinput-color:before {
-  content: unset;
-}
-
-.project-icon-settings-popover .project-icon-color-check {
-  height: 12px;
-  width: 12px;
-  color: #ffffff;
-}
-
-.project-icon-settings-popover .project-icon-item {
+.project-setting-popover .project-setting-popover-footer .btn {
   height: 32px;
-  width: 32px;
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-@media screen and (max-width: 766.8px) {
-  .project-icon-settings-popover .project-icon-item {
-    margin-right: 6px;
-  }
-}
-
-.project-icon-settings-popover .project-icon-item .project-icon-input {
-  height: 100%;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.project-icon-settings-popover .project-icon-item:hover {
-  background-color: #f5f5f5;
+  padding-top: 0;
+  padding-bottom: 0;
 }
