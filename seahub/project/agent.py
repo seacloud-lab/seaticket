@@ -230,6 +230,9 @@ def _build_item_action(action):
         'statistics': action.get('statistics'),
         'created_at': action.get('created_at'),
         'executed_at': action.get('executed_at'),
+        'source_type': action.get('source_type', ''),
+        'source_id': action.get('source_id', ''),
+        'source_title': action.get('source_title', ''),
     }
 
 def list_agent_items(seadb_api, project_uuid, page=1, per_page=20):
@@ -269,28 +272,37 @@ def get_agent_item_runs(seadb_api, project_uuid, source_id, source_type):
     actions_table = SchemaTables.AGENT_ACTIONS.table_name()
     runs_table = SchemaTables.AGENT_RUNS.table_name()
 
+    run_ids_sql = \
+        f"SELECT DISTINCT `run_id` FROM `{actions_table}` " \
+        f"WHERE `source_id` = '{source_id}' AND `source_type` = '{source_type}' " \
+        "ORDER BY `run_id` ASC"
+    run_ids_result = seadb_api.query_rows(project_uuid, run_ids_sql)
+    run_ids = [
+        row.get('run_id') for row in run_ids_result.get('results', [])
+        if row.get('run_id') is not None
+    ]
+    if not run_ids:
+        raise ValueError('Item not found.')
+
+    run_ids_str = ','.join(str(int(run_id)) for run_id in run_ids)
     actions_sql = \
-        "SELECT `_pk`, `run_id`, `source_type`, `source_id`, `source_title`, " \
+        "SELECT `_pk`, `run_id`, " \
         "`action_type`, `tool_name`, `result`, `status`, `suggestion_reason`, " \
         "`suggestion_text`, `suggestion_content`, `sources`, `statistics`, " \
+        "`source_type`, `source_id`, `source_title`, " \
         f"`created_at`, `executed_at` FROM `{actions_table}` " \
-        f"WHERE `source_id` = '{source_id}' AND `source_type` = '{source_type}' " \
-        "ORDER BY `_pk` ASC"
+        f"WHERE `run_id` IN ({run_ids_str}) ORDER BY `run_id` ASC, `_pk` ASC"
     actions_result = seadb_api.query_rows(project_uuid, actions_sql)
     actions = actions_result.get('results', [])
-    if not actions:
-        raise ValueError('Item not found.')
 
     actions_by_run = {}
     for action in actions:
         run_id = action.get('run_id')
         actions_by_run.setdefault(run_id, []).append(_build_item_action(action))
 
-    run_ids = sorted(actions_by_run)
-    run_ids_sql = ','.join(str(int(run_id)) for run_id in run_ids)
     runs_sql = \
         "SELECT `_pk`, `status`, `started_at`, `finished_at`, `error_message`, `events` " \
-        f"FROM `{runs_table}` WHERE `_pk` IN ({run_ids_sql}) ORDER BY `_pk` ASC"
+        f"FROM `{runs_table}` WHERE `_pk` IN ({run_ids_str}) ORDER BY `_pk` ASC"
     runs_result = seadb_api.query_rows(project_uuid, runs_sql)
     runs = runs_result.get('results', [])
 
