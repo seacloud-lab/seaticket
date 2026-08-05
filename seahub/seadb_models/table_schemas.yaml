@@ -1067,14 +1067,15 @@ tables:
         column_type: list
         column_data:
           list_type: int64
-      record_modified_time:
-        column_type: datetime
       connection_type:
         column_type: text
+      record_modified_time:
+        column_type: datetime
       next_privacy_report_at:
         column_type: datetime
     indexes:
     - - user_id
     - - connection_type
+    - - next_privacy_report_at
     - - connection_ids
     table_name: connection_user
