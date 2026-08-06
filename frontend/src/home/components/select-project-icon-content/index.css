@@ -18,8 +18,8 @@
 
 .select-project-icon-content .select-project-icon-content-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, 40px);
-  gap: 4px;
+  grid-template-columns: repeat(13, minmax(32px, 1fr));
+  row-gap: 4px;
 }
 
 .select-project-icon-content .select-project-icon-content-item {
@@ -31,6 +31,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  justify-self: center;
   color: #999;
   background-color: transparent;
 }
