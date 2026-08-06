@@ -283,7 +283,8 @@ def get_agent_log_runs(seadb_api, project_uuid, source_id, source_type):
     actions_table = SchemaTables.AGENT_ACTIONS.table_name()
     runs_table = SchemaTables.AGENT_RUNS.table_name()
     is_ticket = source_type == ExtraSourceType.TICKET.value
-    item_filter = f"`source_id` = '{source_id}' AND `source_type` = '{source_type}'"
+    item_filter = "`source_id` = ? AND `source_type` = ?"
+    item_params = [source_id, source_type]
 
     # A ticket run may contain actions for different source types. For example,
     # processing a ticket can generate both a ticket suggestion and a reply
@@ -295,11 +296,15 @@ def get_agent_log_runs(seadb_api, project_uuid, source_id, source_type):
             f"WHERE {item_filter} "
             "ORDER BY `run_id` ASC"
         )
-        result = seadb_api.query_rows(project_uuid, run_ids_sql)
+        result = seadb_api.query_rows(project_uuid, run_ids_sql, params=item_params)
         run_ids = _get_run_ids(result.get('results', []))
+        if not run_ids:
+            raise ValueError('Item not found.')
         action_filter = f"`run_id` IN ({','.join(map(str, run_ids))})"
+        action_params = None
     else:
         action_filter = item_filter
+        action_params = item_params
 
     actions_sql = (
         "SELECT `_pk`, `run_id`, `action_type`, `tool_name`, `result`, `status`, "
@@ -308,7 +313,7 @@ def get_agent_log_runs(seadb_api, project_uuid, source_id, source_type):
         f"`executed_at` FROM `{actions_table}` WHERE {action_filter} "
         "ORDER BY `run_id` ASC, `_pk` ASC"
     )
-    result = seadb_api.query_rows(project_uuid, actions_sql)
+    result = seadb_api.query_rows(project_uuid, actions_sql, params=action_params)
     actions = result.get('results', [])
     if not actions:
         raise ValueError('Item not found.')
@@ -399,6 +404,12 @@ class AgentLogRunsView(APIView):
         source_type = request.GET.get('source_type')
         if not source_type:
             return api_error(status.HTTP_400_BAD_REQUEST, 'source_type is required.')
+        valid_source_types = (
+            {item.value for item in ConnectionType}
+            | {item.value for item in ExtraSourceType}
+        )
+        if source_type not in valid_source_types:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Invalid source_type.')
 
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:

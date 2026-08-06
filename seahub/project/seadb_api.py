@@ -104,14 +104,14 @@ class SeaDBAPI:
         response = requests.delete(url, json=data, headers=self.headers, timeout=self.timeout)
         return parse_response(response)
 
-    def query_rows(self, base_id, sql, params=[], convert_keys=True):
+    def query_rows(self, base_id, sql, params=None, convert_keys=True):
         base_id = uuid_str_to_36_chars(base_id)
         post_data = {
             'sql': sql,
             'convert_keys': convert_keys
         }
         if params:
-            post_data['params'] = params
+            post_data['parameters'] = params
         url = f'{self.server_url}/api/v1/{base_id}/query'
         response = requests.post(url, json=post_data, headers=self.headers, timeout=self.timeout)
         return normalize_query_date_fields(parse_response(response))
