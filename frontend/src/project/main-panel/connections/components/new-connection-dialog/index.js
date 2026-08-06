@@ -575,7 +575,15 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       }
     }
     if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && column.key === 'team_id' && isLinear) {
-      api = listLinearTeams;
+      if (isLinearOauthConnected) {
+        api = listLinearTeams;
+        column.readonly = false;
+        column.placeholder = gettext('Select a team');
+      } else {
+        api = null;
+        column.readonly = true;
+        column.placeholder = gettext('Please connect Linear first');
+      }
       if (row[key]) {
         row[key] = row[key].value || row[key];
       }
@@ -600,14 +608,14 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         api={api}
         key={key}
         row={row}
-        readonly={isSubmitting}
+        readonly={isSubmitting || column.readonly}
         onChange={onConfigChange}
       />
     );
   }, [
     config, isSubmitting, isGithub, isConfluence, isConfluenceOauthConnected, isLinear,
     onConfigChange, listGitHubRepositories, listConfluenceWorkspaces, listLinearTeams,
-    isDiscord, listDiscordChannels
+    isDiscord, listDiscordChannels, isLinearOauthConnected,
   ]);
 
   return (
