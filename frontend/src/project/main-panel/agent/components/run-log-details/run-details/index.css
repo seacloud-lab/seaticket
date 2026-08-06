@@ -1,5 +1,5 @@
 .seaqa-agent-run-detail {
-  background: #fff;
+  background: var(--bs-body-bg);
   border: 1px solid var(--bs-border-tertiary-color);
   border-radius: 8px;
 }
@@ -11,7 +11,7 @@
 }
 
 .seaqa-agent-run-detail.expanded {
-  box-shadow: 0 3px 8px #1013181a;
+  box-shadow: 0 3px 8px rgba(16, 19, 24, .1);
   flex-direction: column;
   margin-bottom: 16px;
   padding-right: 0;
@@ -38,7 +38,7 @@
 .seaqa-agent-run-detail.collapsed .seaqa-agent-run-detail-header {
   height: 44px;
   padding-bottom: 10px;
-  background-color: #FDFDFC;
+  background-color: var(--bs-th-secondary-bg);
 }
 
 .seaqa-agent-run-detail:last-child .seaqa-agent-run-detail-header {
@@ -52,8 +52,6 @@
 }
 
 .seaqa-agent-run-detail-header-left {
-  display: flex;
-  align-items: center;
   gap: 8px;
 }
 
@@ -61,89 +59,63 @@
   line-height: 22px;
 }
 
-.seaqa-agent-run-detail-header-right {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.seaqa-agent-run-detail .run-card-more-toggle .seaqa-icon-btn {
-  margin-right: 8px;
-}
-
-.run-card-more-dropdown {
-  display: inline-flex;
-}
-
-.run-card-more-toggle {
-  cursor: pointer;
-}
-
-.run-card-more-dropdown .dropdown-menu {
+.seaqa-agent-run-detail-dropdown-menu {
   min-width: 160px;
 }
 
 .seaqa-agent-run-status {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: fit-content;
-  height: 20px;
-  border: 1px solid transparent;
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 12px;
-  padding: 0 8px;
-  border-radius: 10px;
+  height: 24px !important;
 }
 
-.seaqa-agent-run-status.run-done {
-  border-color: #5EBA0033;
-  color: #5EBA00;
-  padding-left: 4px;
+.seaqa-agent-run-status,
+.seaqa-agent-run-status:hover {
+  cursor: default !important;
+  background-color: unset !important;
+}
+
+.seaqa-agent-run-status.run-done,
+.seaqa-agent-run-status.run-done:hover,
+.seaqa-agent-run-status.run-no-action-needed,
+.seaqa-agent-run-status.run-no-action-needed:hover {
+  border-color: rgba(var(--bs-success-rgb), 0.12);
+  color: var(--bs-success);
+  background-color: var(--bs-th-secondary-bg) !important;
 }
 
 .seaqa-agent-run-status.run-done svg {
-  width: 12px;
-  height: 12px;
+  color: inherit !important;
 }
 
-.seaqa-agent-run-status.run-no-action-needed {
-  border-color: #0028641F;
-  color: #5EBA00;
+.seaqa-agent-run-status.run-running,
+.seaqa-agent-run-status.run-failed {
+  font-size: 14px;
+  line-height: 22px;
+  padding: 0 !important;
+  border: unset !important;
 }
 
 .seaqa-agent-run-status.run-running {
-  font-size: 14px;
-  line-height: 22px;
   color: var(--bs-body-secondary-color);
-  padding: 0;
 }
 
 .seaqa-agent-run-status.run-running svg {
   width: 14px;
   height: 14px;
-  color: var(--bs-body-secondary-color);
+  color: inherit;
 }
 
 .seaqa-agent-run-status.run-failed {
   color: var(--bs-text-danger);
-  font-size: 14px;
-  line-height: 22px;
-  padding: 0;
 }
 
 .seaqa-agent-run-event-type {
-  display: inline-flex;
-  align-items: center;
-  height: 20px;
-  padding: 0 8px;
-  border: 1px solid var(--bs-border-color);
-  border-radius: 4px;
-  font-size: 12px;
   color: var(--bs-body-secondary-color);
-  line-height: 12px;
-  white-space: nowrap;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 40, 100, 0.12);
+  background-color: var(--bs-th-secondary-bg);
+  height: 24px;
+  width: fit-content;
+  line-height: 22px;
 }
 
 .seaqa-agent-run-detail-body {
@@ -154,6 +126,4 @@
 
 .seaqa-agent-run-actions-direct {
   gap: 12px;
-  display: flex;
-  flex-direction: column;
 }

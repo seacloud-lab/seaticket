@@ -246,7 +246,7 @@ def _get_run_ids(rows):
     return sorted(run_ids)
 
 
-def list_agent_items(seadb_api, project_uuid, page=1, per_page=20):
+def list_agent_logs(seadb_api, project_uuid, page=1, per_page=20):
     offset = (page - 1) * per_page
     actions_table = SchemaTables.AGENT_ACTIONS.table_name()
     runs_table = SchemaTables.AGENT_RUNS.table_name()
@@ -260,26 +260,26 @@ def list_agent_items(seadb_api, project_uuid, page=1, per_page=20):
         "GROUP BY `actions`.`source_id`, `actions`.`source_type`, `actions`.`source_title` " \
         "ORDER BY `last_active_at` DESC, `actions`.`source_type` DESC " \
         f"LIMIT {offset}, {per_page + 1}"
-    items_result = seadb_api.query_rows(project_uuid, items_sql)
-    items = items_result.get('results', [])
+    logs_result = seadb_api.query_rows(project_uuid, items_sql)
+    logs = logs_result.get('results', [])
 
-    has_more = len(items) > per_page
+    has_more = len(logs) > per_page
     if has_more:
-        items = items[:per_page]
+        logs = logs[:per_page]
 
     return {
-        'items': [{
-            'source_id': item.get(f'{actions_table}.source_id', ''),
-            'source_type': item.get(f'{actions_table}.source_type', ''),
-            'source_title': item.get(f'{actions_table}.source_title', ''),
-            'num_of_runs': item.get('num_of_runs', 0),
-            'last_active_at': item.get('last_active_at'),
-        } for item in items],
+        'logs': [{
+            'source_id': log.get(f'{actions_table}.source_id', ''),
+            'source_type': log.get(f'{actions_table}.source_type', ''),
+            'source_title': log.get(f'{actions_table}.source_title', ''),
+            'num_of_runs': log.get('num_of_runs', 0),
+            'last_active_at': log.get('last_active_at'),
+        } for log in logs],
         'has_more': has_more,
     }
 
 
-def get_agent_item_runs(seadb_api, project_uuid, source_id, source_type):
+def get_agent_log_runs(seadb_api, project_uuid, source_id, source_type):
     actions_table = SchemaTables.AGENT_ACTIONS.table_name()
     runs_table = SchemaTables.AGENT_RUNS.table_name()
     is_ticket = source_type == ExtraSourceType.TICKET.value
@@ -304,7 +304,7 @@ def get_agent_item_runs(seadb_api, project_uuid, source_id, source_type):
     actions_sql = (
         "SELECT `_pk`, `run_id`, `action_type`, `tool_name`, `result`, `status`, "
         "`suggestion_reason`, `suggestion_text`, `suggestion_content`, `sources`, "
-        "`statistics`, `source_type`, `source_id`, `source_title`, `created_at`, "
+        "`source_type`, `source_id`, `source_title`, `created_at`, "
         f"`executed_at` FROM `{actions_table}` WHERE {action_filter} "
         "ORDER BY `run_id` ASC, `_pk` ASC"
     )
@@ -343,10 +343,10 @@ def get_agent_item_runs(seadb_api, project_uuid, source_id, source_type):
     }
 
 
-class AgentItemsView(APIView):
+class AgentLogsView(APIView):
     """
-    List items processed by the agent.
-    GET /api/v1/project/<project_uuid>/agent/items/
+    List logs processed by the agent.
+    GET /api/v1/project/<project_uuid>/agent/logs/
     """
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
@@ -374,7 +374,7 @@ class AgentItemsView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         try:
-            result = list_agent_items(SeaDBAPI(), project_uuid, page, per_page)
+            result = list_agent_logs(SeaDBAPI(), project_uuid, page, per_page)
         except Exception as e:
             logger.error(f'Error listing agent items: {e}')
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
@@ -382,10 +382,10 @@ class AgentItemsView(APIView):
         return Response(result, status=status.HTTP_200_OK)
 
 
-class AgentItemRunsView(APIView):
+class AgentLogRunsView(APIView):
     """
-    List all runs and actions for an item.
-    GET /api/v1/project/<project_uuid>/agent/item/runs/?source_id=<source_id>&source_type=<source_type>
+    List all runs and actions for a log.
+    GET /api/v1/project/<project_uuid>/agent/log/runs/?source_id=<source_id>&source_type=<source_type>
     """
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
@@ -409,57 +409,16 @@ class AgentItemRunsView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         try:
-            result = get_agent_item_runs(SeaDBAPI(), project_uuid, source_id, source_type)
+            result = get_agent_log_runs(SeaDBAPI(), project_uuid, source_id, source_type)
         except ValueError as e:
-            logger.error(f'Error getting agent item runs: {e}')
+            logger.error(f'Error getting agent log runs: {e}')
             return api_error(status.HTTP_404_NOT_FOUND, str(e))
         except Exception as e:
-            logger.error(f'Error getting agent item runs: {e}')
+            logger.error(f'Error getting agent log runs: {e}')
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
         return Response(result, status=status.HTTP_200_OK)
 
-
-class AgentRunsView(APIView):
-    """
-    List agent runs for a project.
-    GET /api/v1/project/<project_uuid>/agent/runs/
-    """
-    authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated, )
-    throttle_classes = (UserRateThrottle, )
-
-    @require_org_context
-    def get(self, request, project_uuid):
-        # argument check
-        try:
-            page = int(request.GET.get('page', 1))
-            per_page = int(request.GET.get('per_page', 50))
-        except ValueError:
-            page = 1
-            per_page = 50
-
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        try:
-            seadb_api = SeaDBAPI()
-            result = list_agent_runs(seadb_api, project_uuid, page, per_page, include_details=False)
-        except Exception as e:
-            logger.error(f'Error listing agent runs: {e}')
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
-
-        return Response(result, status=status.HTTP_200_OK)
 
 class AgentRunDetailView(APIView):
     """

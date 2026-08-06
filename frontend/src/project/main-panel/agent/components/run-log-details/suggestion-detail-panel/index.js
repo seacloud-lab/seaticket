@@ -85,7 +85,7 @@ const SuggestionDetailPanel = ({
     <div className="seaqa-agent-tool-suggestion-panel" ref={ref}>
       <div className="seaqa-agent-tool-suggestion-panel-header">
         <span className="seaqa-agent-tool-suggestion-panel-title text-truncate" title={title}>{title}</span>
-        <IconButton icon="close" className="seaqa-agent-tool-suggestion-panel-close" onClick={onClose}/>
+        <IconButton icon="close" className="flex-shrink-0" onClick={onClose}/>
       </div>
       <div className="seaqa-agent-tool-suggestion-panel-body">
         <Detail

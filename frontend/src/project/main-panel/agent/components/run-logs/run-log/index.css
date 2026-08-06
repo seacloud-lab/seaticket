@@ -2,7 +2,7 @@
   height: fit-content;
   padding: 12px 16px;
   border-bottom: 1px solid var(--bs-border-secondary-color);
-  gap: 4px;
+  gap: 8px;
 }
 
 .seaqa-agent-run-log:hover {
@@ -54,7 +54,7 @@
 }
 
 .seaqa-agent-run-log .seaqa-agent-run-log-footer {
-  color: #444;
+  color: var(--bs-body-tertiary-color);
   font-size: 12px;
   line-height: 22px;
   gap: 4px;

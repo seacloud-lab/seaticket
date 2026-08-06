@@ -1,13 +1,15 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import axios from 'axios';
 import { agentAPI, ticketsAPI } from '@/project/api';
-import { CenteredLoading, IconTooltip, toaster } from '@/components';
-import { gettext } from '@/constants';
+import { CenteredLoading, IconTooltip, toaster, EmptyTip } from '@/components';
+import { gettext, mediaUrl } from '@/constants';
 import RunDetail from './run-details';
 import SuggestionDetailPanel from './suggestion-detail-panel';
 import AgentType2GithubTypeMappingDialog from '../agent-type-to-github-type-mapping-dialog';
 import { useCloseLinkedIssues } from '@/project/main-panel/tickets/hooks';
-import { CONNECTION_TYPES } from '@/project/main-panel/connections/constants';
-import RunLogTitle from '../run-log-title';
+import ResourceTitle from '../resource-title';
+import { getAgentResource } from '../../utils';
+import { Utils } from '@/utils/utils';
 
 import './index.css';
 
@@ -19,26 +21,19 @@ const RunLogDetails = ({
   showLogs,
   settings,
   modifySettings,
+  hideLogs,
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [runs, setRuns] = useState([]);
   const [pendingMapping, setPendingMapping] = useState(null);
   const [suggestionInfo, setSuggestionInfo] = useState(null);
-
   const { openCloseLinkedGitHubIssuesWarningDialog } = useCloseLinkedIssues();
 
   const { source_id, source_type } = useMemo(() => ({
-    source_id: runLog.source_id,
-    source_type: runLog.source_type,
+    source_id: runLog?.source_id,
+    source_type: runLog?.source_type,
   }), [runLog]);
-  const actualSourceId = useMemo(() => {
-    let sourceId = source_id;
-    if (CONNECTION_TYPES.find(connection => connection.type === source_type)) {
-      const source_ids = source_id.split('_');
-      sourceId = source_ids[1];
-    }
-    return sourceId;
-  }, [source_type, source_id]);
+  const resource = useMemo(() => getAgentResource(runLog), [runLog]);
   const suggestionDetail = useMemo(() => {
     if (!suggestionInfo) return null;
     if (!Array.isArray(runs) || runs.length === 0) return null;
@@ -52,13 +47,10 @@ const RunLogDetails = ({
     return { runId, action, mode };
   }, [runs, suggestionInfo]);
 
-  const openSuggestionDetailPanel = useCallback((action, runId, mode = 'view') => {
-    setSuggestionInfo({
-      runId,
-      actionId: action.id,
-      mode,
-    });
-  }, []);
+  const openSuggestionDetailPanel = useCallback((runId, actionId, mode = 'view') => {
+    setSuggestionInfo({ runId, actionId, mode });
+    hideLogs();
+  }, [hideLogs]);
 
   const closeSuggestionDetailPanel = useCallback(() => {
     setSuggestionInfo(null);
@@ -253,15 +245,35 @@ const RunLogDetails = ({
   }, [pendingMapping, settings, updateRunAction, modifySettings]);
 
   useEffect(() => {
+    const controller = new AbortController();
+
+    if (!source_id || !source_type) {
+      setIsLoading(false);
+      setRuns([]);
+      setSuggestionInfo(null);
+      setPendingMapping(null);
+      return () => controller.abort();
+    }
+
     setIsLoading(true);
-    agentAPI.testListAgentItemLogs(projectUuid, source_id, source_type).then(res => {
+    setRuns([]);
+    setSuggestionInfo(null);
+    setPendingMapping(null);
+    agentAPI.listAgentLogRuns(projectUuid, source_id, source_type, controller.signal).then(res => {
+      if (controller.signal.aborted) return;
       const { runs } = res.data;
       setRuns(runs || []);
     }).catch(error => {
-      //
+      if (axios.isCancel(error)) return;
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+      setRuns([]);
     }).finally(() => {
+      if (controller.signal.aborted) return;
       setIsLoading(false);
     });
+
+    return () => controller.abort();
   }, [source_id, source_type]);
 
   return (
@@ -279,14 +291,21 @@ const RunLogDetails = ({
               onClick={showLogs}
             />
           )}
-          <RunLogTitle runLog={runLog} className="font-size-16 font-weight-500 text-truncate" />
+          <ResourceTitle resource={resource} className="font-size-16 font-weight-500 text-truncate" />
           <div className="seaqa-agent-run-log-source-id flex-shrink-0 px-2 font-size-12">
-            {`# ${actualSourceId}`}
+            {`# ${resource._id}`}
           </div>
         </div>
         <div className="seaqa-agent-run-log-details-body d-flex flex-1 o-hidden">
           {isLoading && (<CenteredLoading />)}
-          {!isLoading && (
+          {!isLoading && runs.length === 0 && (
+            <EmptyTip
+              src={`${mediaUrl}img/no-items-tip.png`}
+              title={gettext('No agent runs')}
+              className="w-100"
+            />
+          )}
+          {!isLoading && runs.length !== 0 && (
             <>
               <div className="seaqa-agent-run-log-details h-100 d-flex flex-column p-4 w-100">
                 {runs.map(((run, index) => {
@@ -294,6 +313,7 @@ const RunLogDetails = ({
                     <RunDetail
                       key={run.id || index}
                       run={run}
+                      index={index}
                       isExpanded={index === runs.length - 1 }
                       onConfirmAction={onConfirmAction}
                       onCancelAction={onCancelAction}
@@ -323,7 +343,6 @@ const RunLogDetails = ({
       )}
     </>
   );
-
 };
 
 export default RunLogDetails;

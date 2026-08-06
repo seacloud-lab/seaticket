@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import classnames from 'classnames';
 import { connectionsAPI } from '@/project/api';
 import context from '@/sea-metadata/context';
@@ -11,7 +11,7 @@ import { useConnections } from '@/project/main-panel/connections/hooks';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import { useData, useMetadata } from '@/project/hooks';
 import { AttachmentObject } from '@/project/main-panel/ask/models';
-import { normalizeContextMenuOptions, getResourceIconURL } from '@/project/utils';
+import { normalizeContextMenuOptions } from '@/project/utils';
 import {
   generateAIOptions, generateCreateRelatedTicketOption, generateFindRelatedIssuesOption,
   generateLinkAnExistingTicketOption, generateOpenOriginalPageOption,
@@ -28,24 +28,7 @@ import './index.css';
 
 const { projectUuid } = window.app.pageOptions;
 
-const getResourceFromLog = (log) => {
-  const { source_type, source_id, source_title } = log;
-  const icon = getResourceIconURL(source_type);
-  if (source_type === TICKET_TYPE) return { type: TICKET_TYPE, title: source_title, _id: source_id, icon };
-
-  const separatorIndex = source_id.indexOf('_');
-  const connectionId = separatorIndex > -1 ? source_id.slice(0, separatorIndex) : '';
-  const recordId = separatorIndex > -1 ? source_id.slice(separatorIndex + 1) : '';
-  return {
-    type: source_type,
-    _id: recordId || source_id,
-    title: source_title,
-    connection_id: connectionId ? Number(connectionId) : null,
-    icon,
-  };
-};
-
-const RunLogTitle = ({ runLog, className }) => {
+const ResourceTitle = ({ resource, className }) => {
   const [isShowDetails, setIsShowDetails] = useState(false);
   const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
   const [isTicketDialogOpen, setTicketDialogOpen] = useState(false);
@@ -56,8 +39,6 @@ const RunLogTitle = ({ runLog, className }) => {
   const { connections } = useConnections();
   const { updateAttachments } = useAIChatTools();
   const { modifyRow, modifyRowLink, insertRowByLink } = useData();
-
-  const resource = useMemo(() => getResourceFromLog(runLog), [runLog]);
 
   const openDetails = useCallback((event) => {
     event.stopPropagation();
@@ -217,7 +198,7 @@ const RunLogTitle = ({ runLog, className }) => {
   return (
     <>
       <div
-        className={classnames('seaqa-agent-run-log-title', className)}
+        className={classnames('seaqa-agent-resource-title', className)}
         title={resource?.title}
         onClick={hasDetails ? openDetails : () => {}}
       >
@@ -261,5 +242,4 @@ const RunLogTitle = ({ runLog, className }) => {
   );
 };
 
-
-export default RunLogTitle;
+export default ResourceTitle;

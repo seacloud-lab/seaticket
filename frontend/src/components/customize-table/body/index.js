@@ -18,7 +18,7 @@ const Body = ({ isLoading, emptyTip, columns = [], rows = [], loadMore, rowHeigh
   const rowsCountRef = useRef(0);
   const rowHeightRef = useRef(0);
 
-  const onScroll = Utils.debounce(useCallback(() => {
+  const onScroll = Utils.throttle(useCallback(() => {
     if (isLoading) return;
     if (!loadMore) return;
     const clientHeight = tableRef.current.clientHeight;

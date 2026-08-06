@@ -32,6 +32,11 @@ const RunLogs = ({
     setActiveLogIndex && setActiveLogIndex(index);
   }, [activeLogIndex, setActiveLogIndex]);
 
+  const handleReload = useCallback(() => {
+    setActiveLogIndex(0);
+    reload();
+  }, [setActiveLogIndex, reload]);
+
   const onScroll = Utils.debounce(useCallback(() => {
     if (isLoading) return;
     if (!loadMore) return;
@@ -91,7 +96,7 @@ const RunLogs = ({
             <div className="font-weight-500 text-truncate">
               {gettext('Run logs')}
             </div>
-            <RefreshBtn onClick={reload} className="ml-1" />
+            <RefreshBtn onClick={handleReload} className="ml-1" />
           </div>
           <IconTooltip
             onClick={hideLogs}
@@ -124,7 +129,6 @@ const RunLogs = ({
       <ResizeBar min={left + 300} max={left + 400} onResize={onResize} />
     </div>
   );
-
 };
 
 export default RunLogs;

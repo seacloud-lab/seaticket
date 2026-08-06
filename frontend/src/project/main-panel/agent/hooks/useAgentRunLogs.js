@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { agentAPI } from '@/project/api';
+import { toaster } from '@/components';
+import { Utils } from '@/utils/utils';
 
 const { projectUuid } = window.app.pageOptions;
 
@@ -12,14 +14,16 @@ export const useAgentRunLogs = () => {
 
   const loadRunLogs = useCallback((pageNum = 1) => {
     setIsLoading(true);
-    agentAPI.testListAgentRunLogs(projectUuid, pageNum).then(res => {
-      const { items, has_more } = res.data;
-      setRunLogs(prev => pageNum === 1 ? items : [...(prev || []), ...items]);
+    agentAPI.listAgentLogs(projectUuid, pageNum).then(res => {
+      const { logs, has_more } = res.data;
+      setRunLogs(prev => pageNum === 1 ? logs : [...(prev || []), ...logs]);
       setHasMore(has_more);
       pageRef.current = pageNum;
       setIsLoading(false);
     }).catch(err => {
       console.error('Failed to load agent run logs:', err);
+      const errorMessage = Utils.getErrorMsg(err);
+      toaster.danger(errorMessage);
       setIsLoading(false);
     });
   }, []);

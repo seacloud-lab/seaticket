@@ -2,7 +2,7 @@ import os
 import sys
 import logging
 import argparse
-sys.path.append('/data/dev/seaqa-web/seaqa-web')
+sys.path.append('/opt/seaticket/seaqa-web')
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'seahub.settings')
 import django
 

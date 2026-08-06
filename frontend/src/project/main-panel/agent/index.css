@@ -1,5 +1,5 @@
 /* Agent top-bar content */
-.agent-top-bar-content {
+.seaqa-agent-top-bar-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -8,37 +8,12 @@
 }
 
 /* Agent container */
-.agent-container {
+.seaqa-agent-container {
   flex: 1;
   display: flex;
   overflow: hidden;
-  background-color: #fff;
+  background-color: var(--bs-body-bg);
   width: 100%;
   align-self: stretch;
   position: relative;
-}
-
-/* Agent settings wrapper */
-.agent-execute-btn {
-  background-color: #ED7109;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  padding: 6px 12px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  white-space: nowrap;
-  height: fit-content;
-  flex-shrink: 0;
-}
-
-.agent-execute-btn:hover:not(:disabled) {
-  background-color: #e69500;
-}
-
-.agent-execute-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }

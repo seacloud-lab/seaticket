@@ -11,7 +11,7 @@
   padding: 16px;
   overflow-y: auto;
   font-size: 14px;
-  color: var(--bs-body-secondary-color);
+  color: var(--bs-body-tertiary-color);
   line-height: 22px;
   white-space: pre-wrap;
   word-break: break-word;

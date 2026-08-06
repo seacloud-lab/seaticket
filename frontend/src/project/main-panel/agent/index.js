@@ -25,18 +25,18 @@ const Agent = ({ title, settings, modifySettings }) => {
   return (
     <>
       <TopBar>
-        <div className="agent-top-bar-content">
+        <div className="seaqa-agent-top-bar-content">
           <div className="w-100 text-truncate">{title}</div>
         </div>
       </TopBar>
-      <div className="agent-container">
+      <div className="seaqa-agent-container">
         {isRunLogsLoading && runLogs.length === 0 && (
           <CenteredLoading />
         )}
         {!isRunLogsLoading && runLogs.length === 0 && (
           <EmptyTip
             src={`${mediaUrl}img/no-items-tip.png`}
-            title={gettext('No agent runs')}
+            title={gettext('No agent logs')}
             text={!enabledAgent && gettext('Enable the agent in settings to start')}
             className="w-100"
           />
@@ -58,11 +58,11 @@ const Agent = ({ title, settings, modifySettings }) => {
             <RunLogDetails
               isShowLogs={isShowLogs}
               showLogs={() => setIsShowLogs(true)}
+              hideLogs={() => setIsShowLogs(false)}
               runLog={runLogs[activeLogIndex]}
               settings={settings}
               modifySettings={modifySettings}
             />
-
           </>
         )}
       </div>
