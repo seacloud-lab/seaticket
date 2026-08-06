@@ -16,7 +16,7 @@ class JiraSeaDBAPI:
     def get_issues_by_pks(self, connection_id, _pks):
         _pks_str = ', '.join([str(_pk) for _pk in _pks])
         table_name = SchemaTables.JIRA_ISSUES.table_name(connection_id)
-        sql = "SELECT `_pk`, `issue_id`, `title`, `content`, `status`, `url`, `created_time` " \
+        sql = "SELECT `_pk`, `issue_id`, `title`, `content`, `status`, `author`, `url`, `created_time` " \
             f"FROM `{table_name}` WHERE `_pk` in ({_pks_str})"
         response = self.seadb_api.query_rows(self.base_id, sql)
         return response.get('results', [])

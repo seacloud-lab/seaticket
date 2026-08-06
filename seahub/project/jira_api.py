@@ -8,9 +8,11 @@ from seahub import settings
 
 logger = logging.getLogger(__name__)
 
+OAUTH_TOKEN_EXPIRY_BUFFER_SECONDS = 60
+
 
 class JiraAPI:
-    def __init__(self, access_token, refresh_token=None, expires_at=None, timeout=60):
+    def __init__(self, access_token, refresh_token, expires_at, timeout=60):
         self.access_token = access_token
         self.refresh_token = refresh_token
         self.expires_at = expires_at
@@ -45,7 +47,7 @@ class JiraAPI:
 
         expires_in = data.get('expires_in', 3600) or 3600
         self.expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
-            seconds=max(int(expires_in) - 60, 0)
+            seconds=max(int(expires_in) - OAUTH_TOKEN_EXPIRY_BUFFER_SECONDS, 0)
         )
         return {
             'access_token': self.access_token,
@@ -76,19 +78,16 @@ class JiraAPI:
         for p in projects_data:
             p_id = p.get('id')
             p_key = p.get('key')
-            if not p_id or not p_key:
-                continue
             projects.append({
                 'id': p_id,
                 'key': p_key,
-                'name': p.get('name') or p_key,
+                'name': p.get('name'),
             })
-        projects.sort(key=lambda item: item['key'].lower())
         return projects
 
     @staticmethod
     def calc_expires_at(expires_in):
         expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
-            seconds=max(int(expires_in or 3600) - 60, 0)
+            seconds=max(int(expires_in or 3600) - OAUTH_TOKEN_EXPIRY_BUFFER_SECONDS, 0)
         )
         return expires_at

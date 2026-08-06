@@ -1033,7 +1033,7 @@ class ProjectJiraOauth(models.Model):
     project_uuid = models.UUIDField(unique=True, db_index=True)
     access_token = models.TextField()
     refresh_token = models.TextField()
-    expires_at = models.DateTimeField(db_index=True)
+    expires_at = models.DateTimeField()
 
     objects = ProjectJiraOauthManager()
 
@@ -1161,7 +1161,7 @@ class ProjectLinearOauth(models.Model):
     project_uuid = models.UUIDField(unique=True, db_index=True)
     access_token = models.CharField(max_length=255)
     refresh_token = models.CharField(max_length=255)
-    expires_at = models.DateTimeField(db_index=True)
+    expires_at = models.DateTimeField()
 
     objects = ProjectLinearOauthManager()
 

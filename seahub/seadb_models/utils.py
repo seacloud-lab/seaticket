@@ -676,28 +676,37 @@ def list_seafile_record_details(seadb_api, project_uuid, connection_id, _pk):
     return record, column_metadata, linked_ticket_title
 
 
-def list_jira_issue_record_details(seadb_api, project_uuid, connection_id, _pk):
+def get_jira_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
     from seahub.tickets.ticket_utils import get_ticket_title
     issue_table_name = SchemaTables.JIRA_ISSUES.table_name(connection_id)
-    comments_table_name = SchemaTables.JIRA_ISSUE_COMMENTS.table_name(connection_id)
-    issue_sql = f"SELECT title, assignees, content, created_time, issue_id FROM `{issue_table_name}` WHERE _pk = {_pk}"
+    issue_sql = f"SELECT `_pk`, `title`, `assignees`, `author`, `content`, `created_time`, `issue_id`, `issue_key`, `status`, `priority`, `issue_type`, `linked_ticket`, `outdated`, `ai_summary` FROM `{issue_table_name}` WHERE _pk = {_pk}"
     try:
         issue_res = seadb_api.query_rows(project_uuid, issue_sql)
-        column_metadata = issue_res.get('metadata')
         issue_record = issue_res.get('results')[0] if issue_res.get('results') else {}
-        issue_id = issue_record.get('issue_id')
-        issue_record.pop('issue_id', None)
-        issue_record['author'] = issue_record.pop('assignees', '')
-        comments_record = []
-        if issue_id is not None:
-            comments_sql = f"SELECT author, content, created_time FROM `{comments_table_name}` WHERE issue_id = {issue_id} ORDER BY comment_id ASC"
-            comments_res = seadb_api.query_rows(project_uuid, comments_sql)
-            comments_record = comments_res.get('results', [])
-        issue_record['comments'] = comments_record
+        column_metadata = issue_res.get('metadata')
         linked_ticket = issue_record.get('linked_ticket')
         linked_ticket_title = get_ticket_title(seadb_api, project_uuid, linked_ticket)
     except Exception as e:
-        logger.error(f'SeaDB query error for Jira issue details {issue_table_name} or {comments_table_name}: {e}')
+        issue_record = {}
+        column_metadata = []
+        linked_ticket_title = ''
+        logger.error(f'SeaDB query error for Jira issue {issue_table_name}: {e}')
+    return issue_record, column_metadata, linked_ticket_title
+
+
+def list_jira_issue_record_details(seadb_api, project_uuid, connection_id, _pk):
+    """Query Jira issue details with comments from SeaDB"""
+    comments_table_name = SchemaTables.JIRA_ISSUE_COMMENTS.table_name(connection_id)
+    try:
+        issue_record, column_metadata, linked_ticket_title = get_jira_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
+        issue_id = issue_record.get('issue_id')
+        issue_record.pop('issue_id')
+        comments_sql = f"SELECT author, content, created_time FROM `{comments_table_name}` WHERE issue_id = {issue_id} ORDER BY comment_id ASC"
+        comments_res = seadb_api.query_rows(project_uuid, comments_sql)
+        comments_record = comments_res.get('results', [])
+        issue_record['comments'] = comments_record
+    except Exception as e:
+        logger.error(f'SeaDB query error for Jira issue details {comments_table_name}: {e}')
         issue_record = {}
         column_metadata = []
         linked_ticket_title = ''
@@ -1032,6 +1041,7 @@ def list_notion_record_details(seadb_api, project_uuid, connection_id, _pk):
 
 # func
 def get_connection_records_by_pks(seadb_api, project_uuid, connection_id, connection_type, pks):
+    
     if not pks:
         return []
 
@@ -1134,7 +1144,7 @@ def get_connection_record_by_pk(seadb_api, project_uuid, connection_type, connec
     elif connection_type == ConnectionType.DISCORD.value:
         record, columns, linked_ticket_title = get_discord_thread_by_pk(seadb_api, project_uuid, connection_id, _pk)
     elif connection_type == ConnectionType.JIRA_ISSUE.value:
-        record, columns, linked_ticket_title = (seadb_api, project_uuid, connection_id, _pk)
+        record, columns, linked_ticket_title = get_jira_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
     else:
         record = {}
         columns = []

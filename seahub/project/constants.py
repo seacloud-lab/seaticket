@@ -546,7 +546,7 @@ PORTAL_ISSUE_DISPLAY_ALL_COLUMNS = ['_pk', 'title', 'content', 'creator', 'state
 CONNECTION_DISPLAY_ALL_COLUMNS = {
     ConnectionType.GITHUB_ISSUE.value: ['_pk', 'title', 'author', 'state', 'state_reason', 'issue_type', 'labels', 'comment_count', 'closed_time', 'created_time', 'modified_time', 'ai_summary', 'ai_processed_time', 'linked_ticket', 'outdated'],
     ConnectionType.JIRA_ISSUE.value: ['_pk', 'issue_key', 'title', 'content', 'status', 'priority', 'issue_type',
-                                      'due_date', 'comment_count', 'created_time', 'modified_time', 'ai_summary',
+                                      'due_date', 'comment_count', 'assignees', 'created_time', 'modified_time', 'ai_summary',
                                       'ai_processed_time', 'linked_ticket', 'outdated'],
     ConnectionType.DISCOURSE_FORUM.value: ['_pk', 'title', 'views', 'modified_time', 'created_time', 'ai_summary', 'ai_processed_time', 'linked_ticket', 'outdated'],
     ConnectionType.SITE.value: ['_pk', 'url', 'title', 'modified_time', 'ai_summary', 'ai_processed_time', 'outdated'],

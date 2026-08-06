@@ -339,34 +339,6 @@ class ProjectDiscordChannels(APIView):
         return Response({'channels': channels})
 
 
-def _refresh_jira_access_token(jira_oauth):
-    if not JIRA_CLIENT_ID or not JIRA_CLIENT_SECRET or not jira_oauth.refresh_token:
-        raise RuntimeError('Jira OAuth settings are invalid.')
-
-    payload = {
-        'grant_type': 'refresh_token',
-        'client_id': JIRA_CLIENT_ID,
-        'client_secret': JIRA_CLIENT_SECRET,
-        'refresh_token': jira_oauth.refresh_token,
-    }
-    response = requests.post('https://auth.atlassian.com/oauth/token', json=payload, timeout=10)
-    response.raise_for_status()
-    token_json = response.json()
-    access_token = token_json.get('access_token')
-    refresh_token = token_json.get('refresh_token') or jira_oauth.refresh_token
-    if not access_token:
-        raise RuntimeError('Jira OAuth response missing access token.')
-
-    expires_in = token_json.get('expires_in') or 3600
-    expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=max(int(expires_in) - 60, 0))
-    return ProjectJiraOauth.objects.upsert_token(
-        jira_oauth.project_uuid,
-        access_token,
-        expires_at,
-        refresh_token,
-    )
-
-
 class ProjectJiraSites(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
@@ -422,7 +394,6 @@ class ProjectJiraSites(APIView):
                 'url': site_url,
             })
 
-        sites.sort(key=lambda item: item['name'].lower())
         return Response({'sites': sites})
 
 

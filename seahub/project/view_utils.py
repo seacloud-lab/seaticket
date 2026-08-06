@@ -1028,7 +1028,7 @@ def get_operator(column_name, column_type):
 def _get_operator_by_name(column_name):
     if column_name == 'creator':
         return CreatorOperator
-    elif column_name in ['participants']:
+    elif column_name in ['participants', 'assignees']:
         return CollaboratorOperator
     return None
 

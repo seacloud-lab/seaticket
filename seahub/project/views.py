@@ -34,12 +34,15 @@ SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 logger = logging.getLogger(__name__)
 
 
+OAUTH_TOKEN_EXPIRY_BUFFER_SECONDS = 60
+
+
 def _calc_confluence_expires_at(expires_in):
     try:
         expires_in = int(expires_in or 3600)
     except (TypeError, ValueError):
         expires_in = 3600
-    return datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=max(expires_in - 60, 0))
+    return datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=max(expires_in - OAUTH_TOKEN_EXPIRY_BUFFER_SECONDS, 0))
 
 
 @login_required
