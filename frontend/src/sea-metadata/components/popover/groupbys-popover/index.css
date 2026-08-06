@@ -152,14 +152,3 @@
   width: 200px;
   padding: 0px;
 }
-
-.sea-metadata-groupbys-popover .groupbys-list .option-group .option-group-search {
-  border-bottom: 1px solid #eee;
-  padding-bottom: 0;
-  height: 33px;
-  padding-left: 8px;
-}
-
-.sea-metadata-groupbys-popover .groupbys-list .option-group .seaqa-search-input-wrapper .seaqa-search-input {
-  border: none;
-}
