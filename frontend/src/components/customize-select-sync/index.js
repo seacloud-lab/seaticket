@@ -75,7 +75,7 @@ const CustomizeSelectSync = ({
   }, [isLoading, value, placeholder, allOptions]);
 
   return (
-    <div className="seaqa-customize-select-sync">
+    <div>
       <div className="d-flex align-items-center">
         <div
           ref={ref}
