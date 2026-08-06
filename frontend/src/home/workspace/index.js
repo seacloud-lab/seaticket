@@ -17,6 +17,7 @@ import WorkspaceContainer from './body/workspace-container';
 import LeaveGroupDialog from '../dialog/leave-group-dialog';
 import GroupTrashDialog from '../dialog/group-trash-dialog';
 import ChangeProjectGroupDialog from '../dialog/change-project-group-dialog';
+import CreateProjectDialog from '../dialog/create-project-dialog';
 import ProjectAPITokenDialog from '../../components/dialog/project-api-token-dialog';
 import eventBus from '@/utils/event-bus';
 
@@ -59,7 +60,7 @@ class Workspace extends React.Component {
       isShowTransferGroupDialog: false,
       isShowTemplateList: false,
       isCreatedTemplateLoading: false,
-      isShowVirtualProject: false,
+      isShowCreateProjectDialog: false,
       isShowInviteDialog: false,
       isShowTrashDialog: false,
       isShowMobileRenameView: false,
@@ -260,7 +261,7 @@ class Workspace extends React.Component {
     let { projectList } = this.state;
     let newProjectList = projectList.slice(0);
     newProjectList.push(project);
-    this.setState({ isShowVirtualProject: false, projectList: newProjectList });
+    this.setState({ isShowCreateProjectDialog: false, projectList: newProjectList });
   };
 
   deleteProject = (projectName) => {
@@ -373,12 +374,12 @@ class Workspace extends React.Component {
     this.setState({ isShowTemplateList: !this.state.isShowTemplateList });
   };
 
-  showVirtualProject = () => {
-    this.setState({ isShowVirtualProject: true });
+  showCreateProjectDialog = () => {
+    this.setState({ isShowCreateProjectDialog: true });
   };
 
-  hideVirtualProject = () => {
-    this.setState({ isShowVirtualProject: false });
+  hideCreateProjectDialog = () => {
+    this.setState({ isShowCreateProjectDialog: false });
   };
 
   onGroupMemberToggle = () => {
@@ -414,8 +415,8 @@ class Workspace extends React.Component {
 
   renderEmpty = (isOwnerOrAdmin) => {
     const { page } = this.props;
-    const { projectItemWidth, projectList, isShowVirtualProject } = this.state;
-    if (projectList.length === 0 && !isShowVirtualProject) {
+    const { projectItemWidth, projectList, isShowCreateProjectDialog } = this.state;
+    if (projectList.length === 0 && !isShowCreateProjectDialog) {
       if (page === 'workspace-in-main-panel') {
         if (isOwnerOrAdmin) {
           return (
@@ -423,7 +424,7 @@ class Workspace extends React.Component {
               title={gettext('No projects')}
               text={gettext('Add a project to track issues')}
             >
-              <Button color="primary" onClick={this.showVirtualProject} className='mt-5'>
+              <Button color="primary" onClick={this.showCreateProjectDialog} className='mt-5'>
                 {gettext('Add project')}
               </Button>
             </EmptyTip>
@@ -440,7 +441,7 @@ class Workspace extends React.Component {
       } else if (page === 'all-workspaces') {
         if (isOwnerOrAdmin) {
           return (
-            <div className="empty-project-card" onClick={this.showVirtualProject} style={{ width: projectItemWidth }}>
+            <div className="empty-project-card" onClick={this.showCreateProjectDialog} style={{ width: projectItemWidth }}>
               <div className="empty-project-card-icon">+</div>
               <p className="empty-project-card-text">{gettext('Add a project to track issues')}</p>
             </div>
@@ -479,7 +480,7 @@ class Workspace extends React.Component {
             onTransferGroupToggle={this.onTransferGroupToggle}
             toggleGroupInviteDialog={this.toggleGroupInviteDialog}
             toggleGroupTrashDialog={this.toggleGroupTrashDialog}
-            showVirtualProject={this.showVirtualProject}
+            showCreateProjectDialog={this.showCreateProjectDialog}
           />
           <WorkspaceContainer
             isDesktop={this.isDesktop}
@@ -490,8 +491,6 @@ class Workspace extends React.Component {
             workspace={workspace}
             projectList={projectList}
             isItemFreezed={isItemFreezed}
-            isShowVirtualProject={this.state.isShowVirtualProject}
-            createBlankProject={this.createBlankProject}
             onShowTemplateListToggle={this.onShowTemplateListToggle}
             onDeleteProjectToggle={this.onDeleteProjectToggle}
             onChangeProjectGroupToggle={this.onChangeProjectGroupToggle}
@@ -510,7 +509,6 @@ class Workspace extends React.Component {
             onDeleteGroupToggle={this.onDeleteGroupToggle}
             onTransferGroupToggle={this.onTransferGroupToggle}
             toggleGroupInviteDialog={this.toggleGroupInviteDialog}
-            hideVirtualProject={this.hideVirtualProject}
             setDropdownState={this.setDropdownState}
             getDropdownState={this.getDropdownState}
             onCopyProject={this.props.onCopyProject}
@@ -518,6 +516,13 @@ class Workspace extends React.Component {
           />
         </div>
         {this.renderEmpty(isOwnerOrAdmin)}
+        {this.state.isShowCreateProjectDialog && (
+          <CreateProjectDialog
+            currentWorkspace={workspace}
+            onSubmit={this.createBlankProject}
+            onToggle={this.hideCreateProjectDialog}
+          />
+        )}
         {this.state.isShowDeleteDialog && (
           <CommonOperationConfirmationDialog
             title={gettext('Delete project')}

@@ -1,0 +1,9 @@
+.select-project-icon-dialog .select-project-icon-dialog-header .modal-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.select-project-icon-dialog .select-project-icon-dialog-back {
+  margin-left: -4px;
+}

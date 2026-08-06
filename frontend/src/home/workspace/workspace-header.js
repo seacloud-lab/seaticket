@@ -18,6 +18,7 @@ const propTypes = {
   onTransferGroupToggle: PropTypes.func,
   toggleGroupInviteDialog: PropTypes.func,
   toggleGroupTrashDialog: PropTypes.func,
+  showCreateProjectDialog: PropTypes.func,
 };
 
 class WorkspaceHeader extends Component {
@@ -57,7 +58,7 @@ class WorkspaceHeader extends Component {
           isAdmin={isAdmin}
           isOwnerOrAdmin={isOwnerOrAdmin}
           workspace={workspace}
-          showVirtualProject={this.props.showVirtualProject}
+          showCreateProjectDialog={this.props.showCreateProjectDialog}
           showGroupOptions={showGroupOptions}
         />
       </div>

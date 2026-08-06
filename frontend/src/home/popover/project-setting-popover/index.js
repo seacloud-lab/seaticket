@@ -1,10 +1,10 @@
 import React from 'react';
-import { PopoverBody } from 'reactstrap';
 import PropTypes from 'prop-types';
-import classnames from 'classnames';
-import { PROJECT_ICON_LIST, PROJECT_ICON_COLORS, gettext } from '../../../constants';
-import CustomizePopover from '../../../components/customize-popover';
-import { Icon } from '../../../components';
+import { Button, PopoverBody } from 'reactstrap';
+import CustomizePopover from '@/components/customize-popover';
+import { gettext } from '@/constants';
+import ProjectSettingContent from '../../components/project-setting-content';
+import SelectProjectIconContent from '../../components/select-project-icon-content';
 
 import './index.css';
 
@@ -14,7 +14,8 @@ class ProjectSettingPopover extends React.Component {
     placement: PropTypes.string,
     className: PropTypes.string,
     target: PropTypes.string.isRequired,
-    onToggle: PropTypes.func.isRequired,
+    onCancel: PropTypes.func.isRequired,
+    onSubmit: PropTypes.func.isRequired,
     name: PropTypes.string.isRequired,
     bgColor: PropTypes.string,
     icon: PropTypes.string,
@@ -23,117 +24,78 @@ class ProjectSettingPopover extends React.Component {
     onNameChange: PropTypes.func.isRequired,
   };
 
-  onChangeName = (e) => {
-    this.props.onNameChange(e.target.value);
+  state = {
+    isSelectIconViewOpen: false,
   };
 
-  onColorChange = (bgColor) => {
-    if (bgColor === this.props.bgColor) return;
-    this.props.onColorChange(bgColor);
+  openSelectIconView = () => {
+    this.setState({ isSelectIconViewOpen: true });
   };
 
-  onIconChange = (icon) => {
-    if (icon === this.props.icon) return;
+  closeSelectIconView = () => {
+    this.setState({ isSelectIconViewOpen: false });
+  };
+
+  onSelectIcon = (icon) => {
     this.props.onIconChange(icon);
+    this.closeSelectIconView();
   };
 
-  onEnter = (e) => {
-    e.preventDefault();
-    this.props.onToggle();
+  onEnter = (event) => {
+    event.preventDefault();
+    this.props.onSubmit();
   };
 
-  renderName = () => {
-    return (
-      <div className="mb-3">
-        <input
-          type="text"
-          className="form-control project-icon-settings-name-input"
-          value={this.props.name}
-          onChange={this.onChangeName}
-          autoFocus={true}
-          aria-label={gettext('Enter project name')}
-          aria-describedby={gettext('Enter a description of the project name')}
-        />
-      </div>
-    );
-  };
-
-  renderColorSettings = () => {
-    let { bgColor } = this.props;
-    bgColor = bgColor || PROJECT_ICON_COLORS[0];
-    return (
-      <div className="seaqa-color-content">
-        {PROJECT_ICON_COLORS.map((color, index) => {
-          return (
-            <div
-              key={index}
-              className="seaqa-color-item"
-              onClick={() => this.onColorChange(color)}
-              role="button"
-            >
-              <span className="colorinput">
-                <span
-                  className="colorinput-color"
-                  style={{ backgroundColor: color }}
-                  title={`${gettext('Color')} ${color}`}
-                  aria-label={`${gettext('Color')} ${color}`}
-                  aria-selected={color === bgColor}
-                >
-                  {color === bgColor && (<Icon symbol="check-mark" className="project-icon-color-check" />)}
-                </span>
-              </span>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  renderIconSettings = () => {
-    let { icon, bgColor } = this.props;
-    bgColor = bgColor || PROJECT_ICON_COLORS[0];
-    icon = icon || PROJECT_ICON_LIST[0];
-    return (
-      <div className="project-icon-content">
-        {PROJECT_ICON_LIST.map((iconItem, index) => {
-          let isSelected = iconItem === icon;
-          return (
-            <div
-              key={index}
-              className="project-icon-item"
-              onClick={() => this.onIconChange(iconItem)}
-              role="button"
-              style={{ backgroundColor: isSelected ? bgColor : '' }}
-              title={`${gettext('Icon')} ${iconItem}`}
-              aria-label={`${gettext('Icon')} ${iconItem}`}
-            >
-              <span className="colorinput project-icon-input" aria-selected={isSelected}>
-                <i aria-hidden="true" className={classnames('project-icon project-icon-style', { [iconItem]: iconItem, 'icon-color-white': isSelected })}></i>
-              </span>
-            </div>
-          );
-        })}
-      </div>
-    );
+  onFooterButtonKeyDown = (event) => {
+    event.stopPropagation();
   };
 
   render() {
+    const { isSelectIconViewOpen } = this.state;
     return (
       <CustomizePopover
         placement={this.props.placement || 'right-start'}
         target={this.props.target}
-        hidePopover={this.props.onToggle}
-        hidePopoverWithEsc={this.props.onToggle}
-        onEnter={this.onEnter}
+        hidePopover={this.props.onSubmit}
+        hidePopoverWithEsc={isSelectIconViewOpen ? this.closeSelectIconView : this.props.onCancel}
+        onEnter={isSelectIconViewOpen ? undefined : this.onEnter}
         hideArrow={true}
-        className={`project-icon-settings-popover ${this.props.className || ''}`}
+        className={`project-setting-popover ${this.props.className || ''}`}
         modifiers={this.props.modifiers}
       >
-        <PopoverBody className="p-4">
-          {this.renderName()}
-          {this.renderColorSettings()}
-          {this.renderIconSettings()}
-        </PopoverBody>
+        {isSelectIconViewOpen ? (
+          <PopoverBody className="p-4">
+            <SelectProjectIconContent
+              currentIcon={this.props.icon}
+              bgColor={this.props.bgColor}
+              onPrevious={this.closeSelectIconView}
+              onSubmit={this.onSelectIcon}
+            />
+          </PopoverBody>
+        ) : (
+          <>
+            <PopoverBody className="p-4">
+              <ProjectSettingContent
+                name={this.props.name}
+                bgColor={this.props.bgColor}
+                icon={this.props.icon}
+                onColorChange={this.props.onColorChange}
+                onIconChange={this.props.onIconChange}
+                onNameChange={this.props.onNameChange}
+                onViewAll={this.openSelectIconView}
+                nameInputId={`${this.props.target}-name`}
+              />
+            </PopoverBody>
+            <div className="project-setting-popover-footer">
+              <Button color="secondary" onClick={this.props.onCancel} onKeyDown={this.onFooterButtonKeyDown}>
+                {gettext('Cancel')}
+              </Button>
+              <Button color="primary" onClick={this.props.onSubmit} onKeyDown={this.onFooterButtonKeyDown}>
+                {gettext('Submit')}
+              </Button>
+            </div>
+          </>
+        )}
       </CustomizePopover>
     );
   }

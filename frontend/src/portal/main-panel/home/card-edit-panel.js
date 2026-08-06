@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Button, Label, Input } from 'reactstrap';
 import classnames from 'classnames';
-import { gettext, PROJECT_ICON_COLORS, PROJECT_ICON_LIST } from '@/constants';
+import { DEFAULT_PROJECT_ICON, gettext, PROJECT_ICON_ALL_LIST, PROJECT_ICON_COLORS } from '@/constants';
 import { CustomizePopover, IconButton } from '@/components';
 
 import './card-edit-panel.css';
@@ -10,7 +10,7 @@ const DEFAULT_CARD = {
   title: '',
   description: '',
   link: '',
-  icon: PROJECT_ICON_LIST[0],
+  icon: DEFAULT_PROJECT_ICON,
 };
 
 const PortalHomeCardEditPanel = ({ homePageStyle = {}, activeCard, setActiveCard, setHomePageStyle, onClose }) => {
@@ -22,11 +22,11 @@ const PortalHomeCardEditPanel = ({ homePageStyle = {}, activeCard, setActiveCard
     title = '',
     description = '',
     link = '',
-    icon = PROJECT_ICON_LIST[0],
+    icon = DEFAULT_PROJECT_ICON,
   } = cardStyle;
   const [isIconPopoverOpen, setIsIconPopoverOpen] = useState(false);
   const iconSelectorRef = useRef(null);
-  const selectedIcon = PROJECT_ICON_LIST.includes(icon) ? icon : PROJECT_ICON_LIST[0];
+  const selectedIcon = PROJECT_ICON_ALL_LIST.includes(icon) ? icon : DEFAULT_PROJECT_ICON;
 
   const updateCardStyle = (patch) => {
     const nextCards = cards.map((card) => {
@@ -134,7 +134,7 @@ const PortalHomeCardEditPanel = ({ homePageStyle = {}, activeCard, setActiveCard
               className="portal-home-card-icon-popover"
             >
               <div className="portal-home-card-icon-content">
-                {PROJECT_ICON_LIST.map((iconItem) => {
+                {PROJECT_ICON_ALL_LIST.map((iconItem) => {
                   const isSelected = iconItem === selectedIcon;
                   return (
                     <div

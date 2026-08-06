@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import { PROJECT_ICON_LIST, PROJECT_ICON_COLORS } from '../../constants';
+import { DEFAULT_PROJECT_ICON, PROJECT_ICON_COLORS } from '../../constants';
 
 import './index.css';
 
@@ -9,7 +9,7 @@ const ProjectIcon = ({ className, bgColor, icon, size = '' }) => {
   return (
     <div className={classnames('project-item-icon', className, size)}>
       <i
-        className={`project-icon ${icon || PROJECT_ICON_LIST[0]} project-icon-style`}
+        className={`project-icon ${icon || DEFAULT_PROJECT_ICON} project-icon-style`}
         style={{ color: bgColor || PROJECT_ICON_COLORS[0] }}
         aria-hidden="true"
       >

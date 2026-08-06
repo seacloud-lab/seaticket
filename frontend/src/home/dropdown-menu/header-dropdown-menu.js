@@ -86,7 +86,7 @@ class HeaderDropdownMenu extends React.Component {
         </DropdownToggle>
         <CustomizeDropdownMenu className="drop-list">
           {showAddProject && (
-            <CustomizeDropdownItem onClick={this.props.showVirtualProject}>
+            <CustomizeDropdownItem onClick={this.props.showCreateProjectDialog}>
               <CustomizeDropdownItem.Icon symbol="plus" />
               <CustomizeDropdownItem.Text>{gettext('Add a blank project')}</CustomizeDropdownItem.Text>
             </CustomizeDropdownItem>
@@ -143,6 +143,7 @@ HeaderDropdownMenu.propTypes = {
   onRenameGroupToggle: PropTypes.func.isRequired,
   onManageMembersToggle: PropTypes.func.isRequired,
   onProjectManageMembers: PropTypes.func.isRequired,
+  showCreateProjectDialog: PropTypes.func.isRequired,
   onDeleteGroupToggle: PropTypes.func,
   onLeaveGroupToggle: PropTypes.func,
   onTransferGroupToggle: PropTypes.func,

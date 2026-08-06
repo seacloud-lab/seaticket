@@ -7,7 +7,7 @@ import { gettext, siteRoot, mediaUrl } from '@constants/config';
 import { BAR_TYPE } from '@/project/constants';
 import { Utils } from '@/utils/utils';
 import { removeTextMark } from '@/utils/remove-text-mark';
-import { DEFAULT_COLOR } from '@/constants';
+import { DEFAULT_COLOR, DEFAULT_PROJECT_ICON } from '@/constants';
 import {
   MSG_TYPE_TICKET_ASSIGNEE_ADDED,
   MSG_TYPE_AGENT_NOTIFY_ASSIGNEE,
@@ -157,7 +157,7 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
   const renderHead = useCallback(() => {
     const noticeType = noticeItem.msg_type;
     if (noticeType === MSG_TYPE_PROJECTS) {
-      const iconClass = noticeItem.project_icon || 'icon-worksheet';
+      const iconClass = noticeItem.project_icon || DEFAULT_PROJECT_ICON;
       const iconColor = noticeItem.project_color || DEFAULT_COLOR;
       return (
         <div className="inbox-notification-item-header">

@@ -62,6 +62,8 @@
   gap: 6px 11px;
   padding: 8px;
   max-width: 307px;
+  max-height: 320px;
+  overflow-y: auto;
 }
 
 .portal-home-card-icon-selector {

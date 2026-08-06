@@ -6,7 +6,7 @@ import { CustomizeDropdownMoreToggle, ProjectIcon, toaster } from '@/components'
 import { Utils } from '@/utils/utils';
 import { validateName } from '@/utils/validate';
 import ProjectSettingPopover from '../../popover/project-setting-popover';
-import { DEFAULT_COLOR } from '@/constants/project-icon';
+import { DEFAULT_COLOR, DEFAULT_PROJECT_ICON } from '@/constants/project-icon';
 import ProjectItemDropdownMenu from './project-item-dropdown-menu';
 
 const siteRoot = window.app.config.siteRoot;
@@ -97,12 +97,29 @@ class Project extends React.Component {
 
   onProjectSettingsToggle = (e) => {
     if (e) e.stopPropagation();
-    this.setState({ isShowSettings: !this.state.isShowSettings }, () => {
-      if (!this.state.isShowSettings) {
-        this.setState({ active: false });
-        this.saveProjectProperty();
-      }
+    if (this.state.isShowSettings) {
+      this.onProjectSettingsSubmit();
+      return;
+    }
+    this.setState({ isShowSettings: true });
+  };
+
+  onProjectSettingsCancel = (e) => {
+    if (e) e.stopPropagation();
+    const { name, color, icon } = this.props.project;
+    this.setState({
+      isShowSettings: false,
+      active: false,
+      name,
+      bgColor: color,
+      icon,
     });
+  };
+
+  onProjectSettingsSubmit = (e) => {
+    if (e) e.stopPropagation();
+    if (!this.saveProjectProperty()) return;
+    this.setState({ isShowSettings: false, active: false });
   };
 
   saveProjectProperty = () => {
@@ -112,7 +129,7 @@ class Project extends React.Component {
     let response = validateName(newName);
     if (!response.isValid) {
       toaster.danger(response.message);
-      return;
+      return false;
     }
     newName = response.message;
     if (bgColor !== color || newIcon !== icon || newName !== name) {
@@ -128,6 +145,7 @@ class Project extends React.Component {
       }
       this.props.onUpdateProject(name, updated);
     }
+    return true;
   };
 
   onIconChange = (icon) => {
@@ -202,7 +220,7 @@ class Project extends React.Component {
         <div className="w-100 d-flex justify-content-between">
           <div className="project-item-icon">
             <i
-              className={`project-icon project-icon-style ${project.icon || 'icon-worksheet'}`}
+              className={`project-icon project-icon-style ${project.icon || DEFAULT_PROJECT_ICON}`}
               style={{ color: project.color || DEFAULT_COLOR }}
               aria-hidden="true"
             >
@@ -239,7 +257,8 @@ class Project extends React.Component {
         {this.state.isShowSettings && (
           <ProjectSettingPopover
             target={`project-item-${id}`}
-            onToggle={this.onProjectSettingsToggle}
+            onCancel={this.onProjectSettingsCancel}
+            onSubmit={this.onProjectSettingsSubmit}
             name={newName}
             bgColor={bgColor}
             icon={icon}
