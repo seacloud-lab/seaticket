@@ -55,9 +55,14 @@ class AgentAPI {
   }
 
   // Agent run logs
-  listAgentRunLogs(projectUuid, page = 1, perPage = 20) {
-    const url = this.server + `/api/v1/project/${projectUuid}/agent/runs/?page=${page}&per_page=${perPage}`;
-    return this.req.get(url);
+  listAgentLogs(projectUuid, page = 1, perPage = 20) {
+    const url = this.server + `/api/v1/project/${projectUuid}/agent/logs/`;
+    return this.req.get(url, { params: { page, per_page: perPage } });
+  }
+
+  listAgentLogRuns(projectUuid, source_id, source_type, signal) {
+    const url = this.server + `/api/v1/project/${projectUuid}/agent/log/runs/`;
+    return this.req.get(url, { params: { source_id, source_type }, signal });
   }
 
   getAgentRunDetails(projectUuid, runId, options = {}) {

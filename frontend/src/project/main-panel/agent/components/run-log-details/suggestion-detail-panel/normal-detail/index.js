@@ -18,7 +18,7 @@ const NormalDetail = ({ isEdit, value, onChange }) => {
   if (isEdit) {
     return (
       <textarea
-        className="suggestion-detail-panel-textarea"
+        className="seaqa-agent-tool-suggestion-panel-textarea"
         value={detail}
         onChange={e => handleChange(e.target.value)}
         placeholder={gettext('Edit content...')}
@@ -27,7 +27,7 @@ const NormalDetail = ({ isEdit, value, onChange }) => {
       />
     );
   }
-  return <div className="suggestion-detail-panel-content">{value}</div>;
+  return <div className="seaqa-agent-tool-suggestion-panel-content">{value}</div>;
 };
 
 export default NormalDetail;

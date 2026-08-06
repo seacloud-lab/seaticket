@@ -11,9 +11,9 @@ import {
   formatDetailsValue,
   hasToolDetailsContent,
   shouldHighlightDetailsAsJSON,
-} from './tool-details-content';
+} from './utils';
 
-import './thought-process-dialog.css';
+import './index.css';
 
 const { projectUuid } = window.app.pageOptions;
 

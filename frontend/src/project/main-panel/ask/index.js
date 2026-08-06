@@ -25,7 +25,7 @@ const Main = ({ title, settings }) => {
 
   return (
     <>
-      <TopBar className="pr-3">
+      <TopBar>
         <div className="w-100 text-truncate">{title}</div>
         {!isLoading && (
           <div className="d-flex">

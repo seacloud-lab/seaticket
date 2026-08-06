@@ -1,0 +1,68 @@
+.seaqa-agent-run-log {
+  height: fit-content;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--bs-border-secondary-color);
+  gap: 8px;
+}
+
+.seaqa-agent-run-log:hover {
+  background-color: var(--option-bg-color);
+  cursor: pointer;
+}
+
+.seaqa-agent-run-log.active {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.seaqa-agent-run-log.active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background-color: var(--bs-primary);
+}
+
+.seaqa-agent-run-log .seaqa-agent-run-log-header {
+  gap: 8px;
+}
+
+.seaqa-agent-run-log .seaqa-agent-run-log-resource-icon,
+.seaqa-agent-run-log .seaqa-agent-run-log-resource-icon img {
+  height: 12px;
+  width: 12px;
+}
+
+.seaqa-agent-run-log .seaqa-agent-run-log-resource-info {
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--bs-body-secondary-color);
+}
+
+.seaqa-agent-run-log .seaqa-agent-run-log-body {
+  width: fit-content;
+  max-width: 100%;
+  overflow: hidden;
+  line-height: 22px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+.seaqa-agent-run-log .seaqa-agent-run-log-footer {
+  color: var(--bs-body-tertiary-color);
+  font-size: 12px;
+  line-height: 22px;
+  gap: 4px;
+}
+
+.seaqa-agent-run-log .seaqa-agent-run-log-count {
+  font-size: 12px;
+  color: var(--bs-body-color);
+  background-color: var(--bs-bg-secondary-color);
+  border-radius: 11px;
+}

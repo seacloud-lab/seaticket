@@ -1,325 +1,71 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import TopBar from '../top-bar';
-import RunLogs from './run-logs';
-import SuggestionDetailPanel from './run-logs/suggestion-detail-panel';
-import RefreshBtn from '@/project/components/refresh-btn';
 import { useAgentRunLogs } from './hooks/useAgentRunLogs';
-import { agentAPI, ticketsAPI } from '@/project/api';
-import { toaster, IconTooltip } from '@/components';
-import { gettext } from '@/constants';
-import AgentType2GithubTypeMappingDialog from './components/agent-type-to-github-type-mapping-dialog';
-import { useCloseLinkedIssues } from '@/project/main-panel/tickets/hooks';
+import { gettext, mediaUrl } from '@/constants';
+import RunLogs from './components/run-logs';
+import { EmptyTip, CenteredLoading } from '@/components';
+import RunLogDetails from './components/run-log-details';
 
 import './index.css';
 
-const { projectUuid } = window.app.pageOptions;
-
 const Agent = ({ title, settings, modifySettings }) => {
-  const [pendingMapping, setPendingMapping] = useState(null);
-  const [suggestionDetail, setSuggestionDetail] = useState(null);
-  const [isSavingContent, setIsSavingContent] = useState(false);
-  const [suggestionDetailPanelWidth, setSuggestionDetailPanelWidth] = useState(400);
-  const [runCardsExpansionCommand, setRunCardsExpansionCommand] = useState(null);
-  const { openCloseLinkedGitHubIssuesWarningDialog } = useCloseLinkedIssues();
+  const [isShowLogs, setIsShowLogs] = useState(true);
+  const [activeLogIndex, setActiveLogIndex] = useState(0);
+
   const {
     runLogs,
     isLoading: isRunLogsLoading,
     hasMore,
     loadMore,
     refresh,
-    updateRunAction,
   } = useAgentRunLogs();
 
   const enabledAgent = useMemo(() => settings?.agent.enabled, [settings?.agent]);
 
-  const findActionContext = useCallback((actionId) => {
-    for (const run of runLogs) {
-      const items = run.items || [];
-      for (const item of items) {
-        const actions = item.actions || [];
-        const action = actions.find(a => a.id === actionId);
-        if (action) return { runId: run.id, item, action };
-      }
-      const directActions = run.actions || [];
-      const directAction = directActions.find(a => a.id === actionId);
-      if (directAction) return { runId: run.id, item: null, action: directAction };
-    }
-    return null;
-  }, [runLogs]);
-
-  const handleConfirmAction = useCallback((actionId) => {
-    const actionContext = findActionContext(actionId);
-    if (!actionContext?.runId) return '';
-    const { runId, item, action } = actionContext;
-
-    const executeConfirm = (options = null) => {
-      return agentAPI.confirmAgentAction(projectUuid, runId, actionId, options || {}).then((res) => {
-        updateRunAction(runId, actionId, {
-          status: res.data.status,
-          result: res.data.result,
-        });
-        return { success: res.data.success };
-      }).catch((err) => {
-        const payload = err?.response?.data;
-        if (payload?.error_code === 'mapping_required') {
-          setPendingMapping({
-            runId,
-            actionId,
-            agentType: payload.agent_type,
-            githubIssueTypes: payload.github_issue_types || [],
-          });
-          return { success: false, reason: 'mapping_required' };
-        }
-        if (payload?.detail) {
-          toaster.danger(payload.detail);
-          return { success: false, reason: 'error' };
-        }
-        toaster.danger(gettext('Failed to confirm action'));
-        return { success: false, reason: 'error' };
-      });
-    };
-
-    if (action?.tool_name !== 'suggest_close_ticket') {
-      return executeConfirm();
-    }
-
-    const sourceType = item?.source_type;
-    const sourceId = item?.source_id;
-    if (sourceType !== 'ticket' || !sourceId) {
-      return executeConfirm();
-    }
-
-    const ticketId = Number(sourceId);
-    if (!Number.isInteger(ticketId)) {
-      return executeConfirm();
-    }
-
-    return ticketsAPI.checkLinkedGithubIssues(projectUuid, [ticketId]).then((res) => {
-      const tickets = res?.data?.tickets || [];
-      if (tickets.length > 0) {
-        const ticket = tickets[0];
-        openCloseLinkedGitHubIssuesWarningDialog({
-          ticket,
-          stateReason: '',
-          onCloseTicketOnly: () => {
-            return executeConfirm().then((result) => {
-              if (result?.success) {
-                toaster.success(gettext('Action confirmed'));
-              }
-              return result;
-            });
-          },
-          onCloseTicketAndGitHubIssues: () => {
-            return executeConfirm({ linked_github_issues_to_close: tickets }).then((result) => {
-              if (result?.success) {
-                toaster.success(gettext('Action confirmed'));
-              }
-              return result;
-            });
-          },
-        });
-        return;
-      }
-      return executeConfirm();
-    }).catch((err) => {
-      const payload = err?.response?.data || {};
-      toaster.danger(payload?.detail || gettext('Failed to check linked GitHub issues'));
-    });
-  }, [findActionContext, openCloseLinkedGitHubIssuesWarningDialog, updateRunAction]);
-
-  const handleUpdateContent = useCallback((runId, actionId, suggestionContent) => {
-    return agentAPI.updateAgentAction(projectUuid, runId, actionId, { suggestion_content: suggestionContent }).then((res) => {
-      toaster.success(gettext('Content updated'));
-      updateRunAction(runId, actionId, {
-        suggestion_content: res.data.suggestion_content,
-      });
-    }).catch(err => {
-      console.error('Failed to update action content:', err);
-      toaster.danger(gettext('Failed to update content'));
-      throw err;
-    });
-  }, [updateRunAction]);
-
-  const openSuggestionDetailPanel = useCallback((action, runId, mode = 'view') => {
-    setSuggestionDetail({
-      action,
-      runId,
-      mode,
-    });
-  }, []);
-
-  const closeSuggestionDetailPanel = useCallback(() => {
-    setSuggestionDetail(null);
-  }, []);
-
-  const handleSaveContent = useCallback((value) => {
-    if (!suggestionDetail) return;
-    const { action, runId } = suggestionDetail;
-    setIsSavingContent(true);
-    handleUpdateContent(runId, action.id, value)
-      .then(() => {
-        closeSuggestionDetailPanel();
-      })
-      .finally(() => {
-        setIsSavingContent(false);
-      });
-  }, [suggestionDetail, handleUpdateContent, closeSuggestionDetailPanel]);
-
-  const handleCancelAction = useCallback((actionId) => {
-    for (const run of runLogs) {
-      const items = run.items || [];
-      for (const item of items) {
-        const actions = item.actions || [];
-        const action = actions.find(a => a.id === actionId);
-        if (action) {
-          return agentAPI.cancelAgentAction(projectUuid, run.id, actionId).then((res) => {
-            updateRunAction(run.id, actionId, {
-              status: res.data.status,
-              result: res.data.result,
-            });
-          });
-        }
-      }
-      const directActions = run.actions || [];
-      const directAction = directActions.find(a => a.id === actionId);
-      if (directAction) {
-        return agentAPI.cancelAgentAction(projectUuid, run.id, actionId).then((res) => {
-          updateRunAction(run.id, actionId, {
-            status: res.data.status,
-            result: res.data.result,
-          });
-        });
-      }
-    }
-    return Promise.resolve();
-  }, [runLogs, updateRunAction]);
-
-  const dismissMapping = useCallback(() => {
-    setPendingMapping(null);
-  }, []);
-
-  const submitMappingAndRetry = useCallback((selectedGithubType, callback) => {
-    if (!pendingMapping?.agentType || !pendingMapping?.actionId || !pendingMapping?.runId) return;
-
-    const { runId, actionId, agentType } = pendingMapping;
-    const newAgentSettings = {
-      ...settings?.agent,
-      github_issue_type_mapping: {
-        ...settings?.agent?.github_issue_type_mapping,
-        [agentType]: selectedGithubType,
-      },
-    };
-    modifySettings({ agent: newAgentSettings }).then(() => {
-      setPendingMapping(null);
-      return agentAPI.confirmAgentAction(projectUuid, runId, actionId);
-    }).then((res) => {
-      updateRunAction(runId, actionId, {
-        status: res.data.status,
-        result: res.data.result,
-      });
-      if (res.data.success) {
-        toaster.success(gettext('Action confirmed'));
-        callback && callback();
-      } else {
-        toaster.danger(gettext('Failed to confirm action'));
-        callback && callback(true);
-      }
-    }).catch((err) => {
-      console.error('Failed to save mapping and confirm action:', err);
-      toaster.danger(gettext('Failed to confirm action'));
-      callback && callback(true);
-      throw err;
-    });
-  }, [pendingMapping, settings, updateRunAction, modifySettings]);
-
-  const handleExpandAllRunCards = useCallback(() => {
-    setRunCardsExpansionCommand(prev => ({
-      expanded: true,
-      version: (prev?.version || 0) + 1,
-    }));
-  }, []);
-
-  const handleCollapseAllRunCards = useCallback(() => {
-    setRunCardsExpansionCommand(prev => ({
-      expanded: false,
-      version: (prev?.version || 0) + 1,
-    }));
-  }, []);
-
   return (
     <>
-      <TopBar title={title}>
-        <div className="agent-top-bar-content">
+      <TopBar>
+        <div className="seaqa-agent-top-bar-content">
           <div className="w-100 text-truncate">{title}</div>
         </div>
       </TopBar>
-      <div className="agent-container">
-        <div
-          className="agent-run-logs-section"
-          style={suggestionDetail ? {
-            flex: `1 1 calc(100% - ${suggestionDetailPanelWidth}px)`,
-            width: `calc(100% - ${suggestionDetailPanelWidth}px)`,
-          } : undefined}
-        >
-          <div className="agent-run-logs-header">
-            <div className="d-flex align-items-center">
-              <span>{gettext('Run Logs')}</span>
-              <RefreshBtn className="agent-run-logs-refresh" onClick={refresh} />
-            </div>
-            <div className="d-flex align-items-center gap-2">
-              <IconTooltip
-                role="button"
-                tabindex="0"
-                className="agent-run-logs-expand-fold"
-                icon="expand-all"
-                placement="bottom"
-                hoverBackground={true}
-                tip={gettext('Expand all')}
-                onClick={handleExpandAllRunCards}
-              />
-              <IconTooltip
-                role="button"
-                tabindex="0"
-                className="agent-run-logs-expand-fold"
-                icon="collapse-all"
-                placement="bottom"
-                hoverBackground={true}
-                tip={gettext('Collapse all')}
-                onClick={handleCollapseAllRunCards}
-              />
-            </div>
-          </div>
-          <RunLogs
-            runLogs={runLogs}
-            expansionCommand={runCardsExpansionCommand}
-            isLoading={isRunLogsLoading}
-            hasMore={hasMore}
-            loadMore={loadMore}
-            onConfirmAction={handleConfirmAction}
-            onCancelAction={handleCancelAction}
-            onViewContent={openSuggestionDetailPanel}
-            enabledAgent={enabledAgent}
-          />
-        </div>
-        {suggestionDetail && (
-          <SuggestionDetailPanel
-            suggestionDetail={suggestionDetail}
-            isSaving={isSavingContent}
-            onSave={handleSaveContent}
-            onClose={closeSuggestionDetailPanel}
-            width={suggestionDetailPanelWidth}
-            onWidthChange={setSuggestionDetailPanelWidth}
+      <div className="seaqa-agent-container">
+        {isRunLogsLoading && runLogs.length === 0 && (
+          <CenteredLoading />
+        )}
+        {!isRunLogsLoading && runLogs.length === 0 && (
+          <EmptyTip
+            src={`${mediaUrl}img/no-items-tip.png`}
+            title={gettext('No agent logs')}
+            text={!enabledAgent && gettext('Enable the agent in settings to start')}
+            className="w-100"
           />
         )}
+        {runLogs.length > 0 && (
+          <>
+            {isShowLogs && (
+              <RunLogs
+                runLogs={runLogs}
+                isLoading={isRunLogsLoading}
+                hasMore={hasMore}
+                loadMore={loadMore}
+                reload={refresh}
+                activeLogIndex={activeLogIndex}
+                setActiveLogIndex={setActiveLogIndex}
+                hideLogs={() => setIsShowLogs(false)}
+              />
+            )}
+            <RunLogDetails
+              isShowLogs={isShowLogs}
+              showLogs={() => setIsShowLogs(true)}
+              hideLogs={() => setIsShowLogs(false)}
+              runLog={runLogs[activeLogIndex]}
+              settings={settings}
+              modifySettings={modifySettings}
+            />
+          </>
+        )}
       </div>
-      {pendingMapping && (
-        <AgentType2GithubTypeMappingDialog
-          agentType={pendingMapping?.agentType || ''}
-          githubIssueTypes={pendingMapping?.githubIssueTypes || []}
-          onCancel={dismissMapping}
-          onConfirm={submitMappingAndRetry}
-        />
-      )}
     </>
   );
 };

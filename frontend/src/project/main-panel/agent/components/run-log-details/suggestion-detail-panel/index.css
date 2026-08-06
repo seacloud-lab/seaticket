@@ -1,0 +1,67 @@
+.seaqa-agent-tool-suggestion-panel {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--bs-body-bg);
+  border-left: 1px solid var(--bs-border-secondary-color);
+  box-shadow: none;
+  flex-shrink: 0;
+}
+
+.seaqa-agent-tool-suggestion-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 0 8px 16px;
+  border-bottom: 1px solid var(--bs-border-secondary-color);
+  margin: 0 16px 0 0;
+}
+
+.seaqa-agent-tool-suggestion-panel-title {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  color: var(--bs-body-color);
+}
+
+.seaqa-agent-tool-suggestion-panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.seaqa-agent-tool-suggestion-panel-textarea {
+  width: 100%;
+  height: 100%;
+  min-height: 240px;
+  padding: 16px;
+  border: 1px solid var(--bs-input-focus-border-color);
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--bs-body-color);
+  resize: none;
+  font-family: inherit;
+}
+
+.seaqa-agent-tool-suggestion-panel-textarea:focus {
+  outline: none;
+  border-color: var(--bs-input-focus-border-color);
+}
+
+.seaqa-agent-tool-suggestion-panel-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+}
+
+.seaqa-agent-tool-suggestion-panel .resize-bar {
+  margin-left: -6px;
+}
+
+.seaqa-agent-tool-suggestion-panel .resize-bar-content {
+  background-color: inherit;
+}

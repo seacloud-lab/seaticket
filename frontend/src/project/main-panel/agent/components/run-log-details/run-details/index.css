@@ -1,0 +1,129 @@
+.seaqa-agent-run-detail {
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-tertiary-color);
+  border-radius: 8px;
+}
+
+.seaqa-agent-run-detail.collapsed {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  margin-bottom: -6px;
+}
+
+.seaqa-agent-run-detail.expanded {
+  box-shadow: 0 3px 8px rgba(16, 19, 24, .1);
+  flex-direction: column;
+  margin-bottom: 16px;
+  padding-right: 0;
+}
+
+.seaqa-agent-run-detail:last-child {
+  border-bottom-left-radius: 8px !important;
+  border-bottom-right-radius: 8px !important;
+  margin-bottom: 0 !important;
+}
+
+/* header */
+.seaqa-agent-run-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px 6px 16px;
+  border-radius: 8px 8px 0 0;
+  height: 40px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.seaqa-agent-run-detail.collapsed .seaqa-agent-run-detail-header {
+  height: 44px;
+  padding-bottom: 10px;
+  background-color: var(--bs-th-secondary-bg);
+}
+
+.seaqa-agent-run-detail:last-child .seaqa-agent-run-detail-header {
+  height: 40px !important;
+  padding-bottom: 6px !important;
+}
+
+.seaqa-agent-run-detail:last-child.collapsed .seaqa-agent-run-detail-header {
+  border-bottom-left-radius: 8px !important;
+  border-bottom-right-radius: 8px !important;
+}
+
+.seaqa-agent-run-detail-header-left {
+  gap: 8px;
+}
+
+.seaqa-agent-run-detail .seaqa-agent-run-time {
+  line-height: 22px;
+}
+
+.seaqa-agent-run-detail-dropdown-menu {
+  min-width: 160px;
+}
+
+.seaqa-agent-run-status {
+  height: 24px !important;
+}
+
+.seaqa-agent-run-status,
+.seaqa-agent-run-status:hover {
+  cursor: default !important;
+  background-color: unset !important;
+}
+
+.seaqa-agent-run-status.run-done,
+.seaqa-agent-run-status.run-done:hover,
+.seaqa-agent-run-status.run-no-action-needed,
+.seaqa-agent-run-status.run-no-action-needed:hover {
+  border-color: rgba(var(--bs-success-rgb), 0.12);
+  color: var(--bs-success);
+  background-color: var(--bs-th-secondary-bg) !important;
+}
+
+.seaqa-agent-run-status.run-done svg {
+  color: inherit !important;
+}
+
+.seaqa-agent-run-status.run-running,
+.seaqa-agent-run-status.run-failed {
+  font-size: 14px;
+  line-height: 22px;
+  padding: 0 !important;
+  border: unset !important;
+}
+
+.seaqa-agent-run-status.run-running {
+  color: var(--bs-body-secondary-color);
+}
+
+.seaqa-agent-run-status.run-running svg {
+  width: 14px;
+  height: 14px;
+  color: inherit;
+}
+
+.seaqa-agent-run-status.run-failed {
+  color: var(--bs-text-danger);
+}
+
+.seaqa-agent-run-event-type {
+  color: var(--bs-body-secondary-color);
+  border-radius: 4px;
+  border: 1px solid rgba(0, 40, 100, 0.12);
+  background-color: var(--bs-th-secondary-bg);
+  height: 24px;
+  width: fit-content;
+  line-height: 22px;
+}
+
+.seaqa-agent-run-detail-body {
+  padding: 16px;
+  position: relative;
+  border-top: 1px solid var(--bs-border-secondary-color);
+}
+
+.seaqa-agent-run-actions-direct {
+  gap: 12px;
+}

@@ -4,7 +4,7 @@ import { ModalHeader } from '@/components';
 import { gettext } from '@/constants';
 import { agentAPI } from '@/project/api';
 
-import './run-statistics-dialog.css';
+import './index.css';
 
 const { projectUuid } = window.app.pageOptions;
 

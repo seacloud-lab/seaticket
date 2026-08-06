@@ -1,0 +1,141 @@
+.seaqa-agent-action {
+  gap: 8px;
+}
+
+.seaqa-agent-action::after {
+  content: '';
+  position: absolute;
+  top: 26px;
+  left: 11px;
+  height: calc(100% - 26px);
+  width: 1px;
+  border-left: 1px solid var(--bs-border-secondary-color);
+}
+
+.seaqa-agent-action:last-child::after {
+  display: none;
+}
+
+.seaqa-agent-action-container {
+  flex: 1;
+  font-size: 13px;
+  color: var(--bs-body-secondary-color);
+  line-height: 1.5;
+  position: relative;
+  overflow: hidden;
+}
+
+.seaqa-agent-action-container.seaqa-agent-event-action-container .seaqa-agent-action-label,
+.seaqa-agent-action-container.seaqa-agent-analysis-action-container .seaqa-agent-action-label,
+.seaqa-agent-action-container.seaqa-agent-suggestions-action-container .seaqa-agent-action-label {
+  font-size: 16px;
+}
+
+.seaqa-agent-action-container.seaqa-agent-event-action-container .longtext-preview-container .sf-slate-viewer-article-container .article {
+  margin: 0;
+  padding: 0 !important;
+  font-size: 13px;
+  color: var(--bs-body-tertiary-color);
+}
+
+.seaqa-agent-action-container.seaqa-agent-event-action-container .sf-slate-viewer-scroll-container .article {
+  max-width: 100%;
+}
+
+.seaqa-agent-action-container.seaqa-agent-analysis-action-container .longtext-preview-container .sf-slate-viewer-article-container .article {
+  margin: 0;
+  padding: 0 !important;
+}
+
+.seaqa-agent-action-container.seaqa-agent-analysis-action-container .sf-slate-viewer-scroll-container .article {
+  max-width: 100%;
+}
+
+.seaqa-agent-action-container .longtext-preview-container .article :last-child {
+  margin-bottom: 0;
+}
+
+.seaqa-agent-action-label {
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 500;
+  color: var(--bs-body-color);
+  margin-bottom: 8px;
+}
+
+.seaqa-agent-action-label-thought {
+  margin-bottom: 0;
+  margin-right: 4px;
+  color: var(--bs-body-secondary-color);
+  font-weight: 400;
+}
+
+.seaqa-agent-action-text {
+  color: var(--bs-body-secondary-color);
+  font-size: 14px;
+  line-height: 22px;
+  position: relative;
+  white-space: pre-line;
+}
+
+.seaqa-agent-action-text-thought p {
+  color: var(--bs-body-secondary-color);
+  font-weight: 400;
+  font-style: Italic;
+  font-size: 13px;
+  line-height: 20px;
+  margin-left: 28px;
+  margin-bottom: 0px;
+}
+
+.seaqa-agent-action-text::after {
+  content: '';
+  position: absolute;
+  left: -20px;
+  height: 100%;
+  width: 1px;
+  top: 0;
+  border-left: 1px solid var(--bs-border-secondary-color);
+}
+
+.seaqa-agent-action-text.seaqa-agent-action-text-thought::after {
+  left: 8px;
+}
+
+.seaqa-agent-action-errors {
+  line-height: 22px;
+}
+
+/* tool */
+.seaqa-agent-action-tool {
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 20px;
+  color: var(--bs-body-secondary-color);
+}
+
+.seaqa-agent-action-tool .seaqa-agent-action-tool-content {
+  height: 24px;
+  line-height: 24px;
+  padding: 0px 6px;
+  border-radius: 4px;
+  background: #f7f7f5;
+  color: var(--bs-body-color);
+}
+
+.seaqa-agent-action-tool::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  height: 32px;
+  width: 1px;
+  top: 38px;
+  border-left: 1px solid var(--bs-border-secondary-color);
+}
+
+/* active buttons */
+.seaqa-agent-action-buttons {
+  gap: 8px;
+}

@@ -5,10 +5,6 @@
   flex-shrink: 0;
 }
 
-.seaqa-project-refresh-btn>svg {
-  color: #666 !important;
-}
-
 .seaqa-project-refresh-btn-thought {
   width: auto;
   margin: 0px;
