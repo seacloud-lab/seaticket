@@ -27,6 +27,7 @@ const OptionEditor = ({
   onCreate,
   defaultHighlightIndex,
   isShowSearchIcon = false,
+  searchHeight,
 }) => {
   const optionEditorContainerRef = useRef(null);
 
@@ -66,6 +67,7 @@ const OptionEditor = ({
         onCreate={onCreate}
         defaultHighlightIndex={defaultHighlightIndex}
         isShowSearchIcon={isShowSearchIcon}
+        searchHeight={searchHeight}
       />
     </CustomizePopover>
   );

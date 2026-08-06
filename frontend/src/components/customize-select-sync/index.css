@@ -15,6 +15,12 @@
   color: var(--bs-icon-color) !important;
 }
 
-.seaqa-customize-select-sync-error {
-  color: var(--bs-text-danger);
+.seaqa-customize-select-sync-option-editor .option-editor-container {
+  padding-top: 0;
+}
+
+.seaqa-customize-select-sync-option-editor .option-editor-search-wrapper {
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0;
+  margin-bottom: 8px;
 }

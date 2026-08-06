@@ -75,7 +75,7 @@ const CustomizeSelectSync = ({
   }, [isLoading, value, placeholder, allOptions]);
 
   return (
-    <div>
+    <div className="seaqa-customize-select-sync">
       <div className="d-flex align-items-center">
         <div
           ref={ref}
@@ -107,11 +107,11 @@ const CustomizeSelectSync = ({
         )}
       </div>
       {errorMessage && (
-        <div className="seaqa-customize-select-sync-error mt-2">{errorMessage}</div>
+        <div className="error mt-2">{errorMessage}</div>
       )}
       {!disabled && isShowSelector && (
         <OptionEditor
-          className="seaqa-settings-popover"
+          className="seaqa-settings-popover seaqa-customize-select-sync-option-editor"
           target={ref}
           sameWidthWithTarget={240}
           isMultiple={false}
@@ -120,6 +120,8 @@ const CustomizeSelectSync = ({
           options={allOptions}
           onChange={handleChange}
           onToggle={() => setIShowSelector(false)}
+          searchHeight={32}
+          contentClassName="option-group"
         />
       )}
     </div>
