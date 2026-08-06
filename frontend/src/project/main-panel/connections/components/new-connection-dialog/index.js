@@ -589,7 +589,15 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       }
     }
     if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && column.key === 'workspace_id' && isConfluence) {
-      api = isConfluenceOauthConnected ? listConfluenceWorkspaces : null;
+      if (isConfluenceOauthConnected) {
+        api = listConfluenceWorkspaces;
+        column.readonly = false;
+        column.placeholder = gettext('Select a workspace');
+      } else {
+        api = null;
+        column.readonly = true;
+        column.placeholder = gettext('Please connect Confluence first');
+      }
       if (row[key]) {
         row[key] = row[key].value || row[key];
       }
