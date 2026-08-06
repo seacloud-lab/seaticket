@@ -568,6 +568,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
 
     let api = null;
     let row = { ...config };
+    let fieldColumn = column;
     if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && column.key === 'repository' && isGithub) {
       api = listGitHubRepositories;
       if (row[key]) {
@@ -575,29 +576,23 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       }
     }
     if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && column.key === 'team_id' && isLinear) {
-      if (isLinearOauthConnected) {
-        api = listLinearTeams;
-        column.readonly = false;
-        column.placeholder = gettext('Select a team');
-      } else {
-        api = null;
-        column.readonly = true;
-        column.placeholder = gettext('Please connect Linear first');
-      }
+      api = isLinearOauthConnected ? listLinearTeams : null;
+      fieldColumn = {
+        ...column,
+        readonly: !isLinearOauthConnected,
+        placeholder: isLinearOauthConnected ? gettext('Select a team') : gettext('Please connect Linear first'),
+      };
       if (row[key]) {
         row[key] = row[key].value || row[key];
       }
     }
     if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && column.key === 'workspace_id' && isConfluence) {
-      if (isConfluenceOauthConnected) {
-        api = listConfluenceWorkspaces;
-        column.readonly = false;
-        column.placeholder = gettext('Select a workspace');
-      } else {
-        api = null;
-        column.readonly = true;
-        column.placeholder = gettext('Please connect Confluence first');
-      }
+      api = isConfluenceOauthConnected ? listConfluenceWorkspaces : null;
+      fieldColumn = {
+        ...column,
+        readonly: !isConfluenceOauthConnected,
+        placeholder: isConfluenceOauthConnected ? gettext('Select a workspace') : gettext('Please connect Confluence first'),
+      };
       if (row[key]) {
         row[key] = row[key].value || row[key];
       }
@@ -612,11 +607,11 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     return (
       <ConnectionConfigEditor
         className={is_advanced_option ? 'seaqa-project-connection-advanced-options-field' : ''}
-        column={column}
+        column={fieldColumn}
         api={api}
         key={key}
         row={row}
-        readonly={isSubmitting || column.readonly}
+        readonly={isSubmitting || fieldColumn.readonly}
         onChange={onConfigChange}
       />
     );
