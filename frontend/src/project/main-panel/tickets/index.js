@@ -47,11 +47,11 @@ const Page = ({ toggleBar, type }) => {
   if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL) {
     if (type === BAR_TYPE.MY_TICKET) return (<MyTickets { ...props } />);
     if (type === BAR_TYPE.TRASH) return (<TrashTickets { ...props } />);
-    if (type === BAR_TYPE.NEW_TICKET) return (<NewTicket projectUuid={projectUuid} editorAPI={longtextAPI} />);
+    if (type === BAR_TYPE.NEW_TICKET) return (<NewTicket projectUuid={projectUuid} editorAPI={longtextAPI} toggleBar={toggleBar} />);
     return (<AllTickets { ...props } />);
   }
   if (pageSlugId === TICKET_PAGE_SLUG_ID.NEW) {
-    return (<NewTicket projectUuid={projectUuid} editorAPI={longtextAPI} />);
+    return (<NewTicket projectUuid={projectUuid} editorAPI={longtextAPI} toggleBar={toggleBar} />);
   }
   return (<Ticket { ...props } ticketID={pageSlugId} editorAPI={longtextAPI} onRefresh={onRefresh} togglePageSlugId={togglePageSlugId} />);
 };
