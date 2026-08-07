@@ -59,7 +59,7 @@ const Page = ({ toggleBar, type }) => {
 const Tickets = ({ title, toggleBar, type }) => {
   return (
     <TicketsPageProvider workspaceID={workspaceID} projectName={projectName} type={type}>
-      <TicketTopBar title={title} type={type} permission={permission} />
+      <TicketTopBar title={title} type={type} permission={permission} toggleBar={toggleBar} />
       <Page toggleBar={toggleBar} type={type} />
     </TicketsPageProvider>
   );

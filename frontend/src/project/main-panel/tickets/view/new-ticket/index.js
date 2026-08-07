@@ -6,7 +6,7 @@ import {
   toaster,
   CustomizeDropdownMoreToggle, CustomizeDropdownMenu, CustomizeDropdownItem
 } from '@/components';
-import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
+import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE, siteRoot } from '@/constants';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { PREDEFINED_TICKET_COLUMN_NAME, TICKET_PAGE_SLUG_ID, TICKET_TABLE_NAME, TICKET_STATE_OPTIONS } from '../../constants';
 import {
@@ -121,8 +121,14 @@ const NewTicket = ({ editorAPI, projectUuid, toggleBar }) => {
     });
 
     ticketsAPI.createProjectTicket(projectUuid, serverData).then(res => {
+      const ticketID = res.data.ticket._pk;
+      const { origin } = location;
+      const { workspaceID, projectName } = window.app.pageOptions;
+      const allTicketsURL = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}/`;
       insertRow(TICKET_TABLE_NAME);
-      toggleBar([BAR_TYPE.TICKET, res.data.ticket._pk]);
+      history.replaceState(null, null, allTicketsURL);
+      history.pushState(null, null, `${allTicketsURL}${ticketID}/`);
+      toggleBar([BAR_TYPE.TICKET, ticketID]);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
