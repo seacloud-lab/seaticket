@@ -29,6 +29,10 @@
   cursor: pointer;
 }
 
+.seaqa-email-to-container .seaqa-email-to-value .seaqa-email-to-user.invalid {
+  color: var(--bs-text-danger);
+}
+
 .seaqa-email-to-container .seaqa-email-to-user .seaqa-email-to-user-email {
   flex: 1;
   overflow: hidden;

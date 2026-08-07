@@ -1,52 +1,78 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useState } from 'react';
 import classnames from 'classnames';
 import { Input } from 'reactstrap';
 import { ClickOutside, IconTooltip } from '@/components';
 import { gettext } from '@/constants';
 import { isString } from '@/utils/type-detection';
+import { isValidEmail } from '@/utils/validate';
 
 import './index.css';
 
 const SendTo = ({
-  value: propsValue = [],
+  value,
   readonly = false,
   className,
   onChange,
-}) => {
+}, ref) => {
   const [focus, setFocus] = useState(false);
   const [email, setEmail] = useState('');
-  const value = useMemo(() => {
-    if (!Array.isArray(propsValue) || propsValue.length === 0) return [];
-    return propsValue.filter(email => email && isString(email));
-  }, [propsValue]);
+  const [emails, setEmails] = useState(Array.isArray(value) ? value.filter(email => email && isString(email)) : []);
 
-  const handleRemove = useCallback((email) => {
-    const newValue = value.filter(item => item !== email);
-    onChange(newValue);
-  }, [value, onChange]);
+  useEffect(() => {
+    const nextEmails = Array.isArray(value) ? value.filter(email => email && isString(email)) : [];
+    setEmails(nextEmails);
+  }, [value]);
+
+  const handleRemove = useCallback((emailToRemove) => {
+    const newEmails = emails.filter(item => item !== emailToRemove);
+    setEmails(newEmails);
+    onChange && onChange(newEmails);
+  }, [emails, onChange]);
 
   const onEmailChange = useCallback((event) => {
     const newValue = event.target.value;
     if (newValue === email) return;
     if (newValue.endsWith(',') || newValue.endsWith('，')) {
       const newEmail = newValue.slice(0, -1).trim();
-      if (!newEmail || value.includes(newEmail)) return;
-      const newEmails = [...value, newEmail];
-      onChange(newEmails);
+      if (!newEmail || emails.includes(newEmail)) {
+        setEmail('');
+        return;
+      }
+      const newEmails = [...emails, newEmail];
+      setEmails(newEmails);
       setEmail('');
+      onChange && onChange(newEmails);
       return;
     }
     setEmail(newValue);
-  }, [email, value, onChange]);
+  }, [email, emails, onChange]);
+
+  const formatToEmail = useCallback(() => {
+    const newEmail = email.trim();
+    if (!newEmail || emails.includes(newEmail)) {
+      setEmail('');
+      return emails;
+    }
+
+    const newEmails = [...emails, newEmail];
+    setEmails(newEmails);
+    setEmail('');
+    onChange && onChange(newEmails);
+    return newEmails;
+  }, [email, emails, onChange]);
+
+  useImperativeHandle(ref, () => ({
+    getValue: formatToEmail,
+  }), [formatToEmail]);
 
   return (
     <ClickOutside onClickOutside={() => setFocus(false)}>
       <div className={classnames('seaqa-email-to-container', className, { 'focus': focus })}>
-        {value.length > 0 && (
+        {emails.length > 0 && (
           <div className="seaqa-email-to-value">
-            {value.map(email => {
+            {emails.map(email => {
               return (
-                <div className="seaqa-email-to-user" key={email}>
+                <div className={classnames('seaqa-email-to-user', { 'invalid': !isValidEmail(email) })} key={email}>
                   <div className="seaqa-email-to-user-email">{email}</div>
                   {!readonly && (
                     <IconTooltip
@@ -70,6 +96,7 @@ const SendTo = ({
             value={email}
             onChange={onEmailChange}
             onFocus={() => setFocus(true)}
+            onBlur={formatToEmail}
           />
         )}
       </div>
@@ -77,4 +104,4 @@ const SendTo = ({
   );
 };
 
-export default SendTo;
+export default forwardRef(SendTo);
