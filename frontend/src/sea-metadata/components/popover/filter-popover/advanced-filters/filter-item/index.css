@@ -175,17 +175,6 @@
   padding: 0;
 }
 
-.sea-metadata-filters-list .filter-column .option-group .option-group-search {
-  padding: 0;
-}
-
-.sea-metadata-filters-list .filter-column .option-group .seaqa-search-input-wrapper .seaqa-search-input {
-  border: none;
-  border-bottom: 1px solid #eee;
-  border-radius: 0;
-  padding-left: 16px !important;
-}
-
 .sea-metadata-filters-list .filter-column .option-group .seaqa-search-input-wrapper .seaqa-clear-icon-button.seaqa-icon-btn {
   right: 12px !important;
 }

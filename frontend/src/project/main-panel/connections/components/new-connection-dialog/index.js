@@ -598,7 +598,12 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       }
     }
     if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && column.key === 'channel_id' && isDiscord) {
-      api = listDiscordChannels;
+      api = config.guild_id ? listDiscordChannels : null;
+      fieldColumn = {
+        ...column,
+        readonly: !config.guild_id,
+        placeholder: config.guild_id ? gettext('Select a channel') : gettext('Please install Discord Bot first'),
+      };
       if (row[key]) {
         row[key] = row[key].value || row[key];
       }

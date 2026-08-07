@@ -86,3 +86,15 @@
 .option-group .option .select-option-name .multiple-select-option {
   margin: 0;
 }
+
+.option-group .option-group-search {
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0;
+  height: 33px;
+  padding-left: 8px;
+  padding-right: 7px;
+}
+
+.option-group .seaqa-search-input-wrapper .seaqa-search-input {
+  border: none;
+}
