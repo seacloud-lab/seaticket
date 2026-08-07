@@ -88,6 +88,11 @@ const RunLogs = ({
     }
   }, []);
 
+  useEffect(() => {
+    const activeLogDom = logsRef.current?.querySelector('.seaqa-agent-run-log.active');
+    activeLogDom?.scrollIntoView({ block: 'nearest' });
+  }, []);
+
   return (
     <div className="seaqa-agent-run-logs-container h-100 flex-shrink-0 d-flex" ref={ref}>
       <div className="seaqa-agent-run-logs w-100 h-100 d-flex flex-column">
