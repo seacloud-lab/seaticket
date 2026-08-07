@@ -4,6 +4,7 @@ import { Input } from 'reactstrap';
 import { ClickOutside, IconTooltip } from '@/components';
 import { gettext } from '@/constants';
 import { isString } from '@/utils/type-detection';
+import { isValidEmail } from '@/utils/validate';
 
 import './index.css';
 
@@ -39,6 +40,12 @@ const SendTo = ({
     setEmail(newValue);
   }, [email, value, onChange]);
 
+  const formatToEmail = useCallback(() => {
+    const newEmails = [...value, email];
+    onChange(newEmails);
+    setEmail('');
+  }, [email, value, onChange]);
+
   return (
     <ClickOutside onClickOutside={() => setFocus(false)}>
       <div className={classnames('seaqa-email-to-container', className, { 'focus': focus })}>
@@ -46,7 +53,7 @@ const SendTo = ({
           <div className="seaqa-email-to-value">
             {value.map(email => {
               return (
-                <div className="seaqa-email-to-user" key={email}>
+                <div className={classnames('seaqa-email-to-user', { 'invalid': !isValidEmail(email) })} key={email}>
                   <div className="seaqa-email-to-user-email">{email}</div>
                   {!readonly && (
                     <IconTooltip
@@ -70,6 +77,7 @@ const SendTo = ({
             value={email}
             onChange={onEmailChange}
             onFocus={() => setFocus(true)}
+            onBlur={formatToEmail}
           />
         )}
       </div>

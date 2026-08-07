@@ -4,6 +4,7 @@ import { Button } from 'reactstrap';
 import { gettext } from '@/constants';
 import SendTo from './send-to';
 import { Loading } from '@/components';
+import { areArraysEqual } from '@/utils/array-utils';
 
 import './index.css';
 
@@ -21,9 +22,10 @@ const ReplyEmail = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const ableSubmit = useMemo(() => {
+    if (!areArraysEqual(emailTo, propsEmailTo)) return true;
     if (emailTo.length === 0 || !emailContent || isSubmitting || initValue === emailContent) return false;
     return true;
-  }, [emailTo, emailContent, initValue, isSubmitting]);
+  }, [emailTo, propsEmailTo, emailContent, initValue, isSubmitting]);
 
   const onEmailToChange = useCallback((value) => {
     setEmailTo(value);
@@ -64,7 +66,7 @@ const ReplyEmail = ({
       </div>
       <div className="seaqa-email-replay-to">
         <div className="seaqa-email-replay-to-title">
-          {gettext('Copy to')}
+          {gettext('Cc')}
         </div>
         <SendTo value={emailCC} onChange={onEmailCCChange}/>
       </div>
