@@ -24,6 +24,7 @@
 
 .longtext-preview-container .article {
   padding: 16px !important;
+  max-width: 100% !important;
 }
 
 .longtext-preview-container .article h2 {
