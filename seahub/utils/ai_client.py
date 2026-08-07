@@ -59,3 +59,23 @@ def get_chat_title(params):
     if resp.status_code != 200:
         raise Exception(f'generate chat title error status: {resp.status_code} body: {resp.text}')
     return resp.json().get('title', '')
+
+
+def list_builtin_skills():
+    headers = _build_headers()
+    url = urljoin(SEAQA_AI_INNER_SERVER_URL, '/internal/skills/builtins')
+    resp = requests.get(url, headers=headers, timeout=AI_REPLY_TIMEOUT)
+    if resp.status_code != 200:
+        raise Exception(f'list builtin skills error status: {resp.status_code} body: {resp.text}')
+    return resp.json().get('skills', [])
+
+
+def get_builtin_skill(name):
+    headers = _build_headers()
+    url = urljoin(SEAQA_AI_INNER_SERVER_URL, f'/internal/skills/builtins/{name}')
+    resp = requests.get(url, headers=headers, timeout=AI_REPLY_TIMEOUT)
+    if resp.status_code == 404:
+        return None
+    if resp.status_code != 200:
+        raise Exception(f'get builtin skill error status: {resp.status_code} body: {resp.text}')
+    return resp.json().get('skill')

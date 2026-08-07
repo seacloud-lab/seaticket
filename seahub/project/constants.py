@@ -46,6 +46,9 @@ DEFAULT_AGENT_AUTO_CONFIRM = {
 }
 
 DEFAULT_PROJECT_SETTINGS = {
+    'skills': {
+        'disabled_builtins': [],
+    },
     'agent': {
         'enabled': True,
         'model': 'gemini-3-flash',

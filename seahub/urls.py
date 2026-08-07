@@ -140,6 +140,7 @@ urlpatterns = [
     re_path(r'^', include('seahub.portal.urls')),
 
     re_path(r'^', include('seahub.knowledge_base.urls')),
+    re_path(r'^', include('seahub.chat_skills.urls')),
 
     re_path(r'^', include(('seahub.project.urls', 'project'), namespace='workspace')),
 

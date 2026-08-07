@@ -576,10 +576,15 @@ class ChatView(APIView):
 
         # Read project-level custom prompt from settings
         project_prompt = ''
+        disabled_builtin_skills = []
         if project.settings:
             try:
                 project_settings = json.loads(project.settings)
                 project_prompt = project_settings.get('prompt', '')
+                skills_settings = project_settings.get('skills') or {}
+                disabled_builtin_skills = skills_settings.get('disabled_builtins') or []
+                if not isinstance(disabled_builtin_skills, list):
+                    disabled_builtin_skills = []
             except json.JSONDecodeError:
                 pass
 
@@ -612,6 +617,7 @@ class ChatView(APIView):
             'llm_model': request.data.get('model'),
             'stream': stream,
             'project_prompt': project_prompt,
+            'disabled_builtin_skills': disabled_builtin_skills,
             'username': username # used for kb generator
         }
 

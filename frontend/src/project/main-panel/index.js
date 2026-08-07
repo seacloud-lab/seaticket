@@ -7,6 +7,7 @@ import TopBar from './top-bar';
 import Ask from './ask';
 import Agent from './agent';
 import Settings from './settings';
+import Skills from './skills';
 import KnowledgeBase from './knowledge-base';
 import Analyze from './analyze';
 import Tags from './tags';
@@ -59,6 +60,9 @@ const Container = ({ activeBar, settings, modifySettings, toggleBar, modifyLocal
     }
     case BAR_TYPE.SETTINGS: {
       return (<Settings title={title} settings={settings} modifySettings={modifySettings} />);
+    }
+    case BAR_TYPE.SKILLS: {
+      return (<Skills title={title} />);
     }
     case BAR_TYPE.KNOWLEDGE:
     case BAR_TYPE.KNOWLEDGE_TRASH: {
