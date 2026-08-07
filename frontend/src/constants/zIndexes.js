@@ -25,7 +25,7 @@ export const Z_INDEX = {
   EDITOR_CONTAINER: 9,
 
   RESIZE_BAR: 104,
-  INBOX: 103,
+  INBOX: 105,
   LONG_TEXT_EDITOR: 102,
   // home header should higher than resize bar (104)
   HOME_HEADER: 105,

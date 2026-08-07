@@ -36,7 +36,7 @@ const RunLog = ({
           {resource.type_name + ' #' + resource._id}
         </div>
       </div>
-      <ResourceTitle resource={resource} className="seaqa-agent-run-log-body" />
+      <ResourceTitle resource={resource} className="seaqa-agent-run-log-body" displayDetails={false} />
       <div className="seaqa-agent-run-log-footer d-flex align-items-center">
         <span>
           {gettext('Last active:')}
