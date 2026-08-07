@@ -28,7 +28,7 @@ import './index.css';
 
 const { projectUuid } = window.app.pageOptions;
 
-const ResourceTitle = ({ resource, className }) => {
+const ResourceTitle = ({ displayDetails = true, resource, className }) => {
   const [isShowDetails, setIsShowDetails] = useState(false);
   const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
   const [isTicketDialogOpen, setTicketDialogOpen] = useState(false);
@@ -198,9 +198,9 @@ const ResourceTitle = ({ resource, className }) => {
   return (
     <>
       <div
-        className={classnames('seaqa-agent-resource-title', className)}
+        className={classnames(className, { 'seaqa-agent-resource-title': displayDetails && hasDetails })}
         title={resource?.title}
-        onClick={hasDetails ? openDetails : () => {}}
+        onClick={hasDetails && displayDetails ? openDetails : () => {}}
       >
         {resource?.title}
       </div>
