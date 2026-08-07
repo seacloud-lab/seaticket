@@ -8,7 +8,7 @@ import * as CommonlyUsedHotkey from '@/utils/hotkey';
 import { Utils } from '@/utils/utils';
 import { getType } from '@/utils/type-detection';
 import InputUtils from '@/utils/input-utils';
-import { CHAT_ATTACHMENT_TYPE, CHAT_ATTACHMENT_SOURCE, CHAT_IMAGE_ATTACHMENT_MAX_COUNT, CHAT_MESSAGE_TYPE, DEFAULT_ALLOWED_ATTACHMENT_SOURCES, CHAT_SKILL_COMMANDS } from '../constants';
+import { CHAT_ATTACHMENT_TYPE, CHAT_ATTACHMENT_SOURCE, CHAT_IMAGE_ATTACHMENT_MAX_COUNT, CHAT_MESSAGE_TYPE, DEFAULT_ALLOWED_ATTACHMENT_SOURCES } from '../constants';
 import AttachmentsSelector from './attachments-selector';
 import AttachmentsFormatter from './attachments';
 import { useAIChatTools } from '../hooks';
@@ -35,9 +35,9 @@ const getSkillCommandQuery = (value, range) => {
   return value.slice(range.start + 1, range.end).trim().toLowerCase();
 };
 
-const getSelectedSkillCommandRange = (value, selectionStart, selectionEnd) => {
-  const skillCommands = CHAT_SKILL_COMMANDS.map(skill => `/${skill}`);
-  for (const command of skillCommands) {
+const getSelectedSkillCommandRange = (value, selectionStart, selectionEnd, skillCommands = []) => {
+  const commands = skillCommands.map(skill => `/${skill}`);
+  for (const command of commands) {
     let start = value.indexOf(command);
     while (start !== -1) {
       const end = start + command.length;
@@ -56,8 +56,8 @@ const getSelectedSkillCommandRange = (value, selectionStart, selectionEnd) => {
   return null;
 };
 
-const getSkillCommandDeleteRange = (value, selectionStart, selectionEnd, keyCode) => {
-  const commandRange = getSelectedSkillCommandRange(value, selectionStart, selectionEnd);
+const getSkillCommandDeleteRange = (value, selectionStart, selectionEnd, keyCode, skillCommands = []) => {
+  const commandRange = getSelectedSkillCommandRange(value, selectionStart, selectionEnd, skillCommands);
   if (!commandRange) return null;
 
   const trailingEnd = value[commandRange.end] === ' ' ? commandRange.end + 1 : commandRange.end;
@@ -75,10 +75,10 @@ const getSkillCommandDeleteRange = (value, selectionStart, selectionEnd, keyCode
   return null;
 };
 
-const getMessageWithoutLeadingSkillCommand = (value) => {
+const getMessageWithoutLeadingSkillCommand = (value, skillCommands = []) => {
   if (typeof value !== 'string') return '';
-  const skillCommands = CHAT_SKILL_COMMANDS.map(skill => `/${skill}`);
-  for (const command of skillCommands) {
+  const commands = skillCommands.map(skill => `/${skill}`);
+  for (const command of commands) {
     if (value === command || value.startsWith(`${command} `)) {
       return value.slice(command.length).trim();
     }
@@ -96,6 +96,7 @@ const ChatInput = forwardRef(({
   sendMessage,
   resetClearContext,
   enableSkills = true,
+  skillCommands = [],
   api,
 }, ref) => {
   const chatAPI = api || defaultChatAPI;
@@ -294,7 +295,7 @@ const ChatInput = forwardRef(({
     event && event.stopPropagation();
     event && event.nativeEvent.stopImmediatePropagation();
     const messageValue = typeof initialMessage === 'string' ? initialMessage : value;
-    const messageText = enableSkills ? getMessageWithoutLeadingSkillCommand(messageValue) : messageValue.trim();
+    const messageText = enableSkills ? getMessageWithoutLeadingSkillCommand(messageValue, skillCommands) : messageValue.trim();
     if (!messageText) {
       inputRef.current?.focus();
       return;
@@ -310,18 +311,18 @@ const ChatInput = forwardRef(({
     closeSkillCommandSelector();
     clearAttachments();
     resetClearContext();
-  }, [value, attachments, selectedModel, sendMessage, clearAttachments, clearContext, resetClearContext, closeSkillCommandSelector, enableSkills]);
+  }, [value, attachments, selectedModel, sendMessage, clearAttachments, clearContext, resetClearContext, closeSkillCommandSelector, enableSkills, skillCommands]);
 
   const skillCommandOptions = useMemo(() => {
     if (!enableSkills) return [];
     const query = getSkillCommandQuery(value, skillCommandRange);
-    return CHAT_SKILL_COMMANDS
+    return skillCommands
       .filter(skill => !query || skill.toLowerCase().startsWith(query))
       .map(skill => ({
         value: skill,
         label: `/${skill}`,
       }));
-  }, [value, skillCommandRange, enableSkills]);
+  }, [value, skillCommandRange, enableSkills, skillCommands]);
 
   const onKeyUp = useCallback((event) => {
     if (!(CommonlyUsedHotkey.isModUp(event) || CommonlyUsedHotkey.isModDown(event))) {
@@ -335,7 +336,7 @@ const ChatInput = forwardRef(({
     const keyCode = event.keyCode;
     if (enableSkills && (keyCode === Utils.keyCodes.backspace || keyCode === DELETE_KEY_CODE)) {
       const textarea = inputRef.current;
-      const deleteRange = getSkillCommandDeleteRange(value, textarea.selectionStart, textarea.selectionEnd, keyCode);
+      const deleteRange = getSkillCommandDeleteRange(value, textarea.selectionStart, textarea.selectionEnd, keyCode, skillCommands);
       if (deleteRange) {
         event.preventDefault();
         const nextValue = value.slice(0, deleteRange.start) + value.slice(deleteRange.end);
@@ -378,7 +379,7 @@ const ChatInput = forwardRef(({
       onSendMessage();
       return;
     }
-  }, [value, onSendMessage, isShowSkillCommandSelector, skillCommandOptions, onSkillCommandChange, closeSkillCommandSelector, enableSkills]);
+  }, [value, onSendMessage, isShowSkillCommandSelector, skillCommandOptions, onSkillCommandChange, closeSkillCommandSelector, enableSkills, skillCommands]);
 
   const onMouseUp = useCallback((event) => {
     const selection = window.getSelection();
@@ -510,7 +511,7 @@ const ChatInput = forwardRef(({
   const disabled = isReply || readOnly;
   const isSimple = width <= 673;
   const isUploadingAttachment = attachments.some(att => att.type === CHAT_ATTACHMENT_TYPE.IMAGE && att.status === 'uploading');
-  const messageText = enableSkills ? getMessageWithoutLeadingSkillCommand(value) : value.trim();
+  const messageText = enableSkills ? getMessageWithoutLeadingSkillCommand(value, skillCommands) : value.trim();
   const sendDisabled = disabled || !messageText || isUploadingAttachment;
 
   const domProps = allowImageAttachments && !disabled ? {
@@ -622,6 +623,7 @@ ChatInput.propTypes = {
   readOnly: PropTypes.bool,
   hasHistoryMessages: PropTypes.bool,
   enableSkills: PropTypes.bool,
+  skillCommands: PropTypes.arrayOf(PropTypes.string),
   sendMessage: PropTypes.func.isRequired,
 };
 

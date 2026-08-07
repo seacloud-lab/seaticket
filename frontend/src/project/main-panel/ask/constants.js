@@ -67,10 +67,6 @@ export const CHAT_ATTACHMENT_TYPE = {
   EMPTY: 'empty',
 };
 
-export const CHAT_SKILL_COMMANDS = [
-  'issue-research',
-];
-
 export const CHAT_ATTACHMENT_SOURCE = {
   IMAGE: 'image',
   SOURCE: 'source',

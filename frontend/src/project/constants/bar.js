@@ -10,6 +10,7 @@ export const BAR_TYPE = {
   TRASH: 'tickets/trash',
   CONNECTION: 'connections',
   SETTINGS: 'settings',
+  SKILLS: 'skills',
   SUPPORT_PORTAL: 'support-portal',
   PORTAL_ISSUES: 'portal-issues',
   PORTAL_ISSUES_TRASH: 'portal-issues/trash',
@@ -50,6 +51,11 @@ export const BAR_TYPE_CONFIG = {
     key: BAR_TYPE.SETTINGS,
     name: gettext('Settings'),
     icon: 'set-up'
+  },
+  [BAR_TYPE.SKILLS]: {
+    key: BAR_TYPE.SKILLS,
+    name: gettext('Skills'),
+    icon: 'tool-call'
   },
   [BAR_TYPE.SUPPORT_PORTAL]: {
     key: BAR_TYPE.SUPPORT_PORTAL,
