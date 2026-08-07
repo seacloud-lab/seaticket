@@ -1,39 +1,27 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import SeaEmailEditor from '@seafile/sea-email-editor';
 import { Button } from 'reactstrap';
 import { gettext } from '@/constants';
 import SendTo from './send-to';
-import { Loading } from '@/components';
+import { Loading, toaster } from '@/components';
 import { areArraysEqual } from '@/utils/array-utils';
+import { isValidEmail } from '@/utils/validate';
 
 import './index.css';
 
 const ReplyEmail = ({
-  emailTo: propsEmailTo,
+  emailTo: initialEmailTo,
+  emailCC: initialEmailCC,
   initValue,
   isHtmlValue,
   assetURLPrefix,
   onToggle,
   onSubmit,
 }) => {
-  const [emailTo, setEmailTo] = useState(propsEmailTo || []);
-  const [emailCC, setEmailCC] = useState([]);
   const [emailContent, setEmailContent] = useState(initValue || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const ableSubmit = useMemo(() => {
-    if (!areArraysEqual(emailTo, propsEmailTo)) return true;
-    if (emailTo.length === 0 || !emailContent || isSubmitting || initValue === emailContent) return false;
-    return true;
-  }, [emailTo, propsEmailTo, emailContent, initValue, isSubmitting]);
-
-  const onEmailToChange = useCallback((value) => {
-    setEmailTo(value);
-  }, []);
-
-  const onEmailCCChange = useCallback((value) => {
-    setEmailCC(value);
-  }, []);
+  const emailToRef = useRef(null);
+  const emailCCRef = useRef(null);
 
   const onReplyChange = useCallback((value) => {
     if (value === emailContent) return;
@@ -41,7 +29,30 @@ const ReplyEmail = ({
   }, [emailContent]);
 
   const handleSubmit = useCallback(() => {
-    if (!ableSubmit) return;
+    const emailTo = emailToRef.current?.getValue() || [];
+    if (emailTo.length === 0) {
+      toaster.danger(gettext('Please fill in the recipient\'s address before sending'));
+      return;
+    }
+    const emailCC = emailCCRef.current?.getValue() || [];
+    const allInvalidEmails = [...emailTo, ...emailCC].filter(email => !isValidEmail(email));
+    if (allInvalidEmails.length === 1) {
+      toaster.danger(gettext('This email address is invalid: ') + allInvalidEmails[0]);
+      return;
+    }
+    if (allInvalidEmails.length > 1) {
+      toaster.danger(gettext('These email addresses are invalid: ') + allInvalidEmails.join(', '));
+      return;
+    }
+    if (!emailContent.trim()) {
+      toaster.danger(gettext('Please enter the email content before sending'));
+      return;
+    }
+    if (areArraysEqual(emailTo, initialEmailTo || []) && areArraysEqual(emailCC, initialEmailCC || []) && emailContent === initValue) {
+      toaster.danger(gettext('Please modify the recipients or email content before sending'));
+      return;
+    }
+
     setIsSubmitting(true);
     onSubmit({
       to: emailTo,
@@ -54,7 +65,7 @@ const ReplyEmail = ({
       }
       onToggle();
     });
-  }, [ableSubmit, emailTo, emailCC, emailContent, onToggle, onSubmit]);
+  }, [emailContent, initialEmailCC, initialEmailTo, initValue, onToggle, onSubmit]);
 
   return (
     <div className="seaqa-email-replay-container">
@@ -62,13 +73,13 @@ const ReplyEmail = ({
         <div className="seaqa-email-replay-to-title">
           {gettext('To')}
         </div>
-        <SendTo value={emailTo} onChange={onEmailToChange}/>
+        <SendTo ref={emailToRef} value={initialEmailTo || []}/>
       </div>
       <div className="seaqa-email-replay-to">
         <div className="seaqa-email-replay-to-title">
           {gettext('Cc')}
         </div>
-        <SendTo value={emailCC} onChange={onEmailCCChange}/>
+        <SendTo ref={emailCCRef} value={initialEmailCC || []}/>
       </div>
       <SeaEmailEditor
         value={emailContent}
@@ -78,7 +89,7 @@ const ReplyEmail = ({
       />
       <div className="seaqa-email-replay-op-btns">
         <Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>
-        <Button color="primary" disabled={!ableSubmit} onClick={handleSubmit}>
+        <Button color="primary" disabled={isSubmitting} onClick={handleSubmit}>
           {isSubmitting ? (<Loading />) : (<>{gettext('Submit')}</>)}
         </Button>
       </div>
