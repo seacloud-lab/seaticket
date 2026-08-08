@@ -928,17 +928,17 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       type: CellType.UNREAD_STATUS,
       editable: false,
       is_width_fixed: true,
-      // Saved views sort frozen columns by this value; keep unread before title.
-      frozen: 2,
+      // Saved views sort frozen columns in descending order.
+      frozen: 3,
       width: 33,
     },
     [CONNECTION_PREDEFINED_COLUMN_NAME.IS_REPLIED]: {
-      display_name: gettext('Replied'),
+      display_name: gettext('Reply status'),
       type: CellType.REPLY_STATUS,
       editable: false,
       is_width_fixed: true,
-      frozen: 3,
-      width: 33,
+      frozen: 2,
+      width: 110,
     },
     [CONNECTION_PREDEFINED_COLUMN_NAME.TAGS]: {
       display_name: gettext('Tags'),
@@ -1126,7 +1126,7 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
 
 export const CONNECTION_COLUMNS_WIDTH_CONFIG = {
   'unread': 33,
-  'is_replied': 33,
+  'is_replied': 100,
   'title': 400,
 };
 
