@@ -16,9 +16,9 @@ const EmailDetails = ({ details, className, ...props }) => {
     return details.slice(0, -1).some(item => Boolean(item?.unread));
   }, [details]);
 
-  const hasAnswered = useMemo(() => {
-    if (details.length <= 1) return false;
-    return details.slice(0, -1).some(item => Boolean(item?.answered));
+  const isLastInboundAnswered = useMemo(() => {
+    const lastInbound = details.slice().reverse().find(item => !item?.is_sender);
+    return Boolean(lastInbound?.answered);
   }, [details]);
 
   if (details.length === 0) {
@@ -43,7 +43,7 @@ const EmailDetails = ({ details, className, ...props }) => {
               <span className="email-record-info-sender">{email}</span>
               <span className="email-record-info-content text-truncate"></span>
               {isUnread && <div className="read-status unread"/>}
-              {hasAnswered && !isUnread && (
+              {isLastInboundAnswered && !isUnread && (
                 <svg className="replied-status-arrow" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M9 14L4 9l5-5" />
                   <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11" />

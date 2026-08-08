@@ -796,9 +796,11 @@ def list_email_record_details(seadb_api, project_uuid, connection_id, _pk):
     try:
         thread_record, column_metadata, linked_ticket_title = get_email_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
         email_sql = f"""
-        SELECT 
-        email_from, email_to, title, cc, text_content as content, modified_time, is_sender, html_content, email_id, origin_thread_id, attachments, _pk, unread
-        FROM `{email_table_name}` WHERE thread_id = {_pk} ORDER BY modified_time ASC
+        SELECT
+        email_from, email_to, title, cc, text_content as content, modified_time, is_sender, html_content, email_id, origin_thread_id, attachments, _pk, unread, answered
+        FROM `{email_table_name}`
+        WHERE thread_id = {_pk} AND deleted = false
+        ORDER BY modified_time ASC, _pk ASC
         """
         email_res = seadb_api.query_rows(project_uuid, email_sql)
         email_record = email_res.get('results', [])

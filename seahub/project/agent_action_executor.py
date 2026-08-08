@@ -1192,6 +1192,7 @@ class AgentActionExecutor:
             'origin_thread_id': send_res.get('origin_thread_id') or target_email.get('origin_thread_id'),
             'message_id': message_id,
             'email_id': send_res.get('email_id'),
+            'reply_to_email_id': target_email.get('_pk'),
         }
 
         thread_id = target_email.get('thread_id')
