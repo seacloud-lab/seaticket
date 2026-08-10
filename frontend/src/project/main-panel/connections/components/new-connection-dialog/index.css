@@ -82,7 +82,7 @@
 }
 
 .seaqa-project-connection-dialog .seaqa-project-new-connection-card.selected {
-  border-color: #ff8000;
+  border-color: var(--bs-sf-orange-light);
 }
 
 .seaqa-project-connection-dialog .seaqa-project-new-connection-card-icon-wrap {
@@ -209,7 +209,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px;
-  background: #F7F7F5;
+  background: var(--bs-body-third-bg);
   border-radius: 4px;
   padding-left: 16px;
 }

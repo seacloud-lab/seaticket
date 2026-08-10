@@ -11,7 +11,7 @@
 }
 
 .ticket-rate-formatter .seaqa-icon-svg-priority-01 {
-  fill: #ff8000;
+  fill: var(--bs-sf-orange-light);
 }
 
 .seaqa-priority-settings-popover .popover {

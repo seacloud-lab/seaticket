@@ -18,7 +18,7 @@
   align-items: stretch;
   min-height: 0;
   height: 100%;
-  background-color: #F7F7F5;
+  background-color: var(--bs-body-third-bg);
 }
 
 .portal-home-edit-btn-wrap {

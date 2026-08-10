@@ -51,7 +51,7 @@
   line-height: 30px;
   font-size: 14px;
   color: #59636e;
-  background-color: #F7F7F5;
+  background-color: var(--bs-body-third-bg);
 }
 
 .seaqa-project-ticket-comment.editing .seaqa-project-ticket-comment-op {

@@ -13,7 +13,7 @@
 }
 
 .seaqa-customize-select.seaqa-ai-chat-selector-display.bg-color {
-  background-color: #F7F7F5;
+  background-color: var(--bs-body-third-bg);
 }
 
 .seaqa-customize-select.seaqa-ai-chat-selector-display:hover {
