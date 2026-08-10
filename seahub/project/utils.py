@@ -167,7 +167,7 @@ def create_connection(project, username, connection_type, name, config):
             [SchemaTables.NOTION], api, project_uuid, connection_id
         ),
         ConnectionType.GENERAL_TASK.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
-            [SchemaTables.GENERAL_TASK, SchemaTables.GENERAL_TASK_USER], api, project_uuid, connection_id
+            [SchemaTables.GENERAL_TASK], api, project_uuid, connection_id
         ),
         ConnectionType.LINEAR.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
             [SchemaTables.LINEAR_ISSUES, SchemaTables.LINEAR_ISSUE_COMMENTS], api, project_uuid, connection_id
@@ -312,29 +312,31 @@ def get_project_related_users(owner):
         return [get_user_common_info(owner)]
 
 
-def get_connection_general_task_related_users(project_uuid, connection_id):
-    cache_key = f'gt_related_users_{project_uuid}_{connection_id}'
+def get_connection_related_users(project_uuid, connection_id, connection_type=None):
+    cache_key = f'related_users_{project_uuid}_{connection_id}'
     cached = cache.get(cache_key)
     if cached is not None:
         return cached
     seadb_api = SeaDBAPI()
     related_users = {}
     default_avatar_url = get_default_avatar_url()
-    table_name = SchemaTables.GENERAL_TASK_USER.table_name(connection_id)
+    table_name = SchemaTables.CONNECTION_USER.table_name()
+    type_filter = f" AND connection_type='{connection_type}'" if connection_type else ''
     try:
-        sql = f"SELECT `email`, `name` FROM `{table_name}`"
+        sql = f"SELECT `user_id`, `name` FROM `{table_name}` WHERE {connection_id} IN connection_ids{type_filter}"
         results = seadb_api.query_rows(project_uuid, sql).get('results', [])
     except Exception as e:
-        logger.error(f'get connection general task related users error: {e}')
+        logger.error(f'get connection related users error: {e}')
         return []
 
     for item in results:
-        email = str(item.get('email') or '').strip()
+        user_id = str(item.get('user_id') or '').strip()
         name = str(item.get('name') or '').strip()
-        if not email or not name or email in related_users:
+        if not user_id or not name or user_id in related_users:
             continue
-        related_users[email] = {
-            'email': email,
+        related_users[user_id] = {
+            'user_id': user_id,
+            'email': user_id,   # backward-compatible for User model (GeneralTask users keyed by email)
             'name': name,
             'avatar_url': default_avatar_url,
         }

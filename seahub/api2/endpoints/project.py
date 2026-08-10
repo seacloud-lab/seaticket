@@ -352,6 +352,7 @@ class ProjectsView(APIView):
             init_seadb_tables_from_schema([SchemaTables.KNOWLEDGE_BASE], seadb_api, project.uuid)
             init_seadb_tables_from_schema([SchemaTables.TAG], seadb_api, project.uuid)
             init_seadb_tables_from_schema([SchemaTables.AGENT_RUNS, SchemaTables.AGENT_ACTIONS], seadb_api, project.uuid)
+            init_seadb_tables_from_schema([SchemaTables.CONNECTION_USER], seadb_api, project.uuid)
         except Exception as e:
             logger.error(e)
             project.delete()

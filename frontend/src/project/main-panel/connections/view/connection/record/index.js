@@ -216,6 +216,14 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
     const collaborators = relatedUsers.map(user => new User(user));
     const targetColumns = formatColumns(connection, columns, { collaborators });
     setColumns(targetColumns);
+    // Resolve Confluence account IDs → display names in-place
+    // Detail API uses convert_keys=True → record keys are column names
+    if (connection.type === CONNECTION_TYPE.CONFLUENCE && relatedUsers.length > 0) {
+      const userMap = {};
+      relatedUsers.forEach(u => { if (u.user_id) userMap[u.user_id] = u.name; });
+      if (record.creator_id && userMap[record.creator_id]) record.creator_id = userMap[record.creator_id];
+      if (record.last_modifier_id && userMap[record.last_modifier_id]) record.last_modifier_id = userMap[record.last_modifier_id];
+    }
     setRecord(record);
   }, [connection]);
 

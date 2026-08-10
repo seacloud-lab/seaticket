@@ -525,7 +525,7 @@ CONNECTION_DISPLAY_ALL_COLUMNS = {
     ConnectionType.NOTION.value: ['_pk', 'title', 'creator', 'modified_time', 'ai_summary', 'ai_processed_time', 'created_time', 'last_modifier', 'outdated'],
     ConnectionType.GENERAL_TASK.value: ['_pk', 'title', 'url', 'status', 'size', 'priority', 'assignees', 'participants', 'version', 'others', 'due_date', 'modified_time', 'created_time', 'ai_summary', 'ai_processed_time', 'linked_ticket', 'outdated'],
     ConnectionType.LINEAR.value: ['_pk', 'title', 'author', 'state', 'state_reason', 'labels', 'priority', 'due_date', 'created_time', 'modified_time', 'closed_time', 'ai_summary', 'ai_processed_time', 'linked_ticket', 'outdated'],
-    ConnectionType.CONFLUENCE.value: ['_pk', 'title', 'creator', 'modified_time', 'ai_summary', 'ai_processed_time', 'created_time', 'last_modifier', 'outdated'],
+    ConnectionType.CONFLUENCE.value: ['_pk', 'title', 'creator_id', 'modified_time', 'ai_summary', 'ai_processed_time', 'created_time', 'last_modifier_id', 'outdated'],
     ConnectionType.DISCORD.value: ['_pk', 'title', 'created_time', 'modified_time', 'ai_summary',
                                    'ai_processed_time', 'linked_ticket', 'outdated']
 }

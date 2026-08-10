@@ -726,8 +726,8 @@ class TestProjectConnectionMetaView:
 
         with patch('seahub.project.connections.SeaDBAPI', return_value=Mock()), \
                 patch('seahub.project.connections.get_connection_columns', return_value=[{'key': 'status'}]), \
-                patch('seahub.project.connections.get_connection_general_task_related_users', return_value=[
-                    {'email': 'dev@example.com', 'name': 'Dev User', 'avatar_url': '/avatar.png'}
+                patch('seahub.project.connections.get_connection_related_users', return_value=[
+                    {'user_id': 'dev@example.com', 'email': 'dev@example.com', 'name': 'Dev User', 'avatar_url': '/avatar.png'}
                 ]):
             resp = ProjectConnectionMetaView.as_view()(
                 request, project_uuid=str(project.uuid), connection_id=str(connection.id)
