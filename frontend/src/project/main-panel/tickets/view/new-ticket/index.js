@@ -6,7 +6,7 @@ import {
   toaster,
   CustomizeDropdownMoreToggle, CustomizeDropdownMenu, CustomizeDropdownItem
 } from '@/components';
-import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
+import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE, siteRoot } from '@/constants';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { PREDEFINED_TICKET_COLUMN_NAME, TICKET_PAGE_SLUG_ID, TICKET_TABLE_NAME, TICKET_STATE_OPTIONS } from '../../constants';
 import {
@@ -22,10 +22,11 @@ import { getRowById } from '@/sea-metadata/utils/row';
 import { useData, useTags } from '@/project/hooks';
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
 import { useCollaborators } from '@/sea-metadata';
+import { BAR_TYPE } from '@/project/constants';
 
 import './index.css';
 
-const NewTicket = ({ editorAPI, projectUuid }) => {
+const NewTicket = ({ editorAPI, projectUuid, toggleBar }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [assignees, setAssignees] = useState([]);
@@ -120,8 +121,14 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
     });
 
     ticketsAPI.createProjectTicket(projectUuid, serverData).then(res => {
-      togglePageSlugId(res.data.ticket._pk);
+      const ticketID = res.data.ticket._pk;
+      const { origin } = location;
+      const { workspaceID, projectName } = window.app.pageOptions;
+      const allTicketsURL = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}/`;
       insertRow(TICKET_TABLE_NAME);
+      history.replaceState(null, null, allTicketsURL);
+      history.pushState(null, null, `${allTicketsURL}${ticketID}/`);
+      toggleBar([BAR_TYPE.TICKET, ticketID]);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
@@ -129,7 +136,7 @@ const NewTicket = ({ editorAPI, projectUuid }) => {
     });
   }, [
     title, content, type, assignees, tags, priority, due_date, state, substate, participants, typesData, projectUuid, substatesData,
-    insertRow, togglePageSlugId,
+    insertRow, toggleBar,
   ]);
 
   useEffect(() => {

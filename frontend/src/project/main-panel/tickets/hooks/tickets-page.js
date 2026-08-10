@@ -120,6 +120,27 @@ export const TicketsPageProvider = ({ workspaceID, projectName, type, children }
   }, [togglePageSlugId]);
 
   useEffect(() => {
+    const handlePopState = () => {
+      const decodePathname = decodeURIComponent(location.pathname);
+      const ticketsPath = `/project/${projectName}/${BAR_TYPE.TICKET}/`;
+      const ticketsPathIndex = decodePathname.indexOf(ticketsPath);
+      if (ticketsPathIndex === -1) return;
+
+      const paramsString = decodePathname.slice(ticketsPathIndex + ticketsPath.length);
+      const [pageIdFromURL = ''] = paramsString.split('/');
+      const ticketNumber = Number(pageIdFromURL);
+      if (pageIdFromURL && !isNumber(ticketNumber)) return;
+
+      const nextPageSlugId = pageIdFromURL ? ticketNumber : TICKET_PAGE_SLUG_ID.ALL;
+      setChildrenPageSlugId(TICKET_CHILDREN_PAGE_SLUG_ID.ALL);
+      setPageSlugId(nextPageSlugId);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [projectName]);
+
+  useEffect(() => {
     resetURL(pageSlugId, childrenPageSlugId);
   }, [pageSlugId, childrenPageSlugId, resetURL]);
 

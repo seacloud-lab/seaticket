@@ -12,7 +12,7 @@ import { BAR_TYPE } from '@/project/constants';
 
 import './index.css';
 
-const TicketTopBar = ({ title, type, permission }) => {
+const TicketTopBar = ({ title, type, permission, toggleBar }) => {
   const { pageSlugId, togglePageSlugId, onRefresh, childrenPageSlugId } = useTicketsPage();
   const { typesData, substatesData } = useMetadata();
 
@@ -31,7 +31,12 @@ const TicketTopBar = ({ title, type, permission }) => {
       <IconButton
         icon="arrow-down"
         className="rotate-icon-90 seaqa-project-toggle-tickets-btn"
-        onClick={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.ALL)}
+        title={gettext('Back to All tickets')}
+        aria-label={gettext('Back to All tickets')}
+        onClick={() => type === BAR_TYPE.TICKET
+          ? toggleBar([BAR_TYPE.TICKET])
+          : togglePageSlugId(TICKET_PAGE_SLUG_ID.ALL)
+        }
       />
     );
     if (pageSlugId === TICKET_PAGE_SLUG_ID.TYPES) {
@@ -83,7 +88,7 @@ const TicketTopBar = ({ title, type, permission }) => {
         <span className="text-truncate" title={ticketTitle}>{ticketTitle}</span>
       </>
     );
-  }, [pageSlugId, childrenPageSlugId, type, title, typesData, substatesData, togglePageSlugId, onRefresh]);
+  }, [pageSlugId, childrenPageSlugId, type, title, typesData, substatesData, toggleBar, togglePageSlugId, onRefresh]);
 
   const renderRightChildren = useCallback(() => {
     const isRW = permission === PERMISSION_TYPES.READ_WRITE;
