@@ -32,7 +32,7 @@
   align-items: center;
   justify-content: center;
   justify-self: center;
-  color: #999;
+  color: var(--bs-icon-secondary-color);
   background-color: transparent;
 }
 

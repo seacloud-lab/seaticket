@@ -93,7 +93,7 @@
 }
 
 .inbox-notification-item .notification-content-wrapper .inbox-text-orange {
-  color: #ed7109;
+  color: var(--bs-sf-orange);
 }
 
 .inbox-notification-item .notification-comment-info-wrapper {

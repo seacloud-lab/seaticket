@@ -6,7 +6,7 @@
   margin-left: 8px;
   border: 1px solid #eee;
   padding: 0 2px;
-  color: #666666;
+  color: var(--bs-sf-grey-text);
   border-radius: 2px;
   background: var(--bs-body-bg);
   cursor: pointer;

@@ -15,11 +15,11 @@
   display: flex;
   flex-direction: column;
   overflow: auto;
-  background-color: #f7f7f5;
+  background-color: var(--bs-body-third-bg);
 }
 
 .project-side-nav .seaqa-nav-title {
-  color: #666666;
+  color: var(--bs-sf-grey-text);
   padding: 0 8px;
   line-height: 28px;
   font-size: 14px;
@@ -50,7 +50,7 @@
 .seaqa-nav-list .seaqa-nav-item .seaqa-nav-link {
   margin: 0;
   width: 100%;
-  color: #999;
+  color: var(--bs-icon-secondary-color);
   border: none;
   padding: 0;
 }
@@ -149,12 +149,12 @@
 
 .workspace .project-workspace-icon {
   margin-right: 6px;
-  color: #999;
+  color: var(--bs-icon-secondary-color);
   margin-top: -1px;
 }
 
 .workspace .workspace-name-container .dropdown-toggle:after {
-  color: #999;
+  color: var(--bs-icon-secondary-color);
 }
 
 .workspace .workspace-name-container:hover .workspace-name {
@@ -180,7 +180,7 @@
 .workspace .add-table-btn i {
   margin: auto;
   font-size: 18px;
-  color: #999;
+  color: var(--bs-icon-secondary-color);
 }
 
 .workspace .add-table-btn:hover i {
@@ -197,7 +197,7 @@
 }
 
 .add-workspace {
-  color: #999;
+  color: var(--bs-icon-secondary-color);
 }
 
 .add-workspace:hover {
@@ -279,7 +279,7 @@
 }
 
 .project-item .icon-add {
-  color: #999;
+  color: var(--bs-icon-secondary-color);
 }
 
 .project-item .project-name {
@@ -410,7 +410,7 @@
   border: 1px solid #dbdbdb;
   border-radius: 15px;
   font-size: 12px;
-  color: #666666;
+  color: var(--bs-sf-grey-text);
   background-color: #fff;
   user-select: none;
 }

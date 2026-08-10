@@ -55,6 +55,6 @@
 }
 
 .sea-metadata-ui.collaborator-item .collaborator-remove .seaqa-icon-svg:hover {
-  color: #666666;
+  color: var(--bs-sf-grey-text);
   cursor: pointer;
 }

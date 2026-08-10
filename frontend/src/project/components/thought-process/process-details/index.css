@@ -39,7 +39,7 @@
 /* primary-order-container */
 .seaqa-ai-thought-process-order.primary-order-container {
   justify-content: space-between;
-  background-color: #f7f7f5;
+  background-color: var(--bs-body-third-bg);
   border-radius: 8px;
   border: 1px solid var(--bs-border-secondary-color);
   padding: 0px 16px;

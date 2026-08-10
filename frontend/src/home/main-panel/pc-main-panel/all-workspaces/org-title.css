@@ -11,7 +11,7 @@
 }
 
 .project-center .project-org-title .project-org-icon {
-  color: #999;
+  color: var(--bs-icon-secondary-color);
 }
 
 .project-center .project-org-title .project-org-name {

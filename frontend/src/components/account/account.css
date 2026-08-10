@@ -27,7 +27,7 @@
   .account-toggle {
     font-size: 19px;
     line-height: 1;
-    color: #999;
+    color: var(--bs-icon-secondary-color);
   }
 }
 
@@ -127,7 +127,7 @@
 }
 
 .account-info-card .account-info-card-total {
-  color: #666;
+  color: var(--bs-sf-grey-text);
   font-size: 12px;
   line-height: 28px;
 }

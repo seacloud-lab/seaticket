@@ -65,7 +65,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  color: #666;
+  color: var(--bs-sf-grey-text);
   margin: 9px;
   border: 0;
   border-radius: 3px;
@@ -169,7 +169,7 @@
   justify-content: center;
   margin-right: 4px;
   cursor: pointer;
-  color: #666;
+  color: var(--bs-sf-grey-text);
 }
 
 .filter-by-date-menu .filter-by-date-custom-date-container-outer {
@@ -202,5 +202,5 @@
 
 .search-filters-container .search-filter-toggle.highlighted,
 .search-filter-toggle.highlighted .sf3-font-down {
-  color: #ed7109;
+  color: var(--bs-sf-orange);
 }

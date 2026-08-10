@@ -94,7 +94,7 @@
 
 .seaqa-project-ticket .seaqa-project-ticket-number {
   display: inline-block;
-  color: #666;
+  color: var(--bs-sf-grey-text);
   font-size: 18px;
   font-weight: 500;
 }

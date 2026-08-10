@@ -24,7 +24,7 @@
 }
 
 .permission-editor .permission-editor__menu .permission-editor__option--is-disabled {
-  color: #666;
+  color: var(--bs-sf-grey-text);
   border-top: 1px solid #dedede;
 }
 

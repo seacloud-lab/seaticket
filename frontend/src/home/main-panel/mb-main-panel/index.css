@@ -22,7 +22,7 @@ html:not([data-scale]) .mobile-main-panel .am-tab-bar-bar:before {
 }
 
 .mobile-main-panel .selected-tab-item {
-  color: #ED7109;
+  color: var(--bs-sf-orange);
 }
 
 .mobile-main-panel .am-tab-bar {

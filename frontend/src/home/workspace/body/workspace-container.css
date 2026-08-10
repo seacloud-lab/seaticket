@@ -21,7 +21,7 @@
 }
 
 .main-panel-project-header .main-panel-project-help:hover .seaqa-icon-svg-question-circle-filled {
-  color: #666666;
+  color: var(--bs-sf-grey-text);
 }
 
 .main-panel-project-todo {
@@ -41,12 +41,12 @@
   transition: all 0.1s;
   margin-left: 5px;
   font-size: 12px;
-  color: #666666;
+  color: var(--bs-sf-grey-text);
   cursor: pointer;
 }
 
 .project-group-container .project-group-name .toggle-icon:hover {
-  color: #666;
+  color: var(--bs-sf-grey-text);
 }
 
 .project-group-container .projects-dropdown .create-project-folder-item {
@@ -127,7 +127,7 @@
 }
 
 .project-group-container .load-more-projects .load-more-projects-tip {
-  color: #ED7109;
+  color: var(--bs-sf-orange);
   margin: 0 16px;
   cursor: pointer;
 }
@@ -169,7 +169,7 @@
 
 .project-item-more .seaqa-icon-svg-more-level,
 .project-item-more .seaqa-icon-svg-more-vertical {
-  color: #999;
+  color: var(--bs-icon-secondary-color);
   line-height: 1;
 }
 
@@ -187,7 +187,7 @@
 .project-item .project-item-records {
   width: 100%;
   font-size: 12px;
-  color: #666;
+  color: var(--bs-sf-grey-text);
 }
 
 @media (max-width: 767px) {

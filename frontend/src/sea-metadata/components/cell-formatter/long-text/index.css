@@ -15,7 +15,7 @@
 .sea-metadata-ui.long-text-formatter .sea-metadata-long-text-check-list {
   display: inline-block;
   background-color: #f0f0f0;
-  color: #666;
+  color: var(--bs-sf-grey-text);
   height: 20px;
   line-height: 20px;
   margin: 0 4px;
@@ -28,7 +28,7 @@
   height: 12px;
   width: 12px;
   margin-right: 4px;
-  color: #666;
+  color: var(--bs-sf-grey-text);
   vertical-align: -0.1rem;
 }
 
@@ -52,7 +52,7 @@
 }
 
 .sea-metadata-ui.long-text-formatter .sea-metadata-long-text-images .sea-metadata-image-number {
-  background-color: #999;
+  background-color: var(--bs-icon-secondary-color);
   border-radius: 6px;
   color: #fff;
   display: inline-block;

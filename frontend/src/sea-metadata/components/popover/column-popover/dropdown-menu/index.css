@@ -12,7 +12,7 @@
 }
 
 .column-type-item:hover .sf3-font-down {
-  color: #666;
+  color: var(--bs-sf-grey-text);
 }
 
 .column-type-item .sea-metadata-icon {

@@ -17,7 +17,7 @@
 
 .org-admin .side-nav,
 .sys-admin .side-nav {
-  background-color: #f7f7f5;
+  background-color: var(--bs-body-third-bg);
 }
 
 .side-nav-con {
@@ -56,7 +56,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #999;
+  color: var(--bs-icon-secondary-color);
 }
 
 .side-nav-con .draft-info {
@@ -97,12 +97,12 @@
   width: 20px;
   margin-right: 8px;
   margin-left: 12px;
-  color: #999;
+  color: var(--bs-icon-secondary-color);
 }
 
 .org-admin .side-nav-title,
 .sys-admin .side-nav-title {
-  color: #666666;
+  color: var(--bs-sf-grey-text);
   padding: 0 8px;
   line-height: 28px;
   font-size: 14px;
@@ -132,7 +132,7 @@
 
 .org-admin .main-panel .nav .nav-item .nav-link.active,
 .sys-admin .main-panel .nav .nav-item .nav-link.active {
-  color: #ED7109;
+  color: var(--bs-sf-orange);
   font-weight: 500;
   text-decoration: none;
 }
@@ -213,7 +213,7 @@
 .seaqa-admin-info-center .am-progress-bar {
   height: 6px !important;
   border-radius: 5px;
-  background-color: #ED7109;
+  background-color: var(--bs-sf-orange);
 }
 
 .seaqa-help-icon {
@@ -252,7 +252,7 @@
 
 .web-setting-icon-btn-cancel,
 .web-setting-icon-btn-cancel:hover svg {
-  color: #666;
+  color: var(--bs-sf-grey-text);
 }
 
 .web-setting-textarea {

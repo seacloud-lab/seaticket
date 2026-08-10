@@ -39,7 +39,7 @@
 }
 
 .seaqa-project-search .seaqa-project-search-filter .seaqa-icon-svg {
-  color: #666;
+  color: var(--bs-sf-grey-text);
   height: 12px;
   width: 12px;
 }

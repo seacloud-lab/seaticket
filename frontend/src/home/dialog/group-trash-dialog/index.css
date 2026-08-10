@@ -41,7 +41,7 @@
 
 .group-manage-trash-dialog .trash-projects .trash-table-restore {
   cursor: pointer;
-  color: #ED7109;
+  color: var(--bs-sf-orange);
 }
 
 .group-manage-trash-dialog .trash-projects .trash-table-restore:hover {

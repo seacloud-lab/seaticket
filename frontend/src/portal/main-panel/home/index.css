@@ -127,11 +127,11 @@
 .portal-home-card-add .portal-home-card-add-icon {
   width: 32px;
   height: 32px;
-  fill: #999;
+  fill: var(--bs-icon-secondary-color);
 }
 
 .portal-home-card-add .portal-home-card-add-text {
-  color: #666;
+  color: var(--bs-sf-grey-text);
   font-size: 14px;
 }
 
@@ -147,7 +147,7 @@
 }
 
 .portal-home-card-icon .project-icon-style {
-  color: #FF8000;
+  color: var(--bs-sf-orange-light);
   font-size: 24px;
   width: 24px;
   height: 24px;
@@ -167,7 +167,7 @@
 .portal-home-card-description {
   margin-top: 12px;
   font-size: 14px;
-  color: #666666;
+  color: var(--bs-sf-grey-text);
   line-height: 1.6;
 }
 

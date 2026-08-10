@@ -26,7 +26,7 @@
 }
 
 .seaqa-ticket-close-linked-github-issue .link-item {
-  background-color: #f7f7f5;
+  background-color: var(--bs-body-third-bg);
   height: 32px;
   gap: 8px;
   padding: 0 8px;

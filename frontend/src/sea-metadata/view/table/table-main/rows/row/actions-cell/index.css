@@ -74,7 +74,7 @@
 
 .sea-metadata-table-row .sea-metadata-table-cell.actions-cell .row-expand-icon {
   display: none;
-  color: #666;
+  color: var(--bs-sf-grey-text);
   width: 12px;
   height: 12px;
 }

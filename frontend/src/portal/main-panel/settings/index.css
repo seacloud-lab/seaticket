@@ -46,7 +46,7 @@
 }
 
 .portal-settings-dialog-side .nav-pills .nav-item .nav-link.active::before {
-  background-color: #ed7109;
+  background-color: var(--bs-sf-orange);
   border-radius: 2px;
   content: "";
   display: block;
@@ -80,7 +80,7 @@
 }
 
 .portal-settings-dialog-main .table th {
-  color: #666666;
+  color: var(--bs-sf-grey-text);
 }
 
 .portal-settings-dialog-main .operation-btns {
@@ -141,7 +141,7 @@
 
 .portal-settings-help-text {
   font-size: 13px;
-  color: #999;
+  color: var(--bs-icon-secondary-color);
   margin-bottom: 12px;
 }
 
@@ -153,7 +153,7 @@
 }
 
 .portal-dns-record-type {
-  color: #666;
+  color: var(--bs-sf-grey-text);
   font-size: 13px;
   font-weight: 500;
   white-space: nowrap;

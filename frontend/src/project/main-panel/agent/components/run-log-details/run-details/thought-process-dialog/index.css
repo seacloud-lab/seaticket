@@ -25,7 +25,7 @@
 
 .agent-thought-process-empty {
   font-size: 13px;
-  color: #666;
+  color: var(--bs-sf-grey-text);
 }
 
 .agent-thought-process-pre {

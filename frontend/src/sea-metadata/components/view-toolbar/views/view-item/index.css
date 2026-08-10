@@ -43,7 +43,7 @@
 }
 
 .sea-metadata-views .sea-metadata-view-item.active { 
-  color: #ED7109;
+  color: var(--bs-sf-orange);
   position: relative;
   font-weight: 500;
 }
@@ -63,10 +63,10 @@
 .sea-metadata-views .sea-metadata-view-item .sea-metadata-view-lock-icon {
   height: 12px;
   width: 12px;
-  color: #999;
+  color: var(--bs-icon-secondary-color);
 }
 
 .sea-metadata-views .sea-metadata-view-item.active .sea-metadata-view-lock-icon {
-  color: #ED7109;
+  color: var(--bs-sf-orange);
   font-weight: 500;
 }

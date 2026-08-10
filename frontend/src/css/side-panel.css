@@ -18,11 +18,11 @@
 }
 
 .side-panel .nav-link {
-  color: #666666;
+  color: var(--bs-sf-grey-text);
 }
 
 .side-panel .nav-link.active {
-  color: #ED7109;
+  color: var(--bs-sf-orange);
 }
 
 .side-panel-content {
@@ -58,7 +58,7 @@
   text-align: center;
   line-height: 150px;
   font-size: 30px;
-  color: #ED7109;
+  color: var(--bs-sf-orange);
   -moz-animation: rotate 1.5s ease infinite;
   -webkit-animation: rotate 1.5s ease infinite;
   animation: rotate 1.5s ease infinite;
@@ -83,7 +83,7 @@
 }
 
 .outline-h2:hover {
-  color: #ED7109;
+  color: var(--bs-sf-orange);
 }
 
 .outline-h3 {
@@ -95,7 +95,7 @@
 }
 
 .outline-h3:hover {
-  color: #ED7109;
+  color: var(--bs-sf-orange);
 }
 
 /*tree view */
@@ -160,7 +160,7 @@
   right: 1rem;
   bottom: 0;
   width: 1.5rem;
-  color: #666666;
+  color: var(--bs-sf-grey-text);
   z-index: 2;
   font-size: 0.8125rem;
   text-align: center;
@@ -229,7 +229,7 @@
 }
 
 .workspace-nav-item .workspace-nav-link .project-workspace-icon {
-  color: #999;
+  color: var(--bs-icon-secondary-color);
   margin-right: 5px;
   margin-top: -2px;
 }
@@ -277,7 +277,7 @@
   left: 0;
   top: 28px;
   z-index: 10;
-  background-color: #666;
+  background-color: var(--bs-sf-grey-text);
 }
 
 .group-can-drop::after {

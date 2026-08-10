@@ -22,13 +22,13 @@
 }
 
 .seaqa-customize-tabs .seaqa-customize-tab.active {
-  color: #ed7109;
+  color: var(--bs-sf-orange);
   font-weight: 500;
   position: relative;
 }
 
 .seaqa-customize-tabs .seaqa-customize-tab.active::before {
-  background-color: #ff8000;
+  background-color: var(--bs-sf-orange-light);
   bottom: -5px;
   content: "";
   height: 2px;

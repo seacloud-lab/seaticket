@@ -204,7 +204,7 @@
 }
 
 .sea-metadata-result.success .sea-metadata-table-footer .tip {
-  color: #666666;
+  color: var(--bs-sf-grey-text);
 }
 
 .checkbox-editor-rows-container .grid-checkbox-row-checkbox {
@@ -315,5 +315,5 @@
 
 .sea-metadata-tip-default {
   font-size: 13px;
-  color: #666;
+  color: var(--bs-sf-grey-text);
 }

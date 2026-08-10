@@ -73,7 +73,7 @@
 }
 
 .portal-home-card-icon-selector .project-icon-style {
-  color: #999;
+  color: var(--bs-icon-secondary-color);
   font-size: 20px;
   width: 20px;
 }
@@ -103,7 +103,7 @@
 }
 
 .portal-home-card-icon-item .project-icon-style {
-  color: #999;
+  color: var(--bs-icon-secondary-color);
   font-size: 20px;
 }
 

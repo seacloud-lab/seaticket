@@ -60,7 +60,7 @@
 
 .seaqa-connection-email-record-details .email-record-info .email-record-info-content {
   flex: 1;
-  color: #666;
+  color: var(--bs-sf-grey-text);
 }
 
 .seaqa-connection-email-record-details .email-record-info .email-record-info-time {
@@ -89,7 +89,7 @@
 .seaqa-connection-email-record-details .read-status {
   width: 10px;
   height: 10px;
-  border: 1.5px solid #999;
+  border: 1.5px solid var(--bs-icon-secondary-color);
   background-color: transparent;
   border-radius: 50%;
 }

@@ -1,5 +1,5 @@
 .seaqa-link-verified-dialog .seaqa-tip-default {
-  color: #666;
+  color: var(--bs-sf-grey-text);
   font-size: 14px;
 }
 

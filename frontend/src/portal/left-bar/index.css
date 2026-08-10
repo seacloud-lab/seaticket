@@ -21,7 +21,7 @@
 
 .seaqa-portal-left-bar-item:hover .seaqa-icon-svg,
 .seaqa-portal-left-bar-item .seaqa-icon-svg {
-  color: #666;
+  color: var(--bs-sf-grey-text);
 }
 
 /* Settings Modal - fixed size like seatable-app-universal */

@@ -8,7 +8,7 @@
 
 .seaqa-customize-table-wrapper-header .seaqa-customize-table-wrapper-header-right {
   align-items: center;
-  color: #ed7109;
+  color: var(--bs-sf-orange);
   cursor: pointer;
   display: flex;
   -webkit-user-select: none;

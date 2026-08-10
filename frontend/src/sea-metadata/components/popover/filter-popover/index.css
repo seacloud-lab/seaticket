@@ -47,7 +47,7 @@
 }
 
 .sea-metadata-filter-popover .customize-add-tool .seaqa-icon-svg {
-  color: #666;
+  color: var(--bs-sf-grey-text);
   height: 14px;
   width: 14px;
   transform: none;

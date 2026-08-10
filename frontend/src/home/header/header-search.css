@@ -70,7 +70,7 @@
 }
 
 .search-result-list .item-content .item-name {
-  color: #ED7109 !important;
+  color: var(--sf-orange) !important;
 }
 
 @media (max-width: 767px) {
@@ -99,7 +99,7 @@
   .search-icon-container .search-icon {
     font-size: 22px;
     line-height: 1;
-    color: #999;
+    color: var(--bs-icon-secondary-color);
   }
 
   .search .search-container {
@@ -201,7 +201,7 @@
 }
 
 .project-searcher .input-icon .seaqa-icon-svg-close {
-  color: #666;
+  color: var(--bs-sf-grey-text);
 }
 
 .project-searcher .search-type-wrapper {
@@ -225,7 +225,7 @@
 .project-searcher .recent-used-title {
   margin-top: 10px;
   padding: 0 calc(1rem + 12px);
-  color: #666;
+  color: var(--bs-sf-grey-text);
 }
 
 .project-searcher .search-result-list {

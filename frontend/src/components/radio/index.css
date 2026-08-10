@@ -26,7 +26,7 @@
 }
 
 .seaqa-radio .seaqa-radio-selected-indicator {
-  background-color: #FF8000;
+  background-color: var(--bs-sf-orange-light);
   border: unset !important;
 }
 
@@ -35,7 +35,7 @@
 }
 
 .seaqa-radio .seaqa-radio-selected-indicator.seaqa-radio-indicator-disable {
-  background-color: #FF8000;
+  background-color: var(--bs-sf-orange-light);
 }
 
 .seaqa-radio .seaqa-radio-selected-indicator::before {
