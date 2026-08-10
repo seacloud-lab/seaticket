@@ -37,7 +37,7 @@ class TableManager:
     
     def update_connection_user_table(self, project_uuid):
         res = self.seadb_api.create_table(project_uuid, 'connection_user')
-        actions_table_id = res['table_id']
+        connection_user_table_id = res['table_id']
 
         # add columns
         for column in [
@@ -48,12 +48,12 @@ class TableManager:
             {'column_name': 'record_modified_time', 'column_type': PropertyTypes.DATETIME},
             {'column_name': 'next_privacy_report_at', 'column_type': PropertyTypes.DATETIME},
         ]:
-            self.seadb_api.add_column(project_uuid, actions_table_id, column)
+            self.seadb_api.add_column(project_uuid, connection_user_table_id, column)
         
         for index_column in ['user_id', 'connection_type', 'next_privacy_report_at', 'connection_ids']:
             self.seadb_api.create_column_index(
                 project_uuid,
-                actions_table_id,
+                connection_user_table_id,
                 [index_column],
             )
         
