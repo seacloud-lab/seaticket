@@ -290,28 +290,8 @@ table img {
 }
 
 /* common */
-.w100 {
-  width: 100%;
-}
-
-.h100 {
-  height: 100%;
-}
-
-.vh {
-  visibility: hidden;
-}
-
-.hide {
-  display: none;
-}
-
 .show {
   display: block;
-}
-
-.error {
-  color: red;
 }
 
 .errorlist {
@@ -343,35 +323,11 @@ input.short-input {
   height: 70px;
 }
 
-.sf-btn-link {
-  display: inline-block;
-  color: #212529;
-  line-height: 19px;
-  text-decoration: none;
-  font-weight: normal;
-  padding: 5px 6px;
-  border: 1px solid #c5c5c5;
-  border-radius: 2px;
-}
-
-.sf-btn-link:hover {
-  color: #212529;
-  text-decoration: none;
-  cursor: pointer;
-  background: #fff;
-}
-
 .big-btn-link {
   font-size: 14px;
   line-height: 1.5;
   padding: 6px 20px;
   border-radius: 3px;
-}
-
-.no-deco,
-.no-deco:hover,
-.no-deco:focus {
-  text-decoration: none;
 }
 
 @media (max-width: 767px) {
@@ -1367,47 +1323,13 @@ input.short-input {
 
 /**** sf-popover ****/
 /* e.g. top notice popup, group members popup */
-.sf-popover-container {
-  position: relative;
-}
-
-.sf-popover {
-  width: 240px;
-  background: #fff;
-  border: 1px solid var(--bs-border-secondary-color);
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
-  position: absolute;
-  z-index: 20;
-  border-radius: 8px;
-}
-
 .sf-popover-hd {
   padding: 5px 0 3px;
   border-bottom: 1px solid #dfdfe1;
   margin: 0 10px;
 }
 
-.sf-popover-title {
-  text-align: center;
-}
-
-.sf-popover-close {
-  font-size: 16px;
-  color: #b9b9b9;
-  margin: 4px 0 0;
-}
-
-.sf-popover-con {
-  padding: 0 10px;
-  overflow: auto;
-}
-
 a.sf-popover-item {
-  display: block;
-  color: #444;
-  font-weight: normal;
-  line-height: 31px;
-  text-decoration: none;
   padding: 0 10px;
   margin: 5px -10px;
 }
@@ -1755,21 +1677,6 @@ a.sf-popover-item {
   height: 1em;
   overflow: hidden;
   width: 1em;
-}
-
-/**** btn with link styles ****/
-.sf-link-btn {
-  color: #ED7109;
-  border: none;
-  padding: 0;
-  background: none;
-}
-
-.sf-link-btn:focus,
-.sf-link-btn:hover {
-  color: #ED7109;
-  background: none;
-  text-decoration: underline;
 }
 
 /* client-login-confirm-panel */
