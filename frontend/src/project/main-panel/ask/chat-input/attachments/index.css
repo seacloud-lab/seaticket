@@ -23,13 +23,13 @@
 
 .seaqa-ai-chat-attachments-scroll-before {
   left: 15px;
-  background: linear-gradient(90deg, #fff, #F7F7F5);
+  background: linear-gradient(90deg, #fff, var(--bs-body-third-bg));
   padding-right: 6px;
 }
 
 .seaqa-ai-chat-attachments-scroll-after {
   right: 15px;
-  background: linear-gradient(270deg, #fff, #F7F7F5);
+  background: linear-gradient(270deg, #fff, var(--bs-body-third-bg));
   padding-left: 6px;
 }
 
