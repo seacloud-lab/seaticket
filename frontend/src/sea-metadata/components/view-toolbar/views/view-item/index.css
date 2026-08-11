@@ -56,10 +56,6 @@
   justify-content: center;
 }
 
-.sea-metadata-view-dropdown-menu {
-  display: block;
-}
-
 .sea-metadata-views .sea-metadata-view-item .sea-metadata-view-lock-icon {
   height: 12px;
   width: 12px;

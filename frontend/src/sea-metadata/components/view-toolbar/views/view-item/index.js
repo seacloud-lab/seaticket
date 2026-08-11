@@ -181,13 +181,13 @@ const ViewItem = ({
         <ModalPortal>
           <ClickOutside onClickOutside={closeDropdown}>
             <div
-              className="seaqa-dropdown-menu dropdown-menu position-fixed sea-metadata-view-dropdown-menu"
+              className="dropdown-menu position-fixed d-block"
               style={menuStyle.current}
             >
               {modifyAble && (
                 <button
                   onClick={handleModify}
-                  className={classnames('dropdown-item seaqa-dropdown-item', { 'disabled': view.is_locked })}
+                  className={classnames('dropdown-item', { 'disabled': view.is_locked })}
                   disabled={view.is_locked}
                 >
                   <Icon symbol="rename" className="item-icon" />
@@ -195,7 +195,7 @@ const ViewItem = ({
                 </button>
               )}
               {duplicateAble && (
-                <button onClick={handleDuplicate} className="dropdown-item seaqa-dropdown-item">
+                <button onClick={handleDuplicate} className="dropdown-item">
                   <Icon symbol="copy" className="item-icon" />
                   {gettext('Duplicate view')}
                 </button>
@@ -203,7 +203,7 @@ const ViewItem = ({
               {deleteAble && (
                 <button
                   onClick={openDeleteConfirmationDialog}
-                  className={classnames('dropdown-item seaqa-dropdown-item', { 'disabled': view.is_locked })}
+                  className={classnames('dropdown-item', { 'disabled': view.is_locked })}
                   disabled={view.is_locked}
                 >
                   <Icon symbol="delete" className="item-icon"/>
@@ -211,7 +211,7 @@ const ViewItem = ({
                 </button>
               )}
               {context.getSetting('enableExportAndImportXlsx', false) && (
-                <button onClick={handleExport} className="dropdown-item seaqa-dropdown-item">
+                <button onClick={handleExport} className="dropdown-item">
                   <Icon symbol="export-xlsx" className="item-icon" />
                   {gettext('Export view to XLSX')}
                 </button>

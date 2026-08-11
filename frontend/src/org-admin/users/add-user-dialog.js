@@ -128,7 +128,7 @@ class AddOrgUserDialog extends React.Component {
               <Input id="userPwdNew" type={isShowPassword ? 'text' : 'password'} className="passwd" value={passwdnew || ''} onChange={this.inputPasswordNew} />
             </FormGroup>
           </Form>
-          {this.state.errMessage && <Label className="err-message">{this.state.errMessage}</Label>}
+          {this.state.errMessage && <Label className="text-danger ml-2">{this.state.errMessage}</Label>}
         </ModalBody>
         <ModalFooter>
           <Button color="primary" disabled={this.state.isAddingUser} onClick={this.handleSubmit} className={this.state.isAddingUser ? 'btn-loading' : ''}>{gettext('Submit')}</Button>

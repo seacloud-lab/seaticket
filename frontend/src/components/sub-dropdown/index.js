@@ -28,7 +28,7 @@ const SubDropdown = ({
     >
       <DropdownToggle
         tag="div"
-        className={classnames('seaqa-sub-dropdown-toggle dropdown-item font-weight-normal rotate-icon-270', menu.className)}
+        className={classnames('sub-dropdown-toggle dropdown-item font-weight-normal rotate-icon-270', menu.className)}
         onMouseEnter={(event) => onShow && onShow(event, menu)}
         onClick={(event) => onToggle && onToggle(event, menu)}
       >

@@ -640,34 +640,12 @@ a.table-sort-op:focus {
   text-decoration: none;
 }
 
-/* dropdown-menu style */
-.dropdown-menu {
-  min-width: 8rem;
-}
-
-.dropdown-item {
-  cursor: pointer;
-}
-
 .err-tip {
   margin: 2rem auto;
   padding: 30px 40px;
   font-size: 1rem;
   color: var(--bs-sf-grey-text);
   text-align: center;
-}
-
-.err-message {
-  margin-left: 0.5rem;
-  color: red;
-}
-
-.session-expired-tip {
-  color: red;
-}
-
-.session-expired-link {
-  padding: 0;
 }
 
 /* react select-module */
