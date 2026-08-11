@@ -1,15 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Modal, ModalBody } from 'reactstrap';
-import { CenteredLoading, ModalHeader } from '@/components';
+import { CenteredLoading, CustomizeMarkdownViewer, ModalHeader } from '@/components';
 import { gettext } from '@/constants';
 import AIReply from '@/project/components/ai-reply';
 import ProcessDetails from '@/project/components/thought-process/process-details';
 import { agentAPI } from '@/project/api';
 import {
-  THOUGHT_PROCESS_DETAIL_FIELDS,
   formatDetailsJSONValue,
-  formatDetailsValue,
-  hasToolDetailsContent,
   shouldHighlightDetailsAsJSON,
 } from './utils';
 
@@ -24,37 +21,18 @@ const PRIMARY_SECTION = {
 };
 const PHASE_ORDER = ['prelude', 'analysis', 'handling'];
 const PHASE_LABELS = {
-  prelude: gettext('Event'),
+  prelude: gettext('Prelude'),
   analysis: gettext('Analysis'),
   handling: gettext('Handling'),
 };
 
 const getActionTitle = (action, index) => {
   const actionName = action?.tool_name || action?.type || '-';
-  return `${gettext('Action')} ${index + 1}: ${actionName}`;
+  return `${gettext('Step')} ${index + 1}: ${actionName}`;
 };
 
-const getStepTitle = (actionGroup, index) => {
-  const firstAction = actionGroup?.[0] || {};
-  const step = Number.isInteger(firstAction.step) ? firstAction.step + 1 : index + 1;
-  const actionName = firstAction?.tool_name || firstAction?.type || '-';
-  if (actionGroup.length === 1) return `${gettext('Step')} ${step}: ${actionName}`;
-  return `${gettext('Step')} ${step}`;
-};
-
-const getSubstepTitle = (action, index) => {
-  const actionName = action?.tool_name || action?.type || '-';
-  return `${gettext('Substep')} ${index + 1}: ${actionName}`;
-};
-
-const hasOwnKey = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
-
-const DetailValueFormatter = ({ className, value }) => (
-  <pre className={`${className} agent-thought-process-pre`}>{value}</pre>
-);
-
-const PromptValueFormatter = ({ className, value }) => (
-  <div className={`${className} agent-thought-process-prompt`}>{value}</div>
+const MarkdownValueFormatter = ({ className, value }) => (
+  <CustomizeMarkdownViewer className={className} value={String(value)} showTOC={false} />
 );
 
 const JSONDetailValueFormatter = ({ className, value }) => (
@@ -68,152 +46,92 @@ const JSONDetailValueFormatter = ({ className, value }) => (
 
 const hasDetailValue = (value) => value !== undefined && value !== null && value !== '';
 
-const hasPhaseContextContent = (action) => hasDetailValue(action?.prompt) || hasDetailValue(action?.input);
+const hasArguments = (value) => {
+  if (!hasDetailValue(value)) return false;
+  if (typeof value === 'object') return Object.keys(value).length > 0;
+  if (typeof value !== 'string') return true;
+  try {
+    const parsedValue = JSON.parse(value);
+    if (!parsedValue || typeof parsedValue !== 'object') return true;
+    return Object.keys(parsedValue).length > 0;
+  } catch (e) {
+    return true;
+  }
+};
 
-const buildPhaseTextNode = (phase, actions = [], field, label) => {
-  const phaseActions = actions.filter((action) => hasDetailValue(action?.[field]));
-  if (phaseActions.length !== 1) return null;
-
+const buildPhaseDetailNode = (phase, field, label, formatter) => {
+  if (!hasDetailValue(phase?.[field])) return null;
   return {
-    id: `phase-${phase}-${field}`,
+    id: `phase-${field}`,
     name: label,
     children: [
       {
-        value: phaseActions[0][field],
-        formatter: PromptValueFormatter,
+        value: shouldHighlightDetailsAsJSON(field) ? formatDetailsJSONValue(phase[field]) : phase[field],
+        formatter,
       }
     ],
   };
 };
 
-const buildDetailsChildren = (details, options = {}) => {
+const buildDetailsChildren = (details) => {
   if (!details || typeof details !== 'object') return [];
 
-  const { excludePrompt = false } = options;
-
-  return THOUGHT_PROCESS_DETAIL_FIELDS
-    .map((field) => {
-      if (excludePrompt && field.key === 'prompt') return null;
-      if (!hasOwnKey(details, field.key)) return null;
-      const fieldValue = details[field.key];
-      if (fieldValue === undefined || fieldValue === null || fieldValue === '') return null;
-
-      return {
-        name: `• ${field.label}`,
-        value: shouldHighlightDetailsAsJSON(field.key) ? formatDetailsJSONValue(fieldValue) : formatDetailsValue(fieldValue),
-        formatter: shouldHighlightDetailsAsJSON(field.key) ? JSONDetailValueFormatter : DetailValueFormatter,
-      };
-    })
-    .filter(Boolean);
+  const isSkillView = details.tool_name === 'skill_view';
+  const children = [];
+  if (hasArguments(details.tool_arguments)) {
+    children.push({
+      name: `• ${gettext('Arguments')}`,
+      value: formatDetailsJSONValue(details.tool_arguments),
+      formatter: JSONDetailValueFormatter,
+    });
+  }
+  if (hasDetailValue(details.observation)) {
+    children.push({
+      name: `• ${gettext('Observation')}`,
+      value: isSkillView ? String(details.observation) : formatDetailsJSONValue(details.observation),
+      formatter: isSkillView ? MarkdownValueFormatter : JSONDetailValueFormatter,
+    });
+  }
+  return children;
 };
 
-const getValidPhase = (phase) => {
-  if (typeof phase !== 'string') return null;
-  const normalizedPhase = phase.toLowerCase();
-  return PHASE_ORDER.includes(normalizedPhase) ? normalizedPhase : null;
-};
-
-const collectRunActions = (run) => {
-  const { items = [], actions = [] } = run || {};
-  const itemActions = items.flatMap((item) => item.actions || []);
-  return [...itemActions, ...actions];
-};
-
-const groupActionsByStep = (actions = []) => {
-  const groups = [];
-  const groupIndexes = new Map();
-
-  actions.forEach((action) => {
-    const hasStep = Number.isInteger(action?.step);
-    const groupKey = hasStep ? `step-${action.step}` : `action-${groups.length}`;
-    if (!groupIndexes.has(groupKey)) {
-      groupIndexes.set(groupKey, groups.length);
-      groups.push([]);
-    }
-    groups[groupIndexes.get(groupKey)].push(action);
-  });
-
-  return groups;
-};
-
-const buildActionDetailNode = (action, actionIndex, options = {}) => {
-  const children = buildDetailsChildren(action, options);
-  if (children.length === 0) return null;
-
+const buildActionDetailNode = (action, actionIndex) => {
   return {
     id: action.id || `action-${actionIndex}`,
     name: getActionTitle(action, actionIndex),
-    children,
+    children: buildDetailsChildren(action),
   };
 };
 
-const buildPhaseGroupedActionNodes = (actions = []) => {
-  const actionsByPhase = PHASE_ORDER.reduce((acc, phase) => {
-    acc[phase] = [];
-    return acc;
-  }, {});
+const buildPhaseGroupedActionNodes = (run) => {
+  const items = Array.isArray(run?.items) ? run.items : [];
 
-  actions.forEach((action) => {
-    if (!hasToolDetailsContent(action) && !hasPhaseContextContent(action)) return;
-    const phase = getValidPhase(action.phase);
-    if (!phase) return;
-    actionsByPhase[phase].push(action);
-  });
+  return items.flatMap((item, itemIndex) => PHASE_ORDER.map((phaseName) => {
+    const phase = item?.actions?.[phaseName];
+    if (!phase || typeof phase !== 'object') return null;
 
-  return PHASE_ORDER.map((phase) => {
-    const phaseActions = actionsByPhase[phase];
-    if (phaseActions.length === 0) return null;
+    const actions = Array.isArray(phase.actions) ? phase.actions : [];
+    const promptNode = buildPhaseDetailNode(phase, 'prompt', gettext('Prompt'), MarkdownValueFormatter);
+    const inputNode = buildPhaseDetailNode(phase, 'input', gettext('Input'), JSONDetailValueFormatter);
+    const resultNode = buildPhaseDetailNode(phase, 'result', gettext('Result'), JSONDetailValueFormatter);
+    const actionNodes = actions.map(buildActionDetailNode);
+    const actionsNode = actionNodes.length > 0 ? {
+      id: `item-${itemIndex}-phase-${phaseName}-actions`,
+      name: gettext('Actions'),
+      children: actionNodes,
+    } : null;
 
-    const promptNode = buildPhaseTextNode(phase, phaseActions, 'prompt', gettext('Prompt'));
-    const inputNode = buildPhaseTextNode(phase, phaseActions, 'input', gettext('Input'));
-    const shouldExcludeActionPrompt = Boolean(promptNode);
-    const phaseContextNodes = [promptNode, inputNode].filter(Boolean);
-
-    const actionNodes = groupActionsByStep(phaseActions).map((actionGroup, groupIndex) => {
-      if (actionGroup.length === 1) {
-        const actionNode = buildActionDetailNode(actionGroup[0], groupIndex, { excludePrompt: shouldExcludeActionPrompt });
-        if (!actionNode) return null;
-        return {
-          ...actionNode,
-          id: actionNode.id || `${phase}-step-${groupIndex}`,
-          name: getStepTitle(actionGroup, groupIndex),
-        };
-      }
-
-      const substepNodes = actionGroup.map((action, substepIndex) => {
-        const actionNode = buildActionDetailNode(action, substepIndex, { excludePrompt: shouldExcludeActionPrompt });
-        if (!actionNode) return null;
-        return {
-          ...actionNode,
-          id: action.id || `${phase}-step-${groupIndex}-substep-${substepIndex}`,
-          name: getSubstepTitle(action, substepIndex),
-        };
-      }).filter(Boolean);
-
-      if (substepNodes.length === 0) return null;
-      return {
-        id: `${phase}-step-${actionGroup[0]?.step ?? groupIndex}`,
-        name: getStepTitle(actionGroup, groupIndex),
-        children: [
-          {
-            id: `${phase}-step-${actionGroup[0]?.step ?? groupIndex}-substeps`,
-            name: gettext('Substep'),
-            children: substepNodes,
-          },
-        ],
-      };
-    }).filter(Boolean);
-
+    if (!promptNode && !inputNode && !resultNode && !actionsNode) return null;
     return {
-      id: `phase-${phase}`,
-      name: PHASE_LABELS[phase],
-      children: [...phaseContextNodes, ...actionNodes],
+      id: `item-${itemIndex}-phase-${phaseName}`,
+      name: PHASE_LABELS[phaseName],
+      children: [promptNode, inputNode, actionsNode, resultNode].filter(Boolean),
     };
-  }).filter(Boolean);
+  }).filter(Boolean));
 };
 
 const buildThoughtProcessTree = (run) => {
-  const phaseNodes = buildPhaseGroupedActionNodes(collectRunActions(run));
+  const phaseNodes = buildPhaseGroupedActionNodes(run);
   return phaseNodes.map((node) => ({
     ...PRIMARY_SECTION,
     ...node,
@@ -229,7 +147,7 @@ const ThoughtProcessDialog = ({ runId, onToggle }) => {
     setIsLoading(true);
     setRun(null);
 
-    agentAPI.getAgentRunDetails(projectUuid, runId, { includeDetails: true }).then((res) => {
+    agentAPI.getAgentRunDetails(projectUuid, runId).then((res) => {
       if (!isMounted) return;
       setRun(res.data);
     }).catch(() => {

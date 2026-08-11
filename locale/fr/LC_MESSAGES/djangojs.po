@@ -3179,6 +3179,10 @@ msgstr "Modifier le contenu..."
 msgid "Handling"
 msgstr "Traitement"
 
+#: frontend/src/project/main-panel/agent/components/run-log-details/run-details/run-statistics-dialog/index.js
+msgid "Prelude"
+msgstr "Prélude"
+
 #: frontend/src/project/main-panel/agent/run-logs/thought-process-dialog.js:34
 msgid "Action"
 msgstr "Action"
@@ -6737,4 +6741,3 @@ msgstr "Le nom ne peut pas contenir de barre oblique (/)"
 #: frontend/src/utils/validate/name.js:15
 msgid "Name cannot contain backslash"
 msgstr "Le nom ne peut pas contenir de barre oblique inverse (\\)"
-

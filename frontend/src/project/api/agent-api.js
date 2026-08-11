@@ -65,11 +65,9 @@ class AgentAPI {
     return this.req.get(url, { params: { source_id, source_type }, signal });
   }
 
-  getAgentRunDetails(projectUuid, runId, options = {}) {
-    const { includeDetails = false } = options;
+  getAgentRunDetails(projectUuid, runId) {
     const url = this.server + `/api/v1/project/${projectUuid}/agent/runs/${runId}/`;
-    const params = includeDetails ? { include_details: true } : undefined;
-    return this.req.get(url, { params });
+    return this.req.get(url);
   }
 
   // Agent action operations

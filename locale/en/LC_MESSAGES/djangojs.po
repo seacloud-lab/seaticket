@@ -3230,6 +3230,10 @@ msgstr ""
 msgid "Handling"
 msgstr ""
 
+#: frontend/src/project/main-panel/agent/components/run-log-details/run-details/run-statistics-dialog/index.js
+msgid "Prelude"
+msgstr ""
+
 #: frontend/src/project/main-panel/agent/run-logs/thought-process-dialog.js:34
 msgid "Action"
 msgstr ""

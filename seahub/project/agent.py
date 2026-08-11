@@ -18,12 +18,6 @@ from seahub.api2.utils import api_error
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.models import Projects, ProjectConnections, decrypt_config
 from seahub.project.github_issues_api import GitHubAPI, GitHubAppNotInstalled
-from seahub.tickets.ticket_utils import (
-    get_ticket,
-    close_linked_github_issues,
-    build_ticket_close_payloads_from_client,
-    record_ticket_activities,
-)
 from seahub.utils.decorators import require_org_context
 from seahub.project.utils import (
     check_project_permission,
@@ -38,7 +32,6 @@ from seahub.project.agent_action_executor import (
 from seahub.project.constants import ConnectionType, ExtraSourceType
 
 from seahub.seadb_models.models import SchemaTables
-from rest_framework.permissions import AllowAny
 
 
 logger = logging.getLogger(__name__)
@@ -66,7 +59,27 @@ def _parse_action_sources(raw_sources):
         return []
     return sources if isinstance(sources, list) else []
 
-def _build_items_map_from_actions(actions, include_details=False):
+def _reformat_actions(actions):
+    """Group tool calls and phase output by phase."""
+    phases = {}
+    for action in actions:
+        phase = action.get('phase')
+        if not phase:
+            continue
+
+        phase_actions = phases.setdefault(phase, {'actions': []})
+        if action.get('tool_name') is not None:
+            phase_actions['actions'].append(action)
+        elif action.get('type') == phase:
+            phase_actions.update({
+                'prompt': action.get('prompt'),
+                'input': action.get('input'),
+                'result': action.get('result'),
+            })
+
+    return phases
+
+def _build_items_map_from_actions(actions):
     """build the items map from actions"""
     items_map = {}
     for action in actions:
@@ -84,6 +97,9 @@ def _build_items_map_from_actions(actions, include_details=False):
             'id': action['_pk'],
             'type': action.get('action_type', ''),
             'tool_name': action.get('tool_name', ''),
+            'phase': action.get('phase', ''),
+            'prompt': action.get('prompt', ''),
+            'input': action.get('input', ''),
             'result': action.get('result', ''),
             'status': action.get('status', ''),
             'suggestion_reason': action.get('suggestion_reason', ''),
@@ -94,82 +110,19 @@ def _build_items_map_from_actions(actions, include_details=False):
             'created_at': action.get('created_at', ''),
             'executed_at': action.get('executed_at', ''),
         }
-        if include_details:
-            action_data.update({
-                'phase': action.get('phase', ''),
-                'prompt': action.get('prompt', ''),
-                'input': action.get('input', ''),
-                'step': action.get('step'),
-                'tool_arguments': action.get('tool_arguments', ''),
-                'observation': action.get('observation', ''),
-            })
+        action_data.update({
+            'step': action.get('step'),
+            'tool_arguments': action.get('tool_arguments', ''),
+            'observation': action.get('observation', ''),
+        })
         items_map[key]['actions'].append(action_data)
+
+    for item in items_map.values():
+        item['actions'] = _reformat_actions(item['actions'])
+
     return items_map
 
-
-def list_agent_runs(seadb_api, project_uuid, page=1, per_page=50, include_details=False):
-    offset = (page - 1) * per_page
-    
-    try:
-        runs_sql = "SELECT `_pk`, `status`, `started_at`, `finished_at`, `items_processed`, " \
-            f"`error_message`, `events` FROM `{SchemaTables.AGENT_RUNS.table_name()}` " \
-            f"ORDER BY `started_at` DESC LIMIT {offset}, {per_page + 1}"
-        runs_result = seadb_api.query_rows(project_uuid, runs_sql)
-        runs = runs_result.get('results', [])
-        
-        has_more = len(runs) > per_page
-        if has_more:
-            runs = runs[:per_page]
-        
-        # batch fetch all actions
-        run_ids = [r['_pk'] for r in runs]
-        actions_by_run = {}
-        if run_ids:
-            run_ids_str = ','.join(str(r) for r in run_ids)
-            actions_limit = per_page * 30
-            details_field = ''
-            if include_details:
-                details_field = ', `phase`, `prompt`, `input`, `step`, `tool_arguments`, `observation`'
-            actions_sql = "SELECT `_pk`, `run_id`, `source_type`, `source_id`, `source_title`, " \
-                f"`action_type`, `tool_name`, `result`, `status`, `suggestion_reason`, `suggestion_text`, `suggestion_content`, " \
-                f"`statistics`, `created_at`, `executed_at`, `sources`{details_field} FROM `{SchemaTables.AGENT_ACTIONS.table_name()}` " \
-                f"WHERE `run_id` IN ({run_ids_str}) ORDER BY `run_id` DESC, `created_at` ASC " \
-                f"LIMIT 0, {actions_limit}"
-            actions_result = seadb_api.query_rows(project_uuid, actions_sql)
-            all_actions = actions_result.get('results', [])
-            
-            # group actions by run_id
-            for action in all_actions:
-                run_id = action.get('run_id')
-                if run_id not in actions_by_run:
-                    actions_by_run[run_id] = []
-                actions_by_run[run_id].append(action)
-        
-        # build the return runs list
-        enriched_runs = []
-        for run in runs:
-            run_pk = run['_pk']
-            actions = actions_by_run.get(run_pk, [])
-            items_map = _build_items_map_from_actions(actions, include_details=include_details)
-            
-            enriched_runs.append({
-                'id': run_pk,
-                'status': run.get('status', ''),
-                'started_at': run.get('started_at', ''),
-                'finished_at': run.get('finished_at', ''),
-                'items_processed': run.get('items_processed', 0),
-                'error_message': run.get('error_message', ''),
-                'items': list(items_map.values()),
-                'events': json.loads(run.get('events') or '[]'),
-            })
-        
-        return {'runs': enriched_runs, 'has_more': has_more}
-    except Exception as e:
-        logger.exception(e)
-        raise
-
-
-def get_agent_run_detail(seadb_api, project_uuid, run_id, include_details=False):
+def get_agent_run_detail(seadb_api, project_uuid, run_id):
     try:
         run_sql = "SELECT `_pk`, `status`, `started_at`, `finished_at`, `items_processed`, " \
             f"`error_message`, `events` FROM `{SchemaTables.AGENT_RUNS.table_name()}` WHERE `_pk` = {run_id}"
@@ -179,16 +132,13 @@ def get_agent_run_detail(seadb_api, project_uuid, run_id, include_details=False)
             raise ValueError('Run not found.')
         run = runs[0]
         
-        details_field = ''
-        if include_details:
-            details_field = ', `phase`, `prompt`, `input`, `step`, `tool_arguments`, `observation`'
         actions_sql = "SELECT `_pk`, `run_id`, `source_type`, `source_id`, `source_title`, " \
             f"`action_type`, `tool_name`, `result`, `status`, `suggestion_reason`, `suggestion_text`, `suggestion_content`, " \
-            f"`statistics`, `created_at`, `executed_at`, `sources`{details_field} FROM `{SchemaTables.AGENT_ACTIONS.table_name()}` " \
+            f"`phase`, `prompt`, `input`, `statistics`, `created_at`, `executed_at`, `sources`, `step`, `tool_arguments`, `observation` FROM `{SchemaTables.AGENT_ACTIONS.table_name()}` " \
             f"WHERE `run_id` = {run_id} ORDER BY `created_at` ASC"
         actions_result = seadb_api.query_rows(project_uuid, actions_sql)
         actions = actions_result.get('results', [])
-        items_map = _build_items_map_from_actions(actions, include_details=include_details)
+        items_map = _build_items_map_from_actions(actions)
         
         return {
             'id': run['_pk'],
@@ -305,6 +255,8 @@ def get_agent_log_runs(seadb_api, project_uuid, source_id, source_type):
     else:
         action_filter = item_filter
         action_params = item_params
+
+    action_filter = f"{action_filter} AND `action_type` IN ('event', 'prelude', 'analysis', 'suggestion')"
 
     actions_sql = (
         "SELECT `_pk`, `run_id`, `action_type`, `tool_name`, `result`, `status`, "
@@ -457,8 +409,7 @@ class AgentRunDetailView(APIView):
 
         try:
             seadb_api = SeaDBAPI()
-            include_details = request.GET.get('include_details') == 'true'
-            result = get_agent_run_detail(seadb_api, project_uuid, run_id, include_details=include_details)
+            result = get_agent_run_detail(seadb_api, project_uuid, run_id)
         except ValueError as e:
             logger.error(f'Error getting agent run detail: {e}')
             return api_error(status.HTTP_404_NOT_FOUND, str(e))

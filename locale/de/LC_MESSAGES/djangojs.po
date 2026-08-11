@@ -3179,6 +3179,10 @@ msgstr "Inhalt bearbeiten..."
 msgid "Handling"
 msgstr "Bearbeitung"
 
+#: frontend/src/project/main-panel/agent/components/run-log-details/run-details/run-statistics-dialog/index.js
+msgid "Prelude"
+msgstr "Vorbereitung"
+
 #: frontend/src/project/main-panel/agent/run-logs/thought-process-dialog.js:34
 msgid "Action"
 msgstr "Aktion"
@@ -6737,4 +6741,3 @@ msgstr "Name darf keinen Schrägstrich enthalten"
 #: frontend/src/utils/validate/name.js:15
 msgid "Name cannot contain backslash"
 msgstr "Name darf keinen Backslash enthalten"
-
