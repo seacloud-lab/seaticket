@@ -90,7 +90,7 @@ class CustomizeGroupSelect extends React.Component {
           ...theme,
           colors: {
             ...theme.colors,
-            primary25: '#f5f5f5',
+            primary25: 'var(--bs-body-secondary-bg)',
           },
         })}
         styles={customStyles}

@@ -79,7 +79,7 @@ export const SUPPORT_PREVIEW_COLUMN_TYPES = [];
 
 export const OVER_SCAN_COLUMNS = 10;
 
-export const DELETED_OPTION_BACKGROUND_COLOR = '#eaeaea';
+export const DELETED_OPTION_BACKGROUND_COLOR = 'var(--bs-border-tertiary-color)';
 
 export const DELETED_OPTION_TIPS = gettext('Deleted option');
 

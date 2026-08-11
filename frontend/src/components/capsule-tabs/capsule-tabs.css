@@ -1,5 +1,5 @@
 .capsule-tabs-group {
-  background-color: #f5f5f5;
+  background-color: var(--bs-body-secondary-bg);
   padding: 4px 5px;
   width: fit-content;
   height: fit-content;
@@ -9,7 +9,7 @@
 .capsule-tab {
   border: none !important;
   background-color: transparent !important;
-  color: #212529;
+  color: var(--bs-body-color);
   font-size: 14px;
   font-weight: normal;
   padding: 4px 12px !important;

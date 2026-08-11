@@ -24,7 +24,7 @@
   top: 40px;
   bottom: -32px;
   width: 1px;
-  background-color:  #eaeaea;
+  background-color:  var(--bs-border-tertiary-color);
 }
 
 .connection-status-container .timeline .timeline-item {

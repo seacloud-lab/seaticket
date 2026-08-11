@@ -20,7 +20,7 @@
 }
 
 .seaqa-ai-chat-customize-definition:hover {
-  background-color: #f0f0f0;
+  background-color: var(--bs-bg-secondary-color);
 }
 
 .seaqa-ai-chat-customize-definition .seaqa-ai-chat-customize-definition-order {

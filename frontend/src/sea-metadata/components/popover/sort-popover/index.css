@@ -53,7 +53,7 @@
 }
 
 .sorts-list .delete-sort:hover {
-  background-color: #f5f5f5;
+  background-color: var(--bs-body-secondary-bg);
 }
 
 .delete-sort .seaqa-icon-svg-close {

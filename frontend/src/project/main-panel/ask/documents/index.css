@@ -60,7 +60,7 @@
 .seaqa-customize-select.seaqa-ai-chat-selector-display.seaqa-chat-documents-selector .seaqa-chat-documents-divider {
   height: 12px;
   width: 1px;
-  background-color: #eaeaea;
+  background-color: var(--bs-border-tertiary-color);
 }
 
 .seaqa-customize-select.seaqa-ai-chat-selector-display.seaqa-chat-documents-selector .seaqa-chat-document-name {

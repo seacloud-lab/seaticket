@@ -24,7 +24,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #eaeaea;
+  border-bottom: 1px solid var(--bs-border-tertiary-color);
 }
 
 .seaqa-customize-table .seaqa-customize-table-row.seaqa-customize-table-row-title {
@@ -36,7 +36,7 @@
 }
 
 .seaqa-customize-table .seaqa-customize-table-row:not(.seaqa-customize-table-row-title):hover {
-  background-color: #f5f5f5;
+  background-color: var(--bs-body-secondary-bg);
   cursor: default;
 }
 

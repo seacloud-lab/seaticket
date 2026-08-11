@@ -6,15 +6,15 @@ export const STYLE_COLORS = [
 ];
 
 export const CHART_THEME_COLOR = {
-  pivotTextColor: '#212529',
+  pivotTextColor: 'var(--bs-body-color)',
   textColor: '#666666',
   fontSize: 13,
   gridColor: '#F3F3F3',
   XAxisColor: '#CCCCCC',
   labelColor: '#666666',
-  ringLabelColor: '#212529',
+  ringLabelColor: 'var(--bs-body-color)',
   annotationTitleFontColor: '#666666',
-  annotationValueFontColor: '#212529',
+  annotationValueFontColor: 'var(--bs-body-color)',
   annotationFontSize: 18,
   legendPageNavigatorMarkerColor: '#999999',
   cardColor: '#545454',

@@ -29,7 +29,7 @@
 }
 
 .group-manage-trash-dialog .trash-projects .trash-project-name {
-  color: #212529;
+  color: var(--bs-body-color);
   font-weight: 500;
   padding-right: 20px;
 }

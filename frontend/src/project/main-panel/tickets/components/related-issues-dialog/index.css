@@ -21,7 +21,7 @@
 }
 
 .seaqa-ticket-related-issues-dialog .issues-list-item:hover {
-  background-color: #f5f5f5;
+  background-color: var(--bs-body-secondary-bg);
 }
 
 .seaqa-ticket-related-issues-dialog .issues-list-item-icon {
@@ -60,7 +60,7 @@
 .seaqa-ticket-related-issues-dialog .issues-list-item-content .issues-list-item-score {
   font-size: 12px;
   color: #888;
-  background-color: #eaeaea;
+  background-color: var(--bs-border-tertiary-color);
   border-radius: 9px;
   padding: 0px 6px;
   height: 18px;

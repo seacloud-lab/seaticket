@@ -211,7 +211,7 @@
 
 /* 128 - long-text*/
 .sea-metadata-table-row:hover .sea-metadata-table-row-height-128-cell .sea-metadata-long-text-formatter .sf-slate-viewer-scroll-container .article {
-  background-color: #f5f5f5;
+  background-color: var(--bs-body-secondary-bg);
 }
 
 .sea-metadata-table-row:hover .sea-metadata-table-row-height-128-cell.cell-selected .sea-metadata-long-text-formatter .sf-slate-viewer-scroll-container .article {

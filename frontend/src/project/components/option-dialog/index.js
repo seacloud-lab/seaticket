@@ -110,7 +110,7 @@ const OptionDialog = ({
     if (newColor === color) return;
     setColor(newColor);
     if (isHexColor(newColor)) {
-      const textColor = isDarkColor(newColor) ? '#FFF' : '#212529';
+      const textColor = isDarkColor(newColor) ? '#FFF' : 'var(--bs-body-color)';
       setTextColor(textColor);
     }
   }, [color]);

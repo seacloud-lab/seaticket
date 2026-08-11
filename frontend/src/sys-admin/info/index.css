@@ -22,7 +22,7 @@
 
 .info-item-content table thead th {
   padding: 0 10px;
-  color: #212529;
+  color: var(--bs-body-color);
   font-weight: bold;
   border: 1px solid #ddd;
   border-left: 0;

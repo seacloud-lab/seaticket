@@ -7,7 +7,7 @@
 }
 
 .seaqa-customize-table-wrapper-divider {
-  background-color: #eaeaea;
+  background-color: var(--bs-border-tertiary-color);
   height: 1px;
   width: 100%;
 }

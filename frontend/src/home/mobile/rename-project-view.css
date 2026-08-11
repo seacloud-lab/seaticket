@@ -60,5 +60,5 @@
 }
 
 .rename-project-view-settings .project-icon-item:hover {
-  background-color: #f5f5f5;
+  background-color: var(--bs-body-secondary-bg);
 }

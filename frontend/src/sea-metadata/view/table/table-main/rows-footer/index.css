@@ -97,7 +97,7 @@
 .load-all-tip .load-all:hover,
 .sea-metadata-table-footer .rows-row .load-all:hover {
   color: var(--bs-body-color);
-  border-bottom: 1px solid #212529;
+  border-bottom: 1px solid var(--bs-body-color);
 }
 
 .sea-metadata-table-footer .loading-message {

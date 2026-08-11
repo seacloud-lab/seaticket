@@ -52,7 +52,7 @@
 }
 
 .sea-metadata-groupbys-popover .groupby-item .delete-groupby:hover {
-  background-color: #f5f5f5;
+  background-color: var(--bs-body-secondary-bg);
 }
 
 .sea-metadata-groupbys-popover .delete-groupby .seaqa-icon-svg-close {

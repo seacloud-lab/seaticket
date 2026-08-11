@@ -107,7 +107,7 @@
 }
 
 .seaqa-hide-columns-popover .hide-column-item.dragging {
-  background-color: #f5f5f5;
+  background-color: var(--bs-body-secondary-bg);
 }
 
 .seaqa-hide-columns-popover .hide-column-item.hide-column-can-drop::after,

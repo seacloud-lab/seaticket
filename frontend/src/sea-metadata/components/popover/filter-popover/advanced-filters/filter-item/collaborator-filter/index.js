@@ -170,7 +170,7 @@ const CollaboratorFilter = ({ readOnly, filterTerm, collaborators, filter_predic
                 );
               })}
             </div>
-          ) : <span style={{ color: '#868E96' }}>{placeholder}</span>}
+          ) : <span style={{ color: 'var(--bs-sf-grey-text-placeholder)' }}>{placeholder}</span>}
         </span>
         {!readOnly && (<Icon symbol="arrow-down" />)}
       </div>

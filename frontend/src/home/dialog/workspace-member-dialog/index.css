@@ -53,7 +53,7 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  color: #212529;
+  color: var(--bs-body-color);
 }
 
 .seaqa-group-member-content .member-details .member-role {
@@ -65,6 +65,6 @@
   font-size: 12px;
   font-weight: 500;
   color: var(--bs-sf-grey-text);
-  background-color: #f5f5f5;
+  background-color: var(--bs-body-secondary-bg);
   border-radius: 4px;
 }

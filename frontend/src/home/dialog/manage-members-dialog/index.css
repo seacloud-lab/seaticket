@@ -45,7 +45,7 @@
 }
 
 .delete-group-member-icon:hover {
-  color: #212529;
+  color: var(--bs-body-color);
 }
 
 .add-members-select .true__indicator-separator {

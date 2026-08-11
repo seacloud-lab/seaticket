@@ -133,7 +133,7 @@
 }
 
 .seaqa-connection-email-record-details.expanded .email-body .email-item-toggle-btn {
-  background-color: #f5f5f5;
+  background-color: var(--bs-body-secondary-bg);
   font-size: 13px;
   height: 18px;
   line-height: 15px;

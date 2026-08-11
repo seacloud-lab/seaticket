@@ -293,12 +293,12 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
             name: TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.PRIORITY].op_name,
             oldValue: (
               <Option
-                option={{ name: oldValueOption.name, color: oldValueOption.icon_color || DELETED_OPTION_BACKGROUND_COLOR, text_color: oldValueOption.icon_color ? '#fff' : '#212529' }}
+                option={{ name: oldValueOption.name, color: oldValueOption.icon_color || DELETED_OPTION_BACKGROUND_COLOR, text_color: oldValueOption.icon_color ? '#fff' : 'var(--bs-body-color)' }}
                 className="seaqa-log-removed"
               />
             ),
             newValue: (
-              <Option option={{ name: newValueOption.name, color: newValueOption.icon_color || DELETED_OPTION_BACKGROUND_COLOR, text_color: newValueOption.icon_color ? '#fff' : '#212529' }} />
+              <Option option={{ name: newValueOption.name, color: newValueOption.icon_color || DELETED_OPTION_BACKGROUND_COLOR, text_color: newValueOption.icon_color ? '#fff' : 'var(--bs-body-color)' }} />
             ),
           }
         ];

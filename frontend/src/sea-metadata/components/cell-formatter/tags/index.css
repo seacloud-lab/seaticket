@@ -15,7 +15,7 @@
 }
 
 .sea-metadata-ui.tags-formatter .sea-metadata-tags-operation-container .sea-metadata-tags-operation-add-btn:hover {
-  background-color: #f0f0f0;
+  background-color: var(--bs-bg-secondary-color);
 }
 
 .sea-metadata-ui.tags-formatter .sea-metadata-tags-operation-add-btn .seaqa-icon-svg-add-table {

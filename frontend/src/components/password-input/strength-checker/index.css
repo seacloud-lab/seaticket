@@ -50,7 +50,7 @@
 }
 
 .strength-check-container .progress .default {
-  background-color: #DBDBDB;
+  background-color: var(--bs-hover-tertiary-bg);
 }
 
 .strength-check-container .progress .too-short,

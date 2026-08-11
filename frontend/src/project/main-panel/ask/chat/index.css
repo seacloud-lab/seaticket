@@ -18,7 +18,7 @@
   flex: 1;
   overflow: auto;
   width: 100%;
-  mask-image: linear-gradient(to bottom, #f5f5f5 calc(100% - 24px), transparent);
+  mask-image: linear-gradient(to bottom, var(--bs-body-secondary-bg) calc(100% - 24px), transparent);
   min-height: 0;
 }
 
@@ -86,7 +86,7 @@
   word-wrap: break-word;
   height: auto;
   font-size: 14px;
-  color: #212529;
+  color: var(--bs-body-color);
   background-color: #fff;
 }
 

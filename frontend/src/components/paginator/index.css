@@ -20,7 +20,7 @@
 }
 
 .paginator .paginator-btn:not(.disabled) .seaqa-icon-svg {
-  color: #212529;
+  color: var(--bs-body-color);
 }
 
 .paginator .paginator-dropdown .btn {

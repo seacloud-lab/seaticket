@@ -34,7 +34,7 @@
 }
 
 .btn.btn-secondary:hover {
-  color: #212529;
+  color: var(--bs-body-color);
   background-color: #f6f6f6;
   border-color: rgba(0, 20, 49, 0.12);
 }

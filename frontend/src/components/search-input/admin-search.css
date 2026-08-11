@@ -3,7 +3,7 @@
 }
 
 .admin-search-input .form-control.seaqa-search-input {
-  color: #868E96;
+  color: var(--bs-sf-grey-text-placeholder);
   border-radius: 16px;
   padding-top: 0;
   padding-bottom: 0;
@@ -11,6 +11,6 @@
 }
 
 .admin-search-input .form-control.seaqa-search-input::placeholder {
-  color: #868E96;
+  color: var(--bs-sf-grey-text-placeholder);
   font-size: 14px;
 }

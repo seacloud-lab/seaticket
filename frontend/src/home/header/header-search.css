@@ -13,7 +13,7 @@
 }
 
 .search .search-container .search-input {
-  color: #868E96;
+  color: var(--bs-sf-grey-text-placeholder);
   height: 32px;
   line-height: 32px;
   border-radius: 16px;

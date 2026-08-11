@@ -14,7 +14,7 @@
 .sea-metadata-ui.long-text-formatter .sea-metadata-long-text-links,
 .sea-metadata-ui.long-text-formatter .sea-metadata-long-text-check-list {
   display: inline-block;
-  background-color: #f0f0f0;
+  background-color: var(--bs-bg-secondary-color);
   color: var(--bs-sf-grey-text);
   height: 20px;
   line-height: 20px;
@@ -43,7 +43,7 @@
 }
 
 .sea-metadata-ui.long-text-formatter .sea-metadata-long-text-images img {
-  border: 1px solid #f0f0f0;
+  border: 1px solid var(--bs-bg-secondary-color);
   border-radius: 3px;
   box-sizing: border-box;
   margin-top: -3px;

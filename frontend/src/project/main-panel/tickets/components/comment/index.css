@@ -63,7 +63,7 @@
 
 .seaqa-project-ticket-comment .seaqa-project-ticket-comment-user-name {
   font-weight: 600;
-  color: #212529;
+  color: var(--bs-body-color);
 }
 
 .seaqa-project-ticket-comment .seaqa-project-ticket-comment-content {

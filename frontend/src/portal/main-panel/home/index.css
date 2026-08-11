@@ -73,7 +73,7 @@
 
 .portal-home-title {
   margin: 0;
-  color: #212529;
+  color: var(--bs-body-color);
   font-size: 48px;
   font-weight: 600;
 }
