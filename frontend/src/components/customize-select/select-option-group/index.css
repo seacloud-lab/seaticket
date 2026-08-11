@@ -56,7 +56,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: #212529;
+  color: var(--bs-body-color);
 }
 
 .option-group:not(.searchable) .option {

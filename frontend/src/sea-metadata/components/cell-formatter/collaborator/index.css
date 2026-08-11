@@ -6,8 +6,8 @@
   height: 20px;
   font-size: 13px;
   border-radius: 10px;
-  background: #eaeaea;
-  color: #212529;
+  background: var(--bs-border-tertiary-color);
+  color: var(--bs-body-color);
   width: fit-content;
   max-width: 200px;
 }

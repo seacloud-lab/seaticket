@@ -13,7 +13,7 @@
   border-radius: 3px;
   display: inline-flex;
   align-items: center;
-  background-color: #f0f0f0;
+  background-color: var(--bs-bg-secondary-color);
   color: var(--bs-sf-grey-text);
   height: 20px;
   margin: 0 4px !important;
@@ -38,7 +38,7 @@
 .long-text-formatter .images-container img {
   max-width: 28px;
   max-height: 28px;
-  border: 1px solid #f0f0f0;
+  border: 1px solid var(--bs-bg-secondary-color);
   box-sizing: border-box;
   border-radius: 3px;
 }

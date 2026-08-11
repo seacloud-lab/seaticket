@@ -27,7 +27,7 @@ const LabelsSettings = ({
   const options = useMemo(() => {
     return getColumnOptions(column).map(o => {
       if (o.text_color) return { ...o, value: o.id };
-      return { ...o, value: o.id, text_color: isDarkColor(o.color) ? '#FFF' : '#212529' };
+      return { ...o, value: o.id, text_color: isDarkColor(o.color) ? '#FFF' : 'var(--bs-body-color)' };
     });
   }, [column]);
 

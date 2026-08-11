@@ -36,66 +36,66 @@
 
 .canvas-groups-rows .group-level-2 .group-container-left .group-header-left,
 .canvas-groups-rows .group-level-2 .group-container-right .group-header-right {
-  background-color: #F5F5F5;
+  background-color: var(--bs-body-secondary-bg);
 }
 
 .canvas-groups-rows .group-level-3 .group-container-left .group-header-left,
 .canvas-groups-rows .group-level-3 .group-container-right .group-header-right{
-  background-color: #F0F0F0;
+  background-color: var(--bs-bg-secondary-color);
 }
 
 /* border-color of group container */
 .canvas-groups-rows .group-level-2 .group-container-left {
-  border-left: 1px solid #EAEAEA;
+  border-left: 1px solid var(--bs-border-tertiary-color);
 }
 
 .canvas-groups-rows .group-level-3 .group-container-left {
-  border-left: 1px solid #EAEAEA;
+  border-left: 1px solid var(--bs-border-tertiary-color);
 }
 
 .canvas-groups-rows .group-level-2 .group-container-right {
-  border-right: 1px solid #EAEAEA;
+  border-right: 1px solid var(--bs-border-tertiary-color);
 }
 
 .canvas-groups-rows .group-level-3 .group-container-right {
-  border-right: 1px solid #EAEAEA;
+  border-right: 1px solid var(--bs-border-tertiary-color);
 }
 
 .canvas-groups-rows .group-level-2 .group-container-left,
 .canvas-groups-rows .group-level-2 .group-container-right {
-  border-bottom: 1px solid #EAEAEA;
+  border-bottom: 1px solid var(--bs-border-tertiary-color);
 }
 
 .canvas-groups-rows .group-level-3 .group-container-left,
 .canvas-groups-rows .group-level-3 .group-container-right {
-  border-bottom: 1px solid #EAEAEA;
+  border-bottom: 1px solid var(--bs-border-tertiary-color);
 }
 
 /* border-color of group header */
 .canvas-groups-rows .group-level-1 .group-header-left {
-  border-left: 1px solid #EAEAEA;
+  border-left: 1px solid var(--bs-border-tertiary-color);
 }
 
 .canvas-groups-rows .group-level-1 .group-header-right {
-  border-right: 1px solid #EAEAEA;
+  border-right: 1px solid var(--bs-border-tertiary-color);
 }
 
 .canvas-groups-rows .group-level-1 .group-header-left,
 .canvas-groups-rows .group-level-1 .group-header-right {
-  border-top: 1px solid #EAEAEA;
-  border-bottom: 1px solid #EAEAEA;
+  border-top: 1px solid var(--bs-border-tertiary-color);
+  border-bottom: 1px solid var(--bs-border-tertiary-color);
 }
 
 .canvas-groups-rows .group-level-2 .group-header-left,
 .canvas-groups-rows .group-level-2 .group-header-right {
-  border-top: 1px solid #EAEAEA;
-  border-bottom: 1px solid #EAEAEA;
+  border-top: 1px solid var(--bs-border-tertiary-color);
+  border-bottom: 1px solid var(--bs-border-tertiary-color);
 }
 
 .canvas-groups-rows .group-level-3 .group-header-left,
 .canvas-groups-rows .group-level-3 .group-header-right {
-  border-top: 1px solid #EAEAEA;
-  border-bottom: 1px solid #EAEAEA;
+  border-top: 1px solid var(--bs-border-tertiary-color);
+  border-bottom: 1px solid var(--bs-border-tertiary-color);
 }
 
 .canvas-groups-rows .group-level-1.expanded-group .group-header-left,
@@ -133,7 +133,7 @@
 }
 
 .canvas-groups-rows.single-column .group-level-1 .group-header-cell {
-  border-right: 1px solid #EAEAEA !important;
+  border-right: 1px solid var(--bs-border-tertiary-color) !important;
 }
 
 .canvas-groups-rows.single-column .folded-group .group-container-left,
@@ -144,7 +144,7 @@
 
 /* group header cell */
 .canvas-groups-rows .group-level-1 .group-header-cell {
-  border-right: 1px solid #F5F5F5;
+  border-right: 1px solid var(--bs-body-secondary-bg);
 }
 
 .canvas-groups-rows .group-level-2 .group-header-cell {
@@ -291,7 +291,7 @@
 
 /* border color of last cell within group view */
 .canvas-groups-rows.disabled-add-row .sea-metadata-table-row.sea-metadata-last-table-row .sea-metadata-table-cell {
-  border-bottom: 1px solid #EAEAEA;
+  border-bottom: 1px solid var(--bs-border-tertiary-color);
 }
 
 .canvas-groups-rows.frozen .table-result-table-cell.actions-cell {
@@ -299,11 +299,11 @@
 }
 
 .canvas-groups-rows .actions-cell {
-  border-left: 1px solid #EAEAEA;
+  border-left: 1px solid var(--bs-border-tertiary-color);
 }
 
 .canvas-groups-rows .sea-metadata-table-row .last-cell {
-  border-right: 1px solid #EAEAEA;
+  border-right: 1px solid var(--bs-border-tertiary-color);
 }
 
 .canvas-groups-rows.disabled-add-row .sea-metadata-last-table-row,

@@ -44,7 +44,7 @@
 }
 
 .seaqa-ai-ask-chat-input-content .message-input::placeholder {
-  color: #868E96;
+  color: var(--bs-sf-grey-text-placeholder);
   font-size: 14px;
   line-height: 22px;
 }

@@ -51,14 +51,14 @@
 
 .account-details-popover .account-details-content {
   border-bottom: 1px solid #ddd;
-  color: #212529;
+  color: var(--bs-body-color);
   cursor: default;
   padding: 8px 18px;
 }
 
 .account-details-popover .account-settings-item {
   border-bottom: 1px solid #ddd;
-  color: #212529;
+  color: var(--bs-body-color);
   display: block;
   padding: 8px 18px;
   text-align: left;

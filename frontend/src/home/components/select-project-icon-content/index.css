@@ -37,7 +37,7 @@
 }
 
 .select-project-icon-content .select-project-icon-content-item:hover {
-  background-color: #f5f5f5;
+  background-color: var(--bs-body-secondary-bg);
 }
 
 .select-project-icon-content .select-project-icon-content-item:focus-visible {

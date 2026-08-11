@@ -31,7 +31,7 @@ class Column {
       this.data = {
         ...this.data,
         options: options.map(o => {
-          if (!o.text_color) return { ...o, text_color: isDarkColor(o.color) ? '#FFF' : '#212529' };
+          if (!o.text_color) return { ...o, text_color: isDarkColor(o.color) ? '#FFF' : 'var(--bs-body-color)' };
           const { text_color, textColor, border_color, borderColor, ...others } = o;
           return { ...others, text_color: text_color || textColor, border_color: border_color || borderColor };
         })

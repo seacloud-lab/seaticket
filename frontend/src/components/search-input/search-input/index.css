@@ -10,7 +10,7 @@
   width: 100%;
   padding-left: 2.5rem;
   border-radius: 4px;
-  border-color: #EAEAEA;
+  border-color: var(--bs-border-tertiary-color);
 }
 
 .seaqa-search-input-wrapper .seaqa-search-input.small-size {
@@ -24,7 +24,7 @@
 }
 
 .seaqa-search-input-wrapper .seaqa-search-input::placeholder {
-  color: #868E96;
+  color: var(--bs-sf-grey-text-placeholder);
   font: 14px;
 }
 
@@ -54,7 +54,7 @@
 }
 
 .seaqa-search-input-wrapper .seaqa-search-input-search .seaqa-icon-svg {
-  color: #868E96;
+  color: var(--bs-sf-grey-text-placeholder);
   height: 12px;
   width: 12px;
 }

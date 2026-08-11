@@ -9,7 +9,7 @@
 .seaqa-ai-ask-chats-header .chat-header-divider {
   height: 12px;
   width: 1px;
-  background-color: #eaeaea;
+  background-color: var(--bs-border-tertiary-color);
   margin: 0 12px;
 }
 

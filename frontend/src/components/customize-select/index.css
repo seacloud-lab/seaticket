@@ -21,7 +21,7 @@
 
 .seaqa-select.custom-select.disabled .selected-option,
 .seaqa-select.custom-select.disabled {
-  background-color: #F5F5F5;
+  background-color: var(--bs-body-secondary-bg);
 }
 
 .seaqa-select.custom-select:focus,
@@ -101,7 +101,7 @@
   line-height: 1;
   font-size: 14px;
   white-space: nowrap;
-  color: #868E96;
+  color: var(--bs-sf-grey-text-placeholder);
 }
 
 .seaqa-customize-select .option-group .option-group-content {

@@ -27,7 +27,7 @@
 
 .sea-metadata-tags-selector-popover .option-editor-option .option-editor-option-content {
   flex: unset;
-  border: 1px solid #dbdbdb;
+  border: 1px solid var(--bs-hover-tertiary-bg);
   border-radius: 11px;
   padding: 0 8px 0 4px;
   background-color: #FFFFFF;

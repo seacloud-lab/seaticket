@@ -31,7 +31,7 @@
 .portal-home-edit-panel-title {
   flex: 1 1 auto;
   text-align: center;
-  color: #212529;
+  color: var(--bs-body-color);
   font-size: 18px;
   font-weight: 700;
 }
@@ -41,7 +41,7 @@
   height: 40px;
   border: 1px solid var(--bs-border-color);
   background: #ffffff;
-  color: #212529;
+  color: var(--bs-body-color);
   padding: 0 12px;
   outline: none;
 }
@@ -113,7 +113,7 @@
 .theme-background-upload-image {
   height: 38px;
   width: 100%;
-  background-color: #f0f0f0;
+  background-color: var(--bs-bg-secondary-color);
   color: var(--bs-sf-grey-text);
   display: flex;
   align-items: center;
@@ -126,7 +126,7 @@
 }
 
 .theme-background-upload-image:hover {
-  background-color: #dbdbdb;
+  background-color: var(--bs-hover-tertiary-bg);
   color: var(--bs-sf-grey-text);
   cursor: pointer;
 }

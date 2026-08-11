@@ -254,7 +254,7 @@ const Views = ({ view, toggleView, hideScrollControls = false }) => {
           </>
         )}
         {context.canInsertView() &&
-          <div style={{ borderLeft: '1px solid #EAEAEA' }}>
+          <div style={{ borderLeft: '1px solid var(--bs-border-tertiary-color)' }}>
             <IconButton
               icon="plus"
               className="ml-2"

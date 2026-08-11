@@ -19,7 +19,7 @@
   width: 100%;
   padding-left: 2.5rem;
   border-radius: 0px;
-  border-color: #EAEAEA;
+  border-color: var(--bs-border-tertiary-color);
   border-top: none;
   border-left: none;
   border-right: none;
@@ -27,7 +27,7 @@
 
 .seaqa-collaborator-filter .seaqa-search-input-wrapper .seaqa-search-input:hover:focus,
 .seaqa-collaborator-filter .seaqa-search-input-wrapper .seaqa-search-input:focus {
-  border-color: #EAEAEA;
+  border-color: var(--bs-border-tertiary-color);
   box-shadow: none;
   outline: none;
 }
@@ -58,7 +58,7 @@
   height: 20px;
   font-size: 13px;
   border-radius: 10px;
-  background: #eaeaea;
+  background: var(--bs-border-tertiary-color);
   max-width: 100%;
   overflow: hidden;
   flex-shrink: 0;

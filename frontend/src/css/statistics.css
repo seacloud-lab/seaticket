@@ -21,8 +21,8 @@
   padding: 0 32px;
   height: 48px;
   line-height: 48px;
-  border-right: 1px solid #EAEAEA;
-  border-bottom: 1px solid #EAEAEA;
+  border-right: 1px solid var(--bs-border-tertiary-color);
+  border-bottom: 1px solid var(--bs-border-tertiary-color);
 }
 
 .tab-nav-container .nav-item.active {

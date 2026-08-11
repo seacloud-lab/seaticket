@@ -5,7 +5,7 @@
   align-items: center;
   background: var(--bs-body-bg);
   font-size: 13px;
-  border: 1px solid #dbdbdb;
+  border: 1px solid var(--bs-hover-tertiary-bg);
   border-radius: 11px;
   margin-right: 4px;
   padding: 0 8px 0 4px;

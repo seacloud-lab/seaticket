@@ -32,7 +32,7 @@
 .run-statistics-section-title {
   font-size: 14px;
   font-weight: 600;
-  color: #212529;
+  color: var(--bs-body-color);
   margin: 0 0 12px 0;
   padding-bottom: 8px;
   border-bottom: 1px solid #eee;
@@ -58,7 +58,7 @@
 .summary-value {
   font-size: 14px;
   font-weight: 500;
-  color: #212529;
+  color: var(--bs-body-color);
 }
 
 .run-statistics-table-wrapper {
@@ -79,9 +79,9 @@
 }
 
 .run-statistics-table th {
-  background: #f5f5f5;
+  background: var(--bs-body-secondary-bg);
   font-weight: 600;
-  color: #212529;
+  color: var(--bs-body-color);
   white-space: nowrap;
 }
 
@@ -101,10 +101,10 @@
 }
 
 .run-statistics-table tfoot .totals-row {
-  background: #f0f0f0;
+  background: var(--bs-bg-secondary-color);
 }
 
 .run-statistics-table tfoot .totals-row td {
   border-bottom: none;
-  color: #212529;
+  color: var(--bs-body-color);
 }

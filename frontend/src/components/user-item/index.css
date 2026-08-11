@@ -6,7 +6,7 @@
   height: 20px;
   font-size: 13px;
   border-radius: 10px;
-  background: #eaeaea;
+  background: var(--bs-border-tertiary-color);
   overflow: hidden;
 }
 
@@ -96,7 +96,7 @@
 
 .user-select-container .user-list-container .user-item-container:hover,
 .user-select-container .user-list-container .user-item-container-highlight {
-  background: #f5f5f5;
+  background: var(--bs-body-secondary-bg);
   cursor: pointer;
 }
 

@@ -377,7 +377,7 @@ const TokenCreditUsed = ({
       .attr('y', 20)
       .attr('font-weight', 'bold')
       .attr('font-size', '12px')
-      .attr('fill', '#212529')
+      .attr('fill', 'var(--bs-body-color)')
       .attr('fill-opacity', 0.8)
       .text(gettext('Comprehensive infomation'));
 
@@ -482,7 +482,7 @@ const TokenCreditUsed = ({
         .attr('x', 25)
         .attr('y', 14)
         .style('font-size', '12px')
-        .style('fill', '#212529')
+        .style('fill', 'var(--bs-body-color)')
         .text(item.name);
     });
 

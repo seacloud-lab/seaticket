@@ -25,7 +25,7 @@
 
 .am-list-header .seaqa-am-list-header-content .seaqa-am-list-header-content-title {
   margin-bottom: 0;
-  color: #212529;
+  color: var(--bs-body-color);
   line-height: 50px;
   overflow: hidden;
   text-overflow: ellipsis;
