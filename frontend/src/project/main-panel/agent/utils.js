@@ -36,6 +36,7 @@ export const getDisplayActions = (actions) => {
     return !(nextAction && nextAction.type === ACTION_TYPE.SUMMARY);
   }).filter(action => {
     if (action.type === ACTION_TYPE.SUMMARY) return false;
+    if (action.type === ACTION_TYPE.HANDLING) return false;
     if (action.type === ACTION_TYPE.TOOL_CALL) return false;
     return true;
   });

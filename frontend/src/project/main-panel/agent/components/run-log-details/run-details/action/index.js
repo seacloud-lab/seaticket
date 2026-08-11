@@ -16,6 +16,16 @@ const formatResultText = (result) => {
   return JSON.stringify(result);
 };
 
+const parseResult = (result) => {
+  if (!result) return null;
+  if (typeof result === 'object') return result;
+  try {
+    return JSON.parse(result);
+  } catch (e) {
+    return null;
+  }
+};
+
 const ActionItem = React.memo(({ action, ...props }) => {
   const [isThoughtExpanded, setIsThoughtExpanded] = useState(false);
 
@@ -79,22 +89,26 @@ const ActionItem = React.memo(({ action, ...props }) => {
   }, [type]);
 
   const renderContent = useCallback(() => {
+    const parsedResult = parseResult(result);
     switch (type) {
+      case ACTION_TYPE.PRELUDE:
       case ACTION_TYPE.EVENT: {
+        const eventSummary = parsedResult?.event_summary || result;
         return (
           <div className="seaqa-agent-action-container seaqa-agent-event-action-container">
             <div className="seaqa-agent-action-label">{gettext('Event')}</div>
-            {result && <CustomizeMarkdownViewer value={result} showTOC={false} />}
+            {eventSummary && <CustomizeMarkdownViewer value={eventSummary} showTOC={false} />}
           </div>
         );
       }
       case ACTION_TYPE.ANALYSIS: {
+        const analysisReport = parsedResult?.analysis_report || result;
         return (
           <div className="seaqa-agent-action-container seaqa-agent-analysis-action-container">
             <div className="seaqa-agent-action-label">{gettext('Analysis')}</div>
-            {result && (
+            {analysisReport && (
               <AIReply
-                message={{ ai_reply: result, sources: Array.isArray(sources) ? sources : [] }}
+                message={{ ai_reply: analysisReport, sources: Array.isArray(sources) ? sources : [] }}
                 projectUuid={projectUuid}
                 projectName={projectName}
               />

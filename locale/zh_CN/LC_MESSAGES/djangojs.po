@@ -3179,6 +3179,10 @@ msgstr "编辑内容..."
 msgid "Handling"
 msgstr "处理中"
 
+#: frontend/src/project/main-panel/agent/components/run-log-details/run-details/run-statistics-dialog/index.js
+msgid "Prelude"
+msgstr "前置准备"
+
 #: frontend/src/project/main-panel/agent/run-logs/thought-process-dialog.js:34
 msgid "Action"
 msgstr "动作"
@@ -6737,4 +6741,3 @@ msgstr "名称不能包含斜杠"
 #: frontend/src/utils/validate/name.js:15
 msgid "Name cannot contain backslash"
 msgstr "名称不能包含反斜杠"
-
