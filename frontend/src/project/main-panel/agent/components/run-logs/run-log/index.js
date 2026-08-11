@@ -29,7 +29,7 @@ const RunLog = ({
       onClick={onClick}
     >
       <div className="seaqa-agent-run-log-header d-flex align-items-center">
-        <div className="seaqa-agent-run-log-resource-icon d-center-middle">
+        <div className="seaqa-agent-run-log-resource-icon d-flex justify-content-center align-items-center h-100 w-100 ">
           <img src={resource.icon} alt="" />
         </div>
         <div className="seaqa-agent-run-log-resource-info">
