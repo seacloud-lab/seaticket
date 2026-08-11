@@ -267,7 +267,7 @@ class SortPopover extends Component {
         <div ref={ref => this.sortPopoverRef = ref} onClick={this.onPopoverInsideClick} style={popoverStyle}>
           <div className={`sorts-list${isEmpty ? ' d-flex align-items-center justify-content-center' : ''}`} >
             {isEmpty ?
-              <div className="seaqa-tip-large">{gettext('No sorts')}</div> :
+              <div className="seaqa-tip-default font-size-14">{gettext('No sorts')}</div> :
               this.renderSortsList()
             }
           </div>

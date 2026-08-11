@@ -59,7 +59,7 @@ const View = ({ CustomView, onCustomViewRowClick, ...props }) => {
   return (
     <div className="sea-metadata-wrapper">
       <div className="sea-metadata-main">
-        {errorMessage ? <div className="d-center-middle seaqa-tip-danger">{errorMessage}</div> : renderView(metadata)}
+        {errorMessage ? <div className="d-flex justify-content-center align-items-center h-100 w-100 text-danger font-size-13">{errorMessage}</div> : renderView(metadata)}
       </div>
     </div>
   );

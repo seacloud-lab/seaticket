@@ -21,7 +21,7 @@ class GroupTrashProjects extends React.Component {
     }
     return (
       <Fragment>
-        <p className="seaqa-seaqa-tip-default">
+        <p className="seaqa-tip-default">
           {gettext('Tip: projects deleted {expireDays} days ago will be cleaned automatically.').replace('{expireDays}', trashCleanExpireDays)}
         </p>
         <table className="trash-projects">
