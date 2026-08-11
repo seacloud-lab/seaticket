@@ -18,6 +18,7 @@ const Tooltip = ({
       hideArrow: true,
       fade: true,
       placement,
+      offset: [0, 4],
       className: classnames('seaqa-tooltip', className, placement, { 'seaqa-tooltip-with-confirm-tip': isShowConfirmTip }),
       ...props
     };
