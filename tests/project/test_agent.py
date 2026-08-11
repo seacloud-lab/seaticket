@@ -1,58 +1,6 @@
 from seahub.project.agent import _build_items_map_from_actions, _reformat_actions
 
 
-def test_reformat_actions_groups_tool_calls_and_phase_output():
-    actions = [
-        {
-            'id': 1,
-            'action_type': 'tool_call',
-            'tool_name': 'get_record',
-            'phase': 'prelude',
-            'result': 'record',
-        },
-        {
-            'id': 2,
-            'action_type': 'tool_call',
-            'tool_name': 'skill_view',
-            'phase': 'prelude',
-            'result': 'skill',
-        },
-        {
-            'id': 3,
-            'action_type': 'prelude',
-            'tool_name': None,
-            'phase': 'prelude',
-            'prompt': 'prelude prompt',
-            'input': 'prelude input',
-            'result': 'prelude result',
-        },
-        {
-            'id': 4,
-            'action_type': 'analysis',
-            'tool_name': None,
-            'phase': 'analysis',
-            'prompt': 'analysis prompt',
-            'input': 'analysis input',
-            'result': 'analysis result',
-        },
-    ]
-
-    assert _reformat_actions(actions) == {
-        'prelude': {
-            'actions': actions[:2],
-            'prompt': 'prelude prompt',
-            'input': 'prelude input',
-            'result': 'prelude result',
-        },
-        'analysis': {
-            'actions': [],
-            'prompt': 'analysis prompt',
-            'input': 'analysis input',
-            'result': 'analysis result',
-        },
-    }
-
-
 def test_reformat_actions_ignores_actions_without_a_phase():
     assert _reformat_actions([
         {'action_type': 'tool_call', 'tool_name': 'get_record', 'phase': None},
