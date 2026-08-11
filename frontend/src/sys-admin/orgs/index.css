@@ -15,7 +15,7 @@
   padding: 0 0.5rem;
   cursor: pointer;
   font-weight: 500;
-  color: #666666;
+  color: var(--bs-sf-grey-text);
 }
 
 .org-toolbar .org-toolbar-item:hover {

@@ -67,7 +67,7 @@
 
 .sea-metadata-table-footer .summary-value .summary-value-title,
 .canvas-groups-rows .summary-value .summary-value-title {
-  color: #666666;
+  color: var(--bs-sf-grey-text);
   flex: none;
 }
 
@@ -85,9 +85,9 @@
 .sea-metadata-table-footer .rows-row .load-all {
   height: 16px;
   line-height: 16px;
-  color: #666;
+  color: var(--bs-sf-grey-text);
   cursor: pointer;
-  border-bottom: 1px solid #666;
+  border-bottom: 1px solid var(--bs-sf-grey-text);
 }
 
 .sea-metadata-table-footer .rows-row .load-all {
@@ -103,7 +103,7 @@
 .sea-metadata-table-footer .loading-message {
   display: inline-flex;
   align-items: center;
-  color: #666;
+  color: var(--bs-sf-grey-text);
 }
 
 .sea-metadata-table-footer .loading-message .loading-icon {

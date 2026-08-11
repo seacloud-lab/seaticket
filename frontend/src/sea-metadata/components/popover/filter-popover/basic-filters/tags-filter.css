@@ -16,7 +16,7 @@
   flex: 0 0 auto;
   width: 10px;
   height: 10px;
-  color: #999;
+  color: var(--bs-icon-secondary-color);
 }
 
 .seaqa-tags-filter .seaqa-tags-filter-remove-tag svg,

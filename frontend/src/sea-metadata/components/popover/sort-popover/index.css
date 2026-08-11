@@ -65,7 +65,7 @@
 }
 
 .sorts-list .delete-sort:hover .seaqa-icon-svg-close {
-  color: #666666;
+  color: var(--bs-sf-grey-text);
 }
 
 .sea-metadata-sort-popover .popover-add-tool {

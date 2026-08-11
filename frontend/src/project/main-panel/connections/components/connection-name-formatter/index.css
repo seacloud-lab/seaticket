@@ -39,5 +39,5 @@
 }
 
 .seaqa-connection-name-formatter .connection-name-wrapper .inactive-icon:hover {
-  color: #999999;
+  color: var(--bs-icon-secondary-color);
 }

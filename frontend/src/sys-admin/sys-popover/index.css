@@ -16,7 +16,7 @@
 
 .sys-filter-popover .sys-filter-item .sys-clear-filter {
   font-weight: normal;
-  color: #666;
+  color: var(--bs-sf-grey-text);
   cursor: pointer;
 }
 

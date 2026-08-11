@@ -43,10 +43,10 @@
 .seaqa-inbox-actions .seaqa-icon-svg {
   width: 14px;
   height: 14px;
-  fill: #666;
+  fill: var(--bs-sf-grey-text);
 }
 
 .seaqa-inbox-actions .mark-all-as-read {
   font-size: 14px;
-  color: #666666;
+  color: var(--bs-sf-grey-text);
 }

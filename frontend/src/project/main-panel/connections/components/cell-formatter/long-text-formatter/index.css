@@ -14,7 +14,7 @@
   display: inline-flex;
   align-items: center;
   background-color: #f0f0f0;
-  color: #666;
+  color: var(--bs-sf-grey-text);
   height: 20px;
   margin: 0 4px !important;
   padding: 0 3px !important;
@@ -51,7 +51,7 @@
   font-style: normal;
   font-size: 12px;
   border-radius: 6px;
-  background-color: #666;
+  background-color: var(--bs-sf-grey-text);
   color: #fff;
   transform: translate(-50%, 9px) scale(0.8);
 }

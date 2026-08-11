@@ -9,7 +9,7 @@ body {
 
 /* Main container styles */
 .profile-settings {
-  background-color: #f7f7f5;
+  background-color: var(--bs-body-third-bg);
   padding: 0 1.5rem;
   padding-left: 12px;
 }
@@ -120,7 +120,7 @@ body {
 /* Form and input styles */
 .input-tip {
   padding-top: calc(0.375rem + 1px);
-  color: #666;
+  color: var(--bs-sf-grey-text);
 }
 
 .language-selector {
@@ -144,12 +144,12 @@ body {
 }
 
 .logged-in-session-table .seaqa-dropdown-more {
-  color: #999;
+  color: var(--bs-icon-secondary-color);
   cursor: pointer;
 }
 
 .logged-in-session-table .seaqa-dropdown-more:hover {
-  color: #666;
+  color: var(--bs-sf-grey-text);
 }
 
 .logged-in-session-table thead tr {

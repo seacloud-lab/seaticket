@@ -1,5 +1,5 @@
 .seaqa-tooltip-shortcut-key {
-  border: 1px solid #999;
+  border: 1px solid var(--bs-icon-secondary-color);
   line-height: 20px;
   font-size: 14px;
   padding: 2px 8px;

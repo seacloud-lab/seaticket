@@ -3,7 +3,7 @@
   overflow: hidden;
   height: 100%;
   display: flex;
-  background: #f7f7f5;
+  background: var(--bs-body-third-bg);
   padding: 8px 8px 8px 0;
 }
 

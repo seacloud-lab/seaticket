@@ -20,11 +20,11 @@
 }
 
 .sea-metadata-cell-op-btn .seaqa-icon-svg {
-  color: #999;
+  color: var(--bs-icon-secondary-color);
   height: 14px;
   width: 14px;
 }
 
 .sea-metadata-cell-op-btn:hover .seaqa-icon-svg {
-  color: #999;
+  color: var(--bs-icon-secondary-color);
 }

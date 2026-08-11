@@ -34,7 +34,7 @@
 }
 
 .seaqa-project-connection-dialog .seaqa-project-new-connection-section-title {
-  color: #666;
+  color: var(--bs-sf-grey-text);
   font-size: 14px;
   line-height: 22px;
 }
@@ -78,11 +78,11 @@
 }
 
 .seaqa-project-connection-dialog .seaqa-project-new-connection-card:hover {
-  background: #f7f7f5;
+  background: var(--bs-body-third-bg);
 }
 
 .seaqa-project-connection-dialog .seaqa-project-new-connection-card.selected {
-  border-color: #ff8000;
+  border-color: var(--bs-sf-orange-light);
 }
 
 .seaqa-project-connection-dialog .seaqa-project-new-connection-card-icon-wrap {
@@ -131,7 +131,7 @@
   align-items: center;
   overflow: hidden;
   padding: 0px 16px;
-  background: #f7f7f5;
+  background: var(--bs-body-third-bg);
   border: none;
   border-radius: 8px;
   cursor: default;
@@ -172,12 +172,12 @@
   font-size: 14px;
   line-height: 22px;
   text-align: center;
-  color: #666666;
+  color: var(--bs-sf-grey-text);
 }
 
 .seaqa-project-connection-help {
   margin: 1rem 0;
-  color: #666666;
+  color: var(--bs-sf-grey-text);
   font-weight: 400;
   font-size: 14px;
   line-height: 22px;
@@ -189,7 +189,7 @@
 
 .seaqa-project-connection-oauth-tip {
   margin-bottom: 8px;
-  color: #666;
+  color: var(--bs-sf-grey-text);
   font-size: 12px;
   line-height: 18px;
 }
@@ -200,7 +200,7 @@
   align-items: center;
   justify-content: center;
   padding: 24px 0 8px;
-  color: #666;
+  color: var(--bs-sf-grey-text);
   font-size: 14px;
 }
 
@@ -209,7 +209,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px;
-  background: #F7F7F5;
+  background: var(--bs-body-third-bg);
   border-radius: 4px;
   padding-left: 16px;
 }
@@ -229,7 +229,7 @@
 }
 
 .seaqa-project-linear-oauth .linear-oauth-status .linear-status-icon svg path {
-  fill: #666;
+  fill: var(--bs-sf-grey-text);
 }
 
 .seaqa-project-linear-oauth .linear-oauth-status.connected .linear-status-icon svg path {
@@ -247,14 +247,14 @@
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  background: #f7f7f5;
+  background: var(--bs-body-third-bg);
   height: 42px;
   border-radius: 4px;
   padding: 0px 8px 0px 16px;
 }
 
 .seaqa-project-connection-oauth-status .oauth-status-badge .seaqa-icon-svg {
-  fill: #666;
+  fill: var(--bs-sf-grey-text);
   width: 14px;
   height: 14px;
   margin-right: 8px;

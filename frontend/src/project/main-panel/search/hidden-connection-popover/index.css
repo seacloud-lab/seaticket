@@ -11,7 +11,7 @@
 .seaqa-hide-popover .empty-hide-container .empty-hide-list {
   padding: 0.25rem 10px;
   font-size: 14px;
-  color: #666666;
+  color: var(--bs-sf-grey-text);
 }
 
 .seaqa-hide-popover .seaqa-hide-container {
@@ -46,7 +46,7 @@
 }
 
 .seaqa-hide-popover .hide-list .hide-list-title {
-  color: #666666;
+  color: var(--bs-sf-grey-text);
   padding: 8px 8px 4px;
 }
 
@@ -164,7 +164,7 @@
   width: 100%;
   position: absolute;
   left: 0;
-  background: #666;
+  background: var(--bs-sf-grey-text);
 }
 
 .seaqa-hide-popover .hide-column-item.hide-column-can-drop::after {

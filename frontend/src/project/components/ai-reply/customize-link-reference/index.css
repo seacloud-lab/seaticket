@@ -6,7 +6,7 @@
   border-radius: 50%;
   border: 1px solid #AFB3BA;
   font-size: 12px;
-  color: #666;
+  color: var(--bs-sf-grey-text);
   background-color: #E5E5E5;
   cursor: pointer;
   margin-left: 4px;

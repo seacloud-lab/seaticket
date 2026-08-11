@@ -41,7 +41,7 @@
 }
 
 .seaqa-row-color-add-btns .customize-add-tool .seaqa-icon-svg {
-  color: #666;
+  color: var(--bs-sf-grey-text);
   height: 14px;
   width: 14px;
   margin-right: 8px;

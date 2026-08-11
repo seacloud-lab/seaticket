@@ -53,7 +53,7 @@
 
 .list-item-content .list-item-path {
   font-size: 13px;
-  color: #666;
+  color: var(--bs-sf-grey-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -62,13 +62,13 @@
 
 .list-item-content .list-item-time {
   font-size: 13px;
-  color: #666;
+  color: var(--bs-sf-grey-text);
   margin-top: 2px;
 }
 
 .list-item-content .list-item-detail {
   font-size: 13px;
-  color: #666;
+  color: var(--bs-sf-grey-text);
   overflow: hidden;
   text-overflow: ellipsis;
   margin-top: 2px;

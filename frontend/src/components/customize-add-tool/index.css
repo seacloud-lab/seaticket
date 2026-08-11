@@ -28,5 +28,5 @@
   margin-right: 8px;
   font-size: 12px;
   font-weight: 600;
-  color: #666;
+  color: var(--bs-sf-grey-text);
 }

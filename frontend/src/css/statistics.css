@@ -46,8 +46,8 @@
 }
 
 .tab-nav-container .nav-link.active {
-  color: #ED7109;
-  border-bottom-color: #ED7109;
+  color: var(--bs-sf-orange);
+  border-bottom-color: var(--bs-sf-orange);
 }
 
 /* Statistic Tabs */

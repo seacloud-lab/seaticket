@@ -10,7 +10,7 @@
   justify-content: center;
   height: 24px;
   overflow: hidden;
-  color: #666;
+  color: var(--bs-sf-grey-text);
 }
 
 .seaqa-ai-thought-process-btn:hover {

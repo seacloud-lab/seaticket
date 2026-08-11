@@ -25,7 +25,7 @@
 }
 
 .seaqa-tooltip.seaqa-tooltip-with-confirm-tip .seaqa-tooltip-confirm-text {
-  color: #999;
+  color: var(--bs-icon-secondary-color);
   font-size: 14px;
   line-height: 22px;
   min-width: 40px;

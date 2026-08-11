@@ -88,5 +88,5 @@
 }
 
 .connection-status-container .timeline .timeline-item .timeline-content .timeline-stats {
-  color: #666;
+  color: var(--bs-sf-grey-text);
 }

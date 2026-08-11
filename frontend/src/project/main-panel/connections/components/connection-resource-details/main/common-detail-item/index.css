@@ -42,5 +42,5 @@
 }
 
 .seaqa-resource-detail-item .author-info-wrapper .author-time {
-  color: #666;
+  color: var(--bs-sf-grey-text);
 }

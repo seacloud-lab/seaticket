@@ -81,7 +81,7 @@
   right: 90px;
   border-left: 1px solid #ccc;
   cursor: pointer;
-  color: #999;
+  color: var(--bs-icon-secondary-color);
   height: 27px;
   width: 28px;
   border-radius: 0;
@@ -95,7 +95,7 @@
 }
 
 .add-members .toggle-detail-btn:hover {
-  color: #666;
+  color: var(--bs-sf-grey-text);
 }
 
 .group-manage-members-dialog .seaqa-icon-svg-return {
@@ -113,7 +113,7 @@
   font-size: 14px;
   font-weight: normal;
   background: #f1f1f1;
-  color: #999;
+  color: var(--bs-icon-secondary-color);
   border: none;
 }
 

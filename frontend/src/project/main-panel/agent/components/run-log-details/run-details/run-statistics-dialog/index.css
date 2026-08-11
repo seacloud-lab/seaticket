@@ -52,7 +52,7 @@
 
 .summary-label {
   font-size: 13px;
-  color: #666;
+  color: var(--bs-sf-grey-text);
 }
 
 .summary-value {
@@ -86,7 +86,7 @@
 }
 
 .run-statistics-table td {
-  color: #666;
+  color: var(--bs-sf-grey-text);
 }
 
 .run-statistics-table tbody tr:hover {

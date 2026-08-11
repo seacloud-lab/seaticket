@@ -26,12 +26,12 @@
 
 .portal-chat-source-toggle.highlighted,
 .portal-chat-source-toggle.highlighted .sf3-font-down {
-  color: #ed7109;
+  color: var(--bs-sf-orange);
 }
 
 .portal-chat-source-toggle.disabled,
 .portal-chat-source-toggle.disabled .sf3-font-down {
-  color: #999;
+  color: var(--bs-icon-secondary-color);
   cursor: not-allowed;
 }
 
@@ -93,7 +93,7 @@
 .portal-chat-source-empty {
   padding: 0.25rem 20px;
   font-size: 14px;
-  color: #666;
+  color: var(--bs-sf-grey-text);
 }
 
 .portal-chat-source-section + .portal-chat-source-section {
@@ -101,7 +101,7 @@
 }
 
 .portal-chat-source-section-title {
-  color: #666;
+  color: var(--bs-sf-grey-text);
   padding: 8px 20px 4px;
 }
 

@@ -2,7 +2,7 @@
   height: 100%;
   user-select: none;
   display: flex;
-  background-color: #F7F7F5;
+  background-color: var(--bs-body-third-bg);
 }
 
 .seaqa-project .seaqa-project-side-panel .seaqa-project-side-panel-header {

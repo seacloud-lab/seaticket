@@ -69,7 +69,7 @@
 }
 
 .portal-home-edit-panel-color-value {
-  color: #666666;
+  color: var(--bs-sf-grey-text);
   font-size: 13px;
 }
 
@@ -100,7 +100,7 @@
 }
 
 .portal-home-edit-panel-image-tip {
-  color: #666666;
+  color: var(--bs-sf-grey-text);
   font-size: 12px;
   line-height: 1.5;
 }
@@ -114,7 +114,7 @@
   height: 38px;
   width: 100%;
   background-color: #f0f0f0;
-  color: #666666;
+  color: var(--bs-sf-grey-text);
   display: flex;
   align-items: center;
   padding: 0 16px;
@@ -127,7 +127,7 @@
 
 .theme-background-upload-image:hover {
   background-color: #dbdbdb;
-  color: #666666;
+  color: var(--bs-sf-grey-text);
   cursor: pointer;
 }
 
@@ -136,7 +136,7 @@
 }
 
 .theme-background-image-tip {
-  color: #666;
+  color: var(--bs-sf-grey-text);
   font-size: 12px;
   margin-top: 8px;
 }

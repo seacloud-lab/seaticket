@@ -12,7 +12,7 @@
 .option-editor-empty-tip .empty-tip-text {
   margin-top: 0;
   line-height: 20px;
-  color: #666;
+  color: var(--bs-sf-grey-text);
   font-size: 14px;
 }
 

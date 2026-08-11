@@ -6,12 +6,12 @@
 
 .group-invite-members .no-link-tip {
   line-height: 24px;
-  color: #666;
+  color: var(--bs-sf-grey-text);
 }
 
 .group-invite-members .input-group .btn:hover,
 .group-invite-members .input-group .btn {
-  color: #666;
+  color: var(--bs-sf-grey-text);
 }
 
 .group-invite-members .input-group .btn:hover {

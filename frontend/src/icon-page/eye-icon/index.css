@@ -3,7 +3,7 @@
   top: 10px;
   right: 10px;
   cursor: pointer;
-  color: #999;
+  color: var(--bs-icon-secondary-color);
   height: 16px;
   width: 16px;
   display: flex;
@@ -11,7 +11,7 @@
 }
 
 .password-toggle:hover {
-  color: #666;
+  color: var(--bs-sf-grey-text);
 }
 
 .password-toggle .seaqa-icon-svg-eye {

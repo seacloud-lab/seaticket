@@ -7,7 +7,7 @@
 }
 
 .seaqa-settings-item .link-settings-content .link-item {
-  background-color: #f7f7f5;
+  background-color: var(--bs-body-third-bg);
   height: 32px;
   gap: 8px;
   padding: 0px 8px;

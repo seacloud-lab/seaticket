@@ -38,7 +38,7 @@
   position: absolute;
   border: none;
   color: #FFFFFF;
-  background: #FF8000;
+  background: var(--bs-sf-orange-light);
   display: inline-flex;
   align-items: center;
   justify-content: center;

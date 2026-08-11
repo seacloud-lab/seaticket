@@ -7,7 +7,7 @@
 }
 
 .header-more-operation i {
-  color: #666;
+  color: var(--bs-sf-grey-text);
   cursor: pointer;
   font-size: 12px;
 }

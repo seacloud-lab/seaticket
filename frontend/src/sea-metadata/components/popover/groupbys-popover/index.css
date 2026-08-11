@@ -103,7 +103,7 @@
 }
 
 .sea-metadata-groupbys-popover .groupby-drag .seaqa-icon-svg-drag {
-  color: #999;
+  color: var(--bs-icon-secondary-color);
 }
 
 .sea-metadata-groupbys-popover .popover-add-tool {

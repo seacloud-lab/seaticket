@@ -51,7 +51,7 @@
 }
 
 .seaqa-customize-table .seaqa-customize-table-row.seaqa-customize-table-row-title .seaqa-customize-table-cell {
-  color: #666;
+  color: var(--bs-sf-grey-text);
   font-size: 13px;
   line-height: 20px;
   padding: 10px 0 6px;

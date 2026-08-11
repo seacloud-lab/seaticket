@@ -25,7 +25,7 @@
   justify-content: space-between;
   gap: 8px;
   border-bottom: 1px solid #EAEAEA;
-  background-color: #F7F7F5;
+  background-color: var(--bs-body-third-bg);
 }
 
 .seaqa-ai-chat-customize-link .seaqa-ai-chat-customize-link-header .seaqa-ai-chat-customize-link-name {

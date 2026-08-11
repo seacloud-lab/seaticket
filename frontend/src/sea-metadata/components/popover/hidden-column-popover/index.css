@@ -117,7 +117,7 @@
   width: 100%;
   position: absolute;
   left: 0;
-  background: #666;
+  background: var(--bs-sf-grey-text);
 }
 
 .seaqa-hide-columns-popover .hide-column-item.hide-column-can-drop::after {

@@ -15,7 +15,7 @@
 .prompt-settings-option-body .prompt-preview {
   flex: 1;
   font-size: 14px;
-  color: #666;
+  color: var(--bs-sf-grey-text);
   line-height: 1.5;
   word-break: break-word;
 }

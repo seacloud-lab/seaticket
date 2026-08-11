@@ -47,7 +47,7 @@
 }
 
 .legend-count {
-  color: #999;
+  color: var(--bs-icon-secondary-color);
   font-size: 11px;
   flex-shrink: 0;
 }

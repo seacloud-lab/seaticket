@@ -39,6 +39,6 @@
 }
 
 .paginator-dropdown>.btn .seaqa-icon-svg {
-  color: #999;
+  color: var(--bs-icon-secondary-color);
   font-weight: 400;
 }

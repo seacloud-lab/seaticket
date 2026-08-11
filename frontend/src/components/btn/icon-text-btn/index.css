@@ -1,7 +1,7 @@
 .seaqa-icon-text-btn {
   display: inline-flex;
   align-items: center;
-  color: #ED7109;
+  color: var(--bs-sf-orange);
   font-weight: 400;
   height: 32px;
   line-height: 32px;

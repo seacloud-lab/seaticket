@@ -6,5 +6,5 @@
 }
 
 .sea-metadata-row-header-cell .sea-metadata-table-cell.insert-column:hover .seaqa-icon-svg {
-  fill: #666;
+  fill: var(--bs-sf-grey-text);
 }

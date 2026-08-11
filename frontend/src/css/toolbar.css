@@ -109,7 +109,7 @@
 }
 
 .path-toolbar .toolbar-item a:hover {
-  color: #ED7109;
+  color: var(--bs-sf-orange);
   text-decoration: none;
 }
 /* end path toolbar */

@@ -82,7 +82,7 @@ dl {
 }
 
 dt {
-  color: #666;
+  color: var(--bs-sf-grey-text);
   margin: 24px 0 2px;
   font-weight: normal;
 }
@@ -93,7 +93,7 @@ dd {
 }
 
 a {
-  color: #ED7109;
+  color: var(--bs-sf-orange);
   text-decoration: none;
   font-weight: bold;
 }
@@ -104,7 +104,7 @@ a.normal {
 
 a:focus,
 a:hover {
-  color: #ED7109;
+  color: var(--bs-sf-orange);
 }
 
 img {
@@ -231,7 +231,7 @@ caption {
 th {
   text-align: left;
   font-weight: normal;
-  color: #666;
+  color: var(--bs-sf-grey-text);
 }
 
 th,
@@ -299,7 +299,7 @@ table img {
 }
 
 .tip {
-  color: #666;
+  color: var(--bs-sf-grey-text);
   font-size: 12px;
 }
 
@@ -471,7 +471,7 @@ input.short-input {
   .account-toggle {
     font-size: 18px;
     line-height: 1;
-    color: #999;
+    color: var(--bs-icon-secondary-color);
     margin-top: 8px;
   }
 }
@@ -641,7 +641,7 @@ input.short-input {
 }
 
 .login-panel-wrapper .login-form-wrapper .form-item-input:focus {
-  border-color: #FF8000;
+  border-color: var(--bs-sf-orange-light);
 }
 
 .login-panel-wrapper .forgot-passwd {
@@ -722,7 +722,7 @@ input.short-input {
 }
 
 .multi-saml-sso-panel-wrapper .login-form-wrapper .form-item-input:focus {
-  border-color: #FF8000;
+  border-color: var(--bs-sf-orange-light);
 }
 
 .multi-saml-sso-panel-wrapper .login-panel-bottom-container {
@@ -797,7 +797,7 @@ input.short-input {
 }
 
 .password-reset-panel-wrapper .login-form-wrapper .form-item-input:focus {
-  border-color: #FF8000;
+  border-color: var(--bs-sf-orange-light);
 }
 
 .password-reset-panel-wrapper .login-form-wrapper .turnstile-wrapper,
@@ -883,7 +883,7 @@ input.short-input {
 }
 
 .org-register-panel-wrapper .login-form-wrapper .form-item-input:focus {
-  border-color: #FF8000;
+  border-color: var(--bs-sf-orange-light);
 }
 
 .org-register-panel-wrapper .login-form-wrapper .position-relative .form-item-input {
@@ -964,7 +964,7 @@ input.short-input {
 }
 
 .individual-register-panel-wrapper .login-form-wrapper .form-item-input:focus {
-  border-color: #FF8000;
+  border-color: var(--bs-sf-orange-light);
 }
 
 .individual-register-panel-wrapper .login-form-wrapper .position-relative .form-item-input {
@@ -1137,7 +1137,7 @@ input.short-input {
 }
 
 .portal-login-panel-wrapper .login-form-wrapper .form-item-input:focus {
-  border-color: #FF8000;
+  border-color: var(--bs-sf-orange-light);
 }
 
 .portal-login-panel-wrapper .login-form-wrapper .prompt-text {
@@ -1305,7 +1305,7 @@ input.short-input {
 
 .popover.registration-form-popover .popover-content {
   padding-top: 8px;
-  color: #666;
+  color: var(--bs-sf-grey-text);
   font-size: 12px;
 }
 
@@ -1713,11 +1713,11 @@ a.sf-popover-item {
 }
 
 .page-form-panel .password-icon {
-  color: #999;
+  color: var(--bs-icon-secondary-color);
 }
 
 .page-form-panel .password-icon:hover {
-  color: #666;
+  color: var(--bs-sf-grey-text);
 }
 
 .page-form-panel .form-foot {

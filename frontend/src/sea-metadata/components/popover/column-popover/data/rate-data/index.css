@@ -16,7 +16,7 @@
 }
 
 .sea-metadata-rate-column-data-settings .seaqa-customize-select .seaqa-icon-svg-arrow-down {
-  color: #999;
+  color: var(--bs-icon-secondary-color);
 }
 
 .sea-metadata-rate-column-data-settings .seaqa-customize-select .seaqa-icon-svg-arrow-down:hover {

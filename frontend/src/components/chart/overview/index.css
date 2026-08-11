@@ -53,11 +53,11 @@
 }
 
 .overview-chart-header .credit-header-item.current .icon .seaqa-icon-svg {
-  fill: #ff8000;
+  fill: var(--bs-sf-orange-light);
 }
 
 .overview-chart-header .credit-header-item.current .value {
-  color: #ff8000;
+  color: var(--bs-sf-orange-light);
 }
 
 .overview-chart-header .credit-header-item.last {
