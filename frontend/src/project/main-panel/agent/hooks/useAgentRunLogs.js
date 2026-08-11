@@ -12,6 +12,13 @@ export const useAgentRunLogs = () => {
 
   const pageRef = useRef(1);
 
+  const updateRunLog = useCallback((source_id, source_type, update) => {
+    setRunLogs(runLogs => runLogs.map(runLog => {
+      if (runLog.source_id === source_id && runLog.source_type === source_type) return { ...runLog, ...update };
+      return runLog;
+    }));
+  }, []);
+
   const loadRunLogs = useCallback((pageNum = 1) => {
     setIsLoading(true);
     agentAPI.listAgentLogs(projectUuid, pageNum).then(res => {
@@ -49,5 +56,6 @@ export const useAgentRunLogs = () => {
     hasMore,
     loadMore,
     refresh,
+    updateRunLog,
   };
 };

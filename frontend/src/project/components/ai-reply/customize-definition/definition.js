@@ -62,7 +62,7 @@ const Definition = ({ element, attributes, editor, openDefinitionRecord, onClick
             </div>
           )}
         </div>
-        <div className="seaqa-ai-chat-customize-definition-order">{identifier}</div>
+        <div className="seaqa-ai-chat-customize-link-reference">{identifier}</div>
       </div>
     </div>
   );

@@ -13,6 +13,11 @@
   cursor: pointer;
 }
 
+.sf-slate-viewer-container p:has(+ .seaqa-ai-chat-customize-definition) {
+  margin-bottom: 0 !important;
+}
+
+.sf-slate-viewer-container p + .seaqa-ai-chat-customize-definition,
 .sf-slate-viewer-container ol + .seaqa-ai-chat-customize-definition,
 .sf-slate-viewer-container ul + .seaqa-ai-chat-customize-definition,
 .sf-slate-viewer-container div:has(> table) + .seaqa-ai-chat-customize-definition {
@@ -21,20 +26,6 @@
 
 .seaqa-ai-chat-customize-definition:hover {
   background-color: #f0f0f0;
-}
-
-.seaqa-ai-chat-customize-definition .seaqa-ai-chat-customize-definition-order {
-  height: 16px;
-  width: 16px;
-  line-height: 16px;
-  display: inline-block;
-  text-align: center;
-  border-radius: 50%;
-  font-size: 12px;
-  background-color: var(--bs-th-fifth-bg);
-  flex-shrink: 0;
-  color: var(--bs-body-secondary-color);
-  margin-left: 6px;
 }
 
 .seaqa-ai-chat-customize-definition .seaqa-ai-chat-customize-definition-simple-info {

@@ -18,6 +18,7 @@ const Agent = ({ title, settings, modifySettings }) => {
     hasMore,
     loadMore,
     refresh,
+    updateRunLog,
   } = useAgentRunLogs();
 
   const enabledAgent = useMemo(() => settings?.agent.enabled, [settings?.agent]);
@@ -43,18 +44,17 @@ const Agent = ({ title, settings, modifySettings }) => {
         )}
         {runLogs.length > 0 && (
           <>
-            {isShowLogs && (
-              <RunLogs
-                runLogs={runLogs}
-                isLoading={isRunLogsLoading}
-                hasMore={hasMore}
-                loadMore={loadMore}
-                reload={refresh}
-                activeLogIndex={activeLogIndex}
-                setActiveLogIndex={setActiveLogIndex}
-                hideLogs={() => setIsShowLogs(false)}
-              />
-            )}
+            <RunLogs
+              isShowLogs={isShowLogs}
+              runLogs={runLogs}
+              isLoading={isRunLogsLoading}
+              hasMore={hasMore}
+              loadMore={loadMore}
+              reload={refresh}
+              activeLogIndex={activeLogIndex}
+              setActiveLogIndex={setActiveLogIndex}
+              hideLogs={() => setIsShowLogs(false)}
+            />
             <RunLogDetails
               isShowLogs={isShowLogs}
               showLogs={() => setIsShowLogs(true)}
@@ -62,6 +62,7 @@ const Agent = ({ title, settings, modifySettings }) => {
               runLog={runLogs[activeLogIndex]}
               settings={settings}
               modifySettings={modifySettings}
+              updateRunLog={updateRunLog}
             />
           </>
         )}

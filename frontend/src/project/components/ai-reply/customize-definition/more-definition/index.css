@@ -10,17 +10,12 @@
 }
 
 .seaqa-ai-chat-customize-definitions-popover .popover {
-  background-color: #fff;
-  border: 1px solid #0028641f;
-  border-radius: 3px;
-  box-shadow: 0 0 5px #ccc;
   left: 0;
   min-height: 160px;
   position: absolute;
   width: fit-content;
   max-width: fit-content;
   z-index: 9999;
-  border-radius: 4px !important;
 }
 
 .seaqa-ai-chat-customize-definitions-popover .seaqa-ai-chat-customize-definitions-container {

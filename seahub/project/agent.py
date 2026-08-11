@@ -217,16 +217,128 @@ def list_agent_logs(seadb_api, project_uuid, page=1, per_page=20):
     if has_more:
         logs = logs[:per_page]
 
+    logs = [{
+        'source_id': log.get(f'{actions_table}.source_id', ''),
+        'source_type': log.get(f'{actions_table}.source_type', ''),
+        'source_title': log.get(f'{actions_table}.source_title', ''),
+        'num_of_runs': log.get('num_of_runs', 0),
+        'last_active_at': log.get('last_active_at'),
+        'status': '',
+    } for log in logs]
+
+    _get_agent_log_status(seadb_api, project_uuid, logs)
+
     return {
-        'logs': [{
-            'source_id': log.get(f'{actions_table}.source_id', ''),
-            'source_type': log.get(f'{actions_table}.source_type', ''),
-            'source_title': log.get(f'{actions_table}.source_title', ''),
-            'num_of_runs': log.get('num_of_runs', 0),
-            'last_active_at': log.get('last_active_at'),
-        } for log in logs],
+        'logs': logs,
         'has_more': has_more,
     }
+
+
+def _get_agent_log_status(seadb_api, project_uuid, logs):
+    actions_table = SchemaTables.AGENT_ACTIONS.table_name()
+    runs_table = SchemaTables.AGENT_RUNS.table_name()
+
+    def _gen_filter_info(source_id, source_type, source_title):
+        if source_title:
+            filter = "(`source_id` = ? AND `source_type` = ? AND `source_title` = ?)"
+            params = [source_id, source_type, source_title]
+            return filter, params
+        filter = (
+            "(`source_id` = ? AND `source_type` = ? "
+            "AND (`source_title` IS NULL OR `source_title` = ''))"
+        )
+        params = [source_id, source_type]
+        return filter, params
+
+    actions_filters = []
+    actions_params = []
+
+    for log in logs:
+        source_id = log.get('source_id', '')
+        source_type = log.get('source_type', '')
+        source_title = log.get('source_title')
+        action_filter, action_params = _gen_filter_info(source_id, source_type, source_title)
+        actions_filters.append(action_filter)
+        actions_params.extend(action_params)
+
+    actions_sql = (
+        "SELECT `_pk`, `run_id`, `action_type`, `status`, `source_id`, `source_type`, `source_title` "
+        f"FROM `{actions_table}` WHERE {' OR '.join(actions_filters)} LIMIT 0, 10000"
+    )
+
+    actions_res = seadb_api.query_rows(project_uuid, actions_sql, params=actions_params)
+    actions = actions_res.get('results', [])
+
+    if not actions:
+        return
+
+    run_ids_by_log = {}
+    actions_by_log = {}
+    for action in actions:
+        run_id = action.get('run_id')
+        if run_id is None:
+            continue
+        run_id = int(run_id)
+        log_key = (
+            action.get('source_id', ''),
+            action.get('source_type', ''),
+            action.get('source_title'),
+        )
+        run_ids_by_log.setdefault(log_key, set()).add(run_id)
+        actions_by_log.setdefault(log_key, []).append(action)
+
+    run_ids = sorted({run_id for run_ids in run_ids_by_log.values() for run_id in run_ids})
+    if not run_ids:
+        return
+
+    run_ids_str = ','.join(str(run_id) for run_id in run_ids)
+    runs_status_sql = (
+        "SELECT `_pk`, `status` "
+        f"FROM `{runs_table}` WHERE `_pk` IN ({run_ids_str}) LIMIT 0, {len(run_ids)}"
+    )
+    runs_status_result = seadb_api.query_rows(project_uuid, runs_status_sql)
+    runs_status = runs_status_result.get('results', [])
+    runs_status_by_id = {}
+    for run_status in runs_status:
+        run_id = run_status.get('_pk', 0)
+        runs_status_by_id[str(run_id)] = run_status.get('status')
+
+    for log in logs:
+        log_key = (
+            log.get('source_id', ''),
+            log.get('source_type', ''),
+            log.get('source_title'),
+        )
+        actions = actions_by_log.get(log_key, [])
+        run_ids = run_ids_by_log.get(log_key, set())
+        if not actions or not run_ids:
+            log['status'] = ''
+            continue
+
+        run_status = [runs_status_by_id.get(str(run_id)) for run_id in run_ids]
+        all_completed = all(status == 'completed' for status in run_status)
+        if all_completed:
+            status = []
+            has_pending = any(action.get('status', '') in ('pending', 'executing') for action in actions)
+            has_failed = any(action.get('status', '') == 'failed' for action in actions)
+            has_suggestion = any(action.get('action_type', '') == 'suggestion' for action in actions)
+            if has_pending or has_failed:
+                status = []
+            else:
+                if has_suggestion and 'done' not in status:
+                    status.append('done')
+                elif not has_suggestion and 'no_action_needed' not in status:
+                    status.append('no_action_needed')
+
+            if status:
+                if all(item == 'done' for item in status):
+                    log['status'] = 'done'
+                elif all(item == 'no_action_needed' for item in status):
+                    log['status'] = 'no_action_needed'
+                elif all(item in ('done', 'no_action_needed') for item in status):
+                    log['status'] = 'done'
+        else:
+            log['status'] = ''
 
 
 def get_agent_log_runs(seadb_api, project_uuid, source_id, source_type):

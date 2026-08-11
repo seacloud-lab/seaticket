@@ -1,11 +1,15 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import classnames from 'classnames';
+import copy from 'copy-to-clipboard';
 import { gettext } from '@/constants';
 import { ACTION_STATUS, SUGGESTION_TOOL_NAME_MAP } from '../../../../../constants';
-import { Icon, IconTooltip, IconPopoverTip, IconButton, SecondaryBtn } from '@/components';
+import { Icon, IconTooltip, IconPopoverTip, IconButton, SecondaryBtn, toaster } from '@/components';
 import SuggestionPreview from './suggestion-preview';
 import { parseSuggestionActionResult, getAgentResource } from '../../../../../utils';
 import RunLogTitle from '../../../../resource-title';
+import { TICKET_STATE_CONFIG, TICKET_STATE, TICKET } from '@/project/main-panel/tickets/constants';
+import { getRowById } from '@/sea-metadata/utils/row';
+import { useMetadata } from '@/project/hooks';
 
 import './index.css';
 
@@ -29,6 +33,7 @@ const SuggestionAction = ({
   } = action;
 
   const resource = useMemo(() => getAgentResource(action), [action]);
+  const { typesData } = useMetadata();
 
   const handleConfirm = useCallback((e) => {
     e.stopPropagation();
@@ -50,6 +55,29 @@ const SuggestionAction = ({
     e.stopPropagation();
     onViewContent && onViewContent(runId, id, 'edit');
   }, [runId, id, onViewContent]);
+
+  const handleCopy = useCallback(() => {
+    let copiedContent = suggestion_content;
+    if (tool_name === 'suggest_create_ticket') {
+      let ticket = {};
+      try {
+        const valueObject = JSON.parse(suggestion_content);
+        ticket = { ...TICKET, ...valueObject };
+      } catch {
+        ticket = TICKET;
+      }
+      const { title, content, priority, type, state } = ticket;
+      const stateInfo = TICKET_STATE_CONFIG[state] || TICKET_STATE_CONFIG[TICKET_STATE.OPEN];
+      const typeOption = getRowById(typesData, type);
+      copiedContent = `# ${gettext('Title')}\n${title}\n`;
+      copiedContent += `# ${gettext('Content')}\n${content}\n`;
+      copiedContent += `# ${gettext('State')}\n${stateInfo?.statusName}\n`;
+      copiedContent += `# ${gettext('Type')}\n${typeOption?.display_name || typeOption?.name || ''}\n`;
+      copiedContent += `# ${gettext('Priority')}\n${priority || 0}`;
+    }
+    copy(copiedContent);
+    toaster.success(gettext('The content has been copied'));
+  }, [tool_name, suggestion_content, typesData]);
 
   const handleViewDetails = useCallback((e) => {
     e.stopPropagation();
@@ -193,7 +221,16 @@ const SuggestionAction = ({
                   onClick={handleEditContent}
                 />
               )}
-              {hasContent && (
+              <IconTooltip
+                icon="copy"
+                tip={gettext('Copy')}
+                className="m-0"
+                placement="bottom"
+                hoverBackground={true}
+                size={{ btn: 24, icon: 16 }}
+                onClick={handleCopy}
+              />
+              {hasContent && !canEdit && (
                 <IconTooltip
                   icon="view-issue"
                   tip={gettext('Details')}

@@ -81,9 +81,9 @@ const ActionItem = React.memo(({ action, ...props }) => {
     return (
       <IconButton
         icon={icon}
-        className="no-hover-bg"
+        className="no-hover-bg seaqa-agent-action-icon-btn"
         iconClassName={type === ACTION_TYPE.ERROR ? 'text-danger' : ''}
-        size={{ btn: 22 }}
+        size={{ icon: 14 }}
       />
     );
   }, [type]);
