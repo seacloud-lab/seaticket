@@ -26,8 +26,9 @@ from seahub.api2.utils import api_error, get_user_common_info
 from seahub.project.models import Projects
 from seahub.project.utils import replace_file_url_in_content, get_current_table_metadata, check_project_admin_permission, \
     check_project_permission, check_ticket_permission, check_comment_permission
-from seahub.utils.storage import upload_portal_files_to_s3, delete_record_attachments_from_s3, delete_file_from_s3, \
-    upload_portal_logo_file_to_s3, gen_portal_logo_file_path, get_project_file_from_s3, get_project_file_head_from_s3
+from seahub.utils.storage import FileNotFound, upload_portal_files_to_s3, delete_record_attachments_from_s3, delete_file_from_s3, \
+    upload_portal_logo_file_to_s3, gen_portal_logo_file_path, upload_portal_background_image_file_to_s3, \
+    gen_portal_background_image_file_path, get_project_file_from_s3, get_project_file_head_from_s3
 from seahub.utils.hasher import AESPasswordHasher
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
@@ -151,6 +152,63 @@ class PortalLogoView(APIView):
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        return Response({'file_url': file_url}, status=status.HTTP_201_CREATED)
+
+
+class PortalBackgroundImageView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    def initialize_request(self, request, *args, **kwargs):
+        if request.method == 'GET':
+            self.authentication_classes = ()
+            self.permission_classes = ()
+            self.throttle_classes = ()
+        return super().initialize_request(request, *args, **kwargs)
+
+    def get(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
+
+        file_path = gen_portal_background_image_file_path()
+        try:
+            metadata = get_project_file_head_from_s3(project_uuid, file_path)
+            file = get_project_file_from_s3(project_uuid, file_path)
+        except FileNotFound:
+            return api_error(status.HTTP_404_NOT_FOUND, 'File not found.')
+        except Exception as e:
+            logger.error(e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        response = FileResponse(file, content_type=metadata.get('ContentType') or 'application/octet-stream')
+        response['Cache-Control'] = 'public, max-age=86400, immutable'
+        return response
+
+    @require_org_context
+    def post(self, request, project_uuid):
+        file = request.FILES.get('file')
+        if not file:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'file not found.')
+
+        if file.size > AVATAR_MAX_SIZE * 5:
+            error_msg = _("Your file is too big (%(size)s), the maximum allowed size is %(max_valid_size)s") % { 'size' : filesizeformat(file.size), 'max_valid_size' : filesizeformat(AVATAR_MAX_SIZE * 5)}
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
+
+        if not check_project_admin_permission(request.user.username, project.workspace.owner):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        try:
+            file_url = upload_portal_background_image_file_to_s3(project_uuid, file)
+        except Exception as e:
+            logger.error(e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
         return Response({'file_url': file_url}, status=status.HTTP_201_CREATED)
 
@@ -1481,6 +1539,7 @@ class PortalSettingsView(APIView):
             project_settings = {}
 
         portal_settings = project_settings.get('portal', {})
+        old_home_settings = portal_settings.get('portal_home_settings', {})
         portal_settings.update(bool_updates)
 
         if chat_allowed_sources is not None:
@@ -1511,6 +1570,20 @@ class PortalSettingsView(APIView):
                 delete_file_from_s3(project_uuid, gen_portal_logo_file_path())
             except Exception as e:
                 logger.error(e)
+
+        if portal_home_settings is not None:
+            old_hero_section = old_home_settings.get('portal_home_hero_section', {}) if isinstance(old_home_settings, dict) else {}
+            new_hero_section = portal_home_settings.get('portal_home_hero_section', {})
+            old_background_image_url = old_hero_section.get('theme_background_image_URL', '') if isinstance(old_hero_section, dict) else ''
+            new_background_image_url = new_hero_section.get('theme_background_image_URL', '') if isinstance(new_hero_section, dict) else ''
+            background_image_url_prefix = f'/api/v1/portal/{project_uuid}/background-image/'
+            old_background_image_is_persistent = isinstance(old_background_image_url, str) and old_background_image_url.startswith(background_image_url_prefix)
+            new_background_image_is_persistent = isinstance(new_background_image_url, str) and new_background_image_url.startswith(background_image_url_prefix)
+            if old_background_image_is_persistent and not new_background_image_is_persistent:
+                try:
+                    delete_file_from_s3(project_uuid, gen_portal_background_image_file_path())
+                except Exception as e:
+                    logger.error(e)
 
         return Response({'success': True})
 

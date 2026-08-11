@@ -11,6 +11,7 @@ from seahub.utils import uuid_str_to_32_chars, uuid_str_to_36_chars
 
 logger = logging.getLogger(__name__)
 PORTAL_LOGO_OBJECT_NAME = 'logo'
+PORTAL_BACKGROUND_IMAGE_OBJECT_NAME = 'background-image'
 
 
 def if_none_match_hit(request, etag):
@@ -48,6 +49,10 @@ def gen_s3_connection_file_path(project_uuid, connection_id, filename):
 
 def gen_portal_logo_file_path(filename=PORTAL_LOGO_OBJECT_NAME):
     return f'attachments/portal-logo/{filename}'
+
+
+def gen_portal_background_image_file_path(filename=PORTAL_BACKGROUND_IMAGE_OBJECT_NAME):
+    return f'attachments/portal-background-image/{filename}'
 
 def gen_tmp_upload_file_path(project_uuid, file_path):
     s3_file_path = gen_s3_project_file_path(project_uuid, file_path)
@@ -158,6 +163,34 @@ def upload_portal_logo_file_to_s3(project_uuid, file):
                 logger.error(f"Failed to remove temp file: {e}")
 
     return f'/api/v1/portal/{project_uuid}/logo/?v={version}'
+
+
+def upload_portal_background_image_file_to_s3(project_uuid, file):
+    final_file_path = gen_portal_background_image_file_path()
+    s3_file_path = gen_s3_project_file_path(project_uuid, final_file_path)
+    content_type = getattr(file, 'content_type', None) or 'application/octet-stream'
+    version = int(datetime.now(timezone.utc).timestamp())
+
+    file_path = datetime.now(timezone.utc).strftime('%Y-%m') + '/' + PORTAL_BACKGROUND_IMAGE_OBJECT_NAME
+    tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, file_path)
+    try:
+        with open(tmp_upload_file_path, 'wb') as fd:
+            fd.write(file.read())
+
+        s3_client.upload_file(
+            tmp_upload_file_path,
+            S3_FILE_BUCKET,
+            s3_file_path,
+            ExtraArgs={'ContentType': content_type}
+        )
+    finally:
+        if os.path.exists(tmp_upload_file_path):
+            try:
+                os.remove(tmp_upload_file_path)
+            except Exception as e:
+                logger.error(f"Failed to remove temp file: {e}")
+
+    return f'/api/v1/portal/{project_uuid}/background-image/?v={version}'
 
 
 def check_file_exists_from_s3(s3_file_path):

@@ -6,7 +6,7 @@ from seahub.portal.views import portal_anonymous_validate, portal_external_invit
     portal_accounts_login_view, portal_login_view, portal_preview_view, portal_view
 from seahub.portal.apis import PortalCustomDomainTLSAskView, PortalExternalLoginSendCodeView, PortalExternalLoginVerifyCodeView, \
     PortalIssueCommentView, PortalIssueCommentsView, PortalIssueMetadataView, PortalIssueView, PortalIssuesView, PortalKnowledgeBaseRecordView, \
-    PortalKnowledgeBaseRecordsView, PortalKnowledgeBaseViewsView, PortalLogoView, PortalMyIssuesView, PortalTagsView, PortalUserListView
+    PortalKnowledgeBaseRecordsView, PortalKnowledgeBaseViewsView, PortalLogoView, PortalBackgroundImageView, PortalMyIssuesView, PortalTagsView, PortalUserListView
 
 from seahub.portal.chat.apis import PortalChatMessagesView, PortalChatSessionTitleView, PortalChatSessionsView, PortalChatSessionView, \
     PortalChatView, PortalChatImageView
@@ -45,6 +45,7 @@ urlpatterns = [
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/external-login/send-code/$', PortalExternalLoginSendCodeView.as_view(), name='api-v1-portal-external-login-send-code'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/external-login/verify/$', PortalExternalLoginVerifyCodeView.as_view(), name='api-v1-portal-external-login-verify'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/logo/$', PortalLogoView.as_view(), name='api-v1-portal-logo'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/background-image/$', PortalBackgroundImageView.as_view(), name='api-v1-portal-background-image'),
     re_path(r'^internal/portal/custom-domain/allow-tls$', PortalCustomDomainTLSAskView.as_view(), name='internal-portal-custom-domain-allow-tls'),
 
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/upload-file/$', PortalUploadFileView.as_view(), name='api-v1-portal-upload-file'),
