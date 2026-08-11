@@ -199,7 +199,7 @@ class AgentActionExecutor:
             )
         if tool_name == 'suggest_assign_labels':
             return self._execute_github_suggest_assign_labels(
-                seadb_api, project_uuid, source_id, suggestion_text
+                seadb_api, project_uuid, source_id, suggestion_content, suggestion_text
             )
         if tool_name == 'suggest_create_ticket':
             return self._execute_github_create_ticket(seadb_api, project, project_uuid, source_id, suggestion_content, operator, request=request, auto_executed=auto_executed)
@@ -530,6 +530,16 @@ class AgentActionExecutor:
             normalized.append(name)
         return normalized
 
+    @classmethod
+    def _parse_suggested_label_content(cls, suggestion_content):
+        try:
+            labels = json.loads(suggestion_content)
+        except (TypeError, ValueError):
+            return []
+        if not isinstance(labels, list):
+            return []
+        return cls._normalize_issue_labels(labels)
+
     @staticmethod
     def _normalize_issue_labels(raw_labels):
         if isinstance(raw_labels, list):
@@ -577,16 +587,21 @@ class AgentActionExecutor:
                 filtered.append(canonical)
         return filtered
 
-    def _execute_github_suggest_assign_labels(self, seadb_api, project_uuid, source_id, suggestion_text=''):
+    def _execute_github_suggest_assign_labels(
+        self, seadb_api, project_uuid, source_id, suggestion_content='', suggestion_text=''
+    ):
         ctx = self._get_github_issue_context(seadb_api, project_uuid, source_id)
         if not ctx:
             return self._failed_execution(f'Failed to get GitHub issue context for {source_id}.')
 
-        labels = self._parse_suggested_labels(suggestion_text)
+        labels = self._parse_suggested_label_content(suggestion_content)
+        if not labels:
+            labels = self._parse_suggested_labels(suggestion_text)
         if not labels:
             logger.error(
-                'Cannot parse suggested labels from suggestion_text for GitHub issue %s: %r',
+                'Cannot parse suggested labels for GitHub issue %s from suggestion_content %r or suggestion_text %r',
                 ctx['record_id'],
+                suggestion_content,
                 suggestion_text,
             )
             return self._failed_execution(f'Cannot determine suggested labels for GitHub issue {ctx["record_id"]}.')
