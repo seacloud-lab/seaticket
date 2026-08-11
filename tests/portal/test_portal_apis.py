@@ -417,6 +417,19 @@ class TestPortalSettingsView:
 
         assert resp.status_code == 400
 
+    def test_post_invalid_portal_home_hero_section(self, factory, project_creator, real_project):
+        project = real_project
+        request = factory.post(
+            f"/api/v1/portal/{project.uuid}/settings/",
+            data={'portal_home_settings': json.dumps({'portal_home_hero_section': []})},
+            format='json'
+        )
+        request.user = project_creator
+
+        resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 400
+
     def test_post_password_too_short(self, factory, project_creator, real_project):
         project = real_project
         request = factory.post(
@@ -551,7 +564,7 @@ class TestPortalSettingsView:
         settings_dict['portal'] = {
             'portal_home_settings': {
                 'portal_home_hero_section': {
-                    'theme_background_image_URL': f'/api/v1/portal/{project.uuid}/background-image/?v=1',
+                    'theme_background_image_URL': '/old-background-image.png',
                 },
             },
         }

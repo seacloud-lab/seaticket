@@ -1532,6 +1532,9 @@ class PortalSettingsView(APIView):
             if not isinstance(portal_home_settings, dict):
                 error_msg = 'portal_home_settings invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            if not isinstance(portal_home_settings.get('portal_home_hero_section', {}), dict):
+                error_msg = 'portal_home_settings invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         try:
             project_settings = json.loads(project.settings) if project.settings else {}
@@ -1572,14 +1575,9 @@ class PortalSettingsView(APIView):
                 logger.error(e)
 
         if portal_home_settings is not None:
-            old_hero_section = old_home_settings.get('portal_home_hero_section', {}) if isinstance(old_home_settings, dict) else {}
-            new_hero_section = portal_home_settings.get('portal_home_hero_section', {})
-            old_background_image_url = old_hero_section.get('theme_background_image_URL', '') if isinstance(old_hero_section, dict) else ''
-            new_background_image_url = new_hero_section.get('theme_background_image_URL', '') if isinstance(new_hero_section, dict) else ''
-            background_image_url_prefix = f'/api/v1/portal/{project_uuid}/background-image/'
-            old_background_image_is_persistent = isinstance(old_background_image_url, str) and old_background_image_url.startswith(background_image_url_prefix)
-            new_background_image_is_persistent = isinstance(new_background_image_url, str) and new_background_image_url.startswith(background_image_url_prefix)
-            if old_background_image_is_persistent and not new_background_image_is_persistent:
+            old_background_image_url = old_home_settings.get('portal_home_hero_section', {}).get('theme_background_image_URL')
+            new_background_image_url = portal_home_settings.get('portal_home_hero_section', {}).get('theme_background_image_URL')
+            if old_background_image_url and not new_background_image_url:
                 try:
                     delete_file_from_s3(project_uuid, gen_portal_background_image_file_path())
                 except Exception as e:
