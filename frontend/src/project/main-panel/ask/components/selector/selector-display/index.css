@@ -29,7 +29,7 @@
   min-height: unset;
   max-height: unset;
   color: var(--bs-sf-orange);
-  border-color: var(--sf-orange) !important;
+  border-color: var(--bs-sf-orange) !important;
   background-color: rgba(237, 113, 9, 0.05);
 }
 
