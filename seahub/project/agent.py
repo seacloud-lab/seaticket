@@ -238,6 +238,9 @@ def _get_agent_log_status(seadb_api, project_uuid, logs):
     actions_table = SchemaTables.AGENT_ACTIONS.table_name()
     runs_table = SchemaTables.AGENT_RUNS.table_name()
 
+    if not logs:
+        return
+
     def _gen_filter_info(source_id, source_type, source_title):
         if source_title:
             filter = "(`source_id` = ? AND `source_type` = ? AND `source_title` = ?)"
@@ -307,7 +310,7 @@ def _get_agent_log_status(seadb_api, project_uuid, logs):
         log_key = (
             log.get('source_id', ''),
             log.get('source_type', ''),
-            log.get('source_title'),
+            log.get('source_title') or '',
         )
         actions = actions_by_log.get(log_key, [])
         run_ids = run_ids_by_log.get(log_key, set())
