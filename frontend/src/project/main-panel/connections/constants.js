@@ -821,6 +821,10 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       display_name: gettext('Issue key'),
       is_predefined: true,
     },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.AUTHOR]: {
+      display_name: gettext('Author'),
+      is_predefined: true,
+    },
     [CONNECTION_PREDEFINED_COLUMN_NAME.STATUS]: {
       display_name: gettext('Status'),
       is_predefined: true,

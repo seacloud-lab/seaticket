@@ -133,6 +133,24 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
     connectionsAPI.getConnectionRecord(projectUuid, connection_id, _id).then((res) => {
       const { record, columns, linked_ticket_title, related_users } = res.data;
       const initialDetails = initConnectionResourceDetails(type, record);
+      // Resolve Jira account IDs → display names in details
+      if (type === CONNECTION_TYPE.JIRA_ISSUE && Array.isArray(related_users) && related_users.length > 0) {
+        const jiraUserMap = {};
+        related_users.forEach(u => { if (u.user_id) jiraUserMap[u.user_id] = u.name; });
+        if (Array.isArray(initialDetails)) {
+          initialDetails.forEach(detail => {
+            if (detail.author && jiraUserMap[detail.author]) {
+              detail.author = jiraUserMap[detail.author];
+            }
+          });
+        }
+        if (record.author && jiraUserMap[record.author]) {
+          record.author = jiraUserMap[record.author];
+        }
+        if (Array.isArray(record.assignees)) {
+          record.assignees = record.assignees.map(id => jiraUserMap[id] || id);
+        }
+      }
       const autoReadState = type === CONNECTION_TYPE.EMAIL
         ? getAutoReadEmailState(record, initialDetails, permission)
         : { record, details: initialDetails, shouldMarkThreadRead: false };

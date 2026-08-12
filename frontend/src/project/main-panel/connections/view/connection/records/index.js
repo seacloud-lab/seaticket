@@ -143,6 +143,30 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
               }
             });
           }
+          // Resolve Jira account IDs → display names in-place
+          if (connection.type === CONNECTION_TYPE.JIRA_ISSUE && relatedUsers.length > 0) {
+            const jiraUserMap = {};
+            relatedUsers.forEach(u => { if (u.user_id) jiraUserMap[u.user_id] = u.name; });
+            const authorCol = columns.find(c => c.name === 'author');
+            const assigneesCol = columns.find(c => c.name === 'assignees');
+            rows.forEach(row => {
+              if (authorCol) {
+                const val = row[authorCol.key] || row[authorCol.name];
+                if (val && jiraUserMap[val]) {
+                  row[authorCol.key] = jiraUserMap[val];
+                  row[authorCol.name] = jiraUserMap[val];
+                }
+              }
+              if (assigneesCol) {
+                const val = row[assigneesCol.key] || row[assigneesCol.name];
+                if (Array.isArray(val)) {
+                  const names = val.map(id => jiraUserMap[id] || id);
+                  row[assigneesCol.key] = names;
+                  row[assigneesCol.name] = names;
+                }
+              }
+            });
+          }
 
           const targetColumns = formatColumns(connection, columns, { collaborators });
           const tagsColumn = targetColumns.find(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.TAGS);

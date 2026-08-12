@@ -859,7 +859,7 @@ class ProjectConnectionMetaView(APIView):
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        if project_connection.type not in (ConnectionType.GENERAL_TASK.value, ConnectionType.CONFLUENCE.value):
+        if project_connection.type not in (ConnectionType.GENERAL_TASK.value, ConnectionType.CONFLUENCE.value, ConnectionType.JIRA_ISSUE.value):
             error_msg = 'Only general task and confluence connections support related users.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
