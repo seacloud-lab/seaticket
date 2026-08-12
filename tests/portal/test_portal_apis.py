@@ -518,7 +518,7 @@ class TestPortalSettingsView:
             resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
-        delete_mock.assert_called_once_with(str(project.uuid), 'attachments/portal-logo/logo')
+        delete_mock.assert_called_once_with(str(project.uuid), 'portal/logo')
 
     def test_post_portal_logo_same_file_path_does_not_delete_current_logo(self, factory, project_creator, real_project):
         project = real_project
@@ -582,7 +582,7 @@ class TestPortalSettingsView:
             resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
-        delete_mock.assert_called_once_with(str(project.uuid), 'attachments/portal-background-image/background-image')
+        delete_mock.assert_called_once_with(str(project.uuid), 'portal/background-image')
 
 
 @pytest.mark.django_db
@@ -1021,8 +1021,8 @@ class TestPortalLogoView:
             resp = PortalLogoView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
-        metadata_mock.assert_called_once_with(str(project.uuid), 'attachments/portal-logo/logo')
-        file_mock.assert_called_once_with(str(project.uuid), 'attachments/portal-logo/logo')
+        metadata_mock.assert_called_once_with(str(project.uuid), 'portal/logo')
+        file_mock.assert_called_once_with(str(project.uuid), 'portal/logo')
 
 
 @pytest.mark.django_db
@@ -1042,8 +1042,8 @@ class TestPortalBackgroundImageView:
         assert resp.status_code == 200
         assert resp['Content-Type'] == 'image/png'
         assert resp['Cache-Control'] == 'public, max-age=86400, immutable'
-        metadata_mock.assert_called_once_with(str(project.uuid), 'attachments/portal-background-image/background-image')
-        file_mock.assert_called_once_with(str(project.uuid), 'attachments/portal-background-image/background-image')
+        metadata_mock.assert_called_once_with(str(project.uuid), 'portal/background-image')
+        file_mock.assert_called_once_with(str(project.uuid), 'portal/background-image')
 
 
 @pytest.mark.django_db

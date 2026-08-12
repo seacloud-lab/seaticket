@@ -48,11 +48,16 @@ def gen_s3_connection_file_path(project_uuid, connection_id, filename):
     return f"{project_uuid}/{connection_id}/" + filename
 
 def gen_portal_logo_file_path(filename=PORTAL_LOGO_OBJECT_NAME):
-    return f'attachments/portal-logo/{filename}'
+    return f'portal/{filename}'
 
 
 def gen_portal_background_image_file_path(filename=PORTAL_BACKGROUND_IMAGE_OBJECT_NAME):
-    return f'attachments/portal-background-image/{filename}'
+    return f'portal/{filename}'
+
+
+def gen_record_file_path(entity_type, record_id, filename=''):
+    parent_dir = 'portal' if entity_type == 'portal-issues' else 'attachments'
+    return f'{parent_dir}/{entity_type}/{record_id}/{filename}'
 
 def gen_tmp_upload_file_path(project_uuid, file_path):
     s3_file_path = gen_s3_project_file_path(project_uuid, file_path)
@@ -85,7 +90,7 @@ def upload_files_to_s3(project_uuid, file_urls, username, entity_type, record_id
             logger.warning(tmp_upload_file_path + ' not exists.')
             continue
 
-        final_file_path = f'attachments/{entity_type}/{record_id}/{file_name}'
+        final_file_path = gen_record_file_path(entity_type, record_id, file_name)
         s3_file_path = gen_s3_project_file_path(project_uuid, final_file_path)
         if check_file_exists_from_s3(s3_file_path):
             logger.warning(s3_file_path + ' already exists.')
@@ -117,7 +122,7 @@ def upload_portal_files_to_s3(project_uuid, file_urls, username, entity_type, re
             logger.warning(tmp_upload_file_path + ' not exists.')
             continue
 
-        final_file_path = f'attachments/{entity_type}/{record_id}/{file_name}'
+        final_file_path = gen_record_file_path(entity_type, record_id, file_name)
         s3_file_path = gen_s3_project_file_path(project_uuid, final_file_path)
         if check_file_exists_from_s3(s3_file_path):
             logger.warning(s3_file_path + ' already exists.')
@@ -269,7 +274,7 @@ def _delete_s3_prefix(prefix):
 
 
 def delete_record_attachments_from_s3(project_uuid, entity_type, record_id):
-    prefix = gen_s3_project_file_path(project_uuid, f'attachments/{entity_type}/{record_id}/')
+    prefix = gen_s3_project_file_path(project_uuid, gen_record_file_path(entity_type, record_id))
     _delete_s3_prefix(prefix)
     return prefix
 

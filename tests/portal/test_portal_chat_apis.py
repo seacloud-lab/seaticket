@@ -211,6 +211,20 @@ class TestPortalChatImageRewriteAnonymous:
         assert raw_image_url in content
         assert f'/file/portal-chat-image/{real_project.uuid}/?token=' not in content
 
+    def test_rewrite_supports_portal_issue_image(self, real_project):
+        raw_image_url = f'/file/project/{real_project.uuid}/portal/portal-issues/12/a.png'
+
+        content = rewrite_portal_chat_image_urls(
+            real_project.uuid,
+            f'![a]({raw_image_url})',
+            'session-uuid',
+            'abcd',
+            'visitor-uuid',
+        )
+
+        assert raw_image_url not in content
+        assert f'/file/portal-chat-image/{real_project.uuid}/?token=' in content
+
     def test_history_response_rewrites_internal_image_url(self, factory, real_project):
         _set_portal_settings(real_project, allow_anonymous=True, enable_password_protection=False)
         visitor = create_visitor_session()

@@ -401,7 +401,7 @@ class PortalIssuesView(APIView):
 
             if file_urls:
                 try:
-                    new_file_urls_dict = upload_portal_files_to_s3(project_uuid, file_urls, username, 'portal-issue', int(portal_issue_pk))
+                    new_file_urls_dict = upload_portal_files_to_s3(project_uuid, file_urls, username, 'portal-issues', int(portal_issue_pk))
                     updated_content = replace_file_url_in_content(content, new_file_urls_dict)
                     if updated_content != content:
                         seadb_api.update_rows(project_uuid, portal_issues_table_name, [{
@@ -799,7 +799,7 @@ class PortalIssueView(APIView):
         # upload files
         if file_urls:
             try:
-                new_file_urls_dict = upload_portal_files_to_s3(project_uuid, file_urls, username, 'portal-issue', int(issue.get('_pk')))
+                new_file_urls_dict = upload_portal_files_to_s3(project_uuid, file_urls, username, 'portal-issues', int(issue.get('_pk')))
                 content = replace_file_url_in_content(content, new_file_urls_dict)
             except Exception as e:
                 logger.error(e)
@@ -1011,7 +1011,7 @@ class PortalIssueCommentsView(APIView):
         # upload files
         if file_urls:
             try:
-                new_file_urls_dict = upload_portal_files_to_s3(project_uuid, file_urls, username, 'portal-issue', int(issue.get('_pk')))
+                new_file_urls_dict = upload_portal_files_to_s3(project_uuid, file_urls, username, 'portal-issues', int(issue.get('_pk')))
                 content = replace_file_url_in_content(content, new_file_urls_dict)
             except Exception as e:
                 logger.error(e)
@@ -1123,7 +1123,7 @@ class PortalIssueCommentView(APIView):
          # upload files
         if file_urls:
             try:
-                new_file_urls_dict = upload_portal_files_to_s3(project_uuid, file_urls, username, 'portal-issue', int(issue.get('_pk')))
+                new_file_urls_dict = upload_portal_files_to_s3(project_uuid, file_urls, username, 'portal-issues', int(issue.get('_pk')))
                 content = replace_file_url_in_content(content, new_file_urls_dict)
             except Exception as e:
                 logger.error(e)
@@ -2546,7 +2546,7 @@ class PortalIssueTrashAPIView(APIView):
                 return Response({'success': True}, status=status.HTTP_200_OK)
 
             for issue_id in need_delete_ids:
-                delete_record_attachments_from_s3(project_uuid, 'portal_issue', int(issue_id))
+                delete_record_attachments_from_s3(project_uuid, 'portal-issues', int(issue_id))
             # Remove portal_{issue_id} from linked tickets' linked_connection_records
             linked_ticket_ids = set()
             issue_id_to_ticket_id = {}
