@@ -270,7 +270,7 @@ def rewrite_portal_chat_image_urls(project_uuid, value, session_uuid, message_id
     project_uuid = str(project_uuid)
     pattern = re.compile(
         r'/file/project/%s/'
-        r'(?P<file_path>attachments/[^\s\)\\\]"\']+)' % re.escape(project_uuid)
+        r'(?P<file_path>(?:attachments|portal/portal-issues)/[^\s\)\\\]"\']+)' % re.escape(project_uuid)
     )
 
     def replace(match):

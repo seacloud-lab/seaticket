@@ -10,6 +10,7 @@ from seahub.project.models import Projects
 from seahub.portal.apis import (
     PortalKnowledgeBaseRecordsView,
     PortalKnowledgeBaseViewsView,
+    PortalBackgroundImageView,
     PortalLogoView,
     PortalSettingsView,
     PortalTagsView,
@@ -416,6 +417,19 @@ class TestPortalSettingsView:
 
         assert resp.status_code == 400
 
+    def test_post_invalid_portal_home_hero_section(self, factory, project_creator, real_project):
+        project = real_project
+        request = factory.post(
+            f"/api/v1/portal/{project.uuid}/settings/",
+            data={'portal_home_settings': json.dumps({'portal_home_hero_section': []})},
+            format='json'
+        )
+        request.user = project_creator
+
+        resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 400
+
     def test_post_password_too_short(self, factory, project_creator, real_project):
         project = real_project
         request = factory.post(
@@ -504,7 +518,7 @@ class TestPortalSettingsView:
             resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
-        delete_mock.assert_called_once_with(str(project.uuid), 'attachments/portal-logo/logo')
+        delete_mock.assert_called_once_with(str(project.uuid), 'portal/logo')
 
     def test_post_portal_logo_same_file_path_does_not_delete_current_logo(self, factory, project_creator, real_project):
         project = real_project
@@ -543,6 +557,32 @@ class TestPortalSettingsView:
                 PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
 
         delete_mock.assert_not_called()
+
+    def test_post_clearing_background_image_deletes_current_background_image_file(self, factory, project_creator, real_project):
+        project = real_project
+        settings_dict = json.loads(project.settings) if project.settings else {}
+        settings_dict['portal'] = {
+            'portal_home_settings': {
+                'portal_home_hero_section': {
+                    'theme_background_image_URL': '/old-background-image.png',
+                },
+            },
+        }
+        project.settings = json.dumps(settings_dict)
+        project.save(update_fields=['settings'])
+
+        request = factory.post(
+            f"/api/v1/portal/{project.uuid}/settings/",
+            data={'portal_home_settings': json.dumps({'portal_home_hero_section': {'theme_background_image_URL': ''}})},
+            format='json'
+        )
+        request.user = project_creator
+
+        with patch('seahub.portal.apis.delete_file_from_s3') as delete_mock:
+            resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        delete_mock.assert_called_once_with(str(project.uuid), 'portal/background-image')
 
 
 @pytest.mark.django_db
@@ -981,8 +1021,29 @@ class TestPortalLogoView:
             resp = PortalLogoView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
-        metadata_mock.assert_called_once_with(str(project.uuid), 'attachments/portal-logo/logo')
-        file_mock.assert_called_once_with(str(project.uuid), 'attachments/portal-logo/logo')
+        metadata_mock.assert_called_once_with(str(project.uuid), 'portal/logo')
+        file_mock.assert_called_once_with(str(project.uuid), 'portal/logo')
+
+
+@pytest.mark.django_db
+class TestPortalBackgroundImageView:
+
+    def test_get_uses_s3_background_image(self, factory, real_project):
+        project = real_project
+        request = factory.get(f"/api/v1/portal/{project.uuid}/background-image/")
+        metadata = {
+            'ContentType': 'image/png',
+        }
+
+        with patch('seahub.portal.apis.get_project_file_head_from_s3', return_value=metadata) as metadata_mock, \
+                patch('seahub.portal.apis.get_project_file_from_s3', return_value=BytesIO(b'png')) as file_mock:
+            resp = PortalBackgroundImageView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        assert resp['Content-Type'] == 'image/png'
+        assert resp['Cache-Control'] == 'public, max-age=86400, immutable'
+        metadata_mock.assert_called_once_with(str(project.uuid), 'portal/background-image')
+        file_mock.assert_called_once_with(str(project.uuid), 'portal/background-image')
 
 
 @pytest.mark.django_db

@@ -14,6 +14,6 @@ PORTAL_CHAT_IMAGE_TOKEN_TTL = 30 * 60
 PORTAL_CHAT_PROXY_IMAGE_ATTACHMENT_PREFIXES = (
     'attachments/knowledgebase/',
     'attachments/ticket/',
-    'attachments/portal-issue/',
+    'portal/portal-issues/',
     'attachments/portal-chat/',
 )

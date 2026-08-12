@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 PORTAL_VISIBLE_ATTACHMENT_PREFIXES = (
     'attachments/portal-chat/',
-    'attachments/portal-issue/',
+    'portal/portal-issues/',
     'attachments/knowledgebase/',
 )
 

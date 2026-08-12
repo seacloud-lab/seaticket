@@ -85,7 +85,7 @@ const PortalHomeEditPanel = ({ homePageStyle = {}, setHomePageStyle, updateHomeS
       return;
     }
     setIsUploadingBackgroundImage(true);
-    portalAPI.uploadFile(projectUuid, image)
+    portalAPI.uploadPortalBackgroundImage(projectUuid, image)
       .then((res) => {
         const imageURL = res.data?.file_url || res.data?.url;
         if (!imageURL) {

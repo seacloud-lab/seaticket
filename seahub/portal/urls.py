@@ -7,7 +7,7 @@ from .apis import PortalTagsView, PortalKnowledgeBaseViewsView, PortalKnowledgeB
     PortalSettingsView, PortalExternalInvitationsView, PortalIssueViewsView, PortalIssueViewView, PortalExternalUsersView, PortalUserListView, \
     PortalIssueViewsMoveView, PortalIssueViewsDuplicateView, PortalIssuesView, PortalMyIssuesView, PortalIssueView, PortalIssueCommentsView, \
     PortalIssueCommentView, PortalIssueTrashAPIView, PortalCustomDomainView, PortalCustomDomainVerificationView, PortalDomainAliasView, \
-    PortalPreviewTokenView, PortalLogoView
+    PortalPreviewTokenView, PortalLogoView, PortalBackgroundImageView
 from .portal_issue_types import PortalIssueTypesAPIView, PortalIssueTypeAPIView
 from .portal_issue_substates import PortalIssueSubstatesAPIView, PortalIssueSubstateAPIView
 from .chat.apis import (
@@ -23,7 +23,7 @@ urlpatterns = [
     # portal edit page (for admins)
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/submit-issue/$', portal_edit_view, name='portal_edit_view'),
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/my-issues/$', portal_edit_view, name='portal_edit_view'),
-    re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/my-issues/(?P<issue_id>\d+)/$', portal_edit_view, name='portal_edit_view'),
+    re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/my-issues/(?P<children_id>\d+)/$', portal_edit_view, name='portal_edit_view'),
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/knowledge-base/(?P<children_id>\d+)/$', portal_edit_view, name='portal_edit_view'),
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/knowledge-base/$', portal_edit_view, name='portal_edit_view'),
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/chat/(?P<session_uuid>[-0-9a-f]{36})/$', portal_edit_view, name='portal_edit_view'),
@@ -54,6 +54,7 @@ urlpatterns = [
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/custom-domain/$', PortalCustomDomainView.as_view(), name='api-v1-portal-custom-domain'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/custom-domain/verify/$', PortalCustomDomainVerificationView.as_view(), name='api-v1-portal-custom-domain-verify'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/logo/$', PortalLogoView.as_view(), name='api-v1-portal-logo'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/background-image/$', PortalBackgroundImageView.as_view(), name='api-v1-portal-background-image'),
 
     # portal upload file
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/upload-file/$', PortalUploadFileView.as_view(), name='api-v1-portal-upload-file'),

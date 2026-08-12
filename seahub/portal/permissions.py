@@ -188,7 +188,7 @@ class PortalFilePermission(BasePermission):
         if file_path.startswith('attachments/portal-chat/'):
             return PortalChatPermission().has_permission(request, view)
 
-        if file_path.startswith('attachments/portal-issue/'):
+        if file_path.startswith('portal/portal-issues/'):
             return PortalIssuePermission().has_permission(request, view)
 
         if file_path.startswith('attachments/knowledgebase/'):

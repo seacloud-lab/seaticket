@@ -10,7 +10,8 @@ from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET
 from seahub.utils import uuid_str_to_32_chars, uuid_str_to_36_chars
 
 logger = logging.getLogger(__name__)
-PORTAL_LOGO_OBJECT_NAME = 'logo'
+PORTAL_LOGO_FILE_PATH = 'portal/logo'
+PORTAL_BACKGROUND_IMAGE_FILE_PATH = 'portal/background-image'
 
 
 def if_none_match_hit(request, etag):
@@ -46,8 +47,9 @@ def gen_s3_connection_file_path(project_uuid, connection_id, filename):
     project_uuid = uuid_str_to_32_chars(project_uuid)
     return f"{project_uuid}/{connection_id}/" + filename
 
-def gen_portal_logo_file_path(filename=PORTAL_LOGO_OBJECT_NAME):
-    return f'attachments/portal-logo/{filename}'
+def gen_record_file_path(entity_type, record_id, filename=''):
+    parent_dir = 'portal' if entity_type == 'portal-issues' else 'attachments'
+    return f'{parent_dir}/{entity_type}/{record_id}/{filename}'
 
 def gen_tmp_upload_file_path(project_uuid, file_path):
     s3_file_path = gen_s3_project_file_path(project_uuid, file_path)
@@ -80,7 +82,7 @@ def upload_files_to_s3(project_uuid, file_urls, username, entity_type, record_id
             logger.warning(tmp_upload_file_path + ' not exists.')
             continue
 
-        final_file_path = f'attachments/{entity_type}/{record_id}/{file_name}'
+        final_file_path = gen_record_file_path(entity_type, record_id, file_name)
         s3_file_path = gen_s3_project_file_path(project_uuid, final_file_path)
         if check_file_exists_from_s3(s3_file_path):
             logger.warning(s3_file_path + ' already exists.')
@@ -112,7 +114,7 @@ def upload_portal_files_to_s3(project_uuid, file_urls, username, entity_type, re
             logger.warning(tmp_upload_file_path + ' not exists.')
             continue
 
-        final_file_path = f'attachments/{entity_type}/{record_id}/{file_name}'
+        final_file_path = gen_record_file_path(entity_type, record_id, file_name)
         s3_file_path = gen_s3_project_file_path(project_uuid, final_file_path)
         if check_file_exists_from_s3(s3_file_path):
             logger.warning(s3_file_path + ' already exists.')
@@ -133,12 +135,11 @@ def upload_portal_files_to_s3(project_uuid, file_urls, username, entity_type, re
 
 
 def upload_portal_logo_file_to_s3(project_uuid, file):
-    final_file_path = gen_portal_logo_file_path()
-    s3_file_path = gen_s3_project_file_path(project_uuid, final_file_path)
+    s3_file_path = gen_s3_project_file_path(project_uuid, PORTAL_LOGO_FILE_PATH)
     content_type = getattr(file, 'content_type', None) or 'application/octet-stream'
     version = int(datetime.now(timezone.utc).timestamp())
 
-    file_path = datetime.now(timezone.utc).strftime('%Y-%m') + '/' + PORTAL_LOGO_OBJECT_NAME
+    file_path = datetime.now(timezone.utc).strftime('%Y-%m') + '/' + os.path.basename(PORTAL_LOGO_FILE_PATH)
     tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, file_path)
     try:
         with open(tmp_upload_file_path, 'wb') as fd:
@@ -158,6 +159,33 @@ def upload_portal_logo_file_to_s3(project_uuid, file):
                 logger.error(f"Failed to remove temp file: {e}")
 
     return f'/api/v1/portal/{project_uuid}/logo/?v={version}'
+
+
+def upload_portal_background_image_file_to_s3(project_uuid, file):
+    s3_file_path = gen_s3_project_file_path(project_uuid, PORTAL_BACKGROUND_IMAGE_FILE_PATH)
+    content_type = getattr(file, 'content_type', None) or 'application/octet-stream'
+    version = int(datetime.now(timezone.utc).timestamp())
+
+    file_path = datetime.now(timezone.utc).strftime('%Y-%m') + '/' + os.path.basename(PORTAL_BACKGROUND_IMAGE_FILE_PATH)
+    tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, file_path)
+    try:
+        with open(tmp_upload_file_path, 'wb') as fd:
+            fd.write(file.read())
+
+        s3_client.upload_file(
+            tmp_upload_file_path,
+            S3_FILE_BUCKET,
+            s3_file_path,
+            ExtraArgs={'ContentType': content_type}
+        )
+    finally:
+        if os.path.exists(tmp_upload_file_path):
+            try:
+                os.remove(tmp_upload_file_path)
+            except Exception as e:
+                logger.error(f"Failed to remove temp file: {e}")
+
+    return f'/api/v1/portal/{project_uuid}/background-image/?v={version}'
 
 
 def check_file_exists_from_s3(s3_file_path):
@@ -236,7 +264,7 @@ def _delete_s3_prefix(prefix):
 
 
 def delete_record_attachments_from_s3(project_uuid, entity_type, record_id):
-    prefix = gen_s3_project_file_path(project_uuid, f'attachments/{entity_type}/{record_id}/')
+    prefix = gen_s3_project_file_path(project_uuid, gen_record_file_path(entity_type, record_id))
     _delete_s3_prefix(prefix)
     return prefix
 

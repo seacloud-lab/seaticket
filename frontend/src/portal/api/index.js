@@ -144,6 +144,13 @@ class PortalAPI {
     return this._sendPostRequest(url, formData, { onUploadProgress });
   }
 
+  uploadPortalBackgroundImage(projectUuid, file) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/background-image/';
+    const formData = new FormData();
+    formData.append('file', file);
+    return this._sendPostRequest(url, formData);
+  }
+
   listKBViews(projectUuid) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/knowledge-base-views/';
     return this.req.get(url);
