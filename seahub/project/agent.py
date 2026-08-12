@@ -282,7 +282,7 @@ def _get_agent_log_status(seadb_api, project_uuid, logs):
         log_key = (
             action.get('source_id', ''),
             action.get('source_type', ''),
-            action.get('source_title'),
+            action.get('source_title') or '',
         )
         run_ids_by_log.setdefault(log_key, set()).add(run_id)
         actions_by_log.setdefault(log_key, []).append(action)
