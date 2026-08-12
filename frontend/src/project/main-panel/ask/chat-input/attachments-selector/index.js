@@ -18,12 +18,11 @@ const AttachmentsSelector = ({
   onFileInputClick,
   canAddSources = true,
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isShowSelector, setIsShowSelector] = useState(false);
 
   const attachmentsRef = useRef([]);
   const ref = useRef(null);
-
-  const [isShowSelector, setIsShowSelector] = useState(false);
 
   const openSelector = useCallback(() => {
     setIsShowSelector(true);
@@ -50,6 +49,8 @@ const AttachmentsSelector = ({
       if (key.startsWith('image')) return attachments.find(t => t.key === key);
       return attachmentsRef.current.find(t => t.key === key);
     }).filter(Boolean);
+    setIsDropdownOpen(false);
+    setIsShowSelector(false);
     propsOnChange && propsOnChange(newAttachments);
   }, [attachments, propsOnChange]);
 
@@ -58,7 +59,7 @@ const AttachmentsSelector = ({
 
   return (
     <>
-      <Dropdown isOpen={isOpen} direction="up" className="active-status-editor" toggle={() => setIsOpen(!isOpen)}>
+      <Dropdown isOpen={isDropdownOpen} direction="up" className="active-status-editor" toggle={() => setIsDropdownOpen(!isDropdownOpen)}>
         <DropdownToggle
           className="seaqa-ask-chat-attachments-selector seaqa-icon-btn border d-flex align-items-center"
           tag="div"
@@ -67,7 +68,7 @@ const AttachmentsSelector = ({
         >
           <Icon symbol="plus" />
         </DropdownToggle>
-        {ref.current && (
+        {(ref.current && !isDropdownOpen) && (
           <Tooltip target={ref} placement="top-start">
             {gettext('Add attachments')}
           </Tooltip>
