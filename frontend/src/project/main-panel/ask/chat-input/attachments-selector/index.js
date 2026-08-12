@@ -22,7 +22,7 @@ const AttachmentsSelector = ({
   const [isShowSelector, setIsShowSelector] = useState(false);
 
   const attachmentsRef = useRef([]);
-  const ref = useRef(null);  
+  const ref = useRef(null);
 
   const openSelector = useCallback(() => {
     setIsShowSelector(true);
