@@ -58,6 +58,10 @@
   padding: 12px 16px;
 }
 
+.seaqa-agent-tool-suggestion-panel-footer .btn {
+  width: calc((100% - 8px) / 2);
+}
+
 .seaqa-agent-tool-suggestion-panel .resize-bar {
   margin-left: -6px;
 }

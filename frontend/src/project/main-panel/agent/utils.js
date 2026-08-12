@@ -1,32 +1,6 @@
-import { ACTION_TYPE } from './constants';
+import { ACTION_TYPE, ACTION_STATUS, RUN_STATUS } from './constants';
 import { CONNECTION_TYPES } from '../connections/constants';
 import { getResourceIconURL, getResourceTypeName } from '@/project/utils';
-
-const normalizeRunEvents = (Events) => {
-  if (Array.isArray(Events)) return Events.filter(Boolean);
-  if (!Events || typeof Events !== 'object') return [];
-
-  // New schema: bare event object
-  if (typeof Events.type === 'string') {
-    return [Events];
-  }
-
-  return [];
-};
-
-export const getUniqueEventTypes = (Events) => {
-  const normalizedEvents = normalizeRunEvents(Events);
-  if (normalizedEvents.length === 0) return [];
-  const seen = new Set();
-  return normalizedEvents.reduce((acc, e) => {
-    const type = e && e.type;
-    if (type && !seen.has(type)) {
-      seen.add(type);
-      acc.push(type);
-    }
-    return acc;
-  }, []);
-};
 
 export const getDisplayActions = (actions) => {
   if (!Array.isArray(actions) || actions.length === 0) return [];
@@ -112,4 +86,37 @@ export const getAgentResource = (target) => {
     title: source_title,
     icon,
   };
+};
+
+export const getRunLogStatusByRuns = (runs) => {
+  const isAllCompleted = runs.every(run => run.status === RUN_STATUS.COMPLETED);
+  if (!isAllCompleted) return '';
+
+  let status = [];
+
+  for (let i = 0; i < runs.length; i++) {
+    const run = runs[i];
+    const actions = run.actions || [];
+    const hasPending = actions.some(
+      a => a.status === ACTION_STATUS.PENDING || a.status === ACTION_STATUS.EXECUTING,
+    );
+    const hasFailed = actions.some(a => a.status === ACTION_STATUS.FAILED);
+    const hasSuggestion = actions.some(a => a.type === ACTION_TYPE.SUGGESTION);
+
+    if (hasPending || hasFailed) {
+      status = [];
+      break;
+    }
+
+    if (hasSuggestion) {
+      if (!status.includes('done')) status.push('done');
+    } else {
+      if (!status.includes('no_action_needed')) status.push('no_action_needed');
+    }
+  }
+  if (status.length === 0) return '';
+  if (status.every(item => item === 'done')) return 'done';
+  if (status.every(item => item === 'no_action_needed')) return 'no_action_needed';
+  if (status.every(item => ['done', 'no_action_needed'].includes(item))) return 'done';
+  return '';
 };

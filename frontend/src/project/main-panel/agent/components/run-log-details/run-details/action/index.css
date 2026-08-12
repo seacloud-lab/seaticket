@@ -5,8 +5,8 @@
 .seaqa-agent-action::after {
   content: '';
   position: absolute;
-  top: 26px;
-  left: 11px;
+  top: 30px;
+  left: 6px;
   height: calc(100% - 26px);
   width: 1px;
   border-left: 1px solid var(--bs-border-secondary-color);
@@ -25,13 +25,7 @@
   overflow: hidden;
 }
 
-.seaqa-agent-action-container.seaqa-agent-event-action-container .seaqa-agent-action-label,
-.seaqa-agent-action-container.seaqa-agent-analysis-action-container .seaqa-agent-action-label,
-.seaqa-agent-action-container.seaqa-agent-suggestions-action-container .seaqa-agent-action-label {
-  font-size: 16px;
-}
-
-.seaqa-agent-action-container.seaqa-agent-event-action-container .longtext-preview-container .sf-slate-viewer-article-container .article {
+.seaqa-agent-action-container .longtext-preview-container .sf-slate-viewer-article-container .article {
   margin: 0;
   padding: 0 !important;
   font-size: 13px;
@@ -66,40 +60,26 @@
 .seaqa-agent-action-label-thought {
   margin-bottom: 0;
   margin-right: 4px;
-  color: var(--bs-body-secondary-color);
+  color: var(--bs-body-tertiary-color);
   font-weight: 400;
 }
 
 .seaqa-agent-action-text {
-  color: var(--bs-body-secondary-color);
-  font-size: 14px;
+  color: var(--bs-body-tertiary-color);
+  font-size: 13px;
   line-height: 22px;
   position: relative;
   white-space: pre-line;
 }
 
 .seaqa-agent-action-text-thought p {
-  color: var(--bs-body-secondary-color);
+  color: var(--bs-body-tertiary-color);
   font-weight: 400;
   font-style: Italic;
   font-size: 13px;
   line-height: 20px;
   margin-left: 28px;
   margin-bottom: 0px;
-}
-
-.seaqa-agent-action-text::after {
-  content: '';
-  position: absolute;
-  left: -20px;
-  height: 100%;
-  width: 1px;
-  top: 0;
-  border-left: 1px solid var(--bs-border-secondary-color);
-}
-
-.seaqa-agent-action-text.seaqa-agent-action-text-thought::after {
-  left: 8px;
 }
 
 .seaqa-agent-action-errors {
@@ -138,4 +118,9 @@
 /* active buttons */
 .seaqa-agent-action-buttons {
   gap: 8px;
+}
+
+.seaqa-agent-action-icon-btn.seaqa-icon-btn {
+  height: 22px !important;
+  width: 14px !important;
 }

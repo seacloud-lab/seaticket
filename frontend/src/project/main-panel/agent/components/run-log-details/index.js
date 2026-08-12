@@ -8,7 +8,7 @@ import SuggestionDetailPanel from './suggestion-detail-panel';
 import AgentType2GithubTypeMappingDialog from '../agent-type-to-github-type-mapping-dialog';
 import { useCloseLinkedIssues } from '@/project/main-panel/tickets/hooks';
 import ResourceTitle from '../resource-title';
-import { getAgentResource } from '../../utils';
+import { getAgentResource, getRunLogStatusByRuns } from '../../utils';
 import { Utils } from '@/utils/utils';
 
 import './index.css';
@@ -22,12 +22,14 @@ const RunLogDetails = ({
   settings,
   modifySettings,
   hideLogs,
+  updateRunLog,
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [runs, setRuns] = useState([]);
   const [pendingMapping, setPendingMapping] = useState(null);
   const [suggestionInfo, setSuggestionInfo] = useState(null);
   const { openCloseLinkedGitHubIssuesWarningDialog } = useCloseLinkedIssues();
+  const [isShowAll, setIsShowAll] = useState(true);
 
   const { source_id, source_type } = useMemo(() => ({
     source_id: runLog?.source_id,
@@ -54,21 +56,27 @@ const RunLogDetails = ({
 
   const closeSuggestionDetailPanel = useCallback(() => {
     setSuggestionInfo(null);
-  }, []);
+    showLogs();
+  }, [showLogs]);
 
   const updateRunAction = useCallback((runId, actionId, update) => {
-    setRuns(runs => runs.map(run => {
-      if (run.id === runId) {
-        const { actions } = run;
-        if (!Array.isArray(actions) || actions.length === 0) return run;
-        return {
-          ...run,
-          actions: actions.map(action => action.id === actionId ? { ...action, ...update } : action)
-        };
-      }
-      return run;
-    }));
-  }, []);
+    setRuns(runs => {
+      const nextRuns = runs.map(run => {
+        if (run.id === runId) {
+          const { actions } = run;
+          if (!Array.isArray(actions) || actions.length === 0) return run;
+          return {
+            ...run,
+            actions: actions.map(action => action.id === actionId ? { ...action, ...update } : action)
+          };
+        }
+        return run;
+      });
+      const status = getRunLogStatusByRuns(nextRuns);
+      updateRunLog(source_id, source_type, { status });
+      return nextRuns;
+    });
+  }, [source_id, source_type, updateRunLog]);
 
   const findActionContext = useCallback((actionId) => {
     for (const run of runs) {
@@ -261,8 +269,11 @@ const RunLogDetails = ({
     setPendingMapping(null);
     agentAPI.listAgentLogRuns(projectUuid, source_id, source_type, controller.signal).then(res => {
       if (controller.signal.aborted) return;
-      const { runs } = res.data;
-      setRuns(runs || []);
+      const runs = res.data?.runs || [];
+      setRuns(runs);
+      const status = getRunLogStatusByRuns(runs);
+      updateRunLog(source_id, source_type, { status });
+      setIsShowAll(runs.length <= 8);
     }).catch(error => {
       if (axios.isCancel(error)) return;
       const errorMessage = Utils.getErrorMsg(error);
@@ -274,6 +285,7 @@ const RunLogDetails = ({
     });
 
     return () => controller.abort();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source_id, source_type]);
 
   return (
@@ -292,9 +304,6 @@ const RunLogDetails = ({
             />
           )}
           <ResourceTitle resource={resource} className="font-size-16 font-weight-500 text-truncate" />
-          <div className="seaqa-agent-run-log-source-id flex-shrink-0 px-2 font-size-12">
-            {`# ${resource._id}`}
-          </div>
         </div>
         <div className="seaqa-agent-run-log-details-body d-flex flex-1 o-hidden">
           {isLoading && (<CenteredLoading />)}
@@ -308,7 +317,29 @@ const RunLogDetails = ({
           {!isLoading && runs.length !== 0 && (
             <>
               <div className="seaqa-agent-run-log-details h-100 d-flex flex-column p-4 w-100">
+                {!isShowAll && (
+                  <div className="seaqa-agent-run-detail collapsed seaqa-agent-run-detail-more-tip">
+                    <div className="seaqa-agent-run-detail-header">
+                      <div className="flex-1 text-truncate">
+                        <span className="font-weight-500">{gettext('% runs').replace('%', runs.length - 1)}</span>
+                        {` ${gettext('more')}`}
+                      </div>
+                      <div className="d-flex align-items-center">
+                        <IconTooltip
+                          icon="arrow-down-b"
+                          tip={gettext('Display more runs')}
+                          className="mx-0"
+                          placement="bottom"
+                          hoverBackground={true}
+                          size={{ btn: 24, icon: 16 }}
+                          onClick={() => setIsShowAll(true)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
                 {runs.map(((run, index) => {
+                  if (!isShowAll && index < (runs.length - 1)) return null;
                   return (
                     <RunDetail
                       key={run.id || index}

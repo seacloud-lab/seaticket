@@ -66,3 +66,7 @@
   background-color: var(--bs-bg-secondary-color);
   border-radius: 11px;
 }
+
+.seaqa-agent-run-log-header .seaqa-agent-run-status {
+  height: 12px !important;
+}

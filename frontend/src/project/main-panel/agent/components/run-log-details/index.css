@@ -7,13 +7,3 @@
   border-bottom: 1px solid var(--bs-border-secondary-color);
   gap: 8px;
 }
-
-.seaqa-agent-run-log-source-id {
-  color: var(--bs-body-secondary-color);
-  border-radius: 4px;
-  border: 1px solid rgba(0, 40, 100, 0.12);
-  background-color: var(--bs-th-secondary-bg);
-  height: 24px;
-  width: fit-content;
-  line-height: 22px;
-}

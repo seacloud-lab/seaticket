@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import classnames from 'classnames';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import { ACTION_STATUS, ACTION_TYPE, RUN_STATUS } from '../../../constants';
+import { ACTION_STATUS, ACTION_TYPE, RUN_STATUS, RUN_EVENT_NAME } from '../../../constants';
 import { gettext } from '@/constants';
 import Action from './action';
 import RunStatisticsDialog from './run-statistics-dialog';
@@ -9,7 +9,7 @@ import ThoughtProcessDialog from './thought-process-dialog';
 import { IconTooltip, SecondaryBtn } from '@/components';
 import DateFormatter from '@/project/main-panel/connections/components/cell-formatter/date-formatter';
 import { FROM_NOW } from '@/sea-metadata/constants';
-import { getUniqueEventTypes, getDisplayActions } from '../../../utils';
+import { getDisplayActions } from '../../../utils';
 
 import './index.css';
 
@@ -54,6 +54,7 @@ const RunDetail = ({
           label: (
             <SecondaryBtn
               isSmall={true}
+              icon="info-filled"
               className="seaqa-agent-run-status run-no-action-needed"
               text={gettext('No action needed')}
             />
@@ -84,7 +85,6 @@ const RunDetail = ({
     };
     return null;
   }, [run]);
-  const eventTypes = useMemo(() => getUniqueEventTypes(run?.event), [run]);
 
   const toggleExpanded = useCallback((event) => {
     event.stopPropagation();
@@ -116,19 +116,24 @@ const RunDetail = ({
     setShowThoughtProcessDialog(false);
   }, []);
 
-  const { id, started_at, actions = [] } = run;
+  const { id, started_at, actions = [], event } = run;
   const displayActions = getDisplayActions(actions);
 
   return (
     <>
       <div className={classnames('seaqa-agent-run-detail', { 'expanded': isExpanded, 'collapsed': !isExpanded })}>
         <div className="seaqa-agent-run-detail-header" onClick={toggleExpanded}>
-          <div className="seaqa-agent-run-detail-header-left d-flex align-items-center">
-            <DateFormatter className="seaqa-agent-run-time font-weight-500" value={started_at} column={{ data: { format: FROM_NOW } }} />
-            <div className="seaqa-agent-run-order text-secondary">{`${gettext('Run')} ${index + 1}`}</div>
-            {eventTypes.map(type => (
-              <div key={type} className="seaqa-agent-run-event-type flex-shrink-0 px-2 font-size-12">{type}</div>
-            ))}
+          <div className="seaqa-agent-run-detail-header-left d-flex align-items-center flex-1 o-hidden">
+            <DateFormatter className="seaqa-agent-run-time flex-shrink-0 font-weight-500" value={started_at} column={{ data: { format: FROM_NOW } }} />
+            <div className="seaqa-agent-run-order text-secondary flex-shrink-0">{`${gettext('Run')} #${index + 1}`}</div>
+            {event?.type && (
+              <div
+                className="seaqa-agent-run-event-type font-size-14 font-weight-500 text-truncate"
+                title={RUN_EVENT_NAME[event.type]}
+              >
+                {RUN_EVENT_NAME[event.type]}
+              </div>
+            )}
             {statusTip && statusTip.status === RUN_STATUS.COMPLETED && statusTip.label}
           </div>
           <div className="d-flex align-items-center">

@@ -1,3 +1,5 @@
+import { gettext } from '@/constants';
+
 const RUN_STATUS = {
   RUNNING: 'running',
   COMPLETED: 'completed',
@@ -42,4 +44,41 @@ const SUGGESTION_TOOL_NAME_MAP = {
   'suggest_assign_labels': true,
 };
 
-export { ACTION_STATUS, ACTION_TYPE, SUGGESTION_TOOL_NAME_MAP, ACTION_ICON_MAPPER, RUN_STATUS };
+const RUN_EVENT = {
+  // GitHub
+  GITHUB_ISSUE_ADDED: 'github_issue_added',
+  GITHUB_ISSUE_COMMENT_ADDED: 'github_issue_comment_added',
+
+  // discourse
+  DISCOURSE_TOPIC_ADDED: 'discourse_topic_added',
+  DISCOURSE_TOPIC_COMMENT_ADDED: 'discourse_topic_comment_added',
+
+  // email
+  EMAIL_THREAD_ADDED: 'email_thread_added',
+  EMAIL_MESSAGE_ADDED: 'email_message_added',
+
+  // ticket
+  TICKET_DUE_SOON: 'ticket_due_soon',
+  TICKET_OVER_DUE: 'ticket_over_due',
+  TICKET_LINKED_RECORD_ACTIVITY: 'ticket_linked_record_activity',
+  TICKET_TASK_FINISHED: 'ticket_task_finished',
+};
+
+const RUN_EVENT_NAME = {
+  [RUN_EVENT.GITHUB_ISSUE_ADDED]: gettext('New GitHub issue'),
+  [RUN_EVENT.GITHUB_ISSUE_COMMENT_ADDED]: gettext('New issue comment'),
+  [RUN_EVENT.DISCOURSE_TOPIC_ADDED]: gettext('New forum topic'),
+  [RUN_EVENT.DISCOURSE_TOPIC_COMMENT_ADDED]: gettext('New topic comment'),
+  [RUN_EVENT.EMAIL_THREAD_ADDED]: gettext('New email thread'),
+  [RUN_EVENT.EMAIL_MESSAGE_ADDED]: gettext('New email message'),
+  [RUN_EVENT.TICKET_DUE_SOON]: gettext('Ticket due soon'),
+  [RUN_EVENT.TICKET_OVER_DUE]: gettext('Ticket overdue'),
+  [RUN_EVENT.TICKET_LINKED_RECORD_ACTIVITY]: gettext('New linked ticket activity'),
+  [RUN_EVENT.TICKET_TASK_FINISHED]: gettext('Ticket task finished'),
+};
+
+
+export {
+  ACTION_STATUS, ACTION_TYPE, SUGGESTION_TOOL_NAME_MAP, ACTION_ICON_MAPPER,
+  RUN_STATUS, RUN_EVENT_NAME,
+};

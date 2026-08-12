@@ -13,6 +13,7 @@ const INIT_WIDTH = 300;
 
 const RunLogs = ({
   runLogs,
+  isShowLogs,
   isLoading,
   hasMore,
   loadMore,
@@ -88,13 +89,8 @@ const RunLogs = ({
     }
   }, []);
 
-  useEffect(() => {
-    const activeLogDom = logsRef.current?.querySelector('.seaqa-agent-run-log.active');
-    activeLogDom?.scrollIntoView({ block: 'nearest' });
-  }, []);
-
   return (
-    <div className="seaqa-agent-run-logs-container h-100 flex-shrink-0 d-flex" ref={ref}>
+    <div className={classnames('seaqa-agent-run-logs-container h-100 flex-shrink-0', { 'd-flex': isShowLogs, 'd-none': !isShowLogs })} ref={ref}>
       <div className="seaqa-agent-run-logs w-100 h-100 d-flex flex-column">
         <div className="seaqa-agent-run-logs-header d-flex align-items-center o-hidden pl-4 pr-3 flex-shrink-0">
           <div className="flex-1 d-flex align-items-center o-hidden">
