@@ -1,20 +1,19 @@
 .seaqa-tooltip .tooltip.show {
   opacity: 1;
+  padding: 0px;
 }
 
-.seaqa-tooltip.top-start .tooltip.show {
-  left: -0.4rem !important;
-}
 
 .seaqa-tooltip .tooltip-inner {
   max-width: 242px;
   text-align: start;
   background-color: var(--bs-body-color);
   color: var(--bs-body-bg);
-  border-radius: 4px;
-  line-height: 20px;
-  font-size: 14px;
+  border-radius: 8px;
+  line-height: 18px;
+  font-size: 12px;
   font-weight: 400;
+  padding: 4px 8px;
 }
 
 .seaqa-tooltip.seaqa-tooltip-with-confirm-tip .tooltip-inner {
