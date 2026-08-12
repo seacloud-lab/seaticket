@@ -10,8 +10,8 @@ from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET
 from seahub.utils import uuid_str_to_32_chars, uuid_str_to_36_chars
 
 logger = logging.getLogger(__name__)
-PORTAL_LOGO_OBJECT_NAME = 'logo'
-PORTAL_BACKGROUND_IMAGE_OBJECT_NAME = 'background-image'
+PORTAL_LOGO_FILE_PATH = 'portal/logo'
+PORTAL_BACKGROUND_IMAGE_FILE_PATH = 'portal/background-image'
 
 
 def if_none_match_hit(request, etag):
@@ -46,14 +46,6 @@ def gen_s3_project_file_path(project_uuid, file_path):
 def gen_s3_connection_file_path(project_uuid, connection_id, filename):
     project_uuid = uuid_str_to_32_chars(project_uuid)
     return f"{project_uuid}/{connection_id}/" + filename
-
-def gen_portal_logo_file_path(filename=PORTAL_LOGO_OBJECT_NAME):
-    return f'portal/{filename}'
-
-
-def gen_portal_background_image_file_path(filename=PORTAL_BACKGROUND_IMAGE_OBJECT_NAME):
-    return f'portal/{filename}'
-
 
 def gen_record_file_path(entity_type, record_id, filename=''):
     parent_dir = 'portal' if entity_type == 'portal-issues' else 'attachments'
@@ -143,12 +135,11 @@ def upload_portal_files_to_s3(project_uuid, file_urls, username, entity_type, re
 
 
 def upload_portal_logo_file_to_s3(project_uuid, file):
-    final_file_path = gen_portal_logo_file_path()
-    s3_file_path = gen_s3_project_file_path(project_uuid, final_file_path)
+    s3_file_path = gen_s3_project_file_path(project_uuid, PORTAL_LOGO_FILE_PATH)
     content_type = getattr(file, 'content_type', None) or 'application/octet-stream'
     version = int(datetime.now(timezone.utc).timestamp())
 
-    file_path = datetime.now(timezone.utc).strftime('%Y-%m') + '/' + PORTAL_LOGO_OBJECT_NAME
+    file_path = datetime.now(timezone.utc).strftime('%Y-%m') + '/' + os.path.basename(PORTAL_LOGO_FILE_PATH)
     tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, file_path)
     try:
         with open(tmp_upload_file_path, 'wb') as fd:
@@ -171,12 +162,11 @@ def upload_portal_logo_file_to_s3(project_uuid, file):
 
 
 def upload_portal_background_image_file_to_s3(project_uuid, file):
-    final_file_path = gen_portal_background_image_file_path()
-    s3_file_path = gen_s3_project_file_path(project_uuid, final_file_path)
+    s3_file_path = gen_s3_project_file_path(project_uuid, PORTAL_BACKGROUND_IMAGE_FILE_PATH)
     content_type = getattr(file, 'content_type', None) or 'application/octet-stream'
     version = int(datetime.now(timezone.utc).timestamp())
 
-    file_path = datetime.now(timezone.utc).strftime('%Y-%m') + '/' + PORTAL_BACKGROUND_IMAGE_OBJECT_NAME
+    file_path = datetime.now(timezone.utc).strftime('%Y-%m') + '/' + os.path.basename(PORTAL_BACKGROUND_IMAGE_FILE_PATH)
     tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, file_path)
     try:
         with open(tmp_upload_file_path, 'wb') as fd:

@@ -27,8 +27,8 @@ from seahub.project.models import Projects
 from seahub.project.utils import replace_file_url_in_content, get_current_table_metadata, check_project_admin_permission, \
     check_project_permission, check_ticket_permission, check_comment_permission
 from seahub.utils.storage import FileNotFound, upload_portal_files_to_s3, delete_record_attachments_from_s3, delete_file_from_s3, \
-    upload_portal_logo_file_to_s3, gen_portal_logo_file_path, upload_portal_background_image_file_to_s3, \
-    gen_portal_background_image_file_path, get_project_file_from_s3, get_project_file_head_from_s3
+    PORTAL_BACKGROUND_IMAGE_FILE_PATH, PORTAL_LOGO_FILE_PATH, upload_portal_background_image_file_to_s3, \
+    upload_portal_logo_file_to_s3, get_project_file_from_s3, get_project_file_head_from_s3
 from seahub.utils.hasher import AESPasswordHasher
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
@@ -106,7 +106,7 @@ class PortalLogoView(APIView):
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        file_path = gen_portal_logo_file_path()
+        file_path = PORTAL_LOGO_FILE_PATH
         try:
             metadata = get_project_file_head_from_s3(project_uuid, file_path)
         except Exception as e:
@@ -173,7 +173,7 @@ class PortalBackgroundImageView(APIView):
         if not project:
             return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
 
-        file_path = gen_portal_background_image_file_path()
+        file_path = PORTAL_BACKGROUND_IMAGE_FILE_PATH
         try:
             metadata = get_project_file_head_from_s3(project_uuid, file_path)
             file = get_project_file_from_s3(project_uuid, file_path)
@@ -1570,7 +1570,7 @@ class PortalSettingsView(APIView):
 
         if portal_logo == '':
             try:
-                delete_file_from_s3(project_uuid, gen_portal_logo_file_path())
+                delete_file_from_s3(project_uuid, PORTAL_LOGO_FILE_PATH)
             except Exception as e:
                 logger.error(e)
 
@@ -1579,7 +1579,7 @@ class PortalSettingsView(APIView):
             new_background_image_url = portal_home_settings.get('portal_home_hero_section', {}).get('theme_background_image_URL')
             if old_background_image_url and not new_background_image_url:
                 try:
-                    delete_file_from_s3(project_uuid, gen_portal_background_image_file_path())
+                    delete_file_from_s3(project_uuid, PORTAL_BACKGROUND_IMAGE_FILE_PATH)
                 except Exception as e:
                     logger.error(e)
 
