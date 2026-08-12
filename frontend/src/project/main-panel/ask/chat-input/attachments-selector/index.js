@@ -59,7 +59,7 @@ const AttachmentsSelector = ({
 
   return (
     <>
-      <Dropdown isDropdownOpen={isDropdownOpen} direction="up" className="active-status-editor" toggle={() => setIsDropdownOpen(!isDropdownOpen)}>
+      <Dropdown isOpen={isDropdownOpen} direction="up" className="active-status-editor" toggle={() => setIsDropdownOpen(!isDropdownOpen)}>
         <DropdownToggle
           className="seaqa-ask-chat-attachments-selector seaqa-icon-btn border d-flex align-items-center"
           tag="div"
@@ -68,7 +68,7 @@ const AttachmentsSelector = ({
         >
           <Icon symbol="plus" />
         </DropdownToggle>
-        {ref.current && (
+        {(ref.current && !isDropdownOpen) && (
           <Tooltip target={ref} placement="top-start">
             {gettext('Add attachments')}
           </Tooltip>
