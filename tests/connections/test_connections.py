@@ -204,21 +204,29 @@ class TestProjectConnectionsView:
         assert resp.status_code == 400
         assert resp.data['error_msg'] == 'Confluence OAuth authorization is required.'
 
-    def test_post_general_task_requires_table(self, factory, project_creator, real_project):
+    def test_post_general_task_does_not_require_table(self, factory, project_creator, real_project):
         request = factory.post(
             f'/api/v1/project/{real_project.uuid}/connections/',
             data={
                 'name': 'tasks',
-                'config': json.dumps({'base_url': 'https://adapter.example.com'}),
+                'config': json.dumps({'base_url': 'https://adapter.example.com/tasks/product-tasks/'}),
                 'type': 'general_task',
             },
         )
         request.user = project_creator
 
-        resp = ProjectConnectionsView.as_view()(request, project_uuid=real_project.uuid)
+        record = Mock()
+        record.id = 11
+        record.to_dict.return_value = {'id': 11, 'name': 'tasks', 'type': 'general_task'}
 
-        assert resp.status_code == 400
-        assert resp.data['error_msg'] == 'Table is required.'
+        with patch('seahub.project.utils.ENABLE_GENERAL_TASK', True), \
+                patch('seahub.project.connections.ProjectConnections.objects.create', return_value=record), \
+                patch('seahub.project.seadb_api.SeaDBAPI'), \
+                patch('seahub.seadb_models.utils.init_seadb_tables_from_schema'), \
+                patch('seahub.project.connections.add_connection_sync_task'):
+            resp = ProjectConnectionsView.as_view()(request, project_uuid=real_project.uuid)
+
+        assert resp.status_code == 201
 
 
 class TestProjectConnectionView:
