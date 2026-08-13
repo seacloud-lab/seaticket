@@ -5,7 +5,7 @@ import copy from 'copy-to-clipboard';
 import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Row } from 'reactstrap';
 import { gettext } from '@/constants';
 import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, CONNECTION_SUB_TYPE_MAP, STEP, STEPS, EMAIL_SERVER_PROVIDER, getAvailableConnectionTypes } from '../../constants';
-import { getVisibleEmailFields, getEmailProvider, populateEmailOAuthDefaults, sanitizeEmailConfigByProvider, getConnectionIcon, isOAuthEmailProvider, getEmailOAuthCallbackUrl } from '../../utils';
+import { getVisibleEmailFields, getEmailProvider, populateEmailOAuthDefaults, sanitizeEmailConfigByProvider, switchEmailProvider, getConnectionIcon, isOAuthEmailProvider, getEmailOAuthCallbackUrl } from '../../utils';
 import { ModalHeader, Loading, SecondaryBtn, toaster, IconButton, Icon } from '@/components';
 import ConnectionConfigEditor from '../connection-config-editor';
 import { connectionsAPI } from '@/project/api';
@@ -253,7 +253,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
 
     if (key === 'server_provider') {
       const nextProvider = value || EMAIL_SERVER_PROVIDER.GENERAL;
-      setConfig(populateEmailOAuthDefaults({ ...config, [key]: nextProvider }, nextProvider));
+      setConfig(switchEmailProvider(config, nextProvider));
       setShowEmailAdvancedOptions(false);
       return;
     }

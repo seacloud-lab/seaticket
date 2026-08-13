@@ -146,6 +146,7 @@ export const CONNECTION_FIELDS = {
       is_custom: true,
       options: [
         { value: EMAIL_SERVER_PROVIDER.GENERAL, label: gettext('General email provider') },
+        { value: EMAIL_SERVER_PROVIDER.GMAIL, label: gettext('Gmail') },
         { value: EMAIL_SERVER_PROVIDER.MICROSOFT, label: gettext('Microsoft (Microsoft 365 and Outlook)') },
       ],
       default_value: EMAIL_SERVER_PROVIDER.GENERAL,
@@ -176,7 +177,7 @@ export const CONNECTION_FIELDS = {
       is_display: true,
       is_custom: true,
       is_edit_readonly: true,
-      providers: [EMAIL_SERVER_PROVIDER.MICROSOFT],
+      providers: [EMAIL_SERVER_PROVIDER.GMAIL, EMAIL_SERVER_PROVIDER.MICROSOFT],
     }, {
       key: 'client_secret',
       name: gettext('Client secret'),
@@ -185,7 +186,7 @@ export const CONNECTION_FIELDS = {
       is_display: true,
       is_custom: true,
       is_edit_readonly: true,
-      providers: [EMAIL_SERVER_PROVIDER.MICROSOFT],
+      providers: [EMAIL_SERVER_PROVIDER.GMAIL, EMAIL_SERVER_PROVIDER.MICROSOFT],
     }, {
       key: 'authority_url',
       name: gettext('Authority URL'),
@@ -194,7 +195,7 @@ export const CONNECTION_FIELDS = {
       is_display: true,
       is_custom: true,
       is_edit_readonly: true,
-      providers: [EMAIL_SERVER_PROVIDER.MICROSOFT],
+      providers: [EMAIL_SERVER_PROVIDER.GMAIL, EMAIL_SERVER_PROVIDER.MICROSOFT],
       is_advanced_option: true,
     }, {
       key: 'token_url',
@@ -204,7 +205,7 @@ export const CONNECTION_FIELDS = {
       is_display: true,
       is_custom: true,
       is_edit_readonly: true,
-      providers: [EMAIL_SERVER_PROVIDER.MICROSOFT],
+      providers: [EMAIL_SERVER_PROVIDER.GMAIL, EMAIL_SERVER_PROVIDER.MICROSOFT],
       is_advanced_option: true,
     }, {
       type: CONNECTION_FIELD_TYPE.GROUP,
@@ -284,7 +285,7 @@ export const CONNECTION_FIELDS = {
       type: CONNECTION_FIELD_TYPE.NUMBER,
       is_required: false,
       is_custom: true,
-      providers: [EMAIL_SERVER_PROVIDER.GENERAL, EMAIL_SERVER_PROVIDER.MICROSOFT],
+      providers: [EMAIL_SERVER_PROVIDER.GENERAL, EMAIL_SERVER_PROVIDER.GMAIL, EMAIL_SERVER_PROVIDER.MICROSOFT],
       placeholder: '5',
       default_value: 5,
     },
