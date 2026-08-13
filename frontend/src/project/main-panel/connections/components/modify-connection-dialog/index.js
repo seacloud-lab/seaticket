@@ -40,7 +40,6 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
   const [showEmailAdvancedOptions, setShowEmailAdvancedOptions] = useState(false);
 
   const type = useMemo(() => record.type, [record]);
-
   const columns = useMemo(() => {
     const _columns = CONNECTION_FIELDS[type] || [];
     if (type === CONNECTION_TYPE.GITHUB_ISSUE) return withEditReadonlyDefaults(_columns.filter(c => c.key !== 'repository'));
@@ -135,7 +134,6 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
         }
       }, []);
     }
-
     Object.keys(validConfig).forEach((key) => {
       const field = connectionFields.find(f => f.key === key);
       const fieldType = field?.type;

@@ -7,17 +7,15 @@ from seahub.utils.date_utils import normalize_date
 
 GENERAL_TASK_ACTIVITY_FIELDS = ('title', 'status', 'size', 'priority', 'assignees', 'version', 'due_date')
 
-
 def build_general_task_endpoint(base_url, task_id=None):
     base_url = (base_url or '').strip()
     if not base_url:
         raise ValueError('General task base_url is required.')
-    tasks_url = base_url.rstrip('/')
-    if not tasks_url.endswith('/tasks'):
-        tasks_url = f'{tasks_url}/tasks'
+    resource_url = base_url.rstrip('/')
     if task_id is not None:
-        return f'{tasks_url}/{task_id}'
-    return f'{tasks_url}/'
+        return f'{resource_url}/{task_id}/'
+    return f'{resource_url}/'
+
 
 def get_general_task_headers(connection_config):
     headers = {}

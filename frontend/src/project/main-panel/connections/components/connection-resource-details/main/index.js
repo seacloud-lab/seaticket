@@ -12,7 +12,7 @@ import { connectionsAPI } from '@/project/api';
 
 import './index.css';
 
-const ConnectionResourceDetails = ({ resource, projectUuid, permission, connection, isSmallScreen, updateResource, onThreadUnreadChange, setIsContentEmpty, isContentEmpty }) => {
+const ConnectionResourceDetails = ({ resource, projectUuid, permission, connection, isSmallScreen, updateResource, onThreadUnreadChange, setIsContentEmpty }) => {
   const [status, setStatus] = useState('loading'); // loading / error / loaded
   const [errorMessage, setErrorMessage] = useState('');
   const [details, setDetails] = useState(null);
@@ -161,15 +161,28 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
     });
   }, [projectUuid, resource, type, updateResource, permission, getAutoReadEmailState]);
 
+  useEffect(() => {
+    if (status !== 'loaded') return;
+
+    let contentEmpty = false;
+    if (type === CONNECTION_TYPE.EMAIL) {
+      contentEmpty = mergedDetails.length === 0;
+    } else if (type === CONNECTION_TYPE.DISCOURSE_FORUM) {
+      const discourseDetails = Array.isArray(details) ? details : [];
+      contentEmpty = discourseDetails.length + localDiscourseDetails.length === 0;
+    } else if (type !== CONNECTION_TYPE.GITHUB_ISSUE && type !== CONNECTION_TYPE.LINEAR) {
+      contentEmpty = Array.isArray(details) ? details.length === 0 : !details;
+    }
+    setIsContentEmpty?.(contentEmpty);
+  }, [status, type, details, mergedDetails, localDiscourseDetails, setIsContentEmpty]);
+
   if (status === 'loading') return (<CenteredLoading />);
   if (status === 'error') return (<CenteredError>{errorMessage}</CenteredError>);
 
   if (type === CONNECTION_TYPE.EMAIL) {
     if (mergedDetails.length === 0) {
-      if (!isContentEmpty) setIsContentEmpty(true);
       return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No content')} />);
     } else {
-      if (isContentEmpty) setIsContentEmpty(false);
       return (
         <EmailDetails
           className={`seaqa-connection-resource-details seaqa-connection-${type}-resource-details pt-4 pb-4`}
@@ -199,10 +212,8 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
     const discourseDetails = Array.isArray(details) ? details : [];
     const mergedDiscourseDetails = [...discourseDetails, ...localDiscourseDetails];
     if (mergedDiscourseDetails.length === 0) {
-      if (!isContentEmpty) setIsContentEmpty(true);
       return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No content')} />);
     } else {
-      if (isContentEmpty) setIsContentEmpty(false);
       return (
         <DiscourseDetails
           className={`seaqa-connection-resource-details seaqa-connection-${type}-resource-details pt-4 pb-4`}
@@ -219,10 +230,8 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
 
   if (Array.isArray(details)) {
     if (details.length === 0) {
-      if (!isContentEmpty) setIsContentEmpty(true);
       return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No content')} />);
     } else {
-      if (isContentEmpty) setIsContentEmpty(false);
       return (
         <div className={`seaqa-connection-resource-details seaqa-connection-${type}-resource-details`}>
           {details.map((detail, index) => {
@@ -236,10 +245,8 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
   }
 
   if (details) {
-    if (isContentEmpty) setIsContentEmpty(false);
     return (<CustomizeMarkdownViewer className={`seaqa-connection-${type}-resource-details`} value={details} showTOC={false} />);
   } else {
-    if (!isContentEmpty) setIsContentEmpty(true);
     return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No content')} />);
   }
 };

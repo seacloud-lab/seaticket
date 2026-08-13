@@ -419,7 +419,6 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
               permission={permission}
               updateResource={updateResource}
               onThreadUnreadChange={handleThreadUnreadChange}
-              isContentEmpty={isContentEmpty}
               setIsContentEmpty={setIsContentEmpty}
             />
           </div>
