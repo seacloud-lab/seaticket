@@ -15,6 +15,7 @@ from seahub.utils.ai_client import (
 from seahub.project.models import ProjectConnections, decrypt_config
 from seahub.project.github_issues_api import GitHubAPI
 from seahub.project.discourse_api import DiscourseForumAPI, DiscourseForumAPIException
+from seahub.project.discord_api import DiscordAPI
 from seahub.tickets.ticket_utils import (
     get_ticket,
     collect_open_linked_github_issues_for_tickets,
@@ -27,6 +28,7 @@ from seahub.tickets.ticket_utils import (
     convert_select_field_option_ids_to_names,
 )
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
+from seahub.seadb_models.discord_seadb_api import DiscordSeaDBAPI
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.project.utils import (
@@ -248,6 +250,34 @@ class AgentActionExecutor:
         logger.warning('Unknown email tool_name: %r', tool_name)
         return self._failed_execution(f'Unknown tool_name: {tool_name}')
 
+    def _execute_discord_action(
+        self,
+        seadb_api,
+        project,
+        project_uuid,
+        source_id,
+        tool_name,
+        suggestion_content,
+        operator,
+        request=None,
+        auto_executed=False,
+    ):
+        if tool_name == 'suggest_reply':
+            return self._execute_discord_suggest_reply(seadb_api, project_uuid, source_id, suggestion_content)
+        if tool_name == 'suggest_create_ticket':
+            return self._execute_discord_create_ticket(
+                seadb_api,
+                project,
+                project_uuid,
+                source_id,
+                suggestion_content,
+                operator,
+                request=request,
+                auto_executed=auto_executed,
+            )
+        logger.warning('Unknown discord tool_name: %r', tool_name)
+        return self._failed_execution(f'Unknown tool_name: {tool_name}')
+
     def execute_action(
         self,
         seadb_api,
@@ -307,6 +337,18 @@ class AgentActionExecutor:
             )
         elif source_type == ConnectionType.EMAIL.value:
             execution = self._execute_email_action(
+                seadb_api,
+                project,
+                project_uuid,
+                source_id,
+                tool_name,
+                suggestion_content,
+                effective_operator,
+                request=request,
+                auto_executed=auto_executed,
+            )
+        elif source_type == ConnectionType.DISCORD.value:
+            execution = self._execute_discord_action(
                 seadb_api,
                 project,
                 project_uuid,
@@ -993,6 +1035,87 @@ class AgentActionExecutor:
 
         return project_connection, topic, replies, None
 
+    def _get_discord_thread_context(self, seadb_api, project_uuid, connection_id, thread_pk):
+        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        if not project_connection or project_connection.type != ConnectionType.DISCORD.value:
+            return None, None, f'Discord connection {connection_id} not found.'
+
+        discord_seadb_api = DiscordSeaDBAPI(project_uuid, seadb_api=seadb_api)
+        thread = discord_seadb_api.get_thread_by_pk(connection_id, thread_pk)
+        if not thread:
+            return None, None, f'Discord thread #{thread_pk} not found in SeaDB.'
+
+        return project_connection, thread, None
+
+    def _execute_discord_suggest_reply(self, seadb_api, project_uuid, source_id, reply_content):
+        reply_content = (reply_content or '').strip()
+        if not reply_content:
+            return self._failed_execution('Cannot create Discord reply: empty content.')
+
+        connection_id, record_id = self._parse_connection_source_id(source_id, ConnectionType.DISCORD.value)
+        if connection_id is None or record_id is None:
+            return self._failed_execution(f'Invalid source_id format: {source_id}')
+
+        project_connection, thread, error = self._get_discord_thread_context(
+            seadb_api, project_uuid, connection_id, record_id
+        )
+        if error:
+            return self._failed_execution(error)
+
+        thread_id = (thread.get('thread_id') or '').strip()
+        if not thread_id:
+            return self._failed_execution(f'Discord thread {source_id} has no thread_id.')
+
+        try:
+            config = decrypt_config(json.loads(project_connection.config))
+        except Exception as e:
+            logger.error(f'Invalid discord connection config for {project_connection.id}: {e}')
+            return self._failed_execution('Discord connection config is invalid.')
+
+        bot_token = config.get('bot_token', '')
+        if not bot_token:
+            return self._failed_execution('Discord connection config is missing required field (bot_token).')
+
+        try:
+            discord_api = DiscordAPI(bot_token)
+            message = discord_api.create_message(thread_id, reply_content)
+        except requests.exceptions.RequestException as e:
+            logger.error('Failed to create Discord reply for thread %s: %s', source_id, e)
+            return self._failed_execution(f'Failed to post reply to Discord thread #{record_id}: {e}')
+
+        message_id = str(message.get('id') or '').strip()
+        if not message_id:
+            return self._failed_execution('Failed to save Discord reply: response has no message id.')
+
+        author = ((message.get('author') or {}).get('username') or '').strip()
+        created_time = message.get('timestamp') or timezone.now().isoformat()
+        modified_time = message.get('edited_timestamp') or created_time
+        message_table = SchemaTables.DISCORD_THREAD_MESSAGES.table_name(project_connection.id)
+        row = {
+            'thread_id': thread_id,
+            'message_id': message_id,
+            'author': author,
+            'content': reply_content,
+            'created_time': created_time,
+            'modified_time': modified_time,
+        }
+        try:
+            result = seadb_api.insert_rows(project_uuid, message_table, [row])
+            message_pk = (result.get('pks') or [None])[0]
+        except Exception as e:
+            logger.error(
+                'Discord reply posted remotely but failed to save in SeaDB for source %s: %s',
+                source_id,
+                e,
+            )
+            return self._failed_execution(
+                f'Discord reply was posted, but failed to save local record for thread #{record_id}.'
+            )
+
+        return self._successful_execution(
+            f'Reply posted to Discord thread #{record_id}.'
+        )
+
     def _execute_email_suggest_reply(self, seadb_api, project_uuid, source_id, reply_content):
         reply_content = (reply_content or '').strip()
         if not reply_content:
@@ -1263,6 +1386,56 @@ class AgentActionExecutor:
         logger.info(f'Created ticket #{ticket_pk} from discourse topic {source_id}')
         return self._ticket_created_execution(
             f'Ticket #{ticket_pk} created from discourse topic #{topic_pk}.',
+            ticket,
+        )
+
+    def _execute_discord_create_ticket(self, seadb_api, project, project_uuid, source_id, suggestion_content, username, request=None, auto_executed=False):
+        connection_id, thread_pk = self._parse_connection_source_id(source_id, ConnectionType.DISCORD.value)
+        if connection_id is None or thread_pk is None:
+            return self._failed_execution(f'Invalid source_id format: {source_id}')
+
+        project_connection, thread, error = self._get_discord_thread_context(
+            seadb_api, project_uuid, connection_id, thread_pk
+        )
+        if error:
+            return self._failed_execution(error)
+
+        linked_ticket = thread.get('linked_ticket')
+        if linked_ticket:
+            return self._failed_execution(f'Discord thread #{thread_pk} is already linked to ticket #{linked_ticket}.')
+
+        thread_table = SchemaTables.DISCORD_THREADS.table_name(project_connection.id)
+        thread_pk = thread.get('_pk')
+
+        ticket, error = self._create_ticket(
+            seadb_api=seadb_api,
+            project=project,
+            project_uuid=project_uuid,
+            source_id=source_id,
+            username=username,
+            backup_title=thread.get('title', ''),
+            suggestion_content=suggestion_content,
+            request=request,
+            auto_executed=auto_executed,
+        )
+        if error:
+            return self._failed_execution(error)
+        ticket_pk = ticket['ticket_pk']
+
+        try:
+            seadb_api.update_rows(
+                project_uuid,
+                thread_table,
+                [{'pk': thread_pk, 'row': {'linked_ticket': ticket_pk}}],
+            )
+        except Exception as e:
+            logger.warning(
+                f'Ticket {ticket_pk} created but failed to update linked_ticket on discord thread {source_id}: {e}'
+            )
+
+        logger.info(f'Created ticket #{ticket_pk} from discord thread {source_id}')
+        return self._ticket_created_execution(
+            f'Ticket #{ticket_pk} created from discord thread #{thread_pk}.',
             ticket,
         )
 
