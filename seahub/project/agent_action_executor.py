@@ -53,6 +53,7 @@ from seahub.utils.mailbox_manager import (
 )
 from seahub.utils.auth import is_user_virtual_id
 from seahub.base.templatetags.seahub_tags import email2contact_email
+from seahub.settings import DISCORD_BOT_TOKEN
 
 logger = logging.getLogger(__name__)
 
@@ -1067,17 +1068,7 @@ class AgentActionExecutor:
             return self._failed_execution(f'Discord thread {source_id} has no thread_id.')
 
         try:
-            config = decrypt_config(json.loads(project_connection.config))
-        except Exception as e:
-            logger.error(f'Invalid discord connection config for {project_connection.id}: {e}')
-            return self._failed_execution('Discord connection config is invalid.')
-
-        bot_token = config.get('bot_token', '')
-        if not bot_token:
-            return self._failed_execution('Discord connection config is missing required field (bot_token).')
-
-        try:
-            discord_api = DiscordAPI(bot_token)
+            discord_api = DiscordAPI(DISCORD_BOT_TOKEN)
             message = discord_api.create_message(thread_id, reply_content)
         except requests.exceptions.RequestException as e:
             logger.error('Failed to create Discord reply for thread %s: %s', source_id, e)
