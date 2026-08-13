@@ -99,12 +99,6 @@
   background-color: #fc6440;
 }
 
-.seaqa-connection-email-record-details .replied-status-arrow {
-  flex-shrink: 0;
-  margin: 0 4px;
-  vertical-align: middle;
-}
-
 /* collapsed */
 .seaqa-connection-email-record-details.collapsed {
   cursor: pointer;

@@ -6,8 +6,8 @@
   justify-content: center;
 }
 
-.reply-status-formatter .reply-status-arrow {
-  color: #999;
-  width: 16px;
-  height: 16px;
+.reply-status-formatter .reply-status-icon {
+  color: #bdbdbd;
+  width: 12px;
+  height: 12px;
 }

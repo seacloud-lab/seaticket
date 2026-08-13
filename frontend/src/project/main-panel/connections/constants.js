@@ -938,7 +938,7 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       editable: false,
       is_width_fixed: true,
       frozen: 2,
-      width: 110,
+      width: 33,
     },
     [CONNECTION_PREDEFINED_COLUMN_NAME.TAGS]: {
       display_name: gettext('Tags'),
@@ -1126,7 +1126,7 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
 
 export const CONNECTION_COLUMNS_WIDTH_CONFIG = {
   'unread': 33,
-  'is_replied': 100,
+  'is_replied': 33,
   'title': 400,
 };
 

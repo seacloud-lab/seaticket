@@ -2031,7 +2031,10 @@ class ProjectConnectionReplyEmailView(APIView):
             'reply_to_email_id': target_email.get('_pk'),
         }
         try:
-            pk = email_seadb_api.save_reply_email(project_uuid, connection_id, thread_id, email_data)
+            pk = email_seadb_api.save_reply_email(
+                project_uuid, connection_id, thread_id, email_data,
+                use_last_email_sender=config.get('server_provider') == 'Gmail',
+            )
             email_data['_pk'] = pk
         except Exception as e:
             logger.error('save reply email failed, connection_id: %s, thread_id: %s, error: %s', connection_id, thread_id, e)

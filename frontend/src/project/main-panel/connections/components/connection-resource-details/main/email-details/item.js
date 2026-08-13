@@ -31,7 +31,6 @@ const Item = ({
   const { sender, email } = useMemo(() => getInfoByEmailFrom(detail['email_from']), [detail]);
   const isReadonly = useMemo(() => permission === PERMISSION_TYPES.READ_ONLY, [permission]);
   const isUnread = Boolean(detail.unread);
-  const isAnswered = Boolean(detail.answered);
 
   const contentStart = useMemo(() => {
     const hrefReg = /\[.+\]\(\S+\)|<img( width=[\\|/]?"(\d)+[\\|/|]?")? src="(\S+)" .?\/>|!\[\]\(\S+\)|!\[\]\((\S+)\)|<\S+>/g;
@@ -237,12 +236,6 @@ const Item = ({
               <span className="email-record-info-sender text-truncate" title={sender}>{sender}</span>
               <span className="email-record-info-content text-truncate" title={contentStart}>{contentStart}</span>
               {isUnread && <div className="read-status unread" />}
-              {isAnswered && !isUnread && (
-                <svg className="replied-status-arrow" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9 14L4 9l5-5" />
-                  <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11" />
-                </svg>
-              )}
               <DateFormatter value={detail.modified_time} className="email-record-info-time" />
             </div>
             <div className="email-record-info-to-container">
@@ -286,12 +279,6 @@ const Item = ({
             >
               <div className={classnames('read-status', { unread: isUnread })}/>
             </IconTooltip>
-            {isAnswered && (
-              <svg className="replied-status-arrow" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 14L4 9l5-5" />
-                <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11" />
-              </svg>
-            )}
             {!isReadonly && !isShowReply && (
               <IconTextBtn icon="reply" color="default" text={gettext('Reply')} className="h-5" onClick={openReply} />
             )}

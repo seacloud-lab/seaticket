@@ -223,7 +223,9 @@ class EmailSeaDBAPI:
                 result.append(whole_thread_data)
         return result
 
-    def save_reply_email(self, project_uuid, connection_id, thread_id, email_data):
+    def save_reply_email(
+            self, project_uuid, connection_id, thread_id, email_data,
+            use_last_email_sender=False):
         now = datetime.datetime.now(datetime.UTC).isoformat()
         email_table_name = SchemaTables.EMAIL.table_name(connection_id)
         thread_table_name = SchemaTables.THREAD.table_name(connection_id)
@@ -261,7 +263,8 @@ class EmailSeaDBAPI:
             }])
 
         is_replied = self.recompute_thread_is_replied(
-            project_uuid, connection_id, thread_id
+            project_uuid, connection_id, thread_id,
+            use_last_email_sender=use_last_email_sender,
         )
         email_data['is_replied'] = is_replied
         self.seadb_api.update_rows(project_uuid, thread_table_name, [{
@@ -275,16 +278,29 @@ class EmailSeaDBAPI:
         }])
         return pks[0] if pks else None
 
-    def recompute_thread_is_replied(self, project_uuid, connection_id, thread_id):
+    def recompute_thread_is_replied(
+            self, project_uuid, connection_id, thread_id,
+            use_last_email_sender=False):
         email_table_name = SchemaTables.EMAIL.table_name(connection_id)
-        sql = f"""
-            SELECT answered FROM `{email_table_name}`
-            WHERE thread_id = {int(thread_id)}
-            AND is_sender = false
-            AND deleted = false
-            ORDER BY modified_time DESC, _pk DESC LIMIT 1
-        """
+        if use_last_email_sender:
+            sql = f"""
+                SELECT is_sender, reply_to_message_id FROM `{email_table_name}`
+                WHERE thread_id = {int(thread_id)}
+                AND deleted = false
+                ORDER BY modified_time DESC, _pk DESC LIMIT 1
+            """
+        else:
+            sql = f"""
+                SELECT answered FROM `{email_table_name}`
+                WHERE thread_id = {int(thread_id)}
+                AND is_sender = false
+                AND deleted = false
+                ORDER BY modified_time DESC, _pk DESC LIMIT 1
+            """
         results = self.seadb_api.query_rows(project_uuid, sql).get('results', [])
+        if use_last_email_sender:
+            last_email = results[0] if results else {}
+            return bool(last_email.get('is_sender') and last_email.get('reply_to_message_id'))
         return bool(results and results[0].get('answered'))
 
     def mark_emails_deleted(self, connection_id, email_pks):

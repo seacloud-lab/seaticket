@@ -22,6 +22,7 @@ const COLUMNS_ICON_CONFIG = {
   [CellType.URL]: 'url',
   [CellType.PRIORITY]: 'flag',
   [CellType.UNREAD_STATUS]: 'read-state',
+  [CellType.REPLY_STATUS]: 'reply-status',
   [CellType.LINK]: 'link',
 };
 
@@ -46,6 +47,7 @@ const COLUMNS_ICON_NAME = {
   [CellType.URL]: gettext('URL'),
   [CellType.PRIORITY]: gettext('Priority'),
   [CellType.UNREAD_STATUS]: gettext('Read status'),
+  [CellType.REPLY_STATUS]: gettext('Reply status'),
   [CellType.LINK]: gettext('Link'),
 };
 
