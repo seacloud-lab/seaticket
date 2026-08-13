@@ -56,6 +56,7 @@ def test_build_items_map_reformats_actions_by_phase():
                 'suggestion_reason': '',
                 'suggestion_text': '',
                 'suggestion_content': '',
+                'suggestion_payload': '',
                 'sources': [],
                 'statistics': '',
                 'created_at': '',
