@@ -160,9 +160,10 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
               if (assigneesCol) {
                 const val = row[assigneesCol.key] || row[assigneesCol.name];
                 if (Array.isArray(val)) {
-                  const names = val.map(id => jiraUserMap[id] || id);
-                  row[assigneesCol.key] = names;
-                  row[assigneesCol.name] = names;
+                  const names = val.map(id => jiraUserMap[id] || id).filter(Boolean);
+                  const nameStr = names.join(', ');
+                  row[assigneesCol.key] = nameStr;
+                  row[assigneesCol.name] = nameStr;
                 }
               }
             });
