@@ -1023,6 +1023,8 @@ def get_connection_records_by_pks(seadb_api, project_uuid, connection_id, connec
         table_name = SchemaTables.GENERAL_TASK.table_name(connection_id)
     elif connection_type == ConnectionType.LINEAR.value:
         table_name = SchemaTables.LINEAR_ISSUES.table_name(connection_id)
+    elif connection_type == ConnectionType.DISCORD.value:
+        table_name = SchemaTables.DISCORD_THREADS.table_name(connection_id)
     else:
         return []
 
