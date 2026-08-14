@@ -177,9 +177,9 @@ class ChatAPI {
     return this.req.get(url);
   }
 
-  listAdminChatSessions(projectUuid) {
+  listAdminChatSessions(projectUuid, page = 1, perPage = 50) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/admin/chat/sessions/';
-    return this.req.get(url);
+    return this.req.get(url, { params: { page, per_page: perPage } });
   }
 
   getAdminChatMessages(projectUuid, sessionUuid) {

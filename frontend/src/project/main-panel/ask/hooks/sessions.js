@@ -10,13 +10,15 @@ import { EVENT_BUS_TYPE } from '../../../constants';
 
 const SessionsContext = React.createContext(null);
 
-export const SessionsProvider = ({ projectUuid, api, children }) => {
+export const SessionsProvider = ({ projectUuid, api, children, paginate = false, pageSize = 50 }) => {
   const [isLoading, setLoading] = useState(true);
   const [sessions, setSessions] = useState([]);
   const [teamSessions, setTeamSessions] = useState([]);
   const [isTeamSessionsLoading, setIsTeamSessionsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState(SESSION_TAB_TYPE.MINE);
   const [isShowSessions, setIsShowSessions] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMoreSessions, setHasMoreSessions] = useState(false);
 
   const sendMessageRequestController = useRef({});
 
@@ -260,24 +262,36 @@ export const SessionsProvider = ({ projectUuid, api, children }) => {
     });
   }, [projectUuid, sessions, api]);
 
-  useEffect(() => {
-    setLoading(true);
-    api.listChatSessions(projectUuid).then(res => {
-      let sessions = res.data.sessions;
-      if (Array.isArray(sessions) && sessions.length > 0) {
-        sessions = sessions.map(session => new ChatSession(session));
-      } else {
-        sessions = [];
+  const loadSessions = useCallback((page = 1, append = false) => {
+    if (append) setIsLoadingMore(true);
+    else setLoading(true);
+
+    return api.listChatSessions(projectUuid, page, pageSize).then(res => {
+      let newSessions = res.data.sessions;
+      newSessions = Array.isArray(newSessions) ? newSessions.map(session => new ChatSession(session)) : [];
+      setSessions(prevSessions => append ? [...prevSessions, ...newSessions] : newSessions);
+      if (paginate) {
+        setHasMoreSessions(Boolean(res.data.pagination?.has_next));
       }
-      setSessions(sessions);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
-      setSessions([]);
+      if (!append) setSessions([]);
     }).finally(() => {
-      setLoading(false);
+      if (append) setIsLoadingMore(false);
+      else setLoading(false);
     });
-  }, [projectUuid, api]);
+  }, [api, pageSize, paginate, projectUuid]);
+
+  const loadMoreSessions = useCallback(() => {
+    if (!paginate || isLoading || isLoadingMore || !hasMoreSessions) return Promise.resolve();
+    const nextPage = Math.floor(sessions.length / pageSize) + 1;
+    return loadSessions(nextPage, true);
+  }, [hasMoreSessions, isLoading, isLoadingMore, loadSessions, pageSize, paginate, sessions.length]);
+
+  useEffect(() => {
+    loadSessions();
+  }, [loadSessions]);
 
   useEffect(() => {
     const unsubscribeSendChatMessage = eventBus.subscribe(EVENT_BUS_TYPE.ASK_QUESTION, solveProblem);
@@ -324,6 +338,9 @@ export const SessionsProvider = ({ projectUuid, api, children }) => {
       startChatFromConversation: api.copyChatSession ? startChatFromConversation : null,
       getChatMessage,
       markSessionRunningTask,
+      isLoadingMore,
+      hasMoreSessions,
+      loadMoreSessions,
     }}>
       {children}
     </SessionsContext.Provider>

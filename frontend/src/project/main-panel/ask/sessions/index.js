@@ -12,7 +12,7 @@ const TABS = [
   { value: SESSION_TAB_TYPE.TEAM, label: gettext('Team') },
 ];
 
-const Sessions = ({ sessionId, permission }) => {
+const Sessions = ({ sessionId, permission, onLoadMore }) => {
   const {
     sessions,
     teamSessions,
@@ -20,7 +20,9 @@ const Sessions = ({ sessionId, permission }) => {
     activeTab,
     setActiveTab,
     closeShowSessions,
-    loadTeamSessions
+    loadTeamSessions,
+    isLoadingMore,
+    hasMoreSessions,
   } = useSessions();
   const { isShowDocuments, documents } = useDocuments();
 
@@ -39,6 +41,12 @@ const Sessions = ({ sessionId, permission }) => {
     }
   }, [activeTab, loadTeamSessions]);
 
+  const handleScroll = (event) => {
+    if (!onLoadMore || isLoadingMore || !hasMoreSessions) return;
+    const { scrollTop, scrollHeight, clientHeight } = event.currentTarget;
+    if (scrollHeight - scrollTop - clientHeight < 80) onLoadMore();
+  };
+
   return (
     <div className="seaqa-ai-ask-sessions-wrapper" style={{ width: 280, marginLeft: _isShowDocuments ? 16 : 0 }}>
       <div className="seaqa-ai-ask-sessions-header">
@@ -53,7 +61,7 @@ const Sessions = ({ sessionId, permission }) => {
           onChange={setActiveTab}
         />
       )}
-      <div className="seaqa-ai-ask-sessions-body">
+      <div className="seaqa-ai-ask-sessions-body" onScroll={handleScroll}>
         {isTeamTab && isTeamSessionsLoading && (
           <CenteredLoading />
         )}
@@ -72,6 +80,7 @@ const Sessions = ({ sessionId, permission }) => {
             />
           );
         })}
+        {isLoadingMore && <CenteredLoading />}
       </div>
     </div>
   );

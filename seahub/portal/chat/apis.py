@@ -19,7 +19,7 @@ from seahub.utils import uuid_str_to_32_chars
 from seahub.utils.storage import upload_portal_files_to_s3
 from seahub.project.models import AIUsageStatistics
 from seahub.project.constants import AIScenario
-from seahub.project.utils import check_ai_limit, check_same_org_permission, check_project_admin_permission, delete_portal_sessions
+from seahub.project.utils import check_ai_limit, check_same_org_permission, check_project_admin_permission, delete_portal_sessions, convert_cost_to_credit
 from seahub.utils.ip import get_remote_ip
 from seahub.portal.chat.utils import (
     build_portal_message_result,
@@ -259,10 +259,30 @@ class PortalAdminChatSessionsView(APIView):
     @portal_endpoint
     def get(self, request, project_uuid):
         try:
+            try:
+                current_page = int(request.GET.get('page', 1))
+                per_page = int(request.GET.get('per_page', 50))
+            except (TypeError, ValueError):
+                return api_error(status.HTTP_400_BAD_REQUEST, 'per_page or page invalid')
+
+            if current_page < 1 or per_page < 1:
+                return api_error(status.HTTP_400_BAD_REQUEST, 'per_page or page invalid')
+
+            per_page = min(per_page, 100)
+            start = (current_page - 1) * per_page
+            end = start + per_page
+
             sessions = PortalChatSessions.objects.filter(
                 project_uuid=project_uuid,
-            ).order_by('-updated_at')
-            return Response({'sessions': [session.to_dict() for session in sessions]})
+            ).order_by('-updated_at')[start:end]
+            return Response({
+                'sessions': [session.to_dict() for session in sessions],
+                'pagination': {
+                    'page': current_page,
+                    'per_page': per_page,
+                    'has_next': len(sessions) == per_page,
+                },
+            })
         except Exception as e:
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
@@ -284,11 +304,12 @@ class PortalAdminChatStatisticsView(APIView):
             )
 
             statistic_res = AIUsageStatistics.objects.filter(
-                project_uuid=uuid_str_to_32_chars(project_uuid)
+                project_uuid=uuid_str_to_32_chars(project_uuid),
+                scenario=AIScenario.PORTAL_CHAT.value
             ).aggregate(
                 input_tokens=Sum("input_tokens", default=0),
                 output_tokens=Sum("output_tokens", default=0),
-                cost=Sum("cost", default=0),
+                total_credit_used=convert_cost_to_credit(Sum("cost", default=0)),
             )
 
             return Response({**user_count_res, **statistic_res})
@@ -549,12 +570,10 @@ class PortalChatImageView(APIView):
                 return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
             if payload.get('username') != request.user.username:
                 return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
-            session = PortalChatSessions.objects.filter(
-                project_uuid=project_uuid,
-                session_uuid=session_uuid,
-            ).first()
-            if not session or payload.get('session_username') != session.username:
-                return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+            
+            session, error = _get_session_or_error(session_uuid, payload.get('session_username'))
+            if error:
+                return error
         else:
             if payload.get('username') != username:
                 return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')

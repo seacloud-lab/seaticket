@@ -13,8 +13,10 @@ import './index.css';
 
 const { projectUuid, projectName, workspaceID } = window.app.pageOptions;
 
+const PORTAL_ADMIN_CHAT_PAGE_SIZE = 50;
+
 const adminChatAPI = {
-  listChatSessions: (uuid) => chatAPI.listAdminChatSessions(uuid),
+  listChatSessions: (uuid, page, pageSize) => chatAPI.listAdminChatSessions(uuid, page, pageSize),
   getChatMessages: (uuid, sessionUuid) => chatAPI.getAdminChatMessages(uuid, sessionUuid),
 };
 
@@ -25,7 +27,7 @@ const TABS = [
 
 const AllChat = () => {
   const { pageSlugId, togglePageSlugId } = useAskPage();
-  const { isLoading, sessions } = useSessions();
+  const { isLoading, sessions, loadMoreSessions } = useSessions();
 
   useEffect(() => {
     if (!isLoading && pageSlugId === ASK_PAGE_SLUG_ID.NEW && sessions[0]) {
@@ -48,9 +50,8 @@ const AllChat = () => {
         enableSkills={false}
         readOnly={true}
         hideInput={true}
-        customHeaderTitle={gettext('All chat')}
       />
-      <Sessions sessionId={pageSlugId} permission="r" />
+      <Sessions sessionId={pageSlugId} permission="r" onLoadMore={loadMoreSessions} />
     </div>
   );
 };
@@ -73,7 +74,7 @@ const Statistics = () => {
     { key: 'user_count', label: gettext('Users') },
     { key: 'input_tokens', label: gettext('Input tokens') },
     { key: 'output_tokens', label: gettext('Output tokens') },
-    { key: 'cost', label: gettext('Cost') },
+    { key: 'total_credit_used', label: gettext('Credit used') },
   ];
 
   return (
@@ -81,7 +82,9 @@ const Statistics = () => {
       {items.map(item => (
         <div className="seaqa-portal-chat-analysis-statistics-card" key={item.key}>
           <div className="seaqa-portal-chat-analysis-statistics-label">{item.label}</div>
-          <div className="seaqa-portal-chat-analysis-statistics-value">{statistics?.[item.key] ?? 0}</div>
+          <div className="seaqa-portal-chat-analysis-statistics-value">
+            {item.key === 'total_credit_used' ? statistics?.[item.key].toFixed(0) : statistics?.[item.key] ?? 0}
+          </div>
         </div>
       ))}
     </div>
@@ -100,7 +103,7 @@ const PortalChatAnalysis = ({ title }) => {
         <CustomizeTabs tabs={TABS} value={activeTab} onChange={setActiveTab} />
       </div>
       <AskPageProvider resetURL={resetURL} getInitialPageSlugId={getInitialPageSlugId}>
-        <SessionsProvider projectUuid={projectUuid} api={adminChatAPI}>
+        <SessionsProvider projectUuid={projectUuid} api={adminChatAPI} paginate pageSize={PORTAL_ADMIN_CHAT_PAGE_SIZE}>
           <DocumentsProvider>
             <div className="seaqa-portal-chat-analysis-content">
               {activeTab === 'all-chat' ? <AllChat /> : <Statistics />}
