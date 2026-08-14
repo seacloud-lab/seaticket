@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { notificationAPI } from '@/project/api';
 import { toaster } from '@/components';
 import { Utils } from '@/utils/utils';
@@ -6,8 +6,9 @@ import {
   NOTIFICATION_TYPE, TICKET_MSG_TYPES, MSG_TYPE_PROJECTS, MSG_TYPE_WS_USER_NOTIFICATION,
   MSG_TYPE_WS_USER_LOGOUT_NOTIFICATION,
 } from '../constants';
-import { siteRoot } from '@/constants';
+import { siteRoot, username } from '@/constants';
 import sharedWsClient from '@/utils/websocket-service';
+import BrowserMessenger from '@/utils/browser-messenger';
 
 const NotificationContext = createContext();
 
@@ -22,6 +23,9 @@ export const NotificationProvider = ({ children, projectUuid }) => {
   const [allNotificationCount, setAllNotificationCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+
+  const browserMessenger = useMemo(() => new BrowserMessenger(), []);
+
   const abortControllerRef = useRef(null);
 
   const getFormatList = useCallback((res, type) => {
@@ -142,13 +146,22 @@ export const NotificationProvider = ({ children, projectUuid }) => {
         setNotificationList(prev =>
           prev.map(item => item.id === noticeId ? { ...item, seen: true } : item)
         );
-        setUnseen(u => Math.max(0, u - 1));
+        setUnseen(u => {
+          const newValue = Math.max(0, u - 1);
+          browserMessenger.send({
+            type: username,
+            projectUuid,
+            unseen: newValue,
+            seen: 1,
+          });
+          return newValue;
+        });
       })
       .catch(err => {
         const errorMsg = Utils.getErrorMsg(err);
         toaster.danger(errorMsg);
       });
-  }, [notificationList]);
+  }, [notificationList, projectUuid, browserMessenger]);
 
   const markAllAsRead = useCallback(() => {
     const hasUnread = notificationList.find(item => item.seen === false);
@@ -157,13 +170,46 @@ export const NotificationProvider = ({ children, projectUuid }) => {
       .then(() => {
         setNotificationList(prev => prev.map(item => ({ ...item, seen: true })));
         setUnseen(0);
+        browserMessenger.send({
+          type: username,
+          projectUuid,
+          unseen: 0,
+          seen: unseen,
+        });
       })
       .catch(err => {
         const errorMsg = Utils.getErrorMsg(err);
         toaster.danger(errorMsg);
       });
-  }, [projectUuid, notificationList]);
+  }, [unseen, projectUuid, notificationList, browserMessenger]);
 
+  const markProjectNoticeAsReadByTicket = useCallback((projectUuid, ticketId) => {
+    if (unseen === 0) return;
+    if (!notificationList.find(notification => !notification.seen && TICKET_MSG_TYPES.includes(notification.msg_type) && notification.detail.ticket_id === ticketId)) return;
+    notificationAPI.markProjectNoticeAsReadByTicket(projectUuid, ticketId).then(res => {
+      const { seen_count = 0 } = res.data;
+      const newNotificationList = notificationList.map(notification => {
+        if (!notification.seen && TICKET_MSG_TYPES.includes(notification.msg_type) && notification.detail.ticket_id === ticketId) return { ...notification, seen: true };
+        return notification;
+      });
+      setNotificationList(newNotificationList);
+      setUnseen(u => {
+        const newValue = Math.max(u - seen_count, 0);
+        browserMessenger.send({
+          type: username,
+          projectUuid,
+          unseen: newValue,
+          seen: seen_count,
+        });
+        return newValue;
+      });
+    }).catch(error => {
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+    });
+  }, [unseen, notificationList, browserMessenger]);
+
+  // used for all notifications
   const markAsReadByTab = useCallback((noticeItem, curTab) => {
     if (curTab === NOTIFICATION_TYPE.GENERAL) {
       const notice = notificationList.find(item => item.id === noticeItem.id);
@@ -212,11 +258,16 @@ export const NotificationProvider = ({ children, projectUuid }) => {
       const unSeenList = notificationList.filter(item => item.unseen_count > 0);
       if (unSeenList.length === 0) return;
 
-      const count = unSeenList.reduce((sum, item) => {
-        return sum + item.unseen_count;
-      }, 0);
+      const count = unSeenList.reduce((sum, item) => sum + item.unseen_count, 0);
       Promise.all(unSeenList.map(item => notificationAPI.markAllProjectRead(item.project_uuid)))
         .then(() => {
+          unSeenList.forEach((item) => {
+            browserMessenger.send({
+              type: item.project_uuid,
+              unseen: 0,
+              seen: item.unseen_count
+            });
+          });
           setUnseen(Math.max(0, unseen - count));
           setNotificationList([]);
           setUnseenByType(prev => ({
@@ -229,24 +280,7 @@ export const NotificationProvider = ({ children, projectUuid }) => {
           toaster.danger(errorMsg);
         });
     }
-  }, [notificationList, unseen]);
-
-  const markProjectNoticeAsReadByTicket = useCallback((projectUuid, ticketId) => {
-    if (unseen === 0) return;
-    if (!notificationList.find(notification => !notification.seen && TICKET_MSG_TYPES.includes(notification.msg_type) && notification.detail.ticket_id === ticketId)) return;
-    notificationAPI.markProjectNoticeAsReadByTicket(projectUuid, ticketId).then(res => {
-      const { seen_count = 0 } = res.data;
-      setUnseen(Math.max(unseen - seen_count, 0));
-      const newNotificationList = notificationList.map(notification => {
-        if (!notification.seen && TICKET_MSG_TYPES.includes(notification.msg_type) && notification.detail.ticket_id === ticketId) return { ...notification, seen: true };
-        return notification;
-      });
-      setNotificationList(newNotificationList);
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-    });
-  }, [unseen, notificationList]);
+  }, [notificationList, unseen, browserMessenger]);
 
   useEffect(() => {
     // When clicking on the project notification, open the inbox drawer
@@ -262,6 +296,7 @@ export const NotificationProvider = ({ children, projectUuid }) => {
     };
   }, []);
 
+  // websocket messages
   useEffect(() => {
     if (projectUuid) return;
 
@@ -305,28 +340,68 @@ export const NotificationProvider = ({ children, projectUuid }) => {
     };
   }, [projectUuid]);
 
-  const value = {
-    notificationList,
-    setNotificationList,
-    allNotificationCount,
-    setAllNotificationCount,
-    unseen,
-    unseenByType,
-    loading,
-    loadingMore,
-    fetchNotifications, // Fetch project
-    fetchAllNotifications, // Fetch all
-    markAsRead,
-    markAllAsRead,
-    markAsReadByTab,
-    markProjectNoticeAsReadByTicket,
-    markAllAsReadByTab,
-    showInboxDrawer,
-    setShowInboxDrawer,
-  };
+  // browser messages
+  useEffect(() => {
+    if (!browserMessenger) return;
+    if (projectUuid) {
+      browserMessenger.on(projectUuid, (data) => {
+        const { unseen } = data;
+        setUnseen(unseen);
+        setNotificationList(prev => prev.map(item => ({ ...item, seen: true })));
+      });
+      return () => {
+        browserMessenger.off(projectUuid);
+        browserMessenger.close();
+      };
+    }
+
+    browserMessenger.on(username, (data) => {
+      const { projectUuid, unseen, seen } = data;
+      setUnseen(u => Math.max(u - seen, 0));
+      setUnseenByType(prev => ({ ...prev, [NOTIFICATION_TYPE.PROJECT]: Math.max(prev[NOTIFICATION_TYPE.PROJECT] - seen, 0) }));
+      setNotificationList((notifications) => {
+        if (projectUuid) {
+          const noticeProjectUuidIndex = notifications.findIndex(notification => notification.project_uuid === projectUuid);
+          if (noticeProjectUuidIndex === -1) return notifications;
+          let newNotifications = notifications.slice(0);
+          if (unseen === 0) {
+            newNotifications.splice(noticeProjectUuidIndex, 1);
+          } else {
+            const notification = newNotifications[noticeProjectUuidIndex];
+            newNotifications[noticeProjectUuidIndex] = { ...notification, count: notification.count, unseen_count: unseen };
+          }
+          return newNotifications;
+        }
+        return notifications;
+      });
+    });
+    return () => {
+      browserMessenger.off(username);
+      browserMessenger.close();
+    };
+
+  }, [browserMessenger, projectUuid]);
 
   return (
-    <NotificationContext.Provider value={value}>
+    <NotificationContext.Provider value={{
+      notificationList,
+      setNotificationList,
+      allNotificationCount,
+      setAllNotificationCount,
+      unseen,
+      unseenByType,
+      loading,
+      loadingMore,
+      fetchNotifications, // Fetch project
+      fetchAllNotifications, // Fetch all
+      markAsRead,
+      markAllAsRead,
+      markAsReadByTab,
+      markProjectNoticeAsReadByTicket,
+      markAllAsReadByTab,
+      showInboxDrawer,
+      setShowInboxDrawer,
+    }}>
       {children}
     </NotificationContext.Provider>
   );
