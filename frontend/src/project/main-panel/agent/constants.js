@@ -60,8 +60,7 @@ const RUN_EVENT = {
   // ticket
   TICKET_DUE_SOON: 'ticket_due_soon',
   TICKET_OVER_DUE: 'ticket_over_due',
-  TICKET_LINKED_RECORD_ACTIVITY: 'ticket_linked_record_activity',
-  TICKET_TASK_FINISHED: 'ticket_task_finished',
+  TICKET_TASK_FINISHED: 'general_task_updated',
 };
 
 const RUN_EVENT_NAME = {
@@ -73,8 +72,7 @@ const RUN_EVENT_NAME = {
   [RUN_EVENT.EMAIL_MESSAGE_ADDED]: gettext('New email message'),
   [RUN_EVENT.TICKET_DUE_SOON]: gettext('Ticket due soon'),
   [RUN_EVENT.TICKET_OVER_DUE]: gettext('Ticket overdue'),
-  [RUN_EVENT.TICKET_LINKED_RECORD_ACTIVITY]: gettext('New linked ticket activity'),
-  [RUN_EVENT.TICKET_TASK_FINISHED]: gettext('Ticket task finished'),
+  [RUN_EVENT.TICKET_TASK_FINISHED]: gettext('Internal task finished'),
 };
 
 
