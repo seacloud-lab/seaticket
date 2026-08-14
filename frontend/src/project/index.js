@@ -158,6 +158,10 @@ const Project = () => {
       bar = BAR_TYPE.PORTAL_ISSUE_SUBSTATES;
       children[0] = '';
     }
+    if (bar === BAR_TYPE.PORTAL_ISSUES && children[0] === PORTAL_ISSUE_PAGE_SLUG_ID.ANALYSIS) {
+      bar = BAR_TYPE.PORTAL_CHAT_ANALYSIS;
+      children[0] = '';
+    }
     if (bar === BAR_TYPE.CONNECTION && children[0] && CONNECTION_PAGE_SLUG_ID.ALL !== children[0]) {
       children[0] = Number(children[0]);
     }

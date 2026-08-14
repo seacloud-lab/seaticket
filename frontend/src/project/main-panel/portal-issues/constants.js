@@ -36,6 +36,7 @@ export const PORTAL_ISSUE_PAGE_SLUG_ID = {
   ALL: 'all',
   TYPES: 'types',
   SUBSTATES: 'substates',
+  ANALYSIS: 'analysis',
   TRASH: 'trash',
 };
 

@@ -13,6 +13,7 @@ import Tags from './tags';
 import Inbox from './inbox';
 import SupportPortal from './support-portal';
 import PortalIssues from './portal-issues';
+import PortalChatAnalysis from './portal-chat-analysis';
 import { useNotification } from '@/components/common/notification/hooks/notification';
 import { useTags, useMetadata } from '../hooks';
 import { useConnections } from './connections/hooks';
@@ -78,6 +79,9 @@ const Container = ({ activeBar, settings, modifySettings, toggleBar, modifyLocal
     case BAR_TYPE.PORTAL_ISSUE_TYPES:
     case BAR_TYPE.PORTAL_ISSUE_SUBSTATES: {
       return (<PortalIssues key={barKey} title={title} toggleBar={toggleBar} type={barKey} />);
+    }
+    case BAR_TYPE.PORTAL_CHAT_ANALYSIS: {
+      return (<PortalChatAnalysis title={title} />);
     }
     default:
       return (<Connections title={title} toggleBar={toggleBar} modifyLocalBar={modifyLocalBar} />);

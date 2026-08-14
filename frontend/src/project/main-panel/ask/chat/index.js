@@ -15,7 +15,7 @@ import ChatHeader from '../chat-header';
 
 import './index.css';
 
-const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allowedAttachmentSources, canSelectModel, enableSkills = true, api, renderOperation, customHeaderTitle }) => {
+const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allowedAttachmentSources, canSelectModel, enableSkills = true, api, renderOperation, customHeaderTitle, readOnly: forceReadOnly = false, hideInput = false }) => {
   const [isReply, setReply] = useState(false);
   const [loading, setLoading] = useState(true);
   const [chatHistories, setChatHistories] = useState([]);
@@ -53,8 +53,9 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
   }, [session]);
 
   const readOnly = useMemo(() => {
+    if (forceReadOnly) return true;
     return Boolean(session?.running_task || isSharedByOther);
-  }, [session?.running_task, isSharedByOther]);
+  }, [forceReadOnly, session?.running_task, isSharedByOther]);
 
   const jumpToBottom = useCallback((delay = 1) => {
     if (timer.current) {
@@ -597,33 +598,35 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
           {loading && (<CenteredLoading className="flex-1" />)}
         </div>
       </div>
-      <div className="seaqa-ai-ask-chats-footer">
-        {isSharedByOther && !session?.running_task && startChatFromConversation ? (
-          <div className="seaqa-ai-ask-shared-readonly-footer">
-            <SecondaryBtn
-              icon={isStartingChatFromConversation ? 'loading' : 'copy'}
-              text={gettext('Start a new chat from this conversation')}
-              doing={isStartingChatFromConversation}
-              onClick={handleStartChatFromConversation}
+      {!hideInput && (
+        <div className="seaqa-ai-ask-chats-footer">
+          {isSharedByOther && !session?.running_task && startChatFromConversation ? (
+            <div className="seaqa-ai-ask-shared-readonly-footer">
+              <SecondaryBtn
+                icon={isStartingChatFromConversation ? 'loading' : 'copy'}
+                text={gettext('Start a new chat from this conversation')}
+                doing={isStartingChatFromConversation}
+                onClick={handleStartChatFromConversation}
+              />
+            </div>
+          ) : (
+            <ChatInput
+              ref={messageInputRef}
+              isReply={_isReply}
+              readOnly={readOnly}
+              projectUuid={projectUuid}
+              placeholder={isEmpty ? undefined : ''}
+              allowedAttachmentSources={allowedAttachmentSources}
+              canSelectModel={canSelectModel}
+              enableSkills={enableSkills}
+              sendMessage={sendMessage}
+              clearContext={clearContext}
+              resetClearContext={resetClearContext}
+              api={api}
             />
-          </div>
-        ) : (
-          <ChatInput
-            ref={messageInputRef}
-            isReply={_isReply}
-            readOnly={readOnly}
-            projectUuid={projectUuid}
-            placeholder={isEmpty ? undefined : ''}
-            allowedAttachmentSources={allowedAttachmentSources}
-            canSelectModel={canSelectModel}
-            enableSkills={enableSkills}
-            sendMessage={sendMessage}
-            clearContext={clearContext}
-            resetClearContext={resetClearContext}
-            api={api}
-          />
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

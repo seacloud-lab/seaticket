@@ -1,7 +1,7 @@
 from django.conf import settings
 from rest_framework.permissions import BasePermission
 
-from seahub.project.utils import check_same_org_permission
+from seahub.project.utils import check_same_org_permission, check_project_admin_permission
 from seahub.portal.models import ProjectExternalUser
 from seahub.portal.utils import get_portal_preview_username, get_request_project_and_portal_settings, get_request_session
 
@@ -175,6 +175,20 @@ class PortalChatPermission(BasePermission):
                 return False
             return True
         return False
+
+
+class PortalAdminPermission(BasePermission):
+    """Allow only project administrators to access portal admin APIs."""
+
+    def has_permission(self, request, view):
+        if not getattr(request.user, 'is_authenticated', False):
+            return False
+
+        project, _ = _get_project_and_settings(request, view)
+        if not project:
+            return False
+
+        return check_project_admin_permission(request.user.username, project.workspace.owner)
 
 
 class PortalUploadPermission(PortalChatPermission):

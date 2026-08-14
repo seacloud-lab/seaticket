@@ -40,6 +40,10 @@ const PortalIssuesMoreNav = ({ onClick }) => {
           <CustomizeDropdownItemIcon symbol={'manage-types'} />
           <CustomizeDropdownItemText>{BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_ISSUE_SUBSTATES].name}</CustomizeDropdownItemText>
         </CustomizeDropdownItem>
+        <CustomizeDropdownItem onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_CHAT_ANALYSIS].key)}>
+          <CustomizeDropdownItemIcon symbol={BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_CHAT_ANALYSIS].icon} />
+          <CustomizeDropdownItemText>{BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_CHAT_ANALYSIS].name}</CustomizeDropdownItemText>
+        </CustomizeDropdownItem>
         <div className="dropdown-divider"></div>
         <CustomizeDropdownItem onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_ISSUES_TRASH].key)}>
           <CustomizeDropdownItemIcon symbol={'trash'} />

@@ -177,6 +177,21 @@ class ChatAPI {
     return this.req.get(url);
   }
 
+  listAdminChatSessions(projectUuid) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/admin/chat/sessions/';
+    return this.req.get(url);
+  }
+
+  getAdminChatMessages(projectUuid, sessionUuid) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/admin/chat/sessions/' + sessionUuid + '/messages/';
+    return this.req.get(url);
+  }
+
+  getAdminChatStatistics(projectUuid) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/admin/chat/statistics/';
+    return this.req.get(url);
+  }
+
   getChatMessage(projectUuid, sessionId) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/chat/?session_uuid=' + sessionId;
     return this.req.get(url);

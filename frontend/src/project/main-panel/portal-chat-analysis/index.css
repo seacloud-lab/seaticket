@@ -1,0 +1,62 @@
+.seaqa-portal-chat-analysis-tabs {
+  flex-shrink: 0;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+.seaqa-portal-chat-analysis-content {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.seaqa-portal-chat-analysis-all-chat {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  padding-right: 16px;
+}
+
+.seaqa-portal-chat-analysis-all-chat .seaqa-ai-ask-sessions-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.seaqa-portal-chat-analysis-statistics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-content: start;
+  gap: 16px;
+  width: 100%;
+  padding: 24px;
+}
+
+.seaqa-portal-chat-analysis-statistics-card {
+  padding: 20px;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 8px;
+  background: var(--bs-body-bg);
+}
+
+.seaqa-portal-chat-analysis-statistics-label {
+  color: var(--bs-secondary-color);
+  font-size: 14px;
+}
+
+.seaqa-portal-chat-analysis-statistics-value {
+  margin-top: 8px;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .seaqa-portal-chat-analysis-all-chat {
+    padding-right: 0;
+  }
+
+  .seaqa-portal-chat-analysis-statistics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 16px;
+  }
+}
