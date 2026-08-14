@@ -2,12 +2,16 @@ import React, { useCallback, useMemo, useState, useEffect, useRef } from 'react'
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import copy from 'copy-to-clipboard';
-import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Row } from 'reactstrap';
+import { Button, Modal, Input, ModalBody, FormGroup, Label, Row } from 'reactstrap';
 import { gettext } from '@/constants';
-import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, CONNECTION_SUB_TYPE_MAP, STEP, STEPS, EMAIL_SERVER_PROVIDER, getAvailableConnectionTypes } from '../../constants';
-import { getVisibleEmailFields, getEmailProvider, populateEmailOAuthDefaults, sanitizeEmailConfigByProvider, getConnectionIcon, isOAuthEmailProvider, getEmailOAuthCallbackUrl } from '../../utils';
-import { ModalHeader, Loading, SecondaryBtn, toaster, IconButton, Icon } from '@/components';
+import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, STEP, STEPS, EMAIL_SERVER_PROVIDER, getAvailableConnectionTypes } from '../../constants';
+import { getVisibleEmailFields, getEmailProvider, populateEmailOAuthDefaults, sanitizeEmailConfigByProvider, isOAuthEmailProvider, getEmailOAuthCallbackUrl } from '../../utils';
+import { ModalHeader, Loading, toaster, Icon } from '@/components';
 import ConnectionConfigEditor from '../connection-config-editor';
+import ConnectionDialogFooter from './connection-dialog-footer';
+import GithubConnectionConfig from './github-connection-config';
+import ConnectionTypeSections from './connection-type-sections';
+import SelectedConnectionHeader from './selected-connection-header';
 import { connectionsAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
 import Connection from '../../models/connection';
@@ -48,7 +52,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const [isLoadingRepositories, setIsLoadingRepositories] = useState(false);
   const [showEmailAdvancedOptions, setShowEmailAdvancedOptions] = useState(false);
   const [isWaitingEmailOAuth, setWaitingEmailOAuth] = useState(false);
-  const [collapsedSections, setCollapsedSections] = useState([]);
   const [isWaitingConfluenceOAuth, setWaitingConfluenceOAuth] = useState(false);
   // eslint-disable-next-line no-unused-vars
   const [confluenceWorkspacesVersion, setConfluenceWorkspacesVersion] = useState(0);
@@ -443,35 +446,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   }, [config.guild_id]);
 
   const typeOption = availableConnectionTypes.find(i => i.type === type) || availableConnectionTypes[0];
-  const connectionSections = useMemo(() => {
-    const sectionOrder = ['issues', 'documents', 'tasks'];
-    return sectionOrder
-      .map(subTypeKey => {
-        const subType = CONNECTION_SUB_TYPE_MAP[subTypeKey];
-        if (!subType) return null;
-        const items = availableConnectionTypes.filter(connection => {
-          const connectionSubType = connection.sub_types || connection.subTypes;
-          const connectionSubTypeName = connectionSubType?.name;
-          return connectionSubTypeName === subType.name || connectionSubTypeName === subTypeKey;
-        });
-        return items.length > 0 ? { key: subTypeKey, title: subType.text, items } : null;
-      })
-      .filter(Boolean);
-  }, [availableConnectionTypes]);
-
-  useEffect(() => {
-    setCollapsedSections(prev => prev.filter(sectionKey => connectionSections.some(section => section.key === sectionKey)));
-  }, [connectionSections]);
-
-  const toggleConnectionSection = useCallback((sectionKey) => {
-    setCollapsedSections(prev => {
-      if (prev.includes(sectionKey)) {
-        return prev.filter(key => key !== sectionKey);
-      }
-      return [...prev, sectionKey];
-    });
-  }, []);
-
   const listLinearTeams = useCallback(() => {
     return connectionsAPI.listLinearTeams(projectUuid).then(res => {
       const teams = res?.data?.teams || [];
@@ -636,76 +610,31 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     >
       <ModalHeader toggle={onToggle}>{gettext('New connection')}</ModalHeader>
       <ModalBody className="seaqa-project-connection-body">
-        {stepIndex > 0 &&
-          <div className="seaqa-project-selected-connection">
-            <div className='seaqa-project-connection-help'>
-              {typeOption.help_text}
-              <a className="ml-1" href={typeOption.help_link} target="_blank" rel="noopener noreferrer">{gettext('Help Docs')}</a>
-            </div>
-            <div className='seaqa-project-new-connection-type'>
-              <div className="d-flex align-items-center">
-                <img
-                  src={getConnectionIcon(typeOption.type)}
-                  alt={typeOption.name}
-                  className="seaqa-project-new-connection-icon"
-                />
-                <span className="seaqa-project-new-connection-name">{typeOption.name}</span>
-              </div>
-              {(typeOption.type === CONNECTION_TYPE.GITHUB_ISSUE && githubRepositories.length > 0) && (
-                <SecondaryBtn text={gettext('Manage GitHub app')} onClick={() => window.open(installGitHubAppURL, '_blank')} />
-              )}
-            </div>
-          </div>
-        }
-        {step.key === STEP.TYPE && (
-          <div className="seaqa-project-new-connection-type-sections">
-            {connectionSections.map(section => (
-              <div key={section.key} className="seaqa-project-new-connection-section">
-                <div className="seaqa-project-new-connection-section-header">
-                  <div className="seaqa-project-new-connection-section-title">{section.title}</div>
-                  <IconButton
-                    icon="arrow-down-b"
-                    className={classnames('seaqa-project-new-connection-section-toggle', {
-                      'rotate-icon-90': collapsedSections.includes(section.key),
-                    })}
-                    iconClassName="seaqa-project-new-connection-section-toggle-icon"
-                    role="button"
-                    tabIndex={0}
-                    aria-expanded={!collapsedSections.includes(section.key)}
-                    aria-label={collapsedSections.includes(section.key) ? gettext('Expand section') : gettext('Collapse section')}
-                    onClick={() => toggleConnectionSection(section.key)}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault();
-                        toggleConnectionSection(section.key);
-                      }
-                    }}
-                  />
-                </div>
-                {!collapsedSections.includes(section.key) && (
-                  <div className="seaqa-project-new-connection-grid">
-                    {section.items.map(connection => {
-                      const { type: key, name } = connection;
-                      const isActive = key === type;
-                      return (
-                        <button
-                          type="button"
-                          key={key}
-                          onClick={() => onTypeChange(key)}
-                          className={classnames('seaqa-project-new-connection-card', { selected: isActive })}
-                        >
-                          <span className="seaqa-project-new-connection-card-icon-wrap">
-                            <img src={getConnectionIcon(key)} alt={name} className="seaqa-project-new-connection-card-icon" />
-                          </span>
-                          <span className="seaqa-project-new-connection-card-name">{name}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+        {stepIndex === 0 && (
+          <ConnectionTypeSections
+            availableConnectionTypes={availableConnectionTypes}
+            selectedType={type}
+            onSelectType={onTypeChange}
+          />
+        )}
+        {stepIndex === 1 && (
+          <SelectedConnectionHeader
+            connection={typeOption}
+            hasGithubRepositories={githubRepositories.length > 0}
+            installGitHubAppURL={installGitHubAppURL}
+          />
+        )}
+        {step.key === STEP.CONFIG && isGithub && (
+          <GithubConnectionConfig
+            isLoadingRepositories={isLoadingRepositories}
+            githubRepositories={githubRepositories}
+            installGitHubAppURL={installGitHubAppURL}
+            name={name}
+            isSubmitting={isSubmitting}
+            onNameChange={onNameChange}
+            customColumns={customColumns}
+            renderConnectionField={renderConnectionField}
+          />
         )}
         {step.key === STEP.CONFIG && !isGithub && (
           <div className="seaqa-project-new-connection-config">
@@ -857,67 +786,19 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
             )}
           </div>
         )}
-
-        {step.key === STEP.CONFIG && isGithub && isLoadingRepositories &&
-          <div className="seaqa-project-connection-github-tip d-flex flex-column align-items-center justify-content-center">
-            <Loading />
-            <h4 className="mt-5">{gettext('Checking GitHub App installation status...')}</h4>
-            <p>{gettext('Install GitHub app to your repositories to enable SeaTicket to sync issues from these repositories')}</p>
-          </div>
-        }
-
-        {step.key === STEP.CONFIG && isGithub && !isLoadingRepositories && githubRepositories.length === 0 &&
-          <div className="seaqa-project-connection-github-tip d-flex flex-column align-items-center justify-content-center">
-            <h4>{gettext('GitHub app not installed')}</h4>
-            <p>{gettext('Install GitHub app to your repositories to enable SeaTicket to sync issues from these repositories')}</p>
-            <Button color="primary" outline onClick={() => window.open(installGitHubAppURL, '_blank')} >{gettext('Install GitHub app')}</Button>
-          </div>
-        }
-
-        {step.key === STEP.CONFIG && isGithub && !isLoadingRepositories && githubRepositories.length > 0 && (
-          <div className="seaqa-project-new-connection-config">
-            <FormGroup>
-              <Label>
-                {gettext('Connection name')}
-                <span className="required-tip" title={gettext('Required')}>{'*'}</span>
-              </Label>
-              <Input value={name} onChange={onNameChange} disabled={isSubmitting} />
-            </FormGroup>
-            {customColumns.map(renderConnectionField)}
-          </div>
-        )}
       </ModalBody>
-      {stepIndex === 0 && (
-        <ModalFooter className="seaqa-project-new-connection-footer">
-          <Button
-            type="button"
-            color="secondary"
-            onClick={onToggle}
-          >
-            {gettext('Cancel')}
-          </Button>
-          <Button
-            type="button"
-            color="primary"
-            onClick={() => setStepIndex(1)}
-          >
-            {gettext('Next')}
-          </Button>
-        </ModalFooter>
-      )}
-      {stepIndex === 1 && (
-        <ModalFooter>
-          <Button color="secondary" onClick={() => setStepIndex(0)}>{gettext('Previous')}</Button>
-          <Button color="primary" onClick={handleSubmit} disabled={isSubmitting || isWaitingEmailOAuth || isWaitingConfluenceOAuth || !isValid || !name}>{gettext('Submit')}</Button>
-        </ModalFooter>
-      )}
+      <ConnectionDialogFooter
+        stepIndex={stepIndex}
+        isSubmitDisabled={isSubmitting || isWaitingEmailOAuth || isWaitingConfluenceOAuth || !isValid || !name}
+        onToggle={onToggle}
+        setStepIndex={setStepIndex}
+        onSubmit={handleSubmit}
+      />
     </Modal>
   );
 };
 
 NewConnectionDialog.propTypes = {
-  connection: PropTypes.object,
-  connections: PropTypes.array,
   onSubmit: PropTypes.func.isRequired,
   onToggle: PropTypes.func.isRequired
 };
