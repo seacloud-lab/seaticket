@@ -294,6 +294,10 @@ table img {
   display: block;
 }
 
+.errorlist {
+  color: red;
+}
+
 .tip {
   color: var(--bs-sf-grey-text);
   font-size: 12px;
