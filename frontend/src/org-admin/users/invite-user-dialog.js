@@ -61,7 +61,7 @@ class InviteUserDialog extends React.Component {
               />
             </FormGroup>
           </Form>
-          {errMessage && <Label className="err-message">{errMessage}</Label>}
+          {errMessage && <Label className="text-danger ml-2">{errMessage}</Label>}
         </ModalBody>
         <ModalFooter>
           <Button color="primary" disabled={isSubmitting} onClick={this.submit} className={isSubmitting ? 'btn-loading' : ''}>

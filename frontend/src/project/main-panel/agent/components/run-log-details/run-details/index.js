@@ -149,7 +149,7 @@ const RunDetail = ({
                   size={{ btn: 24, icon: 16 }}
                 />
               </DropdownToggle>
-              <DropdownMenu end className="seaqa-dropdown-menu seaqa-agent-run-detail-dropdown-menu">
+              <DropdownMenu end className="seaqa-agent-run-detail-dropdown-menu">
                 <DropdownItem onClick={handleShowStatistics}>
                   {gettext('Running log details')}
                 </DropdownItem>

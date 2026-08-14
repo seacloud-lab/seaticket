@@ -8,3 +8,7 @@
   height: 34px;
   max-width: 280px;
 }
+
+.language-settings-body .language-selector .option-group {
+  padding: 0;
+}
