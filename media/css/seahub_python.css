@@ -89,7 +89,7 @@ dt {
 
 dd {
   margin-bottom: 0.8em;
-  color: #222;
+  color: var(--bs-body-color);
 }
 
 a {
@@ -292,10 +292,6 @@ table img {
 /* common */
 .show {
   display: block;
-}
-
-.errorlist {
-  color: red;
 }
 
 .tip {
