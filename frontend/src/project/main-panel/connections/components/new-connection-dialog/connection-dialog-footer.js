@@ -6,7 +6,7 @@ import { gettext } from '@/constants';
 const ConnectionDialogFooter = ({ stepIndex, isSubmitDisabled, onToggle, setStepIndex, onSubmit }) => {
   if (stepIndex === 0) {
     return (
-      <ModalFooter className="mt-6">
+      <ModalFooter className="seaqa-project-new-connection-footer">
         <Button type="button" color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>
         <Button type="button" color="primary" onClick={() => setStepIndex(1)}>{gettext('Next')}</Button>
       </ModalFooter>

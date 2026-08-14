@@ -74,6 +74,11 @@
   padding: 50px;
 }
 
+.seaqa-project-connection-dialog .seaqa-project-new-connection-footer {
+  margin-top: 40px;
+  justify-content: flex-end;
+}
+
 .seaqa-project-connection-github-tip h4 {
   font-weight: 500;
   font-size: 16px;
