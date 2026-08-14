@@ -14,7 +14,7 @@ from django.utils.translation import gettext as _
 
 from seahub import settings
 from seahub.project.models import Workspaces, Projects, ProjectGithubAppInstallation, ProjectLinearOauth, ProjectConfluenceOauth, \
-    ProjectJiraOauth
+    ProjectConnectionOauth
 from seahub.project.utils import check_project_admin_permission, check_project_permission, update_github_connection_installation_id
 from seahub.project.linear_api import LinearAPI
 from seahub.project.jira_api import JiraAPI
@@ -26,7 +26,7 @@ from seahub.settings import MEDIA_URL, LLM_MODELS, GITHUB_APP_NAME, ENABLE_GENER
 from seahub.group.models import Group
 from seahub.constants import PERMISSION_READ
 from seahub.portal.utils import get_portal_settings
-from seahub.project.constants import merge_project_settings_defaults
+from seahub.project.constants import ConnectionType, merge_project_settings_defaults
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
@@ -607,8 +607,9 @@ def jira_oauth_callback(request):
         logger.error('Jira OAuth token missing access/refresh token: %s', token_json)
         return render_error(request, _('Failed to authorize Jira.'))
 
-    ProjectJiraOauth.objects.upsert_token(
+    ProjectConnectionOauth.objects.upsert_token(
         project_uuid,
+        ConnectionType.JIRA_ISSUE.value,
         access_token,
         JiraAPI.calc_expires_at(token_json.get('expires_in')),
         refresh_token,

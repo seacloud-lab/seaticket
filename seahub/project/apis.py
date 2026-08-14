@@ -13,12 +13,12 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils.decorators import require_org_context
 from seahub.project.models import Projects, ProjectGithubAppInstallation, ProjectLinearOauth, ProjectConfluenceOauth, \
-    ProjectJiraOauth
+    ProjectConnectionOauth
 from seahub.project.confluence_api import ConfluenceAPI
 from seahub.project.linear_api import LinearAPI
 from seahub.project.utils import check_project_permission, check_project_admin_permission, get_project_related_users, \
     query_items, check_project_admin_permission
-from seahub.project.constants import ITEMS_SEARCH_QUERY_TYPES_SUPPORT
+from seahub.project.constants import ConnectionType, ITEMS_SEARCH_QUERY_TYPES_SUPPORT
 from seahub.project.github_issues_api import GitHubAPI
 from seahub.project.discord_api import DiscordAPI
 from seahub.settings import JIRA_CLIENT_ID, JIRA_CLIENT_SECRET
@@ -357,7 +357,7 @@ class ProjectJiraSites(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        jira_oauth = ProjectJiraOauth.objects.get_by_project_uuid(project_uuid)
+        jira_oauth = ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.JIRA_ISSUE.value)
         if not jira_oauth:
             return api_error(status.HTTP_400_BAD_REQUEST, 'Jira OAuth authorization is required.')
 
@@ -374,8 +374,9 @@ class ProjectJiraSites(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to fetch Jira sites.')
 
         if jira_api.access_token != jira_oauth.access_token:
-            ProjectJiraOauth.objects.upsert_token(
-                project_uuid, jira_api.access_token, jira_api.expires_at, jira_api.refresh_token
+            ProjectConnectionOauth.objects.upsert_token(
+                project_uuid, ConnectionType.JIRA_ISSUE.value,
+                jira_api.access_token, jira_api.expires_at, jira_api.refresh_token
             )
 
         sites = []
@@ -419,7 +420,7 @@ class ProjectJiraProjects(APIView):
         if not site_id:
             return api_error(status.HTTP_400_BAD_REQUEST, 'site_id is required.')
 
-        jira_oauth = ProjectJiraOauth.objects.get_by_project_uuid(project_uuid)
+        jira_oauth = ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.JIRA_ISSUE.value)
         if not jira_oauth:
             return api_error(status.HTTP_400_BAD_REQUEST, 'Jira OAuth authorization is required.')
 
@@ -436,8 +437,9 @@ class ProjectJiraProjects(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to fetch Jira projects.')
 
         if jira_api.access_token != jira_oauth.access_token:
-            ProjectJiraOauth.objects.upsert_token(
-                project_uuid, jira_api.access_token, jira_api.expires_at, jira_api.refresh_token
+            ProjectConnectionOauth.objects.upsert_token(
+                project_uuid, ConnectionType.JIRA_ISSUE.value,
+                jira_api.access_token, jira_api.expires_at, jira_api.refresh_token
             )
 
         return Response({'projects': projects_list})
