@@ -2,12 +2,13 @@ import React, { useCallback, useMemo, useState, useEffect, useRef } from 'react'
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import copy from 'copy-to-clipboard';
-import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Row } from 'reactstrap';
+import { Button, Modal, Input, ModalBody, FormGroup, Label, Row } from 'reactstrap';
 import { gettext } from '@/constants';
 import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, CONNECTION_SUB_TYPE_MAP, STEP, STEPS, EMAIL_SERVER_PROVIDER, getAvailableConnectionTypes } from '../../constants';
 import { getVisibleEmailFields, getEmailProvider, populateEmailOAuthDefaults, sanitizeEmailConfigByProvider, getConnectionIcon, isOAuthEmailProvider, getEmailOAuthCallbackUrl } from '../../utils';
 import { ModalHeader, Loading, SecondaryBtn, toaster, IconButton, Icon } from '@/components';
 import ConnectionConfigEditor from '../connection-config-editor';
+import ConnectionDialogFooter from './connection-dialog-footer';
 import { connectionsAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
 import Connection from '../../models/connection';
@@ -887,30 +888,13 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
           </div>
         )}
       </ModalBody>
-      {stepIndex === 0 && (
-        <ModalFooter className="seaqa-project-new-connection-footer">
-          <Button
-            type="button"
-            color="secondary"
-            onClick={onToggle}
-          >
-            {gettext('Cancel')}
-          </Button>
-          <Button
-            type="button"
-            color="primary"
-            onClick={() => setStepIndex(1)}
-          >
-            {gettext('Next')}
-          </Button>
-        </ModalFooter>
-      )}
-      {stepIndex === 1 && (
-        <ModalFooter>
-          <Button color="secondary" onClick={() => setStepIndex(0)}>{gettext('Previous')}</Button>
-          <Button color="primary" onClick={handleSubmit} disabled={isSubmitting || isWaitingEmailOAuth || isWaitingConfluenceOAuth || !isValid || !name}>{gettext('Submit')}</Button>
-        </ModalFooter>
-      )}
+      <ConnectionDialogFooter
+        stepIndex={stepIndex}
+        isSubmitDisabled={isSubmitting || isWaitingEmailOAuth || isWaitingConfluenceOAuth || !isValid || !name}
+        onToggle={onToggle}
+        setStepIndex={setStepIndex}
+        onSubmit={handleSubmit}
+      />
     </Modal>
   );
 };

@@ -111,11 +111,6 @@
   text-overflow: ellipsis;
 }
 
-.seaqa-project-connection-dialog .seaqa-project-new-connection-footer {
-  margin-top: 40px;
-  justify-content: flex-end;
-}
-
 .seaqa-project-connection-dialog .seaqa-project-selected-connection {
   margin-top: -16px;
   min-height: 76px;
