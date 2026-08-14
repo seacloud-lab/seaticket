@@ -14,7 +14,8 @@ import {
   MSG_TYPE_TICKET_COMMENTED,
   MSG_TYPE_ADD_USER_TO_GROUP,
   MSG_TYPE_ORG_MEMBER_INVITE_ACCEPTED,
-  MSG_TYPE_PROJECTS
+  MSG_TYPE_PROJECTS,
+  TICKET_MSG_TYPES,
 } from '../constants';
 import InboxCount from './inbox-count';
 
@@ -84,16 +85,13 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
   }, [noticeItem, onNoticeItemClick]);
 
   const handleNoticeItemClick = useCallback(() => {
-    onNoticeItemClick(noticeItem);
     const { msg_type, detail } = noticeItem;
-    if (
-      msg_type === MSG_TYPE_TICKET_ASSIGNEE_ADDED ||
-      msg_type === MSG_TYPE_AGENT_NOTIFY_ASSIGNEE ||
-      msg_type === MSG_TYPE_TICKET_COMMENTED
-    ) {
+    if (TICKET_MSG_TYPES.includes(msg_type)) {
       setShowInboxDrawer(false);
       toggleBar([BAR_TYPE.TICKET, detail.ticket_id]);
+      return;
     }
+    onNoticeItemClick(noticeItem);
   }, [noticeItem, onNoticeItemClick, setShowInboxDrawer, toggleBar]);
 
   const renderContent = useCallback(() => {
