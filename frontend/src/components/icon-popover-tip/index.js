@@ -5,6 +5,11 @@ import CustomizePopover from '../customize-popover';
 
 import './index.css';
 
+const decodeEscapedUnicode = (value) => {
+  if (typeof value !== 'string' || value.indexOf('\\u') === -1) return value;
+  return value.replace(/\\u([0-9a-fA-F]{4})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+};
+
 const IconPopoverTip = ({
   icon = 'question-circle-stroked',
   tip,
@@ -16,6 +21,7 @@ const IconPopoverTip = ({
   ...props
 }) => {
   const [isShowPopover, setIsShowPopover] = useState(false);
+  const decodedTip = decodeEscapedUnicode(tip);
 
   const ref = useRef(null);
 
@@ -46,7 +52,7 @@ const IconPopoverTip = ({
         onClick={handleClick}
         { ...props }
       />
-      {tip && isShowPopover && (
+      {decodedTip && isShowPopover && (
         <CustomizePopover
           target={ref}
           placement={placement}
@@ -55,7 +61,7 @@ const IconPopoverTip = ({
           hidePopover={() => setIsShowPopover(false)}
           hidePopoverWithEsc={() => setIsShowPopover(false)}
         >
-          {tip}
+          {decodedTip}
         </CustomizePopover>
       )}
     </>
