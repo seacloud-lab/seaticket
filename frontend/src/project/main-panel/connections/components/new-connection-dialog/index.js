@@ -916,8 +916,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
 };
 
 NewConnectionDialog.propTypes = {
-  connection: PropTypes.object,
-  connections: PropTypes.array,
   onSubmit: PropTypes.func.isRequired,
   onToggle: PropTypes.func.isRequired
 };
