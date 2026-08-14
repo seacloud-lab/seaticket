@@ -114,7 +114,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const isLinear = useMemo(() => type === CONNECTION_TYPE.LINEAR, [type]);
   const isConfluence = useMemo(() => type === CONNECTION_TYPE.CONFLUENCE, [type]);
   const isDiscord = useMemo(() => type === CONNECTION_TYPE.DISCORD, [type]);
-
   const isMicrosoftEmailProvider = useMemo(() => {
     return isEmail && getEmailProvider(config) === EMAIL_SERVER_PROVIDER.MICROSOFT;
   }, [isEmail, config]);
@@ -333,7 +332,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         _config['channel_id'] = channel.value;
       }
     }
-
     onSubmit({ type, name: name.trim(), config: _config }, () => {
       setSubmitting(false);
     });
@@ -582,8 +580,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         row[key] = row[key].value || row[key];
       }
     }
-
-    return (
+    const editor = (
       <ConnectionConfigEditor
         className={is_advanced_option ? 'seaqa-project-connection-advanced-options-field' : ''}
         column={fieldColumn}
@@ -594,6 +591,8 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         onChange={onConfigChange}
       />
     );
+
+    return editor;
   }, [
     config, isSubmitting, isGithub, isConfluence, isConfluenceOauthConnected, isLinear,
     onConfigChange, listGitHubRepositories, listConfluenceWorkspaces, listLinearTeams,
