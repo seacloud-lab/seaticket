@@ -5,12 +5,13 @@ import copy from 'copy-to-clipboard';
 import { Button, Modal, Input, ModalBody, FormGroup, Label, Row } from 'reactstrap';
 import { gettext } from '@/constants';
 import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, STEP, STEPS, EMAIL_SERVER_PROVIDER, getAvailableConnectionTypes } from '../../constants';
-import { getVisibleEmailFields, getEmailProvider, populateEmailOAuthDefaults, sanitizeEmailConfigByProvider, getConnectionIcon, isOAuthEmailProvider, getEmailOAuthCallbackUrl } from '../../utils';
-import { ModalHeader, Loading, SecondaryBtn, toaster, Icon } from '@/components';
+import { getVisibleEmailFields, getEmailProvider, populateEmailOAuthDefaults, sanitizeEmailConfigByProvider, isOAuthEmailProvider, getEmailOAuthCallbackUrl } from '../../utils';
+import { ModalHeader, Loading, toaster, Icon } from '@/components';
 import ConnectionConfigEditor from '../connection-config-editor';
 import ConnectionDialogFooter from './connection-dialog-footer';
 import GithubConnectionConfig from './github-connection-config';
 import ConnectionTypeSections from './connection-type-sections';
+import SelectedConnectionHeader from './selected-connection-header';
 import { connectionsAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
 import Connection from '../../models/connection';
@@ -609,34 +610,32 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     >
       <ModalHeader toggle={onToggle}>{gettext('New connection')}</ModalHeader>
       <ModalBody className="seaqa-project-connection-body">
-        {step.key === STEP.TYPE && (
+        {stepIndex === 0 && (
           <ConnectionTypeSections
             availableConnectionTypes={availableConnectionTypes}
             selectedType={type}
             onSelectType={onTypeChange}
           />
         )}
-        {stepIndex > 0 &&
-          <div className="seaqa-project-selected-connection">
-            <div className='seaqa-project-connection-help'>
-              {typeOption.help_text}
-              <a className="ml-1" href={typeOption.help_link} target="_blank" rel="noopener noreferrer">{gettext('Help Docs')}</a>
-            </div>
-            <div className='seaqa-project-new-connection-type'>
-              <div className="d-flex align-items-center">
-                <img
-                  src={getConnectionIcon(typeOption.type)}
-                  alt={typeOption.name}
-                  className="seaqa-project-new-connection-icon"
-                />
-                <span className="seaqa-project-new-connection-name">{typeOption.name}</span>
-              </div>
-              {(typeOption.type === CONNECTION_TYPE.GITHUB_ISSUE && githubRepositories.length > 0) && (
-                <SecondaryBtn text={gettext('Manage GitHub app')} onClick={() => window.open(installGitHubAppURL, '_blank')} />
-              )}
-            </div>
-          </div>
-        }
+        {stepIndex === 1 && (
+          <SelectedConnectionHeader
+            connection={typeOption}
+            hasGithubRepositories={githubRepositories.length > 0}
+            installGitHubAppURL={installGitHubAppURL}
+          />
+        )}
+        {step.key === STEP.CONFIG && isGithub && (
+          <GithubConnectionConfig
+            isLoadingRepositories={isLoadingRepositories}
+            githubRepositories={githubRepositories}
+            installGitHubAppURL={installGitHubAppURL}
+            name={name}
+            isSubmitting={isSubmitting}
+            onNameChange={onNameChange}
+            customColumns={customColumns}
+            renderConnectionField={renderConnectionField}
+          />
+        )}
         {step.key === STEP.CONFIG && !isGithub && (
           <div className="seaqa-project-new-connection-config">
             <FormGroup>
@@ -786,18 +785,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
               </FormGroup>
             )}
           </div>
-        )}
-        {step.key === STEP.CONFIG && isGithub && (
-          <GithubConnectionConfig
-            isLoadingRepositories={isLoadingRepositories}
-            githubRepositories={githubRepositories}
-            installGitHubAppURL={installGitHubAppURL}
-            name={name}
-            isSubmitting={isSubmitting}
-            onNameChange={onNameChange}
-            customColumns={customColumns}
-            renderConnectionField={renderConnectionField}
-          />
         )}
       </ModalBody>
       <ConnectionDialogFooter
