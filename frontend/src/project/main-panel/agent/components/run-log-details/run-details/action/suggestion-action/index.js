@@ -5,7 +5,7 @@ import { gettext } from '@/constants';
 import { ACTION_STATUS, SUGGESTION_TOOL_NAME_MAP } from '../../../../../constants';
 import { Icon, IconTooltip, IconPopoverTip, IconButton, SecondaryBtn, toaster } from '@/components';
 import SuggestionPreview from './suggestion-preview';
-import { parseSuggestionActionResult, getAgentResource, getSuggestionTitle } from '../../../../../utils';
+import { parseSuggestionActionResult, getAgentResource, getSuggestionTitle, parseEmailSuggestionContent } from '../../../../../utils';
 import RunLogTitle from '../../../../resource-title';
 import { TICKET_STATE_CONFIG, TICKET_STATE, TICKET } from '@/project/main-panel/tickets/constants';
 import { getRowById } from '@/sea-metadata/utils/row';
@@ -34,6 +34,8 @@ const SuggestionAction = ({
   const suggestionTitle = useMemo(() => getSuggestionTitle(action), [action]);
   const resource = useMemo(() => getAgentResource(action), [action]);
   const { typesData } = useMetadata();
+  const sourceType = action?.target_item_type;
+  const sourceId = action?.target_item_id;
 
   const handleConfirm = useCallback((e) => {
     e.stopPropagation();
@@ -75,9 +77,15 @@ const SuggestionAction = ({
       copiedContent += `# ${gettext('Type')}\n${typeOption?.display_name || typeOption?.name || ''}\n`;
       copiedContent += `# ${gettext('Priority')}\n${priority || 0}`;
     }
+    if (tool_name === 'suggest_reply' && sourceType === 'email') {
+      const { to = [], cc = [], content = '' } = parseEmailSuggestionContent(suggestion_content);
+      copiedContent = `# ${gettext('To')}\n${to.join(', ')}\n`;
+      copiedContent += `# ${gettext('Cc')}\n${cc.join(', ')}\n`;
+      copiedContent += `# ${gettext('Content')}\n${content}`;
+    }
     copy(copiedContent);
     toaster.success(gettext('The content has been copied'));
-  }, [tool_name, suggestion_content, typesData]);
+  }, [tool_name, sourceType, suggestion_content, typesData]);
 
   const handleViewDetails = useCallback((e) => {
     e.stopPropagation();
@@ -248,7 +256,12 @@ const SuggestionAction = ({
           )}
         </div>
         {hasContent && !isCancelled && (
-          <SuggestionPreview type={tool_name} value={suggestion_content} />
+          <SuggestionPreview
+            type={tool_name}
+            value={suggestion_content}
+            sourceType={sourceType}
+            sourceId={sourceId}
+          />
         )}
         {status === ACTION_STATUS.PENDING && (
           <div className="seaqa-agent-action-buttons d-flex align-items-center mt-2">

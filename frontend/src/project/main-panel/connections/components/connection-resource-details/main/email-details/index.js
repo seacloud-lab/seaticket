@@ -16,6 +16,11 @@ const EmailDetails = ({ details, className, ...props }) => {
     return details.slice(0, -1).some(item => Boolean(item?.unread));
   }, [details]);
 
+  const senderFrom = useMemo(() => {
+    const latestSentEmail = [...details].reverse().find(item => item?.is_sender && item?.email_from);
+    return latestSentEmail?.email_from || '';
+  }, [details]);
+
   if (details.length === 0) {
     return (
       <div className={classnames('seaqa-connection-email-record empty', className)}>
@@ -59,6 +64,7 @@ const EmailDetails = ({ details, className, ...props }) => {
             detail={detail}
             isExpand={index === details.length - 1}
             setIsLastExpanded={setIsLastExpanded}
+            senderFrom={senderFrom}
             { ...props }
           />
         );

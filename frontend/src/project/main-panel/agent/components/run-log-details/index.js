@@ -200,6 +200,27 @@ const RunLogDetails = ({
     });
   }, [updateRunAction]);
 
+  const handleApproveAction = useCallback((runId, actionId, suggestionContent) => {
+    const savePromise = suggestionContent === undefined
+      ? Promise.resolve(true)
+      : agentAPI.updateAgentAction(projectUuid, runId, actionId, { suggestion_content: suggestionContent })
+        .then((res) => {
+          updateRunAction(runId, actionId, { suggestion_content: res.data.suggestion_content });
+          return true;
+        })
+        .catch((err) => {
+          console.error('Failed to update action content:', err);
+          toaster.danger(gettext('Failed to update content'));
+          return false;
+        });
+    return savePromise.then((saved) => {
+      if (!saved) return false;
+      const confirmResult = onConfirmAction(actionId);
+      if (!confirmResult || typeof confirmResult.then !== 'function') return true;
+      return confirmResult.then((result) => result?.success !== false);
+    });
+  }, [onConfirmAction, updateRunAction]);
+
   const onCancelAction = useCallback((actionId) => {
     for (const run of runs) {
       const items = run.items || [];
@@ -378,6 +399,7 @@ const RunLogDetails = ({
                 <SuggestionDetailPanel
                   suggestionDetail={suggestionDetail}
                   onSave={handleUpdateContent}
+                  onApprove={handleApproveAction}
                   onClose={closeSuggestionDetailPanel}
                 />
               )}

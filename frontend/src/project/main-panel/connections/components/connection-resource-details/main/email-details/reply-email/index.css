@@ -14,21 +14,97 @@
   gap: 16px;
 }
 
+.seaqa-email-replay-container .seaqa-email-replay-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.seaqa-email-replay-container .seaqa-email-replay-header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.seaqa-email-replay-container .seaqa-email-replay-header-icon {
+  width: 20px;
+  height: 20px;
+  fill: #20c933;
+}
+
+.seaqa-email-replay-container .seaqa-email-replay-header-send-btn {
+  border: none;
+  background-color: #a3e6b4;
+  color: #fff;
+  border-radius: 6px;
+  padding: 4px 20px;
+  font-size: 13px;
+  line-height: 22px;
+  box-shadow: 0 2px 4px rgba(16, 19, 24, .08);
+}
+
+.seaqa-email-replay-container .seaqa-email-replay-header-send-btn:hover:not(:disabled) {
+  background-color: #8fdd9f;
+}
+
+.seaqa-email-replay-container .seaqa-email-replay-header-send-btn:disabled {
+  opacity: .65;
+}
+
 .seaqa-email-replay-container .seaqa-email-replay-to {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 8px;
 }
 
 .seaqa-email-replay-container .seaqa-email-replay-to .seaqa-email-replay-to-title {
-  width: 52px;
-  text-align: right;
+  width: 60px;
+  text-align: left;
   flex-shrink: 0;
+  color: var(--bs-body-tertiary-color);
+}
+
+.seaqa-email-replay-container .seaqa-email-replay-static-value {
+  flex: 1;
+  min-width: 0;
+  color: var(--bs-body-tertiary-color);
+}
+
+.seaqa-email-replay-container .seaqa-email-replay-subject-input {
+  flex: 1;
+  min-width: 0;
 }
 
 .seaqa-email-replay-container .sea-email-editor {
   min-height: 300px;
+}
+
+.seaqa-email-replay-container .seaqa-email-replay-attachments {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  border: 1px dashed #dee2e6;
+  border-radius: 8px;
+  color: var(--bs-body-tertiary-color);
+  font-size: 13px;
+}
+
+.seaqa-email-replay-container .seaqa-email-replay-attachments-plus {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-size: 14px;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 .seaqa-email-replay-container .seaqa-email-replay-op-btns {

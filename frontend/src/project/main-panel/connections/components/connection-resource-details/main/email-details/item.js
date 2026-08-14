@@ -16,7 +16,7 @@ import './index.css';
 const Item = ({
   isLast, isExpand,
   detail, projectUuid, connection_id, setIsLastExpanded, recordId, permission,
-  handleReplyEmailSuccess, onUnreadChange
+  handleReplyEmailSuccess, onUnreadChange, senderFrom
 }) => {
   const [isExpanded, setIsExpanded] = useState(isExpand);
   const [isShowReply, setIsShowReply] = useState(false);
@@ -127,11 +127,12 @@ const Item = ({
     updateUnread(!isUnread);
   }, [isUnread, updateUnread]);
 
-  const onSubmit = useCallback(({ to, cc, content }, callback) => {
+  const onSubmit = useCallback(({ to, cc, subject, content }, callback) => {
     const payload = {
       html_content: content,
       to: to.join(','),
       cc: cc.join(','),
+      subject,
       email_id: detail._pk,
     };
     connectionsAPI.replyConnectionEmail(projectUuid, connection_id, payload).then((res) => {
@@ -178,6 +179,8 @@ const Item = ({
     return (
       <ReplyEmail
         emailTo={[replySendTo.current || detail['email_from']]}
+        emailFrom={senderFrom}
+        defaultSubject={detail.title ? `${gettext('Re')}: ${detail.title}` : ''}
         initValue={initValue}
         onToggle={() => setIsShowReply(false)}
         onSubmit={onSubmit}
@@ -185,7 +188,7 @@ const Item = ({
         assetURLPrefix={assetURLPrefix}
       />
     );
-  }, [detail, isHTMLContent, detailContent, sender, projectUuid, connection_id, onSubmit]);
+  }, [detail, isHTMLContent, detailContent, sender, projectUuid, connection_id, onSubmit, senderFrom]);
 
   const onLinkClick = useCallback((link) => {
     if (!link || !isString(link)) return;

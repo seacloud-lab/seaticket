@@ -144,6 +144,108 @@ const getResourceValue = (target, field) => {
   return '';
 };
 
+export const normalizeEmailAddress = (value) => {
+  if (typeof value !== 'string') return '';
+  const trimmed = value.trim();
+  if (!trimmed) return '';
+  const matchedAddress = trimmed.match(/<([^>]+)>/);
+  if (matchedAddress?.[1]) return matchedAddress[1].trim();
+  return trimmed;
+};
+
+export const getDefaultEmailReplyTo = (emails = []) => {
+  if (!Array.isArray(emails)) return '';
+  const targetEmail = [...emails].reverse().find(email => !email?.is_sender);
+  return normalizeEmailAddress(targetEmail?.email_from);
+};
+
+const normalizeEmailList = (value) => {
+  const rawValues = Array.isArray(value) ? value : (typeof value === 'string' ? value.split(/[,，]/) : []);
+  const normalized = [];
+  const seen = new Set();
+  rawValues.forEach((item) => {
+    const address = normalizeEmailAddress(item);
+    const key = address.toLowerCase();
+    if (!address || seen.has(key)) return;
+    normalized.push(address);
+    seen.add(key);
+  });
+  return normalized;
+};
+
+const HTML_TAG_REGEX = /<\/?[a-z][^>]*>/i;
+
+// Legacy data may carry plain-text content with is_html=true; treat it as plain text
+// so blank lines survive both preview rendering and editor deserialization.
+const resolveIsHtml = (isHtml, content) => Boolean(isHtml) && HTML_TAG_REGEX.test(content);
+
+export const parseEmailSuggestionContent = (value) => {
+  if (value && typeof value === 'object') {
+    const content = typeof value.content === 'string' ? value.content : '';
+    return {
+      isStructured: true,
+      to: normalizeEmailList(value.to),
+      cc: normalizeEmailList(value.cc),
+      content,
+      isHtml: resolveIsHtml(value.is_html, content),
+    };
+  }
+
+  if (typeof value !== 'string') {
+    return {
+      isStructured: false,
+      to: [],
+      cc: [],
+      content: '',
+      isHtml: false,
+    };
+  }
+
+  const normalizedValue = value.trim();
+  if (!normalizedValue) {
+    return {
+      isStructured: false,
+      to: [],
+      cc: [],
+      content: '',
+      isHtml: false,
+    };
+  }
+
+  try {
+    const parsed = JSON.parse(normalizedValue);
+    if (parsed && typeof parsed === 'object') {
+      const content = typeof parsed.content === 'string' ? parsed.content : '';
+      return {
+        isStructured: true,
+        to: normalizeEmailList(parsed.to),
+        cc: normalizeEmailList(parsed.cc),
+        content,
+        isHtml: resolveIsHtml(parsed.is_html, content),
+      };
+    }
+  } catch {
+    // Fallback to legacy plain text content.
+  }
+
+  return {
+    isStructured: false,
+    to: [],
+    cc: [],
+    content: value,
+    isHtml: false,
+  };
+};
+
+export const serializeEmailSuggestionContent = ({ to = [], cc = [], content = '', isHtml = false } = {}) => {
+  return JSON.stringify({
+    to: normalizeEmailList(to),
+    cc: normalizeEmailList(cc),
+    content: typeof content === 'string' ? content : '',
+    is_html: Boolean(isHtml),
+  });
+};
+
 export const getAgentResource = (target) => {
   if (!target) return {};
   const source_type = getResourceValue(target, 'source_type');

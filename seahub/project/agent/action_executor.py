@@ -1168,8 +1168,60 @@ class AgentActionExecutor:
             f'Reply posted to Discord thread #{record_id}.'
         )
 
-    def _execute_email_suggest_reply(self, seadb_api, project_uuid, source_id, reply_content):
-        reply_content = (reply_content or '').strip()
+    @staticmethod
+    def _normalize_email_recipients(value):
+        if isinstance(value, list):
+            source_items = value
+        elif isinstance(value, str):
+            source_items = [value]
+        else:
+            source_items = []
+
+        recipients = []
+        seen = set()
+        for source_item in source_items:
+            emails = extract_email_addresses(source_item) if isinstance(source_item, str) else []
+            for email in emails:
+                normalized = str(email or '').strip()
+                lowered = normalized.lower()
+                if not normalized or lowered in seen:
+                    continue
+                seen.add(lowered)
+                recipients.append(normalized)
+        return recipients
+
+    @classmethod
+    def _parse_email_reply_suggestion_content(cls, suggestion_content):
+        if not isinstance(suggestion_content, str):
+            return None
+
+        normalized = suggestion_content.replace('\r\n', '\n').strip()
+        if not normalized:
+            return None
+
+        try:
+            parsed = json.loads(normalized)
+        except Exception:
+            return None
+
+        if not isinstance(parsed, dict):
+            return None
+
+        return {
+            'to': cls._normalize_email_recipients(parsed.get('to')),
+            'cc': cls._normalize_email_recipients(parsed.get('cc')),
+            'content': str(parsed.get('content') or ''),
+            'is_html': bool(parsed.get('is_html')),
+        }
+
+    def _execute_email_suggest_reply(self, seadb_api, project_uuid, source_id, suggestion_content):
+        structured_suggestion = self._parse_email_reply_suggestion_content(suggestion_content)
+        if structured_suggestion:
+            reply_content = (structured_suggestion.get('content') or '').strip()
+            is_html_content = bool(structured_suggestion.get('is_html'))
+        else:
+            reply_content = str(suggestion_content or '').strip()
+            is_html_content = False
         if not reply_content:
             return self._failed_execution('Cannot send reply email: empty content.')
 
@@ -1193,13 +1245,23 @@ class AgentActionExecutor:
         if not target_email:
             return self._failed_execution(f'No inbound email found for thread {source_id}.')
 
-        to_text = target_email.get('email_from') or ''
-        to_emails = extract_email_addresses(to_text)
-        if not to_emails:
+        fallback_to_text = target_email.get('email_from') or ''
+        fallback_to_emails = extract_email_addresses(fallback_to_text)
+        if not fallback_to_emails:
             logger.warning(
-                'Failed to resolve recipient for thread %s: email_from=%r (email pk=%s)', source_id, to_text, target_email.get('_pk'),
+                'Failed to resolve recipient for thread %s: email_from=%r (email pk=%s)',
+                source_id,
+                fallback_to_text,
+                target_email.get('_pk'),
             )
             return self._failed_execution(f'Failed to resolve recipient for thread {source_id}.')
+        to_emails = structured_suggestion.get('to') if structured_suggestion else []
+        if not to_emails:
+            to_emails = fallback_to_emails
+
+        cc_emails = structured_suggestion.get('cc') if structured_suggestion else []
+        to_text = ','.join(to_emails)
+        cc_text = ','.join(cc_emails)
 
         subject = target_email.get('title') or ''
         if not subject:
@@ -1219,10 +1281,10 @@ class AgentActionExecutor:
         message_id = make_msgid(domain=domain)
 
         send_info = {
-            'message': reply_content,
-            'html_message': None,
+            'message': '' if is_html_content else reply_content,
+            'html_message': reply_content if is_html_content else None,
             'send_to': to_emails,
-            'copy_to': [],
+            'copy_to': cc_emails,
             'subject': subject,
             'in_reply_to': target_message_id,
             'message_id': message_id,
@@ -1245,10 +1307,10 @@ class AgentActionExecutor:
             'sender_name': config.get('sender_name', ''),
             'sender_email': sender_email,
             'email_to': to_text,
-            'cc': '',
+            'cc': cc_text,
             'subject': subject,
             'content': reply_content,
-            'html_content': None,
+            'html_content': reply_content if is_html_content else None,
             'reply_to_message_id': target_message_id,
             'origin_thread_id': send_res.get('origin_thread_id') or target_email.get('origin_thread_id'),
             'message_id': message_id,

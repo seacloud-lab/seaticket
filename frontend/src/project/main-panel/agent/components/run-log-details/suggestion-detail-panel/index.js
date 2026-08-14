@@ -5,6 +5,8 @@ import { IconButton, ResizeBar } from '@/components';
 import Detail from './detail';
 import { getSuggestionTitle } from '../../../utils';
 import { isFunction } from '@/utils/type-detection';
+import { isValidEmail } from '@/utils/validate';
+import { parseEmailSuggestionContent } from '@/project/main-panel/agent/utils';
 
 import './index.css';
 
@@ -15,10 +17,12 @@ const DEFAULT_WIDTH = 400;
 const SuggestionDetailPanel = ({
   suggestionDetail,
   onSave,
+  onApprove,
   onClose,
 }) => {
   const [value, setValue] = useState(suggestionDetail?.action?.suggestion_content || '');
   const [isSaving, setIsSaving] = useState(false);
+  const [isApproving, setIsApproving] = useState(false);
 
   const title = useMemo(
     () => getSuggestionTitle(suggestionDetail?.action) || suggestionDetail?.action?.result || '',
@@ -29,9 +33,28 @@ const SuggestionDetailPanel = ({
     () => suggestionDetail?.action?.suggestion_content || '',
     [suggestionDetail?.action?.suggestion_content]
   );
+  const sourceType = useMemo(
+    () => suggestionDetail?.action?.target_item_type,
+    [suggestionDetail?.action]
+  );
+  const sourceId = useMemo(
+    () => suggestionDetail?.action?.target_item_id,
+    [suggestionDetail?.action]
+  );
+  const isEmailReply = useMemo(
+    () => suggestionDetail?.action?.tool_name === 'suggest_reply' && sourceType === 'email',
+    [suggestionDetail?.action?.tool_name, sourceType]
+  );
+  const isEmailContentValid = useMemo(() => {
+    const parsed = parseEmailSuggestionContent(value);
+    if (!parsed.content || !parsed.content.trim()) return false;
+    if (!Array.isArray(parsed.to) || parsed.to.length === 0) return false;
+    return [...parsed.to, ...parsed.cc].every(email => isValidEmail(email));
+  }, [value]);
   const canSave = useMemo(() => {
     if (isSaving) return false;
     if (initValue === value) return false;
+    if (isEmailReply) return isEmailContentValid;
     if (suggestionDetail?.action?.tool_name === 'suggest_create_ticket') {
       try {
         const validValue = JSON.parse(value);
@@ -43,7 +66,11 @@ const SuggestionDetailPanel = ({
       }
     }
     return true;
-  }, [isSaving, initValue, value, suggestionDetail]);
+  }, [isSaving, initValue, value, suggestionDetail, isEmailReply, isEmailContentValid]);
+  const canApprove = useMemo(() => {
+    if (!isEmailReply || isApproving) return false;
+    return isEmailContentValid;
+  }, [isEmailReply, isApproving, isEmailContentValid]);
   const suggestionKey = useMemo(() => {
     const { action, runId } = suggestionDetail;
     return `${runId}_${action.id}`;
@@ -64,6 +91,19 @@ const SuggestionDetailPanel = ({
     });
   }, [suggestionDetail, value, suggestionKey, onSave]);
 
+  const handleApprove = useCallback(() => {
+    const { action, runId } = suggestionDetail;
+    if (!isFunction(onApprove)) return;
+    setIsApproving(true);
+    const contentToSave = initValue === value ? undefined : value;
+    onApprove(runId, action.id, contentToSave).then((success) => {
+      setIsApproving(false);
+      if (success) onClose && onClose();
+    }).catch(() => {
+      setIsApproving(false);
+    });
+  }, [suggestionDetail, initValue, value, onApprove, onClose]);
+
   const onResize = useCallback((width) => {
     localStorage.setItem('project_agent_action_suggestion_panel_width', window.innerWidth - width - 8);
     ref.current.style.width = `${window.innerWidth - width - 8}px`;
@@ -80,6 +120,7 @@ const SuggestionDetailPanel = ({
 
   useEffect(() => {
     setIsSaving(false);
+    setIsApproving(false);
   }, [suggestionKey]);
 
   return (
@@ -91,8 +132,10 @@ const SuggestionDetailPanel = ({
       <div className="seaqa-agent-tool-suggestion-panel-body">
         <Detail
           type={suggestionDetail?.action?.tool_name}
+          sourceType={sourceType}
+          sourceId={sourceId}
           isEdit={isEdit}
-          isSaving={isSaving}
+          isSaving={isSaving || isApproving}
           value={initValue}
           onChange={setValue}
         />
@@ -100,9 +143,15 @@ const SuggestionDetailPanel = ({
       {isEdit && (
         <div className="seaqa-agent-tool-suggestion-panel-footer">
           <Button color="secondary" onClick={onClose}>{gettext('Cancel')}</Button>
-          <Button color="primary" onClick={handleSave} disabled={!canSave}>
-            {isSaving ? gettext('Saving...') : gettext('Save')}
-          </Button>
+          {isEmailReply ? (
+            <Button color="primary" onClick={handleApprove} disabled={!canApprove}>
+              {isApproving ? gettext('Approving...') : gettext('Approve')}
+            </Button>
+          ) : (
+            <Button color="primary" onClick={handleSave} disabled={!canSave}>
+              {isSaving ? gettext('Saving...') : gettext('Save')}
+            </Button>
+          )}
         </div>
       )}
       <ResizeBar

@@ -239,3 +239,97 @@ def test_link_existing_ticket_fails_when_record_already_linked():
     assert result['success'] is False
     assert result['status'] == 'failed'
     assert 'already linked' in result['result']
+
+def test_parse_email_reply_suggestion_content_supports_structured_payload():
+    payload = json.dumps({
+        'to': ['user@example.com', 'USER@example.com'],
+        'cc': 'cc1@example.com,cc2@example.com',
+        'content': 'Hello',
+        'is_html': True,
+    })
+
+    result = AgentActionExecutor._parse_email_reply_suggestion_content(payload)
+
+    assert result == {
+        'to': ['user@example.com'],
+        'cc': ['cc1@example.com', 'cc2@example.com'],
+        'content': 'Hello',
+        'is_html': True,
+    }
+
+
+def test_parse_email_reply_suggestion_content_legacy_plain_text_returns_none():
+    assert AgentActionExecutor._parse_email_reply_suggestion_content('plain text') is None
+
+
+def test_execute_email_suggest_reply_uses_structured_to_cc_content():
+    executor = AgentActionExecutor()
+    seadb_api = Mock()
+    project_connection = Mock()
+    project_connection.id = 5
+    project_connection.config = json.dumps({
+        'username': 'sender@example.com',
+        'sender_email': 'sender@example.com',
+    })
+    emails = [{
+        '_pk': 1,
+        'thread_id': 10,
+        'email_from': 'fallback@example.com',
+        'title': 'Need help',
+        'message_id': '<msg-1@example.com>',
+        'origin_thread_id': 'thread-origin',
+        'is_sender': False,
+    }]
+    email_seadb_api = Mock()
+    email_seadb_api.save_reply_email.return_value = 88
+    payload = json.dumps({
+        'to': ['target@example.com'],
+        'cc': ['cc@example.com'],
+        'content': '<p>Reply body</p>',
+        'is_html': True,
+    })
+
+    with patch.object(executor, '_get_email_thread_context', return_value=(project_connection, {}, emails, None)), \
+            patch('seahub.project.agent.action_executor.toggle_send_email', return_value={'success': True}) as send_mock, \
+            patch('seahub.project.agent.action_executor.EmailSeaDBAPI', return_value=email_seadb_api):
+        result = executor._execute_email_suggest_reply(seadb_api, 'project-uuid', '5_10', payload)
+
+    assert result['success'] is True
+    send_info = send_mock.call_args[0][1]
+    assert send_info['send_to'] == ['target@example.com']
+    assert send_info['copy_to'] == ['cc@example.com']
+    assert send_info['message'] == ''
+    assert send_info['html_message'] == '<p>Reply body</p>'
+
+
+def test_execute_email_suggest_reply_legacy_content_falls_back_to_thread_recipient():
+    executor = AgentActionExecutor()
+    seadb_api = Mock()
+    project_connection = Mock()
+    project_connection.id = 9
+    project_connection.config = json.dumps({
+        'username': 'sender@example.com',
+        'sender_email': 'sender@example.com',
+    })
+    emails = [{
+        '_pk': 3,
+        'thread_id': 20,
+        'email_from': 'legacy@example.com',
+        'title': 'Legacy subject',
+        'message_id': '<legacy@example.com>',
+        'origin_thread_id': 'origin',
+        'is_sender': False,
+    }]
+    email_seadb_api = Mock()
+    email_seadb_api.save_reply_email.return_value = 66
+
+    with patch.object(executor, '_get_email_thread_context', return_value=(project_connection, {}, emails, None)), \
+            patch('seahub.project.agent.action_executor.toggle_send_email', return_value={'success': True}) as send_mock, \
+            patch('seahub.project.agent.action_executor.EmailSeaDBAPI', return_value=email_seadb_api):
+        result = executor._execute_email_suggest_reply(seadb_api, 'project-uuid', '9_20', 'legacy body')
+
+    assert result['success'] is True
+    send_info = send_mock.call_args[0][1]
+    assert send_info['send_to'] == ['legacy@example.com']
+    assert send_info['copy_to'] == []
+    assert send_info['message'] == 'legacy body'

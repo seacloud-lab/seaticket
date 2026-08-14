@@ -21,3 +21,35 @@
   -webkit-mask-image: linear-gradient(to bottom, var(--bs-body-secondary-bg) calc(100% - 24px), transparent);
   mask-image: linear-gradient(to bottom, var(--bs-body-secondary-bg) calc(100% - 24px), transparent);
 }
+
+.suggestion-email-content-preview-wrapper {
+  margin-top: 8px;
+  padding-top: 12px;
+}
+
+.suggestion-email-content-preview-wrapper .suggestion-content-preview {
+  margin-top: 8px;
+}
+
+.suggestion-email-meta-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 16px;
+  color: var(--bs-body-tertiary-color);
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.suggestion-email-meta-label {
+  flex-shrink: 0;
+}
+
+.suggestion-email-html-preview img {
+  max-width: 100%;
+  height: auto;
+}
+
+.suggestion-email-html-preview p:last-child {
+  margin-bottom: 0;
+}

@@ -554,6 +554,69 @@ class TestAgentActionConfirmView:
         assert saved_config['access_token'] != 'old-access'
         assert saved_config['refresh_token'] != 'old-refresh'
 
+    def test_confirm_email_reply_uses_structured_to_and_cc(self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        config = {
+            'server_provider': 'general_email_provider',
+            'sender_name': 'Sender',
+            'sender_email': 'sender@example.com',
+            'username': 'sender@example.com',
+            'password': 'secret',
+            'smtp_host': 'smtp.example.com',
+            'smtp_port': 587,
+        }
+        connection = connection_factory(connection_type='email', config=config)
+        request = factory.post(
+            f"/api/v1/project/{project.uuid}/agent/runs/1/actions/3/confirm/",
+            data={},
+            format='json',
+        )
+        request.user = project_creator
+
+        seadb_api = Mock()
+        seadb_api.query_rows.return_value = {
+            'results': [{
+                'run_id': 1,
+                'status': 'pending',
+                'tool_name': 'suggest_reply',
+                'target_item_type': 'email',
+                'target_item_id': f'{connection.id}_11',
+                'result': '',
+                'suggestion_content': json.dumps({
+                    'to': ['edited@example.com'],
+                    'cc': ['cc@example.com'],
+                    'content': 'structured body',
+                    'is_html': False,
+                }),
+            }]
+        }
+
+        email_thread = {'_pk': 11, 'title': 'Hello'}
+        emails = [{
+            '_pk': 2,
+            'thread_id': 11,
+            'email_from': 'fallback@example.com',
+            'title': 'Hello',
+            'message_id': '<msg-2@example.com>',
+            'origin_thread_id': 'thread-origin',
+            'is_sender': False,
+        }]
+        email_seadb_api = Mock()
+        email_seadb_api.get_thread_by_pk.return_value = email_thread
+        email_seadb_api.get_emails_by_thread_id.return_value = emails
+        email_seadb_api.save_reply_email.return_value = 78
+
+        with patch('seahub.project.agent.agent.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.project.agent.action_executor.EmailSeaDBAPI', return_value=email_seadb_api), \
+                patch('seahub.project.agent.action_executor.toggle_send_email', return_value={'success': True}) as send_mock:
+            resp = AgentActionConfirmView.as_view()(request, project_uuid=project.uuid, run_id='1', action_id='3')
+
+        assert resp.status_code == 200
+        send_info = send_mock.call_args[0][1]
+        assert send_info['send_to'] == ['edited@example.com']
+        assert send_info['copy_to'] == ['cc@example.com']
+        assert send_info['message'] == 'structured body'
+
     def test_confirm_move_email_to_spam_success(self, factory, project_creator, real_project, connection_factory):
         project = real_project
         config = {
