@@ -22,6 +22,7 @@ from seahub.tickets.ticket_utils import get_whole_tickets_data
 from seahub.seadb_models.site_seadb_api import SiteSeaDBAPI
 from seahub.seadb_models.seafile_seadb_api import SeafileSeaDBAPI
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
+from seahub.seadb_models.jira_seadb_api import JiraSeaDBAPI
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.seadb_models.general_task_seadb_api import GeneralTaskSeaDBAPI
@@ -231,6 +232,7 @@ def get_attachments(seadb_api, project_uuid, attachments):
     seafile_documents = []
     ticket_ids = []
     github_issues = []
+    jira_issues = []
     discourse_issues = []
     email_issues = []
     general_tasks = []
@@ -256,6 +258,8 @@ def get_attachments(seadb_api, project_uuid, attachments):
             ticket_ids.append(record_id)
         elif attachment.get('type') == ConnectionType.GITHUB_ISSUE.value:
             github_issues.append(attachment)
+        elif attachment.get('type') == ConnectionType.JIRA_ISSUE.value:
+            jira_issues.append(attachment)
         elif attachment.get('type') == ConnectionType.EMAIL.value:
             email_issues.append(attachment)
         elif attachment.get('type') == ConnectionType.DISCOURSE_FORUM.value:
@@ -285,6 +289,10 @@ def get_attachments(seadb_api, project_uuid, attachments):
     if github_issues:
         github_seadb_api = GitHubSeaDBAPI(project_uuid, seadb_api=seadb_api)
         results += github_seadb_api.get_whole_github_issue_data(github_issues)
+
+    if jira_issues:
+        jira_seadb_api = JiraSeaDBAPI(project_uuid, seadb_api=seadb_api)
+        results += jira_seadb_api.get_whole_jira_issue_data(jira_issues)
 
     if email_issues:
         email_seadb_api = EmailSeaDBAPI(project_uuid, seadb_api=seadb_api)

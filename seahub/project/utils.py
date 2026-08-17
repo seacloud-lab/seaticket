@@ -53,6 +53,7 @@ class EmailOAuthProfileError(Exception):
 LINKED_TICKET_SUPPORT_TYPES = [
     ConnectionType.DISCOURSE_FORUM.value,
     ConnectionType.GITHUB_ISSUE.value,
+    ConnectionType.JIRA_ISSUE.value,
     ConnectionType.EMAIL.value,
     ConnectionType.GENERAL_TASK.value,
     ConnectionType.LINEAR.value,
@@ -177,6 +178,9 @@ def create_connection(project, username, connection_type, name, config):
         ),
         ConnectionType.DISCORD.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
             [SchemaTables.DISCORD_THREADS, SchemaTables.DISCORD_THREAD_MESSAGES], api, project_uuid, connection_id
+        ),
+        ConnectionType.JIRA_ISSUE.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
+            [SchemaTables.JIRA_ISSUES, SchemaTables.JIRA_ISSUE_COMMENTS], api, project_uuid, connection_id
         ),
     }
 

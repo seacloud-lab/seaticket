@@ -27,7 +27,7 @@ from seahub.api2.utils import api_error, to_python_boolean
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.utils import uuid_str_to_32_chars, gen_file_etag_and_modified_time
 from seahub.project.models import Projects, ProjectConnections, decrypt_config, \
-    ConnectionsViews, ProjectGithubAppInstallation, ProjectLinearOauth, ProjectConfluenceOauth
+    ConnectionsViews, ProjectGithubAppInstallation, ProjectLinearOauth, ProjectConfluenceOauth, ProjectConnectionOauth
 from seahub.project.utils import check_project_admin_permission, check_project_permission, url_to_filename, \
     extract_email_addresses, get_email_oauth_callback_url, is_oauth_email_provider, create_connection, \
     fetch_oauth_email_sender_info, EmailOAuthProfileError, persist_project_connection_config, \
@@ -40,7 +40,7 @@ from seahub.seadb_models.utils import init_seadb_tables_from_schema, list_discou
     list_connection_view_records, list_github_issue_record_details, list_seafile_record_details, \
     list_site_record_details, list_email_record_details, get_issue_record_by_pk, list_notion_record_details, \
     list_general_task_record_details, build_general_task_row_data, get_connection_columns, list_linear_issue_record_details, \
-   list_confluence_record_details, list_discord_thread_record_details
+   list_confluence_record_details, list_discord_thread_record_details, list_jira_issue_record_details
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
@@ -221,7 +221,7 @@ class ProjectConnectionsView(APIView):
             if not is_project_admin:
                 record_info.pop('config')
             new_records.append(record_info)
-            
+
 
         return Response({'records': new_records}, status=status.HTTP_200_OK)
 
@@ -272,6 +272,10 @@ class ProjectConnectionsView(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'workspace_id invalid.')
             if not ProjectConfluenceOauth.objects.get_by_project_uuid(project_uuid):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Confluence OAuth authorization is required.')
+
+        if connection_type == ConnectionType.JIRA_ISSUE.value:
+            if not ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.JIRA_ISSUE.value):
+                return api_error(status.HTTP_400_BAD_REQUEST, 'Jira OAuth authorization is required.')
 
         record, error_response = create_connection(project, request.user.username, connection_type, name, config)
         if error_response:
@@ -855,7 +859,7 @@ class ProjectConnectionMetaView(APIView):
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        if project_connection.type not in (ConnectionType.GENERAL_TASK.value, ConnectionType.CONFLUENCE.value):
+        if project_connection.type not in (ConnectionType.GENERAL_TASK.value, ConnectionType.CONFLUENCE.value, ConnectionType.JIRA_ISSUE.value):
             error_msg = 'Only general task and confluence connections support related users.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
@@ -1180,6 +1184,28 @@ class ProjectConfluenceOauthStatusView(APIView):
         return Response({'connected': connected})
 
 
+class ProjectJiraOauthStatusView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def get(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_admin_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        connected = ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.JIRA_ISSUE.value) is not None
+        return Response({'connected': connected})
+
+
 class ProjectConnectionRecordView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
@@ -1231,6 +1257,9 @@ class ProjectConnectionRecordView(APIView):
             record, columns, linked_ticket_title = list_linear_issue_record_details(seadb_api, project_uuid, connection_id, record_id)
         elif project_connection.type == ConnectionType.DISCORD.value:
             record, columns, linked_ticket_title = list_discord_thread_record_details(seadb_api, project_uuid, connection_id, record_id)
+        elif project_connection.type == ConnectionType.JIRA_ISSUE.value:
+            record, columns, linked_ticket_title = list_jira_issue_record_details(seadb_api, project_uuid, connection_id, record_id)
+
         else:
             error_msg = 'type invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -1276,6 +1305,7 @@ class ProjectConnectionRecordView(APIView):
         supported_types = [
             ConnectionType.DISCOURSE_FORUM.value,
             ConnectionType.GITHUB_ISSUE.value,
+            ConnectionType.JIRA_ISSUE.value,
             ConnectionType.SITE.value,
             ConnectionType.SEAFILE.value,
             ConnectionType.EMAIL.value,
@@ -1310,6 +1340,8 @@ class ProjectConnectionRecordView(APIView):
             table_name = SchemaTables.LINEAR_ISSUES.table_name(connection_id)
         elif project_connection.type == ConnectionType.DISCORD.value:
             table_name = SchemaTables.DISCORD_THREADS.table_name(connection_id)
+        elif project_connection.type == ConnectionType.JIRA_ISSUE.value:
+            table_name = SchemaTables.JIRA_ISSUES.table_name(connection_id)
 
         update_row = {'pk': int(record_id), 'row': {}}
         seadb_api = SeaDBAPI()
@@ -1411,7 +1443,7 @@ class ProjectConnectionRecordView(APIView):
             logger.error(f'update connection record error: {e}')
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-        
+
         if project_connection.type == ConnectionType.EMAIL.value and 'unread' in row_data:
             unread = row_data.get('unread')
             sql = f"UPDATE `{SchemaTables.EMAIL.table_name(connection_id)}` SET unread={unread} WHERE thread_id = {record_id}"
@@ -1440,7 +1472,7 @@ class ProjectConnectionUnreadEmailView(APIView):
         unread = request.data.get('unread')
         if unread is None:
             return api_error(status.HTTP_400_BAD_REQUEST, 'unread invalid.')
-        
+
         record_id = request.data.get('record_id')
         try:
             record_pk = int(record_id)
@@ -1478,7 +1510,7 @@ class ProjectConnectionUnreadEmailView(APIView):
             results = response.get('results', [])
             if not results:
                 return Response({'success': True})
-            
+
             update_row['row']['unread'] = unread
             seadb_api.update_rows(project_uuid, email_table_name, [update_row])
 
@@ -1671,6 +1703,7 @@ class ProjectConnectionRecordsView(APIView):
         supported_types = [
             ConnectionType.DISCOURSE_FORUM.value,
             ConnectionType.GITHUB_ISSUE.value,
+            ConnectionType.JIRA_ISSUE.value,
             ConnectionType.SITE.value,
             ConnectionType.SEAFILE.value,
             ConnectionType.EMAIL.value,
@@ -1705,6 +1738,8 @@ class ProjectConnectionRecordsView(APIView):
             table_name = SchemaTables.CONFLUENCE.table_name(connection_id)
         elif project_connection.type == ConnectionType.DISCORD.value:
             table_name = SchemaTables.DISCORD_THREADS.table_name(connection_id)
+        elif project_connection.type == ConnectionType.JIRA_ISSUE.value:
+            table_name = SchemaTables.JIRA_ISSUES.table_name(connection_id)
 
         update_rows = []
         general_task_events = []

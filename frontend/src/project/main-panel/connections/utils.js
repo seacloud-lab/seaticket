@@ -136,6 +136,15 @@ const getEmailOriginalPageUrl = (connection, row) => {
   return '';
 };
 
+const getJiraOriginalPageUrl = (connection, row, columns) => {
+  const siteUrl = connection.config?.site_url;
+  if (!siteUrl) return '';
+  const issueKeyColumn = getColumnByName(columns, 'issue_key');
+  const issueKey = getCellValueByColumn(row, issueKeyColumn);
+  if (!issueKey) return '';
+  return `${siteUrl.replace(/\/$/, '')}/browse/${issueKey}`;
+};
+
 const getNotionOriginalPageUrl = (row, columns) => {
   const pageIdColumn = getColumnByName(columns, 'page_id');
   const pageId = getCellValueByColumn(row, pageIdColumn);
@@ -189,6 +198,9 @@ export const getOriginalPageUrl = (connection, row, columns) => {
     }
     case CONNECTION_TYPE.SEAFILE: {
       return getSeafileOriginalPageUrl(connection, row, columns);
+    }
+    case CONNECTION_TYPE.JIRA_ISSUE: {
+      return getJiraOriginalPageUrl(connection, row, columns);
     }
     case CONNECTION_TYPE.EMAIL: {
       return getEmailOriginalPageUrl(connection, row);
@@ -252,6 +264,23 @@ export const initConnectionResourceDetails = (type, record) => {
     const { replies } = record;
     return Array.isArray(replies) ? replies : [];
   }
+  if (type === CONNECTION_TYPE.JIRA_ISSUE) {
+    const { author, created_time, comments } = record;
+    const mainPost = {
+      author: author || gettext('Unassigned'),
+      created_time,
+      modified_time: created_time,
+      content: content || '',
+    };
+    const initComments = Array.isArray(comments) && comments.length > 0 ? comments.map(detail => ({
+      ...detail,
+      time: detail.created_time,
+      modified_time: detail.created_time || detail.modified_time,
+      body: detail.content || '',
+    })) : [];
+    return [mainPost, ...initComments];
+  }
+
 };
 
 export const getInfoByEmailFrom = (emailFrom) => {

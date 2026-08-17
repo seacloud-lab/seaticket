@@ -23,6 +23,7 @@ CONNECTION_TYPE_TO_SCHEMA_TABLE = {
     ConnectionType.LINEAR.value: SchemaTables.LINEAR_ISSUES,
     ConnectionType.CONFLUENCE.value: SchemaTables.CONFLUENCE,
     ConnectionType.DISCORD.value: SchemaTables.DISCORD_THREADS,
+    ConnectionType.JIRA_ISSUE.value: SchemaTables.JIRA_ISSUES,
 }
 
 
@@ -675,6 +676,42 @@ def list_seafile_record_details(seadb_api, project_uuid, connection_id, _pk):
     return record, column_metadata, linked_ticket_title
 
 
+def get_jira_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
+    from seahub.tickets.ticket_utils import get_ticket_title
+    issue_table_name = SchemaTables.JIRA_ISSUES.table_name(connection_id)
+    issue_sql = f"SELECT `_pk`, `title`, `assignees`, `author`, `content`, `created_time`, `issue_id`, `issue_key`, `status`, `priority`, `issue_type`, `linked_ticket`, `outdated`, `ai_summary` FROM `{issue_table_name}` WHERE _pk = {_pk}"
+    try:
+        issue_res = seadb_api.query_rows(project_uuid, issue_sql)
+        issue_record = issue_res.get('results')[0] if issue_res.get('results') else {}
+        column_metadata = issue_res.get('metadata')
+        linked_ticket = issue_record.get('linked_ticket')
+        linked_ticket_title = get_ticket_title(seadb_api, project_uuid, linked_ticket)
+    except Exception as e:
+        issue_record = {}
+        column_metadata = []
+        linked_ticket_title = ''
+        logger.error(f'SeaDB query error for Jira issue {issue_table_name}: {e}')
+    return issue_record, column_metadata, linked_ticket_title
+
+
+def list_jira_issue_record_details(seadb_api, project_uuid, connection_id, _pk):
+    """Query Jira issue details with comments from SeaDB"""
+    comments_table_name = SchemaTables.JIRA_ISSUE_COMMENTS.table_name(connection_id)
+    try:
+        issue_record, column_metadata, linked_ticket_title = get_jira_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
+        issue_id = issue_record.get('issue_id')
+        issue_record.pop('issue_id')
+        comments_sql = f"SELECT author, content, created_time FROM `{comments_table_name}` WHERE issue_id = {issue_id} ORDER BY comment_id ASC"
+        comments_res = seadb_api.query_rows(project_uuid, comments_sql)
+        comments_record = comments_res.get('results', [])
+        issue_record['comments'] = comments_record
+    except Exception as e:
+        logger.error(f'SeaDB query error for Jira issue details {comments_table_name}: {e}')
+        issue_record = {}
+        column_metadata = []
+        linked_ticket_title = ''
+    return issue_record, column_metadata, linked_ticket_title
+
 # task
 def get_general_task_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
     from seahub.tickets.ticket_utils import get_ticket_title
@@ -888,6 +925,8 @@ def get_title_and_ai_summary_by_pks(seadb_api, project_uuid, source_type, pks, c
         table_name = SchemaTables.TICKETS.table_name()
     elif source_type == ExtraSourceType.PORTAL_ISSUE.value:
         table_name = SchemaTables.PORTAL_ISSUES.table_name()
+    elif source_type == ConnectionType.JIRA_ISSUE.value:
+        table_name = SchemaTables.JIRA_ISSUES.table_name(connection_id)
 
     sql = f"SELECT `_pk`, `title`, `ai_summary` FROM `{table_name}` WHERE `_pk` IN ({','.join([str(pk) for pk in pks])})"
     results = {}
@@ -1002,6 +1041,7 @@ def list_notion_record_details(seadb_api, project_uuid, connection_id, _pk):
 
 # func
 def get_connection_records_by_pks(seadb_api, project_uuid, connection_id, connection_type, pks):
+    
     if not pks:
         return []
 
@@ -1103,6 +1143,8 @@ def get_connection_record_by_pk(seadb_api, project_uuid, connection_type, connec
         record, columns, linked_ticket_title = get_linear_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
     elif connection_type == ConnectionType.DISCORD.value:
         record, columns, linked_ticket_title = get_discord_thread_by_pk(seadb_api, project_uuid, connection_id, _pk)
+    elif connection_type == ConnectionType.JIRA_ISSUE.value:
+        record, columns, linked_ticket_title = get_jira_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
     else:
         record = {}
         columns = []

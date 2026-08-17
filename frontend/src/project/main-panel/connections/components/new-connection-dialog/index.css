@@ -152,6 +152,44 @@
   padding: 0 8px;
 }
 
+.seaqa-project-jira-oauth {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px;
+  background: var(--bs-body-third-bg);
+  border-radius: 4px;
+  padding-left: 16px;
+}
+
+.seaqa-project-jira-oauth .jira-oauth-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--bs-body-color);
+}
+
+.seaqa-project-jira-oauth .jira-oauth-status .jira-status-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.seaqa-project-jira-oauth .jira-oauth-status .jira-status-icon svg path {
+  fill: var(--bs-sf-grey-text);
+}
+
+.seaqa-project-jira-oauth .jira-oauth-status.connected .jira-status-icon svg path {
+  fill: #47B881;
+}
+
+.seaqa-project-jira-oauth .btn {
+  font-weight: 400;
+  height: 26px;
+  padding: 0 8px;
+}
+
 .seaqa-project-connection-oauth-status {
   display: flex;
   align-items: center;

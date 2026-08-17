@@ -1006,6 +1006,44 @@ class ProjectConfluenceOauth(models.Model):
         db_table = 'project_confluence_oauth'
 
 
+class ProjectConnectionOauthManager(models.Manager):
+    def get_by_project_uuid(self, project_uuid, type):
+        return self.filter(project_uuid=project_uuid, type=type).first()
+
+    def upsert_token(self, project_uuid, type, access_token, expires_at, refresh_token):
+        record = self.filter(project_uuid=project_uuid, type=type).first()
+        if record:
+            record.access_token = access_token
+            record.refresh_token = refresh_token
+            record.expires_at = expires_at
+            record.save(update_fields=['access_token', 'refresh_token', 'expires_at'])
+            return record
+
+        record = super(ProjectConnectionOauthManager, self).create(
+            project_uuid=project_uuid,
+            type=type,
+            access_token=access_token,
+            refresh_token=refresh_token,
+            expires_at=expires_at,
+        )
+        record.save()
+        return record
+
+
+class ProjectConnectionOauth(models.Model):
+    project_uuid = models.UUIDField(db_index=True)
+    type = models.CharField(max_length=255)
+    access_token = models.TextField()
+    refresh_token = models.TextField()
+    expires_at = models.DateTimeField()
+
+    objects = ProjectConnectionOauthManager()
+
+    class Meta:
+        db_table = 'project_connection_oauth'
+        unique_together = [['project_uuid', 'type']]
+
+
 # AI Usage Statistics Models
 
 class AIUsageStatistics(models.Model):
@@ -1126,7 +1164,7 @@ class ProjectLinearOauth(models.Model):
     project_uuid = models.UUIDField(unique=True, db_index=True)
     access_token = models.CharField(max_length=255)
     refresh_token = models.CharField(max_length=255)
-    expires_at = models.DateTimeField(db_index=True)
+    expires_at = models.DateTimeField()
 
     objects = ProjectLinearOauthManager()
 

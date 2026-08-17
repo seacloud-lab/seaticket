@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-import requests
+
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -12,14 +12,17 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils.decorators import require_org_context
-from seahub.project.models import Projects, ProjectGithubAppInstallation, ProjectLinearOauth, ProjectConfluenceOauth
+from seahub.project.models import Projects, ProjectGithubAppInstallation, ProjectLinearOauth, ProjectConfluenceOauth, \
+    ProjectConnectionOauth
 from seahub.project.confluence_api import ConfluenceAPI
 from seahub.project.linear_api import LinearAPI
 from seahub.project.utils import check_project_permission, check_project_admin_permission, get_project_related_users, \
     query_items, check_project_admin_permission
-from seahub.project.constants import ITEMS_SEARCH_QUERY_TYPES_SUPPORT
+from seahub.project.constants import ConnectionType, ITEMS_SEARCH_QUERY_TYPES_SUPPORT
 from seahub.project.github_issues_api import GitHubAPI
 from seahub.project.discord_api import DiscordAPI
+from seahub.settings import JIRA_CLIENT_ID, JIRA_CLIENT_SECRET
+from seahub.project.jira_api import JiraAPI
 
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
@@ -334,3 +337,109 @@ class ProjectDiscordChannels(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
         return Response({'channels': channels})
+
+
+class ProjectJiraSites(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    @require_org_context
+    def get(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_admin_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        jira_oauth = ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.JIRA_ISSUE.value)
+        if not jira_oauth:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Jira OAuth authorization is required.')
+
+        jira_api = JiraAPI(
+            access_token=jira_oauth.access_token,
+            refresh_token=jira_oauth.refresh_token,
+            expires_at=jira_oauth.expires_at,
+        )
+
+        try:
+            resources = jira_api.list_accessible_resources()
+        except Exception as e:
+            logger.error('Jira API error fetching sites for project %s: %s', project_uuid, e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to fetch Jira sites.')
+
+        if jira_api.access_token != jira_oauth.access_token:
+            ProjectConnectionOauth.objects.upsert_token(
+                project_uuid, ConnectionType.JIRA_ISSUE.value,
+                jira_api.access_token, jira_api.expires_at, jira_api.refresh_token
+            )
+
+        sites = []
+        for resource in resources:
+            scopes = resource.get('scopes') or []
+            if not any('jira' in str(scope).lower() for scope in scopes):
+                continue
+            site_id = resource.get('id')
+            site_name = resource.get('name')
+            site_url = resource.get('url')
+            if not site_id or not site_name or not site_url:
+                continue
+            sites.append({
+                'id': site_id,
+                'name': site_name,
+                'url': site_url,
+            })
+
+        return Response({'sites': sites})
+
+
+class ProjectJiraProjects(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    @require_org_context
+    def get(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_admin_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        site_id = request.GET.get('site_id', '')
+        if not site_id:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'site_id is required.')
+
+        jira_oauth = ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.JIRA_ISSUE.value)
+        if not jira_oauth:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Jira OAuth authorization is required.')
+
+        jira_api = JiraAPI(
+            access_token=jira_oauth.access_token,
+            refresh_token=jira_oauth.refresh_token,
+            expires_at=jira_oauth.expires_at,
+        )
+
+        try:
+            projects_list = jira_api.list_projects(site_id)
+        except Exception as e:
+            logger.error('Jira API error fetching projects for project %s: %s', project_uuid, e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to fetch Jira projects.')
+
+        if jira_api.access_token != jira_oauth.access_token:
+            ProjectConnectionOauth.objects.upsert_token(
+                project_uuid, ConnectionType.JIRA_ISSUE.value,
+                jira_api.access_token, jira_api.expires_at, jira_api.refresh_token
+            )
+
+        return Response({'projects': projects_list})

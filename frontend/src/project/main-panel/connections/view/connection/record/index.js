@@ -224,6 +224,15 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
       if (record.creator_id && userMap[record.creator_id]) record.creator_id = userMap[record.creator_id];
       if (record.last_modifier_id && userMap[record.last_modifier_id]) record.last_modifier_id = userMap[record.last_modifier_id];
     }
+    // Resolve Jira account IDs → display names in-place
+    if (connection.type === CONNECTION_TYPE.JIRA_ISSUE && relatedUsers.length > 0) {
+      const jiraUserMap = {};
+      relatedUsers.forEach(u => { if (u.user_id) jiraUserMap[u.user_id] = u.name; });
+      if (record.author && jiraUserMap[record.author]) record.author = jiraUserMap[record.author];
+      if (Array.isArray(record.assignees)) {
+        record.assignees = record.assignees.map(id => jiraUserMap[id] || id);
+      }
+    }
     setRecord(record);
   }, [connection]);
 
