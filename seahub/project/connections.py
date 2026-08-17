@@ -2028,7 +2028,6 @@ class ProjectConnectionReplyEmailView(APIView):
             'origin_thread_id': origin_thread_id,
             'message_id': message_id,
             'email_id': sent_email_id,
-            'reply_to_email_id': target_email.get('_pk'),
         }
         try:
             pk = email_seadb_api.save_reply_email(

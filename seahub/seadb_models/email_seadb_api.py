@@ -50,7 +50,7 @@ class EmailSeaDBAPI:
     def get_emails_by_thread_id(self, connection_id, thread_id, limit=None):
         table_name = SchemaTables.EMAIL.table_name(connection_id)
         sql = "SELECT `_pk`, `thread_id`, `title`, `email_from`, `email_to`, `cc`, `content`, " \
-            f"`modified_time`, `is_sender`, `message_id`, `origin_thread_id`, `email_id`, `answered`, `deleted` FROM `{table_name}` WHERE `thread_id` = {thread_id} AND deleted = false ORDER BY `modified_time` ASC, `_pk` ASC"
+            f"`modified_time`, `is_sender`, `message_id`, `origin_thread_id`, `email_id`, `deleted` FROM `{table_name}` WHERE `thread_id` = {thread_id} AND deleted = false ORDER BY `modified_time` ASC, `_pk` ASC"
         if limit is not None:
             sql += f" LIMIT {limit}"
         response = self.seadb_api.query_rows(self.base_id, sql)
@@ -228,7 +228,6 @@ class EmailSeaDBAPI:
         now = datetime.datetime.now(datetime.UTC).isoformat()
         email_table_name = SchemaTables.EMAIL.table_name(connection_id)
         thread_table_name = SchemaTables.THREAD.table_name(connection_id)
-        reply_to_email_id = email_data.get('reply_to_email_id')
 
         sender_name = email_data.get('sender_name', '')
         sender_email = email_data['sender_email']
@@ -253,13 +252,6 @@ class EmailSeaDBAPI:
 
         result = self.seadb_api.insert_rows(project_uuid, email_table_name, [email_row])
         pks = result.get('pks', [])
-        if reply_to_email_id:
-            self.seadb_api.update_rows(project_uuid, email_table_name, [{
-                'pk': int(reply_to_email_id),
-                'row': {
-                    SchemaTables.EMAIL.column.answered.name: True,
-                }
-            }])
 
         is_replied = self.recompute_thread_is_replied(
             project_uuid, connection_id, thread_id,
