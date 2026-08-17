@@ -705,12 +705,22 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     }
     if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && column.key === 'site_id' && isJira) {
       api = isJiraOauthConnected ? listJiraSites : null;
+      fieldColumn = {
+        ...column,
+        readonly: !isJiraOauthConnected,
+        placeholder: isJiraOauthConnected ? gettext('Select a Jira site') : gettext('Please connect Jira first'),
+      };
       if (row[key]) {
         row[key] = row[key].value || row[key];
       }
     }
     if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && column.key === 'project_key' && isJira) {
       api = isJiraOauthConnected ? listJiraProjects : null;
+      fieldColumn = {
+        ...column,
+        readonly: !isJiraOauthConnected,
+        placeholder: isJiraOauthConnected ? gettext('Select a Jira project') : gettext('Please connect Jira first'),
+      };
       if (row[key]) {
         row[key] = row[key].value || row[key];
       }
@@ -727,8 +737,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         onChange={onConfigChange}
       />
     );
-
-    return editor;
   }, [
     config, isJira, isSubmitting, isGithub, isConfluence, isConfluenceOauthConnected, isLinear,
     onConfigChange, isJiraOauthConnected, listGitHubRepositories, listConfluenceWorkspaces, listLinearTeams,
@@ -922,20 +930,22 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
             {isJira && (
               <FormGroup>
                 <Label>{gettext('Authorization')}</Label>
-                <div className="seaqa-project-connection-oauth-status">
-                  <span className={classnames('oauth-status-badge', { connected: isJiraOauthConnected })}>
+                <div className="seaqa-project-jira-oauth">
+                  <span className={classnames('jira-oauth-status', { connected: isJiraOauthConnected })}>
+                    <span className="jira-status-icon d-flex">
+                      <Icon symbol={isJiraOauthConnected ? 'check-circle-filled' : 'close-circle-filled'} />
+                    </span>
                     {isJiraOauthConnected ? gettext('Connected') : gettext('Not connected')}
                   </span>
                   <Button
-                    color="primary"
-                    className="ml-2"
+                    color={isJiraOauthConnected ? 'secondary' : 'primary'}
                     disabled={isSubmitting || isCheckingJiraOauth || isWaitingJiraOAuth}
                     onClick={handleConnectJira}
                   >
                     {isJiraOauthConnected ? gettext('Reconnect Jira') : gettext('Connect Jira')}
                   </Button>
+                  {jiraOauthError && (<div className="text-danger mt-2">{jiraOauthError}</div>)}
                 </div>
-                {jiraOauthError && <div className="text-danger mt-2">{jiraOauthError}</div>}
               </FormGroup>
             )}
             {isWaitingJiraOAuth && (

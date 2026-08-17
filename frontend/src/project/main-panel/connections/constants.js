@@ -318,7 +318,7 @@ export const CONNECTION_FIELDS = {
       is_display: true
     }, {
       key: 'site_id',
-      name: gettext('Jira Site'),
+      name: gettext('Jira site'),
       placeholder: gettext('Select a Jira site'),
       type: CONNECTION_FIELD_TYPE.SYNC_SELECT,
       is_required: true,
