@@ -944,7 +944,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
                   >
                     {isJiraOauthConnected ? gettext('Reconnect Jira') : gettext('Connect Jira')}
                   </Button>
-                  {jiraOauthError && (<div className="text-danger mt-2">{jiraOauthError}</div>)}
+                  {jiraOauthError && (<div className="text-danger">{jiraOauthError}</div>)}
                 </div>
               </FormGroup>
             )}

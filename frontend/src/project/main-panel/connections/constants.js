@@ -546,8 +546,11 @@ export const CONNECTION_TYPES = [
     sub_types: CONNECTION_SUB_TYPE_MAP.issues,
   }, {
     type: CONNECTION_TYPE.JIRA_ISSUE,
-    icon: 'ticket',
+    icon: 'jira',
     name: gettext('Jira'),
+    help_text: gettext('Authorize SeaTicket with your Atlassian account, then select the Jira site and project to sync issues from. If any problem occurs, check the'),
+    help_link: 'https://user-docs.seaticket.ai',
+    // help_link: HELP_WEB_URL + 'Jira',
     sub_types: CONNECTION_SUB_TYPE_MAP.issues,
   }, {
     type: CONNECTION_TYPE.DISCOURSE_FORUM,
