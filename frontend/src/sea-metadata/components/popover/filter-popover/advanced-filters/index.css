@@ -90,6 +90,10 @@
   line-height: 20px;
 }
 
+.sea-metadata-filters-list .seaqa-customize-select.sea-metadata-selector-tags-select .selected-option-show {
+  height: auto;
+}
+
 .sea-metadata-filters-list .seaqa-customize-select.disabled .selected-option-show {
   width: 100%;
 }

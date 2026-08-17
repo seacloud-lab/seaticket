@@ -52,6 +52,7 @@
   margin-top: 0;
 }
 
+.sea-metadata-filters .sea-metadata-filters-list .sea-metadata-selector-tags-select .option-group,
 .sea-metadata-filters .sea-metadata-filters-list .sea-metadata-selector-single-select .option-group,
 .sea-metadata-filters .sea-metadata-filters-list .sea-metadata-selector-multiple-select .option-group {
   margin-top: 0px;
