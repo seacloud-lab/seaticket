@@ -2033,7 +2033,6 @@ class ProjectConnectionReplyEmailView(APIView):
         try:
             pk = email_seadb_api.save_reply_email(
                 project_uuid, connection_id, thread_id, email_data,
-                use_last_email_sender=config.get('server_provider') == 'Gmail',
             )
             email_data['_pk'] = pk
         except Exception as e:

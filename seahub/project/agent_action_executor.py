@@ -1199,7 +1199,6 @@ class AgentActionExecutor:
         try:
             reply_pk = email_seadb_api.save_reply_email(
                 project_uuid, project_connection.id, thread_id, email_data,
-                use_last_email_sender=config.get('server_provider') == 'Gmail',
             )
         except Exception as e:
             logger.error('Save reply email failed for connection %s thread %s: %s', project_connection.id, source_id, e)
