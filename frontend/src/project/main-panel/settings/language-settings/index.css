@@ -1,14 +1,8 @@
-.language-settings-option {
-  margin-top: 0;
-}
-
-.language-settings-body .language-selector {
-  border: 1px solid #ddd;
-  font-size: 14px;
+.language-settings-option .language-selector {
   height: 34px;
   max-width: 280px;
 }
 
-.language-settings-body .language-selector .option-group {
+.language-settings-option .language-selector .option-group {
   padding: 0;
 }

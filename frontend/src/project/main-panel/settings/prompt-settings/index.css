@@ -1,32 +1,25 @@
-.prompt-settings-option-body .tip {
-  font-size: 12px;
+.prompt-settings-option .seaqa-project-settings-item-body .prompt-preview {
+  background-color: var(--bs-th-secondary-bg);
+  border-radius: 4px;
+  border: 1px solid var(--bs-border-tertiary-color);
+  width: 100%;
+  height: fit-content;
 }
 
-.prompt-settings-option-body .prompt-preview-container {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 12px;
-  background-color: #f8f9fa;
-  border-radius: 6px;
-  border: 1px solid #e9ecef;
-}
-
-.prompt-settings-option-body .prompt-preview {
-  flex: 1;
-  font-size: 14px;
-  color: var(--bs-sf-grey-text);
-  line-height: 1.5;
+.prompt-preview-content {
   word-break: break-word;
+  white-space: pre-wrap;
+  font-size: 14px;
+  line-height: 22px;
+  --mask: linear-gradient(to bottom, var(--bs-th-secondary-bg) calc(100% - 24px), #0000);
+  mask-image: var(--mask);
+  overflow-y: auto;
+  max-height: 112px;
+  width: 100%;
 }
 
-.prompt-settings-option-body .edit-prompt-btn {
-  flex-shrink: 0;
-  min-width: 60px;
-}
-
-.ticket-agent-rules-settings .settings-item-header {
-  border-bottom: none;
-  margin-bottom: 0.35rem;
-  padding-top: 0;
+.seaqa-project-prompt-edit-btn {
+  height: 32px;
+  font-weight: normal;
+  padding: 0 12px;
 }

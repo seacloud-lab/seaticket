@@ -1,0 +1,8 @@
+.edit-prompt-dialog {
+  max-width: 720px;
+}
+
+.edit-prompt-dialog .edit-prompt-textarea {
+  resize: none;
+  min-height: 200px;
+}

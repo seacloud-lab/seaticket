@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
-import { Switch } from '@/components';
 import { gettext } from '@/constants';
+import SwitchSettings from '../switch-settings';
+import SettingsItem from '../settings-item';
 
 import './index.css';
 
@@ -36,34 +37,28 @@ const AgentAutoConfirmSettings = ({ value = {}, onChange }) => {
       [itemKey]: checked,
     });
   };
-
   return (
-    <div className='w-100 pl-4 pr-4 pt-2 mb-4'>
-      <div className="settings-item-header text-truncate mb-2">
-        {gettext('Auto-approve actions')}
-      </div>
-      <p className="seaqa-tip-default tip m-0 mb-3">
+    <SettingsItem title={gettext('Auto-approve actions')} className="seaqa-project-auto-approve-action-settings">
+      <p className="seaqa-tip-default m-0 font-size-12 line-height-20">
         {gettext('When enabled, matching suggestions are executed automatically without clicking Approve in run logs.')}
       </p>
-      <div className="agent-auto-confirm-body">
-        {AUTO_CONFIRM_ITEMS.map((item) => (
-          <div className="agent-auto-confirm-row d-flex align-items-center justify-content-between" key={item.key}>
-            <div className="agent-auto-confirm-meta pr-3">
-              <div className="agent-auto-confirm-title d-flex align-items-center">
-                <span>{item.title}</span>
-                {item.risk && <span className="agent-auto-confirm-risk ml-2">{item.risk}</span>}
+      {AUTO_CONFIRM_ITEMS.map((item) => (
+        <>
+          <SwitchSettings
+            placeholder={(
+              <div className="d-flex align-items-center">
+                <div>{item.title}</div>
+                {item.risk && <div className="agent-auto-confirm-risk ml-2 px-2">{item.risk}</div>}
               </div>
-              <p className="seaqa-tip-default tip m-0">{item.tip}</p>
-            </div>
-            <Switch
-              checked={!!autoConfirm[item.key]}
-              onChange={(event) => onToggle(item.key, event.target.checked)}
-              size="large"
-            />
-          </div>
-        ))}
-      </div>
-    </div>
+            )}
+            className="mt-4"
+            tip={item.tip}
+            value={!!autoConfirm[item.key]}
+            onChange={(checked) => onToggle(item.key, checked)}
+          />
+        </>
+      ))}
+    </SettingsItem>
   );
 };
 

@@ -7,6 +7,7 @@ import { agentAPI } from '@/project/api';
 import { gettext } from '@/constants';
 import { getConnectionIcon } from '../../connections/utils';
 import { CONNECTION_TYPE } from '../../connections/constants';
+import SettingsItem from '../settings-item';
 
 import './index.css';
 
@@ -109,11 +110,8 @@ const GitHubIssueTypeMappingSettings = ({ className, value, onChange }) => {
   }, []);
 
   return (
-    <div className={classnames('github-issue-type-mapping-settings w-100 pl-4 pr-4 pt-2', className)}>
-      <div className="github-issue-type-mapping-header text-truncate mb-4">
-        {gettext('Agent issue type to GitHub issue type')}
-      </div>
-      <div className="github-issue-type-mapping-body github-issue-type-mapping-table">
+    <SettingsItem title={gettext('Agent issue type to GitHub issue type')} className={classnames('github-issue-type-mapping-settings', className)}>
+      <div className="github-issue-type-mapping-table">
         <div className="github-issue-type-mapping-table-header github-issue-type-mapping-table-row">
           <div className="github-issue-type-mapping-table-cell">
             <div className="github-issue-type-mapping-title">
@@ -164,11 +162,12 @@ const GitHubIssueTypeMappingSettings = ({ className, value, onChange }) => {
         </div>
       </div>
       {warningText && (
-        <p className="seaqa-tip-default tip m-0 mt-2">
+        <p className="seaqa-tip-default m-0 mt-2 font-size-12 line-height-20">
+          <Icon symbol="exclamation-triangle-filled" className="github-issue-type-mapping-tip-icon" />
           {warningText}
         </p>
       )}
-    </div>
+    </SettingsItem>
   );
 };
 
