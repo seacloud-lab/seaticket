@@ -1743,6 +1743,7 @@ class ProjectConnectionRecordsView(APIView):
 
         update_rows = []
         general_task_events = []
+        email_unread_cascades = []
         seadb_api = SeaDBAPI()
         for record in records_data:
             row_id = record.get('row_id')
@@ -1813,6 +1814,7 @@ class ProjectConnectionRecordsView(APIView):
             if project_connection.type == ConnectionType.EMAIL.value and 'unread' in row_data:
                 update_row['row']['unread'] = row_data.get('unread') if row_data.get('unread') is not None else False
                 update_row['row']['record_modified_time'] = datetime.datetime.now(datetime.UTC).isoformat()
+                email_unread_cascades.append((row_id, update_row['row']['unread']))
 
             if project_connection.type == ConnectionType.EMAIL.value and 'tags' in row_data:
                 update_row['row']['tags'] = row_data.get('tags')
@@ -1830,6 +1832,14 @@ class ProjectConnectionRecordsView(APIView):
             logger.error(f'batch update connection records error: {e}')
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        # Cascade thread unread to its emails, matching the single-record update behavior.
+        for row_id, unread in email_unread_cascades:
+            try:
+                sql = f"UPDATE `{SchemaTables.EMAIL.table_name(connection_id)}` SET unread={unread} WHERE thread_id = {row_id}"
+                seadb_api.query_rows(project_uuid, sql)
+            except Exception as e:
+                logger.warning(f'batch update email unread cascade error: {e}')
 
         for event in general_task_events:
             send_connection_data_event(
