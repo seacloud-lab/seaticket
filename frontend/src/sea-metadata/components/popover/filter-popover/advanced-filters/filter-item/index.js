@@ -25,6 +25,7 @@ import context from '@/sea-metadata/context';
 import SelectOption from '@/sea-metadata/components/cell-formatter/select-option';
 import Tag from '@/sea-metadata/components/tag';
 import { getRowById } from '@/sea-metadata/utils/row';
+import TagOption from '@/components/tag-option';
 
 import './index.css';
 
@@ -379,15 +380,24 @@ class FilterItem extends React.Component {
     }
     const selectedOptionNames = labelArray.length > 0 ? { label: (<Fragment>{labelArray}</Fragment>) } : {};
 
-    const dataOptions = tags.map(option => {
-      return FilterItemUtils.generatorTagOption(option, filterTerm);
+    const tagsOptions = tags.map(tag => {
+      return {
+        value: { tag },
+        selectedKey: `tag:${tag.id}`,
+        name: tag.name,
+        label: (
+          <div className="select-option-name multiple-option-name">
+            <TagOption tag={tag} className="multiple-select-option" />
+          </div>
+        )
+      };
     });
     return (
       <CustomizeSelect
         className="sea-metadata-selector-tags-select"
         value={selectedOptionNames}
         selectedKeys={Array.isArray(filterTerm) ? filterTerm.map(item => `tag:${item}`) : []}
-        options={dataOptions}
+        options={tagsOptions}
         onChange={this.onSelectTag}
         placeholder={gettext('Select tag(s)')}
         searchable={true}

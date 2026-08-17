@@ -7,7 +7,6 @@ import { isWhiteColor } from '@/utils/color-utils';
 import SelectOption from '@/sea-metadata/components/cell-formatter/select-option';
 import { getOptionDisplayNameByOption } from '@/sea-metadata/utils/column';
 import { IconButton } from '@/components';
-import TagOption from '@/components/tag-option';
 
 class FilterItemUtils {
 
@@ -71,20 +70,6 @@ class FilterItemUtils {
         <div className="select-option-name multiple-option-name">
           <SelectOption option={option} className={classnames('multiple-select-option ml-0', { 'multiple-select-option-white': isWhiteColor(option.color) })} />
           <IconButton className="single-check-icon no-hover-bg" icon={filterTerm.indexOf(option.id) > -1 ? 'check-mark' : ''} />
-        </div>
-      )
-    };
-  }
-
-  static generatorTagOption(tag, filterTerm) {
-    return {
-      value: { tag },
-      selectedKey: `tag:${tag.id}`,
-      name: tag.name,
-      label: (
-        <div className="select-option-name multiple-option-name">
-          <TagOption tag={tag} className="multiple-select-option" />
-          <IconButton className="single-check-icon no-hover-bg" icon={filterTerm.indexOf(Number(tag.id)) > -1 ? 'check-mark' : ''} />
         </div>
       )
     };
