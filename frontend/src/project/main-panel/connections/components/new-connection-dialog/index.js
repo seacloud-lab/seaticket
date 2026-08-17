@@ -68,6 +68,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   // eslint-disable-next-line no-unused-vars
   const [linearTeamsVersion, setLinearTeamsVersion] = useState(0);
   const [isLinearOauthConnected, setLinearOauthConnected] = useState(false);
+  const [isWaitingLinearOAuth, setWaitingLinearOAuth] = useState(false);
   const [isCheckingLinearOauth, setCheckingLinearOauth] = useState(false);
   const [linearOauthError, setLinearOauthError] = useState('');
   const confluenceOauthIntervalRef = useRef(null);
@@ -499,6 +500,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     const next = window.location.href;
     const oauthUrl = `${server}/linear/oauth/?project_uuid=${projectUuid}&next=${encodeURIComponent(next)}`;
     oauthWindowRef.current = window.open(oauthUrl, 'linear-oauth', 'width=800,height=700');
+    setWaitingLinearOAuth(true);
 
     // Start polling for OAuth status
     clearInterval(pollingIntervalRef.current);
@@ -507,6 +509,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         if (res?.data?.connected) {
           setLinearOauthConnected(true);
           setLinearOauthError('');
+          setWaitingLinearOAuth(false);
           setLinearTeamsVersion(v => v + 1);
           clearInterval(pollingIntervalRef.current);
           if (oauthWindowRef.current && !oauthWindowRef.current.closed) {
@@ -515,6 +518,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         }
       }).catch(() => {
         // Silently retry on next interval
+        setWaitingLinearOAuth(false);
       });
     }, 2000);
   }, []);
@@ -816,6 +820,8 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         {step.key === STEP.CONFIG && isLinear && (
           <LinearConfig
             isLinearOauthConnected={isLinearOauthConnected}
+            isWaitingLinearOAuth={isWaitingLinearOAuth}
+            setWaitingLinearOAuth={setWaitingLinearOAuth}
             isSubmitting={isSubmitting}
             isCheckingLinearOauth={isCheckingLinearOauth}
             handleConnectLinear={handleConnectLinear}
@@ -882,7 +888,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       </ModalBody>
       <ConnectionDialogFooter
         stepIndex={stepIndex}
-        isSubmitDisabled={isSubmitting || isWaitingEmailOAuth || isWaitingConfluenceOAuth || isWaitingJiraOAuth || !isValid || !name}
+        isSubmitDisabled={isSubmitting || isWaitingEmailOAuth || isWaitingConfluenceOAuth || isWaitingJiraOAuth || isWaitingLinearOAuth || !isValid || !name}
         onToggle={onToggle}
         setStepIndex={setStepIndex}
         onSubmit={handleSubmit}

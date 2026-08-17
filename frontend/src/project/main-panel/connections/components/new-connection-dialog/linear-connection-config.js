@@ -1,14 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import { Button, FormGroup, Input, Label } from 'reactstrap';
+import { Button, FormGroup, Input, Label, Modal, ModalBody } from 'reactstrap';
 import { gettext } from '@/constants';
-import { Icon } from '@/components';
+import { Icon, Loading, ModalHeader } from '@/components';
 
 const LinearConfig = ({
   isLinearOauthConnected,
   isSubmitting,
   isCheckingLinearOauth,
+  isWaitingLinearOAuth,
+  setWaitingLinearOAuth,
   handleConnectLinear,
   linearOauthError,
   name,
@@ -28,7 +30,7 @@ const LinearConfig = ({
         </span>
         <Button
           color={isLinearOauthConnected ? 'secondary' : 'primary'}
-          disabled={isSubmitting || isCheckingLinearOauth}
+          disabled={isSubmitting || isCheckingLinearOauth || isWaitingLinearOAuth}
           onClick={handleConnectLinear}
         >
           {isLinearOauthConnected ? gettext('Reconnect Linear') : gettext('Connect Linear')}
@@ -44,6 +46,24 @@ const LinearConfig = ({
       <Input value={name} onChange={onNameChange} disabled={isSubmitting} />
     </FormGroup>
     {basicCustomColumns.map(renderConnectionField)}
+    <Modal
+      isOpen={isWaitingLinearOAuth}
+      toggle={() => setWaitingLinearOAuth(false)}
+      centered
+      backdrop="static"
+      keyboard={false}
+      className="seaqa-project-connection-oauth-modal"
+    >
+      <ModalHeader toggle={() => setWaitingLinearOAuth(false)}>
+        {gettext('Linear authorization')}
+      </ModalHeader>
+      <ModalBody>
+        <div className="seaqa-project-connection-oauth-pending">
+          <Loading />
+          <div className="mt-3">{gettext('Waiting for Linear authorization to complete...')}</div>
+        </div>
+      </ModalBody>
+    </Modal>
   </div>
 );
 
@@ -51,6 +71,8 @@ LinearConfig.propTypes = {
   isLinearOauthConnected: PropTypes.bool.isRequired,
   isSubmitting: PropTypes.bool.isRequired,
   isCheckingLinearOauth: PropTypes.bool.isRequired,
+  isWaitingLinearOAuth: PropTypes.bool.isRequired,
+  setWaitingLinearOAuth: PropTypes.func.isRequired,
   handleConnectLinear: PropTypes.func.isRequired,
   linearOauthError: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
