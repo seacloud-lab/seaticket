@@ -50,7 +50,7 @@ class EmailSeaDBAPI:
     def get_emails_by_thread_id(self, connection_id, thread_id, limit=None):
         table_name = SchemaTables.EMAIL.table_name(connection_id)
         sql = "SELECT `_pk`, `thread_id`, `title`, `email_from`, `email_to`, `cc`, `content`, " \
-            f"`modified_time`, `is_sender`, `message_id`, `origin_thread_id`, `email_id`, `deleted` FROM `{table_name}` WHERE `thread_id` = {thread_id} AND deleted = false ORDER BY `modified_time` ASC, `_pk` ASC"
+            f"`modified_time`, `is_sender`, `message_id`, `origin_thread_id`, `email_id`, `deleted` FROM `{table_name}` WHERE `thread_id` = {thread_id} AND deleted = false ORDER BY `modified_time` ASC"
         if limit is not None:
             sql += f" LIMIT {limit}"
         response = self.seadb_api.query_rows(self.base_id, sql)
@@ -253,9 +253,9 @@ class EmailSeaDBAPI:
         result = self.seadb_api.insert_rows(project_uuid, email_table_name, [email_row])
         pks = result.get('pks', [])
 
-        is_replied = self.recompute_thread_is_replied(
-            project_uuid, connection_id, thread_id,
-        )
+        # The reply we just inserted is the latest email in the thread, so the
+        # thread is definitely replied to — no need to recompute.
+        is_replied = True
         email_data['is_replied'] = is_replied
         self.seadb_api.update_rows(project_uuid, thread_table_name, [{
             'pk': int(thread_id),
@@ -267,19 +267,6 @@ class EmailSeaDBAPI:
             }
         }])
         return pks[0] if pks else None
-
-    def recompute_thread_is_replied(
-            self, project_uuid, connection_id, thread_id):
-        email_table_name = SchemaTables.EMAIL.table_name(connection_id)
-        sql = f"""
-            SELECT is_sender, reply_to_message_id FROM `{email_table_name}`
-            WHERE thread_id = {int(thread_id)}
-            AND deleted = false
-            ORDER BY modified_time DESC, _pk DESC LIMIT 1
-        """
-        results = self.seadb_api.query_rows(project_uuid, sql).get('results', [])
-        last_email = results[0] if results else {}
-        return bool(last_email.get('is_sender') and last_email.get('reply_to_message_id'))
 
     def mark_emails_deleted(self, connection_id, email_pks):
         table_name = SchemaTables.EMAIL.table_name(connection_id)
