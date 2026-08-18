@@ -591,7 +591,6 @@ export const CONNECTION_TYPES = [
     icon: 'general-tasks',
     name: gettext('General tasks'),
     help_text: gettext('Provide the base URL of your API endpoint that list tasks, create a task and so on. If any problem occurs, check the'),
-    // TODO: add General Tasks help document
     help_link: HELP_WEB_URL + 'General-Tasks',
     sub_types: CONNECTION_SUB_TYPE_MAP.tasks,
   }, {
@@ -606,7 +605,6 @@ export const CONNECTION_TYPES = [
     icon: 'discord-logo',
     name: gettext('Discord'),
     help_text: gettext('Connect your Discord server by authorizing the SeaTicket bot. The bot will sync messages from the selected channel. If any problem occurs, check the'),
-    // TODO: add Discord help document
     help_link: HELP_WEB_URL + 'Discord',
     sub_types: CONNECTION_SUB_TYPE_MAP.issues,
   }
