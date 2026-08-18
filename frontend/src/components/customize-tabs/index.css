@@ -1,9 +1,8 @@
 .seaqa-customize-tabs {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 32px;
   height: 40px;
-  padding: 0px 8px;
   flex-shrink: 0;
 }
 
@@ -12,13 +11,7 @@
   align-items: center;
   height: 30px;
   font-size: 14px;
-  padding: 0px 8px;
   cursor: pointer;
-}
-
-.seaqa-customize-tabs .seaqa-customize-tab:not(.active):hover {
-  background-color: var(--option-bg-color);
-  border-radius: 4px;
 }
 
 .seaqa-customize-tabs .seaqa-customize-tab.active {
@@ -32,7 +25,7 @@
   bottom: -5px;
   content: "";
   height: 2px;
-  left: 8px;
+  left: 0;
   position: absolute;
-  width: calc(100% - 16px);
+  width: 100%;
 }
