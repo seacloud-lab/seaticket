@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import classnames from 'classnames';
 import { Switch } from '@/components';
 
@@ -6,14 +6,11 @@ const SwitchSettings = ({
   tip,
   placeholder,
   className,
-  value: oldValue = true,
+  value = true,
   onChange,
 }) => {
-  const [value, setValue] = useState(oldValue);
-
   const onValueChange = useCallback(() => {
     const newValue = !value;
-    setValue(newValue);
     onChange && onChange(newValue);
   }, [value, onChange]);
 
