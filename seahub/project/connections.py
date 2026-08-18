@@ -1839,7 +1839,8 @@ class ProjectConnectionRecordsView(APIView):
                 sql = f"UPDATE `{SchemaTables.EMAIL.table_name(connection_id)}` SET unread={unread} WHERE thread_id = {row_id}"
                 seadb_api.query_rows(project_uuid, sql)
             except Exception as e:
-                logger.warning(f'batch update email unread cascade error: {e}')
+                logger.error(f'batch update email unread cascade error: {e}')
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to update email unread status.')
 
         for event in general_task_events:
             send_connection_data_event(

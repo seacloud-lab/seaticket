@@ -1097,3 +1097,52 @@ class TestProjectConnectionRecordUpdate:
 
         assert resp.status_code == 200
         assert seadb.update_rows.call_count == 1
+
+    def test_put_batch_update_email_unread_cascades_to_emails(
+            self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        connection = connection_factory(connection_type='email')
+        request = factory.put(
+            f"/api/v1/project/{project.uuid}/connections/{connection.id}/records/",
+            data={'records_data': [{'row_id': '10', 'row': {'unread': False}}]},
+            format='json'
+        )
+        request.user = project_creator
+
+        seadb = Mock()
+
+        with patch('seahub.project.connections.SeaDBAPI', return_value=seadb):
+            resp = ProjectConnectionRecordsView.as_view()(
+                request, project_uuid=project.uuid, connection_id=str(connection.id))
+
+        assert resp.status_code == 200
+        seadb.update_rows.assert_called_once()
+        seadb.query_rows.assert_called_once_with(
+            project.uuid,
+            f"UPDATE `email_{connection.id}` SET unread=False WHERE thread_id = 10"
+        )
+
+    def test_put_batch_update_email_unread_cascade_failure_returns_error(
+            self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        connection = connection_factory(connection_type='email')
+        request = factory.put(
+            f"/api/v1/project/{project.uuid}/connections/{connection.id}/records/",
+            data={'records_data': [{'row_id': '10', 'row': {'unread': True}}]},
+            format='json'
+        )
+        request.user = project_creator
+
+        seadb = Mock()
+        seadb.query_rows.side_effect = Exception('cascade failed')
+
+        with patch('seahub.project.connections.SeaDBAPI', return_value=seadb):
+            resp = ProjectConnectionRecordsView.as_view()(
+                request, project_uuid=project.uuid, connection_id=str(connection.id))
+
+        assert resp.status_code == 500
+        seadb.update_rows.assert_called_once()
+        seadb.query_rows.assert_called_once_with(
+            project.uuid,
+            f"UPDATE `email_{connection.id}` SET unread=True WHERE thread_id = 10"
+        )
