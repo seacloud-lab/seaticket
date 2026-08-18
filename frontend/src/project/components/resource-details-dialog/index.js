@@ -1,7 +1,8 @@
 import { useCallback, useState, useMemo, useEffect } from 'react';
 import { Modal, ModalBody, Dropdown, DropdownToggle, DropdownItem } from 'reactstrap';
 import classnames from 'classnames';
-import { CustomizeDropdownMenu, ModalHeader, IconTooltip, IconButton } from '@/components';
+import copy from 'copy-to-clipboard';
+import { CustomizeDropdownMenu, ModalHeader, IconTooltip, IconButton, toaster } from '@/components';
 import { gettext } from '@/constants';
 import { Utils } from '@/utils/utils';
 import { SUPPORT_ROW_DETAILS_CONNECTION_TYPES, CONNECTION_TYPE } from '../../main-panel/connections/constants';
@@ -89,6 +90,14 @@ const ResourceDetailsDialog = ({
     return getInternalNetworkAddress(type, resource._id, { workspaceID, projectName, connectionID: resource.connection_id });
   }, [type, resource]);
 
+  const canCopyRecordLink = useMemo(() => {
+    return SUPPORT_ROW_DETAILS_CONNECTION_TYPES.includes(type) || [
+      KNOWLEDGE_BASE_TYPE,
+      TICKET_TYPE,
+      PORTAL_ISSUE_TYPE,
+    ].includes(type);
+  }, [type]);
+
   const size = useMemo(() => getDialogSize(innerWidth), [innerWidth]);
 
   const handleSwitchResource = Utils.debounce(useCallback((step) => {
@@ -106,6 +115,11 @@ const ResourceDetailsDialog = ({
   const handleUpdateIssue = useCallback((issue) => {
     setResourceDetails(issue);
   }, []);
+
+  const handleCopyRecordLink = useCallback(() => {
+    copy(internalNetworkAddress);
+    toaster.success(gettext('Copied'));
+  }, [internalNetworkAddress]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -170,6 +184,14 @@ const ResourceDetailsDialog = ({
               icon="open-in-new-tab"
               title={gettext('Open the source address in a new tab')}
               onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
+            />
+          )}
+          {canCopyRecordLink && internalNetworkAddress && (
+            <IconButton
+              className="open-in-new-tab-btn"
+              icon="copy"
+              title={gettext('Copy link')}
+              onClick={handleCopyRecordLink}
             />
           )}
         </div>
