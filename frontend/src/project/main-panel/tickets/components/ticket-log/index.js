@@ -52,35 +52,38 @@ const LOG_TYPE = {
 
 const LOG_ICONS = {
   [LOG_TYPE.PRIORITY_CHANGED]: 'flag-stroked',
+
   [LOG_TYPE.TITLE_CHANGED]: 'rename',
+
   [LOG_TYPE.STATE_CHANGED]: 'dot-circle-stroked',
   [LOG_TYPE.SUBSTATE_CHANGED]: 'dot-circle-stroked',
   [LOG_TYPE.STATE_SUBSTATE_CHANGED]: 'dot-circle-stroked',
-  [LOG_TYPE.TYPE_CHANGED]: 'dot-circle-stroked',
+
+  [LOG_TYPE.TYPE_CHANGED]: 'type-stroked',
 
   [LOG_TYPE.TAGS_ADDED]: 'tag-stroked',
   [LOG_TYPE.TAGS_REMOVED]: 'tag-stroked',
   [LOG_TYPE.TAGS_CHANGED]: 'tag-stroked',
 
-  [LOG_TYPE.ASSIGNEES_ADDED]: 'group-stroked',
-  [LOG_TYPE.ASSIGNEES_REMOVED]: 'group-stroked',
-  [LOG_TYPE.ASSIGNEES_CHANGED]: 'group-stroked',
+  [LOG_TYPE.ASSIGNEES_ADDED]: 'user-stroked',
+  [LOG_TYPE.ASSIGNEES_REMOVED]: 'user-stroked',
+  [LOG_TYPE.ASSIGNEES_CHANGED]: 'user-stroked',
 
-  [LOG_TYPE.GENERAL_TASK_ADDED]: 'dot-circle-stroked',
-  [LOG_TYPE.GENERAL_TASK_UPDATED]: 'dot-circle-stroked',
+  [LOG_TYPE.GENERAL_TASK_ADDED]: 'task-filled',
+  [LOG_TYPE.GENERAL_TASK_UPDATED]: 'task-filled',
 
-  [LOG_TYPE.GITHUB_ISSUE_UPDATED]: 'dot-circle-stroked',
-  [LOG_TYPE.GITHUB_ISSUE_CLOSED]: 'dot-circle-stroked',
-  [LOG_TYPE.GITHUB_ISSUE_REOPENED]: 'dot-circle-stroked',
-  [LOG_TYPE.GITHUB_ISSUE_COMMENT_ADDED]: 'dot-circle-stroked',
+  [LOG_TYPE.GITHUB_ISSUE_UPDATED]: 'github-filled',
+  [LOG_TYPE.GITHUB_ISSUE_CLOSED]: 'github-filled',
+  [LOG_TYPE.GITHUB_ISSUE_REOPENED]: 'github-filled',
+  [LOG_TYPE.GITHUB_ISSUE_COMMENT_ADDED]: 'github-filled',
 
-  [LOG_TYPE.DISCOURSE_TOPIC_UPDATED]: 'dot-circle-stroked',
-  [LOG_TYPE.DISCOURSE_TOPIC_COMMENT_ADDED]: 'dot-circle-stroked',
+  [LOG_TYPE.DISCOURSE_TOPIC_UPDATED]: 'discourse-filled',
+  [LOG_TYPE.DISCOURSE_TOPIC_COMMENT_ADDED]: 'discourse-filled',
 
-  [LOG_TYPE.DISCORD_THREAD_UPDATED]: 'dot-circle-stroked',
-  [LOG_TYPE.DISCORD_THREAD_MESSAGE_ADDED]: 'dot-circle-stroked',
+  [LOG_TYPE.DISCORD_THREAD_UPDATED]: 'discord-filled',
+  [LOG_TYPE.DISCORD_THREAD_MESSAGE_ADDED]: 'discord-filled',
 
-  [LOG_TYPE.EMAIL_MESSAGE_ADDED]: 'dot-circle-stroked',
+  [LOG_TYPE.EMAIL_MESSAGE_ADDED]: 'email-filled',
 };
 
 const diff = (newValue, oldValue) => {
