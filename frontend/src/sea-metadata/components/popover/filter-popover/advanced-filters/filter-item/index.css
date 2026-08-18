@@ -55,10 +55,7 @@
 .sea-metadata-filters .sea-metadata-filters-list .sea-metadata-selector-tags-select .option-group,
 .sea-metadata-filters .sea-metadata-filters-list .sea-metadata-selector-single-select .option-group,
 .sea-metadata-filters .sea-metadata-filters-list .sea-metadata-selector-multiple-select .option-group {
-  margin-top: 0px;
   padding-top: 0px;
-  top: 41px !important;
-  left: -1px !important;
 }
 
 .sea-metadata-filters .sea-metadata-selector-single-select .option-group .option-group-search,

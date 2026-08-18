@@ -107,6 +107,7 @@ class CustomizeSelect extends Component {
             getFilterOptions={this.getFilterOptions}
             supportMultipleSelect={this.props.supportMultipleSelect}
             hideSelectedValue={hideSelectedValue}
+            offset={this.props.offset}
           />
         )}
         {this.state.isShowSelectOptions && isInModal && (
@@ -132,6 +133,7 @@ class CustomizeSelect extends Component {
               getFilterOptions={this.getFilterOptions}
               supportMultipleSelect={this.props.supportMultipleSelect}
               hideSelectedValue={hideSelectedValue}
+              offset={this.props.offset}
             />
           </ModalPortal>
         )}

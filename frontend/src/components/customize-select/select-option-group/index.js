@@ -6,10 +6,12 @@ import SearchInput from '../../search-input';
 import { KeyCodes } from '@/constants/keyCodes';
 import ClickOutside from '../../click-outside';
 import Tip from '../../option-editor/tip';
+import { isNumber } from '@/utils/type-detection';
 
 import './index.css';
 
 const OPTION_HEIGHT = 32;
+const INDENT = 4; // 4px is indent of the option group and select box
 
 const getSelectKey = (value) => {
   if (value == null) return null;
@@ -31,6 +33,17 @@ const getSelectKey = (value) => {
   return null;
 };
 
+const initOffset = (offset) => {
+  if (!offset && offset !== 0) return [-1, INDENT];
+  if (isNumber(offset)) return [offset, offset];
+  if (Array.isArray(offset)) {
+    if (offset.length === 0) return [-1, INDENT];
+    if (offset.length === 1) return [offset[0], offset[0]];
+    return [offset[0], offset[1]];
+  }
+  return [-1, INDENT];
+};
+
 class OptionGroup extends Component {
 
   constructor(props) {
@@ -47,6 +60,7 @@ class OptionGroup extends Component {
 
   componentDidMount() {
     window.addEventListener('keydown', this.onHotKey);
+    document.addEventListener('scroll', this.handleScroll, { passive: true, capture: true });
     setTimeout(() => {
       this.resetMenuStyle();
     }, 1);
@@ -56,15 +70,22 @@ class OptionGroup extends Component {
     this.filterOptions = null;
     this.timer && clearTimeout(this.timer);
     window.removeEventListener('keydown', this.onHotKey);
+    document.removeEventListener('scroll', this.handleScroll, { capture: true });
   }
+
+  handleScroll = (event) => {
+    if (event.target.closest('.option-group-content')) return;
+    this.props.closeSelect();
+  };
 
   resetMenuStyle = () => {
     if (!this.optionGroupRef) return;
     const { isInModal, position, searchable } = this.props;
+    const offset = initOffset(this.props.offset);
     const { top, height } = this.optionGroupRef.getBoundingClientRect();
     if (isInModal) {
       if (position.y + position.height + height > window.innerHeight) {
-        this.optionGroupRef.style.top = (position.y - height) + 'px';
+        this.optionGroupRef.style.top = (position.y - height - offset[1]) + 'px';
       }
       this.optionGroupRef.style.opacity = 1;
       this.searchInputRef.current && this.searchInputRef.current.inputRef.focus();
@@ -72,18 +93,16 @@ class OptionGroup extends Component {
     }
     if (height + top > window.innerHeight) {
       const borderWidth = 2;
-      // 4px is indent of the option group and select box
-      const indent = 4;
-      this.optionGroupRef.style.top = -1 * (height + borderWidth + indent * 2) + 'px';
+      this.optionGroupRef.style.top = -1 * (height + borderWidth + offset[1]) + 'px';
       setTimeout(() => {
         const { top } = this.optionGroupRef.getBoundingClientRect();
         if (top < 0) {
           const { height: parentNodeHeight, top: parentNodeTop } = this.optionGroupRef.parentNode.getBoundingClientRect();
           this.optionGroupRef.style.top = 'unset';
           this.optionGroupRef.style.bottom = parentNodeHeight + 'px';
-          this.optionGroupRef.style.maxHeight = parentNodeTop - 4 + 'px';
-          // 30: paddingTop/paddingBottom(12) + borderTop/borderBottom(2) + gap(4)
-          this.optionGroupContentRef.style.maxHeight = parentNodeTop - (searchable ? (28 + 8) : 0) - 30 + 'px';
+          this.optionGroupRef.style.maxHeight = parentNodeTop - offset[1] + 'px';
+          // 26: paddingTop/paddingBottom(12) + borderTop/borderBottom(2)
+          this.optionGroupContentRef.style.maxHeight = parentNodeTop - (searchable ? (28 + 8) : 0) - (26 + offset[1]) + 'px';
         }
       }, 1);
     }
@@ -212,17 +231,18 @@ class OptionGroup extends Component {
   render() {
     const { searchable, searchPlaceholder, top, left, minWidth, value, isShowSelected, isInModal, position,
       className, addOptionAble, component } = this.props;
+    const offset = initOffset(this.props.offset);
     const { AddOption } = component || {};
     let { searchVal } = this.state;
-    let style = { top: top || 0, left: left || 0 };
+    let style = { left: (left || 0) + offset[0], top: (top || 0) + offset[1] };
     if (minWidth) {
-      style = { top: top || 0, left: left || 0, minWidth };
+      style['minWidth'] = minWidth;
     }
     if (isInModal) {
       style = {
         position: 'fixed',
         left: position.x,
-        top: position.y + position.height,
+        top: position.y + position.height + offset[1],
         minWidth: position.width,
         opacity: 0,
       };

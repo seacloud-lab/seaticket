@@ -10,7 +10,6 @@
 }
 
 .sea-metadata-sort-popover .sorts-list .option-group {
-  margin-top: 3px;
   overflow: auto;
   max-height: 360px;
   min-width: 200px;
