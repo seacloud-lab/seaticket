@@ -1,7 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { Button } from 'reactstrap';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
-import EditPromptDialog from './edit-prompt-dialog';
+import PromptDialog from './prompt-dialog';
+import SettingsItem from '../settings-item';
 
 import './index.css';
 
@@ -38,37 +40,25 @@ const PromptSettings = ({
     });
   }, [onChange]);
 
-  // Truncate prompt for preview display
-  const getPromptPreview = (prompt, maxLength = 100) => {
-    if (!prompt) return gettext('Not set');
-    const promptStr = String(prompt);
-    if (promptStr.length <= maxLength) return promptStr;
-    return promptStr.substring(0, maxLength) + '...';
-  };
-
   return (
     <>
-      <div className={classnames('prompt-settings-option w-100 pl-4 pr-4 mb-4', className)}>
-        <div className="settings-item-header text-truncate">{title}</div>
-        <div className="prompt-settings-option-body">
-          <p className="seaqa-tip-default tip m-0 mb-2">
-            {tip}
-          </p>
-          <div className="prompt-preview-container">
-            <div className="prompt-preview">
-              {getPromptPreview(value)}
+      <SettingsItem title={title} className={classnames('prompt-settings-option', className)}>
+        <p className="seaqa-tip-default m-0 mb-2 font-size-12 line-height-20">
+          {tip}
+        </p>
+        {value && (
+          <div className="prompt-preview mb-2">
+            <div className="prompt-preview-content px-4 py-3">
+              {value}
             </div>
-            <button
-              className="btn btn-outline-primary btn-sm edit-prompt-btn"
-              onClick={openDialog}
-            >
-              {gettext('Edit')}
-            </button>
           </div>
-        </div>
-      </div>
+        )}
+        <Button color="primary" outline className="seaqa-project-prompt-edit-btn" onClick={openDialog}>
+          {dialogTitle}
+        </Button>
+      </SettingsItem>
       {isDialogOpen && (
-        <EditPromptDialog
+        <PromptDialog
           value={value}
           onConfirm={onConfirm}
           onToggle={closeDialog}

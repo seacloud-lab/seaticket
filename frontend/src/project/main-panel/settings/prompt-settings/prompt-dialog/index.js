@@ -4,11 +4,11 @@ import { ModalHeader } from '@/components';
 import { gettext } from '@/constants';
 import toaster from '@/components/toaster';
 
-import './edit-prompt-dialog.css';
+import './index.css';
 
 const TAG_LIKE_PATTERN = /<[^>]+>/;
 
-const EditPromptDialog = ({
+const PromptDialog = ({
   value: initialValue = '',
   onConfirm,
   onToggle,
@@ -32,13 +32,14 @@ const EditPromptDialog = ({
   }, [value, onConfirm, validationMessage]);
 
   return (
-    <Modal isOpen={true} toggle={onToggle} className="edit-prompt-dialog">
+    <Modal isOpen={true} toggle={onToggle} autoFocus={false} className="edit-prompt-dialog">
       <ModalHeader toggle={onToggle}>{title}</ModalHeader>
       <ModalBody>
         <textarea
           className="form-control edit-prompt-textarea"
           rows={10}
           value={value}
+          autoFocus={true}
           onChange={handleInputChange}
           placeholder={placeholder}
           maxLength={maxLength}
@@ -52,4 +53,4 @@ const EditPromptDialog = ({
   );
 };
 
-export default EditPromptDialog;
+export default PromptDialog;
