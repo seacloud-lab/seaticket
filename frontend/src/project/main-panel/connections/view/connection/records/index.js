@@ -349,7 +349,6 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
       callback: () => {
         if (!modifyRows) return;
         if (unreadRows.length === 0) {
-          toaster.success(gettext('Selected threads are already read.'));
           return;
         }
         const rowIds = [];
@@ -361,13 +360,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
           idRowUpdates[_id] = { [unreadColumn.key]: false };
           idOldRowOldData[_id] = { [unreadColumn.key]: true };
         });
-        modifyRows(rowIds, idRowUpdates, idOldRowOldData, false, {
-          success_callback: () => {
-            toaster.success(unreadRows.length === 1
-              ? gettext('Email thread has been marked as read.')
-              : gettext('Email threads have been marked as read.'));
-          },
-        });
+        modifyRows(rowIds, idRowUpdates, idOldRowOldData, false);
       },
     };
   }, [connection]);
@@ -465,6 +458,13 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
         const markAsOutdatedOptions = generateMarkAsOutdatedOptions({ rows, columns: allColumns.current, connection }, modifyRows);
         if (markAsOutdatedOptions.length > 0) {
           list.push(...markAsOutdatedOptions);
+        }
+        if (connection?.type === CONNECTION_TYPE.EMAIL) {
+          const markAsReadOption = getMarkAsReadOption(rows, modifyRows);
+          if (markAsReadOption) {
+            list.push('Divider');
+            list.push(markAsReadOption);
+          }
         }
       }
       return list.filter(Boolean);
