@@ -19,7 +19,7 @@ const LinkedRecord = ({ record, columns, projectUuid, permission, type, children
           src={getConnectionIcon(type || record.type || record.connection_type)}
           alt=""
         />
-        <span className="seaqa-log-inline-link-text" title={children || record.title}>
+        <span className="seaqa-log-inline-link-text" title={record.title}>
           {children || record.title}
         </span>
       </span>
