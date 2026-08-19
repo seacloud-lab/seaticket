@@ -337,6 +337,34 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     });
   }, [projectUuid, connectionID, connection, deleteRows]);
 
+  const getMarkAsReadOption = useCallback((rows, modifyRows) => {
+    if (connection?.type !== CONNECTION_TYPE.EMAIL) return null;
+    if (!Array.isArray(rows) || rows.length === 0) return null;
+    const unreadColumn = getColumnByName(allColumns.current, CONNECTION_PREDEFINED_COLUMN_NAME.UNREAD);
+    if (!unreadColumn) return null;
+    const unreadRows = rows.filter(row => getCellValueByColumn(row, unreadColumn));
+    return {
+      key: 'mark_as_read',
+      label: gettext('Mark as read'),
+      callback: () => {
+        if (!modifyRows) return;
+        if (unreadRows.length === 0) {
+          return;
+        }
+        const rowIds = [];
+        const idRowUpdates = {};
+        const idOldRowOldData = {};
+        unreadRows.forEach(row => {
+          const { _id } = row;
+          rowIds.push(_id);
+          idRowUpdates[_id] = { [unreadColumn.key]: false };
+          idOldRowOldData[_id] = { [unreadColumn.key]: true };
+        });
+        modifyRows(rowIds, idRowUpdates, idOldRowOldData, false);
+      },
+    };
+  }, [connection]);
+
   const createRowsTools = useCallback(({ rows, columns, modifyRows }) => {
     let children = [];
     if (rows.length === 1) {
@@ -378,6 +406,11 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
       if (markAsOutdatedOptions.length > 0) {
         children.push(...markAsOutdatedOptions);
       }
+      const markAsReadOption = getMarkAsReadOption(rows, modifyRows);
+      if (markAsReadOption) {
+        children.push({ key: 'divider' });
+        children.push(markAsReadOption);
+      }
     }
     children = children.filter(Boolean);
     const tools = [];
@@ -392,7 +425,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     return tools;
   }, [
     connection, handleCreateRelatedTicket,
-    handleResolveIssueByAI, handleLinkAnExistingTicket, handleFindRelatedIssues,
+    handleResolveIssueByAI, handleLinkAnExistingTicket, handleFindRelatedIssues, getMarkAsReadOption,
   ]);
 
   const createContextMenuOptions = useCallback(({
@@ -426,6 +459,13 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
         if (markAsOutdatedOptions.length > 0) {
           list.push(...markAsOutdatedOptions);
         }
+        if (connection?.type === CONNECTION_TYPE.EMAIL) {
+          const markAsReadOption = getMarkAsReadOption(rows, modifyRows);
+          if (markAsReadOption) {
+            list.push('Divider');
+            list.push(markAsReadOption);
+          }
+        }
       }
       return list.filter(Boolean);
     }
@@ -448,6 +488,11 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
           list.push(...markAsOutdatedOptions);
         }
         if (connection?.type === CONNECTION_TYPE.EMAIL) {
+          const markAsReadOption = getMarkAsReadOption(rows, modifyRows);
+          if (markAsReadOption) {
+            list.push('Divider');
+            list.push(markAsReadOption);
+          }
           list.push('Divider');
           list.push({
             key: 'delete_emails',
@@ -474,6 +519,11 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
       generateCopyOriginalLinkOption({ row, columns: allColumns.current, connection }),
     ];
     if (connection?.type === CONNECTION_TYPE.EMAIL) {
+      const markAsReadOption = getMarkAsReadOption([row], modifyRows);
+      if (markAsReadOption) {
+        list.push('Divider');
+        list.push(markAsReadOption);
+      }
       list.push('Divider');
       list.push({
         key: 'delete_email',
@@ -490,7 +540,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     return normalizeContextMenuOptions(list);
   }, [
     connection, handleResolveIssueByAI, handleCreateRelatedTicket, handleLinkAnExistingTicket, deleteEmailRows,
-    handleFindRelatedIssues,
+    handleFindRelatedIssues, getMarkAsReadOption,
   ]);
 
   const modifyRowsByDetailsMenu = useCallback((rowIds, idRowUpdates, idOldRowOldData, isCopyPaste = false) => {

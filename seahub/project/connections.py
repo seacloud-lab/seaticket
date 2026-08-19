@@ -1743,6 +1743,7 @@ class ProjectConnectionRecordsView(APIView):
 
         update_rows = []
         general_task_events = []
+        email_unread_by_thread_id = {}
         seadb_api = SeaDBAPI()
         for record in records_data:
             row_id = record.get('row_id')
@@ -1813,6 +1814,7 @@ class ProjectConnectionRecordsView(APIView):
             if project_connection.type == ConnectionType.EMAIL.value and 'unread' in row_data:
                 update_row['row']['unread'] = row_data.get('unread') if row_data.get('unread') is not None else False
                 update_row['row']['record_modified_time'] = datetime.datetime.now(datetime.UTC).isoformat()
+                email_unread_by_thread_id[update_row['pk']] = update_row['row']['unread']
 
             if project_connection.type == ConnectionType.EMAIL.value and 'tags' in row_data:
                 update_row['row']['tags'] = row_data.get('tags')
@@ -1830,6 +1832,21 @@ class ProjectConnectionRecordsView(APIView):
             logger.error(f'batch update connection records error: {e}')
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+
+        # Cascade thread unread to its emails, matching the single-record update behavior.
+        thread_ids_by_unread = {}
+        for thread_id, unread in email_unread_by_thread_id.items():
+            thread_ids_by_unread.setdefault(unread, []).append(thread_id)
+
+        email_table_name = SchemaTables.EMAIL.table_name(connection_id)
+        for unread, thread_ids in thread_ids_by_unread.items():
+            try:
+                placeholders = ', '.join(['?'] * len(thread_ids))
+                sql = f"UPDATE `{email_table_name}` SET unread = ? WHERE thread_id IN ({placeholders})"
+                seadb_api.query_rows(project_uuid, sql, params=[unread, *thread_ids])
+            except Exception as e:
+                logger.error(f'batch update email unread cascade error: {e}')
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to update email unread status.')
 
         for event in general_task_events:
             send_connection_data_event(
