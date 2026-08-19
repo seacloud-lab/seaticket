@@ -88,7 +88,7 @@ const AttachmentsSelector = ({
       </Dropdown>
       {canAddSources && isShowSelector && (
         <SyncOptionEditor
-          className="seaqa-ai-chat-selector-display-editor "
+          className="seaqa-ai-chat-selector-display-editor"
           target={ref}
           isMultiple={true}
           placeholder={gettext('Search')}
