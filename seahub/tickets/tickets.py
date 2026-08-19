@@ -1904,22 +1904,22 @@ class TicketActivitiesAPIView(APIView):
             if activity_type in GITHUB_ISSUE_ACTIVITY_TYPES:
                 activity_item['issue_number'] = issue_number
                 activity_item['issue_url'] = issue_url
-                activity_item['issue_title'] = issue_title
+                activity_item['title'] = issue_title
             elif activity_type in DISCOURSE_TOPIC_ACTIVITY_TYPES:
                 activity_item['topic_id'] = topic_id
                 activity_item['topic_url'] = topic_url
-                activity_item['topic_title'] = topic_title
+                activity_item['title'] = topic_title
             elif activity_type in DISCORD_THREAD_ACTIVITY_TYPES:
                 activity_item['record_id'] = detail.get('record_id')
                 activity_item['thread_id'] = thread_id
-                activity_item['thread_title'] = thread_title
+                activity_item['title'] = thread_title
                 activity_item['thread_url'] = thread_url
             elif activity_type in EMAIL_ACTIVITY_TYPES:
                 activity_item['thread_id'] = thread_id
-                activity_item['thread_title'] = thread_title
+                activity_item['title'] = thread_title
             elif activity_type in GENERAL_TASK_ACTIVITY_TYPES:
                 activity_item['record_id'] = task_record_id
-                activity_item['task_title'] = task_title
+                activity_item['title'] = task_title
                 activity_item['related_users'] = general_task_related_users.get(detail.get('connection_id')) or []
             activities_list.append(activity_item)
 
