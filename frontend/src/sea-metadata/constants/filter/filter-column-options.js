@@ -140,6 +140,11 @@ const FILTER_COLUMN_OPTIONS = {
       FILTER_PREDICATE_TYPE.IS,
     ],
   },
+  [CellType.REPLY_STATUS]: {
+    filterPredicateList: [
+      FILTER_PREDICATE_TYPE.IS,
+    ],
+  },
   [CellType.COLLABORATOR]: {
     filterPredicateList: [
       FILTER_PREDICATE_TYPE.HAS_ANY_OF,

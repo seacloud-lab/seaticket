@@ -463,7 +463,8 @@ class FilterItem extends React.Component {
       case CellType.CHECKBOX: {
         return this.getInputComponent('checkbox');
       }
-      case CellType.UNREAD_STATUS: {
+      case CellType.UNREAD_STATUS:
+      case CellType.REPLY_STATUS: {
         return this.getInputComponent('checkbox');
       }
       case CellType.SINGLE_SELECT:
