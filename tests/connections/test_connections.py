@@ -3,7 +3,7 @@ import json
 import hmac
 import hashlib
 from types import SimpleNamespace
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, call, patch
 
 from seahub.project.connections import (
     ProjectConnectionsView,
@@ -1119,8 +1119,45 @@ class TestProjectConnectionRecordUpdate:
         seadb.update_rows.assert_called_once()
         seadb.query_rows.assert_called_once_with(
             project.uuid,
-            f"UPDATE `email_{connection.id}` SET unread=False WHERE thread_id = 10"
+            f"UPDATE `email_{connection.id}` SET unread = ? WHERE thread_id IN (?)",
+            params=[False, 10],
         )
+
+    def test_put_batch_update_email_unread_cascades_by_unread_value(
+            self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        connection = connection_factory(connection_type='email')
+        request = factory.put(
+            f"/api/v1/project/{project.uuid}/connections/{connection.id}/records/",
+            data={'records_data': [
+                {'row_id': '10', 'row': {'unread': False}},
+                {'row_id': '11', 'row': {'unread': False}},
+                {'row_id': '12', 'row': {'unread': True}},
+            ]},
+            format='json'
+        )
+        request.user = project_creator
+
+        seadb = Mock()
+
+        with patch('seahub.project.connections.SeaDBAPI', return_value=seadb):
+            resp = ProjectConnectionRecordsView.as_view()(
+                request, project_uuid=project.uuid, connection_id=str(connection.id))
+
+        assert resp.status_code == 200
+        seadb.query_rows.assert_has_calls([
+            call(
+                project.uuid,
+                f"UPDATE `email_{connection.id}` SET unread = ? WHERE thread_id IN (?, ?)",
+                params=[False, 10, 11],
+            ),
+            call(
+                project.uuid,
+                f"UPDATE `email_{connection.id}` SET unread = ? WHERE thread_id IN (?)",
+                params=[True, 12],
+            ),
+        ])
+        assert seadb.query_rows.call_count == 2
 
     def test_put_batch_update_email_unread_cascade_failure_returns_error(
             self, factory, project_creator, real_project, connection_factory):
@@ -1144,5 +1181,6 @@ class TestProjectConnectionRecordUpdate:
         seadb.update_rows.assert_called_once()
         seadb.query_rows.assert_called_once_with(
             project.uuid,
-            f"UPDATE `email_{connection.id}` SET unread=True WHERE thread_id = 10"
+            f"UPDATE `email_{connection.id}` SET unread = ? WHERE thread_id IN (?)",
+            params=[True, 10],
         )
