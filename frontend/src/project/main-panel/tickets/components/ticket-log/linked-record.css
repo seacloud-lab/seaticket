@@ -5,15 +5,15 @@
   margin-right: 4px;
   padding: 4px 8px;
   border-radius: 4px;
-  background-color: #f7f7f5;
-  color: #212529;
+  background-color: var(--bs-body-third-bg);
+  color: var(--bs-body-color);
   font-size: 14px;
   line-height: 1.25;
   vertical-align: middle;
 }
 
 .seaqa-log-inline-link:hover {
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.04) 0%, rgba(0, 0, 0, 0.04) 100%), #f7f7f5;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.04) 0%, rgba(0, 0, 0, 0.04) 100%), var(--bs-body-third-bg);
   cursor: pointer;
 }
 
@@ -22,7 +22,7 @@
   width: 14px;
   height: 14px;
   margin-right: 8px;
-  color: #212529;
+  color: var(--bs-icon-color);
 }
 
 .seaqa-log-inline-link-text {
