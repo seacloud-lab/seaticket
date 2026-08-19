@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import classnames from 'classnames';
 import dayjs from '@/utils/dayjs';
-import { IconButton, Option, AsyncCollaborator } from '@/components';
+import { Icon, IconButton, Option, AsyncCollaborator } from '@/components';
 import { gettext } from '@/constants';
 import { useCollaborators } from '@/sea-metadata';
 import { DELETED_OPTION_BACKGROUND_COLOR, PRIORITY_MAP, DELETED_OPTION } from '@/sea-metadata/constants';
@@ -107,6 +107,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
           record={{ type: CONNECTION_TYPE.GITHUB_ISSUE, title: '', _id: issue_number, connection_id }}
           projectUuid={projectUuid}
           permission={permission}
+          type={CONNECTION_TYPE.GITHUB_ISSUE}
         >
           <>#{issue_number}</>
         </LinkedRecord>
@@ -123,6 +124,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
           record={{ type: CONNECTION_TYPE.DISCOURSE_FORUM, title: '', _id: topic_id, connection_id }}
           projectUuid={projectUuid}
           permission={permission}
+          type={CONNECTION_TYPE.DISCOURSE_FORUM}
         >
           <>#{topic_id}</>
         </LinkedRecord>
@@ -131,9 +133,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
     return <span>#{topic_id}</span>;
   }, [projectUuid, permission]);
 
-  const renderDiscordThreadRef = useCallback(({
-    connection_id, record_id, thread_id, thread_title, thread_url
-  } = {}) => {
+  const renderDiscordThreadRef = useCallback(({ connection_id, record_id, thread_id, thread_title, thread_url } = {}) => {
     if (!thread_id) return null;
     if (thread_url && record_id) {
       return (
@@ -141,6 +141,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
           record={{ type: CONNECTION_TYPE.DISCORD, title: '', _id: record_id, connection_id }}
           projectUuid={projectUuid}
           permission={permission}
+          type={CONNECTION_TYPE.DISCORD}
         >
           <>#{thread_id}</>
         </LinkedRecord>
@@ -158,6 +159,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
           permission={permission}
           record={{ type: CONNECTION_TYPE.EMAIL, title: thread_title, _id: thread_id, connection_id }}
           projectUuid={projectUuid}
+          type={CONNECTION_TYPE.EMAIL}
         >
           {label}
         </LinkedRecord>
@@ -183,6 +185,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
           record={{ type: CONNECTION_TYPE.GENERAL_TASK, title: taskTitle, _id: taskId, connection_id }}
           projectUuid={projectUuid}
           permission={permission}
+          type={CONNECTION_TYPE.GENERAL_TASK}
         >
           {label}
         </LinkedRecord>
@@ -261,14 +264,26 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
     };
     const renderValueNode = (field, val, removed = false, taskUserMap = null) => {
       if (isEmptyValue(val)) return null;
-      if (field === 'due_date') return formatDateValue(val);
+      if (field === 'due_date') {
+        const dateValue = formatDateValue(val);
+        return (
+          <span className="seaqa-log-date">
+            <Icon symbol="time" className="seaqa-log-date-icon" />
+            <span className="seaqa-log-date-text" title={dateValue}>
+              {dateValue}
+            </span>
+          </span>
+        );
+      }
       if (taskUserMap && (field === 'assignees' || field === 'participants')) {
         return renderTaskUserList(val, taskUserMap, removed);
       }
       if (Array.isArray(val)) return val.join(', ');
       if (typeof val === 'boolean') return val ? gettext('yes') : gettext('no');
       if (typeof val === 'object') return JSON.stringify(val);
-      return String(val) || null;
+
+      const stringValue = String(val) || null;
+      return (removed && stringValue) ? (<span className="seaqa-log-text-removed">{stringValue}</span>) : stringValue;
     };
     const renderChangeNodes = (oldVal, newVal, labelMap, taskUserMap = null) => {
       const oldObj = (oldVal && typeof oldVal === 'object') ? oldVal : {};
