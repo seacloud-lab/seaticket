@@ -690,7 +690,6 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
           <span>
             {gettext('Email thread')}
             {thread_id && <>{' '}{renderEmailThreadRef(activity)}</>}
-            {thread_title && <span> {thread_title}</span>}
             {' '}{count}{' '}{count === 1 ? gettext('message') : gettext('messages')}{' '}{gettext('added')}
           </span>
         );

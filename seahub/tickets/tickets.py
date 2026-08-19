@@ -1810,10 +1810,12 @@ class TicketActivitiesAPIView(APIView):
                 field_key = activity_type
                 issue_number = detail.get('issue_number')
                 issue_url = detail.get('issue_url', '')
+                issue_title = detail.get('issue_title', '')
             elif activity_type in DISCOURSE_TOPIC_ACTIVITY_TYPES:
                 field_key = activity_type
                 topic_id = detail.get('topic_id')
                 topic_url = detail.get('topic_url', '')
+                topic_title = detail.get('topic_title', '')
             elif activity_type in DISCORD_THREAD_ACTIVITY_TYPES:
                 field_key = activity_type
                 thread_id = detail.get('thread_id')
@@ -1902,9 +1904,11 @@ class TicketActivitiesAPIView(APIView):
             if activity_type in GITHUB_ISSUE_ACTIVITY_TYPES:
                 activity_item['issue_number'] = issue_number
                 activity_item['issue_url'] = issue_url
+                activity_item['issue_title'] = issue_title
             elif activity_type in DISCOURSE_TOPIC_ACTIVITY_TYPES:
                 activity_item['topic_id'] = topic_id
                 activity_item['topic_url'] = topic_url
+                activity_item['topic_title'] = topic_title
             elif activity_type in DISCORD_THREAD_ACTIVITY_TYPES:
                 activity_item['record_id'] = detail.get('record_id')
                 activity_item['thread_id'] = thread_id
