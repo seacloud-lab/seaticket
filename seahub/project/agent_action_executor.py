@@ -1196,7 +1196,9 @@ class AgentActionExecutor:
 
         thread_id = target_email.get('thread_id')
         try:
-            reply_pk = email_seadb_api.save_reply_email(project_uuid, project_connection.id, thread_id, email_data)
+            reply_pk = email_seadb_api.save_reply_email(
+                project_uuid, project_connection.id, thread_id, email_data,
+            )
         except Exception as e:
             logger.error('Save reply email failed for connection %s thread %s: %s', project_connection.id, source_id, e)
             return self._failed_execution('Failed to save reply email.')

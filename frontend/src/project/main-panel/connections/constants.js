@@ -697,6 +697,7 @@ export const CONNECTION_PREDEFINED_COLUMN_NAME = {
   URL: 'url',
   PATH: 'path',
   UNREAD: 'unread',
+  IS_REPLIED: 'is_replied',
   OUTDATED: 'outdated',
   SLUG: 'slug',
   TOPIC_ID: 'topic_id',
@@ -924,7 +925,15 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       type: CellType.UNREAD_STATUS,
       editable: false,
       is_width_fixed: true,
-      // Saved views sort frozen columns by this value; keep unread before title.
+      // Saved views sort frozen columns in descending order.
+      frozen: 3,
+      width: 33,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.IS_REPLIED]: {
+      display_name: gettext('Reply status'),
+      type: CellType.REPLY_STATUS,
+      editable: false,
+      is_width_fixed: true,
       frozen: 2,
       width: 33,
     },
@@ -1114,13 +1123,15 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
 
 export const CONNECTION_COLUMNS_WIDTH_CONFIG = {
   'unread': 33,
+  'is_replied': 33,
   'title': 400,
 };
 
 export const CONNECTION_COLUMNS_ORDER_CONFIG = {
   [CONNECTION_TYPE.EMAIL]: {
     'unread': 1,
-    'title': 2,
+    'is_replied': 2,
+    'title': 3,
   },
 };
 

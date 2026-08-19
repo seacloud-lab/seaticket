@@ -136,6 +136,7 @@ const Item = ({
     };
     connectionsAPI.replyConnectionEmail(projectUuid, connection_id, payload).then((res) => {
       callback && callback();
+      res.data.reply_to_pk = detail._pk;
       handleReplyEmailSuccess(res.data);
     }).catch((error) => {
       toaster.danger(Utils.getErrorMsg(error));

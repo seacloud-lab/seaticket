@@ -2013,7 +2013,7 @@ class ProjectConnectionReplyEmailView(APIView):
 
         sender_name = config.get('sender_name', '')
         # Get Fastmail EMAILID if available
-        email_id = send_res.get('email_id')
+        sent_email_id = send_res.get('email_id')
         origin_thread_id = send_res.get('origin_thread_id') or target_email.get('origin_thread_id')
 
         email_data = {
@@ -2027,10 +2027,12 @@ class ProjectConnectionReplyEmailView(APIView):
             'reply_to_message_id': target_message_id,
             'origin_thread_id': origin_thread_id,
             'message_id': message_id,
-            'email_id': email_id,
+            'email_id': sent_email_id,
         }
         try:
-            pk = email_seadb_api.save_reply_email(project_uuid, connection_id, thread_id, email_data)
+            pk = email_seadb_api.save_reply_email(
+                project_uuid, connection_id, thread_id, email_data,
+            )
             email_data['_pk'] = pk
         except Exception as e:
             logger.error('save reply email failed, connection_id: %s, thread_id: %s, error: %s', connection_id, thread_id, e)

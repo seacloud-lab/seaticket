@@ -159,7 +159,7 @@ const Cell = ({
   const headerIconTooltip = COLUMNS_ICON_NAME[type];
   const canModifyColumnOrder = context.canModifyColumnOrder();
   const isPriorityColumn = checkIsPriorityColumn(column);
-  const isIconOnlyColumn = isPriorityColumn || column.type === CellType.UNREAD_STATUS;
+  const isIconOnlyColumn = isPriorityColumn || column.type === CellType.UNREAD_STATUS || column.type === CellType.REPLY_STATUS;
   const contentClassName = 'sea-metadata-table-column-content sea-metadata-row-header-cell-left d-flex align-items-center text-truncate';
 
   const cell = (

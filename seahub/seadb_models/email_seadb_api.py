@@ -50,7 +50,7 @@ class EmailSeaDBAPI:
     def get_emails_by_thread_id(self, connection_id, thread_id, limit=None):
         table_name = SchemaTables.EMAIL.table_name(connection_id)
         sql = "SELECT `_pk`, `thread_id`, `title`, `email_from`, `email_to`, `cc`, `content`, " \
-            f"`modified_time`, `is_sender`, `message_id`, `origin_thread_id`, `email_id`, `deleted` FROM `{table_name}` WHERE `thread_id` = {thread_id} AND deleted=False ORDER BY `modified_time` ASC"
+            f"`modified_time`, `is_sender`, `message_id`, `origin_thread_id`, `email_id`, `deleted` FROM `{table_name}` WHERE `thread_id` = {thread_id} AND deleted = false ORDER BY `modified_time` ASC"
         if limit is not None:
             sql += f" LIMIT {limit}"
         response = self.seadb_api.query_rows(self.base_id, sql)
@@ -223,7 +223,8 @@ class EmailSeaDBAPI:
                 result.append(whole_thread_data)
         return result
 
-    def save_reply_email(self, project_uuid, connection_id, thread_id, email_data):
+    def save_reply_email(
+            self, project_uuid, connection_id, thread_id, email_data):
         now = datetime.datetime.now(datetime.UTC).isoformat()
         email_table_name = SchemaTables.EMAIL.table_name(connection_id)
         thread_table_name = SchemaTables.THREAD.table_name(connection_id)
@@ -251,12 +252,18 @@ class EmailSeaDBAPI:
 
         result = self.seadb_api.insert_rows(project_uuid, email_table_name, [email_row])
         pks = result.get('pks', [])
+
+        # The reply we just inserted is the latest email in the thread, so the
+        # thread is definitely replied to — no need to recompute.
+        is_replied = True
+        email_data['is_replied'] = is_replied
         self.seadb_api.update_rows(project_uuid, thread_table_name, [{
             'pk': int(thread_id),
             'row': {
                 SchemaTables.THREAD.column.modified_time.name: now,
                 SchemaTables.THREAD.column.record_modified_time.name: now,
                 SchemaTables.THREAD.column.unread.name: False,
+                SchemaTables.THREAD.column.is_replied.name: is_replied,
             }
         }])
         return pks[0] if pks else None
