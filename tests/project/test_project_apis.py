@@ -5,8 +5,8 @@ import pytest
 
 from seahub.project.apis import ProjectRelatedUsersView, ProjectItemsSearchView, ProjectConfluenceWorkspaces
 from seahub.project.confluence_api import ConfluenceAPI
-from seahub.project.constants import ITEMS_SEARCH_QUERY_TYPES_SUPPORT
-from seahub.project.models import ProjectConfluenceOauth
+from seahub.project.constants import ITEMS_SEARCH_QUERY_TYPES_SUPPORT, ConnectionType
+from seahub.project.models import ProjectConnectionOauth
 
 
 @pytest.mark.django_db
@@ -115,8 +115,9 @@ class TestProjectConfluenceWorkspaces:
 
     def test_get_filters_non_confluence_resources(self, factory, project_creator, real_project):
         project = real_project
-        ProjectConfluenceOauth.objects.create(
+        ProjectConnectionOauth.objects.create(
             project_uuid=project.uuid,
+            type=ConnectionType.CONFLUENCE.value,
             access_token='access-token',
             refresh_token='refresh-token',
             expires_at=datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1),
@@ -142,8 +143,9 @@ class TestProjectConfluenceWorkspaces:
 
     def test_get_refreshes_expired_token(self, factory, project_creator, real_project):
         project = real_project
-        ProjectConfluenceOauth.objects.create(
+        ProjectConnectionOauth.objects.create(
             project_uuid=project.uuid,
+            type=ConnectionType.CONFLUENCE.value,
             access_token='expired-token',
             refresh_token='refresh-token',
             expires_at=datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(minutes=1),
@@ -165,6 +167,6 @@ class TestProjectConfluenceWorkspaces:
 
         assert resp.status_code == 200
         # Verify the token was persisted after being refreshed
-        updated_oauth = ProjectConfluenceOauth.objects.get_by_project_uuid(project.uuid)
+        updated_oauth = ProjectConnectionOauth.objects.get_by_project_uuid(project.uuid, ConnectionType.CONFLUENCE.value)
         assert updated_oauth.access_token == 'fresh-token'
         assert updated_oauth.expires_at == new_expires_at

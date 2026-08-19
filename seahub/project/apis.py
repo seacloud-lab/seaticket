@@ -12,7 +12,7 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils.decorators import require_org_context
-from seahub.project.models import Projects, ProjectGithubAppInstallation, ProjectLinearOauth, ProjectConfluenceOauth, \
+from seahub.project.models import Projects, ProjectGithubAppInstallation, \
     ProjectConnectionOauth
 from seahub.project.confluence_api import ConfluenceAPI
 from seahub.project.linear_api import LinearAPI
@@ -155,7 +155,7 @@ class ProjectLinearTeams(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        linear_oauth = ProjectLinearOauth.objects.get_by_project_uuid(project_uuid)
+        linear_oauth = ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.LINEAR.value)
         if not linear_oauth:
             return api_error(status.HTTP_400_BAD_REQUEST, 'Linear OAuth authorization is required.')
 
@@ -194,7 +194,7 @@ class ProjectConfluenceWorkspaces(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        confluence_oauth = ProjectConfluenceOauth.objects.get_by_project_uuid(project_uuid)
+        confluence_oauth = ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.CONFLUENCE.value)
         if not confluence_oauth:
             return api_error(status.HTTP_400_BAD_REQUEST, 'Confluence OAuth authorization is required.')
 
@@ -211,8 +211,9 @@ class ProjectConfluenceWorkspaces(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to fetch Confluence workspaces.')
 
         if confluence_api.access_token != confluence_oauth.access_token:
-            ProjectConfluenceOauth.objects.upsert_token(
-                project_uuid, confluence_api.access_token, confluence_api.expires_at, confluence_api.refresh_token
+            ProjectConnectionOauth.objects.upsert_token(
+                project_uuid, ConnectionType.CONFLUENCE.value,
+                confluence_api.access_token, confluence_api.expires_at, confluence_api.refresh_token
             )
         workspaces = []
         for resource in resources:
@@ -259,7 +260,7 @@ class ProjectConfluenceSpaces(APIView):
         if not workspace_url:
             return api_error(status.HTTP_400_BAD_REQUEST, 'workspace_url is required.')
 
-        confluence_oauth = ProjectConfluenceOauth.objects.get_by_project_uuid(project_uuid)
+        confluence_oauth = ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.CONFLUENCE.value)
         if not confluence_oauth:
             return api_error(status.HTTP_400_BAD_REQUEST, 'Confluence OAuth authorization is required.')
 
@@ -276,8 +277,9 @@ class ProjectConfluenceSpaces(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to fetch Confluence spaces.')
 
         if confluence_api.access_token != confluence_oauth.access_token:
-            ProjectConfluenceOauth.objects.upsert_token(
-                project_uuid, confluence_api.access_token, confluence_api.expires_at, confluence_api.refresh_token
+            ProjectConnectionOauth.objects.upsert_token(
+                project_uuid, ConnectionType.CONFLUENCE.value,
+                confluence_api.access_token, confluence_api.expires_at, confluence_api.refresh_token
             )
 
         all_spaces.sort(key=lambda item: item['name'].lower())

@@ -13,7 +13,7 @@ from django.shortcuts import render, redirect
 from django.utils.translation import gettext as _
 
 from seahub import settings
-from seahub.project.models import Workspaces, Projects, ProjectGithubAppInstallation, ProjectLinearOauth, ProjectConfluenceOauth, \
+from seahub.project.models import Workspaces, Projects, ProjectGithubAppInstallation, \
     ProjectConnectionOauth
 from seahub.project.utils import check_project_admin_permission, check_project_permission, update_github_connection_installation_id
 from seahub.project.linear_api import LinearAPI
@@ -250,7 +250,7 @@ def linear_oauth_callback(request):
         return render_error(request, _('Failed to authorize Linear.'))
 
     expires_at = LinearAPI.calc_expires_in(expires_in)
-    ProjectLinearOauth.objects.upsert_token(project_uuid, access_token, expires_at, refresh_token)
+    ProjectConnectionOauth.objects.upsert_token(project_uuid, ConnectionType.LINEAR.value, access_token, expires_at, refresh_token)
 
     request.session.pop('linear_oauth_state', None)
     request.session.pop('linear_oauth_project_uuid', None)
@@ -362,8 +362,9 @@ def confluence_oauth_callback(request):
         logger.error('Confluence OAuth token missing access/refresh token: %s', token_json)
         return render_error(request, _('Failed to authorize Confluence.'))
 
-    ProjectConfluenceOauth.objects.upsert_token(
+    ProjectConnectionOauth.objects.upsert_token(
         project_uuid,
+        ConnectionType.CONFLUENCE.value,
         access_token,
         _calc_confluence_expires_at(token_json.get('expires_in')),
         refresh_token,
