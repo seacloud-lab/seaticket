@@ -196,17 +196,45 @@ def _get_run_ids(rows):
     return sorted(run_ids)
 
 
+def _get_ticket_run_ids(seadb_api, project_uuid, run_ids):
+    """Return the subset of `run_ids` that are ticket runs.
+
+    Suggestions are stamped with their target's source identity; every other
+    action type is stamped with the identity owning the run. A run is a
+    ticket run when it contains non-suggestion ticket actions, and its
+    activity belongs to the ticket's log only.
+    """
+    if not run_ids:
+        return set()
+    actions_table = SchemaTables.AGENT_ACTIONS.table_name()
+    run_ids_str = ','.join(map(str, run_ids))
+    sql = (
+        f"SELECT DISTINCT `run_id` FROM `{actions_table}` "
+        f"WHERE `run_id` IN ({run_ids_str}) "
+        "AND `source_type` = ? AND `action_type` != 'suggestion'"
+    )
+    result = seadb_api.query_rows(project_uuid, sql, params=[ExtraSourceType.TICKET.value])
+    return {
+        int(row['run_id']) for row in result.get('results', [])
+        if row.get('run_id') is not None
+    }
+
+
 def list_agent_logs(seadb_api, project_uuid, page=1, per_page=20):
     offset = (page - 1) * per_page
     actions_table = SchemaTables.AGENT_ACTIONS.table_name()
     runs_table = SchemaTables.AGENT_RUNS.table_name()
 
+    # Non-suggestion actions mark runs that processed an item directly; in
+    # a ticket run a linked item only carries suggestions, so its counters
+    # freeze once it is linked to a ticket.
     items_sql = \
         "SELECT `actions`.`source_id`, `actions`.`source_type`, `actions`.`source_title`, " \
         "COUNT(DISTINCT `actions`.`run_id`) AS `num_of_runs`, " \
         "MAX(`runs`.`started_at`) AS `last_active_at` " \
         f"FROM `{actions_table}` AS `actions` " \
         f"JOIN `{runs_table}` AS `runs` ON `actions`.`run_id` = `runs`.`_pk` " \
+        "WHERE `actions`.`action_type` != 'suggestion' " \
         "GROUP BY `actions`.`source_id`, `actions`.`source_type`, `actions`.`source_title` " \
         "ORDER BY `last_active_at` DESC, `actions`.`source_type` DESC " \
         f"LIMIT {offset}, {per_page + 1}"
@@ -294,6 +322,8 @@ def _get_agent_log_status(seadb_api, project_uuid, logs):
     if not run_ids:
         return
 
+    ticket_run_ids = _get_ticket_run_ids(seadb_api, project_uuid, run_ids)
+
     run_ids_str = ','.join(str(run_id) for run_id in run_ids)
     runs_status_sql = (
         "SELECT `_pk`, `status` "
@@ -314,6 +344,14 @@ def _get_agent_log_status(seadb_api, project_uuid, logs):
         )
         actions = actions_by_log.get(log_key, [])
         run_ids = run_ids_by_log.get(log_key, set())
+        if log.get('source_type') != ExtraSourceType.TICKET.value:
+            # A linked item's status only reflects runs that processed it
+            # directly; ticket runs belong to the ticket's log.
+            actions = [
+                action for action in actions
+                if int(action['run_id']) not in ticket_run_ids
+            ]
+            run_ids = run_ids - ticket_run_ids
         if not actions or not run_ids:
             log['status'] = ''
             continue
@@ -386,7 +424,18 @@ def get_agent_log_runs(seadb_api, project_uuid, source_id, source_type):
         raise ValueError('Item not found.')
 
     if not is_ticket:
+        # Ticket runs are part of the ticket's log and must not surface in
+        # a linked item's own log.
         run_ids = _get_run_ids(actions)
+        ticket_run_ids = _get_ticket_run_ids(seadb_api, project_uuid, run_ids)
+        run_ids = [run_id for run_id in run_ids if run_id not in ticket_run_ids]
+        if not run_ids:
+            raise ValueError('Item not found.')
+        actions = [
+            action for action in actions
+            if action.get('run_id') is not None
+            and int(action['run_id']) not in ticket_run_ids
+        ]
 
     actions_by_run = {}
     for action in actions:
