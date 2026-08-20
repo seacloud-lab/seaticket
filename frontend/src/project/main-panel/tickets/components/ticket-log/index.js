@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import classnames from 'classnames';
 import dayjs from '@/utils/dayjs';
-import { IconButton, Option, AsyncCollaborator } from '@/components';
+import { Icon, IconButton, Option, AsyncCollaborator } from '@/components';
 import { gettext } from '@/constants';
 import { useCollaborators } from '@/sea-metadata';
 import { DELETED_OPTION_BACKGROUND_COLOR, PRIORITY_MAP, DELETED_OPTION } from '@/sea-metadata/constants';
@@ -99,90 +99,94 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
   const { statesData, substatesData, typesData } = useMetadata();
   const { tagsData } = useTags();
 
-  const renderGithubIssueRef = useCallback(({ connection_id, issue_number, issue_url } = {}) => {
+  const renderGithubIssueRef = useCallback((activity = {}) => {
+    const { connection_id, issue_number, issue_url, title = '' } = activity;
     if (!issue_number) return null;
     if (issue_url) {
       return (
         <LinkedRecord
-          record={{ type: CONNECTION_TYPE.GITHUB_ISSUE, title: '', _id: issue_number, connection_id }}
+          record={{ type: CONNECTION_TYPE.GITHUB_ISSUE, title, _id: issue_number, connection_id }}
           projectUuid={projectUuid}
           permission={permission}
+          type={CONNECTION_TYPE.GITHUB_ISSUE}
         >
-          <>#{issue_number}</>
+          <>{title || '# ' + issue_number}</>
         </LinkedRecord>
       );
     }
-    return <span>#{issue_number}</span>;
+    return <span>{title || '# ' + issue_number}</span>;
   }, [projectUuid, permission]);
 
-  const renderDiscourseTopicRef = useCallback(({ connection_id, topic_id, topic_url }) => {
+  const renderDiscourseTopicRef = useCallback((activity = {}) => {
+    const { connection_id, topic_id, topic_url, title = '' } = activity;
     if (!topic_id) return null;
     if (topic_url) {
       return (
         <LinkedRecord
-          record={{ type: CONNECTION_TYPE.DISCOURSE_FORUM, title: '', _id: topic_id, connection_id }}
+          record={{ type: CONNECTION_TYPE.DISCOURSE_FORUM, title, _id: topic_id, connection_id }}
           projectUuid={projectUuid}
           permission={permission}
+          type={CONNECTION_TYPE.DISCOURSE_FORUM}
         >
-          <>#{topic_id}</>
+          <>{title || '# ' + topic_id}</>
         </LinkedRecord>
       );
     }
-    return <span>#{topic_id}</span>;
+    return <span>{title || '# ' + topic_id}</span>;
   }, [projectUuid, permission]);
 
-  const renderDiscordThreadRef = useCallback(({
-    connection_id, record_id, thread_id, thread_title, thread_url
-  } = {}) => {
+  const renderDiscordThreadRef = useCallback(({ connection_id, record_id, thread_id, title = '', thread_url } = {}) => {
     if (!thread_id) return null;
     if (thread_url && record_id) {
       return (
         <LinkedRecord
-          record={{ type: CONNECTION_TYPE.DISCORD, title: '', _id: record_id, connection_id }}
+          record={{ type: CONNECTION_TYPE.DISCORD, title, _id: record_id, connection_id }}
           projectUuid={projectUuid}
           permission={permission}
+          type={CONNECTION_TYPE.DISCORD}
         >
-          <>#{thread_id}</>
+          <>{title || '# ' + thread_id}</>
         </LinkedRecord>
       );
     }
-    return <span>#{thread_id}</span>;
+    return <span>{title || '# ' + thread_id}</span>;
   }, [projectUuid, permission]);
 
-  const renderEmailThreadRef = useCallback(({ connection_id, thread_id, thread_title } = {}) => {
-    if (!thread_id) return thread_title ? <span>{thread_title}</span> : null;
-    const label = thread_title || `#${thread_id}`;
+  const renderEmailThreadRef = useCallback(({ connection_id, thread_id, title = '' } = {}) => {
+    if (!thread_id) return title ? <span>{title}</span> : null;
+    const label = title || `#${thread_id}`;
     if (projectUuid && connection_id) {
       return (
         <LinkedRecord
           permission={permission}
-          record={{ type: CONNECTION_TYPE.EMAIL, title: thread_title, _id: thread_id, connection_id }}
+          record={{ type: CONNECTION_TYPE.EMAIL, title, _id: thread_id, connection_id }}
           projectUuid={projectUuid}
+          type={CONNECTION_TYPE.EMAIL}
         >
           {label}
         </LinkedRecord>
       );
     }
-    if (thread_title) {
-      return <span>{thread_title}</span>;
+    if (title) {
+      return <span>{title}</span>;
     }
     if (thread_id) {
-      return <span>#{thread_id}</span>;
+      return <span>{label}</span>;
     }
     return null;
   }, [projectUuid, permission]);
 
-  const renderGeneralTaskRef = useCallback(({ connection_id, record_id, task_title } = {}) => {
+  const renderGeneralTaskRef = useCallback(({ connection_id, record_id, title = '' } = {}) => {
     const taskId = record_id;
-    const taskTitle = task_title || '';
-    if (!taskId) return taskTitle ? <span>{taskTitle}</span> : null;
-    const label = taskTitle || `#${taskId}`;
+    if (!taskId) return title ? <span>{title}</span> : null;
+    const label = title || `#${taskId}`;
     if (projectUuid && connection_id) {
       return (
         <LinkedRecord
-          record={{ type: CONNECTION_TYPE.GENERAL_TASK, title: taskTitle, _id: taskId, connection_id }}
+          record={{ type: CONNECTION_TYPE.GENERAL_TASK, title, _id: taskId, connection_id }}
           projectUuid={projectUuid}
           permission={permission}
+          type={CONNECTION_TYPE.GENERAL_TASK}
         >
           {label}
         </LinkedRecord>
@@ -192,7 +196,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
   }, [permission, projectUuid]);
 
   const renderActivityMessage = useCallback(() => {
-    const { activity_type, old_value, new_value, thread_id, thread_title } = activity;
+    const { activity_type, old_value, new_value, thread_id } = activity;
     const asyncCollaboratorProps = {
       className: 'mr-0',
       collaborators,
@@ -261,14 +265,26 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
     };
     const renderValueNode = (field, val, removed = false, taskUserMap = null) => {
       if (isEmptyValue(val)) return null;
-      if (field === 'due_date') return formatDateValue(val);
+      if (field === 'due_date') {
+        const dateValue = formatDateValue(val);
+        return (
+          <span className="seaqa-log-date">
+            <Icon symbol="time" className="seaqa-log-date-icon" />
+            <span className="seaqa-log-date-text" title={dateValue}>
+              {dateValue}
+            </span>
+          </span>
+        );
+      }
       if (taskUserMap && (field === 'assignees' || field === 'participants')) {
         return renderTaskUserList(val, taskUserMap, removed);
       }
       if (Array.isArray(val)) return val.join(', ');
       if (typeof val === 'boolean') return val ? gettext('yes') : gettext('no');
       if (typeof val === 'object') return JSON.stringify(val);
-      return String(val) || null;
+
+      const stringValue = String(val) || null;
+      return (removed && stringValue) ? (<span className="seaqa-log-text-removed">{stringValue}</span>) : stringValue;
     };
     const renderChangeNodes = (oldVal, newVal, labelMap, taskUserMap = null) => {
       const oldObj = (oldVal && typeof oldVal === 'object') ? oldVal : {};
@@ -675,7 +691,6 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
           <span>
             {gettext('Email thread')}
             {thread_id && <>{' '}{renderEmailThreadRef(activity)}</>}
-            {thread_title && <span> {thread_title}</span>}
             {' '}{count}{' '}{count === 1 ? gettext('message') : gettext('messages')}{' '}{gettext('added')}
           </span>
         );
