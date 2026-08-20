@@ -186,65 +186,206 @@ def _build_item_action(action):
     }
 
 
-def _get_run_ids(rows):
+VISIBLE_LOG_ACTION_TYPES = ('event', 'prelude', 'analysis', 'suggestion')
+SUGGESTION_ACTION_TYPE = 'suggestion'
+RUN_STATUS_COMPLETED = 'completed'
+BLOCKING_LOG_ACTION_STATUSES = {'pending', 'executing', 'failed'}
+LOG_STATUS_DONE = 'done'
+LOG_STATUS_NO_ACTION_NEEDED = 'no_action_needed'
+
+
+def _identity_key(source_id='', source_type='', source_title=''):
+    normalized_title = '' if source_title in (None, '') else str(source_title)
+    return (
+        '' if source_id is None else str(source_id),
+        '' if source_type is None else str(source_type),
+        normalized_title,
+    )
+
+
+def _log_group_key(row):
+    return _identity_key(
+        row.get('source_id', ''),
+        row.get('source_type', ''),
+        row.get('source_title', ''),
+    )
+
+
+def _is_suggestion_action(action):
+    return action.get('action_type', '') == SUGGESTION_ACTION_TYPE
+
+
+def _is_ticket_source(source_type):
+    return source_type == ExtraSourceType.TICKET.value
+
+
+def _extract_run_ids(rows):
     run_ids = {
         int(row['run_id']) for row in rows
         if row.get('run_id') is not None
     }
-    if not run_ids:
-        raise ValueError('Item not found.')
     return sorted(run_ids)
 
 
-def _get_ticket_run_ids(seadb_api, project_uuid, run_ids):
-    """Return the subset of `run_ids` that are ticket runs.
+def _build_source_identity_predicate(source_id, source_type, source_title=None, with_title=False):
+    if not with_title:
+        return "`source_id` = ? AND `source_type` = ?", [source_id, source_type]
+    if source_title not in (None, ''):
+        return (
+            "(`source_id` = ? AND `source_type` = ? AND `source_title` = ?)",
+            [source_id, source_type, source_title],
+        )
+    return (
+        "(`source_id` = ? AND `source_type` = ? "
+        "AND (`source_title` IS NULL OR `source_title` = ''))",
+        [source_id, source_type],
+    )
 
-    Suggestions are stamped with their target's source identity; every other
-    action type is stamped with the identity owning the run. A run is a
-    ticket run when it contains non-suggestion ticket actions, and its
-    activity belongs to the ticket's log only.
-    """
-    if not run_ids:
-        return set()
+
+def _query_owned_run_ids(seadb_api, project_uuid, source_id, source_type):
     actions_table = SchemaTables.AGENT_ACTIONS.table_name()
-    run_ids_str = ','.join(map(str, run_ids))
+    source_filter, source_params = _build_source_identity_predicate(source_id, source_type)
     sql = (
         f"SELECT DISTINCT `run_id` FROM `{actions_table}` "
-        f"WHERE `run_id` IN ({run_ids_str}) "
-        "AND `source_type` = ? AND `action_type` != 'suggestion'"
+        f"WHERE {source_filter} "
+        f"AND `action_type` != '{SUGGESTION_ACTION_TYPE}' "
+        "ORDER BY `run_id` ASC"
     )
-    result = seadb_api.query_rows(project_uuid, sql, params=[ExtraSourceType.TICKET.value])
-    return {
-        int(row['run_id']) for row in result.get('results', [])
-        if row.get('run_id') is not None
+    result = seadb_api.query_rows(project_uuid, sql, params=source_params)
+    return _extract_run_ids(result.get('results', []))
+
+
+def _query_owned_run_ids_by_logs(seadb_api, project_uuid, logs):
+    if not logs:
+        return {}
+
+    actions_table = SchemaTables.AGENT_ACTIONS.table_name()
+    source_filters = []
+    source_params = []
+    run_ids_by_log = {
+        _log_group_key(log): set()
+        for log in logs
     }
 
+    for log in logs:
+        source_filter, params = _build_source_identity_predicate(
+            log.get('source_id', ''),
+            log.get('source_type', ''),
+            log.get('source_title', ''),
+            with_title=True,
+        )
+        source_filters.append(source_filter)
+        source_params.extend(params)
 
-def list_agent_logs(seadb_api, project_uuid, page=1, per_page=20):
+    if not source_filters:
+        return run_ids_by_log
+
+    sql = (
+        "SELECT `run_id`, `source_id`, `source_type`, `source_title` "
+        f"FROM `{actions_table}` "
+        f"WHERE ({' OR '.join(source_filters)}) "
+        f"AND `action_type` != '{SUGGESTION_ACTION_TYPE}' "
+        "LIMIT 0, 10000"
+    )
+    result = seadb_api.query_rows(project_uuid, sql, params=source_params)
+    for row in result.get('results', []):
+        run_id = row.get('run_id')
+        if run_id is None:
+            continue
+        key = _log_group_key(row)
+        if key in run_ids_by_log:
+            run_ids_by_log[key].add(int(run_id))
+    return run_ids_by_log
+
+
+def _query_log_summary_rows(seadb_api, project_uuid, page, per_page):
     offset = (page - 1) * per_page
     actions_table = SchemaTables.AGENT_ACTIONS.table_name()
     runs_table = SchemaTables.AGENT_RUNS.table_name()
-
-    # Non-suggestion actions mark runs that processed an item directly; in
-    # a ticket run a linked item only carries suggestions, so its counters
-    # freeze once it is linked to a ticket.
-    items_sql = \
-        "SELECT `actions`.`source_id`, `actions`.`source_type`, `actions`.`source_title`, " \
-        "COUNT(DISTINCT `actions`.`run_id`) AS `num_of_runs`, " \
-        "MAX(`runs`.`started_at`) AS `last_active_at` " \
-        f"FROM `{actions_table}` AS `actions` " \
-        f"JOIN `{runs_table}` AS `runs` ON `actions`.`run_id` = `runs`.`_pk` " \
-        "WHERE `actions`.`action_type` != 'suggestion' " \
-        "GROUP BY `actions`.`source_id`, `actions`.`source_type`, `actions`.`source_title` " \
-        "ORDER BY `last_active_at` DESC, `actions`.`source_type` DESC " \
+    sql = (
+        "SELECT `actions`.`source_id`, `actions`.`source_type`, `actions`.`source_title`, "
+        "COUNT(DISTINCT `actions`.`run_id`) AS `num_of_runs`, "
+        "MAX(`runs`.`started_at`) AS `last_active_at` "
+        f"FROM `{actions_table}` AS `actions` "
+        f"JOIN `{runs_table}` AS `runs` ON `actions`.`run_id` = `runs`.`_pk` "
+        f"WHERE `actions`.`action_type` != '{SUGGESTION_ACTION_TYPE}' "
+        "GROUP BY `actions`.`source_id`, `actions`.`source_type`, `actions`.`source_title` "
+        "ORDER BY `last_active_at` DESC, `actions`.`source_type` DESC "
         f"LIMIT {offset}, {per_page + 1}"
-    logs_result = seadb_api.query_rows(project_uuid, items_sql)
-    logs = logs_result.get('results', [])
+    )
+    result = seadb_api.query_rows(project_uuid, sql)
+    return result.get('results', [])
 
-    has_more = len(logs) > per_page
+
+def _query_actions_by_run_ids(seadb_api, project_uuid, run_ids):
+    if not run_ids:
+        return []
+    actions_table = SchemaTables.AGENT_ACTIONS.table_name()
+    run_ids_str = ','.join(map(str, run_ids))
+    action_types_str = ','.join(f"'{action_type}'" for action_type in VISIBLE_LOG_ACTION_TYPES)
+    sql = (
+        "SELECT `_pk`, `run_id`, `action_type`, `status`, `source_id`, `source_type`, `source_title` "
+        f"FROM `{actions_table}` "
+        f"WHERE `run_id` IN ({run_ids_str}) AND `action_type` IN ({action_types_str}) "
+        "LIMIT 0, 10000"
+    )
+    result = seadb_api.query_rows(project_uuid, sql)
+    return result.get('results', [])
+
+
+def _query_runs_status_by_ids(seadb_api, project_uuid, run_ids):
+    if not run_ids:
+        return {}
+    runs_table = SchemaTables.AGENT_RUNS.table_name()
+    run_ids_str = ','.join(map(str, run_ids))
+    sql = (
+        "SELECT `_pk`, `status` "
+        f"FROM `{runs_table}` WHERE `_pk` IN ({run_ids_str}) "
+        f"LIMIT 0, {len(run_ids)}"
+    )
+    result = seadb_api.query_rows(project_uuid, sql)
+    statuses = {}
+    for run in result.get('results', []):
+        run_id = run.get('_pk')
+        if run_id is None:
+            continue
+        statuses[int(run_id)] = run.get('status')
+    return statuses
+
+
+def _actions_visible_in_log(actions, log_key, run_ids, include_cross_source):
+    visible_actions = []
+    for action in actions:
+        run_id = action.get('run_id')
+        if run_id is None:
+            continue
+        run_id = int(run_id)
+        if run_id not in run_ids:
+            continue
+        if include_cross_source or _log_group_key(action) == log_key:
+            visible_actions.append(action)
+    return visible_actions
+
+
+def _calculate_log_status(run_ids, actions, run_status_by_id):
+    if not run_ids or not actions:
+        return ''
+    if not all(run_status_by_id.get(run_id) == RUN_STATUS_COMPLETED for run_id in run_ids):
+        return ''
+    if any(action.get('status', '') in BLOCKING_LOG_ACTION_STATUSES for action in actions):
+        return ''
+    if any(_is_suggestion_action(action) for action in actions):
+        return LOG_STATUS_DONE
+    return LOG_STATUS_NO_ACTION_NEEDED
+
+
+def list_agent_logs(seadb_api, project_uuid, page=1, per_page=20):
+    summary_rows = _query_log_summary_rows(seadb_api, project_uuid, page, per_page)
+    has_more = len(summary_rows) > per_page
     if has_more:
-        logs = logs[:per_page]
+        summary_rows = summary_rows[:per_page]
 
+    actions_table = SchemaTables.AGENT_ACTIONS.table_name()
     logs = [{
         'source_id': log.get(f'{actions_table}.source_id', ''),
         'source_type': log.get(f'{actions_table}.source_type', ''),
@@ -252,9 +393,9 @@ def list_agent_logs(seadb_api, project_uuid, page=1, per_page=20):
         'num_of_runs': log.get('num_of_runs', 0),
         'last_active_at': log.get('last_active_at'),
         'status': '',
-    } for log in logs]
+    } for log in summary_rows]
 
-    _get_agent_log_status(seadb_api, project_uuid, logs)
+    _populate_agent_log_statuses(seadb_api, project_uuid, logs)
 
     return {
         'logs': logs,
@@ -262,180 +403,77 @@ def list_agent_logs(seadb_api, project_uuid, page=1, per_page=20):
     }
 
 
-def _get_agent_log_status(seadb_api, project_uuid, logs):
-    actions_table = SchemaTables.AGENT_ACTIONS.table_name()
-    runs_table = SchemaTables.AGENT_RUNS.table_name()
-
+def _populate_agent_log_statuses(seadb_api, project_uuid, logs):
     if not logs:
         return
 
-    def _gen_filter_info(source_id, source_type, source_title):
-        if source_title:
-            filter = "(`source_id` = ? AND `source_type` = ? AND `source_title` = ?)"
-            params = [source_id, source_type, source_title]
-            return filter, params
-        filter = (
-            "(`source_id` = ? AND `source_type` = ? "
-            "AND (`source_title` IS NULL OR `source_title` = ''))"
-        )
-        params = [source_id, source_type]
-        return filter, params
-
-    actions_filters = []
-    actions_params = []
-
-    for log in logs:
-        source_id = log.get('source_id', '')
-        source_type = log.get('source_type', '')
-        source_title = log.get('source_title')
-        action_filter, action_params = _gen_filter_info(source_id, source_type, source_title)
-        actions_filters.append(action_filter)
-        actions_params.extend(action_params)
-
-    actions_sql = (
-        "SELECT `_pk`, `run_id`, `action_type`, `status`, `source_id`, `source_type`, `source_title` "
-        f"FROM `{actions_table}` WHERE {' OR '.join(actions_filters)} LIMIT 0, 10000"
-    )
-
-    actions_res = seadb_api.query_rows(project_uuid, actions_sql, params=actions_params)
-    actions = actions_res.get('results', [])
-
-    if not actions:
+    owned_run_ids_by_log = _query_owned_run_ids_by_logs(seadb_api, project_uuid, logs)
+    all_run_ids = sorted({
+        run_id
+        for run_ids in owned_run_ids_by_log.values()
+        for run_id in run_ids
+    })
+    if not all_run_ids:
         return
 
-    run_ids_by_log = {}
-    actions_by_log = {}
-    for action in actions:
-        run_id = action.get('run_id')
-        if run_id is None:
-            continue
-        run_id = int(run_id)
-        log_key = (
-            action.get('source_id', ''),
-            action.get('source_type', ''),
-            action.get('source_title') or '',
-        )
-        run_ids_by_log.setdefault(log_key, set()).add(run_id)
-        actions_by_log.setdefault(log_key, []).append(action)
+    actions = _query_actions_by_run_ids(seadb_api, project_uuid, all_run_ids)
+    run_status_by_id = _query_runs_status_by_ids(seadb_api, project_uuid, all_run_ids)
 
-    run_ids = sorted({run_id for run_ids in run_ids_by_log.values() for run_id in run_ids})
+    for log in logs:
+        log_key = _log_group_key(log)
+        log_run_ids = sorted(owned_run_ids_by_log.get(log_key, set()))
+        visible_actions = _actions_visible_in_log(
+            actions,
+            log_key,
+            set(log_run_ids),
+            include_cross_source=_is_ticket_source(log.get('source_type', '')),
+        )
+        log['status'] = _calculate_log_status(log_run_ids, visible_actions, run_status_by_id)
+
+
+
+def _query_log_actions_by_runs(seadb_api, project_uuid, run_ids, source_id, source_type, include_cross_source):
     if not run_ids:
-        return
-
-    ticket_run_ids = _get_ticket_run_ids(seadb_api, project_uuid, run_ids)
-
-    run_ids_str = ','.join(str(run_id) for run_id in run_ids)
-    runs_status_sql = (
-        "SELECT `_pk`, `status` "
-        f"FROM `{runs_table}` WHERE `_pk` IN ({run_ids_str}) LIMIT 0, {len(run_ids)}"
-    )
-    runs_status_result = seadb_api.query_rows(project_uuid, runs_status_sql)
-    runs_status = runs_status_result.get('results', [])
-    runs_status_by_id = {}
-    for run_status in runs_status:
-        run_id = run_status.get('_pk', 0)
-        runs_status_by_id[str(run_id)] = run_status.get('status')
-
-    for log in logs:
-        log_key = (
-            log.get('source_id', ''),
-            log.get('source_type', ''),
-            log.get('source_title') or '',
-        )
-        actions = actions_by_log.get(log_key, [])
-        run_ids = run_ids_by_log.get(log_key, set())
-        if log.get('source_type') != ExtraSourceType.TICKET.value:
-            # A linked item's status only reflects runs that processed it
-            # directly; ticket runs belong to the ticket's log.
-            actions = [
-                action for action in actions
-                if int(action['run_id']) not in ticket_run_ids
-            ]
-            run_ids = run_ids - ticket_run_ids
-        if not actions or not run_ids:
-            log['status'] = ''
-            continue
-
-        run_status = [runs_status_by_id.get(str(run_id)) for run_id in run_ids]
-        all_completed = all(status == 'completed' for status in run_status)
-        if all_completed:
-            status = []
-            has_pending = any(action.get('status', '') in ('pending', 'executing') for action in actions)
-            has_failed = any(action.get('status', '') == 'failed' for action in actions)
-            has_suggestion = any(action.get('action_type', '') == 'suggestion' for action in actions)
-            if has_pending or has_failed:
-                status = []
-            else:
-                if has_suggestion and 'done' not in status:
-                    status.append('done')
-                elif not has_suggestion and 'no_action_needed' not in status:
-                    status.append('no_action_needed')
-
-            if status:
-                if all(item == 'done' for item in status):
-                    log['status'] = 'done'
-                elif all(item == 'no_action_needed' for item in status):
-                    log['status'] = 'no_action_needed'
-                elif all(item in ('done', 'no_action_needed') for item in status):
-                    log['status'] = 'done'
-        else:
-            log['status'] = ''
-
-
-def get_agent_log_runs(seadb_api, project_uuid, source_id, source_type):
+        return []
     actions_table = SchemaTables.AGENT_ACTIONS.table_name()
-    runs_table = SchemaTables.AGENT_RUNS.table_name()
-    is_ticket = source_type == ExtraSourceType.TICKET.value
-    item_filter = "`source_id` = ? AND `source_type` = ?"
-    item_params = [source_id, source_type]
-
-    # A ticket run may contain actions for different source types. For example,
-    # processing a ticket can generate both a ticket suggestion and a reply
-    # suggestion for an externally linked GitHub issue. Runs for other source
-    # types do not contain actions belonging to different source types.
-    if is_ticket:
-        run_ids_sql = (
-            f"SELECT DISTINCT `run_id` FROM `{actions_table}` "
-            f"WHERE {item_filter} "
-            "ORDER BY `run_id` ASC"
-        )
-        result = seadb_api.query_rows(project_uuid, run_ids_sql, params=item_params)
-        run_ids = _get_run_ids(result.get('results', []))
-        if not run_ids:
-            raise ValueError('Item not found.')
-        action_filter = f"`run_id` IN ({','.join(map(str, run_ids))})"
+    run_ids_str = ','.join(map(str, run_ids))
+    action_types_str = ','.join(f"'{action_type}'" for action_type in VISIBLE_LOG_ACTION_TYPES)
+    if include_cross_source:
+        action_filter = f"`run_id` IN ({run_ids_str})"
         action_params = None
     else:
-        action_filter = item_filter
-        action_params = item_params
-
-    action_filter = f"{action_filter} AND `action_type` IN ('event', 'prelude', 'analysis', 'suggestion')"
-
-    actions_sql = (
+        source_filter, source_params = _build_source_identity_predicate(source_id, source_type)
+        action_filter = f"`run_id` IN ({run_ids_str}) AND {source_filter}"
+        action_params = source_params
+    sql = (
         "SELECT `_pk`, `run_id`, `action_type`, `tool_name`, `result`, `status`, "
         "`suggestion_reason`, `suggestion_text`, `suggestion_content`, `sources`, "
         "`source_type`, `source_id`, `source_title`, `created_at`, "
-        f"`executed_at` FROM `{actions_table}` WHERE {action_filter} "
+        f"`executed_at` FROM `{actions_table}` "
+        f"WHERE {action_filter} AND `action_type` IN ({action_types_str}) "
         "ORDER BY `run_id` ASC, `_pk` ASC"
     )
-    result = seadb_api.query_rows(project_uuid, actions_sql, params=action_params)
-    actions = result.get('results', [])
-    if not actions:
+    result = seadb_api.query_rows(project_uuid, sql, params=action_params)
+    return result.get('results', [])
+
+
+def get_agent_log_runs(seadb_api, project_uuid, source_id, source_type):
+    runs_table = SchemaTables.AGENT_RUNS.table_name()
+    run_ids = _query_owned_run_ids(seadb_api, project_uuid, source_id, source_type)
+    if not run_ids:
         raise ValueError('Item not found.')
 
-    if not is_ticket:
-        # Ticket runs are part of the ticket's log and must not surface in
-        # a linked item's own log.
-        run_ids = _get_run_ids(actions)
-        ticket_run_ids = _get_ticket_run_ids(seadb_api, project_uuid, run_ids)
-        run_ids = [run_id for run_id in run_ids if run_id not in ticket_run_ids]
-        if not run_ids:
-            raise ValueError('Item not found.')
-        actions = [
-            action for action in actions
-            if action.get('run_id') is not None
-            and int(action['run_id']) not in ticket_run_ids
-        ]
+    include_cross_source = _is_ticket_source(source_type)
+    actions = _query_log_actions_by_runs(
+        seadb_api,
+        project_uuid,
+        run_ids,
+        source_id,
+        source_type,
+        include_cross_source=include_cross_source,
+    )
+    if not actions:
+        raise ValueError('Item not found.')
 
     actions_by_run = {}
     for action in actions:
