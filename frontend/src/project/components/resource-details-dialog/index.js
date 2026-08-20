@@ -190,7 +190,7 @@ const ResourceDetailsDialog = ({
           {canCopyRecordLink && internalNetworkAddress && (
             <IconButton
               className="open-in-new-tab-btn"
-              icon="copy"
+              icon="copy-link"
               title={gettext('Copy link')}
               onClick={handleCopyRecordLink}
             />
