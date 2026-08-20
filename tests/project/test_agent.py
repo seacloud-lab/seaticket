@@ -5,8 +5,7 @@ import pytest
 from seahub.project.agent import (
     _build_items_map_from_actions,
     _calculate_log_status,
-    _extract_run_ids,
-    _query_owned_run_ids,
+    _calculate_suggestions_status,
     _reformat_actions,
     get_agent_log_runs,
     list_agent_logs,
@@ -21,148 +20,104 @@ def test_reformat_actions_ignores_actions_without_a_phase():
 
 def test_reformat_actions_keeps_an_empty_tool_name():
     action = {'action_type': 'tool_call', 'tool_name': '', 'phase': 'prelude'}
-
-    assert _reformat_actions([action]) == {
-        'prelude': {'actions': [action]},
-    }
+    assert _reformat_actions([action]) == {'prelude': {'actions': [action]}}
 
 
-def test_build_items_map_reformats_actions_by_phase():
+def test_build_items_map_groups_owner_and_target_fields():
     actions = [
         {
             '_pk': 1,
-            'action_type': 'tool_call',
-            'tool_name': 'get_record',
-            'phase': 'prelude',
-            'source_type': 'ticket',
-            'source_id': '3',
-            'source_title': 'Test ticket',
+            'action_type': 'analysis',
+            'tool_name': None,
+            'phase': 'analysis',
+            'result': 'owner result',
+            'status': 'completed',
         },
         {
             '_pk': 2,
-            'action_type': 'prelude',
-            'tool_name': None,
-            'phase': 'prelude',
-            'prompt': 'prelude prompt',
-            'input': 'prelude input',
-            'result': 'prelude result',
-            'source_type': 'ticket',
-            'source_id': '3',
-            'source_title': 'Test ticket',
+            'action_type': 'suggestion',
+            'tool_name': 'suggest_reply',
+            'phase': 'analysis',
+            'result': 'suggestion result',
+            'status': 'pending',
+            'target_source_type': 'github_issue',
+            'target_source_id': '1_9',
+            'target_source_title': 'Issue 9',
         },
     ]
 
-    items_map = _build_items_map_from_actions(actions)
+    items_map = _build_items_map_from_actions(actions, owner_source={
+        'source_type': 'ticket',
+        'source_id': '42',
+        'source_title': 'Ticket 42',
+    })
 
-    assert items_map[('ticket', '3')]['actions'] == {
-        'prelude': {
-            'actions': [{
-                'id': 1,
-                'type': 'tool_call',
-                'tool_name': 'get_record',
-                'phase': 'prelude',
-                'prompt': '',
-                'input': '',
-                'result': '',
-                'status': '',
-                'suggestion_reason': '',
-                'suggestion_text': '',
-                'suggestion_content': '',
-                'sources': [],
-                'statistics': '',
-                'created_at': '',
-                'executed_at': '',
-                'step': None,
-                'tool_arguments': '',
-                'observation': '',
-            }],
-            'prompt': 'prelude prompt',
-            'input': 'prelude input',
-            'result': 'prelude result',
-        },
-    }
+    assert ('ticket', '42') in items_map
+    assert ('github_issue', '1_9') in items_map
+    assert items_map[('ticket', '42')]['source_title'] == 'Ticket 42'
+    assert items_map[('github_issue', '1_9')]['source_title'] == 'Issue 9'
 
 
-def test_extract_run_ids_ignores_empty_and_returns_sorted_unique_ids():
-    rows = [
-        {'run_id': '7'},
-        {'run_id': 2},
-        {'run_id': None},
-        {'run_id': '2'},
-        {},
-    ]
-    assert _extract_run_ids(rows) == [2, 7]
+@pytest.mark.parametrize(
+    'statuses, expected',
+    [
+        ([], 'none'),
+        (['pending'], 'pending'),
+        (['executing', 'executed'], 'pending'),
+        (['failed'], 'failed'),
+        (['executed', 'cancelled'], 'resolved'),
+    ],
+)
+def test_calculate_suggestions_status(statuses, expected):
+    assert _calculate_suggestions_status(statuses) == expected
 
 
-def test_calculate_log_status_returns_empty_for_incomplete_runs_or_blocking_actions():
-    assert _calculate_log_status(
-        run_ids=[1, 2],
-        actions=[{'action_type': 'analysis', 'status': 'completed'}],
-        run_status_by_id={1: 'completed', 2: 'running'},
-    ) == ''
-
-    assert _calculate_log_status(
-        run_ids=[1],
-        actions=[{'action_type': 'suggestion', 'status': 'pending'}],
-        run_status_by_id={1: 'completed'},
-    ) == ''
-
-
-def test_calculate_log_status_returns_done_or_no_action_needed():
-    assert _calculate_log_status(
-        run_ids=[1],
-        actions=[{'action_type': 'suggestion', 'status': 'completed'}],
-        run_status_by_id={1: 'completed'},
-    ) == 'done'
-
-    assert _calculate_log_status(
-        run_ids=[1],
-        actions=[{'action_type': 'analysis', 'status': 'completed'}],
-        run_status_by_id={1: 'completed'},
-    ) == 'no_action_needed'
+@pytest.mark.parametrize(
+    'runs, expected',
+    [
+        ([], ''),
+        ([{'status': 'running', 'suggestions_status': 'pending'}], ''),
+        ([{'status': 'completed', 'suggestions_status': ''}], ''),
+        ([{'status': 'completed', 'suggestions_status': 'pending'}], ''),
+        ([{'status': 'completed', 'suggestions_status': 'failed'}], ''),
+        ([{'status': 'completed', 'suggestions_status': 'none'}], 'no_action_needed'),
+        ([{'status': 'completed', 'suggestions_status': 'resolved'}], 'done'),
+        (
+            [
+                {'status': 'completed', 'suggestions_status': 'none'},
+                {'status': 'completed', 'suggestions_status': 'resolved'},
+            ],
+            'done',
+        ),
+    ],
+)
+def test_calculate_log_status(runs, expected):
+    assert _calculate_log_status(runs) == expected
 
 
-def test_query_owned_run_ids_uses_owner_actions_only():
-    seadb_api = Mock()
-    seadb_api.query_rows.return_value = {
-        'results': [
-            {'run_id': 3},
-            {'run_id': '1'},
-            {'run_id': None},
-        ]
-    }
-
-    run_ids = _query_owned_run_ids(seadb_api, 'project-1', '1_9', 'github_issue')
-
-    assert run_ids == [1, 3]
-    _, sql = seadb_api.query_rows.call_args.args[:2]
-    assert "`action_type` != 'suggestion'" in sql
-    assert seadb_api.query_rows.call_args.kwargs['params'] == ['1_9', 'github_issue']
-
-
-def test_list_agent_logs_maps_join_keys_and_computes_status():
+def test_list_agent_logs_aggregates_status_from_runs_table():
     seadb_api = Mock()
     seadb_api.query_rows.side_effect = [
         {
             'results': [
                 {
-                    'agent_actions.source_id': '1_9',
-                    'agent_actions.source_type': 'github_issue',
-                    'agent_actions.source_title': None,
+                    'owner_source_id': '1_9',
+                    'owner_source_type': 'github_issue',
+                    'owner_source_title': 'Issue 9',
                     'num_of_runs': 1,
                     'last_active_at': '2026-08-20T00:00:00+00:00',
                 },
                 {
-                    'agent_actions.source_id': '42',
-                    'agent_actions.source_type': 'ticket',
-                    'agent_actions.source_title': 'Ticket 42',
+                    'owner_source_id': '42',
+                    'owner_source_type': 'ticket',
+                    'owner_source_title': 'Ticket 42',
                     'num_of_runs': 1,
                     'last_active_at': '2026-08-19T00:00:00+00:00',
                 },
                 {
-                    'agent_actions.source_id': 'overflow',
-                    'agent_actions.source_type': 'ticket',
-                    'agent_actions.source_title': 'Overflow',
+                    'owner_source_id': 'overflow',
+                    'owner_source_type': 'ticket',
+                    'owner_source_title': 'Overflow',
                     'num_of_runs': 1,
                     'last_active_at': '2026-08-18T00:00:00+00:00',
                 },
@@ -170,21 +125,22 @@ def test_list_agent_logs_maps_join_keys_and_computes_status():
         },
         {
             'results': [
-                {'run_id': 200, 'source_id': '1_9', 'source_type': 'github_issue', 'source_title': None},
-                {'run_id': 100, 'source_id': '42', 'source_type': 'ticket', 'source_title': 'Ticket 42'},
-            ]
-        },
-        {
-            'results': [
-                {'run_id': 200, 'action_type': 'analysis', 'status': 'completed', 'source_id': '1_9', 'source_type': 'github_issue', 'source_title': None},
-                {'run_id': 100, 'action_type': 'prelude', 'status': 'completed', 'source_id': '42', 'source_type': 'ticket', 'source_title': 'Ticket 42'},
-                {'run_id': 100, 'action_type': 'suggestion', 'status': 'completed', 'source_id': '1_9', 'source_type': 'github_issue', 'source_title': None},
-            ]
-        },
-        {
-            'results': [
-                {'_pk': 100, 'status': 'completed'},
-                {'_pk': 200, 'status': 'completed'},
+                {
+                    '_pk': 101,
+                    'status': 'completed',
+                    'suggestions_status': 'none',
+                    'owner_source_id': '1_9',
+                    'owner_source_type': 'github_issue',
+                    'owner_source_title': 'Issue 9',
+                },
+                {
+                    '_pk': 202,
+                    'status': 'completed',
+                    'suggestions_status': 'resolved',
+                    'owner_source_id': '42',
+                    'owner_source_type': 'ticket',
+                    'owner_source_title': 'Ticket 42',
+                },
             ]
         },
     ]
@@ -194,17 +150,30 @@ def test_list_agent_logs_maps_join_keys_and_computes_status():
     assert result['has_more'] is True
     assert len(result['logs']) == 2
     statuses = {
-        (log['source_type'], str(log['source_id'])): log['status']
+        (log['owner_source_type'], str(log['owner_source_id'])): log['status']
         for log in result['logs']
     }
     assert statuses[('github_issue', '1_9')] == 'no_action_needed'
     assert statuses[('ticket', '42')] == 'done'
 
 
-def test_get_agent_log_runs_for_non_ticket_uses_owned_runs_only():
+def test_get_agent_log_runs_for_non_ticket_filters_suggestions_by_target():
     seadb_api = Mock()
     seadb_api.query_rows.side_effect = [
-        {'results': [{'run_id': 7}]},
+        {
+            'results': [{
+                '_pk': 7,
+                'status': 'completed',
+                'suggestions_status': 'resolved',
+                'owner_source_type': 'github_issue',
+                'owner_source_id': '1_9',
+                'owner_source_title': 'Issue 9',
+                'started_at': None,
+                'finished_at': None,
+                'error_message': '',
+                'event': '{}',
+            }]
+        },
         {
             'results': [
                 {
@@ -215,33 +184,62 @@ def test_get_agent_log_runs_for_non_ticket_uses_owned_runs_only():
                     'result': 'ok',
                     'status': 'completed',
                     'suggestion_reason': '',
-                    'suggestion_text': '',
+                    'suggestion_title': '',
                     'suggestion_content': '',
                     'sources': '[]',
-                    'source_type': 'github_issue',
-                    'source_id': '1_9',
-                    'source_title': 'Issue 9',
+                    'target_source_type': '',
+                    'target_source_id': '',
+                    'target_source_title': '',
                     'created_at': '2026-08-20T00:00:00+00:00',
                     'executed_at': '2026-08-20T00:00:01+00:00',
                 },
+                {
+                    '_pk': 2,
+                    'run_id': 7,
+                    'action_type': 'suggestion',
+                    'tool_name': 'suggest_reply',
+                    'result': 'reply',
+                    'status': 'pending',
+                    'suggestion_reason': '',
+                    'suggestion_title': '',
+                    'suggestion_content': '',
+                    'sources': '[]',
+                    'target_source_type': 'github_issue',
+                    'target_source_id': '1_9',
+                    'target_source_title': 'Issue 9',
+                    'created_at': '2026-08-20T00:00:02+00:00',
+                    'executed_at': '',
+                },
             ]
         },
-        {'results': [{'_pk': 7, 'status': 'completed', 'started_at': None, 'finished_at': None, 'error_message': '', 'events': '[]'}]},
     ]
 
     result = get_agent_log_runs(seadb_api, 'project-1', '1_9', 'github_issue')
-
     assert [run['id'] for run in result['runs']] == [7]
-    assert len(result['runs'][0]['actions']) == 1
+    assert len(result['runs'][0]['actions']) == 2
+
     actions_sql = seadb_api.query_rows.call_args_list[1].args[1]
-    assert "`run_id` IN (7) AND `source_id` = ? AND `source_type` = ?" in actions_sql
+    assert '`target_source_id` = ? AND `target_source_type` = ?' in actions_sql
     assert seadb_api.query_rows.call_args_list[1].kwargs['params'] == ['1_9', 'github_issue']
 
 
 def test_get_agent_log_runs_for_ticket_keeps_cross_source_suggestions():
     seadb_api = Mock()
     seadb_api.query_rows.side_effect = [
-        {'results': [{'run_id': 10}]},
+        {
+            'results': [{
+                '_pk': 10,
+                'status': 'completed',
+                'suggestions_status': 'pending',
+                'owner_source_type': 'ticket',
+                'owner_source_id': '42',
+                'owner_source_title': 'Ticket 42',
+                'started_at': None,
+                'finished_at': None,
+                'error_message': '',
+                'event': '{"type": "ticket_updated"}',
+            }]
+        },
         {
             'results': [
                 {
@@ -252,14 +250,14 @@ def test_get_agent_log_runs_for_ticket_keeps_cross_source_suggestions():
                     'result': 'ticket prelude',
                     'status': 'completed',
                     'suggestion_reason': '',
-                    'suggestion_text': '',
+                    'suggestion_title': '',
                     'suggestion_content': '',
                     'sources': '[]',
-                    'source_type': 'ticket',
-                    'source_id': '42',
-                    'source_title': 'Ticket 42',
+                    'target_source_type': '',
+                    'target_source_id': '',
+                    'target_source_title': '',
                     'created_at': '2026-08-20T00:00:00+00:00',
-                    'executed_at': '2026-08-20T00:00:01+00:00',
+                    'executed_at': '',
                 },
                 {
                     '_pk': 2,
@@ -267,33 +265,29 @@ def test_get_agent_log_runs_for_ticket_keeps_cross_source_suggestions():
                     'action_type': 'suggestion',
                     'tool_name': 'suggest_reply',
                     'result': 'reply',
-                    'status': 'completed',
-                    'suggestion_reason': 'reason',
-                    'suggestion_text': 'text',
-                    'suggestion_content': 'content',
+                    'status': 'pending',
+                    'suggestion_reason': '',
+                    'suggestion_title': '',
+                    'suggestion_content': '',
                     'sources': '[]',
-                    'source_type': 'github_issue',
-                    'source_id': '1_9',
-                    'source_title': 'Issue 9',
-                    'created_at': '2026-08-20T00:00:02+00:00',
-                    'executed_at': '2026-08-20T00:00:03+00:00',
+                    'target_source_type': 'github_issue',
+                    'target_source_id': '1_9',
+                    'target_source_title': 'Issue 9',
+                    'created_at': '2026-08-20T00:00:01+00:00',
+                    'executed_at': '',
                 },
             ]
         },
-        {'results': [{'_pk': 10, 'status': 'completed', 'started_at': None, 'finished_at': None, 'error_message': '', 'events': '[{\"type\": \"ticket_updated\"}]'}]},
     ]
 
     result = get_agent_log_runs(seadb_api, 'project-1', '42', 'ticket')
-
     assert [run['id'] for run in result['runs']] == [10]
-    action_source_types = {action['source_type'] for action in result['runs'][0]['actions']}
-    assert action_source_types == {'ticket', 'github_issue'}
+    assert len(result['runs'][0]['actions']) == 2
     assert seadb_api.query_rows.call_args_list[1].kwargs['params'] is None
 
 
-def test_get_agent_log_runs_for_non_ticket_raises_if_no_owned_run():
+def test_get_agent_log_runs_raises_when_owner_not_found():
     seadb_api = Mock()
     seadb_api.query_rows.return_value = {'results': []}
-
     with pytest.raises(ValueError, match='Item not found.'):
         get_agent_log_runs(seadb_api, 'project-1', '1_9', 'github_issue')

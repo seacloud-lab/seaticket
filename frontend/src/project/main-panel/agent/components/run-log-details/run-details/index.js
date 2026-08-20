@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import classnames from 'classnames';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import { ACTION_STATUS, ACTION_TYPE, RUN_STATUS, RUN_EVENT_NAME } from '../../../constants';
+import { RUN_STATUS, RUN_EVENT_NAME, SUGGESTIONS_STATUS } from '../../../constants';
 import { gettext } from '@/constants';
 import Action from './action';
 import RunStatisticsDialog from './run-statistics-dialog';
@@ -30,15 +30,9 @@ const RunDetail = ({
 
   const statusTip = useMemo(() => {
     if (run.status === RUN_STATUS.COMPLETED) {
-      const allActions = run.actions || [];
-      const hasPending = allActions.some(action =>
-        [ACTION_STATUS.PENDING, ACTION_STATUS.EXECUTING].includes(action?.status)
-      );
-      const hasFailed = allActions.some(action => action?.status === ACTION_STATUS.FAILED);
-      const hasSuggestion = allActions.some(a => a && a.type === ACTION_TYPE.SUGGESTION);
-      const noPending = !hasPending;
-      if (noPending && !hasFailed) {
-        if (hasSuggestion) return {
+      const suggestionsStatus = (run.suggestions_status || '').trim();
+      if (suggestionsStatus === SUGGESTIONS_STATUS.RESOLVED) {
+        return {
           status: RUN_STATUS.COMPLETED,
           label: (
             <SecondaryBtn
@@ -49,6 +43,8 @@ const RunDetail = ({
             />
           )
         };
+      }
+      if (suggestionsStatus === SUGGESTIONS_STATUS.NONE) {
         return {
           status: RUN_STATUS.COMPLETED,
           label: (

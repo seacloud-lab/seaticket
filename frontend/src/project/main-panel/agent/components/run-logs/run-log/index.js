@@ -14,7 +14,7 @@ const RunLog = ({
   runLog,
   onClick,
 }) => {
-  const { source_id, source_type, num_of_runs, last_active_at, status } = runLog;
+  const { owner_source_id, owner_source_type, num_of_runs, last_active_at, status } = runLog;
 
   let runsTip = num_of_runs + ' ' + gettext('Runs');
   if (num_of_runs === 0) runsTip = '';
@@ -25,7 +25,7 @@ const RunLog = ({
 
   return (
     <div
-      key={`${source_type}_${source_id}`}
+      key={`${owner_source_type}_${owner_source_id}`}
       className={classnames('seaqa-agent-run-log w-100 d-flex flex-column position-relative', { 'active': active })}
       onClick={onClick}
     >

@@ -20,7 +20,7 @@ const SuggestionDetailPanel = ({
   const [isSaving, setIsSaving] = useState(false);
 
   const title = useMemo(
-    () => suggestionDetail?.action?.suggestion_text || suggestionDetail?.action?.result || '',
+    () => suggestionDetail?.action?.suggestion_title || suggestionDetail?.action?.result || '',
     [suggestionDetail?.action]
   );
   const isEdit = useMemo(() => suggestionDetail?.mode === 'edit', [suggestionDetail?.mode]);

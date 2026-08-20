@@ -186,7 +186,7 @@ class AgentActionExecutor:
         project_uuid,
         source_id,
         tool_name,
-        suggestion_text,
+        suggestion_title,
         suggestion_content,
         operator,
         request=None,
@@ -198,11 +198,11 @@ class AgentActionExecutor:
             )
         if tool_name == 'suggest_modify_type':
             return self._execute_github_suggest_modify_type(
-                seadb_api, project, project_uuid, source_id, suggestion_text
+                seadb_api, project, project_uuid, source_id, suggestion_title
             )
         if tool_name == 'suggest_assign_labels':
             return self._execute_github_suggest_assign_labels(
-                seadb_api, project_uuid, source_id, suggestion_content, suggestion_text
+                seadb_api, project_uuid, source_id, suggestion_content, suggestion_title
             )
         if tool_name == 'suggest_create_ticket':
             return self._execute_github_create_ticket(seadb_api, project, project_uuid, source_id, suggestion_content, operator, request=request, auto_executed=auto_executed)
@@ -293,9 +293,9 @@ class AgentActionExecutor:
     ):
         effective_operator = AUTO_EXECUTION_USER if auto_executed else operator
         tool_name = action.get('tool_name')
-        source_type = action.get('source_type', 'ticket')
-        source_id = action.get('source_id', '')
-        suggestion_text = action.get('suggestion_text', '')
+        source_type = action.get('target_source_type', 'ticket')
+        source_id = action.get('target_source_id', '')
+        suggestion_title = action.get('suggestion_title', '')
         suggestion_content = action.get('suggestion_content', '')
         action_id = action.get('_pk') or action.get('id') or ''
 
@@ -318,7 +318,7 @@ class AgentActionExecutor:
                 project_uuid,
                 source_id,
                 tool_name,
-                suggestion_text,
+                suggestion_title,
                 suggestion_content,
                 effective_operator,
                 request=request,
@@ -631,7 +631,7 @@ class AgentActionExecutor:
         return filtered
 
     def _execute_github_suggest_assign_labels(
-        self, seadb_api, project_uuid, source_id, suggestion_content='', suggestion_text=''
+        self, seadb_api, project_uuid, source_id, suggestion_content='', suggestion_title=''
     ):
         ctx = self._get_github_issue_context(seadb_api, project_uuid, source_id)
         if not ctx:
@@ -639,13 +639,13 @@ class AgentActionExecutor:
 
         labels = self._parse_suggested_label_content(suggestion_content)
         if not labels:
-            labels = self._parse_suggested_labels(suggestion_text)
+            labels = self._parse_suggested_labels(suggestion_title)
         if not labels:
             logger.error(
-                'Cannot parse suggested labels for GitHub issue %s from suggestion_content %r or suggestion_text %r',
+                'Cannot parse suggested labels for GitHub issue %s from suggestion_content %r or suggestion_title %r',
                 ctx['record_id'],
                 suggestion_content,
-                suggestion_text,
+                suggestion_title,
             )
             return self._failed_execution(f'Cannot determine suggested labels for GitHub issue {ctx["record_id"]}.')
 
@@ -696,16 +696,16 @@ class AgentActionExecutor:
             f'Labels updated for GitHub issue {ctx["record_id"]}: {json.dumps(applied_labels, ensure_ascii=False)}.'
         )
 
-    def _execute_github_suggest_modify_type(self, seadb_api, project, project_uuid, source_id, suggestion_text=''):
+    def _execute_github_suggest_modify_type(self, seadb_api, project, project_uuid, source_id, suggestion_title=''):
         ctx = self._get_github_issue_context(seadb_api, project_uuid, source_id)
         if not ctx:
             return self._failed_execution(f'Failed to get GitHub issue context for {source_id}.')
 
-        suggested_type = self._parse_suggested_type(suggestion_text)
+        suggested_type = self._parse_suggested_type(suggestion_title)
         if not suggested_type:
             logger.error(
-                f'Cannot parse suggested_type from suggestion_text for GitHub issue {ctx["record_id"]}: '
-                f'{suggestion_text!r}'
+                f'Cannot parse suggested_type from suggestion_title for GitHub issue {ctx["record_id"]}: '
+                f'{suggestion_title!r}'
             )
             return self._failed_execution(
                 f'Cannot determine suggested issue type for GitHub issue {ctx["record_id"]}.'

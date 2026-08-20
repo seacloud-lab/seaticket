@@ -38,7 +38,7 @@ def test_github_label_action_passes_structured_content_to_executor():
         project_uuid='project-uuid',
         source_id='1_2',
         tool_name='suggest_assign_labels',
-        suggestion_text='Display text can change',
+        suggestion_title='Display text can change',
         suggestion_content='["Bug"]',
         operator='user@example.com',
     )
@@ -47,3 +47,28 @@ def test_github_label_action_passes_structured_content_to_executor():
     executor._execute_github_suggest_assign_labels.assert_called_once_with(
         seadb_api, 'project-uuid', '1_2', '["Bug"]', 'Display text can change'
     )
+
+
+def test_execute_action_reads_target_source_fields():
+    executor = AgentActionExecutor()
+    executor._execute_github_issue_action = Mock(return_value={'success': True, 'result': 'ok'})
+    seadb_api = Mock()
+    project = Mock()
+
+    result = executor.execute_action(
+        seadb_api=seadb_api,
+        project=project,
+        project_uuid='project-uuid',
+        action={
+            '_pk': 1,
+            'tool_name': 'suggest_reply',
+            'target_source_type': 'github_issue',
+            'target_source_id': '1_2',
+            'suggestion_title': 'reply',
+            'suggestion_content': 'reply content',
+        },
+        operator='user@example.com',
+    )
+
+    assert result['success'] is True
+    executor._execute_github_issue_action.assert_called_once()

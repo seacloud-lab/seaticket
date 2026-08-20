@@ -27,7 +27,7 @@ const SuggestionAction = ({
     status,
     result,
     tool_name,
-    suggestion_text,
+    suggestion_title,
     suggestion_content,
     suggestion_reason,
   } = action;
@@ -201,9 +201,9 @@ const SuggestionAction = ({
       <div className={classnames('seaqa-agent-action-suggestion-card', { 'seaqa-agent-action-suggestion-card-cancelled': isCancelled })}>
         <div className="seaqa-agent-action-suggestion-card-header d-flex align-items-center">
           <Icon symbol={renderSuggestionIcon()} />
-          {suggestion_text && (
+          {suggestion_title && (
             <div className="seaqa-agent-action-suggestion-text-container">
-              <span className="text-truncate seaqa-agent-action-suggestion-text" title={suggestion_text}>{suggestion_text}</span>
+              <span className="text-truncate seaqa-agent-action-suggestion-text" title={suggestion_title}>{suggestion_title}</span>
               {!isCancelled && (<>{renderSuggestionReasonTooltip()}</>)}
             </div>
           )}

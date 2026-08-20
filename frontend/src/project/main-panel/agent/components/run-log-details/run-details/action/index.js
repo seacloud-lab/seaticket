@@ -119,8 +119,14 @@ const ActionItem = React.memo(({ action, ...props }) => {
       case ACTION_TYPE.SUGGESTION: {
         if (!Array.isArray(children) || children.length === 0) return null;
         const firstChild = children[0];
-        const { source_id, source_type } = firstChild;
-        const isShowTitle = children.length > 1 && !children.every(child => child.source_id === source_id && child.source_type === source_type);
+        const { target_source_id, target_source_type } = firstChild;
+        const isShowTitle = (
+          children.length > 1 &&
+          !children.every(child => (
+            child.target_source_id === target_source_id &&
+            child.target_source_type === target_source_type
+          ))
+        );
         return (
           <div className="seaqa-agent-action-container seaqa-agent-suggestions-action-container">
             <div className="seaqa-agent-action-label">{gettext('Suggestion')}</div>

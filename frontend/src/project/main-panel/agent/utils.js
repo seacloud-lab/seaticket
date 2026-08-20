@@ -1,4 +1,4 @@
-import { ACTION_TYPE, ACTION_STATUS, RUN_STATUS } from './constants';
+import { ACTION_TYPE, RUN_STATUS, SUGGESTIONS_STATUS } from './constants';
 import { CONNECTION_TYPES } from '../connections/constants';
 import { getResourceIconURL, getResourceTypeName } from '@/project/utils';
 
@@ -59,9 +59,18 @@ export const parseSuggestionActionResult = (result) => {
   return { message: result };
 };
 
+const getResourceValue = (target, field) => {
+  if (target[field] !== undefined) return target[field];
+  if (target[`owner_${field}`] !== undefined) return target[`owner_${field}`];
+  if (target[`target_${field}`] !== undefined) return target[`target_${field}`];
+  return '';
+};
+
 export const getAgentResource = (target) => {
   if (!target) return {};
-  const { source_type, source_id, source_title } = target;
+  const source_type = getResourceValue(target, 'source_type');
+  const source_id = getResourceValue(target, 'source_id');
+  const source_title = getResourceValue(target, 'source_title');
   if (!source_id) return {};
   const icon = getResourceIconURL(source_type);
   const sourceId = String(source_id || '');
@@ -89,34 +98,15 @@ export const getAgentResource = (target) => {
 };
 
 export const getRunLogStatusByRuns = (runs) => {
+  if (!Array.isArray(runs) || runs.length === 0) return '';
   const isAllCompleted = runs.every(run => run.status === RUN_STATUS.COMPLETED);
   if (!isAllCompleted) return '';
 
-  let status = [];
-
-  for (let i = 0; i < runs.length; i++) {
-    const run = runs[i];
-    const actions = run.actions || [];
-    const hasPending = actions.some(
-      a => a.status === ACTION_STATUS.PENDING || a.status === ACTION_STATUS.EXECUTING,
-    );
-    const hasFailed = actions.some(a => a.status === ACTION_STATUS.FAILED);
-    const hasSuggestion = actions.some(a => a.type === ACTION_TYPE.SUGGESTION);
-
-    if (hasPending || hasFailed) {
-      status = [];
-      break;
-    }
-
-    if (hasSuggestion) {
-      if (!status.includes('done')) status.push('done');
-    } else {
-      if (!status.includes('no_action_needed')) status.push('no_action_needed');
-    }
+  const suggestionsStatuses = runs.map(run => (run.suggestions_status || '').trim());
+  if (suggestionsStatuses.some(item => [SUGGESTIONS_STATUS.PENDING, SUGGESTIONS_STATUS.FAILED, ''].includes(item))) {
+    return '';
   }
-  if (status.length === 0) return '';
-  if (status.every(item => item === 'done')) return 'done';
-  if (status.every(item => item === 'no_action_needed')) return 'no_action_needed';
-  if (status.every(item => ['done', 'no_action_needed'].includes(item))) return 'done';
+  if (suggestionsStatuses.some(item => item === SUGGESTIONS_STATUS.RESOLVED)) return 'done';
+  if (suggestionsStatuses.every(item => item === SUGGESTIONS_STATUS.NONE)) return 'no_action_needed';
   return '';
 };
