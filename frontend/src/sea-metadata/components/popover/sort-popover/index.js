@@ -1,31 +1,22 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import isHotkey from 'is-hotkey';
 import { UncontrolledPopover } from 'reactstrap';
-import CustomizeSelect from '@/components/customize-select';
+import classnames from 'classnames';
 import CustomizeAddTool from '@/components/customize-add-tool';
 import Icon from '@/components/icon';
 import { gettext } from '@/constants';
 import { getColumnByKey } from '../../../utils/column';
 import { getEventClassName } from '@/utils/dom';
 import {
-  EVENT_BUS_TYPE, COLUMNS_ICON_CONFIG, VIEW_SORT_COLUMN_RULES, VIEW_FIRST_SORT_COLUMN_RULES, SORT_TYPE, VIEW_TYPE,
+  EVENT_BUS_TYPE, VIEW_SORT_COLUMN_RULES, VIEW_FIRST_SORT_COLUMN_RULES, VIEW_TYPE,
 } from '../../../constants';
 import { execSortsOperation, getDisplaySorts, isSortsEmpty, SORT_OPERATION } from './utils';
 import context from '@/sea-metadata/context';
 import ObjectUtils from '@/utils/object-utils';
+import { ColumnSelector, SortSelector } from '../../selectors';
 
 import './index.css';
-
-const SORT_TYPES = [
-  {
-    name: gettext('Up'),
-    value: SORT_TYPE.UP,
-  }, {
-    name: gettext('Down'),
-    value: SORT_TYPE.DOWN,
-  },
-];
 
 const propTypes = {
   readOnly: PropTypes.bool,
@@ -41,11 +32,10 @@ class SortPopover extends Component {
 
   constructor(props) {
     super(props);
-    const { sorts, columns, type } = this.props;
-    this.sortTypeOptions = this.createSortTypeOptions();
+    const { sorts, columns = [], type } = this.props;
     this.checkColumnEnableFirstSortRule = VIEW_FIRST_SORT_COLUMN_RULES[type || VIEW_TYPE.TABLE];
     this.checkColumnEnableSortRule = VIEW_SORT_COLUMN_RULES[type || VIEW_TYPE.TABLE];
-    this.columnsOptions = this.createColumnsOptions(columns);
+    this.columns = columns.filter(column => this.checkColumnEnableSortRule(column));
     this.initSorts = getDisplaySorts(sorts, columns);
     this.state = {
       sorts: [...this.initSorts],
@@ -94,9 +84,9 @@ class SortPopover extends Component {
   };
 
   UNSAFE_componentWillReceiveProps(nextProps) {
-    const newColumns = nextProps.columns;
+    const newColumns = nextProps.columns || [];
     if (newColumns !== this.props.columns) {
-      this.columnsOptions = this.createColumnsOptions(newColumns);
+      this.columns = newColumns.filter(column => this.checkColumnEnableSortRule(column));
     }
   }
 
@@ -113,12 +103,9 @@ class SortPopover extends Component {
     this.updateSorts(newSorts);
   };
 
-  onSelectColumn = (value, index) => {
+  onSelectColumn = (newColumnKey, index) => {
     const sorts = this.state.sorts.slice(0);
-    const newColumnKey = value.column.key;
-    if (newColumnKey === sorts[index].column_key) {
-      return;
-    }
+    if (newColumnKey === sorts[index].column_key) return;
     const newSorts = execSortsOperation(SORT_OPERATION.MODIFY_SORT_COLUMN, { sorts, index, column_key: newColumnKey });
     this.updateSorts(newSorts);
   };
@@ -147,36 +134,6 @@ class SortPopover extends Component {
     this.props.hidePopover();
   };
 
-  createColumnsOptions = (columns = []) => {
-    const sortableColumns = columns.filter(column => this.checkColumnEnableSortRule(column));
-    return sortableColumns.map((column) => {
-      const { type, display_name: name } = column;
-      return {
-        value: { column },
-        selectedKey: `column:${column.key}`,
-        name: name,
-        label: (
-          <Fragment>
-            <span className="sea-metadata-filter-header-icon">
-              <Icon className="sea-metadata-icon" symbol={COLUMNS_ICON_CONFIG[type]} />
-            </span>
-            <span className="select-option-name mr-4" title={name} aria-label={name}>{name}</span>
-          </Fragment>
-        )
-      };
-    });
-  };
-
-  createSortTypeOptions = () => {
-    return SORT_TYPES.map(sortType => {
-      return {
-        value: { sortType: sortType.value },
-        selectedKey: `sortType:${sortType.value}`,
-        label: <span className="select-option-name">{sortType.name}</span>
-      };
-    });
-  };
-
   renderSortsList = () => {
     const { columns } = this.props;
     const { sorts } = this.state;
@@ -188,18 +145,10 @@ class SortPopover extends Component {
 
   renderSortItem = (column, sort, index) => {
     const { readOnly = false } = this.props;
-    const selectedColumn = this.columnsOptions.find(c => c.value.column.key === column.key);
 
-    const selectedType = sort.sort_type;
-    const selectedTypeOption = SORT_TYPES.find(sortType => sortType.value === selectedType);
-    const selectedSortType = selectedType && {
-      label: <span className="select-option-name">{selectedTypeOption?.name || gettext('Up')}</span>,
-      value: { sortType: selectedType },
-    };
-
-    let columnsOptions = this.columnsOptions;
+    let columns = this.columns;
     if (index === 0) {
-      columnsOptions = columnsOptions.filter(o => this.checkColumnEnableFirstSortRule(o.value.column));
+      columns = columns.filter(column => this.checkColumnEnableFirstSortRule(column));
     }
 
     return (
@@ -211,22 +160,18 @@ class SortPopover extends Component {
         }
         <div className="condition">
           <div className="sort-column">
-            <CustomizeSelect
+            <ColumnSelector
+              value={column.key}
+              columns={columns}
               disabled={readOnly}
-              value={selectedColumn}
               onChange={(value) => this.onSelectColumn(value, index)}
-              options={columnsOptions}
-              searchable={true}
-              searchPlaceholder={context.translate('Search {column}')}
-              noOptionsPlaceholder={gettext('No results')}
             />
           </div>
           <div className="sort-predicate ml-2">
-            <CustomizeSelect
+            <SortSelector
               disabled={readOnly}
-              value={selectedSortType}
+              value={sort.sort_type}
               onChange={(value) => this.onSelectSortType(value, index)}
-              options={this.sortTypeOptions}
             />
           </div>
         </div>
@@ -265,9 +210,9 @@ class SortPopover extends Component {
         boundariesElement={document.body}
       >
         <div ref={ref => this.sortPopoverRef = ref} onClick={this.onPopoverInsideClick} style={popoverStyle}>
-          <div className={`sorts-list${isEmpty ? ' d-flex align-items-center justify-content-center' : ''}`} >
+          <div className={classnames('sorts-list', { 'empty-sorts-container d-flex align-items-center justify-content-center': isEmpty })} >
             {isEmpty ?
-              <div className="seaqa-tip-default font-size-14">{gettext('No sorts')}</div> :
+              <div className="seaqa-tip-default font-size-14 line-height-22">{gettext('No sorts')}</div> :
               this.renderSortsList()
             }
           </div>

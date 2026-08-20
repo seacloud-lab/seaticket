@@ -1,0 +1,8 @@
+.sea-metadata-column-option {
+  flex-wrap: nowrap;
+  gap: 8px;
+}
+
+.sea-metadata-column-option-icon-btn .seaqa-icon-svg {
+  color: var(--bs-icon-secondary-color);
+}

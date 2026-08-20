@@ -21,8 +21,8 @@ const Groupbys = ({ readOnly, groupbys, columns, onDelete, onUpdate, onMove }) =
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className={classnames('groupbys-list', { 'd-flex align-items-center justify-content-center': isEmpty })}>
-        {isEmpty && <div className="seaqa-tip-default font-size-14">{gettext('No groupings applied to this view.')}</div>}
+      <div className={classnames('groupbys-list', { 'd-flex align-items-center justify-content-center empty-groupbys-list': isEmpty })}>
+        {isEmpty && <div className="seaqa-tip-default font-size-14 line-height-22">{gettext('No groupings applied to this view.')}</div>}
         {!isEmpty && groupbys.map((groupby, index) => {
           return (
             <GroupbyItem

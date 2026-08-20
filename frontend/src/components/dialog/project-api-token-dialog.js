@@ -91,7 +91,7 @@ class APITokenItem extends React.Component {
             <div className="d-inline-flex align-items-center">
               {isPermissionSelectOpen &&
                 <CustomizeSelect
-                  value={permissionList.find(option => option.value === item.permission)}
+                  value={item.permission}
                   options={permissionList}
                   onChange={this.onUpdatePermission}
                   maxWidth={200}
@@ -291,7 +291,7 @@ class ProjectAPITokenDialog extends React.Component {
                   </td>
                   <td>
                     <CustomizeSelect
-                      value={this.permissionList.find(option => option.value === permission)}
+                      value={permission}
                       options={this.permissionList}
                       onChange={this.setPermission}
                       maxWidth={200}

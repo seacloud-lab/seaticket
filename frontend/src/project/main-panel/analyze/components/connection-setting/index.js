@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef, useMemo } from 'react';
 import { gettext } from '@/constants';
-import { Icon, IconTooltip, OptionEditor } from '@/components';
+import { Icon, IconTooltip, OptionsEditor } from '@/components';
 import { getConnectionIcon } from '@/project/main-panel/connections/utils';
 import { useConnections } from '@/project/main-panel/connections/hooks';
 
@@ -80,7 +80,7 @@ const ConnectionSetting = ({ selectedConnections, onConnectionsChange, onRemoveC
           <span>{gettext('Add connections')}</span>
         </div>
         {isShowPopover && (
-          <OptionEditor
+          <OptionsEditor
             className="analyze-connection-popover"
             optionClassName="analyze-popover-item"
             options={option}

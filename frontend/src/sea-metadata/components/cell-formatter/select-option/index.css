@@ -1,3 +1,4 @@
 .sea-metadata-ui-select-option {
   width: fit-content;
+  flex-shrink: 0;
 }

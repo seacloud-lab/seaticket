@@ -1,14 +1,13 @@
-import React, { Fragment, useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { useDrag, useDrop } from 'react-dnd';
-import CustomizeSelect from '@/components/customize-select';
-import Icon from '@/components/icon';
+import { CustomizeSelect, Icon } from '@/components';
 import { gettext } from '@/constants';
 import { getColumnByKey } from '../../../../utils/column';
-import { COLUMNS_ICON_CONFIG, SORT_TYPE, SORT_COLUMN_OPTIONS } from '../../../../constants';
+import { SORT_TYPE, SORT_COLUMN_OPTIONS } from '../../../../constants';
 import { getGroupbyGranularityByColumn, isShowGroupCountType, getSelectedCountType, getDefaultCountType } from '../../../../utils/group';
-import context from '@/sea-metadata/context';
+import { ColumnSelector, SortSelector } from '@/sea-metadata/components/selectors';
 
 /*
   groupby: {
@@ -57,48 +56,7 @@ const GroupbyItem = ({ showDragBtn, index, readOnly, groupby, columns, onDelete,
 
   drop(preview(ref));
 
-  const column = useMemo(() => {
-    return getColumnByKey(columns, groupby.column_key);
-  }, [groupby, columns]);
-
-  const columnsOptions = useMemo(() => {
-    if (!Array.isArray(columns) || columns.length === 0) return [];
-    return columns.map(column => {
-      const { type, display_name: name } = column;
-      return {
-        value: { column },
-        name,
-        label: (
-          <>
-            <span className="sea-metadata-filter-header-icon">
-              <Icon className="sea-metadata-icon" symbol={COLUMNS_ICON_CONFIG[type]} />
-            </span>
-            <span className="select-option-name mr-4">{name}</span>
-          </>
-        )
-      };
-    });
-  }, [columns]);
-
-  const selectedColumn = useMemo(() => {
-    return columnsOptions.find(option => option.value.column.key === groupby.column_key);
-  }, [columnsOptions, groupby]);
-
-  const sortOptions = useMemo(() => {
-    return [
-      {
-        value: { sortType: SORT_TYPE.UP },
-        label: <span className="select-option-name">{gettext('Up')}</span>
-      }, {
-        value: { sortType: SORT_TYPE.DOWN },
-        label: <span className="select-option-name">{gettext('Down')}</span>
-      }
-    ];
-  }, []);
-
-  const selectedSortType = useMemo(() => {
-    return sortOptions.find(option => option.value.sortType === groupby.sort_type);
-  }, [sortOptions, groupby]);
+  const column = useMemo(() => getColumnByKey(columns, groupby?.column_key), [groupby, columns]);
 
   const DISPLAY_GROUP_DATE_GRANULARITY_TEXT = useMemo(() => {
     return {
@@ -111,57 +69,44 @@ const GroupbyItem = ({ showDragBtn, index, readOnly, groupby, columns, onDelete,
   }, []);
 
   const countTypeOptions = useMemo(() => {
-    const column = getColumnByKey(columns, groupby.column_key);
     const { granularityList, displayGranularity } = getGroupbyGranularityByColumn(column);
     return granularityList.map((granularity) => {
       return {
         value: granularity,
-        selectedKey: `groupCountType:${granularity}`,
-        label: <span className="select-option-name">{DISPLAY_GROUP_DATE_GRANULARITY_TEXT[displayGranularity[granularity]]}</span>,
+        label: DISPLAY_GROUP_DATE_GRANULARITY_TEXT[displayGranularity[granularity]],
       };
     });
-  }, [columns, groupby, DISPLAY_GROUP_DATE_GRANULARITY_TEXT]);
+  }, [column, DISPLAY_GROUP_DATE_GRANULARITY_TEXT]);
 
-  const selectedCountType = useMemo(() => {
-    const { count_type } = groupby;
-    const countType = getSelectedCountType(column, count_type);
-    if (countType) {
-      return {
-        value: countType,
-        selectedKey: `groupCountType:${count_type || getDefaultCountType(column)}`,
-        label: <span className="select-option-name">{DISPLAY_GROUP_DATE_GRANULARITY_TEXT[countType]}</span>
-      };
-    }
-  }, [column, groupby, DISPLAY_GROUP_DATE_GRANULARITY_TEXT]);
+  const selectedCountType = useMemo(() => getSelectedCountType(column, groupby?.count_type), [column, groupby]);
 
   const deleteGroupby = useCallback((event) => {
     event.nativeEvent.stopImmediatePropagation();
     onDelete(index);
   }, [index, onDelete]);
 
-  const selectColumn = useCallback((option) => {
+  const handleSelectColumn = useCallback((newColumnKey) => {
     const { column_key } = groupby;
-    if (option.column.key === column_key) return;
+    if (newColumnKey === column_key) return;
+    const newColumn = getColumnByKey(columns, newColumnKey);
     const sort_type = SORT_TYPE.UP;
-    const count_type = getDefaultCountType(option.column);
+    const count_type = getDefaultCountType(newColumn);
     const newGroupby = {
       ...groupby,
-      ...{ column_key: option.column.key, sort_type, count_type }
+      ...{ column_key: newColumnKey, sort_type, count_type }
     };
     onUpdate(newGroupby, index);
-  }, [groupby, index, onUpdate]);
+  }, [groupby, index, columns, onUpdate]);
 
-  const selectCountType = useCallback((countType) => {
-    const { count_type } = groupby;
-    if (countType === count_type) return;
+  const handleSelectCountType = useCallback((countType) => {
+    if (countType === groupby.count_type) return;
     const newGroupby = { ...groupby, count_type: countType };
     onUpdate(newGroupby, index);
   }, [groupby, index, onUpdate]);
 
-  const selectSortType = useCallback((option) => {
-    const { count_type } = groupby;
-    if (option.sortType === count_type) return;
-    const newGroupby = { ...groupby, sort_type: option.sortType };
+  const handleSelectSortType = useCallback((newSortType) => {
+    if (newSortType === groupby.sort_type) return;
+    const newGroupby = { ...groupby, sort_type: newSortType };
     onUpdate(newGroupby, index);
   }, [groupby, index, onUpdate]);
 
@@ -180,14 +125,11 @@ const GroupbyItem = ({ showDragBtn, index, readOnly, groupby, columns, onDelete,
       )}
       <div className="condition">
         <div className="groupby-column">
-          <CustomizeSelect
+          <ColumnSelector
             disabled={readOnly}
-            value={selectedColumn}
-            options={columnsOptions}
-            onChange={selectColumn}
-            searchable={true}
-            searchPlaceholder={context.translate('Search {column}')}
-            noOptionsPlaceholder={gettext('No results')}
+            value={column.key}
+            columns={columns}
+            onChange={handleSelectColumn}
           />
         </div>
         {isShowGroupCountType(column) && (
@@ -195,19 +137,17 @@ const GroupbyItem = ({ showDragBtn, index, readOnly, groupby, columns, onDelete,
             <CustomizeSelect
               disabled={readOnly}
               value={selectedCountType}
-              selectedKey={selectedCountType?.selectedKey}
-              onChange={selectCountType}
               options={countTypeOptions}
+              onChange={handleSelectCountType}
             />
           </div>
         )}
         <div className="groupby-predicate">
           {(!column.key || SORT_COLUMN_OPTIONS.includes(column.type)) && (
-            <CustomizeSelect
+            <SortSelector
               disabled={readOnly}
-              value={selectedSortType}
-              options={sortOptions}
-              onChange={selectSortType}
+              value={groupby.sort_type}
+              onChange={handleSelectSortType}
             />
           )}
         </div>

@@ -8,7 +8,7 @@ import { useSelectedUsers } from '../selected-users';
 import {
   CustomizeDropdownMoreToggle, CustomizeDropdownMenu, CustomizeDropdownItem,
   CommonOperationConfirmationDialog, ModalPortal,
-  SelectEditor, ActiveStatusEditor,
+  PermissionSelect, ActiveStatusEditor,
   toaster,
 } from '@/components';
 import { getRoleOptions, getStatusOptions, translateStatus } from '@/utils/role-status-utils';
@@ -175,7 +175,7 @@ const User = ({
           if (key === 'institution') {
             return (
               <td key={key}>
-                <SelectEditor
+                <PermissionSelect
                   isTextMode={true}
                   isEditIconShow={onModify && highlight && institutions.length > 0}
                   options={institutions}

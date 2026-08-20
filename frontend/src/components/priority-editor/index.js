@@ -1,20 +1,18 @@
 import React, { useMemo } from 'react';
 import classnames from 'classnames';
-import OptionEditor from '../option-editor';
+import OptionsEditor from '../options-editor';
 
 import './index.css';
 
 const PriorityEditor = ({
-  target,
   className,
   priorities,
   modifiers = [
     { name: 'preventOverflow', options: { boundary: document.body } },
     { name: 'offset', options: { offset: [-6, 8] } }
   ],
-  value,
   onChange,
-  onToggle,
+  ...props
 }) => {
 
   const options = useMemo(() => {
@@ -24,7 +22,7 @@ const PriorityEditor = ({
         icon: priority.icon,
         name: priority.name,
         label: (
-          <div className="seaqa-priority-editor-option-name-hotkey d-flex justify-content-between w-100" >
+          <div className="seaqa-priority-editor-option-name-hotkey d-flex justify-content-between w-100">
             <div className="seaqa-priority-editor-option-name">{priority.name}</div>
             <div className="seaqa-priority-editor-option-hotkey">{priority.hotKey}</div>
           </div>
@@ -34,17 +32,15 @@ const PriorityEditor = ({
   }, [priorities]);
 
   return (
-    <OptionEditor
-      target={target}
+    <OptionsEditor
       className={classnames('seaqa-priority-editor-popover', className)}
-      onToggle={onToggle}
-      value={value}
       isSearchEnabled={false}
+      isCloseSubmit={false}
       checkPlacement="left"
       options={options}
       modifiers={modifiers}
-      sameWidthWithTarget={240}
       onChange={(newValue) => onChange(newValue || 0)}
+      { ...props }
     />
   );
 };

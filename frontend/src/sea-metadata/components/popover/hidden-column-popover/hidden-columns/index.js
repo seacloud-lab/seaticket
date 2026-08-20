@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import HideColumn from './hide-column';
-import Tip from '@/components/option-editor/tip';
+import Tip from '@/components/options-editor/tip';
 import { gettext } from '@/constants';
 
 const HiddenColumns = ({ readOnly, columns, hiddenColumns, onChange, canReorder, modifyColumnOrder }) => {
@@ -27,9 +27,9 @@ const HiddenColumns = ({ readOnly, columns, hiddenColumns, onChange, canReorder,
   const draggingColumnIndex = draggingColumnKey ? columns.findIndex(c => c.key === draggingColumnKey) : -1;
 
   return (
-    <div className={classnames('hide-columns-list w-100', { 'py-2': !isEmpty })}>
+    <div className={classnames('hide-columns-list w-100', { 'py-2': !isEmpty, 'pt-2': isEmpty })}>
       {isEmpty && (
-        <Tip tip={gettext('No columns available to be hidden')} hasAvailableOptions={false} />
+        <Tip height={32} tip={gettext('No columns available to be hidden')} options={[1]} />
       )}
       {!isEmpty && columns.map((column, columnIndex) => {
         return (

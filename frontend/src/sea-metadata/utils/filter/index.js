@@ -4,14 +4,6 @@ import {
   filterTermModifierNotWithin, filterTermModifierIsWithin,
 } from '../../constants';
 
-export const SPECIAL_TERM_TYPE = {
-  CREATOR: 'creator',
-  SINGLE_SELECT: 'single_select',
-  MULTIPLE_SELECT: 'multiple_select',
-  COLLABORATOR: 'collaborator',
-  RATE: 'rate'
-};
-
 export const SIMPLE_TEXT_INPUT_COLUMNS_MAP = {
   [CellType.TEXT]: true,
   [CellType.URL]: true,
@@ -54,115 +46,23 @@ export const FILTER_ERR_MSG_LIST = [
   FILTER_ERR_MSG.INVALID_TERM,
 ];
 
-const MULTIPLE_SELECTOR_COLUMNS = [CellType.CREATOR, CellType.LAST_MODIFIER];
+const MULTIPLE_SELECTOR_COLUMNS = [
+  CellType.CREATOR,
+  CellType.LAST_MODIFIER,
+  CellType.MULTIPLE_SELECT,
+  CellType.COLLABORATOR,
+  CellType.TAGS,
+];
 
-export const isFilterTermArray = (column, filterPredicate) => {
+export const isFilterTermArray = (column, predicate) => {
   const { type } = column;
   if (MULTIPLE_SELECTOR_COLUMNS.includes(type)) {
     return true;
   }
-  if (type === CellType.SINGLE_SELECT && [FILTER_PREDICATE_TYPE.IS_ANY_OF, FILTER_PREDICATE_TYPE.IS_NONE_OF].includes(filterPredicate)) {
+  if ((type === CellType.SINGLE_SELECT || type === CellType.TYPE) && ARRAY_PREDICATE[predicate]) {
     return true;
   }
   return false;
-};
-
-export const getUpdatedFilterByCreator = (filter, collaborator) => {
-  if (!collaborator || !collaborator.email) {
-    if (Array.isArray(collaborator)) {
-      const emails = Array.from(new Set(collaborator.map(item => (typeof item === 'string' ? item : item && item.email)).filter(Boolean)));
-      if (!emails.length) {
-        return;
-      }
-      return Object.assign({}, filter, { filter_term: emails });
-    }
-    if (typeof collaborator === 'string' && collaborator) {
-      return Object.assign({}, filter, { filter_term: [collaborator] });
-    }
-    return;
-  }
-  const multipleSelectType = [FILTER_PREDICATE_TYPE.CONTAINS, FILTER_PREDICATE_TYPE.NOT_CONTAIN];
-  let { filter_predicate, filter_term: filterTerm } = filter;
-  if (multipleSelectType.includes(filter_predicate)) {
-    filterTerm = filterTerm ? filter.filter_term.slice(0) : [];
-    let selectedEmail = collaborator.email;
-    let collaborator_index = filterTerm.indexOf(selectedEmail);
-    if (collaborator_index > -1) {
-      filterTerm.splice(collaborator_index, 1);
-    } else {
-      filterTerm.push(selectedEmail);
-    }
-  } else {
-    if (filterTerm[0] === collaborator.email) {
-      return;
-    }
-    filterTerm = [collaborator.email];
-  }
-  return Object.assign({}, filter, { filter_term: filterTerm });
-};
-
-export const getUpdatedFilterBySelectSingle = (filter, columnOption) => {
-  let new_filter_term;
-  // if predicate is any of / is none of, filter_term is array; else filter_term is string
-  if (ARRAY_PREDICATE[filter.filter_predicate]) {
-    new_filter_term = Array.isArray(filter.filter_term) ? [...filter.filter_term] : [];
-    const index = new_filter_term.indexOf(columnOption.id);
-    if (index === -1) {
-      new_filter_term.push(columnOption.id);
-    } else {
-      new_filter_term.splice(index, 1);
-    }
-  } else {
-    new_filter_term = columnOption.id;
-  }
-  return Object.assign({}, filter, { filter_term: new_filter_term });
-};
-
-export const getUpdatedFilterBySelectMultiple = (filter, columnOption) => {
-  let filterTerm = filter.filter_term ? filter.filter_term : [];
-  let index = filterTerm.indexOf(columnOption.id);
-  if (index > -1) {
-    filterTerm.splice(index, 1);
-  } else {
-    filterTerm.push(columnOption.id);
-  }
-  return Object.assign({}, filter, { filter_term: filterTerm });
-};
-
-export const getUpdatedFilterBySelectTag = (filter, tag) => {
-  let filterTerm = filter.filter_term ? filter.filter_term : [];
-  const tagId = Number(tag.id);
-  let index = filterTerm.indexOf(tagId);
-  if (index > -1) {
-    filterTerm.splice(index, 1);
-  } else {
-    filterTerm.push(tagId);
-  }
-  return Object.assign({}, filter, { filter_term: filterTerm });
-};
-
-export const getUpdatedFilterByCollaborator = (filter, collaborator) => {
-  const filterTerm = Array.isArray(collaborator)
-    ? Array.from(new Set(collaborator.map(email => `${email}`))).filter(Boolean)
-    : (() => {
-      let currentFilterTerm = filter.filter_term ? filter.filter_term.slice(0) : [];
-      let selectedEmail = collaborator.email;
-      let collaboratorIndex = currentFilterTerm.indexOf(selectedEmail);
-      if (collaboratorIndex > -1) {
-        currentFilterTerm.splice(collaboratorIndex, 1);
-      } else {
-        currentFilterTerm.push(selectedEmail);
-      }
-      return currentFilterTerm;
-    })();
-  return Object.assign({}, filter, { filter_term: filterTerm });
-};
-
-export const getUpdatedFilterByRate = (filter, value) => {
-  if (filter.filter_term === value) {
-    return Object.assign({}, filter, { filter_term: 0 });
-  }
-  return Object.assign({}, filter, { filter_term: value });
 };
 
 export const getColumnOptions = (column) => {
@@ -218,7 +118,7 @@ export const getUpdatedFilterByPredicate = (filter, column, filterPredicate) => 
     return updatedFilter;
   }
 
-  if (columnType === CellType.SINGLE_SELECT) {
+  if (columnType === CellType.SINGLE_SELECT || columnType === CellType.TYPE) {
     if (ARRAY_PREDICATE[filterPredicate]) {
       if (ARRAY_PREDICATE[filter.filter_predicate] !== ARRAY_PREDICATE[filterPredicate]) {
         updatedFilter.filter_term = [];
@@ -273,29 +173,6 @@ export const getUpdatedFilterByNormalTerm = (filter, column, filterIndex, event)
     return filter;
   }
   return Object.assign({}, filter, { filter_term: filterTerm });
-};
-
-export const getUpdatedFilterBySpecialTerm = (filter, type, value) => {
-  switch (type) {
-    case SPECIAL_TERM_TYPE.CREATOR: {
-      return getUpdatedFilterByCreator(filter, value);
-    }
-    case SPECIAL_TERM_TYPE.SINGLE_SELECT: {
-      return getUpdatedFilterBySelectSingle(filter, value);
-    }
-    case SPECIAL_TERM_TYPE.MULTIPLE_SELECT: {
-      return getUpdatedFilterBySelectMultiple(filter, value);
-    }
-    case SPECIAL_TERM_TYPE.COLLABORATOR: {
-      return getUpdatedFilterByCollaborator(filter, value);
-    }
-    case SPECIAL_TERM_TYPE.RATE: {
-      return getUpdatedFilterByRate(filter, value);
-    }
-    default: {
-      return filter;
-    }
-  }
 };
 
 export {

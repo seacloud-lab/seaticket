@@ -5,7 +5,7 @@ import { LongTextInlineEditor } from '@seafile/seafile-editor';
 import { gettext, lang, server, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
 import { isLongTextValueExceedLimit, default as LongTextEditorUtilities } from '@/utils/long-text';
 import { canCheckSeafileEditorBrowser } from '@/utils/seafile-editor-browser';
-import { CenteredLoading, toaster, Option, OptionEditor } from '@/components';
+import { CenteredLoading, toaster, Option, OptionsEditor } from '@/components';
 import { portalAPI } from '../api';
 import { PORTAL_PAGE } from '../constants';
 import { useData, usePortalIssuesMetadata } from '@/project/hooks';
@@ -50,7 +50,7 @@ const IssueTypeSettings = ({ id, isReadonly, value, typesData, onChange }) => {
         </div>
       </div>
       {!isReadonly && isShowEditor && (
-        <OptionEditor
+        <OptionsEditor
           id={id}
           target={editorRef}
           isMultiple={false}

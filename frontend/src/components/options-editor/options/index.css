@@ -1,0 +1,26 @@
+.options-editor-content {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.options-editor-content.empty {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.options-editor-content.empty .empty-tip {
+  min-height: 32px;
+  height: 100%;
+  width: 100%;
+}
+
+.options-editor-option.disabled {
+  cursor: default;
+}
+
+.options-editor-option.disabled:hover,
+.options-editor-option.disabled.active {
+  background-color: transparent;
+}

@@ -58,6 +58,16 @@
             settings: '{{ settings|escapejs }}',
             langCode: "{{LANGUAGE_CODE|escapejs}}",
             llmModels: {{ llm_models|safe }},
+            langList: (function() {
+                var list = [];
+                {% for LANG in LANGUAGES %}
+                list.push({
+                    langCode: '{{ LANG.0|escapejs }}',
+                    langName: '{{ LANG.1|escapejs }}',
+                });
+                {% endfor %}
+                return list;
+            })(),
         }
      };
 </script>

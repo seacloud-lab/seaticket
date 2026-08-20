@@ -1,6 +1,6 @@
 import React, { useCallback, useRef, useState } from 'react';
 import classnames from 'classnames';
-import { OptionEditor } from '@/components';
+import { OptionsEditor } from '@/components';
 import SelectorDisplay from './selector-display';
 
 import './index.css';
@@ -48,7 +48,7 @@ const Selector = ({
         {children}
       </SelectorDisplay>
       {isShowMenu && (
-        <OptionEditor
+        <OptionsEditor
           className={`seaqa-ai-chat-selector-display-editor ${editorClassName || ''} `}
           options={options}
           target={ref}

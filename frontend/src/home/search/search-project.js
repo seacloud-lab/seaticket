@@ -5,7 +5,7 @@ import { gettext } from '@/constants';
 import SearchResultItem from './search-result-item';
 import { Utils } from '@/utils/utils';
 import getWorkspaceName from '../utils/get-workspace-name';
-import { getValueLength } from './search-utils';
+import { getSearchValueLength } from '@/utils/search';
 import { IconButton } from '@/components';
 
 const propTypes = {
@@ -128,7 +128,7 @@ class SearchProject extends Component {
     }
     this.inputValue = newValue.trim();
 
-    if (this.inputValue === '' || getValueLength(this.inputValue) < 3) {
+    if (this.inputValue === '' || getSearchValueLength(this.inputValue) < 3) {
       this.setState({
         isResultShow: false,
         isResultGetted: false
@@ -189,7 +189,7 @@ class SearchProject extends Component {
     if (!isResultShow) {
       return;
     }
-    if (!isResultGetted || getValueLength(this.inputValue) < 3) {
+    if (!isResultGetted || getSearchValueLength(this.inputValue) < 3) {
       return (
         <span className="loading-icon loading-tip"></span>
       );

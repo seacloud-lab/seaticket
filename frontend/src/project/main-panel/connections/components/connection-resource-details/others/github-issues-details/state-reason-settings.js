@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
-import { Option, OptionEditor, CustomizeLabel } from '@/components';
+import { Option, OptionsEditor, CustomizeLabel } from '@/components';
 import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { getColumnOptions, getOption } from '@/sea-metadata/utils/column';
 import { isEsc, isShiftS } from '@/utils/hotkey';
@@ -78,7 +78,7 @@ const StateReasonSettings = ({
         </div>
       </div>
       {!isReadonly && isShowEditor && (
-        <OptionEditor
+        <OptionsEditor
           id={id}
           className="seaqa-settings-popover"
           target={editorRef}

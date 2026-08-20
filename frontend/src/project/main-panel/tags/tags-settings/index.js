@@ -4,12 +4,11 @@ import { gettext, SELECT_OPTION_COLORS } from '@/constants';
 import Tag from '@/sea-metadata/components/tag';
 import RemoveBtn from '@/sea-metadata/components/tag/remove-btn';
 import { CustomizePopover, CustomizeLabel } from '@/components';
-import OptionEditorContainer from '@/components/option-editor/option-editor-container';
+import Container from '@/components/options-editor/sync-options-editor/container';
 import { isCellValueChanged } from '@/sea-metadata/utils/cell';
 import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
 import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { isEsc, isT } from '@/utils/hotkey';
-import TagOption from '@/components/tag-option';
 
 import './index.css';
 
@@ -36,7 +35,7 @@ const TagsSettings = ({
       return {
         ...tag,
         value: tag._id,
-        label: <TagOption tag={tag} />,
+        label: <Tag tag={tag} />,
       };
     });
   }, [tagsData, isLoading]);
@@ -69,7 +68,7 @@ const TagsSettings = ({
       return {
         ...tag,
         value: _id,
-        label: (<TagOption tag={tag} />),
+        label: (<Tag tag={tag} />),
       };
     });
   }, [createTag]);
@@ -132,12 +131,12 @@ const TagsSettings = ({
       {isShowEditor && (
         <CustomizePopover
           target={editorRef}
-          className="option-editor-popover seaqa-tags-selector-popover seaqa-settings-popover hide-description"
+          className="options-editor-popover seaqa-tags-selector-popover seaqa-settings-popover hide-description"
           sameWidthWithTarget={240}
           hidePopover={closeEditor}
           hidePopoverWithEsc={closeEditor}
         >
-          <OptionEditorContainer
+          <Container
             ref={optionEditorContainerRef}
             isMultiple={true}
             optionHeight="fit-content"
@@ -159,7 +158,7 @@ const TagsSettings = ({
                 );
               });
             }}
-          </OptionEditorContainer>
+          </Container>
         </CustomizePopover>
       )}
     </div>

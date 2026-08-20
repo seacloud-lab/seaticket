@@ -171,7 +171,7 @@ const AllViews = ({
                 );
               })}
               {views.length === 0 && (
-                <EmptyTip src={`${mediaUrl}img/no-results.png`} text={gettext('No results')} className="option-editor-no-results-tip" />
+                <EmptyTip src={`${mediaUrl}img/no-results.png`} text={gettext('No results')} />
               )}
             </div>
           </div>

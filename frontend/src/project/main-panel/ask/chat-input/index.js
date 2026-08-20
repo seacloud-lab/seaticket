@@ -2,7 +2,7 @@ import React, { useCallback, useRef, useState, useEffect, useMemo, useImperative
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import slugid from 'slugid';
-import { IconButton, ClickOutside, OptionEditor, Tooltip, UploadFile, toaster } from '@/components';
+import { IconButton, ClickOutside, OptionsEditor, Tooltip, UploadFile, toaster } from '@/components';
 import { gettext } from '@/constants';
 import * as CommonlyUsedHotkey from '@/utils/hotkey';
 import { Utils } from '@/utils/utils';
@@ -556,7 +556,7 @@ const ChatInput = forwardRef(({
             />
             <div ref={previewContentRef} className="message-input message-input-preview"></div>
             {isShowSkillCommandSelector && !disabled && (
-              <OptionEditor
+              <OptionsEditor
                 className="seaqa-ai-chat-selector-display-editor"
                 target={inputContentRef}
                 isMultiple={false}

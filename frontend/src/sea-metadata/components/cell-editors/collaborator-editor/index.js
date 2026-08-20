@@ -1,7 +1,7 @@
 import React, { forwardRef, useImperativeHandle, useCallback, useRef, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { gettext } from '@constants';
-import Main from '@/components/collaborator-editor/main';
+import Container from '@/components/collaborator-editor/container';
 import { useCollaborators } from '../../../hooks';
 import { hasOwnProperty } from '@/utils/object-utils';
 
@@ -55,12 +55,12 @@ const CollaboratorEditor = forwardRef(({
 
   return (
     <div
-      className="sea-metadata-collaborator-editor popover collaborator-editor-popover"
+      className="sea-metadata-collaborator-editor popover options-editor-popover"
       style={{ top: 0, left: isBeyondScreen ? 'unset' : 0, right: isBeyondScreen ? -column.width : 'unset' }}
       ref={editorRef}
     >
-      <Main
-        ref={mainRef}
+      <Container
+        innerRef={mainRef}
         isShowDeleteArea={true}
         placeholder={gettext('Search users')}
         value={value}

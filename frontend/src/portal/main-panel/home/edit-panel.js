@@ -1,10 +1,8 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { Button, Label, Input } from 'reactstrap';
 import { SketchPicker } from 'react-color';
 import { gettext } from '@/constants';
-import CustomizeSelect from '@/components/customize-select';
-import Radio from '@/components/radio';
-import { IconButton, toaster, UploadFile } from '@/components';
+import { IconButton, toaster, UploadFile, CustomizeSelect, Radio } from '@/components';
 import { portalAPI } from '@/portal/api';
 import { Utils } from '@/utils/utils';
 
@@ -15,15 +13,15 @@ const { projectUuid } = window.app.pageOptions;
 const TITLE_SIZE_OPTIONS = [32, 40, 48, 56, 64, 72].map((size) => ({
   value: size,
   name: `${size}px`,
-  label: <span>{`${size}px`}</span>,
+  label: `${size}px`,
 }));
 
 const COLOR_PRESETS = ['#f8f1e3', '#fff5ea', '#eef7ff', '#f7f0ff', '#f6fbf5', '#fef7f2', '#f9f7ff', '#f4fbfa'];
 
 const CARD_LAYOUT_OPTIONS = [2, 3, 4, 5, 6].map((count) => ({
   value: count,
-  name: `${count}`,
-  label: <span>{`${count}`}</span>,
+  name: count + '',
+  label: count + '',
 }));
 
 const MAX_BACKGROUND_IMAGE_SIZE = 5 * 1024 * 1024;
@@ -37,14 +35,6 @@ const PortalHomeEditPanel = ({ homePageStyle = {}, setHomePageStyle, updateHomeS
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [isUploadingBackgroundImage, setIsUploadingBackgroundImage] = useState(false);
   const uploadBackgroundImageRef = useRef(null);
-
-  const title_sizeValue = useMemo(() => {
-    return TITLE_SIZE_OPTIONS.find(option => option.value === title_size) || TITLE_SIZE_OPTIONS[0];
-  }, [title_size]);
-
-  const cardLayoutValue = useMemo(() => {
-    return CARD_LAYOUT_OPTIONS.find(option => option.value === card_layout) || CARD_LAYOUT_OPTIONS[1];
-  }, [card_layout]);
 
   const updateHomePageStyle = useCallback((patch) => {
     setHomePageStyle((prev) => {
@@ -136,7 +126,7 @@ const PortalHomeEditPanel = ({ homePageStyle = {}, setHomePageStyle, updateHomeS
       <div className="portal-home-edit-panel-section">
         <Label>{gettext('Title size')}</Label>
         <CustomizeSelect
-          value={title_sizeValue}
+          value={title_size || TITLE_SIZE_OPTIONS[0].value}
           options={TITLE_SIZE_OPTIONS}
           onChange={(value) => updateHomePageStyle({ title_size: value })}
           placeholder={gettext('Select size')}
@@ -228,7 +218,7 @@ const PortalHomeEditPanel = ({ homePageStyle = {}, setHomePageStyle, updateHomeS
       <div className="portal-home-edit-panel-section">
         <Label>{gettext('Card layout')}</Label>
         <CustomizeSelect
-          value={cardLayoutValue}
+          value={card_layout || CARD_LAYOUT_OPTIONS[0].value}
           options={CARD_LAYOUT_OPTIONS}
           onChange={(value) => updateCardsSection({ card_layout: value })}
           placeholder={gettext('Select layout')}

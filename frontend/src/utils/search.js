@@ -1,3 +1,5 @@
+import { isString } from './type-detection';
+
 export const searchCollaborators = (collaborators, searchValue) => {
   const validSearchValue = searchValue ? searchValue.trim().toLowerCase() : '';
   const validCollaborators = Array.isArray(collaborators) && collaborators.length > 0 ? collaborators : [];
@@ -29,7 +31,24 @@ export const searchOptions = (options, searchValue) => {
   return options.filter(option => {
     const { name } = option;
     if (!name) return false;
-    if (name.toString().toLowerCase().indexOf(validSearchValue) > -1) return true;
+    if (isString(name) && name.toString().toLowerCase().indexOf(validSearchValue) > -1) return true;
     return false;
   });
+};
+
+export const getSearchValueLength = (str) => {
+  var code; var len = 0;
+  for (var i = 0; i < str.length; i++) {
+    code = str.charCodeAt(i);
+    if (code === 10) { // solve enter problem
+      len += 2;
+    } else if (code < 0x007f) {
+      len += 1;
+    } else if (code >= 0x0080 && code <= 0x07ff) {
+      len += 2;
+    } else if (code >= 0x0800 && code <= 0xffff) {
+      len += 3;
+    }
+  }
+  return len;
 };

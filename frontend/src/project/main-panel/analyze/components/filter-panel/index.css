@@ -46,15 +46,15 @@
   min-height: fit-content;
 }
 
-.analyze-filter-option-editor .option-editor-container {
+.analyze-filter-option-editor .options-editor-container {
   min-height: fit-content;
 }
 
-.analyze-filter-option-editor .option-editor-content {
+.analyze-filter-option-editor .options-editor-content {
   min-height: fit-content;
 }
 
-.analyze-filter-option-editor .option-editor-option {
+.analyze-filter-option-editor .options-editor-option {
   padding: 0 8px;
 }
 
@@ -181,12 +181,12 @@
   background-color: rgba(0, 0, 0, 0.04);
 }
 
-.analyze-date-filter-presets .option-editor-option.disabled {
+.analyze-date-filter-presets .options-editor-option.disabled {
   color: #BBB;
   pointer-events: none;
 }
 
-.analyze-date-filter-presets .option-editor-option.disabled:hover {
+.analyze-date-filter-presets .options-editor-option.disabled:hover {
   background-color: transparent;
   cursor: default;
 }

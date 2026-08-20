@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Alert, Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input } from 'reactstrap';
-import SelectEditor from '../../components/select-editor';
+import PermissionSelect from '../../components/permission-select';
 import { gettext } from '../../constants';
 import { Utils } from '../../utils/utils';
 import ModalHeader from '../../components/modal-header';
@@ -157,7 +157,7 @@ class SysAdminAddUserDialog extends React.Component {
                     title={gettext('You can also add a user as a guest, who will not be allowed to create projects and groups.')}
                   />
                 </Label>
-                <SelectEditor
+                <PermissionSelect
                   isTextMode={false}
                   isEditIconShow={false}
                   options={availableRoles}

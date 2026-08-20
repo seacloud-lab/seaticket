@@ -4,7 +4,7 @@ import Main from './main';
 
 const Card = ({
   expandRow,
-  isMultipleSelect = false,
+  isMultiple = false,
   isShowHeader = true,
   mode = 'add',
   metadata,
@@ -40,7 +40,7 @@ const Card = ({
         metadata={metadata}
         onRowClick={onRowClick}
         activeRow={expandRowRef.current}
-        isMultipleSelect={isMultipleSelect}
+        isMultiple={isMultiple}
         isShowHeader={isShowHeader}
         mode={mode}
       />

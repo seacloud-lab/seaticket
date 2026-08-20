@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react'
 import classnames from 'classnames';
 import { gettext } from '@/constants';
 import { Option, CustomizePopover, CustomizeLabel, IconButton } from '@/components';
-import OptionEditorContainer from '@/components/option-editor/option-editor-container';
+import Container from '@/components/options-editor/sync-options-editor/container';
 import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { isEsc, isL } from '@/utils/hotkey';
 import { getColumnOptions, getOption } from '@/sea-metadata/utils/column';
@@ -128,12 +128,12 @@ const LabelsSettings = ({
       {!isReadonly && isShowEditor && (
         <CustomizePopover
           target={editorRef}
-          className="option-editor-popover seaqa-settings-popover"
+          className="options-editor-popover seaqa-settings-popover"
           sameWidthWithTarget={240}
           hidePopover={closeEditor}
           hidePopoverWithEsc={closeEditor}
         >
-          <OptionEditorContainer
+          <Container
             id={id}
             ref={optionEditorContainerRef}
             isMultiple={true}
@@ -161,7 +161,7 @@ const LabelsSettings = ({
                 );
               });
             }}
-          </OptionEditorContainer>
+          </Container>
         </CustomizePopover>
       )}
     </>

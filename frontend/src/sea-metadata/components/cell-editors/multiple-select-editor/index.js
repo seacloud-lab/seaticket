@@ -2,7 +2,7 @@ import React, { forwardRef, useMemo, useImperativeHandle, useCallback, useRef, u
 import PropTypes from 'prop-types';
 import { getColumnOptions, generateNewOption, getOption } from '../../../utils/column';
 import context from '@/sea-metadata/context';
-import OptionEditorContainer from '@/components/option-editor/option-editor-container';
+import Container from '@/components/options-editor/sync-options-editor/container';
 import { gettext } from '@/constants';
 import { IconButton, Option } from '@/components';
 
@@ -73,8 +73,8 @@ const MultipleSelectEditor = forwardRef(({
   }), [column, onCommit]);
 
   return (
-    <div className="sea-metadata-single-select-editor option-editor-popover sea-metadata-multiple-select-editor" style={style} ref={editorRef}>
-      <OptionEditorContainer
+    <div className="sea-metadata-single-select-editor options-editor-popover sea-metadata-multiple-select-editor" style={style} ref={editorRef}>
+      <Container
         ref={optionEditorContainerRef}
         isMultiple={true}
         placeholder={gettext('Search options')}
@@ -103,7 +103,7 @@ const MultipleSelectEditor = forwardRef(({
             );
           });
         }}
-      </OptionEditorContainer>
+      </Container>
     </div>
   );
 });

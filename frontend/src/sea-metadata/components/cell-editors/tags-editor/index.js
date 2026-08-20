@@ -2,11 +2,10 @@ import React, { forwardRef, useMemo, useImperativeHandle, useCallback, useRef, u
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import context from '@/sea-metadata/context';
-import OptionEditorContainer from '@/components/option-editor/option-editor-container';
+import Container from '@/components/options-editor/sync-options-editor/container';
 import { gettext } from '@/constants';
 import { SELECT_OPTION_COLORS } from '../../../constants';
 import { useTagsData } from '../../../hooks';
-import TagOption from '@/components/tag-option';
 import { isCellValueChanged } from '@/sea-metadata/utils/cell';
 import { getRowById } from '@/sea-metadata/utils/row';
 import Tag from '@/sea-metadata/components/tag';
@@ -35,7 +34,7 @@ const TagsEditor = forwardRef(({
       return {
         ...tag,
         value: tag._id,
-        label: <TagOption tag={tag} />,
+        label: <Tag tag={tag} />,
       };
     });
   }, [tagsData]);
@@ -53,7 +52,7 @@ const TagsEditor = forwardRef(({
       return {
         ...tag,
         value: _id,
-        label: (<TagOption tag={tag} />),
+        label: (<Tag tag={tag} />),
       };
     });
   }, [createTag]);
@@ -98,11 +97,11 @@ const TagsEditor = forwardRef(({
 
   return (
     <div
-      className={classnames('sea-metadata-tags-selector-popover popover seaqa-tags-selector-popover option-editor-popover', { 'hide-description': true })}
+      className={classnames('sea-metadata-tags-selector-popover popover seaqa-tags-selector-popover options-editor-popover', { 'hide-description': true })}
       style={style}
       ref={editorRef}
     >
-      <OptionEditorContainer
+      <Container
         ref={optionEditorContainerRef}
         isMultiple={true}
         placeholder={gettext('Search tags')}
@@ -125,7 +124,7 @@ const TagsEditor = forwardRef(({
             );
           });
         }}
-      </OptionEditorContainer>
+      </Container>
     </div>
   );
 });

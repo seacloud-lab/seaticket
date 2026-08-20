@@ -1,0 +1,13 @@
+.options-editor-empty-tip {
+  height: fit-content;
+}
+
+.options-editor-empty-tip .no-items-img-tip {
+  width: 48px !important;
+  height: 48px !important;
+  flex-shrink: 0;
+}
+
+.option-editor-start-searching-tip .empty-tip-text {
+  max-width: 180px;
+}

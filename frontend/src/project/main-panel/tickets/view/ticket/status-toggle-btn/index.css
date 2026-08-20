@@ -5,18 +5,18 @@
   min-height: 118px;
 }
 
-.seaqa-project-ticket-state-toggle-popover .option-editor-search-wrapper {
+.seaqa-project-ticket-state-toggle-popover .options-editor-search-wrapper {
   display: none;
 }
 
-.seaqa-project-ticket-state-toggle-popover.option-editor-popover .option-editor-content .option-editor-option {
+.seaqa-project-ticket-state-toggle-popover.options-editor-popover .options-editor-content .options-editor-option {
   height: fit-content;
   align-items: flex-start;
   padding: 8px 10px;
   gap: 8px;
 }
 
-.seaqa-project-ticket-state-toggle-popover.option-editor-popover .option-editor-content .option-editor-option-content {
+.seaqa-project-ticket-state-toggle-popover.options-editor-popover .options-editor-content .options-editor-option-content {
   align-items: flex-start;
   gap: 8px;
 }

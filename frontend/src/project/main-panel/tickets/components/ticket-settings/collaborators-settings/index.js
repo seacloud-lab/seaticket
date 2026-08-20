@@ -100,6 +100,7 @@ const CollaboratorsSettings = ({
       {!isReadonly && isShowAssigneesEditor && (
         <CollaboratorEditor
           id={id}
+          isCloseSubmit={true}
           sameWidthWithTarget={240}
           target={assigneesRef}
           value={value}

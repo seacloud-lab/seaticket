@@ -30,10 +30,6 @@ const SettingsPanel = ({
     ];
   }, []);
 
-  const displayColorOption = useMemo(() => {
-    return colorOptions.find(o => o.value === colorBy) || colorOptions[0];
-  }, [colorBy, colorOptions]);
-
   const modeOptions = useMemo(() => {
     return [
       { value: 'density', label: gettext('Density') },
@@ -41,9 +37,7 @@ const SettingsPanel = ({
     ];
   }, []);
 
-  const displayModeOption = useMemo(() => {
-    return modeOptions.find(o => o.value === displayMode) || modeOptions[0];
-  }, [displayMode, modeOptions]);
+  const validColorBy = colorBy || colorOptions[0].value;
 
   return (
     <div className="analyze-settings-panel">
@@ -76,8 +70,8 @@ const SettingsPanel = ({
           <CustomizeSelect
             className="analyze-settings-select"
             isInModal={true}
-            value={displayColorOption.value === '' ? { value: '', label: '' } : displayColorOption}
-            options={displayColorOption.value === '' ? colorOptions.filter(option => option.value !== '') : colorOptions}
+            value={validColorBy}
+            options={validColorBy === '' ? colorOptions.filter(option => option.value !== '') : colorOptions}
             onChange={onColorByChange}
           />
         </FormGroup>
@@ -87,7 +81,7 @@ const SettingsPanel = ({
           <CustomizeSelect
             className="analyze-settings-select"
             isInModal={true}
-            value={displayModeOption}
+            value={displayMode || modeOptions[0].value}
             options={modeOptions}
             onChange={onDisplayModeChange}
           />

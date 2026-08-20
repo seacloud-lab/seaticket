@@ -9,6 +9,10 @@
   padding: 16px;
 }
 
+.sea-metadata-groupbys-popover .groupbys-list.empty-groupbys-list {
+  min-height: 102px;
+}
+
 .sea-metadata-groupbys-popover .groupbys-list .groupby-item {
   display: flex;
   align-items: center;
@@ -59,11 +63,6 @@
   color: var(--bs-icon-color);
   height: 14px;
   width: 14px;
-}
-
-.sea-metadata-groupbys-popover .groupby-item .option-group {
-  overflow: auto;
-  max-height: 360px;
 }
 
 .sea-metadata-groupbys-popover .groupby-item .condition {
@@ -143,12 +142,4 @@
 
 .sea-metadata-groupbys-popover .popover-add-tool .groupbys-tools .groupbys-tool-item:hover {
   background: var(--bs-hover-bg);
-}
-
-.sea-metadata-groupbys-popover .groupbys-list .option-group {
-  margin-top: 4px;
-  overflow: auto;
-  max-height: 360px;
-  width: 200px;
-  padding: 0px;
 }

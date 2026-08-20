@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { getCellValueByColumn } from '../../../utils/cell';
 import { getColumnByKey, getColumnOptions, generateNewOption } from '../../../utils/column';
 import context from '@/sea-metadata/context';
-import OptionEditorContainer from '@/components/option-editor/option-editor-container';
+import Container from '@/components/options-editor/sync-options-editor/container';
 import { gettext } from '@/constants';
 import { PREDEFINED_TICKET_COLUMN_NAME } from '@/project/main-panel/tickets/constants';
 
@@ -96,8 +96,8 @@ const SingleSelectEditor = forwardRef(({
   }), [column, onCommit]);
 
   return (
-    <div className="sea-metadata-single-select-editor option-editor-popover" style={style} ref={editorRef}>
-      <OptionEditorContainer
+    <div className="sea-metadata-single-select-editor options-editor-popover" style={style} ref={editorRef}>
+      <Container
         ref={optionEditorContainerRef}
         isMultiple={false}
         placeholder={gettext('Search options')}
@@ -109,8 +109,7 @@ const SingleSelectEditor = forwardRef(({
         onCreate={canEditData ? createOption : null}
         onPressTab={onPressTab}
         isSearchEnabled={column.name !== PREDEFINED_TICKET_COLUMN_NAME.STATE}
-      >
-      </OptionEditorContainer>
+      />
     </div>
   );
 });

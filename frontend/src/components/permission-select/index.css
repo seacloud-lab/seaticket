@@ -1,0 +1,7 @@
+.permission-select-container .permission-select-explanation {
+  user-select: none;
+  padding-left: 10px;
+  word-break: keep-all;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}

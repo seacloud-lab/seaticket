@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react'
 import classnames from 'classnames';
 import { Button, ButtonGroup, } from 'reactstrap';
 import { gettext } from '@/constants';
-import { Option, OptionEditor, CustomizeLabel, Icon } from '@/components';
+import { Option, OptionsEditor, CustomizeLabel, Icon } from '@/components';
 import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { isEsc, isS, isShiftS } from '@/utils/hotkey';
 import { getColumnOptions, getOption } from '@/sea-metadata/utils/column';
@@ -165,7 +165,7 @@ const StateSettings = ({
         )}
       </div>
       {!isReadonly && isShowEditor && (
-        <OptionEditor
+        <OptionsEditor
           id={id}
           target={editorRef}
           className="seaqa-settings-popover seaqa-state-settings-popover"

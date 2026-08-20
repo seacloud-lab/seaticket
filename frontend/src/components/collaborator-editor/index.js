@@ -1,61 +1,74 @@
 import React, { useCallback, useRef } from 'react';
 import classnames from 'classnames';
 import CustomizePopover from '../customize-popover';
-import Main from './main';
 import { areArraysEqual } from '../../utils/array-utils';
-
-import './index.css';
+import Container from './container';
 
 const CollaboratorEditor = ({
   id,
   target,
   className,
+  placement,
   isShowDeleteArea = true,
   isSearchEnabled = true,
   isMultiple = true,
+  isCloseSubmit = false,
   sameWidthWithTarget = false,
   placeholder,
   emptyTip,
   value = [],
   collaborators = [],
+  modifiers = [
+    { name: 'preventOverflow', options: { boundary: document.body } },
+    { name: 'offset', options: { offset: [0, 4] } }
+  ],
   onChange,
-  onClose,
+  onClose: onToggle,
 }) => {
-  const mainRef = useRef(null);
+  const containerRef = useRef(null);
 
-  const handleSubmit = useCallback(() => {
+  const handleClose = useCallback(() => {
+    if (!isCloseSubmit) {
+      onToggle();
+      return;
+    }
+    const newValue = containerRef.current.getValue();
     if (isMultiple) {
-      const newValue = mainRef.current.getValue();
       if (!areArraysEqual(newValue, value)) {
         onChange(newValue);
       }
+    } else {
+      if (newValue !== value) {
+        onChange(newValue);
+      }
     }
-    onClose();
-  }, [isMultiple, value, onChange, onClose]);
+    onToggle();
+  }, [isMultiple, isCloseSubmit, value, onChange, onToggle]);
 
   return (
     <CustomizePopover
       target={target}
-      className={classnames('collaborator-editor-popover', className)}
-      hidePopover={handleSubmit}
-      hidePopoverWithEsc={handleSubmit}
+      className={classnames('options-editor-popover', className)}
+      placement={placement}
+      modifiers={modifiers}
       sameWidthWithTarget={sameWidthWithTarget}
+      hidePopover={handleClose}
+      hidePopoverWithEsc={handleClose}
     >
-      <Main
-        ref={mainRef}
+      <Container
         id={id}
+        innerRef={containerRef}
         isShowDeleteArea={isShowDeleteArea}
-        isSearchEnabled={isSearchEnabled}
         isMultiple={isMultiple}
         placeholder={placeholder}
+        isSearchEnabled={isSearchEnabled}
         emptyTip={emptyTip}
-        value={value}
         collaborators={collaborators}
-        onToggle={onClose}
-        onHidden={handleSubmit}
+        value={value}
+        onChange={isCloseSubmit ? () => {} : onChange}
+        onToggle={onToggle}
       />
     </CustomizePopover>
-
   );
 };
 

@@ -1,7 +1,19 @@
+import { gettext } from '@/constants';
+
 export const FILTER_CONJUNCTION_TYPE = {
   AND: 'And',
   OR: 'Or',
 };
+
+export const FILTER_CONJUNCTION_TYPES = [
+  {
+    value: FILTER_CONJUNCTION_TYPE.AND,
+    label: gettext('And'),
+  }, {
+    value: FILTER_CONJUNCTION_TYPE.OR,
+    label: gettext('Or'),
+  },
+];
 
 export const FILTER_ERR_MSG = {
   INVALID_FILTER: 'invalid filter',

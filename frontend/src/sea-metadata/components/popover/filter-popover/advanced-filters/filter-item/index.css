@@ -1,181 +1,138 @@
-.sea-metadata-selector-single-select .selected-option .selected-option-show {
-  width: calc(100% - 20px);
-  height: 20px;
-  line-height: 20px;
-}
-
-.sea-metadata-selector-single-select .selected-option .single-select-option,
-.sea-metadata-selector-multiple-select .selected-option .multiple-select-option {
-  display: inline-block !important;
-  margin: 0 !important;
-}
-
-.sea-metadata-selector-multiple-select .selected-option .multiple-select-option {
-  margin-right: 10px !important;
-}
-
-.sea-metadata-selector-single-select .multiple-select-option.multiple-select-option-white,
-.sea-metadata-selector-multiple-select .multiple-select-option.multiple-select-option-white {
-  border: 1px solid #d1d9e0b3;
-  line-height: 18px;
-}
-
-.sea-metadata-selector-single-select .seaqa-select-option,
-.sea-metadata-selector-multiple-select .seaqa-select-option {
-  height: 30px;
-  padding: 0 10px;
-}
-
-.sea-metadata-selector-single-select .seaqa-select-option:hover,
-.sea-metadata-selector-multiple-select .seaqa-select-option:hover,
-.sea-metadata-selector-single-select .seaqa-select-option.active,
-.sea-metadata-selector-multiple-select .seaqa-select-option.active {
-  background-color: #f7f7f7;
-  color: var(--bs-body-color);
-}
-
-.sea-metadata-selector-multiple-select.seaqa-customize-select .selected-option-show,
-.sea-metadata-selector-single-select.seaqa-customize-select .selected-option-show {
-  text-overflow: clip;
-}
-
-.sea-metadata-selector-single-select .select-option-name,
-.sea-metadata-selector-multiple-select .select-option-name {
-  margin-top: 5px;
+.sea-metadata-filters-list .filter-item {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  padding: 0.25rem 0;
+  gap: 14px;
 }
 
-.sea-metadata-filters .sea-metadata-selector-single-select .select-option-name,
-.sea-metadata-filters .sea-metadata-selector-multiple-select .select-option-name {
-  margin-top: 0;
-}
-
-.sea-metadata-filters .sea-metadata-filters-list .sea-metadata-selector-tags-select .option-group,
-.sea-metadata-filters .sea-metadata-filters-list .sea-metadata-selector-single-select .option-group,
-.sea-metadata-filters .sea-metadata-filters-list .sea-metadata-selector-multiple-select .option-group {
-  margin-top: 0px;
-  padding-top: 0px;
-  top: 41px !important;
-  left: -1px !important;
-}
-
-.sea-metadata-filters .sea-metadata-selector-single-select .option-group .option-group-search,
-.sea-metadata-filters .sea-metadata-selector-multiple-select .option-group .option-group-search {
-  padding: 0;
-}
-
-.sea-metadata-filters .sea-metadata-selector-single-select .option-group .option-group-search .seaqa-search-input,
-.sea-metadata-filters .sea-metadata-selector-multiple-select .option-group .option-group-search .seaqa-search-input {
-  border-top: none;
-  border-left: none;
-  border-right: none;
-  border-radius: 0px;
-  border-color: #eee;
-  padding-left: 16px !important;
-}
-
-.sea-metadata-filters .sea-metadata-selector-single-select .option-group .option-group-search .seaqa-clear-icon-button.seaqa-icon-btn,
-.sea-metadata-filters .sea-metadata-selector-multiple-select .option-group .option-group-search .seaqa-clear-icon-button.seaqa-icon-btn {
-  right: 12px !important;
-}
-
-.sea-metadata-selector-single-select .select-option-name .single-check-icon,
-.sea-metadata-selector-multiple-select .select-option-name .single-check-icon {
-  height: 20px;
-  width: 20px;
-}
-
-.sea-metadata-selector-single-select .select-option-name .single-check-icon .seaqa-icon-svg,
-.sea-metadata-selector-multiple-select .select-option-name .single-check-icon .seaqa-icon-svg {
-  height: 12px;
-  width: 12px;
-}
-
-.sea-metadata-selector-single-select .select-option-name.conjunction-option-name,
-.sea-metadata-selector-multiple-select .select-option-name.conjunction-option-name {
-  justify-content: flex-start;
-}
-
-/* priority */
-.sea-metadata-selector-priority .selected-option-show {
-  width: 100% !important;
-}
-
-.sea-metadata-selector-priority .selected-option {
-  padding-right: 64px;
-}
-
-.sea-metadata-selector-priority .selected-option .seaqa-icon-svg-arrow-down {
-  display: none;
-}
-
-.sea-metadata-selector-priority .option-group {
-  min-width: 200px;
-  padding: 0;
-}
-
-.sea-metadata-selector-priority .seaqa-select-option {
-  display: inline-flex;
-  align-items: center;
-  height: 32px;
-  font-size: 14px;
-}
-
-.sea-metadata-selector-priority .option-group .seaqa-select-option.active {
-  border-radius: 4px;
-}
-
-.sea-metadata-selector-priority .seaqa-select-option .option-content {
+.sea-metadata-filters-list .filter-item .condition {
   display: flex;
-  align-items: center;
   flex: 1;
-  min-width: 0;
 }
 
-.sea-metadata-selector-priority .seaqa-select-option .priority-filter-option-check {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 14px;
-  width: 14px;
-  height: 14px;
-  margin-right: 8px;
+.sea-metadata-filters-list .filter-item .condition > div {
+  height: 38px;
+  line-height: 38px;
+  margin-left: 0.5rem;
 }
 
-.sea-metadata-selector-priority .seaqa-select-option .priority-filter-option-check .seaqa-icon-svg {
-  width: 14px;
-  height: 14px;
+.sea-metadata-filters-list .filter-item .condition > div:first-child {
+  margin-left: 0;
 }
 
-.sea-metadata-selector-priority .seaqa-select-option .priority-filter-option-content {
+.sea-metadata-filters-list .filter-item .filter-term {
+  max-width: 300px;
+}
+
+.sea-metadata-filters-list .filter-item .filter-conjunction {
+  width: 84px;
+  flex-shrink: 0;
+}
+
+.sea-metadata-filters-list .filter-item .filter-predicate,
+.sea-metadata-filters-list .filter-item .filter-term-modifier {
+  width: 138px;
+  max-width: 138px;
+  flex-shrink: 0;
+}
+
+.sea-metadata-filters-list .filter-item .filter-container {
+  width: calc(100% - 80px);
   display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  flex: 1;
-  min-width: 0;
+  gap: 8px;
 }
 
-.sea-metadata-selector-priority .seaqa-select-option .priority-filter-option-icon {
-  flex: 0 0 16px;
-  width: 16px;
-  height: 16px;
-  margin-right: 8px;
+.sea-metadata-filters-list .sea-metadata-filter-conjunction-select .seaqa-select-container {
+  background-color: var(--bs-body-bg);
 }
 
-/* filter-column */
-.sea-metadata-filters-list .filter-column {
+.sea-metadata-filters-list .sea-metadata-filter-conjunction-select .selected-option-show {
+  color: var(--bs-icon-color);
+  width: 100%;
+}
+
+.sea-metadata-filters-list .filter-item .filter-column {
   width: 160px;
   max-width: 160px;
+  flex-shrink: 0;
 }
 
-.sea-metadata-filters-list .filter-column .option-group {
+.sea-metadata-filters-list .filter-term input {
+  display: flex;
   min-width: 200px;
-  max-width: 400px;
-  padding: 0;
+  max-width: 300px;
+  height: 38px;
+  padding-left: 8px;
+  padding-right: 8px;
+  outline: none;
+  border-radius: 4px;
+  font-size: 0.875rem;
 }
 
-.sea-metadata-filters-list .filter-column .option-group .seaqa-search-input-wrapper .seaqa-clear-icon-button.seaqa-icon-btn {
-  right: 12px !important;
+.sea-metadata-filters-list .filter-term input:disabled:hover {
+  border-color: rgba(0, 40, 100, 0.12);
+}
+
+.sea-metadata-filters-list .filter-term input:hover:focus {
+  border-color: var(--bs-custom-select-focus-border-color);
+}
+
+.sea-metadata-filters-list .filter-term input:focus {
+  color: #495057;
+  background: var(--bs-body-bg);
+  border-color: var(--bs-custom-select-focus-border-color);
+  outline: 0;
+}
+
+.sea-metadata-filters-list .filter-term input[type='checkbox'] {
+  width: inherit;
+}
+
+.sea-metadata-filters-list .filter-term input[type='checkbox']:focus {
+  border: 0;
+  box-shadow: none;
+}
+
+.sea-metadata-filters-list .filter-term .sea-metadata-unread-status-filter {
+  height: 38px;
+  width: 38px;
+  border: 1px solid rgba(0, 40, 100, 0.12);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.sea-metadata-filters-list .filter-term .sea-metadata-unread-status-filter.disabled {
+  cursor: default;
+}
+
+.sea-metadata-filters-list .filter-term .date-picker-container input {
+  height: 32px;
+  line-height: 30px;
+}
+
+.sea-metadata-filters-list .filter-term .date-picker-container input:focus {
+  color: #495057;
+  background: var(--bs-body-bg);
+  outline: 0;
+  box-shadow: none;
+  border-color: var(--bs-input-focus-border-color);
+}
+
+.sea-metadata-filters-list .filter-term .date-picker-container table tr {
+  height: 30px;
+}
+
+.sea-metadata-filters-list .filter-term .filter-rate-list {
+  display: flex;
+  padding: 0 5px;
+  border: 1px solid rgba(0, 40, 100, 0.12);
+}
+
+.sea-metadata-sort-select-container,
+.sea-metadata-columns-select-container,
+.sea-metadata-filter-predicate-container,
+.sea-metadata-filter-term-modifier-container,
+.sea-metadata-filter-conjunction-select-container {
+  min-width: 200px;
+  max-width: 300px;
 }

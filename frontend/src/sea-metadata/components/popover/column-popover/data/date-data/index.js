@@ -2,8 +2,7 @@ import React, { useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { FormGroup, Label } from 'reactstrap';
-import CustomizeSelect from '@/components/customize-select';
-import Switch from '@/components/switch';
+import { CustomizeSelect, Switch } from '@/components';
 import { gettext } from '@/constants';
 import { getDateDisplayString } from '../../../../../utils/column';
 import { DEFAULT_DATE_FORMAT } from '../../../../../constants';
@@ -76,7 +75,7 @@ const DateData = ({ value, column, onChange }) => {
       <FormGroup className="">
         <Label>{gettext('Format')}</Label>
         <CustomizeSelect
-          value={selectedValue}
+          value={selectedValue?.value}
           options={options}
           onChange={onFormatChange}
         />
