@@ -997,10 +997,10 @@ class ProjectConnectionOauthManager(models.Manager):
 
 class ProjectConnectionOauth(models.Model):
     project_uuid = models.UUIDField(db_index=True)
-    type = models.CharField(max_length=255)
+    type = models.CharField(max_length=255, db_index=True)
     access_token = models.TextField()
     refresh_token = models.TextField()
-    expires_at = models.DateTimeField()
+    expires_at = models.DateTimeField(db_index=True)
 
     objects = ProjectConnectionOauthManager()
 
@@ -1101,5 +1101,3 @@ class ProjectIssuesStatistics(models.Model):
 
     class Meta:
         db_table = 'project_issues_statistics'
-
-

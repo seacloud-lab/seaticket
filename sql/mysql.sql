@@ -809,5 +809,8 @@ CREATE TABLE `project_connection_oauth` (
   `refresh_token` TEXT NOT NULL,
   `expires_at` datetime(6) NOT NULL,
   PRIMARY KEY (`id`),
+  KEY `project_connection_oauth_project_uuid` (`project_uuid`),
+  KEY `project_connection_type` (`type`),
+  KEY `oauth_expires_at` (`expires_at`),
   UNIQUE KEY `project_connection_oauth_project_uuid_type_uniq` (`project_uuid`, `type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
