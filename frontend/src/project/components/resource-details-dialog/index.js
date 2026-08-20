@@ -33,6 +33,13 @@ const initColumns = [
   { key: 'page_id', name: 'page_id' },
 ];
 
+const SUPPORT_COPY_RECORD_LINK_TYPES = [
+  ...SUPPORT_ROW_DETAILS_CONNECTION_TYPES,
+  KNOWLEDGE_BASE_TYPE,
+  TICKET_TYPE,
+  PORTAL_ISSUE_TYPE,
+];
+
 const ResourceDetailsDialog = ({
   projectUuid, resource, columns = initColumns, isShowIcon,
   switchResource, onToggle,
@@ -90,13 +97,7 @@ const ResourceDetailsDialog = ({
     return getInternalNetworkAddress(type, resource._id, { workspaceID, projectName, connectionID: resource.connection_id });
   }, [type, resource]);
 
-  const canCopyRecordLink = useMemo(() => {
-    return SUPPORT_ROW_DETAILS_CONNECTION_TYPES.includes(type) || [
-      KNOWLEDGE_BASE_TYPE,
-      TICKET_TYPE,
-      PORTAL_ISSUE_TYPE,
-    ].includes(type);
-  }, [type]);
+  const canCopyRecordLink = SUPPORT_COPY_RECORD_LINK_TYPES.includes(type);
 
   const size = useMemo(() => getDialogSize(innerWidth), [innerWidth]);
 
