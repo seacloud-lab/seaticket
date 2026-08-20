@@ -119,7 +119,7 @@ const ResourceDetailsDialog = ({
 
   const handleCopyRecordLink = useCallback(() => {
     copy(internalNetworkAddress);
-    toaster.success(gettext('Copied'));
+    toaster.success(gettext('Link copied'));
   }, [internalNetworkAddress]);
 
   useEffect(() => {
