@@ -15,7 +15,7 @@ import ChatHeader from '../chat-header';
 
 import './index.css';
 
-const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allowedAttachmentSources, canSelectModel, enableSkills = true, api, renderOperation, customHeaderTitle, readOnly: forceReadOnly = false, hideInput = false }) => {
+const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allowedAttachmentSources, canSelectModel, enableSkills = true, api, renderOperation, customHeaderTitle, readOnly: forceReadOnly = false, hideInput = false, hideHeader = false }) => {
   const [isReply, setReply] = useState(false);
   const [loading, setLoading] = useState(true);
   const [chatHistories, setChatHistories] = useState([]);
@@ -558,7 +558,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
       {operationContent && (
         <div className="chat-header-operation-wrapper">{operationContent}</div>
       )}
-      {!isNewChat && (
+      {!isNewChat && !hideHeader && (
         <div className="seaqa-ai-ask-chats-header">
           <ChatHeader
             isReply={_isReply}

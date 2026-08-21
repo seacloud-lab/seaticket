@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { CenteredLoading, CustomizeTabs, toaster } from '@/components';
+import dayjs from 'dayjs';
+import { CenteredLoading, CustomizeTabs, EmptyTip, IconButton, toaster } from '@/components';
 import { gettext } from '@/constants';
-import Sessions from '../ask/sessions';
 import Chat from '../ask/chat';
 import { AskPageProvider, DocumentsProvider, SessionsProvider, useAskPage, useSessions } from '../ask/hooks';
 import { ASK_PAGE_SLUG_ID } from '../ask/constants';
 import { chatAPI } from '@/portal/api/chat-api';
+import { useCollaborators } from '@/sea-metadata';
 import TopBar from '../top-bar';
 
 import '../ask/index.css';
@@ -28,30 +29,80 @@ const TABS = [
 const AllChat = () => {
   const { pageSlugId, togglePageSlugId } = useAskPage();
   const { isLoading, sessions, loadMoreSessions } = useSessions();
+  const { collaborators } = useCollaborators();
+  const selectedSession = sessions.find(session => session._id === pageSlugId);
 
-  useEffect(() => {
-    if (!isLoading && pageSlugId === ASK_PAGE_SLUG_ID.NEW && sessions[0]) {
-      togglePageSlugId(sessions[0]._id);
-    }
-  }, [isLoading, pageSlugId, sessions, togglePageSlugId]);
+  const getUserName = (username) => {
+    const user = collaborators.find(collaborator => collaborator.email === username);
+    return user?.name || username;
+  };
 
   if (isLoading) return <CenteredLoading />;
 
   return (
     <div className="seaqa-portal-chat-analysis-all-chat">
-      <Chat
-        sessionId={pageSlugId}
-        workspaceID={workspaceID}
-        projectUuid={projectUuid}
-        projectName={projectName}
-        settings={{}}
-        api={adminChatAPI}
-        canSelectModel={false}
-        enableSkills={false}
-        readOnly={true}
-        hideInput={true}
-      />
-      <Sessions sessionId={pageSlugId} permission="r" onLoadMore={loadMoreSessions} />
+      <div className="seaqa-portal-chat-analysis-session-list" onScroll={(event) => {
+        const { scrollTop, scrollHeight, clientHeight } = event.currentTarget;
+        if (scrollHeight - scrollTop - clientHeight < 80) loadMoreSessions();
+      }}>
+        <table className="seaqa-portal-chat-analysis-session-table">
+          <thead>
+            <tr>
+              <th>{gettext('Title')}</th>
+              <th>{gettext('User')}</th>
+              <th>{gettext('Input tokens')}</th>
+              <th>{gettext('Output tokens')}</th>
+              <th>{gettext('Credit used')}</th>
+              <th>{gettext('Time')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sessions.map(session => (
+              <tr
+                key={session._id}
+                className={session._id === pageSlugId ? 'selected' : ''}
+                onClick={() => togglePageSlugId(session._id)}
+              >
+                <td title={session.name}>{session.name}</td>
+                <td title={getUserName(session.username)}>{getUserName(session.username)}</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>{dayjs(session.updated_at).format('YYYY-MM-DD HH:mm:ss')}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {sessions.length === 0 && <EmptyTip text={gettext('No chats')} />}
+      </div>
+      {pageSlugId && pageSlugId !== ASK_PAGE_SLUG_ID.NEW && (
+        <div className="seaqa-portal-chat-analysis-chat-detail">
+          <div className="seaqa-portal-chat-analysis-chat-detail-content">
+            <div className="seaqa-portal-chat-analysis-chat-detail-header">
+              <span className="text-truncate" title={selectedSession?.name}>{selectedSession?.name}</span>
+              <IconButton
+                icon="close"
+                onClick={() => togglePageSlugId(ASK_PAGE_SLUG_ID.NEW)}
+                title={gettext('Close')}
+                aria-label={gettext('Close')}
+              />
+            </div>
+            <Chat
+              sessionId={pageSlugId}
+              workspaceID={workspaceID}
+              projectUuid={projectUuid}
+              projectName={projectName}
+              settings={{}}
+              api={adminChatAPI}
+              canSelectModel={false}
+              enableSkills={false}
+              readOnly={true}
+              hideInput={true}
+              hideHeader={true}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
