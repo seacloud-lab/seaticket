@@ -22,7 +22,8 @@ from seahub.project.connections import (
     ProjectEmailOAuthCallbackView,
 )
 from seahub.project.agent import AgentActionConfirmView
-from seahub.project.models import ProjectConfluenceOauth
+from seahub.project.models import ProjectConnectionOauth
+from seahub.project.constants import ConnectionType
 from seahub.utils.storage import FileNotFound
 from seahub.settings import GITHUB_WEBHOOK_SECRET
 
@@ -840,8 +841,9 @@ class TestProjectConfluenceOauthStatusView:
 
     def test_get_returns_true_when_connected(self, factory, project_creator, real_project):
         project = real_project
-        ProjectConfluenceOauth.objects.create(
+        ProjectConnectionOauth.objects.create(
             project_uuid=project.uuid,
+            type=ConnectionType.CONFLUENCE.value,
             access_token='access-token',
             refresh_token='refresh-token',
             expires_at=datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1),
