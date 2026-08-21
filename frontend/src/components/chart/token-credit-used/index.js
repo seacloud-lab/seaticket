@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import * as d3 from 'd3';
 import { gettext } from '@/constants';
-import Tooltip from './tooltip';
+import TokenCreditUsedTooltip from './token-credit-used-tooltip';
 
 const formatCreditUsed = (value) => {
   if (value === 0) return '0';
@@ -492,7 +492,7 @@ const TokenCreditUsed = ({
     <div className="seaqa-ai-tokens-chart w-100 h-100 d-flex align-items-center justify-content-center" ref={ref}>
       <svg ref={chartRef}></svg>
       {tooltip.display && tooltipData.current && (
-        <Tooltip data={tooltipData.current} position={tooltip.position} legends={legends} />
+        <TokenCreditUsedTooltip data={tooltipData.current} position={tooltip.position} legends={legends} />
       )}
     </div>
   );

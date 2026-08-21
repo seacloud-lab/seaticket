@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { gettext } from '@/constants';
 import './index.css';
 
-const Tooltip = ({
+const TokenCreditUsedTooltip = ({
   data,
   position: initPosition,
   legends
@@ -51,4 +51,4 @@ const Tooltip = ({
   );
 };
 
-export default Tooltip;
+export default TokenCreditUsedTooltip;
