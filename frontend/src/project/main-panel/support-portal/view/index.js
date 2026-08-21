@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import classnames from 'classnames';
+import { Button } from 'reactstrap';
 import { gettext, mediaUrl, server, siteRoot } from '@/constants';
-import { CustomizeBtn, toaster } from '@/components';
+import { toaster, Icon } from '@/components';
 import { portalAPI } from '@/portal/api';
 import { Utils } from '@/utils/utils';
 
@@ -60,13 +61,15 @@ const View = () => {
       </div>
       <div className="seaqa-support-portal-tip-pages">
         {isProjectAdmin && (
-          <CustomizeBtn color="primary" icon="rename" onClick={() => window.open(editURL, '_blank', 'noopener,noreferrer')}>
+          <Button color="primary" onClick={() => window.open(editURL, '_blank', 'noopener,noreferrer')}>
+            <Icon symbol="rename" className="mr-2" aria-hidden="true" />
             {gettext('Edit portal')}
-          </CustomizeBtn>
+          </Button>
         )}
-        <CustomizeBtn color="secondary" icon="open-in-new-tab" onClick={onViewPortal} disabled={isOpeningPortal}>
+        <Button color="secondary" onClick={onViewPortal} disabled={isOpeningPortal}>
+          <Icon symbol="open-in-new-tab" className="mr-2" aria-hidden="true" />
           {gettext('View portal')}
-        </CustomizeBtn>
+        </Button>
       </div>
     </div>
   );

@@ -60,7 +60,7 @@ import Tooltip from './tooltip';
 import PriorityEditor from './priority-editor';
 import PathRedirection from './path-redirection';
 import CustomizeLabel from './customize-label';
-import { IconTextBtn, SecondaryBtn, CustomizeBtn } from './btn';
+import { IconTextBtn, SecondaryBtn } from './btn';
 import CopyInput from './copy-input';
 import ImagePreviewer from './image-previewer';
 import IconPopoverTip from './icon-popover-tip';
@@ -131,7 +131,6 @@ export {
   CustomizeLabel,
   IconTextBtn,
   SecondaryBtn,
-  CustomizeBtn,
   CopyInput,
   ImagePreviewer,
   IconPopoverTip,

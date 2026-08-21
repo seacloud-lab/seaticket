@@ -35,3 +35,15 @@
   gap: 16px;
   margin-top: 24px;
 }
+
+.seaqa-support-portal-view .seaqa-support-portal-tip-pages button {
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 14px;
+}
+
+.seaqa-support-portal-view .seaqa-support-portal-tip-pages button svg {
+  height: 14px;
+  width: 14px;
+}
