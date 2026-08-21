@@ -3177,7 +3177,7 @@ msgstr "编辑内容..."
 
 #: frontend/src/project/main-panel/agent/run-logs/thought-process-dialog.js:29
 msgid "Handling"
-msgstr "处理中"
+msgstr "处理"
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/run-details/run-statistics-dialog/index.js
 msgid "Prelude"
