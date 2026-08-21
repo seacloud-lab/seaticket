@@ -996,7 +996,7 @@ class ProjectConnectionOauthManager(models.Manager):
 
 
 class ProjectConnectionOauth(models.Model):
-    project_uuid = models.UUIDField(db_index=True)
+    project_uuid = models.UUIDField()
     type = models.CharField(max_length=255, db_index=True)
     access_token = models.TextField()
     refresh_token = models.TextField()
