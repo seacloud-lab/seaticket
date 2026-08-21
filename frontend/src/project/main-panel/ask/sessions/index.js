@@ -58,7 +58,7 @@ const Sessions = ({ sessionId, permission }) => {
           <CenteredLoading />
         )}
         {!isTeamSessionsLoading && displaySessions.length === 0 && (
-          <EmptyTip src={`${mediaUrl}img/no-nitification.png`} className="seaqa-ai-ask-sessions-empty" text={gettext('No chats')} />
+          <EmptyTip src={`${mediaUrl}img/no-notification.png`} className="seaqa-ai-ask-sessions-empty" text={gettext('No chats')} />
         )}
         {!isTeamSessionsLoading && displaySessions.map(session => {
           const isSelected = sessionId === session._id;

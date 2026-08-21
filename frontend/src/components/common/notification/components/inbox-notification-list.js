@@ -16,7 +16,7 @@ const InboxNotificationList = ({
       {loading && <CenteredLoading />}
       {!loading && notificationList.length === 0 && (
         <EmptyTip
-          src={`${mediaUrl}img/no-nitification.png`}
+          src={`${mediaUrl}img/no-notification.png`}
           title={gettext('No notifications')}
         />
       )}
