@@ -3,6 +3,7 @@ import { Button } from 'reactstrap';
 import { gettext } from '@/constants';
 import { IconButton, ResizeBar } from '@/components';
 import Detail from './detail';
+import { getSuggestionTitle } from '../../../utils';
 import { isFunction } from '@/utils/type-detection';
 
 import './index.css';
@@ -20,7 +21,7 @@ const SuggestionDetailPanel = ({
   const [isSaving, setIsSaving] = useState(false);
 
   const title = useMemo(
-    () => suggestionDetail?.action?.suggestion_title || suggestionDetail?.action?.result || '',
+    () => getSuggestionTitle(suggestionDetail?.action) || suggestionDetail?.action?.result || '',
     [suggestionDetail?.action]
   );
   const isEdit = useMemo(() => suggestionDetail?.mode === 'edit', [suggestionDetail?.mode]);

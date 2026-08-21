@@ -87,7 +87,6 @@ class TableManager:
             {'column_name': 'tool_arguments', 'column_type': PropertyTypes.TEXT},
             {'column_name': 'observation', 'column_type': PropertyTypes.TEXT},
             {'column_name': 'suggestion_reason', 'column_type': PropertyTypes.TEXT},
-            {'column_name': 'suggestion_title', 'column_type': PropertyTypes.TEXT},
             {'column_name': 'suggestion_content', 'column_type': PropertyTypes.TEXT},
             {'column_name': 'suggestion_payload', 'column_type': PropertyTypes.TEXT},
             {'column_name': 'target_source_type', 'column_type': PropertyTypes.TEXT},
