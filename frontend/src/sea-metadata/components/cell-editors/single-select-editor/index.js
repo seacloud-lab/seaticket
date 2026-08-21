@@ -6,8 +6,6 @@ import context from '@/sea-metadata/context';
 import OptionEditorContainer from '@/components/option-editor/option-editor-container';
 import { gettext } from '@/constants';
 import { PREDEFINED_TICKET_COLUMN_NAME } from '@/project/main-panel/tickets/constants';
-// import Tag from '@/sea-metadata/components/tag';
-// import RemoveBtn from '@/sea-metadata/components/tag/remove-btn';
 
 import './index.css';
 
@@ -48,17 +46,6 @@ const SingleSelectEditor = forwardRef(({
     }
     return options.map(o => ({ ...o, name: o.display_name || o.name, value: o.id }));
   }, [row, column, columns]);
-
-  // const selectedOption = useMemo(() => {
-  //   if (!value) return null;
-  //   const option = options.find(o => o.value === value);
-  //   if (!option) return null;
-  //   return {
-  //     id: option.value,
-  //     name: option.name,
-  //     color: option.color,
-  //   };
-  // }, [options, value]);
 
   const style = useMemo(() => {
     return { width: 300, top: 0 };
@@ -123,15 +110,6 @@ const SingleSelectEditor = forwardRef(({
         onPressTab={onPressTab}
         isSearchEnabled={column.name !== PREDEFINED_TICKET_COLUMN_NAME.STATE}
       >
-        {/* {column.name !== PREDEFINED_TICKET_COLUMN_NAME.STATE ? ({ value: selectedOptionId, onChange }) => {
-          if (!selectedOptionId) return null;
-          if (!selectedOption || selectedOption.id !== selectedOptionId) return null;
-          return (
-            <Tag tag={selectedOption} className="m-0">
-              <RemoveBtn callback={() => onChange(selectedOptionId)} />
-            </Tag>
-          );
-        } : null} */}
       </OptionEditorContainer>
     </div>
   );
