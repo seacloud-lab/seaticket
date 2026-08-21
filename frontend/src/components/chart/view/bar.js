@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import * as d3 from 'd3';
 import { initChart, destroyChart, drawYaxis, addClipPath, checkTickOverlap } from '../utils';
 import { STYLE_COLORS, CHART_THEME_COLOR } from '../constants';
-import ToolTip from '../components/tooltip';
+import ChartTooltip from '../chart-tooltip';
 import { gettext } from '@/constants';
 
 import './index.css';
@@ -133,7 +133,7 @@ const Bar = ({ data }) => {
 
   return (
     <div className="chart-svg-wrapper flex-1" ref={ref}>
-      <ToolTip tooltipData={tooltipData} toolTipPosition={toolTipPosition} chart={chartRef.current} />
+      <ChartTooltip tooltipData={tooltipData} toolTipPosition={toolTipPosition} chart={chartRef.current} />
     </div>
   );
 };

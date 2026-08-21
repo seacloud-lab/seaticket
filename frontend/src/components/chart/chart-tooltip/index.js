@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './index.css';
 
-const ToolTip = ({ tooltipData, toolTipPosition, chart }) => {
+const ChartTooltip = ({ tooltipData, toolTipPosition, chart }) => {
   const tooltipRef = useRef(null);
   const [position, setPosition] = useState({ offsetX: -9999, offsetY: -9999 });
   const { title, items, titleMarkColor } = tooltipData || { title: '', items: [] };
@@ -65,4 +65,4 @@ const ToolTip = ({ tooltipData, toolTipPosition, chart }) => {
   );
 };
 
-export default ToolTip;
+export default ChartTooltip;
