@@ -1,8 +1,9 @@
 import React, { useCallback, useRef } from 'react';
-import { toaster, ProjectsTable, ClearTrashDialog } from '@/components';
+import { toaster, ProjectsTable } from '@/components';
 import { orgID, gettext, trashCleanExpireDays } from '@/constants';
 import { Utils } from '@/utils/utils';
 import orgAdminAPI from '../api';
+import CommonOperationConfirmationDialog from '@/components/dialog/common-operation-confirmation-dialog';
 
 const TrashProjects = ({ isShowTrashEmptyConfirmDialog, onTrashEmptyConfirmDialogToggle }) => {
   const ref = useRef(null);
@@ -43,9 +44,12 @@ const TrashProjects = ({ isShowTrashEmptyConfirmDialog, onTrashEmptyConfirmDialo
         </p>
       </ProjectsTable>
       {isShowTrashEmptyConfirmDialog && (
-        <ClearTrashDialog
-          onToggle={onTrashEmptyConfirmDialogToggle}
-          onClear={onClear}
+        <CommonOperationConfirmationDialog
+          title={gettext('Clean')}
+          message={gettext('Are you sure to clean the trash?')}
+          executeOperation={onClear}
+          confirmBtnText={gettext('Clean')}
+          toggleDialog={onTrashEmptyConfirmDialogToggle}
         />
       )}
     </>

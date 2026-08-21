@@ -7,7 +7,6 @@ import Logo from './logo';
 import {
   CommonOperationConfirmationDialog,
   RestoreProjectDialog,
-  ClearTrashDialog,
   LinkVerifiedDialog,
 } from './dialog';
 import EmptyTip from './empty-tip';
@@ -81,7 +80,6 @@ export {
   CommonOperationConfirmationDialog,
   ProjectsTable,
   RestoreProjectDialog,
-  ClearTrashDialog,
   EmptyTip,
   Icon, IconButton,
   Loading,
