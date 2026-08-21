@@ -4,18 +4,11 @@
   flex-shrink: 0;
   line-height: 14px;
   display: inline-flex;
-  cursor: pointer;
   position: absolute;
-  border-radius: 4px;
-}
-
-.sea-ticket-clear-icon-button.seaqa-icon-btn:hover {
-  background-color: #0000000A;
 }
 
 .seaqa-clear-icon-button.seaqa-icon-btn .seaqa-icon-svg {
   margin-top: 0;
-  color: var(--bs-icon-color);
   height: 12px;
   width: 12px;
 }
