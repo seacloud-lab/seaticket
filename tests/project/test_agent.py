@@ -6,6 +6,7 @@ from seahub.project.agent import (
     _build_items_map_from_actions,
     _calculate_log_status,
     _calculate_suggestions_status,
+    _query_run_status_counts,
     _reformat_actions,
     get_agent_log_runs,
     list_agent_logs,
@@ -73,29 +74,22 @@ def test_calculate_suggestions_status(statuses, expected):
 
 
 @pytest.mark.parametrize(
-    'runs, expected',
+    'summary_row, expected',
     [
-        ([], ''),
-        ([{'status': 'running', 'suggestions_status': 'pending'}], ''),
-        ([{'status': 'completed', 'suggestions_status': ''}], ''),
-        ([{'status': 'completed', 'suggestions_status': 'pending'}], ''),
-        ([{'status': 'completed', 'suggestions_status': 'failed'}], ''),
-        ([{'status': 'completed', 'suggestions_status': 'none'}], 'no_action_needed'),
-        ([{'status': 'completed', 'suggestions_status': 'resolved'}], 'done'),
-        (
-            [
-                {'status': 'completed', 'suggestions_status': 'none'},
-                {'status': 'completed', 'suggestions_status': 'resolved'},
-            ],
-            'done',
-        ),
+        ({'num_of_runs': 0, 'incomplete_runs': 0, 'open_suggestion_runs': 0, 'resolved_runs': 0}, ''),
+        ({'num_of_runs': 1, 'incomplete_runs': 1, 'open_suggestion_runs': 1, 'resolved_runs': 0}, ''),
+        ({'num_of_runs': 1, 'incomplete_runs': 0, 'open_suggestion_runs': 1, 'resolved_runs': 0}, ''),
+        ({'num_of_runs': 1, 'incomplete_runs': 1, 'open_suggestion_runs': 0, 'resolved_runs': 1}, ''),
+        ({'num_of_runs': 1, 'incomplete_runs': 0, 'open_suggestion_runs': 0, 'resolved_runs': 0}, 'no_action_needed'),
+        ({'num_of_runs': 1, 'incomplete_runs': 0, 'open_suggestion_runs': 0, 'resolved_runs': 1}, 'done'),
+        ({'num_of_runs': 2, 'incomplete_runs': 0, 'open_suggestion_runs': 0, 'resolved_runs': 1}, 'done'),
     ],
 )
-def test_calculate_log_status(runs, expected):
-    assert _calculate_log_status(runs) == expected
+def test_calculate_log_status(summary_row, expected):
+    assert _calculate_log_status(summary_row) == expected
 
 
-def test_list_agent_logs_aggregates_status_from_runs_table():
+def test_list_agent_logs_counts_run_statuses_per_owner():
     seadb_api = Mock()
     seadb_api.query_rows.side_effect = [
         {
@@ -126,20 +120,18 @@ def test_list_agent_logs_aggregates_status_from_runs_table():
         {
             'results': [
                 {
-                    '_pk': 101,
-                    'status': 'completed',
-                    'suggestions_status': 'none',
                     'owner_source_id': '1_9',
                     'owner_source_type': 'github_issue',
-                    'owner_source_title': 'Issue 9',
+                    'status': 'completed',
+                    'suggestions_status': 'none',
+                    'bucket_size': 1,
                 },
                 {
-                    '_pk': 202,
-                    'status': 'completed',
-                    'suggestions_status': 'resolved',
                     'owner_source_id': '42',
                     'owner_source_type': 'ticket',
-                    'owner_source_title': 'Ticket 42',
+                    'status': 'completed',
+                    'suggestions_status': 'resolved',
+                    'bucket_size': 1,
                 },
             ]
         },
@@ -156,8 +148,51 @@ def test_list_agent_logs_aggregates_status_from_runs_table():
     assert statuses[('github_issue', '1_9')] == 'no_action_needed'
     assert statuses[('ticket', '42')] == 'done'
 
+    assert seadb_api.query_rows.call_count == 2
+    summary_sql = seadb_api.query_rows.call_args_list[0].args[1]
+    assert 'GROUP BY `owner_source_id`, `owner_source_type` ' in summary_sql
+    count_sql = seadb_api.query_rows.call_args_list[1].args[1]
+    assert 'COUNT(*)' in count_sql
+    assert 'GROUP BY `owner_source_id`, `owner_source_type`, `status`, `suggestions_status`' in count_sql
+    assert seadb_api.query_rows.call_args_list[1].kwargs['params'] == [
+        '1_9', 'github_issue', '42', 'ticket',
+    ]
 
-def test_get_agent_log_runs_for_non_ticket_filters_suggestions_by_target():
+
+def test_query_run_status_counts_buckets_incomplete_runs_first():
+    seadb_api = Mock()
+    seadb_api.query_rows.return_value = {
+        'results': [
+            # An unfinished run with pending suggestions only counts as incomplete.
+            {
+                'owner_source_id': '42',
+                'owner_source_type': 'ticket',
+                'status': 'running',
+                'suggestions_status': 'pending',
+                'bucket_size': 2,
+            },
+            {
+                'owner_source_id': '42',
+                'owner_source_type': 'ticket',
+                'status': 'completed',
+                'suggestions_status': 'resolved',
+                'bucket_size': 3,
+            },
+        ]
+    }
+
+    counts = _query_run_status_counts(seadb_api, 'project-1', [
+        {'owner_source_id': '42', 'owner_source_type': 'ticket'},
+    ])
+
+    assert counts[('42', 'ticket')] == {
+        'incomplete_runs': 2,
+        'open_suggestion_runs': 0,
+        'resolved_runs': 3,
+    }
+
+
+def test_get_agent_log_runs_includes_all_suggestions_for_non_ticket():
     seadb_api = Mock()
     seadb_api.query_rows.side_effect = [
         {
@@ -208,17 +243,34 @@ def test_get_agent_log_runs_for_non_ticket_filters_suggestions_by_target():
                     'created_at': '2026-08-20T00:00:02+00:00',
                     'executed_at': '',
                 },
+                {
+                    '_pk': 3,
+                    'run_id': 7,
+                    'action_type': 'suggestion',
+                    'tool_name': 'suggest_notify_assignee',
+                    'result': 'notify',
+                    'status': 'pending',
+                    'suggestion_reason': '',
+                    'suggestion_content': '',
+                    'sources': '[]',
+                    'target_source_type': 'ticket',
+                    'target_source_id': '42',
+                    'target_source_title': 'Ticket 42',
+                    'created_at': '2026-08-20T00:00:03+00:00',
+                    'executed_at': '',
+                },
             ]
         },
     ]
 
     result = get_agent_log_runs(seadb_api, 'project-1', '1_9', 'github_issue')
     assert [run['id'] for run in result['runs']] == [7]
-    assert len(result['runs'][0]['actions']) == 2
+    # All actions are returned, including the suggestion targeting another source.
+    assert len(result['runs'][0]['actions']) == 3
 
     actions_sql = seadb_api.query_rows.call_args_list[1].args[1]
-    assert '`target_source_id` = ? AND `target_source_type` = ?' in actions_sql
-    assert seadb_api.query_rows.call_args_list[1].kwargs['params'] == ['1_9', 'github_issue']
+    assert 'target_source_id` = ?' not in actions_sql
+    assert seadb_api.query_rows.call_args_list[1].kwargs == {}
 
 
 def test_get_agent_log_runs_for_ticket_keeps_cross_source_suggestions():
@@ -279,7 +331,7 @@ def test_get_agent_log_runs_for_ticket_keeps_cross_source_suggestions():
     result = get_agent_log_runs(seadb_api, 'project-1', '42', 'ticket')
     assert [run['id'] for run in result['runs']] == [10]
     assert len(result['runs'][0]['actions']) == 2
-    assert seadb_api.query_rows.call_args_list[1].kwargs['params'] is None
+    assert seadb_api.query_rows.call_args_list[1].kwargs == {}
 
 
 def test_get_agent_log_runs_raises_when_owner_not_found():

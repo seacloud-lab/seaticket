@@ -86,54 +86,58 @@ def _reformat_actions(actions):
 
     return phases
 
+def _serialize_action(action, with_trace=False):
+    """Serialize one agent_actions row for API responses."""
+    data = {
+        'id': action['_pk'],
+        'type': action.get('action_type', ''),
+        'tool_name': action.get('tool_name', ''),
+        'result': action.get('result', ''),
+        'status': action.get('status', ''),
+        'suggestion_reason': action.get('suggestion_reason', ''),
+        'suggestion_content': action.get('suggestion_content', ''),
+        'suggestion_payload': action.get('suggestion_payload', ''),
+        'sources': _parse_action_sources(action.get('sources')),
+        'statistics': action.get('statistics', ''),
+        'created_at': action.get('created_at', ''),
+        'executed_at': action.get('executed_at', ''),
+        'target_source_type': action.get('target_source_type', ''),
+        'target_source_id': action.get('target_source_id', ''),
+        'target_source_title': action.get('target_source_title', ''),
+    }
+    if with_trace:
+        data.update({
+            'phase': action.get('phase', ''),
+            'prompt': action.get('prompt', ''),
+            'input': action.get('input', ''),
+            'step': action.get('step'),
+            'tool_arguments': action.get('tool_arguments', ''),
+            'observation': action.get('observation', ''),
+        })
+    return data
+
+
 def _build_items_map_from_actions(actions, owner_source=None):
     """Build grouped items by owner (non-suggestion) or target (suggestion)."""
     owner_source = owner_source or {}
     items_map = {}
     for action in actions:
-        if _is_suggestion_action(action):
-            source_type = action.get('target_source_type', '')
-            source_id = action.get('target_source_id', '')
-            source_title = action.get('target_source_title', '')
-            if not source_type or not source_id:
-                source_type = owner_source.get('source_type', '')
-                source_id = owner_source.get('source_id', '')
-                source_title = owner_source.get('source_title', '')
-        else:
-            source_type = owner_source.get('source_type', '')
-            source_id = owner_source.get('source_id', '')
-            source_title = owner_source.get('source_title', '')
-        key = (source_type, source_id)
+        source = owner_source
+        if _is_suggestion_action(action) and action.get('target_source_type') and action.get('target_source_id'):
+            source = {
+                'source_type': action.get('target_source_type', ''),
+                'source_id': action.get('target_source_id', ''),
+                'source_title': action.get('target_source_title', ''),
+            }
+        key = (source.get('source_type', ''), source.get('source_id', ''))
         if key not in items_map:
             items_map[key] = {
-                'source_type': source_type,
-                'source_id': source_id,
-                'source_title': source_title,
+                'source_type': key[0],
+                'source_id': key[1],
+                'source_title': source.get('source_title', ''),
                 'actions': [],
             }
-        action_data = {
-            'id': action['_pk'],
-            'type': action.get('action_type', ''),
-            'tool_name': action.get('tool_name', ''),
-            'phase': action.get('phase', ''),
-            'prompt': action.get('prompt', ''),
-            'input': action.get('input', ''),
-            'result': action.get('result', ''),
-            'status': action.get('status', ''),
-            'suggestion_reason': action.get('suggestion_reason', ''),
-            'suggestion_content': action.get('suggestion_content', ''),
-            'suggestion_payload': action.get('suggestion_payload', ''),
-            'sources': _parse_action_sources(action.get('sources')),
-            'statistics': action.get('statistics', ''),
-            'created_at': action.get('created_at', ''),
-            'executed_at': action.get('executed_at', ''),
-        }
-        action_data.update({
-            'step': action.get('step'),
-            'tool_arguments': action.get('tool_arguments', ''),
-            'observation': action.get('observation', ''),
-        })
-        items_map[key]['actions'].append(action_data)
+        items_map[key]['actions'].append(_serialize_action(action, with_trace=True))
 
     for item in items_map.values():
         item['actions'] = _reformat_actions(item['actions'])
@@ -189,146 +193,136 @@ def _parse_run_event(raw_event):
             raw_event = json.loads(raw_event)
         except Exception:
             return None
-    if isinstance(raw_event, list):
-        return raw_event[0] if raw_event else None
     return raw_event if isinstance(raw_event, dict) else None
 
-def _build_item_action(action):
-    return {
-        'id': action['_pk'],
-        'type': action.get('action_type', ''),
-        'tool_name': action.get('tool_name', ''),
-        'result': action.get('result'),
-        'status': action.get('status', ''),
-        'suggestion_reason': action.get('suggestion_reason'),
-        'suggestion_content': action.get('suggestion_content'),
-        'suggestion_payload': action.get('suggestion_payload'),
-        'sources': _parse_action_sources(action.get('sources')),
-        'statistics': action.get('statistics'),
-        'created_at': action.get('created_at'),
-        'executed_at': action.get('executed_at'),
-        'target_source_type': action.get('target_source_type', ''),
-        'target_source_id': action.get('target_source_id', ''),
-        'target_source_title': action.get('target_source_title', ''),
-    }
 
-
-VISIBLE_LOG_ACTION_TYPES = ('event', 'prelude', 'analysis', 'suggestion')
+VISIBLE_LOG_ACTION_TYPES = ('prelude', 'analysis', 'suggestion')
 SUGGESTION_ACTION_TYPE = 'suggestion'
+
 RUN_STATUS_COMPLETED = 'completed'
+
+ACTION_STATUS_PENDING = 'pending'
+ACTION_STATUS_EXECUTING = 'executing'
+ACTION_STATUS_FAILED = 'failed'
+ACTION_STATUS_CANCELLED = 'cancelled'
+
+SUGGESTIONS_STATUS_NONE = 'none'
+SUGGESTIONS_STATUS_PENDING = 'pending'
+SUGGESTIONS_STATUS_RESOLVED = 'resolved'
+SUGGESTIONS_STATUS_FAILED = 'failed'
+
 LOG_STATUS_DONE = 'done'
 LOG_STATUS_NO_ACTION_NEEDED = 'no_action_needed'
-
-
-def _identity_key(source_id='', source_type='', source_title=''):
-    normalized_title = '' if source_title in (None, '') else str(source_title)
-    return (
-        '' if source_id is None else str(source_id),
-        '' if source_type is None else str(source_type),
-        normalized_title,
-    )
-
-
-def _log_group_key(row):
-    return _identity_key(
-        row.get('owner_source_id', ''),
-        row.get('owner_source_type', ''),
-        row.get('owner_source_title', ''),
-    )
 
 
 def _is_suggestion_action(action):
     return action.get('action_type', '') == SUGGESTION_ACTION_TYPE
 
 
-def _is_ticket_source(source_type):
-    return source_type == ExtraSourceType.TICKET.value
-
-
-def _build_owner_identity_predicate(owner_source_id, owner_source_type, owner_source_title=None, with_title=False):
-    if not with_title:
-        return "`owner_source_id` = ? AND `owner_source_type` = ?", [owner_source_id, owner_source_type]
-    if owner_source_title not in (None, ''):
-        return (
-            "(`owner_source_id` = ? AND `owner_source_type` = ? AND `owner_source_title` = ?)",
-            [owner_source_id, owner_source_type, owner_source_title],
-        )
-    return (
-        "(`owner_source_id` = ? AND `owner_source_type` = ? "
-        "AND (`owner_source_title` IS NULL OR `owner_source_title` = ''))",
-        [owner_source_id, owner_source_type],
-    )
-
-
 def _query_owned_runs(seadb_api, project_uuid, owner_source_id, owner_source_type):
     runs_table = SchemaTables.AGENT_RUNS.table_name()
-    source_filter, source_params = _build_owner_identity_predicate(owner_source_id, owner_source_type)
     sql = (
         "SELECT `_pk`, `status`, `suggestions_status`, `started_at`, "
         "`finished_at`, `error_message`, `event`, "
         "`owner_source_type`, `owner_source_id`, `owner_source_title` "
         f"FROM `{runs_table}` "
-        f"WHERE {source_filter} "
+        "WHERE `owner_source_id` = ? AND `owner_source_type` = ? "
         "ORDER BY `_pk` ASC"
     )
-    result = seadb_api.query_rows(project_uuid, sql, params=source_params)
+    result = seadb_api.query_rows(project_uuid, sql, params=[owner_source_id, owner_source_type])
     return result.get('results', [])
-
-
-def _query_runs_by_log_owners(seadb_api, project_uuid, logs):
-    if not logs:
-        return {}
-
-    runs_table = SchemaTables.AGENT_RUNS.table_name()
-    source_filters = []
-    source_params = []
-    runs_by_log = {
-        _log_group_key(log): []
-        for log in logs
-    }
-
-    for log in logs:
-        source_filter, params = _build_owner_identity_predicate(
-            log.get('owner_source_id', ''),
-            log.get('owner_source_type', ''),
-            log.get('owner_source_title', ''),
-            with_title=True,
-        )
-        source_filters.append(source_filter)
-        source_params.extend(params)
-
-    if not source_filters:
-        return runs_by_log
-
-    sql = (
-        "SELECT `_pk`, `status`, `suggestions_status`, "
-        "`owner_source_id`, `owner_source_type`, `owner_source_title` "
-        f"FROM `{runs_table}` "
-        f"WHERE {' OR '.join(source_filters)} "
-        "LIMIT 0, 10000"
-    )
-    result = seadb_api.query_rows(project_uuid, sql, params=source_params)
-    for row in result.get('results', []):
-        key = _log_group_key(row)
-        if key in runs_by_log:
-            runs_by_log[key].append(row)
-    return runs_by_log
 
 
 def _query_log_summary_rows(seadb_api, project_uuid, page, per_page):
     offset = (page - 1) * per_page
     runs_table = SchemaTables.AGENT_RUNS.table_name()
     sql = (
-        "SELECT `owner_source_id`, `owner_source_type`, `owner_source_title`, "
+        "SELECT `owner_source_id`, `owner_source_type`, "
+        "MAX(`owner_source_title`) AS `owner_source_title`, "
         "COUNT(*) AS `num_of_runs`, "
         "MAX(`started_at`) AS `last_active_at` "
         f"FROM `{runs_table}` "
-        "GROUP BY `owner_source_id`, `owner_source_type`, `owner_source_title` "
+        "GROUP BY `owner_source_id`, `owner_source_type` "
         "ORDER BY `last_active_at` DESC, `owner_source_type` DESC "
         f"LIMIT {offset}, {per_page + 1}"
     )
     result = seadb_api.query_rows(project_uuid, sql)
     return result.get('results', [])
+
+
+def _query_run_status_counts(seadb_api, project_uuid, summary_rows):
+    """Count runs of the given owners bucketed by (status, suggestions_status).
+
+    SeaDB does not support conditional aggregation (SUM(CASE WHEN ...)), so the
+    counting is done here over one GROUP BY bucket query. Bucketing keeps the
+    returned row count independent of how many runs an owner has.
+
+    Example - two owners on the current page, five runs in total. Issue 1_9
+    has three runs (2 completed without suggestions, 1 completed with resolved
+    suggestions) and ticket 42 has two runs (1 still running with a pending
+    suggestion, 1 completed with a pending suggestion):
+
+        summary_rows = [
+            {'owner_source_id': '1_9', 'owner_source_type': 'github_issue'},
+            {'owner_source_id': '42',  'owner_source_type': 'ticket'},
+        ]
+
+    Bucket rows returned by SeaDB:
+
+        ('1_9', 'github_issue', 'completed', 'none',     bucket_size=2)
+        ('1_9', 'github_issue', 'completed', 'resolved', bucket_size=1)
+        ('42',  'ticket',       'running',   'pending',  bucket_size=1)
+        ('42',  'ticket',       'completed', 'pending',  bucket_size=1)
+
+    Aggregated result:
+
+        {
+            ('1_9', 'github_issue'): {'incomplete_runs': 0, 'open_suggestion_runs': 0, 'resolved_runs': 1},
+            ('42',  'ticket'):       {'incomplete_runs': 1, 'open_suggestion_runs': 1, 'resolved_runs': 0},
+        }
+
+    A run that is not completed counts only towards incomplete_runs: its
+    suggestions_status is not final yet, so it must not also count as an open
+    suggestion. The explicit LIMIT 0, 10000 is required because SeaDB silently
+    caps queries without LIMIT at 100 rows, and truncated buckets would corrupt
+    the log badge status.
+    """
+    counts = {}
+    owner_filters = []
+    params = []
+    for row in summary_rows:
+        key = (row.get('owner_source_id', ''), row.get('owner_source_type', ''))
+        counts[key] = {'incomplete_runs': 0, 'open_suggestion_runs': 0, 'resolved_runs': 0}
+        owner_filters.append("(`owner_source_id` = ? AND `owner_source_type` = ?)")
+        params.extend([key[0], key[1]])
+    if not owner_filters:
+        return counts
+
+    runs_table = SchemaTables.AGENT_RUNS.table_name()
+    sql = (
+        "SELECT `owner_source_id`, `owner_source_type`, `status`, `suggestions_status`, "
+        "COUNT(*) AS `bucket_size` "
+        f"FROM `{runs_table}` "
+        f"WHERE {' OR '.join(owner_filters)} "
+        "GROUP BY `owner_source_id`, `owner_source_type`, `status`, `suggestions_status` "
+        "LIMIT 0, 10000"
+    )
+    result = seadb_api.query_rows(project_uuid, sql, params=params)
+    for row in result.get('results', []):
+        key = (row.get('owner_source_id', ''), row.get('owner_source_type', ''))
+        if key not in counts:
+            continue
+        bucket_size = int(row.get('bucket_size') or 0)
+        run_status = str(row.get('status') or '').strip()
+        if run_status != RUN_STATUS_COMPLETED:
+            counts[key]['incomplete_runs'] += bucket_size
+            continue
+        suggestions_status = str(row.get('suggestions_status') or '').strip()
+        if suggestions_status in ('', SUGGESTIONS_STATUS_PENDING, SUGGESTIONS_STATUS_FAILED):
+            counts[key]['open_suggestion_runs'] += bucket_size
+        elif suggestions_status == SUGGESTIONS_STATUS_RESOLVED:
+            counts[key]['resolved_runs'] += bucket_size
+    return counts
 
 
 def _calculate_suggestions_status(suggestion_statuses):
@@ -338,12 +332,12 @@ def _calculate_suggestions_status(suggestion_statuses):
         if action_status is not None
     ]
     if not normalized_statuses:
-        return 'none'
-    if any(action_status in ('pending', 'executing') for action_status in normalized_statuses):
-        return 'pending'
-    if any(action_status == 'failed' for action_status in normalized_statuses):
-        return 'failed'
-    return 'resolved'
+        return SUGGESTIONS_STATUS_NONE
+    if any(action_status in (ACTION_STATUS_PENDING, ACTION_STATUS_EXECUTING) for action_status in normalized_statuses):
+        return SUGGESTIONS_STATUS_PENDING
+    if any(action_status == ACTION_STATUS_FAILED for action_status in normalized_statuses):
+        return SUGGESTIONS_STATUS_FAILED
+    return SUGGESTIONS_STATUS_RESOLVED
 
 
 def _refresh_run_suggestions_status(seadb_api, project_uuid, run_id):
@@ -353,7 +347,6 @@ def _refresh_run_suggestions_status(seadb_api, project_uuid, run_id):
         "SELECT `status` "
         f"FROM `{actions_table}` "
         f"WHERE `run_id` = {int(run_id)} AND `action_type` = '{SUGGESTION_ACTION_TYPE}' "
-        "LIMIT 0, 10000"
     )
     suggestion_rows = seadb_api.query_rows(project_uuid, suggestion_sql).get('results', [])
     suggestions_status = _calculate_suggestions_status([
@@ -380,20 +373,23 @@ def _refresh_run_suggestions_status_safely(seadb_api, project_uuid, run_id):
         return ''
 
 
-def _calculate_log_status(runs):
-    if not runs:
-        return ''
-    if any(run.get('status') != RUN_STATUS_COMPLETED for run in runs):
-        return ''
+def _calculate_log_status(summary_row):
+    """Derive the log badge status from the aggregate counters of one summary row.
 
-    suggestions_statuses = [str(run.get('suggestions_status', '') or '').strip() for run in runs]
-    if any(suggestions_status in ('', 'pending', 'failed') for suggestions_status in suggestions_statuses):
+    Returns '' (no badge) while any run is incomplete or still has open
+    suggestions, 'done' once all runs completed and at least one resolved its
+    suggestions, and 'no_action_needed' when all runs completed without any
+    resolved suggestion.
+    """
+    if not summary_row.get('num_of_runs'):
         return ''
-    if any(suggestions_status == 'resolved' for suggestions_status in suggestions_statuses):
+    if summary_row.get('incomplete_runs'):
+        return ''
+    if summary_row.get('open_suggestion_runs'):
+        return ''
+    if summary_row.get('resolved_runs'):
         return LOG_STATUS_DONE
-    if all(suggestions_status == 'none' for suggestions_status in suggestions_statuses):
-        return LOG_STATUS_NO_ACTION_NEEDED
-    return ''
+    return LOG_STATUS_NO_ACTION_NEEDED
 
 
 def list_agent_logs(seadb_api, project_uuid, page=1, per_page=20):
@@ -402,16 +398,22 @@ def list_agent_logs(seadb_api, project_uuid, page=1, per_page=20):
     if has_more:
         summary_rows = summary_rows[:per_page]
 
-    logs = [{
-        'owner_source_id': log.get('owner_source_id', ''),
-        'owner_source_type': log.get('owner_source_type', ''),
-        'owner_source_title': log.get('owner_source_title', ''),
-        'num_of_runs': log.get('num_of_runs', 0),
-        'last_active_at': log.get('last_active_at'),
-        'status': '',
-    } for log in summary_rows]
+    status_counts = _query_run_status_counts(seadb_api, project_uuid, summary_rows)
 
-    _populate_agent_log_statuses(seadb_api, project_uuid, logs)
+    logs = []
+    for row in summary_rows:
+        key = (row.get('owner_source_id', ''), row.get('owner_source_type', ''))
+        logs.append({
+            'owner_source_id': row.get('owner_source_id', ''),
+            'owner_source_type': row.get('owner_source_type', ''),
+            'owner_source_title': row.get('owner_source_title', ''),
+            'num_of_runs': row.get('num_of_runs', 0),
+            'last_active_at': row.get('last_active_at'),
+            'status': _calculate_log_status({
+                'num_of_runs': row.get('num_of_runs', 0),
+                **status_counts.get(key, {}),
+            }),
+        })
 
     return {
         'logs': logs,
@@ -419,37 +421,17 @@ def list_agent_logs(seadb_api, project_uuid, page=1, per_page=20):
     }
 
 
-def _populate_agent_log_statuses(seadb_api, project_uuid, logs):
-    if not logs:
-        return
-    runs_by_log = _query_runs_by_log_owners(seadb_api, project_uuid, logs)
-    for log in logs:
-        log['status'] = _calculate_log_status(runs_by_log.get(_log_group_key(log), []))
+def _query_log_actions_by_runs(seadb_api, project_uuid, run_ids):
+    """Fetch all visible actions of the given runs.
 
-
-def _query_log_actions_by_runs(
-    seadb_api,
-    project_uuid,
-    run_ids,
-    owner_source_id,
-    owner_source_type,
-    include_all_suggestions,
-):
+    Runs are strictly owned by the queried item, so every suggestion inside
+    them belongs to this log.
+    """
     if not run_ids:
         return []
     actions_table = SchemaTables.AGENT_ACTIONS.table_name()
     run_ids_str = ','.join(map(str, run_ids))
     action_types_str = ','.join(f"'{action_type}'" for action_type in VISIBLE_LOG_ACTION_TYPES)
-    action_params = None
-    visibility_filter = "`action_type` != 'suggestion'"
-    if include_all_suggestions:
-        visibility_filter = '1 = 1'
-    else:
-        visibility_filter = (
-            "`action_type` != 'suggestion' "
-            "OR (`target_source_id` = ? AND `target_source_type` = ?)"
-        )
-        action_params = [str(owner_source_id), owner_source_type]
 
     sql = (
         "SELECT `_pk`, `run_id`, `action_type`, `tool_name`, `result`, `status`, "
@@ -459,10 +441,9 @@ def _query_log_actions_by_runs(
         f"FROM `{actions_table}` "
         f"WHERE `run_id` IN ({run_ids_str}) "
         f"AND `action_type` IN ({action_types_str}) "
-        f"AND ({visibility_filter}) "
         "ORDER BY `run_id` ASC, `_pk` ASC"
     )
-    result = seadb_api.query_rows(project_uuid, sql, params=action_params)
+    result = seadb_api.query_rows(project_uuid, sql)
     return result.get('results', [])
 
 
@@ -472,14 +453,7 @@ def get_agent_log_runs(seadb_api, project_uuid, owner_source_id, owner_source_ty
         raise ValueError('Item not found.')
 
     run_ids = [int(run['_pk']) for run in runs if run.get('_pk') is not None]
-    actions = _query_log_actions_by_runs(
-        seadb_api,
-        project_uuid,
-        run_ids,
-        owner_source_id,
-        owner_source_type,
-        include_all_suggestions=_is_ticket_source(owner_source_type),
-    )
+    actions = _query_log_actions_by_runs(seadb_api, project_uuid, run_ids)
 
     actions_by_run = {}
     for action in actions:
@@ -487,7 +461,7 @@ def get_agent_log_runs(seadb_api, project_uuid, owner_source_id, owner_source_ty
         if run_id is None:
             continue
         run_id = int(run_id)
-        actions_by_run.setdefault(run_id, []).append(_build_item_action(action))
+        actions_by_run.setdefault(run_id, []).append(_serialize_action(action))
 
     return {
         'runs': [{
@@ -682,10 +656,10 @@ class AgentActionConfirmView(APIView):
             if action_run_id != int(run_id):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Action does not belong to the specified run.')
 
-            if action['status'] == 'executing':
+            if action['status'] == ACTION_STATUS_EXECUTING:
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Action is already executing.')
 
-            if action['status'] != 'pending':
+            if action['status'] != ACTION_STATUS_PENDING:
                 return api_error(status.HTTP_400_BAD_REQUEST, f'Action is not pending: {action["status"]}')
 
             _update_action_status_and_refresh_run(
@@ -693,7 +667,7 @@ class AgentActionConfirmView(APIView):
                 project_uuid,
                 action_run_id,
                 action_id,
-                {'status': 'executing'},
+                {'status': ACTION_STATUS_EXECUTING},
             )
 
             # 3. Dispatch to the appropriate handler based on source_type and tool_name
@@ -713,7 +687,7 @@ class AgentActionConfirmView(APIView):
                     project_uuid,
                     action_run_id,
                     action_id,
-                    {'status': 'pending'},
+                    {'status': ACTION_STATUS_PENDING},
                 )
                 return self._mapping_required_response(
                     seadb_api,
@@ -847,7 +821,7 @@ class AgentActionAutoExecuteView(APIView):
 
         # 2. Idempotency check: only process pending actions
         action_status = (action.get('status') or '').strip()
-        if action_status != 'pending':
+        if action_status != ACTION_STATUS_PENDING:
             return {
                 'action_id': action_id,
                 'success': True,
@@ -865,7 +839,7 @@ class AgentActionAutoExecuteView(APIView):
             return {
                 'action_id': action_id,
                 'success': False,
-                'status': 'pending',
+                'status': ACTION_STATUS_PENDING,
                 'result': 'Skipped: tool is not enabled for auto-confirm.',
                 'suggestions_status': _refresh_run_suggestions_status_safely(
                     seadb_api, project_uuid, run_id
@@ -878,7 +852,7 @@ class AgentActionAutoExecuteView(APIView):
             project_uuid,
             run_id,
             action_id,
-            {'status': 'executing'},
+            {'status': ACTION_STATUS_EXECUTING},
         )
 
         # 5. Execute action
@@ -900,7 +874,7 @@ class AgentActionAutoExecuteView(APIView):
                 run_id,
                 action_id,
                 {
-                    'status': 'pending',
+                    'status': ACTION_STATUS_PENDING,
                     'result': f'Mapping required for agent type: {e.agent_type}',
                     'executed_at': timezone.now().isoformat(),
                 },
@@ -908,7 +882,7 @@ class AgentActionAutoExecuteView(APIView):
             return {
                 'action_id': action_id,
                 'success': False,
-                'status': 'pending',
+                'status': ACTION_STATUS_PENDING,
                 'result': f'Mapping required for agent type: {e.agent_type}',
                 'suggestions_status': suggestions_status,
             }
@@ -981,7 +955,7 @@ class AgentActionUpdateView(APIView):
             if action.get('run_id') != int(run_id):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Action does not belong to the specified run.')
 
-            if action.get('status') != 'pending':
+            if action.get('status') != ACTION_STATUS_PENDING:
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Action is not pending.')
 
             update_data = [{
@@ -1038,7 +1012,7 @@ class AgentActionCancelView(APIView):
             if action_run_id != int(run_id):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Action does not belong to this run.')
 
-            if action.get('status') != 'pending':
+            if action.get('status') != ACTION_STATUS_PENDING:
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Action is not pending.')
 
             # Update action status to cancelled
@@ -1051,7 +1025,7 @@ class AgentActionCancelView(APIView):
                 action_run_id,
                 action_id,
                 {
-                    'status': 'cancelled',
+                    'status': ACTION_STATUS_CANCELLED,
                     'result': result_message,
                     'executed_at': now,
                 }
@@ -1059,7 +1033,7 @@ class AgentActionCancelView(APIView):
             return Response({
                 'success': True,
                 'action_id': action_id,
-                'status': 'cancelled',
+                'status': ACTION_STATUS_CANCELLED,
                 'result': result_message,
                 'suggestions_status': suggestions_status,
             })
