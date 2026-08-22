@@ -107,7 +107,10 @@
 
 .inbox-notification-item .notification-comment-content {
   max-width: calc(100% - 16px);
+  display: -webkit-box;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  white-space: normal;
 }

@@ -115,7 +115,7 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
           </div>
           <div className="notification-comment-info-wrapper d-flex">
             <span className="notification-content-quotes">"</span>
-            <div className="notification-comment-content">
+            <div className="notification-comment-content" title={commentContent}>
               {commentContent}
             </div>
             <span className="notification-content-quotes text-end">"</span>
@@ -134,7 +134,7 @@ const InboxNotificationItem = ({ noticeItem, onNoticeItemClick, toggleBar, setSh
           {reminderMessage && (
             <div className="notification-comment-info-wrapper d-flex">
               <span className="notification-content-quotes">"</span>
-              <div className="notification-comment-content">
+              <div className="notification-comment-content" title={reminderMessage}>
                 {reminderMessage}
               </div>
               <span className="notification-content-quotes text-end">"</span>
