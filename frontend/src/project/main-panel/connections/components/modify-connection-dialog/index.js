@@ -1,4 +1,5 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import copy from 'copy-to-clipboard';
 import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Alert, Row } from 'reactstrap';
@@ -6,10 +7,15 @@ import { gettext } from '@/constants';
 import { validateName } from '@/utils/validate';
 import { CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, EMAIL_SERVER_PROVIDER } from '../../constants';
 import { getVisibleEmailFields, getEmailProvider, populateEmailOAuthDefaults, sanitizeEmailConfigByProvider, getEmailOAuthCallbackUrl, isOAuthEmailProvider } from '../../utils';
-import { ModalHeader, toaster, Switch } from '@/components';
+import { ModalHeader, toaster, Switch, Loading, Icon } from '@/components';
 import ConnectionConfigEditor from '../connection-config-editor';
+import { connectionsAPI } from '@/project/api';
 
 import '../new-connection-dialog/index.css';
+
+const { server, projectUuid } = window.app.pageOptions;
+
+const getSelectedOptionValue = (value) => value?.value || value || '';
 
 const withEditReadonlyDefaults = (fields) => {
   return fields.map((field) => {
@@ -38,8 +44,19 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
   const [isSubmitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [showEmailAdvancedOptions, setShowEmailAdvancedOptions] = useState(false);
+  const [isFirebaseCrashOauthConnected, setFirebaseCrashOauthConnected] = useState(false);
+  const [isCheckingFirebaseCrashOauth, setCheckingFirebaseCrashOauth] = useState(false);
+  const [isWaitingFirebaseCrashOAuth, setWaitingFirebaseCrashOAuth] = useState(false);
+  const [firebaseCrashOauthError, setFirebaseCrashOauthError] = useState('');
+  const firebaseCrashOauthWindowRef = useRef(null);
+  const firebaseCrashOauthIntervalRef = useRef(null);
 
   const type = useMemo(() => record.type, [record]);
+  const isFirebaseCrash = useMemo(() => type === CONNECTION_TYPE.FIREBASE_CRASH, [type]);
+  const firebaseProjectId = useMemo(
+    () => getSelectedOptionValue(config.project_id),
+    [config.project_id]
+  );
   const columns = useMemo(() => {
     const _columns = CONNECTION_FIELDS[type] || [];
     if (type === CONNECTION_TYPE.GITHUB_ISSUE) return withEditReadonlyDefaults(_columns.filter(c => c.key !== 'repository'));
@@ -81,6 +98,7 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
 
   const isValid = useMemo(() => {
     if (!name.trim()) return false;
+    if (isFirebaseCrash && !isFirebaseCrashOauthConnected) return false;
     return customColumns.length > 0 ? customColumns.every(c => {
       if (c.type === CONNECTION_FIELD_TYPE.GROUP) {
         return c.children.every(child => {
@@ -91,7 +109,135 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
       if (c.is_required) return Boolean(config[c.key]);
       return true;
     }) : true;
-  }, [name, config, customColumns]);
+  }, [name, config, customColumns, isFirebaseCrash, isFirebaseCrashOauthConnected]);
+
+  const stopFirebaseCrashOAuthPolling = useCallback(() => {
+    if (firebaseCrashOauthIntervalRef.current) {
+      window.clearInterval(firebaseCrashOauthIntervalRef.current);
+      firebaseCrashOauthIntervalRef.current = null;
+    }
+  }, []);
+
+  const fetchFirebaseCrashOauthStatus = useCallback(() => {
+    setCheckingFirebaseCrashOauth(true);
+    return connectionsAPI.getFirebaseCrashOauthStatus(projectUuid).then(res => {
+      setFirebaseCrashOauthConnected(Boolean(res?.data?.connected));
+      setFirebaseCrashOauthError(res?.data?.oauth_error || '');
+    }).catch(() => {
+      setFirebaseCrashOauthConnected(false);
+      setFirebaseCrashOauthError(gettext('Failed to check Firebase Crashlytics authorization status.'));
+    }).finally(() => {
+      setCheckingFirebaseCrashOauth(false);
+    });
+  }, []);
+
+  const listFirebaseCrashProjects = useCallback(() => {
+    if (!isFirebaseCrashOauthConnected) {
+      return Promise.resolve({ data: { options: [] } });
+    }
+    return connectionsAPI.listFirebaseCrashProjects(projectUuid).then(res => {
+      const projects = res?.data?.projects || [];
+      return {
+        data: {
+          options: projects.map(project => ({
+            value: project.project_id,
+            project,
+            label: project.name === project.project_id
+              ? project.project_id
+              : `${project.name} (${project.project_id})`,
+            name: project.name,
+          })),
+        }
+      };
+    });
+  }, [isFirebaseCrashOauthConnected]);
+
+  const listFirebaseCrashDatasets = useCallback(() => {
+    if (!isFirebaseCrashOauthConnected || !firebaseProjectId) {
+      return Promise.resolve({ data: { options: [] } });
+    }
+    return connectionsAPI.listFirebaseCrashDatasets(projectUuid, firebaseProjectId).then(res => {
+      const datasets = res?.data?.datasets || [];
+      return {
+        data: {
+          options: datasets.map(dataset => ({
+            value: dataset.dataset_id,
+            dataset,
+            label: dataset.name === dataset.dataset_id
+              ? dataset.dataset_id
+              : `${dataset.name} (${dataset.dataset_id})`,
+            name: dataset.name,
+          })),
+        }
+      };
+    });
+  }, [firebaseProjectId, isFirebaseCrashOauthConnected]);
+
+  const handleConnectFirebaseCrash = useCallback(() => {
+    const next = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    const oauthUrl = `${server}/firebase-crash/oauth/?project_uuid=${projectUuid}&next=${encodeURIComponent(next)}`;
+    stopFirebaseCrashOAuthPolling();
+    if (firebaseCrashOauthWindowRef.current && !firebaseCrashOauthWindowRef.current.closed) {
+      firebaseCrashOauthWindowRef.current.close();
+    }
+    setFirebaseCrashOauthError('');
+    const oauthWindow = window.open(oauthUrl, 'firebase-crash-oauth', 'width=800,height=700');
+    if (!oauthWindow) {
+      setWaitingFirebaseCrashOAuth(false);
+      setFirebaseCrashOauthError(gettext('Unable to open the Google authorization window.'));
+      return;
+    }
+    firebaseCrashOauthWindowRef.current = oauthWindow;
+    setWaitingFirebaseCrashOAuth(true);
+    firebaseCrashOauthIntervalRef.current = window.setInterval(() => {
+      if (oauthWindow.closed) {
+        stopFirebaseCrashOAuthPolling();
+        firebaseCrashOauthWindowRef.current = null;
+        setWaitingFirebaseCrashOAuth(false);
+        setFirebaseCrashOauthError(gettext('Google authorization was cancelled or failed.'));
+        return;
+      }
+      connectionsAPI.getFirebaseCrashOauthStatus(projectUuid).then(res => {
+        const oauthStatus = res?.data || {};
+        if (oauthStatus.oauth_error) {
+          stopFirebaseCrashOAuthPolling();
+          setWaitingFirebaseCrashOAuth(false);
+          setFirebaseCrashOauthConnected(false);
+          setFirebaseCrashOauthError(oauthStatus.oauth_error);
+          if (!oauthWindow.closed) {
+            oauthWindow.close();
+          }
+          firebaseCrashOauthWindowRef.current = null;
+        } else if (oauthStatus.connected && !oauthStatus.oauth_pending) {
+          stopFirebaseCrashOAuthPolling();
+          setWaitingFirebaseCrashOAuth(false);
+          setFirebaseCrashOauthConnected(true);
+          setFirebaseCrashOauthError('');
+          if (!oauthWindow.closed) {
+            oauthWindow.close();
+          }
+          firebaseCrashOauthWindowRef.current = null;
+        }
+      }).catch(() => {
+        // Silently retry on next interval
+      });
+    }, 2000);
+  }, [stopFirebaseCrashOAuthPolling]);
+
+  useEffect(() => {
+    if (!isFirebaseCrash) return undefined;
+    fetchFirebaseCrashOauthStatus();
+    return undefined;
+  }, [isFirebaseCrash, fetchFirebaseCrashOauthStatus]);
+
+  useEffect(() => {
+    return () => {
+      stopFirebaseCrashOAuthPolling();
+      if (firebaseCrashOauthWindowRef.current && !firebaseCrashOauthWindowRef.current.closed) {
+        firebaseCrashOauthWindowRef.current.close();
+      }
+    };
+  }, [stopFirebaseCrashOAuthPolling]);
 
   const onNameChange = useCallback((event) => {
     const newValue = event.target.value;
@@ -111,9 +257,21 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
       return;
     }
 
+    if (isFirebaseCrash && key === 'project_id') {
+      const previousProjectId = getSelectedOptionValue(config.project_id);
+      const selectedProjectId = getSelectedOptionValue(value);
+      setConfig({
+        ...config,
+        [key]: value,
+        dataset_id: previousProjectId === selectedProjectId ? config.dataset_id : undefined,
+      });
+      setChanged(true);
+      return;
+    }
+
     setConfig({ ...config, [key]: value });
     setChanged(true);
-  }, [config]);
+  }, [config, isFirebaseCrash]);
 
   const handleSubmit = useCallback(() => {
     const { isValid, message } = validateName(name);
@@ -133,6 +291,10 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
           return [...acc, item];
         }
       }, []);
+    }
+    if (record.type === CONNECTION_TYPE.FIREBASE_CRASH) {
+      validConfig.project_id = getSelectedOptionValue(validConfig.project_id);
+      validConfig.dataset_id = getSelectedOptionValue(validConfig.dataset_id);
     }
     Object.keys(validConfig).forEach((key) => {
       const field = connectionFields.find(f => f.key === key);
@@ -169,18 +331,50 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
       );
     }
 
+    let api = null;
+    let row = { ...config };
+    let fieldColumn = column;
+    if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && key === 'project_id' && isFirebaseCrash) {
+      api = isFirebaseCrashOauthConnected ? listFirebaseCrashProjects : null;
+      fieldColumn = {
+        ...column,
+        readonly: !isFirebaseCrashOauthConnected,
+        placeholder: isFirebaseCrashOauthConnected
+          ? gettext('Select a Firebase project')
+          : gettext('Please connect Google first'),
+      };
+      row[key] = getSelectedOptionValue(row[key]);
+    }
+    if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && key === 'dataset_id' && isFirebaseCrash) {
+      api = isFirebaseCrashOauthConnected && firebaseProjectId ? listFirebaseCrashDatasets : null;
+      fieldColumn = {
+        ...column,
+        readonly: !isFirebaseCrashOauthConnected || !firebaseProjectId,
+        placeholder: !isFirebaseCrashOauthConnected
+          ? gettext('Please connect Google first')
+          : firebaseProjectId
+            ? gettext('Select a BigQuery dataset')
+            : gettext('Select a Firebase project first'),
+      };
+      row[key] = getSelectedOptionValue(row[key]);
+    }
+
     return (
       <ConnectionConfigEditor
         className={is_advanced_option ? 'seaqa-project-connection-advanced-options-field' : ''}
-        column={column}
+        column={fieldColumn}
+        api={api}
         key={key}
-        row={config}
-        readonly={isSubmitting || is_edit_readonly}
+        row={row}
+        readonly={isSubmitting || is_edit_readonly || fieldColumn.readonly}
         canModifyPassword={false}
         onChange={onConfigChange}
       />
     );
-  }, [config, isSubmitting, onConfigChange]);
+  }, [
+    config, isSubmitting, onConfigChange, isFirebaseCrash, isFirebaseCrashOauthConnected,
+    firebaseProjectId, listFirebaseCrashProjects, listFirebaseCrashDatasets,
+  ]);
 
   const onCopyCallbackUrl = useCallback(() => {
     copy(callbackUrl);
@@ -212,6 +406,33 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
           </FormGroup>
         )}
         {isOAuthEmail ? basicCustomColumns.slice(1, 4).map(renderConnectionField) : null}
+        {isFirebaseCrash && (
+          <FormGroup>
+            <Label>{gettext('Authorization')}</Label>
+            <div className="seaqa-project-jira-oauth">
+              <span className={classnames('jira-oauth-status', { connected: isFirebaseCrashOauthConnected })}>
+                <span className="jira-status-icon d-flex">
+                  <Icon symbol={isFirebaseCrashOauthConnected ? 'check-circle-filled' : 'close-circle-filled'} />
+                </span>
+                {isFirebaseCrashOauthConnected ? gettext('Connected') : gettext('Not connected')}
+              </span>
+              <Button
+                color={isFirebaseCrashOauthConnected ? 'secondary' : 'primary'}
+                disabled={isSubmitting || isCheckingFirebaseCrashOauth || isWaitingFirebaseCrashOAuth}
+                onClick={handleConnectFirebaseCrash}
+              >
+                {isFirebaseCrashOauthConnected ? gettext('Reconnect Google') : gettext('Connect Google')}
+              </Button>
+              {firebaseCrashOauthError && (<div className="text-danger">{firebaseCrashOauthError}</div>)}
+            </div>
+          </FormGroup>
+        )}
+        {isWaitingFirebaseCrashOAuth && (
+          <div className="seaqa-project-connection-oauth-pending">
+            <Loading />
+            <div className="mt-3">{gettext('Waiting for Google authorization to complete...')}</div>
+          </div>
+        )}
         {isMicrosoftEmailProvider && (
           <div className="seaqa-project-connection-advanced-options mb-3">
             <Switch

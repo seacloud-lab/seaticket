@@ -10,6 +10,7 @@ class ConnectionType(Enum):
     SITE = 'site'
     SEAFILE = 'seafile'
     LINEAR = 'linear'
+    FIREBASE_CRASH = 'firebase_crash'
 
 
 MAX_EMBEDDING_ANALYSIS_RECORDS = 100000

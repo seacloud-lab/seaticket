@@ -59,6 +59,18 @@ const Editor = ({ api, column, row, readonly, canModifyPassword = true, onChange
         />
       );
     }
+    case CONNECTION_FIELD_TYPE.LONG_TEXT: {
+      return (
+        <Input
+          type="textarea"
+          value={value}
+          placeholder={placeholder}
+          disabled={readonly}
+          rows={8}
+          onChange={(e) => onChange(key, e.target.value)}
+        />
+      );
+    }
 
     default: {
       return (

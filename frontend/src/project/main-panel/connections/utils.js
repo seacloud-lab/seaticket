@@ -180,6 +180,14 @@ const getDiscordOriginalPageUrl = (connection, row, columns) => {
   return `https://discord.com/channels/${guild_id}/${threadId}`;
 };
 
+const getFirebaseCrashOriginalPageUrl = (connection, row, columns) => {
+  const projectId = connection.config?.project_id;
+  const appId = getCellValueByColumn(row, getColumnByName(columns, 'app_id'));
+  const issueId = getCellValueByColumn(row, getColumnByName(columns, 'issue_id'));
+  if (!projectId || !appId || !issueId) return '';
+  return `https://console.firebase.google.com/project/${encodeURIComponent(projectId)}/crashlytics/app/${encodeURIComponent(appId)}/issues/${encodeURIComponent(issueId)}`;
+};
+
 export const getOriginalPageUrl = (connection, row, columns) => {
   if (!connection || !row || !columns) return '';
   switch (connection.type) {
@@ -213,6 +221,9 @@ export const getOriginalPageUrl = (connection, row, columns) => {
     }
     case CONNECTION_TYPE.DISCORD: {
       return getDiscordOriginalPageUrl(connection, row, columns);
+    }
+    case CONNECTION_TYPE.FIREBASE_CRASH: {
+      return getFirebaseCrashOriginalPageUrl(connection, row, columns);
     }
     default: {
       return '';
@@ -280,6 +291,7 @@ export const initConnectionResourceDetails = (type, record) => {
     })) : [];
     return [mainPost, ...initComments];
   }
+  if (type === CONNECTION_TYPE.FIREBASE_CRASH) return content || '';
 
 };
 
@@ -313,6 +325,9 @@ export const initConnectionStatus = (status = '') => {
 
 export const getTableName = (connection) => {
   if (!connection) return '';
+  if (connection.type === CONNECTION_TYPE.FIREBASE_CRASH) {
+    return `firebase_crash_issue_${connection.id}`;
+  }
   return `${connection.type}_${connection.id}`;
 };
 

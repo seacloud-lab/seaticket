@@ -24,6 +24,7 @@ CONNECTION_TYPE_TO_SCHEMA_TABLE = {
     ConnectionType.CONFLUENCE.value: SchemaTables.CONFLUENCE,
     ConnectionType.DISCORD.value: SchemaTables.DISCORD_THREADS,
     ConnectionType.JIRA_ISSUE.value: SchemaTables.JIRA_ISSUES,
+    ConnectionType.FIREBASE_CRASH.value: SchemaTables.FIREBASE_CRASH_ISSUES,
 }
 
 
@@ -929,6 +930,8 @@ def get_title_and_ai_summary_by_pks(seadb_api, project_uuid, source_type, pks, c
         table_name = SchemaTables.PORTAL_ISSUES.table_name()
     elif source_type == ConnectionType.JIRA_ISSUE.value:
         table_name = SchemaTables.JIRA_ISSUES.table_name(connection_id)
+    elif source_type == ConnectionType.FIREBASE_CRASH.value:
+        table_name = SchemaTables.FIREBASE_CRASH_ISSUES.table_name(connection_id)
 
     sql = f"SELECT `_pk`, `title`, `ai_summary` FROM `{table_name}` WHERE `_pk` IN ({','.join([str(pk) for pk in pks])})"
     results = {}
@@ -1067,6 +1070,8 @@ def get_connection_records_by_pks(seadb_api, project_uuid, connection_id, connec
         table_name = SchemaTables.LINEAR_ISSUES.table_name(connection_id)
     elif connection_type == ConnectionType.DISCORD.value:
         table_name = SchemaTables.DISCORD_THREADS.table_name(connection_id)
+    elif connection_type == ConnectionType.FIREBASE_CRASH.value:
+        table_name = SchemaTables.FIREBASE_CRASH_ISSUES.table_name(connection_id)
     else:
         return []
 
@@ -1126,6 +1131,33 @@ def list_discord_thread_record_details(seadb_api, project_uuid, connection_id, _
     return record, column_metadata, linked_ticket_title
 
 
+def get_firebase_crash_issue_by_pk(seadb_api, project_uuid, connection_id, _pk):
+    from seahub.tickets.ticket_utils import get_ticket_title
+    table_name = SchemaTables.FIREBASE_CRASH_ISSUES.table_name(connection_id)
+    sql = (
+        f"SELECT `_pk`, `issue_id`, `source_table`, `app_id`, `title`, `subtitle`, `content`, `error_type`, `platform`, "
+        f"`bundle_identifier`, `app_version`, `is_fatal`, `occurrence_count`, `affected_users`, "
+        f"`first_seen_time`, `last_seen_time`, `linked_ticket`, `outdated`, `ai_summary` "
+        f"FROM `{table_name}` WHERE _pk = {_pk}"
+    )
+    try:
+        res = seadb_api.query_rows(project_uuid, sql)
+        record = res.get('results', [])
+        record = record[0] if record else {}
+        column_metadata = res.get('metadata')
+        linked_ticket_title = get_ticket_title(seadb_api, project_uuid, record.get('linked_ticket'))
+    except Exception as e:
+        record = {}
+        column_metadata = []
+        linked_ticket_title = ''
+        logger.error(f'SeaDB query error for Firebase crash issue {table_name}: {e}')
+    return record, column_metadata, linked_ticket_title
+
+
+def list_firebase_crash_issue_record_details(seadb_api, project_uuid, connection_id, _pk):
+    return get_firebase_crash_issue_by_pk(seadb_api, project_uuid, connection_id, _pk)
+
+
 def get_connection_record_by_pk(seadb_api, project_uuid, connection_type, connection_id, _pk):
     if connection_type == ConnectionType.DISCOURSE_FORUM.value:
         record, columns, linked_ticket_title = get_discourse_topic_by_pk(seadb_api, project_uuid, connection_id, _pk)
@@ -1147,6 +1179,10 @@ def get_connection_record_by_pk(seadb_api, project_uuid, connection_type, connec
         record, columns, linked_ticket_title = get_discord_thread_by_pk(seadb_api, project_uuid, connection_id, _pk)
     elif connection_type == ConnectionType.JIRA_ISSUE.value:
         record, columns, linked_ticket_title = get_jira_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
+    elif connection_type == ConnectionType.FIREBASE_CRASH.value:
+        record, columns, linked_ticket_title = get_firebase_crash_issue_by_pk(
+            seadb_api, project_uuid, connection_id, _pk
+        )
     else:
         record = {}
         columns = []

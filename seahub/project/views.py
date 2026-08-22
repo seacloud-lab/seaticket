@@ -4,12 +4,13 @@ import json
 import base64
 import secrets
 import datetime
-from urllib.parse import urlencode, unquote
+from urllib.parse import urlencode, unquote, urlparse
 
 import requests
 
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 
 from seahub import settings
@@ -22,7 +23,8 @@ from seahub.utils import render_error
 from seahub.auth.decorators import login_required
 from seahub.settings import MEDIA_URL, LLM_MODELS, GITHUB_APP_NAME, ENABLE_GENERAL_TASK, THOUGHT_PROCESS_ENABLED, \
     LINEAR_CLIENT_ID, LINEAR_CLIENT_SECRET, LINEAR_REDIRECT_URL, DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_REDIRECT_URL, \
-    JIRA_CLIENT_ID, JIRA_CLIENT_SECRET, JIRA_REDIRECT_URL
+    JIRA_CLIENT_ID, JIRA_CLIENT_SECRET, JIRA_REDIRECT_URL, \
+    FIREBASE_CRASH_CLIENT_ID, FIREBASE_CRASH_CLIENT_SECRET, FIREBASE_CRASH_REDIRECT_URL
 from seahub.group.models import Group
 from seahub.constants import PERMISSION_READ
 from seahub.portal.utils import get_portal_settings
@@ -35,6 +37,21 @@ logger = logging.getLogger(__name__)
 
 
 OAUTH_TOKEN_EXPIRY_BUFFER_SECONDS = 60
+
+
+def _safe_oauth_return_to(request, return_to):
+    if not isinstance(return_to, str) or not return_to.startswith('/') or return_to.startswith('//'):
+        return '/'
+    parsed = urlparse(return_to)
+    if parsed.scheme or parsed.netloc:
+        return '/'
+    if not url_has_allowed_host_and_scheme(
+        return_to,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return '/'
+    return return_to
 
 
 def _calc_confluence_expires_at(expires_in):
@@ -517,6 +534,190 @@ def _calc_jira_expires_at(expires_in):
     except (TypeError, ValueError):
         expires_in = 3600
     return datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=max(expires_in - 60, 0))
+
+
+def _calc_firebase_crash_expires_at(expires_in):
+    try:
+        expires_in = int(expires_in or 3600)
+    except (TypeError, ValueError):
+        expires_in = 3600
+    return datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=max(expires_in - 60, 0))
+
+
+def _clear_firebase_crash_oauth_session(request, error=''):
+    request.session.pop('firebase_crash_oauth_state', None)
+    request.session.pop('firebase_crash_oauth_project_uuid', None)
+    request.session.pop('firebase_crash_oauth_return_to', None)
+    if error:
+        request.session['firebase_crash_oauth_error'] = error
+
+
+@login_required
+def firebase_crash_oauth(request):
+    return_to = _safe_oauth_return_to(request, request.GET.get('next') or '/')
+    project_uuid = request.GET.get('project_uuid', '')
+
+    if not project_uuid:
+        return render_error(request, _('Please install through the address provided by sea-ticket.'))
+
+    project = Projects.objects.get_project_by_uuid(project_uuid)
+    if not project:
+        return render_error(request, _('Please install through the address provided by sea-ticket.'))
+    workspace = project.workspace
+
+    username = request.user.username
+    if not check_project_admin_permission(username, workspace.owner):
+        return render_error(request, _('Permission denied.'))
+
+    if not FIREBASE_CRASH_CLIENT_ID or not FIREBASE_CRASH_CLIENT_SECRET or not FIREBASE_CRASH_REDIRECT_URL:
+        return render_error(request, _('Firebase Crashlytics OAuth settings are invalid.'))
+
+    state = secrets.token_urlsafe(24)
+    request.session.pop('firebase_crash_oauth_error', None)
+    request.session['firebase_crash_oauth_state'] = state
+    request.session['firebase_crash_oauth_project_uuid'] = project_uuid
+    request.session['firebase_crash_oauth_return_to'] = return_to
+
+    params = {
+        'client_id': FIREBASE_CRASH_CLIENT_ID,
+        'scope': ' '.join([
+            'https://www.googleapis.com/auth/firebase.readonly',
+            'https://www.googleapis.com/auth/bigquery',
+        ]),
+        'redirect_uri': FIREBASE_CRASH_REDIRECT_URL,
+        'state': state,
+        'response_type': 'code',
+        'access_type': 'offline',
+        'include_granted_scopes': 'true',
+        'prompt': 'consent',
+    }
+    return redirect('https://accounts.google.com/o/oauth2/v2/auth?' + urlencode(params))
+
+
+@login_required
+def firebase_crash_oauth_callback(request):
+    state = request.GET.get('state')
+
+    session_state = request.session.get('firebase_crash_oauth_state')
+    project_uuid = request.session.get('firebase_crash_oauth_project_uuid')
+    return_to = request.session.get('firebase_crash_oauth_return_to', '/')
+
+    if not state or state != session_state:
+        _clear_firebase_crash_oauth_session(
+            request, _('Google authorization was cancelled or failed.')
+        )
+        return render_error(request, _('Invalid Firebase Crashlytics OAuth state.'))
+
+    provider_error = request.GET.get('error')
+    if provider_error:
+        error_description = request.GET.get('error_description') or provider_error
+        logger.warning(
+            'Firebase Crashlytics OAuth provider returned an error: %s',
+            error_description,
+        )
+        _clear_firebase_crash_oauth_session(
+            request, _('Google authorization was cancelled or denied.')
+        )
+        return render_error(request, _('Google authorization was cancelled or denied.'))
+
+    code = request.GET.get('code')
+    if not code:
+        _clear_firebase_crash_oauth_session(
+            request, _('Google authorization was cancelled or failed.')
+        )
+        return render_error(request, _('Invalid Firebase Crashlytics OAuth response.'))
+
+    if not project_uuid:
+        _clear_firebase_crash_oauth_session(
+            request, _('Google authorization was cancelled or failed.')
+        )
+        return render_error(request, _('Please install through the address provided by sea-ticket.'))
+
+    project = Projects.objects.get_project_by_uuid(project_uuid)
+    if not project:
+        _clear_firebase_crash_oauth_session(
+            request, _('Google authorization was cancelled or failed.')
+        )
+        return render_error(request, _('Please install through the address provided by sea-ticket.'))
+    workspace = project.workspace
+
+    username = request.user.username
+    if not check_project_admin_permission(username, workspace.owner):
+        _clear_firebase_crash_oauth_session(
+            request, _('Google authorization was cancelled or failed.')
+        )
+        return render_error(request, _('Permission denied.'))
+
+    if not FIREBASE_CRASH_CLIENT_ID or not FIREBASE_CRASH_CLIENT_SECRET or not FIREBASE_CRASH_REDIRECT_URL:
+        _clear_firebase_crash_oauth_session(
+            request, _('Google authorization was cancelled or failed.')
+        )
+        return render_error(request, _('Firebase Crashlytics OAuth settings are invalid.'))
+
+    token_payload = {
+        'grant_type': 'authorization_code',
+        'client_id': FIREBASE_CRASH_CLIENT_ID,
+        'client_secret': FIREBASE_CRASH_CLIENT_SECRET,
+        'code': code,
+        'redirect_uri': FIREBASE_CRASH_REDIRECT_URL,
+    }
+    try:
+        resp = requests.post('https://oauth2.googleapis.com/token', data=token_payload, timeout=10)
+    except Exception as e:
+        logger.error('Firebase Crashlytics OAuth token request error: %s', e)
+        _clear_firebase_crash_oauth_session(
+            request, _('Failed to authorize Firebase Crashlytics.')
+        )
+        return render_error(request, _('Failed to authorize Firebase Crashlytics.'))
+
+    if resp.status_code != 200:
+        logger.error('Firebase Crashlytics OAuth token response invalid: status=%s', resp.status_code)
+        _clear_firebase_crash_oauth_session(
+            request, _('Failed to authorize Firebase Crashlytics.')
+        )
+        return render_error(request, _('Failed to authorize Firebase Crashlytics.'))
+
+    try:
+        token_json = resp.json()
+    except (TypeError, ValueError) as e:
+        logger.error('Firebase Crashlytics OAuth token response is not valid JSON: %s', e)
+        _clear_firebase_crash_oauth_session(
+            request, _('Failed to authorize Firebase Crashlytics.')
+        )
+        return render_error(request, _('Failed to authorize Firebase Crashlytics.'))
+    if not isinstance(token_json, dict):
+        logger.error(
+            'Firebase Crashlytics OAuth token response is not a JSON object: type=%s',
+            type(token_json).__name__,
+        )
+        _clear_firebase_crash_oauth_session(
+            request, _('Failed to authorize Firebase Crashlytics.')
+        )
+        return render_error(request, _('Failed to authorize Firebase Crashlytics.'))
+
+    access_token = token_json.get('access_token')
+    old_oauth = ProjectConnectionOauth.objects.get_by_project_uuid(
+        project_uuid, ConnectionType.FIREBASE_CRASH.value
+    )
+    refresh_token = token_json.get('refresh_token') or (old_oauth.refresh_token if old_oauth else None)
+    if not access_token or not refresh_token:
+        logger.error('Firebase Crashlytics OAuth token missing access/refresh token')
+        _clear_firebase_crash_oauth_session(
+            request, _('Failed to authorize Firebase Crashlytics.')
+        )
+        return render_error(request, _('Failed to authorize Firebase Crashlytics.'))
+
+    ProjectConnectionOauth.objects.upsert_token(
+        project_uuid,
+        ConnectionType.FIREBASE_CRASH.value,
+        access_token,
+        _calc_firebase_crash_expires_at(token_json.get('expires_in')),
+        refresh_token,
+    )
+
+    _clear_firebase_crash_oauth_session(request)
+
+    return redirect(_safe_oauth_return_to(request, return_to))
 
 
 @login_required

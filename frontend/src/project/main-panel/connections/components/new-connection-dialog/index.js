@@ -41,6 +41,8 @@ const initializeConfig = (newType) => {
   return defaultConfig;
 };
 
+const getSelectedOptionValue = (value) => value?.value || value || '';
+
 const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const availableConnectionTypes = useMemo(() => getAvailableConnectionTypes(enableGeneralTask), []);
   const [stepIndex, setStepIndex] = useState(0);
@@ -79,6 +81,12 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const [jiraProjectsVersion, setJiraProjectsVersion] = useState(0);
   const [isCheckingJiraOauth, setCheckingJiraOauth] = useState(false);
   const [jiraOauthError, setJiraOauthError] = useState('');
+  const [isWaitingFirebaseCrashOAuth, setWaitingFirebaseCrashOAuth] = useState(false);
+  const [isFirebaseCrashOauthConnected, setFirebaseCrashOauthConnected] = useState(false);
+  const [isCheckingFirebaseCrashOauth, setCheckingFirebaseCrashOauth] = useState(false);
+  const [firebaseCrashOauthError, setFirebaseCrashOauthError] = useState('');
+  const firebaseCrashOauthWindowRef = useRef(null);
+  const firebaseCrashOauthIntervalRef = useRef(null);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -121,6 +129,10 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const isConfluence = useMemo(() => type === CONNECTION_TYPE.CONFLUENCE, [type]);
   const isDiscord = useMemo(() => type === CONNECTION_TYPE.DISCORD, [type]);
   const isJira = useMemo(() => type === CONNECTION_TYPE.JIRA_ISSUE, [type]);
+  const isFirebaseCrash = useMemo(() => type === CONNECTION_TYPE.FIREBASE_CRASH, [type]);
+  const firebaseProjectId = useMemo(() => {
+    return getSelectedOptionValue(config.project_id);
+  }, [config.project_id]);
 
   const isMicrosoftEmailProvider = useMemo(() => {
     return isEmail && getEmailProvider(config) === EMAIL_SERVER_PROVIDER.MICROSOFT;
@@ -148,6 +160,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     if (isConfluence && !isConfluenceOauthConnected) return false;
     if (isDiscord && !config.guild_id) return false;
     if (isJira && !isJiraOauthConnected) return false;
+    if (isFirebaseCrash && !isFirebaseCrashOauthConnected) return false;
     return customColumns.length > 0 ? customColumns.every(c => {
       if (c.type === CONNECTION_FIELD_TYPE.GROUP) {
         return c.children.every(child => {
@@ -159,7 +172,11 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       return true;
     }) : true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [name, config, customColumns, isLinear, isLinearOauthConnected, isConfluence, isConfluenceOauthConnected, isDiscord]);
+  }, [
+    name, config, customColumns, isLinear, isLinearOauthConnected, isConfluence,
+    isConfluenceOauthConnected, isDiscord, isJira, isJiraOauthConnected,
+    isFirebaseCrash, isFirebaseCrashOauthConnected,
+  ]);
 
   useEffect(() => {
     const handleDiscordOAuthMessage = (event) => {
@@ -199,15 +216,26 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     }
   }, []);
 
+  const stopFirebaseCrashOAuthPolling = useCallback(() => {
+    if (firebaseCrashOauthIntervalRef.current) {
+      window.clearInterval(firebaseCrashOauthIntervalRef.current);
+      firebaseCrashOauthIntervalRef.current = null;
+    }
+  }, []);
+
   useEffect(() => {
     return () => {
       stopEmailOAuthPolling();
       stopConfluenceOAuthPolling();
+      stopFirebaseCrashOAuthPolling();
       if (confluenceOauthWindowRef.current && !confluenceOauthWindowRef.current.closed) {
         confluenceOauthWindowRef.current.close();
       }
+      if (firebaseCrashOauthWindowRef.current && !firebaseCrashOauthWindowRef.current.closed) {
+        firebaseCrashOauthWindowRef.current.close();
+      }
     };
-  }, [stopEmailOAuthPolling, stopConfluenceOAuthPolling]);
+  }, [stopEmailOAuthPolling, stopConfluenceOAuthPolling, stopFirebaseCrashOAuthPolling]);
 
   const onNameChange = useCallback((event) => {
     const newValue = event.target.value;
@@ -269,8 +297,19 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       return;
     }
 
+    if (isFirebaseCrash && key === 'project_id') {
+      const previousProjectId = getSelectedOptionValue(config.project_id);
+      const selectedProjectId = getSelectedOptionValue(value);
+      setConfig({
+        ...config,
+        [key]: value,
+        dataset_id: previousProjectId === selectedProjectId ? config.dataset_id : undefined,
+      });
+      return;
+    }
+
     setConfig({ ...config, [key]: value });
-  }, [config]);
+  }, [config, isFirebaseCrash]);
 
   const handleSubmit = useCallback(() => {
     setSubmitting(true);
@@ -354,12 +393,16 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         _config['project_name'] = project.project.name;
       }
     }
+    if (isFirebaseCrash) {
+      _config['project_id'] = getSelectedOptionValue(_config.project_id);
+      _config['dataset_id'] = getSelectedOptionValue(_config.dataset_id);
+    }
 
     onSubmit({ type, name: name.trim(), config: _config }, () => {
       setSubmitting(false);
     });
     return;
-  }, [name, type, config, isJira, isLinear, onSubmit, stopEmailOAuthPolling, isConfluence, isGithub, selectedSpaceKeys, isDiscord]);
+  }, [name, type, config, isJira, isLinear, onSubmit, stopEmailOAuthPolling, isConfluence, isGithub, selectedSpaceKeys, isDiscord, isFirebaseCrash]);
 
   const onCopyCallbackUrl = useCallback(() => {
     copy(callbackUrl);
@@ -570,6 +613,113 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   }, []);
 
   const listJiraSites = useCallback((signal) => {
+  const fetchFirebaseCrashOauthStatus = useCallback(() => {
+    setCheckingFirebaseCrashOauth(true);
+    return connectionsAPI.getFirebaseCrashOauthStatus(projectUuid).then(res => {
+      setFirebaseCrashOauthConnected(Boolean(res?.data?.connected));
+      setFirebaseCrashOauthError(res?.data?.oauth_error || '');
+    }).catch(() => {
+      setFirebaseCrashOauthConnected(false);
+      setFirebaseCrashOauthError(gettext('Failed to check Firebase Crashlytics authorization status.'));
+    }).finally(() => {
+      setCheckingFirebaseCrashOauth(false);
+    });
+  }, []);
+
+  const listFirebaseCrashProjects = useCallback(() => {
+    if (!isFirebaseCrashOauthConnected) {
+      return Promise.resolve({ data: { options: [] } });
+    }
+    return connectionsAPI.listFirebaseCrashProjects(projectUuid).then(res => {
+      const projects = res?.data?.projects || [];
+      return {
+        data: {
+          options: projects.map(project => ({
+            value: project.project_id,
+            project,
+            label: project.name === project.project_id
+              ? project.project_id
+              : `${project.name} (${project.project_id})`,
+            name: project.name,
+          })),
+        }
+      };
+    });
+  }, [isFirebaseCrashOauthConnected]);
+
+  const listFirebaseCrashDatasets = useCallback(() => {
+    if (!isFirebaseCrashOauthConnected || !firebaseProjectId) {
+      return Promise.resolve({ data: { options: [] } });
+    }
+    return connectionsAPI.listFirebaseCrashDatasets(projectUuid, firebaseProjectId).then(res => {
+      const datasets = res?.data?.datasets || [];
+      return {
+        data: {
+          options: datasets.map(dataset => ({
+            value: dataset.dataset_id,
+            dataset,
+            label: dataset.name === dataset.dataset_id
+              ? dataset.dataset_id
+              : `${dataset.name} (${dataset.dataset_id})`,
+            name: dataset.name,
+          })),
+        }
+      };
+    });
+  }, [firebaseProjectId, isFirebaseCrashOauthConnected]);
+
+  const handleConnectFirebaseCrash = useCallback(() => {
+    const next = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    const oauthUrl = `${server}/firebase-crash/oauth/?project_uuid=${projectUuid}&next=${encodeURIComponent(next)}`;
+    stopFirebaseCrashOAuthPolling();
+    if (firebaseCrashOauthWindowRef.current && !firebaseCrashOauthWindowRef.current.closed) {
+      firebaseCrashOauthWindowRef.current.close();
+    }
+    setFirebaseCrashOauthError('');
+    const oauthWindow = window.open(oauthUrl, 'firebase-crash-oauth', 'width=800,height=700');
+    if (!oauthWindow) {
+      setWaitingFirebaseCrashOAuth(false);
+      setFirebaseCrashOauthError(gettext('Unable to open the Google authorization window.'));
+      return;
+    }
+    firebaseCrashOauthWindowRef.current = oauthWindow;
+    setWaitingFirebaseCrashOAuth(true);
+    firebaseCrashOauthIntervalRef.current = window.setInterval(() => {
+      if (oauthWindow.closed) {
+        stopFirebaseCrashOAuthPolling();
+        firebaseCrashOauthWindowRef.current = null;
+        setWaitingFirebaseCrashOAuth(false);
+        setFirebaseCrashOauthError(gettext('Google authorization was cancelled or failed.'));
+        return;
+      }
+      connectionsAPI.getFirebaseCrashOauthStatus(projectUuid).then(res => {
+        const oauthStatus = res?.data || {};
+        if (oauthStatus.oauth_error) {
+          stopFirebaseCrashOAuthPolling();
+          setWaitingFirebaseCrashOAuth(false);
+          setFirebaseCrashOauthConnected(false);
+          setFirebaseCrashOauthError(oauthStatus.oauth_error);
+          if (!oauthWindow.closed) {
+            oauthWindow.close();
+          }
+          firebaseCrashOauthWindowRef.current = null;
+        } else if (oauthStatus.connected && !oauthStatus.oauth_pending) {
+          stopFirebaseCrashOAuthPolling();
+          setWaitingFirebaseCrashOAuth(false);
+          setFirebaseCrashOauthConnected(true);
+          setFirebaseCrashOauthError('');
+          if (!oauthWindow.closed) {
+            oauthWindow.close();
+          }
+          firebaseCrashOauthWindowRef.current = null;
+        }
+      }).catch(() => {
+        // Silently retry on next interval
+      });
+    }, 2000);
+  }, [stopFirebaseCrashOAuthPolling]);
+
+  const listJiraSites = useCallback(() => {
     if (!isJiraOauthConnected) {
       return Promise.resolve({ data: { options: [] } });
     }
@@ -615,6 +765,11 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     if (!isJira) return;
     fetchJiraOauthStatus();
   }, [isJira, fetchJiraOauthStatus]);
+
+  useEffect(() => {
+    if (!isFirebaseCrash) return;
+    fetchFirebaseCrashOauthStatus();
+  }, [isFirebaseCrash, fetchFirebaseCrashOauthStatus]);
 
   // Reset project_key when site_id changes
   useEffect(() => {
@@ -725,6 +880,34 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         row[key] = row[key].value || row[key];
       }
     }
+    if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && column.key === 'project_id' && isFirebaseCrash) {
+      api = isFirebaseCrashOauthConnected ? listFirebaseCrashProjects : null;
+      fieldColumn = {
+        ...column,
+        readonly: !isFirebaseCrashOauthConnected,
+        placeholder: isFirebaseCrashOauthConnected
+          ? gettext('Select a Firebase project')
+          : gettext('Please connect Google first'),
+      };
+      if (row[key]) {
+        row[key] = getSelectedOptionValue(row[key]);
+      }
+    }
+    if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && column.key === 'dataset_id' && isFirebaseCrash) {
+      api = isFirebaseCrashOauthConnected && firebaseProjectId ? listFirebaseCrashDatasets : null;
+      fieldColumn = {
+        ...column,
+        readonly: !isFirebaseCrashOauthConnected || !firebaseProjectId,
+        placeholder: !isFirebaseCrashOauthConnected
+          ? gettext('Please connect Google first')
+          : firebaseProjectId
+            ? gettext('Select a BigQuery dataset')
+            : gettext('Select a Firebase project first'),
+      };
+      if (row[key]) {
+        row[key] = getSelectedOptionValue(row[key]);
+      }
+    }
 
     return (
       <ConnectionConfigEditor
@@ -741,6 +924,8 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     config, isJira, isSubmitting, isGithub, isConfluence, isConfluenceOauthConnected, isLinear,
     onConfigChange, isJiraOauthConnected, listGitHubRepositories, listConfluenceWorkspaces, listLinearTeams,
     isDiscord, listDiscordChannels, isLinearOauthConnected, listJiraProjects, listJiraSites,
+    isFirebaseCrash, isFirebaseCrashOauthConnected, listFirebaseCrashProjects,
+    listFirebaseCrashDatasets, firebaseProjectId,
   ]);
 
   return (
@@ -954,12 +1139,39 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
                 <div className="mt-3">{gettext('Waiting for Jira authorization to complete...')}</div>
               </div>
             )}
+            {isFirebaseCrash && (
+              <FormGroup>
+                <Label>{gettext('Authorization')}</Label>
+                <div className="seaqa-project-jira-oauth">
+                  <span className={classnames('jira-oauth-status', { connected: isFirebaseCrashOauthConnected })}>
+                    <span className="jira-status-icon d-flex">
+                      <Icon symbol={isFirebaseCrashOauthConnected ? 'check-circle-filled' : 'close-circle-filled'} />
+                    </span>
+                    {isFirebaseCrashOauthConnected ? gettext('Connected') : gettext('Not connected')}
+                  </span>
+                  <Button
+                    color={isFirebaseCrashOauthConnected ? 'secondary' : 'primary'}
+                    disabled={isSubmitting || isCheckingFirebaseCrashOauth || isWaitingFirebaseCrashOAuth}
+                    onClick={handleConnectFirebaseCrash}
+                  >
+                    {isFirebaseCrashOauthConnected ? gettext('Reconnect Google') : gettext('Connect Google')}
+                  </Button>
+                  {firebaseCrashOauthError && (<div className="text-danger">{firebaseCrashOauthError}</div>)}
+                </div>
+              </FormGroup>
+            )}
+            {isWaitingFirebaseCrashOAuth && (
+              <div className="seaqa-project-connection-oauth-pending">
+                <Loading />
+                <div className="mt-3">{gettext('Waiting for Google authorization to complete...')}</div>
+              </div>
+            )}
           </div>
         )}
       </ModalBody>
       <ConnectionDialogFooter
         stepIndex={stepIndex}
-        isSubmitDisabled={isSubmitting || isWaitingEmailOAuth || isWaitingConfluenceOAuth || isWaitingJiraOAuth || !isValid || !name}
+        isSubmitDisabled={isSubmitting || isWaitingEmailOAuth || isWaitingConfluenceOAuth || isWaitingJiraOAuth || isWaitingFirebaseCrashOAuth || !isValid || !name}
         onToggle={onToggle}
         setStepIndex={setStepIndex}
         onSubmit={handleSubmit}
