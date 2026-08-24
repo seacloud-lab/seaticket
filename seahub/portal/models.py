@@ -415,9 +415,9 @@ class PortalChatSessions(models.Model):
     session_uuid = models.CharField(max_length=36, unique=True, db_index=True)
     username = models.CharField(max_length=255, db_index=True)
     session_name = models.CharField(max_length=255)
-    input_tokens = models.BigIntegerField(default=0)
-    output_tokens = models.BigIntegerField(default=0)
-    credit_used = models.DecimalField(max_digits=20, decimal_places=6, default=0)
+    input_tokens = models.IntegerField(default=0)
+    output_tokens = models.IntegerField(default=0)
+    credit_used = models.FloatField(default=0)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
 
