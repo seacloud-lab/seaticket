@@ -65,9 +65,9 @@ const AllChat = () => {
               >
                 <td title={session.name}>{session.name}</td>
                 <td title={getUserName(session.username)}>{getUserName(session.username)}</td>
-                <td></td>
-                <td></td>
-                <td></td>
+                <td>{session.input_tokens ?? 0}</td>
+                <td>{session.output_tokens ?? 0}</td>
+                <td>{Number(session.credit_used ?? 0).toFixed(2)}</td>
                 <td>{dayjs(session.updated_at).format('YYYY-MM-DD HH:mm:ss')}</td>
               </tr>
             ))}
