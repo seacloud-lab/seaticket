@@ -1,8 +1,14 @@
+import json
+
 from django.utils import timezone
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 from rest_framework import status
 
+from seahub import settings
 from seahub.api2.utils import api_error
-from seahub.project.constants import EMAIL_OAUTH_SESSION_KEY, EMAIL_OAUTH_SESSION_TIMEOUT
+from seahub.project.constants import EMAIL_OAUTH_SESSION_KEY, EMAIL_OAUTH_SESSION_TIMEOUT, \
+    EMAIL_ACCOUNT_TYPE_PERSONAL, EMAIL_ACCOUNT_TYPE_SHARED, PERSONAL_EMAIL_OAUTH_CONFIGS
 from seahub.project.utils import is_oauth_email_provider
 
 
@@ -28,6 +34,26 @@ class CommonOAuthUtils:
 
 
 class EmailOAuthUtils(CommonOAuthUtils):
+    @staticmethod
+    def _get_personal_oauth_config(provider):
+        config = PERSONAL_EMAIL_OAUTH_CONFIGS.get(provider)
+        if not config:
+            return None
+
+        client_id = getattr(settings, config['client_id_setting'], '')
+        client_secret = getattr(settings, config['client_secret_setting'], '')
+        if not client_id or not client_secret:
+            return None
+
+        return {
+            'client_id': client_id,
+            'client_secret': client_secret,
+            'authority_url': config['authority_url'],
+            'token_url': config['token_url'],
+            'scopes': list(config['scopes']),
+            'authority_args': dict(config['authority_args']),
+        }
+
     @classmethod
     def _get_oauth_transactions(cls, request):
         transactions = super().get_oauth_session(EMAIL_OAUTH_SESSION_KEY, request)
@@ -70,8 +96,16 @@ class EmailOAuthUtils(CommonOAuthUtils):
 
     @classmethod
     def build_email_oauth_config(cls, request):
-        name = (request.data.get('name') or '').strip()
-        config = request.data.get('config')
+        data = getattr(request, 'data', None)
+        if data is None:
+            data = request.POST
+            if request.content_type == 'application/json':
+                try:
+                    data = json.loads(request.body)
+                except (TypeError, ValueError):
+                    data = {}
+        name = (data.get('name') or '').strip()
+        config = data.get('config')
         if not name:
             return None, api_error(status.HTTP_400_BAD_REQUEST, 'name invalid.')
         if not isinstance(config, dict):
@@ -81,6 +115,27 @@ class EmailOAuthUtils(CommonOAuthUtils):
         provider = config.get('server_provider')
         if not is_oauth_email_provider(provider):
             return None, api_error(status.HTTP_400_BAD_REQUEST, 'server_provider invalid.')
+
+        account_type = config.get('account_type') or EMAIL_ACCOUNT_TYPE_PERSONAL
+        if account_type not in (EMAIL_ACCOUNT_TYPE_PERSONAL, EMAIL_ACCOUNT_TYPE_SHARED):
+            return None, api_error(status.HTTP_400_BAD_REQUEST, 'account_type invalid.')
+
+        connection_config = {
+            'server_provider': provider,
+            'account_type': account_type,
+        }
+        if 'sync_years' in config:
+            connection_config['sync_years'] = config['sync_years']
+
+        if account_type == EMAIL_ACCOUNT_TYPE_PERSONAL:
+            oauth_config = cls._get_personal_oauth_config(provider)
+            if not oauth_config:
+                return None, api_error(status.HTTP_400_BAD_REQUEST, 'Email OAuth provider is not configured.')
+            return {
+                'name': name,
+                'config': connection_config,
+                'oauth_config': oauth_config,
+            }, None
 
         required_fields = ['client_id', 'client_secret', 'authority_url', 'token_url', 'scopes', 'authority_args']
         for key in required_fields:
@@ -96,8 +151,20 @@ class EmailOAuthUtils(CommonOAuthUtils):
         if not config.get('authority_args'):
             return None, api_error(status.HTTP_400_BAD_REQUEST, 'authority_args invalid.')
 
+        sender_email = (config.get('sender_email') or '').strip()
+        if not sender_email:
+            return None, api_error(status.HTTP_400_BAD_REQUEST, 'sender_email invalid.')
+        try:
+            validate_email(sender_email)
+        except ValidationError:
+            return None, api_error(status.HTTP_400_BAD_REQUEST, 'sender_email invalid.')
+
         config['server_provider'] = provider
+        config['account_type'] = account_type
+        config['sender_email'] = sender_email
+        config['sender_name'] = (config.get('sender_name') or '').strip()
         return {
             'name': name,
             'config': config,
+            'oauth_config': config,
         }, None

@@ -9,7 +9,7 @@ export const EMAIL_SERVER_PROVIDER = {
   MICROSOFT: 'Microsoft',
 };
 
-const EMAIL_GOOGLE_OAUTH_CONFIG = {
+export const DEFAULT_SHARED_GOOGLE_OAUTH_CONFIG = {
   AUTH_URL: 'https://accounts.google.com/o/oauth2/v2/auth',
   TOKEN_URL: 'https://oauth2.googleapis.com/token',
   AUTH_KWARGS: {
@@ -18,7 +18,7 @@ const EMAIL_GOOGLE_OAUTH_CONFIG = {
   }
 };
 
-const EMAIL_MICROSOFT_OAUTH_CONFIG = {
+export const DEFAULT_SHARED_MICROSOFT_OAUTH_CONFIG = {
   AUTH_URL: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
   TOKEN_URL: 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
   AUTH_KWARGS: {
@@ -27,54 +27,13 @@ const EMAIL_MICROSOFT_OAUTH_CONFIG = {
   }
 };
 
-export const EMAIL_SERVICE_TYPE_KEY_MAP = {
-  [EMAIL_SERVER_PROVIDER.GMAIL]: 'gmail',
-  [EMAIL_SERVER_PROVIDER.MICROSOFT]: 'microsoft',
+export const EMAIL_ACCOUNT_TYPE = {
+  PERSONAL: 'personal',
+  SHARED: 'shared',
 };
 
-export const EMAIL_SCOPES_MAP = {
-  gmail: [
-    'https://www.googleapis.com/auth/gmail.readonly',
-    'https://www.googleapis.com/auth/gmail.send',
-    'https://www.googleapis.com/auth/gmail.settings.basic',
-  ],
-  microsoft: [
-    'openid',
-    'profile',
-    'email',
-    'offline_access',
-    'User.Read',
-    'Mail.Read',
-    'Mail.Send',
-  ],
-};
-
-export const EMAIL_AUTH_KWARGS_MAP = {
-  gmail: EMAIL_GOOGLE_OAUTH_CONFIG.AUTH_KWARGS,
-  microsoft: EMAIL_MICROSOFT_OAUTH_CONFIG.AUTH_KWARGS,
-};
-
-export const EMAIL_AUTH_URLS_MAP = {
-  gmail: EMAIL_GOOGLE_OAUTH_CONFIG.AUTH_URL,
-  microsoft: EMAIL_MICROSOFT_OAUTH_CONFIG.AUTH_URL,
-};
-
-export const EMAIL_TOKEN_URLS_MAP = {
-  gmail: EMAIL_GOOGLE_OAUTH_CONFIG.TOKEN_URL,
-  microsoft: EMAIL_MICROSOFT_OAUTH_CONFIG.TOKEN_URL,
-};
-
-export const getDefaultEmailOAuthConfig = (provider) => {
-  const key = EMAIL_SERVICE_TYPE_KEY_MAP[provider];
-  if (!key) return {};
-
-  return {
-    authority_url: EMAIL_AUTH_URLS_MAP[key] || '',
-    token_url: EMAIL_TOKEN_URLS_MAP[key] || '',
-    scopes: EMAIL_SCOPES_MAP[key] || [],
-    authority_args: EMAIL_AUTH_KWARGS_MAP[key] || {},
-  };
-};
+// These defaults are reserved for the hidden shared-account flow. Personal
+// accounts always use the server-owned OAuth provider configuration.
 
 export const STEP = {
   TYPE: 'type',
@@ -153,13 +112,26 @@ export const CONNECTION_FIELDS = {
       default_value: EMAIL_SERVER_PROVIDER.GENERAL,
       tip: gettext('The authentication type for third-party account login via email service provider. For most email service providers, you can use \"General Email Service Provider\", which authenticates via username and password; for Gmail accounts, users can choose either \"General Email Service Provider\" or \"Gmail\", the latter authenticating the Google account using OAuth2 mode; for MS365 and Outlook email users, only the \"Microsoft (Microsoft 365 and Outlook)\" mode can be selected for account authentication via OAuth2.')
     }, {
+      key: 'account_type',
+      name: gettext('Account type'),
+      type: CONNECTION_FIELD_TYPE.SELECT,
+      is_required: true,
+      is_custom: true,
+      providers: [EMAIL_SERVER_PROVIDER.GMAIL, EMAIL_SERVER_PROVIDER.MICROSOFT],
+      default_value: EMAIL_ACCOUNT_TYPE.PERSONAL,
+      options: [
+        { value: EMAIL_ACCOUNT_TYPE.PERSONAL, label: gettext('Personal account') },
+        { value: EMAIL_ACCOUNT_TYPE.SHARED, label: gettext('Shared account') },
+      ],
+    }, {
       key: 'sender_name',
       name: gettext('"From" display name (optional)'),
       type: CONNECTION_FIELD_TYPE.TEXT,
       is_required: false,
       is_display: true,
       is_custom: true,
-      providers: [EMAIL_SERVER_PROVIDER.GENERAL],
+      providers: [EMAIL_SERVER_PROVIDER.GENERAL, EMAIL_SERVER_PROVIDER.GMAIL, EMAIL_SERVER_PROVIDER.MICROSOFT],
+      account_types: [EMAIL_ACCOUNT_TYPE.SHARED],
       tip: gettext('The display name is an arbitrary description prepended to an email address. When a display name is used, the email address is enclosed in angle brackets. Example: \'Bill Smith <william.smith@example.com>\''),
     }, {
       key: 'sender_email',
@@ -168,7 +140,8 @@ export const CONNECTION_FIELDS = {
       is_required: false,
       is_display: true,
       is_custom: true,
-      providers: [EMAIL_SERVER_PROVIDER.GENERAL],
+      providers: [EMAIL_SERVER_PROVIDER.GENERAL, EMAIL_SERVER_PROVIDER.GMAIL, EMAIL_SERVER_PROVIDER.MICROSOFT],
+      account_types: [EMAIL_ACCOUNT_TYPE.SHARED],
       tip: gettext('The address is the full email address of the sender. It need not be identical to the username of the account.')
     }, {
       key: 'client_id',
@@ -178,7 +151,8 @@ export const CONNECTION_FIELDS = {
       is_display: true,
       is_custom: true,
       is_edit_readonly: true,
-      providers: [EMAIL_SERVER_PROVIDER.MICROSOFT],
+      providers: [EMAIL_SERVER_PROVIDER.GMAIL, EMAIL_SERVER_PROVIDER.MICROSOFT],
+      account_types: [EMAIL_ACCOUNT_TYPE.SHARED],
     }, {
       key: 'client_secret',
       name: gettext('Client secret'),
@@ -187,7 +161,8 @@ export const CONNECTION_FIELDS = {
       is_display: true,
       is_custom: true,
       is_edit_readonly: true,
-      providers: [EMAIL_SERVER_PROVIDER.MICROSOFT],
+      providers: [EMAIL_SERVER_PROVIDER.GMAIL, EMAIL_SERVER_PROVIDER.MICROSOFT],
+      account_types: [EMAIL_ACCOUNT_TYPE.SHARED],
     }, {
       key: 'authority_url',
       name: gettext('Authority URL'),
@@ -196,7 +171,8 @@ export const CONNECTION_FIELDS = {
       is_display: true,
       is_custom: true,
       is_edit_readonly: true,
-      providers: [EMAIL_SERVER_PROVIDER.MICROSOFT],
+      providers: [EMAIL_SERVER_PROVIDER.GMAIL, EMAIL_SERVER_PROVIDER.MICROSOFT],
+      account_types: [EMAIL_ACCOUNT_TYPE.SHARED],
       is_advanced_option: true,
     }, {
       key: 'token_url',
@@ -206,7 +182,8 @@ export const CONNECTION_FIELDS = {
       is_display: true,
       is_custom: true,
       is_edit_readonly: true,
-      providers: [EMAIL_SERVER_PROVIDER.MICROSOFT],
+      providers: [EMAIL_SERVER_PROVIDER.GMAIL, EMAIL_SERVER_PROVIDER.MICROSOFT],
+      account_types: [EMAIL_ACCOUNT_TYPE.SHARED],
       is_advanced_option: true,
     }, {
       type: CONNECTION_FIELD_TYPE.GROUP,
@@ -286,7 +263,7 @@ export const CONNECTION_FIELDS = {
       type: CONNECTION_FIELD_TYPE.NUMBER,
       is_required: false,
       is_custom: true,
-      providers: [EMAIL_SERVER_PROVIDER.GENERAL, EMAIL_SERVER_PROVIDER.MICROSOFT],
+      providers: [EMAIL_SERVER_PROVIDER.GENERAL, EMAIL_SERVER_PROVIDER.GMAIL, EMAIL_SERVER_PROVIDER.MICROSOFT],
       placeholder: '5',
       default_value: 5,
     },

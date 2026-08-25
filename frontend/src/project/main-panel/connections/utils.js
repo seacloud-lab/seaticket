@@ -7,7 +7,7 @@ import {
   SUPPORT_LINK_EXISTING_TICKET_CONNECTION_TYPES, GENERAL_TASK_STATUS_NAME_MAP, GENERAL_TASK_SIZE_NAME_MAP,
   GENERAL_TASK_PRIORITY_NAME_MAP, CONNECTION_PREDEFINED_COLUMN_CONFIG, GITHUB_STATE_REASON_NAME_MAP,
   GITHUB_STATE_OPTION_NAME_MAP,
-  CONNECTION_FIELD_TYPE, EMAIL_SERVER_PROVIDER, getDefaultEmailOAuthConfig,
+  CONNECTION_FIELD_TYPE, EMAIL_SERVER_PROVIDER, EMAIL_ACCOUNT_TYPE,
 } from './constants';
 import { getColumnByName, getColumnOptions, getOption } from '@/sea-metadata/utils/column';
 import { getRowById } from '@/sea-metadata/utils/row';
@@ -16,23 +16,24 @@ import { isString } from '@/utils/type-detection';
 import { toaster } from '@/components';
 import { CellType } from '@/sea-metadata/constants';
 
-export const shouldDisplayEmailField = (field, provider, showAdvancedOptions) => {
+export const shouldDisplayEmailField = (field, provider, showAdvancedOptions, accountType = EMAIL_ACCOUNT_TYPE.PERSONAL) => {
   if (field.providers && !field.providers.includes(provider)) return false;
+  if (field.account_types && isOAuthEmailProvider(provider) && !field.account_types.includes(accountType)) return false;
   if (field.is_advanced_option && !showAdvancedOptions) return false;
   return true;
 };
 
-export const getVisibleEmailFields = (fields, provider, showAdvancedOptions) => {
+export const getVisibleEmailFields = (fields, provider, showAdvancedOptions, accountType) => {
   return fields.reduce((acc, field) => {
     if (field.type === CONNECTION_FIELD_TYPE.GROUP) {
       if (field.providers && !field.providers.includes(provider)) return acc;
-      const children = field.children.filter(child => shouldDisplayEmailField(child, provider, showAdvancedOptions));
+      const children = field.children.filter(child => shouldDisplayEmailField(child, provider, showAdvancedOptions, accountType));
       if (children.length === 0) return acc;
       acc.push({ ...field, children });
       return acc;
     }
 
-    if (!shouldDisplayEmailField(field, provider, showAdvancedOptions)) return acc;
+    if (!shouldDisplayEmailField(field, provider, showAdvancedOptions, accountType)) return acc;
     acc.push(field);
     return acc;
   }, []);
@@ -46,29 +47,12 @@ export const isOAuthEmailProvider = (provider) => {
   return provider === EMAIL_SERVER_PROVIDER.MICROSOFT || provider === EMAIL_SERVER_PROVIDER.GMAIL;
 };
 
-export const getEmailOAuthCallbackUrl = () => {
-  return `${server}/api/v1/connections/email/oauth/callback/`;
-};
-
-export const populateEmailOAuthDefaults = (config = {}, provider) => {
-  if (provider !== EMAIL_SERVER_PROVIDER.MICROSOFT && provider !== EMAIL_SERVER_PROVIDER.GMAIL) return config;
-
-  const nextConfig = { ...config };
-  const defaultOAuthConfig = getDefaultEmailOAuthConfig(provider);
-  ['authority_url', 'token_url', 'authority_args', 'scopes'].forEach((oauthKey) => {
-    const oldValue = nextConfig[oauthKey];
-    if (oldValue !== undefined && oldValue !== null && oldValue !== '') return;
-    nextConfig[oauthKey] = defaultOAuthConfig[oauthKey];
-  });
-
-  return nextConfig;
-};
-
 export const sanitizeEmailConfigByProvider = (config = {}) => {
   const provider = getEmailProvider(config);
   const nextConfig = { ...config, server_provider: provider };
 
-  if (provider === EMAIL_SERVER_PROVIDER.MICROSOFT) {
+  if (isOAuthEmailProvider(provider)) {
+    nextConfig.account_type = nextConfig.account_type || EMAIL_ACCOUNT_TYPE.PERSONAL;
     delete nextConfig.sender_name;
     delete nextConfig.sender_email;
     delete nextConfig.smtp_host;
@@ -77,9 +61,18 @@ export const sanitizeEmailConfigByProvider = (config = {}) => {
     delete nextConfig.imap_port;
     delete nextConfig.username;
     delete nextConfig.password;
-    return populateEmailOAuthDefaults(nextConfig, provider);
+    if (nextConfig.account_type === EMAIL_ACCOUNT_TYPE.PERSONAL) {
+      delete nextConfig.client_id;
+      delete nextConfig.client_secret;
+      delete nextConfig.authority_url;
+      delete nextConfig.token_url;
+      delete nextConfig.authority_args;
+      delete nextConfig.scopes;
+    }
+    return nextConfig;
   }
 
+  delete nextConfig.account_type;
   delete nextConfig.client_id;
   delete nextConfig.client_secret;
   delete nextConfig.authority_url;

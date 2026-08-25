@@ -38,8 +38,33 @@ EMAIL_OAUTH_SESSION_TIMEOUT = 10 * 60
 GENERAL_EMAIL_PROVIDER = 'general_email_provider'
 MICROSOFT_EMAIL_PROVIDER = 'Microsoft'
 GMAIL_EMAIL_PROVIDER = 'Gmail'
+EMAIL_ACCOUNT_TYPE_PERSONAL = 'personal'
+EMAIL_ACCOUNT_TYPE_SHARED = 'shared'
 
 OAUTH_EMAIL_PROVIDERS = [MICROSOFT_EMAIL_PROVIDER, GMAIL_EMAIL_PROVIDER]
+
+PERSONAL_EMAIL_OAUTH_CONFIGS = {
+    GMAIL_EMAIL_PROVIDER: {
+        'client_id_setting': 'GOOGLE_EMAIL_CLIENT_ID',
+        'client_secret_setting': 'GOOGLE_EMAIL_CLIENT_SECRET',
+        'authority_url': 'https://accounts.google.com/o/oauth2/v2/auth',
+        'token_url': 'https://oauth2.googleapis.com/token',
+        'scopes': [
+            'https://www.googleapis.com/auth/gmail.readonly',
+            'https://www.googleapis.com/auth/gmail.send',
+            'https://www.googleapis.com/auth/gmail.settings.basic',
+        ],
+        'authority_args': {'access_type': 'offline', 'prompt': 'consent'},
+    },
+    MICROSOFT_EMAIL_PROVIDER: {
+        'client_id_setting': 'MICROSOFT_EMAIL_CLIENT_ID',
+        'client_secret_setting': 'MICROSOFT_EMAIL_CLIENT_SECRET',
+        'authority_url': 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
+        'token_url': 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
+        'scopes': ['openid', 'profile', 'email', 'offline_access', 'User.Read', 'Mail.Read', 'Mail.Send'],
+        'authority_args': {'response_mode': 'query', 'prompt': 'consent'},
+    },
+}
 
 DEFAULT_AGENT_AUTO_CONFIRM = {
     'suggest_notify_assignee': True,

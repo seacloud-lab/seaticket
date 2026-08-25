@@ -8,16 +8,21 @@ from urllib.parse import urlencode, unquote
 
 import requests
 
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.utils.translation import gettext as _
+from django.utils import timezone
+from requests_oauthlib import OAuth2Session
 
 from seahub import settings
-from seahub.project.models import Workspaces, Projects, ProjectGithubAppInstallation, \
+from seahub.project.models import Workspaces, Projects, ProjectConnections, ProjectGithubAppInstallation, \
     ProjectConnectionOauth
-from seahub.project.utils import check_project_admin_permission, check_project_permission, update_github_connection_installation_id
+from seahub.project.utils import check_project_admin_permission, check_project_permission, update_github_connection_installation_id, \
+    get_email_oauth_callback_url, fetch_oauth_email_sender_info, EmailOAuthProfileError
 from seahub.project.linear_api import LinearAPI
 from seahub.project.jira_api import JiraAPI
+from seahub.project.oauth_utils import EmailOAuthUtils
+from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.utils import render_error
 from seahub.auth.decorators import login_required
 from seahub.settings import MEDIA_URL, LLM_MODELS, GITHUB_APP_NAME, ENABLE_GENERAL_TASK, THOUGHT_PROCESS_ENABLED, \
@@ -159,6 +164,167 @@ def github_installation_setup(request):
         update_github_connection_installation_id(project_uuid, installation_id)
 
     return redirect(return_url)
+
+
+@login_required
+def email_oauth(request, project_uuid):
+    if request.method != 'POST':
+        return JsonResponse({'error_msg': 'Method not allowed.'}, status=405)
+
+    if not request.user.permissions.can_add_project():
+        return JsonResponse({'error_msg': 'Permission denied.'}, status=403)
+
+    project = Projects.objects.get_project_by_uuid(project_uuid)
+    if not project:
+        return JsonResponse({'error_msg': f'Project {project_uuid} not found.'}, status=404)
+
+    workspace = project.workspace
+    username = request.user.username
+    if not check_project_admin_permission(username, workspace.owner):
+        return JsonResponse({'error_msg': 'Permission denied.'}, status=403)
+
+    oauth_payload, error_response = EmailOAuthUtils.build_email_oauth_config(request)
+    if error_response:
+        return error_response
+
+    name = oauth_payload['name']
+    config = oauth_payload['config']
+    oauth_config = oauth_payload['oauth_config']
+    if ProjectConnections.objects.filter(project_uuid=project.uuid, name=name, deleted=False).exists():
+        return JsonResponse({'error_msg': f'Connection name {name} already exists.'}, status=400)
+
+    callback_url = get_email_oauth_callback_url()
+    try:
+        session = OAuth2Session(
+            client_id=oauth_config.get('client_id'),
+            scope=oauth_config.get('scopes'),
+            redirect_uri=callback_url,
+        )
+        authorization_url, state = session.authorization_url(oauth_config.get('authority_url'))
+        for key, value in oauth_config.get('authority_args', {}).items():
+            authorization_url += f'&{key}={value}'
+    except Exception as e:
+        logger.exception(e)
+        return JsonResponse({'error_msg': 'Failed to fetch authorization url'}, status=500)
+
+    EmailOAuthUtils.set_oauth_session(request, state, {
+        'oauth_state': state,
+        'project_uuid': project_uuid,
+        'created_at': timezone.now().timestamp(),
+        'status': 'in-progress',
+        'name': name,
+        'config': config,
+        'oauth_config': oauth_config,
+        'connection_id': None,
+        'error_msg': '',
+    })
+    return JsonResponse({'auth_url': authorization_url, 'state': state})
+
+
+@login_required
+def email_oauth_callback(request):
+    request_state = request.GET.get('state')
+    if not request_state:
+        return render(request, 'error.html', {'error_msg': _('Request not found')})
+
+    oauth_data = EmailOAuthUtils.get_oauth_session(request, request_state)
+    if not oauth_data:
+        return render(request, 'error.html', {'error_msg': _('Request not found')})
+
+    if oauth_data.get('status') == 'success':
+        return render(request, 'authorization_success.html')
+
+    project_uuid = oauth_data.get('project_uuid')
+    if not project_uuid:
+        EmailOAuthUtils.set_oauth_failure(request, request_state, 'Project not found.')
+        return render(request, 'error.html', {'error_msg': _('Project not found.')})
+
+    project = Projects.objects.get_project_by_uuid(project_uuid)
+    if not project:
+        EmailOAuthUtils.set_oauth_failure(request, request_state, 'Project not found.')
+        return render(request, 'error.html', {'error_msg': _('Project not found.')})
+
+    workspace = project.workspace
+    username = request.user.username
+    if not check_project_admin_permission(username, workspace.owner):
+        EmailOAuthUtils.set_oauth_failure(request, request_state, 'Permission denied.')
+        return render(request, 'error.html', {'error_msg': _('Permission denied.')})
+
+    config = oauth_data.get('config') or {}
+    oauth_config = oauth_data.get('oauth_config') or {}
+    name = oauth_data.get('name')
+    if not all([config, oauth_config, name, oauth_data.get('oauth_state')]):
+        error_msg = 'Invalid request, please try again later'
+        EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
+        return render(request, 'error.html', {'error_msg': _(error_msg)})
+
+    if request_state != oauth_data.get('oauth_state'):
+        error_msg = 'OAuth request is expired or has been replaced by a newer authorization.'
+        EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
+        return render(request, 'error.html', {'error_msg': _(error_msg)})
+
+    callback_url = get_email_oauth_callback_url()
+    authorization_response_url = callback_url + '?' + request.META.get('QUERY_STRING', '')
+    try:
+        session = OAuth2Session(
+            client_id=oauth_config.get('client_id'),
+            scope=oauth_config.get('scopes'),
+            state=oauth_data.get('oauth_state'),
+            redirect_uri=callback_url,
+        )
+        token = session.fetch_token(
+            oauth_config.get('token_url'),
+            client_secret=oauth_config.get('client_secret'),
+            authorization_response=authorization_response_url,
+        )
+    except Exception as e:
+        logger.error(e)
+        error_msg = 'Failed to request token, please check your connection configurations'
+        EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
+        return render(request, 'error.html', {'error_msg': _(error_msg)})
+
+    refresh_token = token.get('refresh_token')
+    if not refresh_token:
+        error_msg = 'Failed to request token'
+        EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
+        return render(request, 'error.html', {'error_msg': _(error_msg)})
+
+    final_config = dict(config)
+    try:
+        if final_config.get('account_type') == 'personal':
+            final_config.update(fetch_oauth_email_sender_info(final_config, token.get('access_token')))
+    except EmailOAuthProfileError as e:
+        logger.error(e)
+        error_msg = 'Failed to fetch sender profile, please check your connection configurations'
+        EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
+        return render(request, 'error.html', {'error_msg': _(error_msg)})
+
+    try:
+        ProjectConnectionOauth.objects.upsert_token(
+            project_uuid,
+            ConnectionType.EMAIL.value,
+            token.get('access_token') or '',
+            token.get('expires_at') or timezone.now().timestamp(),
+            refresh_token,
+        )
+    except Exception as e:
+        logger.exception('Failed to persist Email OAuth tokens: %s', e)
+        error_msg = 'Failed to save OAuth authorization.'
+        EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
+        return render(request, 'error.html', {'error_msg': _(error_msg)})
+
+    oauth_data['status'] = 'authorized'
+    oauth_data['sender_name'] = final_config.get('sender_name', '')
+    oauth_data['sender_email'] = final_config.get('sender_email', '')
+    oauth_data.pop('oauth_config', None)
+    oauth_data['config'] = final_config
+    oauth_data['error_msg'] = ''
+    EmailOAuthUtils.set_oauth_session(request, request_state, oauth_data)
+
+    return render(request, 'authorization_success.html', {
+        'name': name,
+        'nickname': email2nickname(username),
+    })
 
 @login_required
 def linear_oauth(request):

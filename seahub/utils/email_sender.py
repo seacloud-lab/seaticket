@@ -6,6 +6,7 @@ import ssl
 import imaplib
 import re
 import json
+from urllib.parse import quote
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
@@ -338,15 +339,18 @@ class SMTPEmailSender(_EmailSenderBase):
 class _OAuthEmailSender(OAuthTokenClient, _EmailSenderBase):
     """Base class for OAuth-based email senders (Gmail, Microsoft)"""
 
-    def __init__(self, config):
-        super().__init__(config)
+    def __init__(self, config, oauth_token=None, oauth_config=None):
+        super().__init__(config, oauth_token, oauth_config)
         self.sender_name = config.get('sender_name', '')
         self.sender_email = config.get('sender_email')
+        self.account_type = config.get('account_type', 'personal')
 
         if not self._has_complete_oauth_config():
             logger.error('OAuth email config is invalid. client_id: %s, token_url: %s',
                         self.client_id, self.token_url)
             raise EmailConfigError('OAuth email configuration is incomplete')
+        if self.account_type == 'shared' and not self.sender_email:
+            raise EmailConfigError('Shared email sender address is required')
 
     def _do_send_email(self, msg_obj):
         """Subclasses implement this to send email via their API"""
@@ -388,14 +392,19 @@ class _OAuthEmailSender(OAuthTokenClient, _EmailSenderBase):
             'success': success,
             'message_id': message_id,
             'email_id': email_id,
-            'config_updated': self.config_updated,
+            'oauth_updated': self.oauth_updated,
+            'oauth_token': getattr(self, 'oauth_token', None),
         }
 
 
 class GmailSender(_OAuthEmailSender):
     """Gmail API email sender"""
 
-    EMAIL_SENDING_ENDPOINT = 'https://gmail.googleapis.com/upload/gmail/v1/users/me/messages/send?uploadType=multipart'
+    EMAIL_SENDING_ENDPOINT = 'https://gmail.googleapis.com/upload/gmail/v1/users/{principal}/messages/send?uploadType=multipart'
+
+    def _sending_endpoint(self):
+        principal = self.sender_email if self.account_type == 'shared' else 'me'
+        return self.EMAIL_SENDING_ENDPOINT.format(principal=quote(principal, safe=''))
 
     def _do_send_email(self, msg_obj):
         msg_string = msg_obj.as_string()
@@ -423,7 +432,7 @@ class GmailSender(_OAuthEmailSender):
         }
 
         return requests.post(
-            self.EMAIL_SENDING_ENDPOINT,
+            self._sending_endpoint(),
             data=request_body,
             headers=headers
         )
@@ -432,7 +441,11 @@ class GmailSender(_OAuthEmailSender):
 class MicrosoftSender(_OAuthEmailSender):
     """Microsoft API email sender"""
 
-    EMAIL_SENDING_ENDPOINT = 'https://graph.microsoft.com/v1.0/me/sendMail'
+    EMAIL_SENDING_ENDPOINT = 'https://graph.microsoft.com/v1.0/{principal}/sendMail'
+
+    def _sending_endpoint(self):
+        principal = f'users/{quote(self.sender_email, safe="")}' if self.account_type == 'shared' else 'me'
+        return self.EMAIL_SENDING_ENDPOINT.format(principal=principal)
 
     def _do_send_email(self, msg_obj):
         msg_bytes = msg_obj.as_bytes()
@@ -443,10 +456,10 @@ class MicrosoftSender(_OAuthEmailSender):
             'Content-Type': 'text/plain'
         }
 
-        return requests.post(self.EMAIL_SENDING_ENDPOINT, data=msg_base64, headers=headers)
+        return requests.post(self._sending_endpoint(), data=msg_base64, headers=headers)
 
 
-def get_email_sender_from_config(config):
+def get_email_sender_from_config(config, oauth_token=None, oauth_config=None):
     server_provider = config.get('server_provider', 'general_email_provider')
 
     if server_provider == 'general_email_provider':
@@ -478,14 +491,14 @@ def get_email_sender_from_config(config):
 
         )
     elif server_provider == 'Gmail':
-        return GmailSender(config)
+        return GmailSender(config, oauth_token, oauth_config)
     elif server_provider == 'Microsoft':
-        return MicrosoftSender(config)
+        return MicrosoftSender(config, oauth_token, oauth_config)
     else:
         logger.error('Invalid server_provider: %s', server_provider)
         raise EmailConfigError(f'Invalid server_provider: {server_provider}')
 
 
-def toggle_send_email(config, send_info):
-    sender = get_email_sender_from_config(config)
+def toggle_send_email(config, send_info, oauth_token=None, oauth_config=None):
+    sender = get_email_sender_from_config(config, oauth_token, oauth_config)
     return sender.send(send_info)

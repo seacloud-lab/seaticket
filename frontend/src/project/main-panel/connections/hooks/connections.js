@@ -129,7 +129,7 @@ export const ConnectionsProvider = ({
     toggleConnectionDialog(false);
   }, [toggleConnectionDialog]);
 
-  const createConnection = useCallback(({ type, name, config }, resetSubmittingState, isShowConnectionDialog = false, callback, preloadedConnection = null) => {
+  const createConnection = useCallback(({ type, name, config, oauthState }, resetSubmittingState, isShowConnectionDialog = false, callback, preloadedConnection = null) => {
     if (preloadedConnection) {
       const newConnections = [...connections, preloadedConnection];
       setConnections(newConnections);
@@ -139,7 +139,7 @@ export const ConnectionsProvider = ({
       return;
     }
 
-    connectionsAPI.createConnection(projectUuid, { type, name, config }).then(res => {
+    connectionsAPI.createConnection(projectUuid, { type, name, config, oauthState }).then(res => {
       const connection = new Connection(res.data.record);
       const newConnections = [...connections, connection];
       setConnections(newConnections);

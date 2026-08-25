@@ -1,12 +1,11 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
-import copy from 'copy-to-clipboard';
 import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Alert, Row } from 'reactstrap';
 import { gettext } from '@/constants';
 import { validateName } from '@/utils/validate';
 import { CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, EMAIL_SERVER_PROVIDER } from '../../constants';
-import { getVisibleEmailFields, getEmailProvider, populateEmailOAuthDefaults, sanitizeEmailConfigByProvider, getEmailOAuthCallbackUrl, isOAuthEmailProvider } from '../../utils';
-import { ModalHeader, toaster, Switch } from '@/components';
+import { getVisibleEmailFields, getEmailProvider, sanitizeEmailConfigByProvider, isOAuthEmailProvider } from '../../utils';
+import { ModalHeader } from '@/components';
 import ConnectionConfigEditor from '../connection-config-editor';
 
 import '../new-connection-dialog/index.css';
@@ -37,7 +36,7 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
   const [isChanged, setChanged] = useState(false);
   const [isSubmitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [showEmailAdvancedOptions, setShowEmailAdvancedOptions] = useState(false);
+  const [showEmailAdvancedOptions] = useState(false);
 
   const type = useMemo(() => record.type, [record]);
   const columns = useMemo(() => {
@@ -52,7 +51,7 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
         };
       });
     }
-    if (type === CONNECTION_TYPE.EMAIL) return withEditReadonlyDefaults(getVisibleEmailFields(_columns, getEmailProvider(config), showEmailAdvancedOptions));
+    if (type === CONNECTION_TYPE.EMAIL) return withEditReadonlyDefaults(getVisibleEmailFields(_columns, getEmailProvider(config), showEmailAdvancedOptions, config.account_type));
     return withEditReadonlyDefaults(_columns);
   }, [type, config, showEmailAdvancedOptions]);
 
@@ -61,10 +60,6 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
     return c.is_custom;
   }), [columns]);
 
-  const isMicrosoftEmailProvider = useMemo(() => {
-    return type === CONNECTION_TYPE.EMAIL && getEmailProvider(config) === EMAIL_SERVER_PROVIDER.MICROSOFT;
-  }, [type, config]);
-
   const basicCustomColumns = useMemo(() => {
     return customColumns.filter(column => !column.is_advanced_option);
   }, [customColumns]);
@@ -72,8 +67,6 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
   const advancedCustomColumns = useMemo(() => {
     return customColumns.filter(column => column.is_advanced_option);
   }, [customColumns]);
-
-  const callbackUrl = useMemo(() => getEmailOAuthCallbackUrl(), []);
 
   const isOAuthEmail = useMemo(() => {
     return type === CONNECTION_TYPE.EMAIL && isOAuthEmailProvider(getEmailProvider(config));
@@ -105,8 +98,11 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
 
     if (key === 'server_provider') {
       const nextProvider = value || EMAIL_SERVER_PROVIDER.GENERAL;
-      setConfig(populateEmailOAuthDefaults({ ...config, [key]: nextProvider }, nextProvider));
-      setShowEmailAdvancedOptions(false);
+      setConfig({
+        ...config,
+        [key]: nextProvider,
+        ...(isOAuthEmailProvider(nextProvider) ? { account_type: 'personal' } : { account_type: undefined }),
+      });
       setChanged(true);
       return;
     }
@@ -126,7 +122,7 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
     let connectionFields = CONNECTION_FIELDS[record.type] || [];
     if (record.type === CONNECTION_TYPE.EMAIL) {
       validConfig = sanitizeEmailConfigByProvider(validConfig);
-      connectionFields = getVisibleEmailFields(connectionFields, getEmailProvider(config), showEmailAdvancedOptions).reduce((acc, item) => {
+      connectionFields = getVisibleEmailFields(connectionFields, getEmailProvider(config), showEmailAdvancedOptions, config.account_type).reduce((acc, item) => {
         if (item.type === CONNECTION_FIELD_TYPE.GROUP) {
           return [...acc, ...item.children];
         } else {
@@ -182,11 +178,6 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
     );
   }, [config, isSubmitting, onConfigChange]);
 
-  const onCopyCallbackUrl = useCallback(() => {
-    copy(callbackUrl);
-    toaster.success(gettext('Connection URL has been copied to clipboard'), { duration: 2 });
-  }, [callbackUrl]);
-
   return (
     <Modal isOpen={true} toggle={onToggle} autoFocus={false} className="seaqa-project-connection-dialog" >
       <ModalHeader toggle={onToggle}>{gettext('Edit connection')}</ModalHeader>
@@ -198,30 +189,8 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
           </Label>
           <Input value={name} onChange={onNameChange} autoFocus disabled={isSubmitting} />
         </FormGroup>
-        {isOAuthEmail ? basicCustomColumns.slice(0, 1).map(renderConnectionField) : basicCustomColumns.map(renderConnectionField)}
-        {isOAuthEmail && (
-          <FormGroup>
-            <Label>{gettext('OAuth callback URL')}</Label>
-            <div className="seaqa-project-connection-oauth-tip">{gettext('Use this callback URL in your email provider OAuth app configuration. It is read-only and must match exactly.')}</div>
-            <div className="input-group">
-              <Input value={callbackUrl} disabled={true} />
-              <div className="input-group-append">
-                <Button type="button" onClick={onCopyCallbackUrl}>{gettext('Copy')}</Button>
-              </div>
-            </div>
-          </FormGroup>
-        )}
-        {isOAuthEmail ? basicCustomColumns.slice(1, 4).map(renderConnectionField) : null}
-        {isMicrosoftEmailProvider && (
-          <div className="seaqa-project-connection-advanced-options mb-3">
-            <Switch
-              checked={showEmailAdvancedOptions}
-              onChange={() => setShowEmailAdvancedOptions(!showEmailAdvancedOptions)}
-              placeholder={gettext('Advanced options')}
-              textPosition="right"
-            />
-          </div>
-        )}
+        {isOAuthEmail ? basicCustomColumns.filter(column => column.key !== 'account_type').map(renderConnectionField) : basicCustomColumns.map(renderConnectionField)}
+        {false && isOAuthEmail && basicCustomColumns.filter(column => column.key === 'account_type').map(renderConnectionField)}
         {advancedCustomColumns.map(renderConnectionField)}
         {errorMsg && (<Alert color="danger">{errorMsg}</Alert>)}
       </ModalBody>
