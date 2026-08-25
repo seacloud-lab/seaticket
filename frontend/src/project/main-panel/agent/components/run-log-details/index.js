@@ -144,8 +144,8 @@ const RunLogDetails = ({
       return executeConfirm();
     }
 
-    const sourceType = item?.source_type || action?.target_source_type;
-    const sourceId = item?.source_id || action?.target_source_id;
+    const sourceType = item?.source_type || action?.target_item_type;
+    const sourceId = item?.source_id || action?.target_item_id;
     if (sourceType !== 'ticket' || !sourceId) {
       return executeConfirm();
     }

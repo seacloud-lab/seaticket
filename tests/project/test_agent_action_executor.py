@@ -53,8 +53,8 @@ def test_execute_action_reads_target_source_fields():
         action={
             '_pk': 1,
             'tool_name': 'suggest_reply',
-            'target_source_type': 'github_issue',
-            'target_source_id': '1_2',
+            'target_item_type': 'github_issue',
+            'target_item_id': '1_2',
             'suggestion_content': 'reply content',
         },
         operator='user@example.com',
@@ -88,8 +88,8 @@ def test_execute_action_parses_suggestion_payload_json():
         action={
             '_pk': 1,
             'tool_name': 'suggest_assign_labels',
-            'target_source_type': 'github_issue',
-            'target_source_id': '1_2',
+            'target_item_type': 'github_issue',
+            'target_item_id': '1_2',
             'suggestion_payload': '{"suggested_labels": ["Bug"]}',
         },
         operator='user@example.com',

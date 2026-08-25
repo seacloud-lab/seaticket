@@ -304,8 +304,8 @@ class AgentActionExecutor:
     ):
         effective_operator = AUTO_EXECUTION_USER if auto_executed else operator
         tool_name = action.get('tool_name')
-        source_type = action.get('target_source_type', 'ticket')
-        source_id = action.get('target_source_id', '')
+        source_type = action.get('target_item_type', 'ticket')
+        source_id = action.get('target_item_id', '')
         suggestion_content = action.get('suggestion_content', '')
         suggestion_payload = self._parse_suggestion_payload(action.get('suggestion_payload'))
         action_id = action.get('_pk') or action.get('id') or ''

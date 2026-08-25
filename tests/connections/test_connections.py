@@ -514,8 +514,8 @@ class TestAgentActionConfirmView:
                 'run_id': 1,
                 'status': 'pending',
                 'tool_name': 'suggest_reply',
-                'target_source_type': 'email',
-                'target_source_id': f'{connection.id}_10',
+                'target_item_type': 'email',
+                'target_item_id': f'{connection.id}_10',
                 'result': '',
                 'suggestion_content': 'reply body',
             }]
@@ -577,8 +577,8 @@ class TestAgentActionConfirmView:
                 'run_id': 1,
                 'status': 'pending',
                 'tool_name': 'suggest_move_to_spam',
-                'target_source_type': 'email',
-                'target_source_id': f'{connection.id}_10',
+                'target_item_type': 'email',
+                'target_item_id': f'{connection.id}_10',
                 'result': '',
                 'suggestion_content': 'spam detection reason',
             }]
@@ -633,8 +633,8 @@ class TestAgentActionConfirmView:
                 'run_id': 1,
                 'status': 'pending',
                 'tool_name': 'suggest_move_to_spam',
-                'target_source_type': 'email',
-                'target_source_id': f'{connection.id}_10',
+                'target_item_type': 'email',
+                'target_item_id': f'{connection.id}_10',
                 'result': '',
                 'suggestion_content': 'spam detection reason',
             }]

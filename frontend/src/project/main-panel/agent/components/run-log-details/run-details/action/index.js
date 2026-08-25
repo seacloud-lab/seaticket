@@ -119,12 +119,12 @@ const ActionItem = React.memo(({ action, ...props }) => {
       case ACTION_TYPE.SUGGESTION: {
         if (!Array.isArray(children) || children.length === 0) return null;
         const firstChild = children[0];
-        const { target_source_id, target_source_type } = firstChild;
+        const { target_item_id, target_item_type } = firstChild;
         const isShowTitle = (
           children.length > 1 &&
           !children.every(child => (
-            child.target_source_id === target_source_id &&
-            child.target_source_type === target_source_type
+            child.target_item_id === target_item_id &&
+            child.target_item_type === target_item_type
           ))
         );
         return (

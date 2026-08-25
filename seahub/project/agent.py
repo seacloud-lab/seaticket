@@ -101,9 +101,9 @@ def _serialize_action(action, with_trace=False):
         'statistics': action.get('statistics', ''),
         'created_at': action.get('created_at', ''),
         'executed_at': action.get('executed_at', ''),
-        'target_source_type': action.get('target_source_type', ''),
-        'target_source_id': action.get('target_source_id', ''),
-        'target_source_title': action.get('target_source_title', ''),
+        'target_item_type': action.get('target_item_type', ''),
+        'target_item_id': action.get('target_item_id', ''),
+        'target_item_title': action.get('target_item_title', ''),
     }
     if with_trace:
         data.update({
@@ -123,11 +123,11 @@ def _build_items_map_from_actions(actions, owner_source=None):
     items_map = {}
     for action in actions:
         source = owner_source
-        if _is_suggestion_action(action) and action.get('target_source_type') and action.get('target_source_id'):
+        if _is_suggestion_action(action) and action.get('target_item_type') and action.get('target_item_id'):
             source = {
-                'source_type': action.get('target_source_type', ''),
-                'source_id': action.get('target_source_id', ''),
-                'source_title': action.get('target_source_title', ''),
+                'source_type': action.get('target_item_type', ''),
+                'source_id': action.get('target_item_id', ''),
+                'source_title': action.get('target_item_title', ''),
             }
         key = (source.get('source_type', ''), source.get('source_id', ''))
         if key not in items_map:
@@ -155,7 +155,7 @@ def get_agent_run_detail(seadb_api, project_uuid, run_id):
             raise ValueError('Run not found.')
         run = runs[0]
 
-        actions_sql = "SELECT `_pk`, `run_id`, `target_source_type`, `target_source_id`, `target_source_title`, " \
+        actions_sql = "SELECT `_pk`, `run_id`, `target_item_type`, `target_item_id`, `target_item_title`, " \
             f"`action_type`, `tool_name`, `result`, `status`, `suggestion_reason`, `suggestion_content`, `suggestion_payload`, " \
             f"`phase`, `prompt`, `input`, `statistics`, `created_at`, `executed_at`, `sources`, `step`, `tool_arguments`, `observation` FROM `{SchemaTables.AGENT_ACTIONS.table_name()}` " \
             f"WHERE `run_id` = {run_id} ORDER BY `created_at` ASC"
@@ -436,7 +436,7 @@ def _query_log_actions_by_runs(seadb_api, project_uuid, run_ids):
     sql = (
         "SELECT `_pk`, `run_id`, `action_type`, `tool_name`, `result`, `status`, "
         "`suggestion_reason`, `suggestion_content`, `suggestion_payload`, `sources`, "
-        "`target_source_type`, `target_source_id`, `target_source_title`, "
+        "`target_item_type`, `target_item_id`, `target_item_title`, "
         "`created_at`, `executed_at` "
         f"FROM `{actions_table}` "
         f"WHERE `run_id` IN ({run_ids_str}) "
@@ -641,7 +641,7 @@ class AgentActionConfirmView(APIView):
             seadb_api = SeaDBAPI()
 
             # 1. Get action details from SeaDB
-            sql = "SELECT `_pk`, `run_id`, `status`, `tool_name`, `target_source_type`, `target_source_id`, `suggestion_content`, `suggestion_payload` " \
+            sql = "SELECT `_pk`, `run_id`, `status`, `tool_name`, `target_item_type`, `target_item_id`, `suggestion_content`, `suggestion_payload` " \
                 f"FROM `{SchemaTables.AGENT_ACTIONS.table_name()}` WHERE `_pk` = {action_id}"
             result = seadb_api.query_rows(project_uuid, sql)
             actions = result.get('results', [])
@@ -802,7 +802,7 @@ class AgentActionAutoExecuteView(APIView):
         """
         # 1. Get action details
         sql = (
-            "SELECT `_pk`, `run_id`, `status`, `tool_name`, `target_source_type`, `target_source_id`, "
+            "SELECT `_pk`, `run_id`, `status`, `tool_name`, `target_item_type`, `target_item_id`, "
             "`suggestion_content`, `suggestion_payload` "
             f"FROM `{SchemaTables.AGENT_ACTIONS.table_name()}` WHERE `_pk` = {action_id} LIMIT 1"
         )

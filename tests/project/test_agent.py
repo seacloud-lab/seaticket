@@ -41,9 +41,9 @@ def test_build_items_map_groups_owner_and_target_fields():
             'phase': 'analysis',
             'result': 'suggestion result',
             'status': 'pending',
-            'target_source_type': 'github_issue',
-            'target_source_id': '1_9',
-            'target_source_title': 'Issue 9',
+            'target_item_type': 'github_issue',
+            'target_item_id': '1_9',
+            'target_item_title': 'Issue 9',
         },
     ]
 
@@ -221,9 +221,9 @@ def test_get_agent_log_runs_includes_all_suggestions_for_non_ticket():
                     'suggestion_reason': '',
                     'suggestion_content': '',
                     'sources': '[]',
-                    'target_source_type': '',
-                    'target_source_id': '',
-                    'target_source_title': '',
+                    'target_item_type': '',
+                    'target_item_id': '',
+                    'target_item_title': '',
                     'created_at': '2026-08-20T00:00:00+00:00',
                     'executed_at': '2026-08-20T00:00:01+00:00',
                 },
@@ -237,9 +237,9 @@ def test_get_agent_log_runs_includes_all_suggestions_for_non_ticket():
                     'suggestion_reason': '',
                     'suggestion_content': '',
                     'sources': '[]',
-                    'target_source_type': 'github_issue',
-                    'target_source_id': '1_9',
-                    'target_source_title': 'Issue 9',
+                    'target_item_type': 'github_issue',
+                    'target_item_id': '1_9',
+                    'target_item_title': 'Issue 9',
                     'created_at': '2026-08-20T00:00:02+00:00',
                     'executed_at': '',
                 },
@@ -253,9 +253,9 @@ def test_get_agent_log_runs_includes_all_suggestions_for_non_ticket():
                     'suggestion_reason': '',
                     'suggestion_content': '',
                     'sources': '[]',
-                    'target_source_type': 'ticket',
-                    'target_source_id': '42',
-                    'target_source_title': 'Ticket 42',
+                    'target_item_type': 'ticket',
+                    'target_item_id': '42',
+                    'target_item_title': 'Ticket 42',
                     'created_at': '2026-08-20T00:00:03+00:00',
                     'executed_at': '',
                 },
@@ -269,7 +269,7 @@ def test_get_agent_log_runs_includes_all_suggestions_for_non_ticket():
     assert len(result['runs'][0]['actions']) == 3
 
     actions_sql = seadb_api.query_rows.call_args_list[1].args[1]
-    assert 'target_source_id` = ?' not in actions_sql
+    assert 'target_item_id` = ?' not in actions_sql
     assert seadb_api.query_rows.call_args_list[1].kwargs == {}
 
 
@@ -302,9 +302,9 @@ def test_get_agent_log_runs_for_ticket_keeps_cross_source_suggestions():
                     'suggestion_reason': '',
                     'suggestion_content': '',
                     'sources': '[]',
-                    'target_source_type': '',
-                    'target_source_id': '',
-                    'target_source_title': '',
+                    'target_item_type': '',
+                    'target_item_id': '',
+                    'target_item_title': '',
                     'created_at': '2026-08-20T00:00:00+00:00',
                     'executed_at': '',
                 },
@@ -318,9 +318,9 @@ def test_get_agent_log_runs_for_ticket_keeps_cross_source_suggestions():
                     'suggestion_reason': '',
                     'suggestion_content': '',
                     'sources': '[]',
-                    'target_source_type': 'github_issue',
-                    'target_source_id': '1_9',
-                    'target_source_title': 'Issue 9',
+                    'target_item_type': 'github_issue',
+                    'target_item_id': '1_9',
+                    'target_item_title': 'Issue 9',
                     'created_at': '2026-08-20T00:00:01+00:00',
                     'executed_at': '',
                 },
