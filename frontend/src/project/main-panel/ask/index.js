@@ -25,13 +25,9 @@ const Main = ({ title, settings }) => {
   const isLoading = isAskPageLoading || isSessionsLoading;
 
   useEffect(() => {
-    skillsAPI.listSkills(projectUuid).then((res) => {
-      const skills = Array.isArray(res?.data?.skills) ? res.data.skills : [];
-      const enabledSkillNames = skills
-        .filter(skill => skill && skill.enabled)
-        .map(skill => skill.name)
-        .filter(name => typeof name === 'string' && name);
-      setSkillCommands(enabledSkillNames);
+    skillsAPI.listSkillCommands(projectUuid).then((res) => {
+      const commands = Array.isArray(res?.data?.commands) ? res.data.commands : [];
+      setSkillCommands(commands.filter(name => typeof name === 'string' && name));
     }).catch(() => {
       // Do not block chat if skills endpoint fails.
       setSkillCommands([]);

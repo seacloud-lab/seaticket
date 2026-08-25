@@ -24,6 +24,11 @@ class SkillsAPI {
     return this.req.get(url);
   }
 
+  listSkillCommands(projectUuid) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/skills/commands/';
+    return this.req.get(url);
+  }
+
   getSkill(projectUuid, skillName) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/skills/' + skillName + '/';
     return this.req.get(url);

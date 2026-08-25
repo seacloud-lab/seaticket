@@ -267,6 +267,49 @@ class SkillsAPIView(APIView):
         return Response({'skill': _serialize_custom_skill(row, include_details=True)}, status=status.HTTP_201_CREATED)
 
 
+class SkillCommandsAPIView(APIView):
+    """Member-readable list of enabled skill names for the chat command selector.
+
+    Deliberately exposes names only: skill content and metadata remain
+    restricted to project admins via the other endpoints.
+    """
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    @require_org_context
+    def get(self, request, project_uuid):
+        project, workspace = _load_project(project_uuid)
+        if not project:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
+
+        username = request.user.username
+        if not check_project_permission(username, workspace.owner):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        try:
+            seadb_api = SeaDBAPI()
+            ensure_skills_seadb_table(seadb_api, project_uuid)
+            custom_rows = _list_custom_skill_rows(seadb_api, project_uuid)
+            builtin_skills = _load_builtin_skills()
+        except Exception as e:
+            logger.exception(e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        disabled_builtin_set = set(_get_disabled_builtin_skills(project))
+        commands = [
+            skill['name']
+            for skill in builtin_skills
+            if skill.get('name') and skill['name'] not in disabled_builtin_set
+        ]
+        commands.extend([
+            row['name']
+            for row in custom_rows
+            if row.get('name') and row.get('enabled')
+        ])
+        return Response({'commands': commands})
+
+
 class SkillAPIView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
