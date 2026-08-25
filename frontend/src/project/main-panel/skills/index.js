@@ -3,7 +3,7 @@ import TopBar from '../top-bar';
 import { CenteredLoading, toaster } from '@/components';
 import { gettext } from '@/constants';
 import { Utils } from '@/utils/utils';
-import { chatSkillsAPI } from '@/project/api';
+import { skillsAPI } from '@/project/api';
 import { SkillsPageProvider, useSkillsPage } from './hooks/skills-page';
 import { SKILLS_PAGE_SLUG_ID } from './constants';
 import SkillsList from './view/skills-list';
@@ -21,7 +21,7 @@ const Content = ({ title }) => {
 
   const loadSkills = useCallback(() => {
     setLoading(true);
-    chatSkillsAPI.listChatSkills(projectUuid).then((res) => {
+    skillsAPI.listSkills(projectUuid).then((res) => {
       const nextSkills = Array.isArray(res?.data?.skills) ? res.data.skills : [];
       setSkills(nextSkills);
       setLoading(false);
@@ -61,7 +61,7 @@ const Content = ({ title }) => {
 
     const nextEnabled = !skill.enabled;
     setTogglingSkillNameMap((prev) => ({ ...prev, [skill.name]: true }));
-    chatSkillsAPI.updateChatSkill(projectUuid, skill.name, { enabled: nextEnabled }).then(() => {
+    skillsAPI.updateSkill(projectUuid, skill.name, { enabled: nextEnabled }).then(() => {
       setSkills((prevSkills) => prevSkills.map((item) => {
         if (item.name !== skill.name) return item;
         return { ...item, enabled: nextEnabled };

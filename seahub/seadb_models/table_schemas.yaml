@@ -561,20 +561,18 @@ tables:
     indexes:
     - - name
     table_name: tag
-  ChatSkillTable:
+  SkillsTable:
     columns:
       name:
         column_type: text
       description:
         column_type: text
+      metadata:
+        column_type: text
       content:
         column_type: text
         column_data:
           compressed: true
-      required_tools:
-        column_type: text
-      support_external_portal:
-        column_type: bool
       enabled:
         column_type: bool
       creator:
@@ -592,7 +590,7 @@ tables:
     - - enabled
     - - modified_time
     - - deleted
-    table_name: chat_skills
+    table_name: skills
   PortalIssuesTable:
     columns:
       title:

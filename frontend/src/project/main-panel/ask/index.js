@@ -8,7 +8,7 @@ import { PERMISSION_TYPES, gettext, siteRoot } from '@/constants';
 import { ASK_PAGE_SLUG_ID } from './constants';
 import { useConnections } from '../connections/hooks';
 import Documents from './documents';
-import { chatAPI, chatSkillsAPI } from '@/project/api';
+import { chatAPI, skillsAPI } from '@/project/api';
 import { BAR_TYPE } from '../../constants';
 
 import './index.css';
@@ -25,7 +25,7 @@ const Main = ({ title, settings }) => {
   const isLoading = isAskPageLoading || isSessionsLoading;
 
   useEffect(() => {
-    chatSkillsAPI.listChatSkills(projectUuid).then((res) => {
+    skillsAPI.listSkills(projectUuid).then((res) => {
       const skills = Array.isArray(res?.data?.skills) ? res.data.skills : [];
       const enabledSkillNames = skills
         .filter(skill => skill && skill.enabled)

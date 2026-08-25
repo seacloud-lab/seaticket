@@ -2,6 +2,7 @@
 import datetime
 import json
 import logging
+import re
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -17,13 +18,13 @@ from seahub.project.constants import merge_project_settings_defaults
 from seahub.project.utils import check_project_permission, check_project_admin_permission
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import SchemaTables
-from seahub.seadb_models.utils import ensure_chat_skills_seadb_table
-from seahub.utils.ai_client import list_builtin_skills, get_builtin_skill
+from seahub.seadb_models.utils import ensure_skills_seadb_table
+from seahub.utils.ai_client import list_builtin_skills, get_builtin_skill, parse_skill
 from seahub.utils.decorators import require_org_context
-from seahub.chat_skills.parser import parse_skill_markdown, SKILL_NAME_RE
 
 
 logger = logging.getLogger(__name__)
+SKILL_NAME_RE = re.compile(r'^[a-z0-9]+(?:-[a-z0-9]+)*$')
 
 
 def _coerce_bool(value, field_name='value'):
@@ -38,15 +39,22 @@ def _coerce_bool(value, field_name='value'):
     raise ValueError(f'{field_name} invalid.')
 
 
-def _encode_required_tools(required_tools):
-    return json.dumps(required_tools, separators=(',', ':'))
+def _encode_metadata(metadata):
+    metadata = metadata or {}
+    if not isinstance(metadata, dict):
+        raise ValueError('metadata invalid.')
+    return json.dumps(metadata, separators=(',', ':'), ensure_ascii=False)
 
 
-def _decode_required_tools(value):
-    tools = json.loads(value)
-    if not isinstance(tools, list) or not all(isinstance(tool, str) and tool for tool in tools):
-        raise ValueError('Stored required_tools invalid.')
-    return tools
+def _decode_metadata(value):
+    if isinstance(value, dict):
+        return value
+    if value in (None, ''):
+        return {}
+    metadata = json.loads(value)
+    if not isinstance(metadata, dict):
+        raise ValueError('Stored metadata invalid.')
+    return metadata
 
 
 def _load_project(project_uuid):
@@ -123,8 +131,7 @@ def _serialize_builtin_skill(skill, disabled_builtin_set, include_details=False)
     if include_details:
         item.update({
             'content': skill.get('content', ''),
-            'required_tools': skill.get('required_tools') or [],
-            'support_external_portal': bool(skill.get('support_external_portal', False)),
+            'metadata': skill.get('metadata') or {},
         })
     return item
 
@@ -145,14 +152,13 @@ def _serialize_custom_skill(row, include_details=False):
     if include_details:
         item.update({
             'content': row['content'],
-            'required_tools': _decode_required_tools(row['required_tools']),
-            'support_external_portal': row['support_external_portal'],
+            'metadata': _decode_metadata(row.get('metadata')),
         })
     return item
 
 
 def _list_custom_skill_rows(seadb_api, project_uuid):
-    table_name = SchemaTables.CHAT_SKILLS.table_name()
+    table_name = SchemaTables.SKILLS.table_name()
     sql = (
         f"SELECT `_pk`, `name`, `description`, `enabled`, `creator`, `last_modifier`, "
         f"`created_time`, `modified_time`, `deleted` FROM `{table_name}` "
@@ -162,10 +168,10 @@ def _list_custom_skill_rows(seadb_api, project_uuid):
 
 
 def _get_custom_skill_row_by_name(seadb_api, project_uuid, skill_name):
-    table_name = SchemaTables.CHAT_SKILLS.table_name()
+    table_name = SchemaTables.SKILLS.table_name()
     sql = (
-        f"SELECT `_pk`, `name`, `description`, `content`, `required_tools`, "
-        f"`support_external_portal`, `enabled`, `creator`, `last_modifier`, "
+        f"SELECT `_pk`, `name`, `description`, `content`, `metadata`, "
+        f"`enabled`, `creator`, `last_modifier`, "
         f"`created_time`, `modified_time`, `deleted` FROM `{table_name}` "
         f"WHERE `name` = '{skill_name}' AND (`deleted` = False OR `deleted` IS NULL) LIMIT 1"
     )
@@ -173,7 +179,7 @@ def _get_custom_skill_row_by_name(seadb_api, project_uuid, skill_name):
     return rows[0] if rows else None
 
 
-class ChatSkillsAPIView(APIView):
+class SkillsAPIView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
@@ -190,7 +196,7 @@ class ChatSkillsAPIView(APIView):
 
         try:
             seadb_api = SeaDBAPI()
-            ensure_chat_skills_seadb_table(seadb_api, project_uuid)
+            ensure_skills_seadb_table(seadb_api, project_uuid)
             custom_rows = _list_custom_skill_rows(seadb_api, project_uuid)
             builtin_skills = _load_builtin_skills()
         except Exception as e:
@@ -222,7 +228,7 @@ class ChatSkillsAPIView(APIView):
         enabled_raw = request.data.get('enabled', True)
         try:
             enabled = _coerce_bool(enabled_raw, 'enabled')
-            parsed = parse_skill_markdown(content)
+            parsed = parse_skill(content)
         except ValueError as e:
             return api_error(status.HTTP_400_BAD_REQUEST, str(e))
 
@@ -232,25 +238,24 @@ class ChatSkillsAPIView(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Custom skill name conflicts with a builtin skill.')
 
             seadb_api = SeaDBAPI()
-            ensure_chat_skills_seadb_table(seadb_api, project_uuid)
+            ensure_skills_seadb_table(seadb_api, project_uuid)
             if _get_custom_skill_row_by_name(seadb_api, project_uuid, parsed['name']):
                 return api_error(status.HTTP_409_CONFLICT, 'Skill already exists.')
 
             now = datetime.datetime.now(datetime.UTC).isoformat()
             row = {
-                SchemaTables.CHAT_SKILLS.column.name.name: parsed['name'],
-                SchemaTables.CHAT_SKILLS.column.description.name: parsed['description'],
-                SchemaTables.CHAT_SKILLS.column.content.name: parsed['content'],
-                SchemaTables.CHAT_SKILLS.column.required_tools.name: _encode_required_tools(parsed['required_tools']),
-                SchemaTables.CHAT_SKILLS.column.support_external_portal.name: parsed['support_external_portal'],
-                SchemaTables.CHAT_SKILLS.column.enabled.name: enabled,
-                SchemaTables.CHAT_SKILLS.column.creator.name: username,
-                SchemaTables.CHAT_SKILLS.column.last_modifier.name: username,
-                SchemaTables.CHAT_SKILLS.column.created_time.name: now,
-                SchemaTables.CHAT_SKILLS.column.modified_time.name: now,
-                SchemaTables.CHAT_SKILLS.column.deleted.name: False,
+                SchemaTables.SKILLS.column.name.name: parsed['name'],
+                SchemaTables.SKILLS.column.description.name: parsed['description'],
+                SchemaTables.SKILLS.column.content.name: str(content).strip(),
+                SchemaTables.SKILLS.column.metadata.name: _encode_metadata(parsed.get('metadata')),
+                SchemaTables.SKILLS.column.enabled.name: enabled,
+                SchemaTables.SKILLS.column.creator.name: username,
+                SchemaTables.SKILLS.column.last_modifier.name: username,
+                SchemaTables.SKILLS.column.created_time.name: now,
+                SchemaTables.SKILLS.column.modified_time.name: now,
+                SchemaTables.SKILLS.column.deleted.name: False,
             }
-            res = seadb_api.insert_rows(project_uuid, SchemaTables.CHAT_SKILLS.table_name(), [row])
+            res = seadb_api.insert_rows(project_uuid, SchemaTables.SKILLS.table_name(), [row])
             pks = res.get('pks') or []
             if len(pks) != 1:
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
@@ -262,7 +267,7 @@ class ChatSkillsAPIView(APIView):
         return Response({'skill': _serialize_custom_skill(row, include_details=True)}, status=status.HTTP_201_CREATED)
 
 
-class ChatSkillAPIView(APIView):
+class SkillAPIView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
@@ -286,11 +291,11 @@ class ChatSkillAPIView(APIView):
             if skill_name in builtin_map:
                 skill = get_builtin_skill(skill_name) or builtin_map[skill_name]
                 return Response({
-                    'skill': _serialize_builtin_skill(skill, disabled_builtin_set, include_details=True)
+                    'skill': _serialize_builtin_skill(skill, disabled_builtin_set, include_details=True),
                 })
 
             seadb_api = SeaDBAPI()
-            ensure_chat_skills_seadb_table(seadb_api, project_uuid)
+            ensure_skills_seadb_table(seadb_api, project_uuid)
             row = _get_custom_skill_row_by_name(seadb_api, project_uuid, skill_name)
             if not row:
                 return api_error(status.HTTP_404_NOT_FOUND, 'Skill not found.')
@@ -318,8 +323,6 @@ class ChatSkillAPIView(APIView):
 
         try:
             builtin_map = _load_builtin_map()
-            disabled_builtin_set = set(_get_disabled_builtin_skills(project))
-
             if skill_name in builtin_map:
                 if content is not None:
                     return api_error(status.HTTP_400_BAD_REQUEST, 'Builtin skill content is read-only.')
@@ -329,11 +332,11 @@ class ChatSkillAPIView(APIView):
                 _set_builtin_skill_enabled(project, skill_name, enabled)
                 skill = get_builtin_skill(skill_name) or builtin_map[skill_name]
                 return Response({
-                    'skill': _serialize_builtin_skill(skill, set(_get_disabled_builtin_skills(project)), include_details=True)
+                    'skill': _serialize_builtin_skill(skill, set(_get_disabled_builtin_skills(project)), include_details=True),
                 })
 
             seadb_api = SeaDBAPI()
-            ensure_chat_skills_seadb_table(seadb_api, project_uuid)
+            ensure_skills_seadb_table(seadb_api, project_uuid)
             row = _get_custom_skill_row_by_name(seadb_api, project_uuid, skill_name)
             if not row:
                 return api_error(status.HTTP_404_NOT_FOUND, 'Skill not found.')
@@ -347,21 +350,20 @@ class ChatSkillAPIView(APIView):
 
             update_row = {}
             if content is not None:
-                parsed = parse_skill_markdown(content, expected_name=skill_name)
-                update_row[SchemaTables.CHAT_SKILLS.column.name.name] = parsed['name']
-                update_row[SchemaTables.CHAT_SKILLS.column.description.name] = parsed['description']
-                update_row[SchemaTables.CHAT_SKILLS.column.content.name] = parsed['content']
-                update_row[SchemaTables.CHAT_SKILLS.column.required_tools.name] = _encode_required_tools(parsed['required_tools'])
-                update_row[SchemaTables.CHAT_SKILLS.column.support_external_portal.name] = parsed['support_external_portal']
+                parsed = parse_skill(content, expected_name=skill_name)
+                update_row[SchemaTables.SKILLS.column.name.name] = parsed['name']
+                update_row[SchemaTables.SKILLS.column.description.name] = parsed['description']
+                update_row[SchemaTables.SKILLS.column.content.name] = str(content).strip()
+                update_row[SchemaTables.SKILLS.column.metadata.name] = _encode_metadata(parsed.get('metadata'))
 
             if enabled_raw is not None:
                 enabled = _coerce_bool(enabled_raw, 'enabled')
-                update_row[SchemaTables.CHAT_SKILLS.column.enabled.name] = enabled
+                update_row[SchemaTables.SKILLS.column.enabled.name] = enabled
 
-            update_row[SchemaTables.CHAT_SKILLS.column.last_modifier.name] = username
-            update_row[SchemaTables.CHAT_SKILLS.column.modified_time.name] = datetime.datetime.now(datetime.UTC).isoformat()
+            update_row[SchemaTables.SKILLS.column.last_modifier.name] = username
+            update_row[SchemaTables.SKILLS.column.modified_time.name] = datetime.datetime.now(datetime.UTC).isoformat()
 
-            seadb_api.update_rows(project_uuid, SchemaTables.CHAT_SKILLS.table_name(), [{
+            seadb_api.update_rows(project_uuid, SchemaTables.SKILLS.table_name(), [{
                 'pk': int(row['_pk']),
                 'row': update_row,
             }])
@@ -394,18 +396,18 @@ class ChatSkillAPIView(APIView):
                 return api_error(status.HTTP_403_FORBIDDEN, 'Builtin skill cannot be deleted.')
 
             seadb_api = SeaDBAPI()
-            ensure_chat_skills_seadb_table(seadb_api, project_uuid)
+            ensure_skills_seadb_table(seadb_api, project_uuid)
             row = _get_custom_skill_row_by_name(seadb_api, project_uuid, skill_name)
             if not row:
                 return api_error(status.HTTP_404_NOT_FOUND, 'Skill not found.')
 
             update_row = {
-                SchemaTables.CHAT_SKILLS.column.deleted.name: True,
-                SchemaTables.CHAT_SKILLS.column.enabled.name: False,
-                SchemaTables.CHAT_SKILLS.column.last_modifier.name: username,
-                SchemaTables.CHAT_SKILLS.column.modified_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
+                SchemaTables.SKILLS.column.deleted.name: True,
+                SchemaTables.SKILLS.column.enabled.name: False,
+                SchemaTables.SKILLS.column.last_modifier.name: username,
+                SchemaTables.SKILLS.column.modified_time.name: datetime.datetime.now(datetime.UTC).isoformat(),
             }
-            seadb_api.update_rows(project_uuid, SchemaTables.CHAT_SKILLS.table_name(), [{
+            seadb_api.update_rows(project_uuid, SchemaTables.SKILLS.table_name(), [{
                 'pk': int(row['_pk']),
                 'row': update_row,
             }])
@@ -415,7 +417,7 @@ class ChatSkillAPIView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
 
-class ChatSkillValidateAPIView(APIView):
+class SkillValidateAPIView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )
@@ -433,20 +435,19 @@ class ChatSkillValidateAPIView(APIView):
         content = request.data.get('content')
         expected_name = request.data.get('expected_name') or None
         try:
-            parsed = parse_skill_markdown(content, expected_name=expected_name)
+            parsed = parse_skill(content, expected_name=expected_name)
             builtin_map = _load_builtin_map()
             if parsed['name'] in builtin_map:
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Custom skill name conflicts with a builtin skill.')
 
             seadb_api = SeaDBAPI()
-            ensure_chat_skills_seadb_table(seadb_api, project_uuid)
+            ensure_skills_seadb_table(seadb_api, project_uuid)
             exists = _get_custom_skill_row_by_name(seadb_api, project_uuid, parsed['name']) is not None
             return Response({
                 'skill': {
                     'name': parsed['name'],
                     'description': parsed['description'],
-                    'required_tools': parsed['required_tools'],
-                    'support_external_portal': parsed['support_external_portal'],
+                    'metadata': parsed.get('metadata') or {},
                 },
                 'exists': exists,
             })

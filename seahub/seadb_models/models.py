@@ -16,7 +16,7 @@ class SchemaTables:
     THREAD = SCHEMA.ThreadTable
     KNOWLEDGE_BASE = SCHEMA.KnowledgeBaseTable
     TAG = SCHEMA.TagTable
-    CHAT_SKILLS = SCHEMA.ChatSkillTable
+    SKILLS = SCHEMA.SkillsTable
     PORTAL_ISSUES = SCHEMA.PortalIssuesTable
     PORTAL_ISSUE_COMMENTS = SCHEMA.PortalIssueCommentsTable
     AGENT_RUNS = SCHEMA.AgentRunsTable

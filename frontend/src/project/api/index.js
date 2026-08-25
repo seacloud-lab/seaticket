@@ -4,7 +4,7 @@ import { connectionsAPI } from './connections-api';
 import { searchAPI } from './search-api';
 import { ticketsAPI } from './tickets-api';
 import { knowledgeBaseAPI } from './knowledge-base-api';
-import { chatSkillsAPI } from './chat-skills-api';
+import { skillsAPI } from './skills-api';
 import { notificationAPI } from '../../api/notification-api';
 
 export {
@@ -14,6 +14,6 @@ export {
   searchAPI,
   ticketsAPI,
   knowledgeBaseAPI,
-  chatSkillsAPI,
+  skillsAPI,
   notificationAPI,
 };

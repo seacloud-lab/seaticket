@@ -172,14 +172,14 @@ def ensure_portal_issues_seadb_table(seadb_api, project_uuid):
     if not portal_issues_table:
         init_seadb_tables_from_schema([SchemaTables.PORTAL_ISSUES, SchemaTables.PORTAL_ISSUE_COMMENTS], seadb_api, project_uuid)
 
-def ensure_chat_skills_seadb_table(seadb_api, project_uuid):
+def ensure_skills_seadb_table(seadb_api, project_uuid):
     metadata = seadb_api.get_base_metadata(project_uuid)
     tables_metadata = metadata.get('tables') or []
 
-    chat_skills_table_name = SchemaTables.CHAT_SKILLS.table_name()
-    chat_skills_table = get_current_table_metadata(tables_metadata, chat_skills_table_name)
-    if not chat_skills_table:
-        init_seadb_tables_from_schema([SchemaTables.CHAT_SKILLS], seadb_api, project_uuid)
+    skills_table_name = SchemaTables.SKILLS.table_name()
+    skills_table = get_current_table_metadata(tables_metadata, skills_table_name)
+    if not skills_table:
+        init_seadb_tables_from_schema([SchemaTables.SKILLS], seadb_api, project_uuid)
 
 def get_connection_table_name(connection_type, connection_id):
     schema_table = CONNECTION_TYPE_TO_SCHEMA_TABLE.get(connection_type)
