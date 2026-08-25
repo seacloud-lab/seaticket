@@ -384,7 +384,7 @@ const Settings = () => {
 
   return (
     <>
-      <div className="portal-settings-dialog-side dialog-side-nav">
+      <div className="portal-settings-dialog-side p-4">
         <Nav pills vertical className="w-100">
           {SETTING_TABS.map(tab => {
             return (

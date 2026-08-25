@@ -2,11 +2,7 @@
   display: flex;
   flex: 0 1 25%;
   max-width: 25%;
-  border-right: 1px solid #eee;
-}
-
-.portal-settings-dialog-side.dialog-side-nav {
-  padding: 16px;
+  border-right: 1px solid var(--bs-border-secondary-color);
 }
 
 .portal-settings-dialog-side .nav-pills .nav-item .nav-link {

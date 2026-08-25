@@ -10,6 +10,7 @@ import { portalAPI } from '../api';
 import { getPortalPublicUrl } from '../path-utils';
 
 import './index.css';
+import './portal-settings-dialog.css';
 
 const LeftBar = () => {
   const [isShowSettings, setIsShowSettings] = useState(false);
@@ -68,12 +69,12 @@ const LeftBar = () => {
 
   return (
     <>
-      <div className="seaqa-portal-left-bar">
+      <div className="seaqa-portal-left-bar d-flex align-items-center">
         {bars.map(bar => {
           return (
             <IconTooltip
               key={bar.icon}
-              className="seaqa-portal-left-bar-item"
+              className="seaqa-portal-left-bar-item d-flex justify-content-center align-items-center"
               size={{ btn: 50, icon: 20 }}
               hoverBackground={true}
               icon={bar.icon}
