@@ -449,15 +449,7 @@ export const CONNECTION_FIELDS = {
       is_required: true,
       is_display: true,
       is_custom: true,
-    }, {
-      key: 'space_keys',
-      name: gettext('Spaces'),
-      type: CONNECTION_FIELD_TYPE.EMPTY,
-      is_required: false,
-      is_display: false,
-      is_custom: true,
-      default_value: [],
-    }
+    },
   ],
   [CONNECTION_TYPE.GENERAL_TASK]: [
     {
