@@ -12,9 +12,14 @@ export const useAgentRunLogs = () => {
 
   const pageRef = useRef(1);
 
-  const updateRunLog = useCallback((source_id, source_type, update) => {
+  const updateRunLog = useCallback((owner_source_id, owner_source_type, update) => {
     setRunLogs(runLogs => runLogs.map(runLog => {
-      if (runLog.source_id === source_id && runLog.source_type === source_type) return { ...runLog, ...update };
+      if (
+        runLog.owner_source_id === owner_source_id &&
+        runLog.owner_source_type === owner_source_type
+      ) {
+        return { ...runLog, ...update };
+      }
       return runLog;
     }));
   }, []);

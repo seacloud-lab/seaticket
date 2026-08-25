@@ -15,6 +15,13 @@ const ACTION_STATUS = {
   FAILED: 'failed',
 };
 
+const SUGGESTIONS_STATUS = {
+  NONE: 'none',
+  PENDING: 'pending',
+  RESOLVED: 'resolved',
+  FAILED: 'failed',
+};
+
 const ACTION_TYPE = {
   THOUGHT: 'thought',
   EVENT: 'event', // for compatible
@@ -78,5 +85,5 @@ const RUN_EVENT_NAME = {
 
 export {
   ACTION_STATUS, ACTION_TYPE, SUGGESTION_TOOL_NAME_MAP, ACTION_ICON_MAPPER,
-  RUN_STATUS, RUN_EVENT_NAME,
+  RUN_STATUS, RUN_EVENT_NAME, SUGGESTIONS_STATUS,
 };

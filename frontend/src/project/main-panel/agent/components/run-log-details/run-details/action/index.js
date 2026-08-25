@@ -29,7 +29,7 @@ const parseResult = (result) => {
 const ActionItem = React.memo(({ action, ...props }) => {
   const [isThoughtExpanded, setIsThoughtExpanded] = useState(false);
 
-  const { type, status, result, sources, children } = action;
+  const { type, status, result, references, children } = action;
 
   const toggleThoughtExpand = useCallback((e) => {
     e.stopPropagation();
@@ -108,7 +108,7 @@ const ActionItem = React.memo(({ action, ...props }) => {
             <div className="seaqa-agent-action-label">{gettext('Analysis')}</div>
             {analysisReport && (
               <AIReply
-                message={{ ai_reply: analysisReport, sources: Array.isArray(sources) ? sources : [] }}
+                message={{ ai_reply: analysisReport, sources: Array.isArray(references) ? references : [] }}
                 projectUuid={projectUuid}
                 projectName={projectName}
               />
@@ -119,8 +119,14 @@ const ActionItem = React.memo(({ action, ...props }) => {
       case ACTION_TYPE.SUGGESTION: {
         if (!Array.isArray(children) || children.length === 0) return null;
         const firstChild = children[0];
-        const { source_id, source_type } = firstChild;
-        const isShowTitle = children.length > 1 && !children.every(child => child.source_id === source_id && child.source_type === source_type);
+        const { target_item_id, target_item_type } = firstChild;
+        const isShowTitle = (
+          children.length > 1 &&
+          !children.every(child => (
+            child.target_item_id === target_item_id &&
+            child.target_item_type === target_item_type
+          ))
+        );
         return (
           <div className="seaqa-agent-action-container seaqa-agent-suggestions-action-container">
             <div className="seaqa-agent-action-label">{gettext('Suggestion')}</div>
@@ -172,7 +178,7 @@ const ActionItem = React.memo(({ action, ...props }) => {
         return (<div className="seaqa-agent-action-container">{result}</div>);
       }
     }
-  }, [isThoughtExpanded, result, sources, type, props, children, toggleThoughtExpand]);
+  }, [isThoughtExpanded, result, references, type, props, children, toggleThoughtExpand]);
 
   return (
     <div

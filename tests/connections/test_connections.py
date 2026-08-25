@@ -514,8 +514,8 @@ class TestAgentActionConfirmView:
                 'run_id': 1,
                 'status': 'pending',
                 'tool_name': 'suggest_reply',
-                'source_type': 'email',
-                'source_id': f'{connection.id}_10',
+                'target_item_type': 'email',
+                'target_item_id': f'{connection.id}_10',
                 'result': '',
                 'suggestion_content': 'reply body',
             }]
@@ -542,9 +542,9 @@ class TestAgentActionConfirmView:
             send_config['expires_at'] = 999999
             return {'success': True, 'message_id': '<reply@example.com>', 'config_updated': True}
 
-        with patch('seahub.project.agent.SeaDBAPI', return_value=seadb_api), \
-                patch('seahub.project.agent_action_executor.EmailSeaDBAPI', return_value=email_seadb_api), \
-                patch('seahub.project.agent_action_executor.toggle_send_email', side_effect=mutate_config):
+        with patch('seahub.project.agent.agent.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.project.agent.action_executor.EmailSeaDBAPI', return_value=email_seadb_api), \
+                patch('seahub.project.agent.action_executor.toggle_send_email', side_effect=mutate_config):
             resp = AgentActionConfirmView.as_view()(request, project_uuid=project.uuid, run_id='1', action_id='2')
 
         assert resp.status_code == 200
@@ -577,8 +577,8 @@ class TestAgentActionConfirmView:
                 'run_id': 1,
                 'status': 'pending',
                 'tool_name': 'suggest_move_to_spam',
-                'source_type': 'email',
-                'source_id': f'{connection.id}_10',
+                'target_item_type': 'email',
+                'target_item_id': f'{connection.id}_10',
                 'result': '',
                 'suggestion_content': 'spam detection reason',
             }]
@@ -597,10 +597,10 @@ class TestAgentActionConfirmView:
         email_seadb_api.get_thread_by_pk.return_value = email_thread
         email_seadb_api.get_emails_by_thread_id.return_value = emails
 
-        with patch('seahub.project.agent.SeaDBAPI', return_value=seadb_api), \
-                patch('seahub.project.agent_action_executor.EmailSeaDBAPI', return_value=email_seadb_api), \
+        with patch('seahub.project.agent.agent.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.project.agent.action_executor.EmailSeaDBAPI', return_value=email_seadb_api), \
                 patch(
-                    'seahub.project.agent_action_executor.move_emails_to_junk',
+                    'seahub.project.agent.action_executor.move_emails_to_junk',
                     return_value={'moved_count': 1, 'target_folder': 'Spam'},
                 ) as move_mock:
             resp = AgentActionConfirmView.as_view()(request, project_uuid=project.uuid, run_id='1', action_id='2')
@@ -633,8 +633,8 @@ class TestAgentActionConfirmView:
                 'run_id': 1,
                 'status': 'pending',
                 'tool_name': 'suggest_move_to_spam',
-                'source_type': 'email',
-                'source_id': f'{connection.id}_10',
+                'target_item_type': 'email',
+                'target_item_id': f'{connection.id}_10',
                 'result': '',
                 'suggestion_content': 'spam detection reason',
             }]
@@ -653,10 +653,10 @@ class TestAgentActionConfirmView:
         email_seadb_api.get_thread_by_pk.return_value = email_thread
         email_seadb_api.get_emails_by_thread_id.return_value = emails
 
-        with patch('seahub.project.agent.SeaDBAPI', return_value=seadb_api), \
-                patch('seahub.project.agent_action_executor.EmailSeaDBAPI', return_value=email_seadb_api), \
+        with patch('seahub.project.agent.agent.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.project.agent.action_executor.EmailSeaDBAPI', return_value=email_seadb_api), \
                 patch(
-                    'seahub.project.agent_action_executor.move_emails_to_junk',
+                    'seahub.project.agent.action_executor.move_emails_to_junk',
                     return_value={'moved_count': 0, 'target_folder': 'Spam'},
                 ) as move_mock:
             resp = AgentActionConfirmView.as_view()(request, project_uuid=project.uuid, run_id='1', action_id='2')

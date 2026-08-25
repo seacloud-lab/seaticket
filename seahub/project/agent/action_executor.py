@@ -1,6 +1,5 @@
 import logging
 import json
-import re
 import requests
 from email.utils import make_msgid
 from urllib.parse import urlparse
@@ -121,6 +120,18 @@ class AgentActionExecutor:
         }
 
     @staticmethod
+    def _parse_suggestion_payload(suggestion_payload):
+        if isinstance(suggestion_payload, dict):
+            return suggestion_payload
+        if isinstance(suggestion_payload, str):
+            try:
+                parsed = json.loads(suggestion_payload)
+            except (TypeError, ValueError):
+                return {}
+            return parsed if isinstance(parsed, dict) else {}
+        return {}
+
+    @staticmethod
     def get_effective_auto_confirm_map(project):
         settings = getattr(project, 'settings', None) or {}
         if isinstance(settings, str):
@@ -186,8 +197,8 @@ class AgentActionExecutor:
         project_uuid,
         source_id,
         tool_name,
-        suggestion_text,
         suggestion_content,
+        suggestion_payload,
         operator,
         request=None,
         auto_executed=False,
@@ -198,11 +209,11 @@ class AgentActionExecutor:
             )
         if tool_name == 'suggest_modify_type':
             return self._execute_github_suggest_modify_type(
-                seadb_api, project, project_uuid, source_id, suggestion_text
+                seadb_api, project, project_uuid, source_id, suggestion_payload
             )
         if tool_name == 'suggest_assign_labels':
             return self._execute_github_suggest_assign_labels(
-                seadb_api, project_uuid, source_id, suggestion_content, suggestion_text
+                seadb_api, project_uuid, source_id, suggestion_payload
             )
         if tool_name == 'suggest_create_ticket':
             return self._execute_github_create_ticket(seadb_api, project, project_uuid, source_id, suggestion_content, operator, request=request, auto_executed=auto_executed)
@@ -293,10 +304,10 @@ class AgentActionExecutor:
     ):
         effective_operator = AUTO_EXECUTION_USER if auto_executed else operator
         tool_name = action.get('tool_name')
-        source_type = action.get('source_type', 'ticket')
-        source_id = action.get('source_id', '')
-        suggestion_text = action.get('suggestion_text', '')
+        source_type = action.get('target_item_type', 'ticket')
+        source_id = action.get('target_item_id', '')
         suggestion_content = action.get('suggestion_content', '')
+        suggestion_payload = self._parse_suggestion_payload(action.get('suggestion_payload'))
         action_id = action.get('_pk') or action.get('id') or ''
 
         if source_type == 'ticket':
@@ -318,8 +329,8 @@ class AgentActionExecutor:
                 project_uuid,
                 source_id,
                 tool_name,
-                suggestion_text,
                 suggestion_content,
+                suggestion_payload,
                 effective_operator,
                 request=request,
                 auto_executed=auto_executed,
@@ -538,52 +549,6 @@ class AgentActionExecutor:
         )
 
     @staticmethod
-    def _parse_suggested_type(result_text):
-        if not result_text:
-            return ''
-        match = re.search(r'to "(.+?)" for this GitHub issue', result_text)
-        if match:
-            return match.group(1).strip()
-        return ''
-
-    @staticmethod
-    def _parse_suggested_labels(result_text):
-        if not result_text:
-            return []
-        suggest_assign_labels_re = re.compile(r'labels (\[.*?\]) to this GitHub issue$')
-        match = suggest_assign_labels_re.search(result_text.strip())
-        if not match:
-            return []
-        try:
-            labels = json.loads(match.group(1))
-        except Exception:
-            return []
-        if not isinstance(labels, list):
-            return []
-        normalized = []
-        seen = set()
-        for label in labels:
-            name = str(label).strip()
-            if not name:
-                continue
-            key = name.lower()
-            if key in seen:
-                continue
-            seen.add(key)
-            normalized.append(name)
-        return normalized
-
-    @classmethod
-    def _parse_suggested_label_content(cls, suggestion_content):
-        try:
-            labels = json.loads(suggestion_content)
-        except (TypeError, ValueError):
-            return []
-        if not isinstance(labels, list):
-            return []
-        return cls._normalize_issue_labels(labels)
-
-    @staticmethod
     def _normalize_issue_labels(raw_labels):
         if isinstance(raw_labels, list):
             labels = raw_labels
@@ -631,21 +596,20 @@ class AgentActionExecutor:
         return filtered
 
     def _execute_github_suggest_assign_labels(
-        self, seadb_api, project_uuid, source_id, suggestion_content='', suggestion_text=''
+        self, seadb_api, project_uuid, source_id, suggestion_payload=None
     ):
         ctx = self._get_github_issue_context(seadb_api, project_uuid, source_id)
         if not ctx:
             return self._failed_execution(f'Failed to get GitHub issue context for {source_id}.')
 
-        labels = self._parse_suggested_label_content(suggestion_content)
-        if not labels:
-            labels = self._parse_suggested_labels(suggestion_text)
+        suggestion_payload = self._parse_suggestion_payload(suggestion_payload)
+        raw_labels = suggestion_payload.get('suggested_labels')
+        labels = self._normalize_issue_labels(raw_labels) if isinstance(raw_labels, list) else []
         if not labels:
             logger.error(
-                'Cannot parse suggested labels for GitHub issue %s from suggestion_content %r or suggestion_text %r',
+                'Cannot parse suggested_labels from suggestion_payload for GitHub issue %s: %r',
                 ctx['record_id'],
-                suggestion_content,
-                suggestion_text,
+                suggestion_payload,
             )
             return self._failed_execution(f'Cannot determine suggested labels for GitHub issue {ctx["record_id"]}.')
 
@@ -693,19 +657,22 @@ class AgentActionExecutor:
             logger.warning(f'Failed to update SeaDB for GitHub issue {ctx["record_id"]}: {e}')
 
         return self._successful_execution(
-            f'Labels updated for GitHub issue {ctx["record_id"]}: {json.dumps(applied_labels, ensure_ascii=False)}.'
+            f'Labels updated for GitHub issue #{ctx["record_id"]}: {json.dumps(applied_labels, ensure_ascii=False)}.'
         )
 
-    def _execute_github_suggest_modify_type(self, seadb_api, project, project_uuid, source_id, suggestion_text=''):
+    def _execute_github_suggest_modify_type(self, seadb_api, project, project_uuid, source_id, suggestion_payload=None):
         ctx = self._get_github_issue_context(seadb_api, project_uuid, source_id)
         if not ctx:
             return self._failed_execution(f'Failed to get GitHub issue context for {source_id}.')
 
-        suggested_type = self._parse_suggested_type(suggestion_text)
+        suggestion_payload = self._parse_suggestion_payload(suggestion_payload)
+        raw_suggested_type = suggestion_payload.get('suggested_type')
+        suggested_type = raw_suggested_type.strip() if isinstance(raw_suggested_type, str) else ''
         if not suggested_type:
             logger.error(
-                f'Cannot parse suggested_type from suggestion_text for GitHub issue {ctx["record_id"]}: '
-                f'{suggestion_text!r}'
+                'Cannot parse suggested_type from suggestion_payload for GitHub issue %s: %r',
+                ctx['record_id'],
+                suggestion_payload,
             )
             return self._failed_execution(
                 f'Cannot determine suggested issue type for GitHub issue {ctx["record_id"]}.'
@@ -786,7 +753,7 @@ class AgentActionExecutor:
             logger.warning(f'Failed to update SeaDB for GitHub issue {ctx["record_id"]}: {e}')
 
         return self._successful_execution(
-            f'Issue type updated to "{new_type}" for GitHub issue {ctx["record_id"]}.'
+            f'Issue type updated to "{new_type}" for GitHub issue #{ctx["record_id"]}.'
         )
 
     @staticmethod

@@ -111,11 +111,11 @@ const RunLogs = ({
         </div>
         <div className="seaqa-agent-run-logs-body flex-1" onScroll={onScroll} ref={logsRef}>
           {runLogs.map((log, index) => {
-            const { source_id, source_type } = log;
+            const { owner_source_id, owner_source_type } = log;
 
             return (
               <RunLog
-                key={`${source_type}_${source_id}`}
+                key={`${owner_source_type}_${owner_source_id}`}
                 runLog={log}
                 active={index === activeLogIndex}
                 onClick={() => handleClick(index)}

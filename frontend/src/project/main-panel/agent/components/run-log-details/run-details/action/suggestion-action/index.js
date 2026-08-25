@@ -5,7 +5,7 @@ import { gettext } from '@/constants';
 import { ACTION_STATUS, SUGGESTION_TOOL_NAME_MAP } from '../../../../../constants';
 import { Icon, IconTooltip, IconPopoverTip, IconButton, SecondaryBtn, toaster } from '@/components';
 import SuggestionPreview from './suggestion-preview';
-import { parseSuggestionActionResult, getAgentResource } from '../../../../../utils';
+import { parseSuggestionActionResult, getAgentResource, getSuggestionTitle } from '../../../../../utils';
 import RunLogTitle from '../../../../resource-title';
 import { TICKET_STATE_CONFIG, TICKET_STATE, TICKET } from '@/project/main-panel/tickets/constants';
 import { getRowById } from '@/sea-metadata/utils/row';
@@ -27,11 +27,11 @@ const SuggestionAction = ({
     status,
     result,
     tool_name,
-    suggestion_text,
     suggestion_content,
     suggestion_reason,
   } = action;
 
+  const suggestionTitle = useMemo(() => getSuggestionTitle(action), [action]);
   const resource = useMemo(() => getAgentResource(action), [action]);
   const { typesData } = useMetadata();
 
@@ -201,9 +201,9 @@ const SuggestionAction = ({
       <div className={classnames('seaqa-agent-action-suggestion-card', { 'seaqa-agent-action-suggestion-card-cancelled': isCancelled })}>
         <div className="seaqa-agent-action-suggestion-card-header d-flex align-items-center">
           <Icon symbol={renderSuggestionIcon()} />
-          {suggestion_text && (
+          {suggestionTitle && (
             <div className="seaqa-agent-action-suggestion-text-container">
-              <span className="text-truncate seaqa-agent-action-suggestion-text" title={suggestion_text}>{suggestion_text}</span>
+              <span className="text-truncate seaqa-agent-action-suggestion-text" title={suggestionTitle}>{suggestionTitle}</span>
               {!isCancelled && (<>{renderSuggestionReasonTooltip()}</>)}
             </div>
           )}

@@ -60,9 +60,9 @@ class AgentAPI {
     return this.req.get(url, { params: { page, per_page: perPage } });
   }
 
-  listAgentLogRuns(projectUuid, source_id, source_type, signal) {
+  listAgentLogRuns(projectUuid, owner_source_id, owner_source_type, signal) {
     const url = this.server + `/api/v1/project/${projectUuid}/agent/log/runs/`;
-    return this.req.get(url, { params: { source_id, source_type }, signal });
+    return this.req.get(url, { params: { owner_source_id, owner_source_type }, signal });
   }
 
   getAgentRunDetails(projectUuid, runId) {

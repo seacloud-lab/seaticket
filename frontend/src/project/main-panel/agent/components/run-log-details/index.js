@@ -31,9 +31,9 @@ const RunLogDetails = ({
   const { openCloseLinkedGitHubIssuesWarningDialog } = useCloseLinkedIssues();
   const [isShowAll, setIsShowAll] = useState(true);
 
-  const { source_id, source_type } = useMemo(() => ({
-    source_id: runLog?.source_id,
-    source_type: runLog?.source_type,
+  const { owner_source_id, owner_source_type } = useMemo(() => ({
+    owner_source_id: runLog?.owner_source_id,
+    owner_source_type: runLog?.owner_source_type,
   }), [runLog]);
   const resource = useMemo(() => getAgentResource(runLog), [runLog]);
   const suggestionDetail = useMemo(() => {
@@ -59,24 +59,27 @@ const RunLogDetails = ({
     showLogs();
   }, [showLogs]);
 
-  const updateRunAction = useCallback((runId, actionId, update) => {
+  const updateRunAction = useCallback((runId, actionId, update, runUpdate = null) => {
     setRuns(runs => {
       const nextRuns = runs.map(run => {
         if (run.id === runId) {
           const { actions } = run;
-          if (!Array.isArray(actions) || actions.length === 0) return run;
+          const nextActions = Array.isArray(actions)
+            ? actions.map(action => action.id === actionId ? { ...action, ...update } : action)
+            : actions;
           return {
             ...run,
-            actions: actions.map(action => action.id === actionId ? { ...action, ...update } : action)
+            ...(runUpdate || {}),
+            actions: nextActions,
           };
         }
         return run;
       });
       const status = getRunLogStatusByRuns(nextRuns);
-      updateRunLog(source_id, source_type, { status });
+      updateRunLog(owner_source_id, owner_source_type, { status });
       return nextRuns;
     });
-  }, [source_id, source_type, updateRunLog]);
+  }, [owner_source_id, owner_source_type, updateRunLog]);
 
   const findActionContext = useCallback((actionId) => {
     for (const run of runs) {
@@ -103,6 +106,8 @@ const RunLogDetails = ({
         updateRunAction(runId, actionId, {
           status: res.data.status,
           result: res.data.result,
+        }, {
+          suggestions_status: res.data.suggestions_status,
         });
         return { success: res.data.success };
       }).catch((err) => {
@@ -114,6 +119,16 @@ const RunLogDetails = ({
             agentType: payload.agent_type,
             githubIssueTypes: payload.github_issue_types || [],
           });
+          if (typeof payload.suggestions_status === 'string') {
+            setRuns(runs => {
+              const nextRuns = runs.map(run => (
+                run.id === runId ? { ...run, suggestions_status: payload.suggestions_status } : run
+              ));
+              const status = getRunLogStatusByRuns(nextRuns);
+              updateRunLog(owner_source_id, owner_source_type, { status });
+              return nextRuns;
+            });
+          }
           return { success: false, reason: 'mapping_required' };
         }
         if (payload?.detail) {
@@ -129,8 +144,8 @@ const RunLogDetails = ({
       return executeConfirm();
     }
 
-    const sourceType = item?.source_type;
-    const sourceId = item?.source_id;
+    const sourceType = item?.source_type || action?.target_item_type;
+    const sourceId = item?.source_id || action?.target_item_id;
     if (sourceType !== 'ticket' || !sourceId) {
       return executeConfirm();
     }
@@ -171,7 +186,7 @@ const RunLogDetails = ({
       const payload = err?.response?.data || {};
       toaster.danger(payload?.detail || gettext('Failed to check linked GitHub issues'));
     });
-  }, [findActionContext, openCloseLinkedGitHubIssuesWarningDialog, updateRunAction]);
+  }, [findActionContext, openCloseLinkedGitHubIssuesWarningDialog, updateRunAction, owner_source_id, owner_source_type, updateRunLog]);
 
   const handleUpdateContent = useCallback((runId, actionId, suggestionContent) => {
     return agentAPI.updateAgentAction(projectUuid, runId, actionId, { suggestion_content: suggestionContent }).then((res) => {
@@ -196,6 +211,8 @@ const RunLogDetails = ({
             updateRunAction(run.id, actionId, {
               status: res.data.status,
               result: res.data.result,
+            }, {
+              suggestions_status: res.data.suggestions_status,
             });
           });
         }
@@ -207,6 +224,8 @@ const RunLogDetails = ({
           updateRunAction(run.id, actionId, {
             status: res.data.status,
             result: res.data.result,
+          }, {
+            suggestions_status: res.data.suggestions_status,
           });
         });
       }
@@ -236,6 +255,8 @@ const RunLogDetails = ({
       updateRunAction(runId, actionId, {
         status: res.data.status,
         result: res.data.result,
+      }, {
+        suggestions_status: res.data.suggestions_status,
       });
       if (res.data.success) {
         toaster.success(gettext('Action confirmed'));
@@ -255,7 +276,7 @@ const RunLogDetails = ({
   useEffect(() => {
     const controller = new AbortController();
 
-    if (!source_id || !source_type) {
+    if (!owner_source_id || !owner_source_type) {
       setIsLoading(false);
       setRuns([]);
       setSuggestionInfo(null);
@@ -267,12 +288,12 @@ const RunLogDetails = ({
     setRuns([]);
     setSuggestionInfo(null);
     setPendingMapping(null);
-    agentAPI.listAgentLogRuns(projectUuid, source_id, source_type, controller.signal).then(res => {
+    agentAPI.listAgentLogRuns(projectUuid, owner_source_id, owner_source_type, controller.signal).then(res => {
       if (controller.signal.aborted) return;
       const runs = res.data?.runs || [];
       setRuns(runs);
       const status = getRunLogStatusByRuns(runs);
-      updateRunLog(source_id, source_type, { status });
+      updateRunLog(owner_source_id, owner_source_type, { status });
       setIsShowAll(runs.length <= 8);
     }).catch(error => {
       if (axios.isCancel(error)) return;
@@ -286,7 +307,7 @@ const RunLogDetails = ({
 
     return () => controller.abort();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [source_id, source_type]);
+  }, [owner_source_id, owner_source_type]);
 
   return (
     <>
