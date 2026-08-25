@@ -92,7 +92,7 @@ class TableManager:
             {'column_name': 'target_item_type', 'column_type': PropertyTypes.TEXT},
             {'column_name': 'target_item_id', 'column_type': PropertyTypes.TEXT},
             {'column_name': 'target_item_title', 'column_type': PropertyTypes.TEXT},
-            {'column_name': 'sources', 'column_type': PropertyTypes.TEXT},
+            {'column_name': 'references', 'column_type': PropertyTypes.TEXT},
             {'column_name': 'statistics', 'column_type': PropertyTypes.TEXT},
             {'column_name': 'created_at', 'column_type': PropertyTypes.DATETIME},
             {'column_name': 'executed_at', 'column_type': PropertyTypes.DATETIME},

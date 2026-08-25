@@ -53,18 +53,18 @@ def _update_action_status_and_refresh_run(seadb_api, project_uuid, run_id, actio
     return _refresh_run_suggestions_status_safely(seadb_api, project_uuid, int(run_id))
 
 
-def _parse_action_sources(raw_sources):
-    if isinstance(raw_sources, list):
-        return raw_sources
-    if not raw_sources:
+def _parse_action_references(raw_references):
+    if isinstance(raw_references, list):
+        return raw_references
+    if not raw_references:
         return []
-    if not isinstance(raw_sources, str):
+    if not isinstance(raw_references, str):
         return []
     try:
-        sources = json.loads(raw_sources)
+        references = json.loads(raw_references)
     except Exception:
         return []
-    return sources if isinstance(sources, list) else []
+    return references if isinstance(references, list) else []
 
 def _reformat_actions(actions):
     """Group tool calls and phase output by phase."""
@@ -97,7 +97,7 @@ def _serialize_action(action, with_trace=False):
         'suggestion_reason': action.get('suggestion_reason', ''),
         'suggestion_content': action.get('suggestion_content', ''),
         'suggestion_payload': action.get('suggestion_payload', ''),
-        'sources': _parse_action_sources(action.get('sources')),
+        'references': _parse_action_references(action.get('references')),
         'statistics': action.get('statistics', ''),
         'created_at': action.get('created_at', ''),
         'executed_at': action.get('executed_at', ''),
@@ -157,7 +157,7 @@ def get_agent_run_detail(seadb_api, project_uuid, run_id):
 
         actions_sql = "SELECT `_pk`, `run_id`, `target_item_type`, `target_item_id`, `target_item_title`, " \
             f"`action_type`, `tool_name`, `result`, `status`, `suggestion_reason`, `suggestion_content`, `suggestion_payload`, " \
-            f"`phase`, `prompt`, `input`, `statistics`, `created_at`, `executed_at`, `sources`, `step`, `tool_arguments`, `observation` FROM `{SchemaTables.AGENT_ACTIONS.table_name()}` " \
+            f"`phase`, `prompt`, `input`, `statistics`, `created_at`, `executed_at`, `references`, `step`, `tool_arguments`, `observation` FROM `{SchemaTables.AGENT_ACTIONS.table_name()}` " \
             f"WHERE `run_id` = {run_id} ORDER BY `created_at` ASC"
         actions_result = seadb_api.query_rows(project_uuid, actions_sql)
         actions = actions_result.get('results', [])
@@ -435,7 +435,7 @@ def _query_log_actions_by_runs(seadb_api, project_uuid, run_ids):
 
     sql = (
         "SELECT `_pk`, `run_id`, `action_type`, `tool_name`, `result`, `status`, "
-        "`suggestion_reason`, `suggestion_content`, `suggestion_payload`, `sources`, "
+        "`suggestion_reason`, `suggestion_content`, `suggestion_payload`, `references`, "
         "`target_item_type`, `target_item_id`, `target_item_title`, "
         "`created_at`, `executed_at` "
         f"FROM `{actions_table}` "

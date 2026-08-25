@@ -29,7 +29,7 @@ const parseResult = (result) => {
 const ActionItem = React.memo(({ action, ...props }) => {
   const [isThoughtExpanded, setIsThoughtExpanded] = useState(false);
 
-  const { type, status, result, sources, children } = action;
+  const { type, status, result, references, children } = action;
 
   const toggleThoughtExpand = useCallback((e) => {
     e.stopPropagation();
@@ -108,7 +108,7 @@ const ActionItem = React.memo(({ action, ...props }) => {
             <div className="seaqa-agent-action-label">{gettext('Analysis')}</div>
             {analysisReport && (
               <AIReply
-                message={{ ai_reply: analysisReport, sources: Array.isArray(sources) ? sources : [] }}
+                message={{ ai_reply: analysisReport, sources: Array.isArray(references) ? references : [] }}
                 projectUuid={projectUuid}
                 projectName={projectName}
               />
@@ -178,7 +178,7 @@ const ActionItem = React.memo(({ action, ...props }) => {
         return (<div className="seaqa-agent-action-container">{result}</div>);
       }
     }
-  }, [isThoughtExpanded, result, sources, type, props, children, toggleThoughtExpand]);
+  }, [isThoughtExpanded, result, references, type, props, children, toggleThoughtExpand]);
 
   return (
     <div
