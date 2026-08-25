@@ -191,7 +191,7 @@ class SkillsAPIView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
 
         username = request.user.username
-        if not check_project_permission(username, workspace.owner):
+        if not check_project_admin_permission(username, workspace.owner):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         try:
@@ -279,7 +279,7 @@ class SkillAPIView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
 
         username = request.user.username
-        if not check_project_permission(username, workspace.owner):
+        if not check_project_admin_permission(username, workspace.owner):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         if not SKILL_NAME_RE.match(skill_name):
