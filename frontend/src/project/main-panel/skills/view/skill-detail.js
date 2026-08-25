@@ -18,8 +18,7 @@ import {
 const NEW_SKILL_BODY = '# Skill\n';
 
 const METADATA_PLACEHOLDER = `seaticket-agent:
-  phases: [analysis]
-  required-tools: [tasks_search]`;
+  enabled: true`;
 
 const SkillDetail = ({ projectUuid, pageSlugId, isProjectAdmin, onSaved, onDeleted, onCancel }) => {
   const isOpen = pageSlugId !== SKILLS_PAGE_SLUG_ID.ALL;
