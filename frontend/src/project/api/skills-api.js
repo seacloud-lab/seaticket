@@ -48,11 +48,6 @@ class SkillsAPI {
     const url = this.server + '/api/v1/project/' + projectUuid + '/skills/' + skillName + '/';
     return this.req.delete(url);
   }
-
-  validateSkill(projectUuid, data) {
-    const url = this.server + '/api/v1/project/' + projectUuid + '/skills/validate/';
-    return this.req.post(url, data);
-  }
 }
 
 const skillsAPI = new SkillsAPI();

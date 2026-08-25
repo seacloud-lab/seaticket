@@ -138,9 +138,7 @@ const SkillDetail = ({ projectUuid, pageSlugId, isProjectAdmin, onSaved, onDelet
     const content = composeSkillContent({ name, description, metadataText, body });
 
     if (isNew) {
-      skillsAPI.validateSkill(projectUuid, { content }).then(() => {
-        return skillsAPI.createSkill(projectUuid, { content, enabled });
-      }).then((res) => {
+      skillsAPI.createSkill(projectUuid, { content, enabled }).then((res) => {
         toaster.success(gettext('Skill created.'));
         onSaved && onSaved(res?.data?.skill?.name);
       }).catch((error) => {
@@ -149,11 +147,9 @@ const SkillDetail = ({ projectUuid, pageSlugId, isProjectAdmin, onSaved, onDelet
       return;
     }
 
-    skillsAPI.validateSkill(projectUuid, { content, expected_name: pageSlugId }).then(() => {
-      return skillsAPI.updateSkill(projectUuid, pageSlugId, {
-        content,
-        revision: skill?.revision,
-      });
+    skillsAPI.updateSkill(projectUuid, pageSlugId, {
+      content,
+      revision: skill?.revision,
     }).then(() => {
       toaster.success(gettext('Skill updated.'));
       onSaved && onSaved(pageSlugId);
