@@ -1,6 +1,6 @@
 from unittest.mock import Mock
 
-from seahub.project.agent_action_executor import AgentActionExecutor
+from seahub.project.agent.action_executor import AgentActionExecutor
 
 
 def test_parse_suggestion_payload_accepts_dict():

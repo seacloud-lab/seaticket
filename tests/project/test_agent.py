@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from seahub.project.agent import (
+from seahub.project.agent.utils import (
     _build_items_map_from_actions,
     _calculate_log_status,
     _calculate_suggestions_status,
