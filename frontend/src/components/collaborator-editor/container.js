@@ -44,7 +44,7 @@ const Container = ({
       onChange={onChange}
       onToggle={onToggle}
     >
-      {isShowDeleteArea ? ({ value, onChange }) => {
+      {isShowDeleteArea && Array.isArray(value) ? ({ value, onChange }) => {
         if (value.length === 0) return null;
         return value.map(item => {
           const collaborator = collaborators.find(c => c.email === item);

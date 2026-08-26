@@ -4,11 +4,12 @@ import {
 } from '../../../../../constants';
 import { useTagsData } from '@/sea-metadata/hooks';
 import Tag from '@/sea-metadata/components/tag';
-import { getRowById } from '@/sea-metadata/utils/row';
+import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
 import { TagSelector } from '../../../../selectors';
 import { gettext } from '@/constants';
 import SelectTrigger from '@/components/customize-select/select-trigger';
 import { isFilterTermArray } from '@/sea-metadata/utils/filter';
+import { isCellValueChanged } from '@/sea-metadata/utils/cell';
 
 const TagsFilter = ({
   readOnly,
@@ -33,6 +34,17 @@ const TagsFilter = ({
   const closeEditor = useCallback(() => {
     setIsShowEditor(false);
   }, []);
+
+  const handleChange = useCallback((newValue) => {
+    const _newValue = Array.isArray(newValue) && newValue.length > 0 ? newValue.map(v => Number(v)) : newValue;
+    if (!isCellValueChanged(_newValue, value)) return;
+    let validValue = newValue;
+    if (Array.isArray(newValue) && newValue.length > 0) {
+      const tags = getRowsByIds(tagsData, newValue);
+      validValue = tags.map(tag => Number(tag._id));
+    }
+    onChange?.(validValue);
+  }, [value, tagsData, onChange]);
 
   return (
     <>
@@ -60,7 +72,7 @@ const TagsFilter = ({
         <TagSelector
           target={tagsFilterRef}
           value={value}
-          onChange={onChange}
+          onChange={handleChange}
           onToggle={closeEditor}
           isMultiple={isMultiple}
         />

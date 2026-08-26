@@ -156,7 +156,8 @@ class FilterItem extends React.Component {
   };
 
   onFilterTermChanged = (newFilterTerm) => {
-    const { index, filter } = this.props;
+    const { index, filter, readOnly } = this.props;
+    if (readOnly) return;
     const { filterTerm } = this.state;
     if (newFilterTerm === filterTerm) return;
     this.setState({ filterTerm: newFilterTerm });

@@ -5,7 +5,7 @@ import Options from '../options';
 import { getEventClassName } from '@/utils/dom';
 import SelectTrigger from '../select-trigger';
 
-const SyncSelect = ({
+const StaticSelect = ({
   className,
   containerClassName,
   value,
@@ -126,7 +126,7 @@ const SyncSelect = ({
   );
 };
 
-SyncSelect.propTypes = {
+StaticSelect.propTypes = {
   className: PropTypes.string,
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.array, PropTypes.number]),
   options: PropTypes.array,
@@ -139,4 +139,4 @@ SyncSelect.propTypes = {
   isInModal: PropTypes.bool, // if select component in a modal (option group need ModalPortal to show)
 };
 
-export default SyncSelect;
+export default StaticSelect;
