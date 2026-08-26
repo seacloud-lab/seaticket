@@ -151,9 +151,9 @@ class ConnectionsAPI {
     return this.req.get(url);
   }
 
-  listFirebaseCrashDatasets(projectUuid, firebaseProjectId) {
-    const url = this.server + '/api/v1/project/' + projectUuid + '/firebase-crash/datasets/';
-    return this.req.get(url, { params: { project_id: firebaseProjectId } });
+  listFirebaseCrashApps(projectUuid, projectId) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/firebase-crash/apps/';
+    return this.req.get(url, { params: { project_id: projectId } });
   }
 
   getConnection(projectUuid, connectionID) {

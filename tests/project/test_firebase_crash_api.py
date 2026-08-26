@@ -1,12 +1,7 @@
 import pytest
 from django.test import RequestFactory
 
-from seahub.project.connections import (
-    _parse_connection_config,
-    _restore_firebase_crash_ticket_links,
-    _sync_firebase_crash_ticket_link,
-    _validate_firebase_crash_batch_record,
-)
+from seahub.project.connections import _validate_firebase_crash_batch_record
 from seahub.project.firebase_crash_api import FirebaseCrashOAuthAPI, FirebaseCrashOAuthError
 from seahub.project import views
 
@@ -19,19 +14,6 @@ class FakeResponse:
 
     def json(self):
         return self.payload
-
-
-def test_parse_connection_config_accepts_dict_and_json_object():
-    config = {'project_id': 'firebase-project'}
-
-    assert _parse_connection_config(config) is config
-    assert _parse_connection_config('{"project_id": "firebase-project"}') == config
-
-
-@pytest.mark.parametrize('value', ['', '{', '[]', 'null', None, 1])
-def test_parse_connection_config_rejects_invalid_values(value):
-    with pytest.raises(ValueError, match='config invalid'):
-        _parse_connection_config(value)
 
 
 def test_lists_all_firebase_projects_and_sorts_by_name(monkeypatch):
@@ -71,11 +53,44 @@ def test_lists_all_firebase_projects_and_sorts_by_name(monkeypatch):
     assert calls[1][1]['pageToken'] == 'second-page'
 
 
+def test_lists_firebase_apps_across_platforms_and_sorts(monkeypatch):
+    responses = [
+        FakeResponse(
+            200,
+            {
+                'apps': [
+                    {'appId': '1:1:android:aaa', 'packageName': 'com.zeta', 'displayName': 'Zeta'},
+                ],
+            },
+        ),
+        FakeResponse(
+            200,
+            {
+                'apps': [
+                    {'appId': '1:1:ios:bbb', 'bundleId': 'com.alpha', 'displayName': 'Alpha'},
+                ],
+            },
+        ),
+    ]
+    monkeypatch.setattr(
+        'seahub.project.firebase_crash_api.requests.get',
+        lambda *args, **kwargs: responses.pop(0),
+    )
+
+    api = FirebaseCrashOAuthAPI('access-token', 'refresh-token')
+
+    assert api.list_apps('firebase-project') == [
+        {'app_id': '1:1:ios:bbb', 'name': 'Alpha', 'platform': 'IOS', 'identifier': 'com.alpha'},
+        {'app_id': '1:1:android:aaa', 'name': 'Zeta', 'platform': 'ANDROID', 'identifier': 'com.zeta'},
+    ]
+
+
 @pytest.mark.parametrize(
     ('method_name', 'args'),
     [
         ('list_projects', ()),
         ('list_datasets', ('firebase-project',)),
+        ('list_apps', ('firebase-project',)),
         ('_list_dataset_tables', ('firebase-project', 'firebase_crashlytics')),
     ],
 )
@@ -354,34 +369,3 @@ def test_invalid_firebase_crash_oauth_state_clears_session(monkeypatch):
     assert request.session == {
         'firebase_crash_oauth_error': 'Google authorization was cancelled or failed.'
     }
-
-
-def test_firebase_crash_ticket_link_same_ticket_is_a_noop():
-    class FailingSeaDB:
-        def update_rows(self, *args, **kwargs):
-            raise AssertionError('same-ticket updates must not write')
-
-    assert _sync_firebase_crash_ticket_link(
-        FailingSeaDB(), 'project', 1, 2, 7, 7
-    ) == []
-    assert _sync_firebase_crash_ticket_link(
-        FailingSeaDB(), 'project', 1, 2, None, None
-    ) == []
-
-
-def test_restores_firebase_crash_ticket_links_in_reverse_order():
-    class FakeSeaDB:
-        def __init__(self):
-            self.updates = []
-
-        def update_rows(self, project_uuid, table_name, rows):
-            self.updates.append((project_uuid, table_name, rows))
-
-    seadb = FakeSeaDB()
-    _restore_firebase_crash_ticket_links(
-        seadb,
-        'project',
-        [(20, ['record-2']), (10, ['record-1'])],
-    )
-
-    assert [update[2][0]['pk'] for update in seadb.updates] == [10, 20]

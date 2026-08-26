@@ -352,9 +352,9 @@ export const CONNECTION_FIELDS = {
       is_display: true,
       is_custom: true,
     }, {
-      key: 'dataset_id',
-      name: gettext('BigQuery dataset'),
-      placeholder: gettext('Select a BigQuery dataset'),
+      key: 'app_id',
+      name: gettext('Firebase application'),
+      placeholder: gettext('Select a Firebase application'),
       type: CONNECTION_FIELD_TYPE.SYNC_SELECT,
       is_required: true,
       is_display: true,
@@ -736,12 +736,8 @@ export const CONNECTION_PREDEFINED_COLUMN_NAME = {
   VERSION: 'version',
   OTHERS: 'others',
   ISSUE_ID: 'issue_id',
-  SOURCE_TABLE: 'source_table',
-  APP_ID: 'app_id',
   SUBTITLE: 'subtitle',
   ERROR_TYPE: 'error_type',
-  PLATFORM: 'platform',
-  BUNDLE_IDENTIFIER: 'bundle_identifier',
   APP_VERSION: 'app_version',
   IS_FATAL: 'is_fatal',
   OCCURRENCE_COUNT: 'occurrence_count',
@@ -914,28 +910,12 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       display_name: gettext('Issue ID'),
       is_predefined: true,
     },
-    [CONNECTION_PREDEFINED_COLUMN_NAME.SOURCE_TABLE]: {
-      display_name: gettext('Source table'),
-      is_predefined: true,
-    },
-    [CONNECTION_PREDEFINED_COLUMN_NAME.APP_ID]: {
-      display_name: gettext('App ID'),
-      is_predefined: true,
-    },
     [CONNECTION_PREDEFINED_COLUMN_NAME.SUBTITLE]: {
       display_name: gettext('Subtitle'),
       is_predefined: true,
     },
     [CONNECTION_PREDEFINED_COLUMN_NAME.ERROR_TYPE]: {
       display_name: gettext('Error type'),
-      is_predefined: true,
-    },
-    [CONNECTION_PREDEFINED_COLUMN_NAME.PLATFORM]: {
-      display_name: gettext('Platform'),
-      is_predefined: true,
-    },
-    [CONNECTION_PREDEFINED_COLUMN_NAME.BUNDLE_IDENTIFIER]: {
-      display_name: gettext('Bundle identifier'),
       is_predefined: true,
     },
     [CONNECTION_PREDEFINED_COLUMN_NAME.APP_VERSION]: {

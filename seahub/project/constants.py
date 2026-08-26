@@ -197,7 +197,7 @@ CONNECTION_FIELDS = {
     ],
     ConnectionType.FIREBASE_CRASH.value: [
         ConnectionField('project_id', True, False).to_dict(),
-        ConnectionField('dataset_id', True, False).to_dict(),
+        ConnectionField('app_id', True, False).to_dict(),
     ]
 }
 
@@ -582,8 +582,8 @@ CONNECTION_DISPLAY_ALL_COLUMNS = {
     ConnectionType.CONFLUENCE.value: ['_pk', 'title', 'creator_id', 'modified_time', 'ai_summary', 'ai_processed_time', 'created_time', 'last_modifier_id', 'outdated'],
     ConnectionType.DISCORD.value: ['_pk', 'title', 'created_time', 'modified_time', 'ai_summary',
                                    'ai_processed_time', 'linked_ticket', 'outdated'],
-    ConnectionType.FIREBASE_CRASH.value: ['_pk', 'issue_id', 'source_table', 'app_id', 'title', 'subtitle', 'content', 'error_type',
-                                          'platform', 'bundle_identifier', 'app_version', 'is_fatal',
+    ConnectionType.FIREBASE_CRASH.value: ['_pk', 'issue_id', 'title', 'subtitle', 'content', 'error_type',
+                                          'app_version', 'is_fatal',
                                           'occurrence_count', 'affected_users', 'first_seen_time', 'last_seen_time',
                                           'ai_summary', 'ai_processed_time', 'linked_ticket', 'outdated'],
 }
@@ -597,7 +597,7 @@ CONNECTION_MUST_RETURN_COLUMNS = {
     ConnectionType.LINEAR.value: ['identifier'],
     ConnectionType.CONFLUENCE.value: ['page_id'],
     ConnectionType.DISCORD.value: ['thread_id'],
-    ConnectionType.FIREBASE_CRASH.value: ['issue_id', 'source_table', 'app_id'],
+    ConnectionType.FIREBASE_CRASH.value: ['issue_id'],
 }
 
 LLM_INPUT_CHARACTERS_LIMIT = 4000

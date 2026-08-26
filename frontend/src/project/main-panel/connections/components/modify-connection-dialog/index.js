@@ -48,15 +48,12 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
   const [isCheckingFirebaseCrashOauth, setCheckingFirebaseCrashOauth] = useState(false);
   const [isWaitingFirebaseCrashOAuth, setWaitingFirebaseCrashOAuth] = useState(false);
   const [firebaseCrashOauthError, setFirebaseCrashOauthError] = useState('');
+  const [firebaseCrashAppsVersion, setFirebaseCrashAppsVersion] = useState(0);
   const firebaseCrashOauthWindowRef = useRef(null);
   const firebaseCrashOauthIntervalRef = useRef(null);
 
   const type = useMemo(() => record.type, [record]);
   const isFirebaseCrash = useMemo(() => type === CONNECTION_TYPE.FIREBASE_CRASH, [type]);
-  const firebaseProjectId = useMemo(
-    () => getSelectedOptionValue(config.project_id),
-    [config.project_id]
-  );
   const columns = useMemo(() => {
     const _columns = CONNECTION_FIELDS[type] || [];
     if (type === CONNECTION_TYPE.GITHUB_ISSUE) return withEditReadonlyDefaults(_columns.filter(c => c.key !== 'repository'));
@@ -152,26 +149,26 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
     });
   }, [isFirebaseCrashOauthConnected]);
 
-  const listFirebaseCrashDatasets = useCallback(() => {
-    if (!isFirebaseCrashOauthConnected || !firebaseProjectId) {
+  const listFirebaseCrashApps = useCallback(() => {
+    const projectId = getSelectedOptionValue(config.project_id);
+    if (!isFirebaseCrashOauthConnected || !projectId) {
       return Promise.resolve({ data: { options: [] } });
     }
-    return connectionsAPI.listFirebaseCrashDatasets(projectUuid, firebaseProjectId).then(res => {
-      const datasets = res?.data?.datasets || [];
+    void firebaseCrashAppsVersion;
+    return connectionsAPI.listFirebaseCrashApps(projectUuid, projectId).then(res => {
+      const apps = res?.data?.apps || [];
       return {
         data: {
-          options: datasets.map(dataset => ({
-            value: dataset.dataset_id,
-            dataset,
-            label: dataset.name === dataset.dataset_id
-              ? dataset.dataset_id
-              : `${dataset.name} (${dataset.dataset_id})`,
-            name: dataset.name,
+          options: apps.map(app => ({
+            value: app.app_id,
+            app,
+            label: `${app.name} (${app.platform})`,
+            name: app.name,
           })),
         }
       };
     });
-  }, [firebaseProjectId, isFirebaseCrashOauthConnected]);
+  }, [config.project_id, isFirebaseCrashOauthConnected, firebaseCrashAppsVersion]);
 
   const handleConnectFirebaseCrash = useCallback(() => {
     const next = `${window.location.pathname}${window.location.search}${window.location.hash}`;
@@ -230,6 +227,21 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
     return undefined;
   }, [isFirebaseCrash, fetchFirebaseCrashOauthStatus]);
 
+  // Reset app_id when project_id changes
+  useEffect(() => {
+    if (!isFirebaseCrash || !isFirebaseCrashOauthConnected) return;
+    const projectId = config.project_id;
+    if (projectId) {
+      setFirebaseCrashAppsVersion(v => v + 1);
+      setConfig(prev => {
+        if (prev.app_id) {
+          return { ...prev, app_id: undefined };
+        }
+        return prev;
+      });
+    }
+  }, [isFirebaseCrash, isFirebaseCrashOauthConnected, config.project_id]);
+
   useEffect(() => {
     return () => {
       stopFirebaseCrashOAuthPolling();
@@ -257,21 +269,9 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
       return;
     }
 
-    if (isFirebaseCrash && key === 'project_id') {
-      const previousProjectId = getSelectedOptionValue(config.project_id);
-      const selectedProjectId = getSelectedOptionValue(value);
-      setConfig({
-        ...config,
-        [key]: value,
-        dataset_id: previousProjectId === selectedProjectId ? config.dataset_id : undefined,
-      });
-      setChanged(true);
-      return;
-    }
-
     setConfig({ ...config, [key]: value });
     setChanged(true);
-  }, [config, isFirebaseCrash]);
+  }, [config]);
 
   const handleSubmit = useCallback(() => {
     const { isValid, message } = validateName(name);
@@ -294,7 +294,14 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
     }
     if (record.type === CONNECTION_TYPE.FIREBASE_CRASH) {
       validConfig.project_id = getSelectedOptionValue(validConfig.project_id);
-      validConfig.dataset_id = getSelectedOptionValue(validConfig.dataset_id);
+      const app = validConfig.app_id;
+      if (app && app.app) {
+        validConfig.app_id = app.app.app_id;
+        validConfig.platform = app.app.platform;
+        validConfig.bundle_identifier = app.app.identifier;
+      } else {
+        validConfig.app_id = getSelectedOptionValue(validConfig.app_id);
+      }
     }
     Object.keys(validConfig).forEach((key) => {
       const field = connectionFields.find(f => f.key === key);
@@ -345,16 +352,15 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
       };
       row[key] = getSelectedOptionValue(row[key]);
     }
-    if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && key === 'dataset_id' && isFirebaseCrash) {
-      api = isFirebaseCrashOauthConnected && firebaseProjectId ? listFirebaseCrashDatasets : null;
+    if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && key === 'app_id' && isFirebaseCrash) {
+      const projectId = getSelectedOptionValue(config.project_id);
+      api = isFirebaseCrashOauthConnected && projectId ? listFirebaseCrashApps : null;
       fieldColumn = {
         ...column,
-        readonly: !isFirebaseCrashOauthConnected || !firebaseProjectId,
-        placeholder: !isFirebaseCrashOauthConnected
-          ? gettext('Please connect Google first')
-          : firebaseProjectId
-            ? gettext('Select a BigQuery dataset')
-            : gettext('Select a Firebase project first'),
+        readonly: !isFirebaseCrashOauthConnected || !projectId,
+        placeholder: isFirebaseCrashOauthConnected
+          ? (projectId ? gettext('Select a Firebase application') : gettext('Please select a Firebase project first'))
+          : gettext('Please connect Google first'),
       };
       row[key] = getSelectedOptionValue(row[key]);
     }
@@ -373,7 +379,7 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
     );
   }, [
     config, isSubmitting, onConfigChange, isFirebaseCrash, isFirebaseCrashOauthConnected,
-    firebaseProjectId, listFirebaseCrashProjects, listFirebaseCrashDatasets,
+    listFirebaseCrashProjects, listFirebaseCrashApps,
   ]);
 
   const onCopyCallbackUrl = useCallback(() => {

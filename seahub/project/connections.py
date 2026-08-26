@@ -58,7 +58,7 @@ from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_tick
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES, send_connection_data_event
 from seahub.settings import GITHUB_WEBHOOK_SECRET
 from seahub.project.github_issues_api import GitHubAPI, GitHubAppNotInstalled
-from seahub.project.firebase_crash_api import FirebaseCrashOAuthAPI, FirebaseCrashOAuthError
+from seahub.project.firebase_crash_api import FirebaseCrashOAuthAPI, FirebaseCrashOAuthError, FIREBASE_CRASHLYTICS_DATASET_ID
 from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
 from seahub.utils.mailbox_manager import move_emails_to_trash
 from seahub.project.discourse_api import DiscourseForumAPI, DiscourseForumAPIException
@@ -75,119 +75,6 @@ logger = logging.getLogger(__name__)
 
 
 FIREBASE_CRASH_MUTABLE_FIELDS = frozenset(('outdated', 'linked_ticket'))
-
-
-def _parse_connection_config(value):
-    if isinstance(value, dict):
-        return value
-    if not isinstance(value, str):
-        raise ValueError('config invalid.')
-    try:
-        config = json.loads(value)
-    except (TypeError, ValueError) as e:
-        raise ValueError('config invalid.') from e
-    if not isinstance(config, dict):
-        raise ValueError('config invalid.')
-    return config
-
-
-def _normalize_linked_ticket_id(value):
-    if value in (None, ''):
-        return None
-    if isinstance(value, bool):
-        raise TicketLinkValidationError('linked_ticket invalid.')
-    try:
-        ticket_id = int(value)
-    except (TypeError, ValueError) as e:
-        raise TicketLinkValidationError('linked_ticket invalid.') from e
-    if ticket_id <= 0:
-        raise TicketLinkValidationError('linked_ticket invalid.')
-    return ticket_id
-
-
-def _get_connection_record_linked_ticket(seadb_api, project_uuid, connection_id, record_id):
-    table_name = SchemaTables.FIREBASE_CRASH_ISSUES.table_name(connection_id)
-    sql = f"SELECT `_pk`, `linked_ticket` FROM `{table_name}` WHERE `_pk` = {int(record_id)}"
-    rows = seadb_api.query_rows(project_uuid, sql).get('results', [])
-    if not rows:
-        raise TicketLinkValidationError('Firebase Crashlytics record not found.')
-    return _normalize_linked_ticket_id(rows[0].get('linked_ticket'))
-
-
-def _sync_firebase_crash_ticket_link(
-    seadb_api,
-    project_uuid,
-    connection_id,
-    record_id,
-    old_ticket_id,
-    new_ticket_id,
-):
-    if old_ticket_id == new_ticket_id:
-        return []
-
-    linked_record_key = f'{connection_id}_{record_id}'
-    old_ticket = None
-    new_ticket = None
-    if old_ticket_id is not None:
-        old_ticket, _ = get_ticket(seadb_api, project_uuid, old_ticket_id)
-    if new_ticket_id is not None:
-        new_ticket, _ = get_ticket(seadb_api, project_uuid, new_ticket_id)
-        if not new_ticket:
-            raise TicketLinkValidationError('Ticket not found.')
-
-    ticket_updates = {}
-    ticket_snapshots = []
-
-    def get_linked_records(ticket):
-        records = ticket.get('linked_connection_records', []) if ticket else []
-        return records if isinstance(records, list) else []
-
-    if old_ticket:
-        old_records = list(dict.fromkeys(get_linked_records(old_ticket)))
-        next_old_records = [record for record in old_records if record != linked_record_key]
-        if next_old_records != old_records:
-            ticket_updates[old_ticket['_pk']] = {
-                'pk': old_ticket['_pk'],
-                'row': {'linked_connection_records': next_old_records},
-            }
-            ticket_snapshots.append((old_ticket['_pk'], old_records))
-
-    if new_ticket:
-        new_records = list(dict.fromkeys(get_linked_records(new_ticket)))
-        if linked_record_key not in new_records:
-            new_records.append(linked_record_key)
-        if new_records != get_linked_records(new_ticket):
-            ticket_updates[new_ticket['_pk']] = {
-                'pk': new_ticket['_pk'],
-                'row': {'linked_connection_records': new_records},
-            }
-            ticket_snapshots.append((new_ticket['_pk'], get_linked_records(new_ticket)))
-
-    if ticket_updates:
-        seadb_api.update_rows(
-            project_uuid,
-            SchemaTables.TICKETS.table_name(),
-            list(ticket_updates.values()),
-        )
-    return ticket_snapshots
-
-
-def _restore_firebase_crash_ticket_links(seadb_api, project_uuid, snapshots):
-    for ticket_pk, linked_records in reversed(snapshots):
-        try:
-            seadb_api.update_rows(
-                project_uuid,
-                SchemaTables.TICKETS.table_name(),
-                [{
-                    'pk': ticket_pk,
-                    'row': {'linked_connection_records': linked_records},
-                }],
-            )
-        except Exception:
-            logger.exception(
-                'Failed to restore Firebase Crashlytics ticket link for ticket %s',
-                ticket_pk,
-            )
 
 
 def _validate_firebase_crash_record_update(row_data):
@@ -248,12 +135,15 @@ def _validate_firebase_crash_connection_config(project_uuid, config):
         raise FirebaseCrashOAuthError('Firebase Crashlytics OAuth authorization is required.')
 
     project_id = config.get('project_id')
-    dataset_id = config.get('dataset_id')
-    if not project_id or not dataset_id:
-        raise FirebaseCrashOAuthError('Firebase project and BigQuery dataset are required.')
+    if not project_id:
+        raise FirebaseCrashOAuthError('Firebase project is required.')
+
+    app_id = config.get('app_id')
+    if not app_id:
+        raise FirebaseCrashOAuthError('Firebase application is required.')
 
     try:
-        firebase_crash_api.validate_connection_config(project_id, dataset_id)
+        firebase_crash_api.validate_connection_config(project_id, FIREBASE_CRASHLYTICS_DATASET_ID)
     finally:
         _persist_firebase_crash_oauth(project_uuid, firebase_crash_api)
 
@@ -446,10 +336,7 @@ class ProjectConnectionsView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        try:
-            config = _parse_connection_config(config)
-        except ValueError as e:
-            return api_error(status.HTTP_400_BAD_REQUEST, str(e))
+        config = json.loads(config)
         if connection_type == ConnectionType.EMAIL.value and is_oauth_email_provider(config.get('server_provider')):
             error_msg = 'OAuth email connections must be authorized before creation.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -817,12 +704,9 @@ class ProjectConnectionView(APIView):
 
         # argument check
         if new_config:
-            try:
-                new_config = _parse_connection_config(new_config)
-            except ValueError as e:
-                return api_error(status.HTTP_400_BAD_REQUEST, str(e))
             config = decrypt_config(json.loads(project_connection.config))
             old_config = config.copy()
+            new_config = json.loads(new_config)
             config.update(new_config)
             new_config = config
 
@@ -833,11 +717,11 @@ class ProjectConnectionView(APIView):
             if project_connection.type == ConnectionType.FIREBASE_CRASH.value:
                 if project_connection.last_sync_time and any(
                     old_config.get(field) != new_config.get(field)
-                    for field in ('project_id', 'dataset_id')
+                    for field in ('project_id', 'app_id')
                 ):
                     return api_error(
                         status.HTTP_400_BAD_REQUEST,
-                        'Firebase project and BigQuery dataset cannot be changed after the connection has synced. Create a new connection instead.',
+                        'Firebase project or application cannot be changed after the connection has synced. Create a new connection instead.',
                     )
                 try:
                     _validate_firebase_crash_connection_config(project_uuid, new_config)
@@ -1507,6 +1391,38 @@ class ProjectFirebaseCrashDatasetsView(APIView):
         return Response({'datasets': datasets})
 
 
+class ProjectFirebaseCrashAppsView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def get(self, request, project_uuid):
+        firebase_project_id = request.GET.get('project_id', '')
+        if not firebase_project_id:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'project_id is required.')
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            return api_error(status.HTTP_404_NOT_FOUND, f'Project {project_uuid} not found.')
+        if not check_project_admin_permission(request.user.username, project.workspace.owner):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        firebase_crash_api = _get_firebase_crash_oauth_api(project_uuid)
+        if not firebase_crash_api:
+            return api_error(
+                status.HTTP_400_BAD_REQUEST,
+                'Firebase Crashlytics OAuth authorization is required.',
+            )
+        try:
+            apps = firebase_crash_api.list_apps(firebase_project_id)
+        except FirebaseCrashOAuthError as e:
+            return api_error(status.HTTP_400_BAD_REQUEST, str(e))
+        finally:
+            _persist_firebase_crash_oauth(project_uuid, firebase_crash_api)
+        return Response({'apps': apps})
+
+
 class ProjectConnectionRecordView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
@@ -1657,7 +1573,6 @@ class ProjectConnectionRecordView(APIView):
 
         update_row = {'pk': int(record_id), 'row': {}}
         seadb_api = SeaDBAPI()
-        ticket_link_snapshots = []
         general_task_event = None
 
         if project_connection.type == ConnectionType.GENERAL_TASK.value:
@@ -1729,45 +1644,25 @@ class ProjectConnectionRecordView(APIView):
 
         if 'linked_ticket' in row_data and project_connection.type in LINKED_TICKET_SUPPORT_TYPES:
             linked_ticket = row_data.get('linked_ticket')
-            if project_connection.type == ConnectionType.FIREBASE_CRASH.value:
-                try:
-                    linked_ticket = _normalize_linked_ticket_id(linked_ticket)
-                    old_linked_ticket = _get_connection_record_linked_ticket(
-                        seadb_api, project_uuid, connection_id, record_id
-                    )
-                    ticket_link_snapshots = _sync_firebase_crash_ticket_link(
-                        seadb_api,
-                        project_uuid,
-                        connection_id,
-                        record_id,
-                        old_linked_ticket,
-                        linked_ticket,
-                    )
-                except TicketLinkValidationError as e:
-                    return api_error(status.HTTP_400_BAD_REQUEST, str(e))
-                except Exception as e:
-                    logger.error(f'update Firebase Crashlytics ticket link error: {e}')
-                    return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
             update_row['row']['linked_ticket'] = linked_ticket
             update_row['row']['record_modified_time'] = datetime.datetime.now(datetime.UTC).isoformat()
-            if project_connection.type != ConnectionType.FIREBASE_CRASH.value:
-                try:
-                    ticket, ticket_metadata = get_ticket(seadb_api, project_uuid, linked_ticket)
-                    if not ticket:
-                        return api_error(status.HTTP_404_NOT_FOUND, 'Ticket not found.')
-                    old_value = ticket.get('linked_connection_records', []) or []
-                    new_value = list(dict.fromkeys(old_value + [f'{connection_id}_{record_id}']))
-                    update_rows = [
-                        {
-                            'pk': ticket.get('_pk'),
-                            'row': {'linked_connection_records': new_value}
-                        }
-                    ]
-                    seadb_api.update_rows(project_uuid, SchemaTables.TICKETS.table_name(), update_rows)
-                except Exception as e:
-                    logger.error(f'update connection record error: {e}')
-                    error_msg = 'Internal Server Error'
-                    return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+            try:
+                ticket, ticket_metadata = get_ticket(seadb_api, project_uuid, linked_ticket)
+                if not ticket:
+                    return api_error(status.HTTP_404_NOT_FOUND, 'Ticket not found.')
+                old_value = ticket.get('linked_connection_records', []) or []
+                new_value = list(dict.fromkeys(old_value + [f'{connection_id}_{record_id}']))
+                update_rows = [
+                    {
+                        'pk': ticket.get('_pk'),
+                        'row': {'linked_connection_records': new_value}
+                    }
+                ]
+                seadb_api.update_rows(project_uuid, SchemaTables.TICKETS.table_name(), update_rows)
+            except Exception as e:
+                logger.error(f'update connection record error: {e}')
+                error_msg = 'Internal Server Error'
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         if not update_row['row']:
             return Response({'success': True})
@@ -1776,10 +1671,6 @@ class ProjectConnectionRecordView(APIView):
             seadb_api.update_rows(project_uuid, table_name, [update_row])
         except Exception as e:
             logger.error(f'update connection record error: {e}')
-            if ticket_link_snapshots:
-                _restore_firebase_crash_ticket_links(
-                    seadb_api, project_uuid, ticket_link_snapshots
-                )
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
@@ -2093,7 +1984,6 @@ class ProjectConnectionRecordsView(APIView):
 
         update_rows = []
         general_task_events = []
-        ticket_link_snapshots = []
         email_unread_by_thread_id = {}
         seadb_api = SeaDBAPI()
         for record in records_data:
@@ -2175,34 +2065,6 @@ class ProjectConnectionRecordsView(APIView):
                 update_row['row']['tags'] = row_data.get('tags')
                 update_row['row']['record_modified_time'] = datetime.datetime.now(datetime.UTC).isoformat()
 
-            if project_connection.type == ConnectionType.FIREBASE_CRASH.value and 'linked_ticket' in row_data:
-                try:
-                    linked_ticket = _normalize_linked_ticket_id(row_data.get('linked_ticket'))
-                    old_linked_ticket = _get_connection_record_linked_ticket(
-                        seadb_api, project_uuid, connection_id, row_id
-                    )
-                    ticket_link_snapshots.extend(_sync_firebase_crash_ticket_link(
-                        seadb_api,
-                        project_uuid,
-                        connection_id,
-                        row_id,
-                        old_linked_ticket,
-                        linked_ticket,
-                    ))
-                except TicketLinkValidationError as e:
-                    _restore_firebase_crash_ticket_links(
-                        seadb_api, project_uuid, ticket_link_snapshots
-                    )
-                    return api_error(status.HTTP_400_BAD_REQUEST, str(e))
-                except Exception as e:
-                    logger.error(f'batch update Firebase Crashlytics ticket link error: {e}')
-                    _restore_firebase_crash_ticket_links(
-                        seadb_api, project_uuid, ticket_link_snapshots
-                    )
-                    return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
-                update_row['row']['linked_ticket'] = linked_ticket
-                update_row['row']['record_modified_time'] = datetime.datetime.now(datetime.UTC).isoformat()
-
             if update_row['row']:
                 update_rows.append(update_row)
 
@@ -2213,10 +2075,6 @@ class ProjectConnectionRecordsView(APIView):
             seadb_api.update_rows(project_uuid, table_name, update_rows)
         except Exception as e:
             logger.error(f'batch update connection records error: {e}')
-            if ticket_link_snapshots:
-                _restore_firebase_crash_ticket_links(
-                    seadb_api, project_uuid, ticket_link_snapshots
-                )
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 

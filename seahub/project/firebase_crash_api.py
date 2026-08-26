@@ -22,6 +22,10 @@ OAUTH_TOKEN_EXPIRY_BUFFER_SECONDS = 60
 APP_TABLE_PATTERN = re.compile(r'^[A-Za-z0-9_-]+_(ANDROID|IOS)$')
 PROJECT_ID_PATTERN = re.compile(r'^[a-z][a-z0-9-]{4,28}[a-z0-9]$')
 DATASET_ID_PATTERN = re.compile(r'^[A-Za-z_][A-Za-z0-9_]{0,1023}$')
+# Crashlytics exports to a single fixed BigQuery dataset per project.
+FIREBASE_CRASHLYTICS_DATASET_ID = 'firebase_crashlytics'
+FIREBASE_ANDROID_APPS_URL = 'https://firebase.googleapis.com/v1beta1/projects/{project_id}/androidApps'
+FIREBASE_IOS_APPS_URL = 'https://firebase.googleapis.com/v1beta1/projects/{project_id}/iosApps'
 
 
 class FirebaseCrashOAuthError(Exception):
@@ -202,10 +206,50 @@ class FirebaseCrashOAuthAPI:
                 if dataset.get('datasetReference', {}).get('datasetId')
             ],
             key=lambda dataset: (
-                dataset['dataset_id'] != 'firebase_crashlytics',
+                dataset['dataset_id'] != FIREBASE_CRASHLYTICS_DATASET_ID,
                 dataset['name'].lower(),
                 dataset['dataset_id'],
             ),
+        )
+
+    def list_apps(self, project_id):
+        self._validate_resource_ids(project_id)
+        apps = []
+        for platform, url, identifier_key in (
+            ('ANDROID', FIREBASE_ANDROID_APPS_URL, 'packageName'),
+            ('IOS', FIREBASE_IOS_APPS_URL, 'bundleId'),
+        ):
+            page_token = None
+            visited_page_tokens = set()
+            while True:
+                if page_token:
+                    if page_token in visited_page_tokens:
+                        raise FirebaseCrashOAuthError(
+                            'Firebase application API returned a repeated page token.'
+                        )
+                    visited_page_tokens.add(page_token)
+                params = {'pageSize': 1000}
+                if page_token:
+                    params['pageToken'] = page_token
+                data = self._get(url.format(project_id=project_id), params=params)
+                for app in data.get('apps') or []:
+                    app_id = app.get('appId')
+                    if not app_id:
+                        continue
+                    identifier = app.get(identifier_key)
+                    apps.append({
+                        'app_id': app_id,
+                        'name': app.get('displayName') or identifier or app_id,
+                        'platform': platform,
+                        'identifier': identifier,
+                    })
+                page_token = data.get('nextPageToken')
+                if not page_token:
+                    break
+
+        return sorted(
+            apps,
+            key=lambda app: (app['name'].lower(), app['platform'], app['app_id']),
         )
 
     def _list_dataset_tables(self, project_id, dataset_id):

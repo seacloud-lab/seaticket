@@ -1135,8 +1135,8 @@ def get_firebase_crash_issue_by_pk(seadb_api, project_uuid, connection_id, _pk):
     from seahub.tickets.ticket_utils import get_ticket_title
     table_name = SchemaTables.FIREBASE_CRASH_ISSUES.table_name(connection_id)
     sql = (
-        f"SELECT `_pk`, `issue_id`, `source_table`, `app_id`, `title`, `subtitle`, `content`, `error_type`, `platform`, "
-        f"`bundle_identifier`, `app_version`, `is_fatal`, `occurrence_count`, `affected_users`, "
+        f"SELECT `_pk`, `issue_id`, `title`, `subtitle`, `content`, `error_type`, "
+        f"`app_version`, `is_fatal`, `occurrence_count`, `affected_users`, "
         f"`first_seen_time`, `last_seen_time`, `linked_ticket`, `outdated`, `ai_summary` "
         f"FROM `{table_name}` WHERE _pk = {_pk}"
     )

@@ -182,7 +182,7 @@ const getDiscordOriginalPageUrl = (connection, row, columns) => {
 
 const getFirebaseCrashOriginalPageUrl = (connection, row, columns) => {
   const projectId = connection.config?.project_id;
-  const appId = getCellValueByColumn(row, getColumnByName(columns, 'app_id'));
+  const appId = connection.config?.app_id;
   const issueId = getCellValueByColumn(row, getColumnByName(columns, 'issue_id'));
   if (!projectId || !appId || !issueId) return '';
   return `https://console.firebase.google.com/project/${encodeURIComponent(projectId)}/crashlytics/app/${encodeURIComponent(appId)}/issues/${encodeURIComponent(issueId)}`;
