@@ -16,6 +16,7 @@ const Container = ({
   collaborators,
   onChange,
   onToggle,
+  ...props
 }) => {
   const options = useMemo(() => {
     if (!Array.isArray(collaborators) || collaborators.length === 0) return [];
@@ -43,6 +44,7 @@ const Container = ({
       optionHeight={32}
       onChange={onChange}
       onToggle={onToggle}
+      { ...props }
     >
       {isShowDeleteArea && Array.isArray(value) ? ({ value, onChange }) => {
         if (value.length === 0) return null;

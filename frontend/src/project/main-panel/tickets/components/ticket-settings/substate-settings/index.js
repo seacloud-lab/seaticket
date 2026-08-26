@@ -83,7 +83,6 @@ const SubStateSettings = ({
           target={editorRef}
           sameWidthWithTarget={240}
           isMultiple={false}
-          isCloseSubmit={true}
           value={substate}
           options={options}
           onChange={onSubstateChange}

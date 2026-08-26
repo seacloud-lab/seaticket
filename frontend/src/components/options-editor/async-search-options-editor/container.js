@@ -137,7 +137,7 @@ const Container = forwardRef(({
       <Options
         isLoading={isLoading}
         isAsyncSearch={true}
-        displayOptions={options}
+        options={options}
         maxHeight={maxHeight - 26} // 26: padding-top(12) + padding-bottom(12) + border(2)
         isSearchEnabled={true}
         searchValue={searchValue}

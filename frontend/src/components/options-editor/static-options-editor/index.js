@@ -78,7 +78,7 @@ const StaticOptionsEditor = ({
         value={value}
         options={options}
         optionHeight={optionHeight}
-        onChange={isCloseSubmit ? () => {} : onChange}
+        onChange={isCloseSubmit && !isMultiple ? () => {} : onChange}
         onToggle={onToggle}
         onCreate={onCreate}
         defaultHighlightIndex={defaultHighlightIndex}

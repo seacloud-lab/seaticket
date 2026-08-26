@@ -108,7 +108,6 @@ const StateSettings = ({
           sameWidthWithTarget={sameWidthWithTarget}
           isMultiple={false}
           isSearchEnabled={false}
-          isCloseSubmit={true}
           value={`${state}__${substate}`}
           options={options}
           onChange={onStateChange}

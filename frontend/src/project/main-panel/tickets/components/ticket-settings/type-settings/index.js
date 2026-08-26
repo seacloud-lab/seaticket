@@ -81,7 +81,6 @@ const TypeSettings = ({
           target={editorRef}
           sameWidthWithTarget={240}
           isMultiple={false}
-          isCloseSubmit={true}
           value={value}
           placeholder={gettext('Search type')}
           emptyTip={gettext('No types')}

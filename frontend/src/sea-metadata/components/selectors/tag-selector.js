@@ -1,11 +1,12 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import classnames from 'classnames';
 import { OptionsEditor, RemoveButton } from '@/components';
 import { useTagsData } from '@/sea-metadata/hooks';
 import { getTagsOptions } from '@/sea-metadata/utils/column';
 import Tag from '@/sea-metadata/components/tag';
-import { getRowById } from '@/sea-metadata/utils/row';
+import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
 import { gettext } from '@/constants';
+import { isCellValueChanged } from '@/sea-metadata/utils/cell';
 
 const TagSelector = ({
   isMultiple = true,
@@ -31,6 +32,17 @@ const TagSelector = ({
     }));
   }, [tagsData]);
 
+  const handleChange = useCallback((newValue) => {
+    const _newValue = Array.isArray(newValue) && newValue.length > 0 ? newValue.map(v => Number(v)) : newValue;
+    if (!isCellValueChanged(_newValue, value)) return;
+    let validValue = newValue;
+    if (Array.isArray(newValue) && newValue.length > 0) {
+      const tags = getRowsByIds(tagsData, newValue);
+      validValue = tags.map(tag => Number(tag._id));
+    }
+    onChange?.(validValue);
+  }, [value, tagsData, onChange]);
+
   return (
     <OptionsEditor
       className={classnames('sea-metadata-data-filter-popover', className)}
@@ -43,7 +55,7 @@ const TagSelector = ({
       emptyTip={gettext('No tags available')}
       value={Array.isArray(value) ? value.map(v => String(v)) : []}
       options={options}
-      onChange={onChange}
+      onChange={handleChange}
     >
       {({ value: selectedTagIds, onChange }) => {
         if (!Array.isArray(selectedTagIds) || selectedTagIds.length === 0) return null;

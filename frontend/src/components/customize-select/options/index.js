@@ -164,7 +164,7 @@ class Options extends Component {
     this.filterOptions = searchOptions(options, searchVal);
     if (this.filterOptions.length === 0) {
       return (
-        <EmptyTip text={noOptionsPlaceholder || gettext('No results')} className="seaqa-customize-select-empty-tip" />
+        <EmptyTip text={searchVal ? gettext('No results') : noOptionsPlaceholder} className="seaqa-customize-select-empty-tip" />
       );
     }
     return this.filterOptions.map((opt, i) => {

@@ -3,8 +3,7 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { useTagsData } from '@/sea-metadata/hooks';
 import { gettext } from '@/constants';
-import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
-import { isCellValueChanged } from '@/sea-metadata/utils/cell';
+import { getRowById } from '@/sea-metadata/utils/row';
 import { TagSelector } from '../../../selectors';
 import SelectTrigger from '@/components/customize-select/select-trigger';
 
@@ -25,17 +24,6 @@ const TagsFilter = ({ readOnly, value, onChange }) => {
     setIsShowEditor(false);
   }, []);
 
-  const handleChange = useCallback((newValue) => {
-    const _newValue = Array.isArray(newValue) && newValue.length > 0 ? newValue.map(v => Number(v)) : newValue;
-    if (!isCellValueChanged(_newValue, value)) return;
-    let validValue = newValue;
-    if (Array.isArray(newValue) && newValue.length > 0) {
-      const tags = getRowsByIds(tagsData, newValue);
-      validValue = tags.map(tag => Number(tag._id));
-    }
-    onChange?.(validValue);
-  }, [value, tagsData, onChange]);
-
   let validValue = Array.isArray(value) ? value.map(v => v + '') : [];
   validValue = validValue.filter(id => getRowById(tagsData, id));
 
@@ -53,7 +41,7 @@ const TagsFilter = ({ readOnly, value, onChange }) => {
         <TagSelector
           target={editorRef}
           value={value}
-          onChange={handleChange}
+          onChange={onChange}
           onToggle={closeEditor}
         />
       )}

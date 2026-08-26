@@ -24,6 +24,7 @@ const CollaboratorEditor = ({
   ],
   onChange,
   onClose: onToggle,
+  ...props
 }) => {
   const containerRef = useRef(null);
 
@@ -65,8 +66,9 @@ const CollaboratorEditor = ({
         emptyTip={emptyTip}
         collaborators={collaborators}
         value={value}
-        onChange={isCloseSubmit ? () => {} : onChange}
+        onChange={isCloseSubmit && !isMultiple ? () => {} : onChange}
         onToggle={onToggle}
+        { ...props }
       />
     </CustomizePopover>
   );

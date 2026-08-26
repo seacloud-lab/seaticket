@@ -44,7 +44,6 @@ const ColumnSelector = ({
       options={options}
       containerClassName="sea-metadata-columns-select-container"
       searchable={true}
-      // isInModal={true}
       searchPlaceholder={context.translate('Search {column}')}
       noOptionsPlaceholder={gettext('No results')}
       onChange={onChange}

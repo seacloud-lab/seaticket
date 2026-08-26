@@ -35,7 +35,6 @@ const PriorityEditor = ({
     <OptionsEditor
       className={classnames('seaqa-priority-editor-popover', className)}
       isSearchEnabled={false}
-      isCloseSubmit={false}
       checkPlacement="left"
       options={options}
       modifiers={modifiers}

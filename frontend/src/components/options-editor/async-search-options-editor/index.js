@@ -58,7 +58,7 @@ const AsyncSearchOptionsEditor = ({
         checkPlacement={checkPlacement}
         optionClassName={optionClassName}
         className={contentClassName}
-        onChange={isCloseSubmit ? () => {} : onChange}
+        onChange={isCloseSubmit && !isMultiple ? () => {} : onChange}
         onToggle={onToggle}
         onSearch={onSearch}
       >
