@@ -149,11 +149,11 @@
 }
 
 .seaqa-ai-model-selector-editor .popover,
-.seaqa-ai-model-selector-editor .option-editor-container {
+.seaqa-ai-model-selector-editor .options-editor-container {
   min-height: fit-content;
 }
 
-.seaqa-ai-model-selector-editor .option-editor-container .option-editor-content {
+.seaqa-ai-model-selector-editor .options-editor-container .options-editor-content {
   min-height: fit-content;
 }
 

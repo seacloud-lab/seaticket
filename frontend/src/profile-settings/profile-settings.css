@@ -123,14 +123,6 @@ body {
   color: var(--bs-sf-grey-text);
 }
 
-.language-selector {
-  width: 260px;
-}
-
-.language-selector .seaqa-customize-select .option-group {
-  padding: 0;
-}
-
 .profile-settings .btn {
   min-width: 60px;
 }

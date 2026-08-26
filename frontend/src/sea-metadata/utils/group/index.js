@@ -30,13 +30,7 @@ export const getGroupbyColumns = (columns, groupbys = []) => {
 
 export const getSelectedCountType = (column, countType) => {
   const type = countType || getDefaultCountType(column);
-  if (!type) {
-    return null;
-  }
-  if (isDateColumn(column)) {
-    return DISPLAY_GROUP_DATE_GRANULARITY[type];
-  }
-  return null;
+  return type || null;
 };
 
 export const isShowGroupCountType = (column) => {

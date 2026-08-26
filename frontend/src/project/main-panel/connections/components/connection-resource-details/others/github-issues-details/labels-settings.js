@@ -1,8 +1,8 @@
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
-import { Option, CustomizePopover, CustomizeLabel, IconButton } from '@/components';
-import OptionEditorContainer from '@/components/option-editor/option-editor-container';
+import { Option, CustomizePopover, CustomizeLabel, RemoveButton } from '@/components';
+import Container from '@/components/options-editor/static-options-editor/container';
 import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { isEsc, isL } from '@/utils/hotkey';
 import { getColumnOptions, getOption } from '@/sea-metadata/utils/column';
@@ -107,14 +107,7 @@ const LabelsSettings = ({
                 return (
                   <Option option={label} key={label.id} className="sea-metadata-multiple-select-editor-option">
                     {!isReadonly && (
-                      <IconButton
-                        icon="close"
-                        onClick={(event) => handleRemove(event, label.id)}
-                        className="sea-metadata-select-remove-btn no-hover-bg cursor-pointer"
-                        size={{ btn: 14, icon: 10 }}
-                        style={{ margin: '0 -2px 0 2px' }}
-                        iconStyle={{ color: label.text_color }}
-                      />
+                      <RemoveButton callback={(event) => handleRemove(event, label.id)} size={10} iconStyle={{ color: label.text_color }} />
                     )}
                   </Option>
                 );
@@ -128,12 +121,12 @@ const LabelsSettings = ({
       {!isReadonly && isShowEditor && (
         <CustomizePopover
           target={editorRef}
-          className="option-editor-popover seaqa-settings-popover"
+          className="options-editor-popover seaqa-settings-popover"
           sameWidthWithTarget={240}
           hidePopover={closeEditor}
           hidePopoverWithEsc={closeEditor}
         >
-          <OptionEditorContainer
+          <Container
             id={id}
             ref={optionEditorContainerRef}
             isMultiple={true}
@@ -149,19 +142,12 @@ const LabelsSettings = ({
                 if (!option) return null;
                 return (
                   <Option option={option} key={optionId} className="sea-metadata-multiple-select-editor-option">
-                    <IconButton
-                      icon="close"
-                      onClick={() => onChange(optionId)}
-                      className="sea-metadata-select-remove-btn no-hover-bg"
-                      size={{ btn: 14, icon: 10 }}
-                      style={{ margin: '0 -2px 0 2px', cursor: 'pointer' }}
-                      iconStyle={{ color: option.text_color }}
-                    />
+                    <RemoveButton callback={() => onChange(optionId)} size={10} iconStyle={{ color: option.text_color }} />
                   </Option>
                 );
               });
             }}
-          </OptionEditorContainer>
+          </Container>
         </CustomizePopover>
       )}
     </>

@@ -36,6 +36,7 @@ export const enableUserSetName = window.app.pageOptions.enableUserSetName;
 export const customNavItems = window.app.pageOptions.customNavItems;
 export const disableAddingPersonalProjects = window.app.pageOptions.disableAddingPersonalProjects;
 export const isOrgStaff = window.app.pageOptions.isOrgStaff;
+export const langList = window.app.pageOptions?.langList || [];
 
 export const trashCleanExpireDays = window.app.pageOptions.trashCleanExpireDays;
 

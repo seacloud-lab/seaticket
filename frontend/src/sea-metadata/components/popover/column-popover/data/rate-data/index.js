@@ -2,10 +2,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { FormGroup, Label } from 'reactstrap';
 import classnames from 'classnames';
-import CustomizePopover from '@/components/customize-popover';
-import CustomizeSelect from '@/components/customize-select';
-import Icon from '@/components/icon';
-import IconBtn from '@/components/icon-button';
+import { CustomizePopover, CustomizeSelect, Icon, IconButton } from '@/components';
 import { gettext } from '@/constants';
 import { RATE_MAX_NUMBER, RATE_COLORS, RATE_TYPES, DEFAULT_RATE_DATA } from '../../../../../constants';
 
@@ -54,7 +51,7 @@ const RateData = ({ value, onChange, updatePopoverState }) => {
         <FormGroup className="rate-column-data-setting-item rate-column-data-style-setting">
           <Label>{gettext('Style')}</Label>
           <div
-            className={classnames('seaqa-customize-select custom-select rate-column-data-style-setting-wrapper', { 'focus': isShowStylePopover })}
+            className={classnames('seaqa-customize-select rate-column-data-style-setting-wrapper', { 'focus': isShowStylePopover })}
             id="sea-metadata-rate-column-data-style-setting-wrapper"
             onClick={openStylePopover}
             ref={selectedBtnRef}
@@ -76,7 +73,7 @@ const RateData = ({ value, onChange, updatePopoverState }) => {
                 {RATE_COLORS.map(color => {
                   return RATE_TYPES.map(type => {
                     return (
-                      <IconBtn
+                      <IconButton
                         key={type + 'color' + color}
                         symbol={type}
                         onClick={() => onRateStyleChange(color, type)}
@@ -93,7 +90,7 @@ const RateData = ({ value, onChange, updatePopoverState }) => {
         <FormGroup className="rate-column-data-setting-item rate-column-data-max-setting">
           <Label>{gettext('Max')}</Label>
           <CustomizeSelect
-            value={selectedMaxOption}
+            value={selectedMaxOption?.value}
             options={maxOptions}
             onChange={onMaxChange}
           />

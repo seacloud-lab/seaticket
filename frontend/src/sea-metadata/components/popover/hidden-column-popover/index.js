@@ -122,6 +122,7 @@ const HideColumnPopover = ({ hidePopover, onChange, readOnly, target, placement,
         <HiddenColumns
           readOnly={readOnly}
           columns={displayColumns}
+          searchValue={searchValue}
           hiddenColumns={hiddenColumns}
           onChange={hideColumn}
           canReorder={canReorder}

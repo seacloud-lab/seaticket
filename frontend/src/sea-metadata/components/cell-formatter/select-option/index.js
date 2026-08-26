@@ -9,13 +9,12 @@ import './index.css';
 const SelectOption = ({ option, className, fontSize, children }) => {
   const style = useMemo(() => {
     let _style = {
-      display: 'inline-block',
       padding: '0px 10px',
       height: '20px',
       lineHeight: '20px',
       textAlign: 'center',
       borderRadius: '10px',
-      maxWidth: '250px',
+      maxWidth: 'min(calc(100%), 250px)',
       fontSize: fontSize ? fontSize : 13,
       backgroundColor: option.color,
       color: option.text_color || option.textColor || null,
@@ -24,19 +23,22 @@ const SelectOption = ({ option, className, fontSize, children }) => {
       _style['border'] = '1px solid #d1d9e0b3';
       _style['lineHeight'] = '18px';
     }
+    if (children) {
+      _style['gap'] = 4;
+    }
     return _style;
-  }, [option, fontSize]);
+  }, [option, fontSize, children]);
 
   const optionName = getOptionDisplayNameByOption(option);
 
   return (
     <div
-      className={classnames('sea-metadata-ui-select-option text-truncate', className)}
+      className={classnames('sea-metadata-ui-select-option d-flex align-items-center justify-content-center', className)}
       style={style}
       title={optionName}
       aria-label={optionName}
     >
-      {optionName}
+      <span className="flex-1 text-truncate">{optionName}</span>
       {children}
     </div>
   );

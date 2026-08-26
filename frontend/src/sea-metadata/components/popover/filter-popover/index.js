@@ -46,7 +46,7 @@ class FilterPopover extends Component {
 
   componentDidMount() {
     this.popoverRef && this.popoverRef.click();
-    document.addEventListener('click', this.hideDTablePopover, true);
+    document.addEventListener('click', this.hidePopoverByClick, true);
     document.addEventListener('keydown', this.onHotKey);
     this.unsubscribeOpenSelect = context.eventBus.subscribe(EVENT_BUS_TYPE.OPEN_SELECT, this.setSelectStatus);
     window.addEventListener('resize', this.syncPopoverScrollState);
@@ -54,7 +54,7 @@ class FilterPopover extends Component {
   }
 
   componentWillUnmount() {
-    document.removeEventListener('click', this.hideDTablePopover, true);
+    document.removeEventListener('click', this.hidePopoverByClick, true);
     document.removeEventListener('keydown', this.onHotKey);
     window.removeEventListener('resize', this.syncPopoverScrollState);
     this.unsubscribeOpenSelect();
@@ -89,7 +89,8 @@ class FilterPopover extends Component {
     this.isSelectOpen = status;
   };
 
-  hideDTablePopover = (e) => {
+  hidePopoverByClick = (e) => {
+    if (document.getElementsByClassName('sea-metadata-data-filter-popover').length > 0) return;
     if (this.popoverRef && !getEventClassName(e).includes('popover') && !this.popoverRef.contains(e.target)) {
       e.preventDefault();
       e.stopPropagation();

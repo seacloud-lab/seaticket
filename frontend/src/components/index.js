@@ -36,8 +36,7 @@ import ProjectIcon from './project-icon';
 import { Collaborator, AsyncCollaborator } from './collaborator';
 import CollaboratorEditor from './collaborator-editor';
 import Option from './option';
-import OptionEditor from './option-editor';
-import SyncOptionEditor from './sync-option-editor';
+import OptionsEditor from './options-editor';
 import PasswordInput from './password-input';
 import TextInput from './text-input';
 import UploadFile from './upload-file';
@@ -52,7 +51,7 @@ import ProjectsTable from './projects-table';
 import UserSelect from './user-select';
 import Switch from './switch';
 import IconTooltip from './icon-tooltip';
-import SelectEditor from './select-editor';
+import PermissionSelect from './permission-select';
 import RadioGroup from './radio-group';
 import ClearIconButton from './clear-icon-button';
 import CustomizeTabs from './customize-tabs';
@@ -64,6 +63,8 @@ import { IconTextBtn, SecondaryBtn } from './btn';
 import CopyInput from './copy-input';
 import ImagePreviewer from './image-previewer';
 import IconPopoverTip from './icon-popover-tip';
+import LanguageSelect from './language-select';
+import RemoveButton from './remove-btn';
 
 export {
   FixedWidthTable,
@@ -109,7 +110,7 @@ export {
   Collaborator,
   CollaboratorEditor,
   Option,
-  OptionEditor, SyncOptionEditor,
+  OptionsEditor,
   PasswordInput,
   TextInput,
   UploadFile,
@@ -120,7 +121,7 @@ export {
   UserSelect,
   Switch,
   IconTooltip,
-  SelectEditor,
+  PermissionSelect,
   LinkVerifiedDialog,
   RadioGroup,
   ClearIconButton,
@@ -134,4 +135,6 @@ export {
   CopyInput,
   ImagePreviewer,
   IconPopoverTip,
+  LanguageSelect,
+  RemoveButton,
 };

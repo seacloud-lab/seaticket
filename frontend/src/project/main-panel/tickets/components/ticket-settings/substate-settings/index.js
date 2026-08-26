@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
-import { Option, OptionEditor, CustomizeLabel } from '@/components';
+import { Option, OptionsEditor, CustomizeLabel } from '@/components';
 import { getRowById } from '@/sea-metadata/utils/row';
 import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { isEsc, isShiftS } from '@/utils/hotkey';
@@ -77,7 +77,7 @@ const SubStateSettings = ({
         </div>
       </div>
       {!isReadonly && isShowEditor && (
-        <OptionEditor
+        <OptionsEditor
           id="substate-editor-popover"
           className="seaqa-settings-popover"
           target={editorRef}

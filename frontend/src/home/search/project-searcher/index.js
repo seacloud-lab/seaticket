@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import SearchedList from './searched-list';
 import { CustomizeTabs, Loading, SearchInput } from '@/components';
 import homeAPI from '../../api';
-import { getValueLength } from '../search-utils';
+import { getSearchValueLength } from '@/utils/search';
 import { gettext } from '@constants';
 import { QUERY_TYPE, SEARCHED_STORE_KEY } from './constant';
 import { getNormalizeSearchedList, loadRecentUsed, storeSearchedItem } from './utils';
@@ -51,7 +51,7 @@ const ProjectSearcher = (props) => {
   };
 
   const startSearch = (searchStr) => {
-    if (getValueLength(searchStr) < 3) {
+    if (getSearchValueLength(searchStr) < 3) {
       setIsLoading(false);
       setSearchedRes({});
     } else {
@@ -67,7 +67,7 @@ const ProjectSearcher = (props) => {
 
   const onChangeQueryType = (queryType) => {
     setCurrQueryType(queryType);
-    if (searchedRes[SEARCHED_STORE_KEY[queryType]] || (!searchStr || getValueLength(searchStr) < 3)) {
+    if (searchedRes[SEARCHED_STORE_KEY[queryType]] || (!searchStr || getSearchValueLength(searchStr) < 3)) {
       return;
     }
     searchWithQueryData(searchStr, queryType);
@@ -165,7 +165,7 @@ const ProjectSearcher = (props) => {
           </div>
         );
       }
-      else if (getValueLength(searchStr) < 3) {
+      else if (getSearchValueLength(searchStr) < 3) {
         return (
           <div className='search-result-none'>
             {gettext('Type more characters to start search')}

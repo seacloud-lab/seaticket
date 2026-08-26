@@ -67,7 +67,7 @@ const AgentType2GithubTypeMappingDialog = ({
               <div className="github-issue-type-mapping-table-cell">
                 <CustomizeSelect
                   className="github-issue-type-selector"
-                  value={options.find((option) => option.value === selectedType) || null}
+                  value={selectedType}
                   options={options}
                   placeholder={gettext('Please select')}
                   onChange={(value) => setSelectedType(value)}

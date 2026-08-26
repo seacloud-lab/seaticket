@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import AsyncCollaborator from './async-collaborator';
-import Collaborator from './collaborator';
+import { Collaborator } from '@/components';
 import { hasOwnProperty } from '@/utils/object-utils';
 
 const CollaboratorsFormatter = ({ value, className, children: emptyFormatter, column, ...params }) => {

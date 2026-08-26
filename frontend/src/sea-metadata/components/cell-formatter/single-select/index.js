@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import SelectOption from '../select-option';
 import { getOption } from '@/sea-metadata/utils/column';
+import { Option } from '@/components';
 
 import './index.css';
 
@@ -22,7 +22,7 @@ const SingleSelectFormatter = ({ value, options, fontSize, className, column, ro
     };
     return (
       <div { ...props }>
-        <SelectOption option={newOption} fontSize={fontSize} />
+        <Option option={newOption} fontSize={fontSize} />
       </div>
     );
   }
@@ -30,7 +30,7 @@ const SingleSelectFormatter = ({ value, options, fontSize, className, column, ro
   return (
     <div { ...props }>
       {option ? (
-        <SelectOption option={option} fontSize={fontSize} />
+        <Option option={option} fontSize={fontSize} />
       ) : (
         <>{emptyFormatter || null}</>
       )}

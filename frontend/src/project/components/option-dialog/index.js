@@ -1,12 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Modal, ModalBody, ModalFooter, Button, FormGroup, Label, Input, Alert } from 'reactstrap';
 import classnames from 'classnames';
-import { ColorSelectorPopover, CustomizeSelect, IconButton, ModalHeader } from '@/components';
+import { ColorSelectorPopover, CustomizeSelect, IconButton, ModalHeader, Option } from '@/components';
 import { gettext, SELECT_OPTION_COLORS } from '@/constants';
-import Option from '../option';
 import { validateName } from '@/utils/validate';
 import { isHexColor, isDarkColor } from '@/utils/color-utils';
-import SelectOption from '@/sea-metadata/components/cell-formatter/select-option';
 import ObjectUtils from '@/utils/object-utils';
 
 import './index.css';
@@ -42,22 +40,11 @@ const OptionDialog = ({
         value: option._id,
         name: option.display_name || option.name,
         label: (
-          <div className="select-option-name single-option-name">
-            <SelectOption option={option} className="single-select-option ml-0" />
-            <IconButton className="single-check-icon no-hover-bg" icon={parentId === option.id ? 'check-mark' : ''} />
-          </div>
+          <Option option={option} />
         ),
       };
     });
-  }, [parentOptions, parentId]);
-  const selectedParentOption = useMemo(() => {
-    if (!Array.isArray(parentOptions) || parentOptions.length === 0) return null;
-    const option = parentOptions.find(o => o._id === parentId);
-    if (!option) return null;
-    return {
-      label: (<SelectOption option={option} className="single-select-option ml-0" />)
-    };
-  }, [parentOptions, parentId]);
+  }, [parentOptions]);
   const isValid = useMemo(() => {
     if (!name.trim()) return false;
     if (!color) return false;
@@ -237,8 +224,7 @@ const OptionDialog = ({
               <span className="required-tip" title={gettext('Required')}>{'*'}</span>
             </Label>
             <CustomizeSelect
-              className="sea-metadata-selector-single-select"
-              value={selectedParentOption}
+              value={parentId}
               options={formattedParentOptions}
               onChange={onSelectParentOption}
               placeholder={gettext('Select an option')}

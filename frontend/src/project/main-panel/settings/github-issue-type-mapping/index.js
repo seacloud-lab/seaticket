@@ -139,7 +139,6 @@ const GitHubIssueTypeMappingSettings = ({ className, value, onChange }) => {
         <div className="github-issue-type-mapping-table-body">
           {AGENT_TYPE_ROWS.map((agentType) => {
             const currentValue = (value[agentType] || '').trim();
-            const selectedOption = options.find((option) => option.value === currentValue) || null;
             return (
               <div key={agentType} className="github-issue-type-mapping-table-row">
                 <div className="github-issue-type-mapping-table-cell">
@@ -148,7 +147,7 @@ const GitHubIssueTypeMappingSettings = ({ className, value, onChange }) => {
                 <div className="github-issue-type-mapping-table-cell">
                   <CustomizeSelect
                     className="github-issue-type-selector"
-                    value={selectedOption}
+                    value={currentValue}
                     options={options}
                     placeholder={gettext('Please select')}
                     onChange={(selected) => handleChange(agentType, selected)}

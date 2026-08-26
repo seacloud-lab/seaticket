@@ -14,7 +14,7 @@ const RENDER_MORE_NUMBER = 20;
 
 const Main = ({
   metadata,
-  isMultipleSelect = false,
+  isMultiple = false,
   columns, rows,
   mode = 'add',
   canResize = true,
@@ -92,7 +92,7 @@ const Main = ({
     if (mode === 'add' || mode === 'remove') {
       const rowId = row._id;
       let newSelectedRowIds = selectedRowIds.slice(0);
-      if (isMultipleSelect) {
+      if (isMultiple) {
         const rowIndex = newSelectedRowIds.findIndex(id => id === rowId);
         if (rowIndex === -1) {
           newSelectedRowIds.push(rowId);
@@ -106,7 +106,7 @@ const Main = ({
       return;
     }
     onRowClick && onRowClick(row);
-  }, [isMultipleSelect, selectedRowIds, mode, updateSelectedRowIds, onRowClick]);
+  }, [isMultiple, selectedRowIds, mode, updateSelectedRowIds, onRowClick]);
 
   const handleRowStatusClick = useCallback((row) => {
     const newSelectedRowIds = selectedRowIds.filter(id => id !== row._id);

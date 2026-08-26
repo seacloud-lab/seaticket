@@ -83,11 +83,11 @@ class SearchInput extends Component {
     const { onClear, size = 38, isShowClearIcon = false } = this.props;
     if (!isShowClearIcon || !isFunction(onClear)) return null;
     const CLEAR_ICON_HEIGHT = 20;
+    const gap = (size - CLEAR_ICON_HEIGHT) / 2;
     return (
       <ClearIconButton
         onClick={this.onClear}
-        // Icon should set right to 4px, but here we set it to 5px, to avoid overlapping with the 1px border
-        style={{ top: (size - CLEAR_ICON_HEIGHT) / 2, right: 5 }}
+        style={{ top: gap, right: gap }}
       />
     );
   };

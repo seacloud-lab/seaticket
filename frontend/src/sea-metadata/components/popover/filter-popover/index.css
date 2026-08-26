@@ -52,3 +52,16 @@
   width: 14px;
   transform: none;
 }
+
+.sea-metadata-data-filter-popover .popover.bs-popover-auto[data-popper-placement^=top],
+.sea-metadata-data-filter-popover .popover.bs-popover-top {
+  margin-bottom: 0;
+}
+
+.sea-metadata-data-filter-popover.border-radius-4 .popover {
+  border-radius: 4px;
+}
+
+.sea-metadata-data-filter-popover.border-radius-4 .popover .options-editor-selected-value-wrapper {
+  border-radius: 4px 4px 0 0;
+}

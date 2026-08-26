@@ -2,7 +2,6 @@ import React from 'react';
 import { Input } from 'reactstrap';
 import { CONNECTION_FIELD_TYPE } from '../../constants';
 import { TextInput, PasswordInput, CustomizeSelect } from '@/components';
-import CustomizeSelectSync from '@/components/customize-select-sync';
 
 const Editor = ({ api, column, row, readonly, canModifyPassword = true, onChange }) => {
   const { key, type, placeholder, default_value, options, can_edit_multiple_times = true, } = column;
@@ -36,24 +35,27 @@ const Editor = ({ api, column, row, readonly, canModifyPassword = true, onChange
       );
     }
     case CONNECTION_FIELD_TYPE.SELECT: {
-      const option = options.find(o => o.value === value);
       return (
         <CustomizeSelect
-          value={option}
+          value={value}
           options={options}
           disabled={readonly}
+          isInModal={true}
           onChange={(newValue) => onChange(key, newValue)}
         />
       );
     }
     case CONNECTION_FIELD_TYPE.SYNC_SELECT: {
       return (
-        <CustomizeSelectSync
+        <CustomizeSelect
+          isRemote={true}
           value={value}
           api={api}
           placeholder={placeholder}
           disabled={readonly}
-          onChange={(newValue) => onChange(key, newValue)}
+          isInModal={true}
+          searchable={true}
+          onChange={(newValue, newValueOption) => onChange(key, newValueOption)}
         />
       );
     }

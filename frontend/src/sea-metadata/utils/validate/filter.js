@@ -228,6 +228,7 @@ class ValidateFilter {
         return this.isValidTermType(term, TERM_TYPE_MAP.NUMBER);
       }
 
+      case CellType.UNREAD_STATUS:
       case CellType.CHECKBOX:
       case CellType.BOOL: {
         return this.isValidTermType(term, TERM_TYPE_MAP.BOOLEAN);

@@ -1,9 +1,22 @@
+import { gettext } from '@/constants';
 import { CellType } from './column';
 
 const SORT_TYPE = {
   UP: 'up',
   DOWN: 'down',
 };
+
+export const SORT_TYPES = [
+  {
+    value: SORT_TYPE.UP,
+    name: gettext('Up'),
+    label: gettext('Up'),
+  }, {
+    value: SORT_TYPE.DOWN,
+    name: gettext('Down'),
+    label: gettext('Down'),
+  },
+];
 
 const SORT_COLUMN_OPTIONS = [
   CellType.TEXT,

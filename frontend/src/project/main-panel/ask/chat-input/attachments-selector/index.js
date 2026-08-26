@@ -2,7 +2,7 @@ import React, { useCallback, useState, useRef } from 'react';
 import { Dropdown, DropdownToggle } from 'reactstrap';
 import {
   CustomizeDropdownItem, CustomizeDropdownMenu, CustomizeDropdownItemIcon, CustomizeDropdownItemText,
-  Icon, SyncOptionEditor, Tooltip
+  Icon, OptionsEditor, Tooltip
 } from '@/components';
 import { gettext } from '@/constants';
 import { searchAPI } from '@/project/api';
@@ -87,8 +87,9 @@ const AttachmentsSelector = ({
         </CustomizeDropdownMenu>
       </Dropdown>
       {canAddSources && isShowSelector && (
-        <SyncOptionEditor
+        <OptionsEditor
           className="seaqa-ai-chat-selector-display-editor"
+          isAsyncSearch={true}
           target={ref}
           isMultiple={true}
           placeholder={gettext('Search')}

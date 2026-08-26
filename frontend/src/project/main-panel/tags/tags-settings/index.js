@@ -2,14 +2,12 @@ import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react'
 import classnames from 'classnames';
 import { gettext, SELECT_OPTION_COLORS } from '@/constants';
 import Tag from '@/sea-metadata/components/tag';
-import RemoveBtn from '@/sea-metadata/components/tag/remove-btn';
-import { CustomizePopover, CustomizeLabel } from '@/components';
-import OptionEditorContainer from '@/components/option-editor/option-editor-container';
+import { CustomizePopover, CustomizeLabel, RemoveButton } from '@/components';
+import Container from '@/components/options-editor/static-options-editor/container';
 import { isCellValueChanged } from '@/sea-metadata/utils/cell';
 import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
 import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { isEsc, isT } from '@/utils/hotkey';
-import TagOption from '@/components/tag-option';
 
 import './index.css';
 
@@ -36,7 +34,7 @@ const TagsSettings = ({
       return {
         ...tag,
         value: tag._id,
-        label: <TagOption tag={tag} />,
+        label: <Tag tag={tag} />,
       };
     });
   }, [tagsData, isLoading]);
@@ -69,7 +67,7 @@ const TagsSettings = ({
       return {
         ...tag,
         value: _id,
-        label: (<TagOption tag={tag} />),
+        label: (<Tag tag={tag} />),
       };
     });
   }, [createTag]);
@@ -120,7 +118,7 @@ const TagsSettings = ({
             {selectedTags.map(tag => (
               <Tag tag={tag} key={tag._id} className="mr-0">
                 {!isReadonly && (
-                  <RemoveBtn callback={(event) => handleRemove(event, tag)} />
+                  <RemoveButton callback={(event) => handleRemove(event, tag)} />
                 )}
               </Tag>
             ))}
@@ -132,12 +130,12 @@ const TagsSettings = ({
       {isShowEditor && (
         <CustomizePopover
           target={editorRef}
-          className="option-editor-popover seaqa-tags-selector-popover seaqa-settings-popover hide-description"
+          className="options-editor-popover seaqa-tags-selector-popover seaqa-settings-popover hide-description"
           sameWidthWithTarget={240}
           hidePopover={closeEditor}
           hidePopoverWithEsc={closeEditor}
         >
-          <OptionEditorContainer
+          <Container
             ref={optionEditorContainerRef}
             isMultiple={true}
             optionHeight="fit-content"
@@ -154,12 +152,12 @@ const TagsSettings = ({
                 if (!tag) return null;
                 return (
                   <Tag tag={tag} key={tagId} className="m-0">
-                    <RemoveBtn callback={() => onChange(tagId)} />
+                    <RemoveButton callback={() => onChange(tagId)} />
                   </Tag>
                 );
               });
             }}
-          </OptionEditorContainer>
+          </Container>
         </CustomizePopover>
       )}
     </div>

@@ -93,9 +93,9 @@ class ConnectionsAPI {
     return this.req.get(url);
   }
 
-  listConfluenceWorkspaces(projectUuid) {
+  listConfluenceWorkspaces(projectUuid, signal) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/confluence/workspaces/';
-    return this.req.get(url);
+    return this.req.get(url, { signal });
   }
 
   listConfluenceSpaces(projectUuid, workspaceId, workspaceUrl) {
@@ -121,9 +121,9 @@ class ConnectionsAPI {
     return this.req.get(url);
   }
 
-  listLinearTeams(projectUuid) {
+  listLinearTeams(projectUuid, signal) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/linear/teams/';
-    return this.req.get(url);
+    return this.req.get(url, { signal });
   }
 
   getJiraOauthStatus(projectUuid) {
@@ -131,14 +131,14 @@ class ConnectionsAPI {
     return this.req.get(url);
   }
 
-  listJiraSites(projectUuid) {
+  listJiraSites(projectUuid, signal) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/jira/sites/';
-    return this.req.get(url);
+    return this.req.get(url, { signal });
   }
 
-  listJiraProjects(projectUuid, siteId) {
+  listJiraProjects(projectUuid, siteId, signal) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/jira/projects/';
-    return this.req.get(url, { params: { site_id: siteId } });
+    return this.req.get(url, { params: { site_id: siteId }, signal });
   }
 
   getConnection(projectUuid, connectionID) {
@@ -322,15 +322,15 @@ class ConnectionsAPI {
     return this.req.put(url, updateData);
   }
 
-  listGitHubRepositories(projectUuid) {
+  listGitHubRepositories(projectUuid, signal) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/repositories/';
-    return this.req.get(url);
+    return this.req.get(url, { signal });
   }
 
-  listDiscordChannels(projectUuid, guildId) {
+  listDiscordChannels(projectUuid, guildId, signal) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/discord-channels/';
     const data = { guild_id: guildId };
-    return this.req.post(url, data);
+    return this.req.post(url, data, { signal });
   }
 
   unreadConnectionEmail(projectUuid, connectionID, recordData) {

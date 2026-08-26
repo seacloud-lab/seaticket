@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import SelectOption from '../select-option';
+import { Option } from '@/components';
 import { DELETED_OPTION_BACKGROUND_COLOR, DELETED_OPTION_TIPS } from '../../../constants';
 
 import './index.css';
@@ -23,7 +23,7 @@ const MultipleSelectFormatter = ({ value, options, fontSize, className, children
   return (
     <div className={classnames('sea-metadata-ui cell-formatter-container multiple-select-formatter', className)}>
       {displayOptions.map(option => {
-        return (<SelectOption key={option.id} option={option} fontSize={fontSize} />);
+        return (<Option key={option.id} option={option} fontSize={fontSize} />);
       })}
     </div>
   );

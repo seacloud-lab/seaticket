@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
-import { Option, OptionEditor, CustomizeLabel } from '@/components';
+import { Option, OptionsEditor, CustomizeLabel } from '@/components';
 import { TICKET_STATE_OPTIONS } from '../../../constants';
 import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { isEsc, isS } from '@/utils/hotkey';
@@ -101,7 +101,7 @@ const StateSettings = ({
         </div>
       </div>
       {!isReadonly && isShowEditor && (
-        <OptionEditor
+        <OptionsEditor
           id="state-editor-popover"
           className="seaqa-settings-popover seaqa-state-settings-popover"
           target={editorRef}

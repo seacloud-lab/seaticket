@@ -366,8 +366,8 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     toaster.success(gettext('Connection URL has been copied to clipboard'), { duration: 2 });
   }, [callbackUrl]);
 
-  const listGitHubRepositories = useCallback(() => {
-    return connectionsAPI.listGitHubRepositories(projectUuid).then(res => {
+  const listGitHubRepositories = useCallback((signal) => {
+    return connectionsAPI.listGitHubRepositories(projectUuid, signal).then(res => {
       const { repositories } = res.data;
       return {
         data: {
@@ -377,11 +377,11 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     });
   }, []);
 
-  const listConfluenceWorkspaces = useCallback(() => {
+  const listConfluenceWorkspaces = useCallback((signal) => {
     if (!isConfluenceOauthConnected) {
       return Promise.resolve({ data: { options: [] } });
     }
-    return connectionsAPI.listConfluenceWorkspaces(projectUuid).then((res) => {
+    return connectionsAPI.listConfluenceWorkspaces(projectUuid, signal).then((res) => {
       const workspaces = res?.data?.workspaces || [];
       return {
         data: {
@@ -453,10 +453,10 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     }, 2000);
   }, [stopConfluenceOAuthPolling]);
 
-  const listDiscordChannels = useCallback(() => {
+  const listDiscordChannels = useCallback((signal) => {
     const guildId = config.guild_id;
     if (!guildId) return Promise.resolve({ data: { channels: [] } });
-    return connectionsAPI.listDiscordChannels(projectUuid, guildId).then(res => {
+    return connectionsAPI.listDiscordChannels(projectUuid, guildId, signal).then(res => {
       const channels = (res && res.data && res.data.channels) || [];
       return {
         data: {
@@ -467,8 +467,8 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   }, [config.guild_id]);
 
   const typeOption = availableConnectionTypes.find(i => i.type === type) || availableConnectionTypes[0];
-  const listLinearTeams = useCallback(() => {
-    return connectionsAPI.listLinearTeams(projectUuid).then(res => {
+  const listLinearTeams = useCallback((signal) => {
+    return connectionsAPI.listLinearTeams(projectUuid, signal).then(res => {
       const teams = res?.data?.teams || [];
       return {
         data: {
@@ -569,12 +569,12 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     }, 2000);
   }, []);
 
-  const listJiraSites = useCallback(() => {
+  const listJiraSites = useCallback((signal) => {
     if (!isJiraOauthConnected) {
       return Promise.resolve({ data: { options: [] } });
     }
     void jiraSitesVersion;
-    return connectionsAPI.listJiraSites(projectUuid).then(res => {
+    return connectionsAPI.listJiraSites(projectUuid, signal).then(res => {
       const sites = res?.data?.sites || [];
       return {
         data: {
@@ -589,14 +589,14 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     });
   }, [jiraSitesVersion, isJiraOauthConnected]);
 
-  const listJiraProjects = useCallback(() => {
+  const listJiraProjects = useCallback((signal) => {
     const siteId = config.site_id;
     const actualSiteId = siteId?.site?.id || siteId?.id || siteId;
     if (!isJiraOauthConnected || !actualSiteId) {
       return Promise.resolve({ data: { options: [] } });
     }
     void jiraProjectsVersion;
-    return connectionsAPI.listJiraProjects(projectUuid, actualSiteId).then(res => {
+    return connectionsAPI.listJiraProjects(projectUuid, actualSiteId, signal).then(res => {
       const projects = res?.data?.projects || [];
       return {
         data: {

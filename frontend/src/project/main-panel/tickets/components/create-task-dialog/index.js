@@ -218,7 +218,7 @@ const CreateTaskDialog = ({
             </CustomizeLabel>
             <CustomizeSelect
               className="mb-2"
-              value={generalTaskConnectionsOptions.find(o => o.value === connectionId)}
+              value={connectionId}
               options={generalTaskConnectionsOptions}
               onChange={onSelectConnection}
               placeholder={gettext('Select a connection')}

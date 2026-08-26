@@ -92,7 +92,6 @@ const Main = ({
         <EmptyTip
           src={`${mediaUrl}img/no-results.png`}
           text={gettext('No results')}
-          className="option-editor-no-results-tip"
         />
       );
     }

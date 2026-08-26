@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button, ButtonGroup, } from 'reactstrap';
 import { TICKET_STATE } from '../../../constants';
-import { Icon, OptionEditor } from '@/components';
+import { Icon, OptionsEditor } from '@/components';
 import { gettext } from '@/constants';
 
 import './index.css';
@@ -139,7 +139,7 @@ const StatusToggleButton = ({
         </Button>
       </ButtonGroup>
       {isShowPopover && (
-        <OptionEditor
+        <OptionsEditor
           target={downBtn}
           className="seaqa-project-ticket-state-toggle-popover"
           value={`${state}--${substate}`}

@@ -1,0 +1,45 @@
+.options-editor-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  height: 32px;
+  width: 100%;
+  padding: 0 8px;
+  gap: 16px;
+}
+
+.options-editor-option:hover,
+.options-editor-option.active {
+  background-color: var(--option-bg-color);
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.options-editor-option .options-editor-option-content {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.options-editor-option .options-editor-option-content .options-editor-option-icon,
+.options-editor-option .options-editor-option-content .options-editor-option-icon .seaqa-icon-svg {
+  height: 16px;
+  width: 16px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.options-editor-option .options-editor-option-check-btn,
+.options-editor-option .options-editor-option-check-btn .seaqa-icon-svg {
+  height: 14px;
+  width: 14px;
+}
+
+/* check check-placement left */
+.options-editor-option.check-placement-left {
+  justify-content: flex-start;
+  padding: 0 8px;
+  gap: 0;
+}

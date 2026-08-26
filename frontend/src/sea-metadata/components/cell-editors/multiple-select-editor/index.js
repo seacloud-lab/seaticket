@@ -2,9 +2,9 @@ import React, { forwardRef, useMemo, useImperativeHandle, useCallback, useRef, u
 import PropTypes from 'prop-types';
 import { getColumnOptions, generateNewOption, getOption } from '../../../utils/column';
 import context from '@/sea-metadata/context';
-import OptionEditorContainer from '@/components/option-editor/option-editor-container';
+import Container from '@/components/options-editor/static-options-editor/container';
 import { gettext } from '@/constants';
-import { IconButton, Option } from '@/components';
+import { RemoveButton, Option } from '@/components';
 
 import '../single-select-editor/index.css';
 
@@ -73,8 +73,8 @@ const MultipleSelectEditor = forwardRef(({
   }), [column, onCommit]);
 
   return (
-    <div className="sea-metadata-single-select-editor option-editor-popover sea-metadata-multiple-select-editor" style={style} ref={editorRef}>
-      <OptionEditorContainer
+    <div className="sea-metadata-single-select-editor options-editor-popover sea-metadata-multiple-select-editor" style={style} ref={editorRef}>
+      <Container
         ref={optionEditorContainerRef}
         isMultiple={true}
         placeholder={gettext('Search options')}
@@ -91,19 +91,12 @@ const MultipleSelectEditor = forwardRef(({
             const option = getOption(options, item);
             return (
               <Option option={option} className="sea-metadata-multiple-select-editor-option">
-                <IconButton
-                  icon="close"
-                  onClick={() => onChange(item)}
-                  className="sea-metadata-select-remove-btn no-hover-bg"
-                  size={{ btn: 14, icon: 10 }}
-                  style={{ margin: '0 -2px 0 2px', cursor: 'pointer' }}
-                  iconStyle={{ color: option.text_color }}
-                />
+                <RemoveButton callback={() => onChange(item)} iconStyle={{ color: option.text_color }} size={10} />
               </Option>
             );
           });
         }}
-      </OptionEditorContainer>
+      </Container>
     </div>
   );
 });

@@ -2,10 +2,10 @@ import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import HideColumn from './hide-column';
-import Tip from '@/components/option-editor/tip';
-import { gettext } from '@/constants';
+import Tip from '@/components/options-editor/tip';
+import { gettext, mediaUrl } from '@/constants';
 
-const HiddenColumns = ({ readOnly, columns, hiddenColumns, onChange, canReorder, modifyColumnOrder }) => {
+const HiddenColumns = ({ readOnly, searchValue, columns, hiddenColumns, onChange, canReorder, modifyColumnOrder }) => {
   const [draggingColumnKey, setDraggingCellKey] = useState(null);
   const [dragOverColumnKey, setDragOverCellKey] = useState(null);
 
@@ -27,9 +27,9 @@ const HiddenColumns = ({ readOnly, columns, hiddenColumns, onChange, canReorder,
   const draggingColumnIndex = draggingColumnKey ? columns.findIndex(c => c.key === draggingColumnKey) : -1;
 
   return (
-    <div className={classnames('hide-columns-list w-100', { 'py-2': !isEmpty })}>
+    <div className={classnames('hide-columns-list w-100', { 'py-2': !isEmpty, 'pt-2': isEmpty })}>
       {isEmpty && (
-        <Tip tip={gettext('No columns available to be hidden')} hasAvailableOptions={false} />
+        <Tip searchValue={searchValue} src={`${mediaUrl}img/no-items-tip.png`} tip={gettext('No columns available to be hidden')} />
       )}
       {!isEmpty && columns.map((column, columnIndex) => {
         return (

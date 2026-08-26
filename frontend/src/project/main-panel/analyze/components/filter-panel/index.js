@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import dayjs from '@/sea-metadata/utils/dayjs';
 import { gettext } from '@/constants';
-import { Icon, OptionEditor } from '@/components';
+import { Icon, OptionsEditor } from '@/components';
 import classnames from 'classnames';
 import { getDurationLabel, buildPresetRange, isDisabledPreset } from './utils';
 import { presetLabelMapping, DATE_FORMAT } from './constants';
@@ -167,7 +167,7 @@ const FilterPanel = ({
           <Icon symbol="arrow-down" />
         </div>
         {isShowPopover && (
-          <OptionEditor
+          <OptionsEditor
             className="analyze-filter-option-editor"
             options={stateOptions}
             target={popoverRef}
@@ -223,7 +223,7 @@ const FilterPanel = ({
               <Icon symbol="arrow-down" />
             </div>
             {isShowPresetPopover && (
-              <OptionEditor
+              <OptionsEditor
                 className="analyze-filter-option-editor analyze-date-filter-presets"
                 options={presetOptions}
                 target={presetPopoverRef}

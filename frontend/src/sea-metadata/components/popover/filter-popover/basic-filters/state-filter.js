@@ -1,11 +1,8 @@
 import React, { useCallback, useMemo } from 'react';
 import classnames from 'classnames';
 import { CustomizeSelect } from '@/components';
-import Icon from '@/components/icon';
 import { gettext } from '@/constants';
 import { getColumnOptions, getOptionDisplayNameByOption } from '@/sea-metadata/utils/column';
-
-import './state-filter.css';
 
 const StateFilter = ({ readOnly = true, value = [], column, onChange: onChangeAPI }) => {
 
@@ -13,29 +10,19 @@ const StateFilter = ({ readOnly = true, value = [], column, onChange: onChangeAP
     const columnOptions = getColumnOptions(column);
     const selectOptions = columnOptions.map(o => {
       const { id } = o;
-      const name = getOptionDisplayNameByOption(o);
       return {
         value: id,
-        label: (
-          <div className="select-basic-filter-option">
-            <div className="select-basic-filter-option-name" title={name} aria-label={name}>{name}</div>
-            {value.includes(id) && (
-              <Icon symbol="check-mark" />
-            )}
-          </div>
-        )
+        label: getOptionDisplayNameByOption(o),
       };
     });
     if (value.length > 0) {
       selectOptions.unshift({
         value: '',
-        label: <div className="select-basic-filter-option select-basic-filter-option-empty">--</div>,
+        label: '--',
       });
     }
     return selectOptions;
   }, [column, value]);
-
-  const displayValue = useMemo(() => ({ label: <>{gettext('State')}</> }), []);
 
   const onChange = useCallback((newValue) => {
     if (newValue === '') {
@@ -53,13 +40,15 @@ const StateFilter = ({ readOnly = true, value = [], column, onChange: onChangeAP
     <CustomizeSelect
       disabled={readOnly}
       supportMultipleSelect={true}
-      className={classnames('sea-metadata-basic-filters-select sea-metadata-table-group-by-basic-checkbox-select seaqa-state-filter mr-4', { 'highlighted': value.length > 0 })}
-      value={displayValue}
+      className={classnames('sea-metadata-basic-filters-select', { 'highlighted': value.length > 0 })}
+      containerClassName="border-radius-8 sea-metadata-state-select-container"
+      value={value}
       options={options}
       onChange={onChange}
-    />
+    >
+      {gettext('State')}
+    </CustomizeSelect>
   );
-
 };
 
 export default StateFilter;

@@ -5,7 +5,6 @@ import FilterItem from './filter-item';
 import { ValidateFilter } from '../../../../utils/validate';
 import { getColumnByKey } from '../../../../utils/column';
 import { FILTER_COLUMN_OPTIONS } from '../../../../constants';
-import FilterItemUtils from './filter-item-utils';
 
 import './index.css';
 
@@ -29,14 +28,6 @@ class AdvancedFilters extends Component {
 
   constructor(props) {
     super(props);
-    this.conjunctionOptions = null;
-    this.columnOptions = null;
-  }
-
-  UNSAFE_componentWillReceiveProps(nextProps) {
-    if (nextProps.columns !== this.props.columns) {
-      this.columnOptions = null;
-    }
   }
 
   updateFilter = (filterIndex, updatedFilter) => {
@@ -53,13 +44,6 @@ class AdvancedFilters extends Component {
     this.props.modifyFilterConjunction(filterConjunction);
   };
 
-  getConjunctionOptions = () => {
-    if (!this.conjunctionOptions) {
-      this.conjunctionOptions = FilterItemUtils.generatorConjunctionOptions();
-    }
-    return this.conjunctionOptions;
-  };
-
   getFilterColumns = () => {
     const { columns } = this.props;
     return columns.filter(column => {
@@ -68,20 +52,9 @@ class AdvancedFilters extends Component {
     });
   };
 
-  getColumnOptions = () => {
-    if (!this.columnOptions) {
-      const filterColumns = this.getFilterColumns();
-      this.columnOptions = filterColumns.map(column => {
-        return FilterItemUtils.generatorColumnOption(column);
-      });
-    }
-    return this.columnOptions;
-  };
-
   renderFilterItem = (filter, index, errMsg, filterColumn) => {
     const { readOnly, filterConjunction, value } = this.props;
-    const conjunctionOptions = this.getConjunctionOptions();
-    const columnOptions = this.getColumnOptions();
+    const filterColumns = this.getFilterColumns();
     return (
       <FilterItem
         key={index}
@@ -90,9 +63,8 @@ class AdvancedFilters extends Component {
         filter={filter}
         errMsg={errMsg}
         filterColumn={filterColumn}
+        filterColumns={filterColumns}
         filterConjunction={filterConjunction}
-        conjunctionOptions={conjunctionOptions}
-        filterColumnOptions={columnOptions}
         value={value}
         deleteFilter={this.deleteFilter}
         updateFilter={this.updateFilter}
@@ -110,7 +82,7 @@ class AdvancedFilters extends Component {
     const isEmpty = filters.length === 0;
     return (
       <div className={classnames('sea-metadata-filters-list', { 'empty-filters-container p-0 d-flex align-items-center justify-content-center': isEmpty }, { [className]: className })}>
-        {isEmpty && <div className="empty-filters-list">{emptyPlaceholder}</div>}
+        {isEmpty && <div className="font-size-14 line-height-22 seaqa-tip-default">{emptyPlaceholder}</div>}
         {!isEmpty &&
           filters.map((filter, index) => {
             const { column_key } = filter;

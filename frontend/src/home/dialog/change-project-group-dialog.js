@@ -1,8 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal, ModalBody, ModalFooter, Label } from 'reactstrap';
-import { ModalHeader, toaster } from '@/components';
-import CustomizeSelect from '@/components/customize-select';
+import { ModalHeader, toaster, CustomizeSelect } from '@/components';
 import { Utils } from '@/utils/utils';
 import homeAPI from '../api';
 
@@ -94,7 +93,6 @@ class ChangeProjectGroupDialog extends React.Component {
     const { groups, selectedGroupID, errMessage, isLoading, isSubmitting } = this.state;
     const workspaceTargetID = String(currentWorkspace.id);
     const disabled = isLoading || !selectedGroupID || selectedGroupID === workspaceTargetID || isSubmitting;
-    const selectedGroup = groups.find(group => group.value === selectedGroupID) || null;
 
     return (
       <Modal isOpen={true} toggle={toggleDialog}>
@@ -103,7 +101,7 @@ class ChangeProjectGroupDialog extends React.Component {
           <Label for="project-group-selector">{gettext('Move project {placeholder} to').replace('{placeholder}', `"${currentProject.name}"`)}</Label>
           <CustomizeSelect
             id="project-group-selector"
-            value={selectedGroup}
+            value={selectedGroupID}
             options={groups}
             onChange={this.onGroupChange}
             placeholder={gettext('Select a group')}

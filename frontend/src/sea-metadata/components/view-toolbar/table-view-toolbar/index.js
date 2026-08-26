@@ -30,7 +30,7 @@ const TableViewToolbar = ({
 
   const toggleMoreMenu = useCallback((event) => {
     const target = event?.target;
-    if (target?.closest?.('.popover, .option-group, .seaqa-select')) return;
+    if (target?.closest?.('.popover, .seaqa-select-options-container, .seaqa-select')) return;
     setIsMoreMenuOpen(prev => !prev);
   }, []);
 

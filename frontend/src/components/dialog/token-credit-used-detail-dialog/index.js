@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
 import classnames from 'classnames';
 import { gettext, mediaUrl } from '@/constants';
-import { Loading, EmptyTip, ModalHeader, IconButton } from '@/components';
+import { Loading, EmptyTip, ModalHeader } from '@/components';
 import { Utils } from '@/utils/utils';
 import toaster from '@/components/toaster';
 import DateAndTimePicker from '@/project/main-panel/search/date-and-time-picker';
@@ -215,51 +215,12 @@ class TokenCreditUsedDetailDialog extends Component {
       isLoading,
       startDate,
       endDate,
-      availableModels,
-      selectedModels,
       selectedScenarios,
       data,
       groupBy,
       modelsUsageStatics
     } = this.state;
     const { groups, onCloseDialog } = this.props;
-    const groupByOptions = groups.map(v => {
-      return {
-        ...v,
-        label: (
-          <div className="d-flex align-items-center">
-            <div className="flex-1 text-truncate">{v.label}</div>
-            <IconButton className="no-hover-bg ml-3" icon={v.value === groupBy ? 'check-mark-option' : ''} size={14} />
-          </div>
-        )
-      };
-    });
-
-    const scenarioOptions = ALL_SCENARIOS.map(s => ({
-      value: s.value,
-      label: (
-        <div className="select-basic-filter-option">
-          <div className="select-basic-filter-option-checkbox mr-2">
-            <input type="checkbox" checked={selectedScenarios.includes(s.value)} readOnly />
-          </div>
-          <div className="select-basic-filter-option-name" title={s.label} aria-label={s.label}>{s.label}</div>
-        </div>
-      )
-    }));
-
-    const modelsOptions = availableModels && typeof availableModels === 'object' ? Object.entries(availableModels).map(([label, value]) => {
-      return {
-        value: value,
-        label: (
-          <div className="select-basic-filter-option">
-            <div className="select-basic-filter-option-checkbox mr-2">
-              <input type="checkbox" checked={selectedModels.includes(value)} readOnly />
-            </div>
-            <div className="select-basic-filter-option-name" title={label} aria-label={label}>{label}</div>
-          </div>
-        )
-      };
-    }) : [];
 
     const customizeSelectClassName = 'sea-metadata-basic-filters-select sea-metadata-table-group-by-basic-checkbox-select seaqa-ai-statistic-condition-select';
 
@@ -273,29 +234,23 @@ class TokenCreditUsedDetailDialog extends Component {
                 disabled={false}
                 supportMultipleSelect={false}
                 className={classnames(customizeSelectClassName, 'mr-4')}
-                value={{ label: gettext('Group by') }}
-                options={groupByOptions}
+                options={groups}
+                value={groupBy}
                 onChange={this.updateView}
-              />
+              >
+                {gettext('Group by')}
+              </CustomizeSelect>
             )}
             <CustomizeSelect
               disabled={false}
               supportMultipleSelect={true}
               className={classnames(customizeSelectClassName, 'mr-4', { 'highlighted': selectedScenarios.length < ALL_SCENARIOS.length })}
-              value={{ label: `${gettext('Scenario')} (${selectedScenarios.length}/${ALL_SCENARIOS.length})` }}
-              options={scenarioOptions}
+              value={selectedScenarios}
+              options={ALL_SCENARIOS}
               onChange={this.updateFilterScenarios}
-            />
-            {false &&
-              <CustomizeSelect
-                disabled={false}
-                supportMultipleSelect={true}
-                className={classnames(customizeSelectClassName, 'mr-4', { 'highlighted': selectedModels.length > 0 })}
-                value={{ label: `${gettext('Model')} (${selectedModels.length} ${gettext('selected')})` }}
-                options={modelsOptions}
-                onChange={this.updateFilterModels}
-              />
-            }
+            >
+              {`${gettext('Scenario')} (${selectedScenarios.length}/${ALL_SCENARIOS.length})`}
+            </CustomizeSelect>
             <div className="seaqa-ai-statistic-date-condition">
               <span className="date-range-title">{gettext('Date range: ')}</span>
               <span className="date-range-value">
