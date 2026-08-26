@@ -622,7 +622,7 @@ def list_github_issue_record_details(seadb_api, project_uuid, connection_id, _pk
 def get_linear_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
     from seahub.tickets.ticket_utils import get_ticket_title
     issue_table_name = SchemaTables.LINEAR_ISSUES.table_name(connection_id)
-    issue_sql = f"SELECT `_pk`, `title`, `author`, `content`, `created_time`, `due_date`, `issue_id`, `identifier`, `state`, `labels`, `linked_ticket` FROM `{issue_table_name}` WHERE _pk = {_pk}"
+    issue_sql = f"SELECT `_pk`, `title`, `author`, `content`, `created_time`, `due_date`, `issue_id`, `identifier`, `state`, `labels`, `linked_ticket`, `outdated` FROM `{issue_table_name}` WHERE _pk = {_pk}"
     try:
         issue_res = seadb_api.query_rows(project_uuid, issue_sql)
         issue_record = issue_res.get('results')[0] if issue_res.get('results') else {}
@@ -748,9 +748,9 @@ def list_general_task_record_details(seadb_api, project_uuid, connection_id, _pk
 
 
 # site
-def get_site_record_by_id(seadb_api, project_uuid, connection_id, _pk):
+def get_site_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
     site_table_name = SchemaTables.WEB_CRAWL.table_name(connection_id)
-    sql = f"SELECT `_pk`, `title`, `url`, `modified_time` FROM `{site_table_name}` WHERE _pk = {_pk}"
+    sql = f"SELECT `_pk`, `title`, `url`, `modified_time`, `outdated` FROM `{site_table_name}` WHERE _pk = {_pk}"
     try:
         res = seadb_api.query_rows(project_uuid, sql)
         record = res.get('results')[0] if res.get('results') else {}
@@ -764,7 +764,7 @@ def get_site_record_by_id(seadb_api, project_uuid, connection_id, _pk):
 
 def list_site_record_details(seadb_api, project_uuid, connection_id, _pk):
     try:
-        record, column_metadata, linked_ticket_title = get_site_record_by_id(seadb_api, project_uuid, connection_id, _pk)
+        record, column_metadata, linked_ticket_title = get_site_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
     except Exception as e:
         record = {}
         column_metadata = []
@@ -1022,9 +1022,9 @@ def retrieve_vector_search_rerank_data(seadb_api, project_uuid, results):
 
 
 # notion
-def get_notion_record_by_id(seadb_api, project_uuid, connection_id, _pk):
+def get_notion_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
     notion_table_name = SchemaTables.NOTION.table_name(connection_id)
-    sql = f"SELECT title, content, created_time, modified_time, creator, page_id  FROM `{notion_table_name}` WHERE _pk = {_pk}"
+    sql = f"SELECT title, content, created_time, modified_time, creator, page_id, `outdated` FROM `{notion_table_name}` WHERE _pk = {_pk}"
     try:
         notion_res = seadb_api.query_rows(project_uuid, sql)
         record = notion_res.get('results')[0] if notion_res.get('results') else {}
@@ -1037,7 +1037,7 @@ def get_notion_record_by_id(seadb_api, project_uuid, connection_id, _pk):
 
 
 def list_notion_record_details(seadb_api, project_uuid, connection_id, _pk):
-    record, columns, _ = get_notion_record_by_id(seadb_api, project_uuid, connection_id, _pk)
+    record, columns, _ = get_notion_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
     return record, columns, ''
 
 
@@ -1130,7 +1130,7 @@ def get_connection_record_by_pk(seadb_api, project_uuid, connection_type, connec
     if connection_type == ConnectionType.DISCOURSE_FORUM.value:
         record, columns, linked_ticket_title = get_discourse_topic_by_pk(seadb_api, project_uuid, connection_id, _pk)
     elif connection_type == ConnectionType.SITE.value:
-        record, columns, linked_ticket_title = get_site_record_by_id(seadb_api, project_uuid, connection_id, _pk)
+        record, columns, linked_ticket_title = get_site_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
     elif connection_type == ConnectionType.GITHUB_ISSUE.value:
         record, columns, linked_ticket_title = get_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
     elif connection_type == ConnectionType.SEAFILE.value:
@@ -1138,7 +1138,7 @@ def get_connection_record_by_pk(seadb_api, project_uuid, connection_type, connec
     elif connection_type == ConnectionType.EMAIL.value:
         record, columns, linked_ticket_title = get_email_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
     elif connection_type == ConnectionType.NOTION.value:
-        record, columns, linked_ticket_title = get_notion_record_by_id(seadb_api, project_uuid, connection_id, _pk)
+        record, columns, linked_ticket_title = get_notion_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
     elif connection_type == ConnectionType.GENERAL_TASK.value:
         record, columns, linked_ticket_title = get_general_task_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
     elif connection_type == ConnectionType.LINEAR.value:

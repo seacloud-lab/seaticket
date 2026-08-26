@@ -148,14 +148,14 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
       _tools.push(...outdatedOptions);
     }
     _tools = _tools.filter(Boolean);
-    if (_tools[0]?.key === 'divider') {
-      _tools.shift();
-    }
-    if (_tools[_tools.length - 1]?.key === 'divider') {
-      _tools.pop();
-    }
+    // Remove leading, trailing and consecutive dividers.
     _tools = _tools.reduce((acc, item, index, array) => {
-      if (item && item.key === 'divider' && index > 0 && array[index - 1] && array[index - 1].key === 'divider') {
+      const isDivider = item && item.key === 'divider';
+      if (isDivider && (
+        index === 0 ||
+        index === array.length - 1 ||
+        (array[index - 1] && array[index - 1].key === 'divider')
+      )) {
         return acc;
       }
       acc.push(item);
