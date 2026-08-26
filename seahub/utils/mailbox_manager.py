@@ -323,8 +323,8 @@ class OAuthMailboxManager(OAuthTokenClient, BaseMailboxManager):
     _TRASH_LABEL = ''
     _JUNK_LABEL = ''
 
-    def __init__(self, config):
-        super().__init__(config)
+    def __init__(self, config, oauth_token=None, oauth_config=None):
+        super().__init__(config, oauth_token, oauth_config)
         if not self._has_complete_oauth_config():
             raise MailboxConfigError('OAuth email configuration is incomplete for mailbox operations.')
 
@@ -350,7 +350,12 @@ class OAuthMailboxManager(OAuthTokenClient, BaseMailboxManager):
     def _process_messages(self, message_ids, action, target_folder, op_name):
         normalized_message_ids = self._normalize_message_ids(message_ids)
         if not normalized_message_ids:
-            return {'moved_count': 0, 'target_folder': target_folder, 'config_updated': self.config_updated}
+            return {
+                'moved_count': 0,
+                'target_folder': target_folder,
+                'oauth_updated': self.oauth_updated,
+                'oauth_token': getattr(self, 'oauth_token', None),
+            }
 
         try:
             self._request_access_token()
@@ -364,7 +369,12 @@ class OAuthMailboxManager(OAuthTokenClient, BaseMailboxManager):
                 action(provider_message_id)
                 moved_count += 1
 
-            return {'moved_count': moved_count, 'target_folder': target_folder, 'config_updated': self.config_updated}
+            return {
+                'moved_count': moved_count,
+                'target_folder': target_folder,
+                'oauth_updated': self.oauth_updated,
+                'oauth_token': getattr(self, 'oauth_token', None),
+            }
         except (MailboxConfigError, MailboxOperationError, EmailAuthProviderError):
             raise
         except Exception as e:
@@ -461,27 +471,27 @@ class MicrosoftMailboxManager(OAuthMailboxManager):
         self._move_to_well_known_folder(provider_message_id, self._JUNK_LABEL)
 
 
-def get_mailbox_manager_from_config(config):
+def get_mailbox_manager_from_config(config, oauth_token=None, oauth_config=None):
     server_provider = config.get('server_provider', 'general_email_provider')
 
     if server_provider == 'general_email_provider':
         return ImapMailboxManager(config)
     elif server_provider == 'Gmail':
-        return GmailMailboxManager(config)
+        return GmailMailboxManager(config, oauth_token, oauth_config)
     elif server_provider == 'Microsoft':
-        return MicrosoftMailboxManager(config)
+        return MicrosoftMailboxManager(config, oauth_token, oauth_config)
 
     logger.error('Mailbox manager not supported for server_provider: %s', server_provider)
     raise MailboxConfigError(f'Mailbox operations are not supported for provider: {server_provider}')
 
 
-def move_emails_to_junk(config, message_ids):
-    manager = get_mailbox_manager_from_config(config)
+def move_emails_to_junk(config, message_ids, oauth_token=None, oauth_config=None):
+    manager = get_mailbox_manager_from_config(config, oauth_token, oauth_config)
     return manager.move_to_junk(message_ids)
 
 
-def move_emails_to_trash(config, emails_info):
-    manager = get_mailbox_manager_from_config(config)
+def move_emails_to_trash(config, emails_info, oauth_token=None, oauth_config=None):
+    manager = get_mailbox_manager_from_config(config, oauth_token, oauth_config)
     return manager.move_to_trash(emails_info)
 
 

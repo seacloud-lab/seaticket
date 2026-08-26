@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, FormGroup, Label, Row } from 'reactstrap';
 import { gettext } from '@/constants';
 import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, STEP, STEPS, EMAIL_SERVER_PROVIDER, getAvailableConnectionTypes } from '../../constants';
-import { getVisibleEmailFields, getEmailProvider, sanitizeEmailConfigByProvider, isOAuthEmailProvider } from '../../utils';
+import { getVisibleEmailFields, getEmailProvider, sanitizeEmailConfigByProvider, isOAuthEmailProvider, hasValidMicrosoftOAuthUrls } from '../../utils';
 import { ModalHeader, Loading, toaster, Icon } from '@/components';
 import ConnectionConfigEditor from '../connection-config-editor';
 import ConnectionDialogFooter from './connection-dialog-footer';
@@ -272,6 +272,10 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const handleEmailOAuthLogin = useCallback(() => {
     let _config = { ...config };
     _config = sanitizeEmailConfigByProvider(_config);
+    if (!hasValidMicrosoftOAuthUrls(_config)) {
+      toaster.danger(gettext('Microsoft OAuth URLs must start with https://login.microsoftonline.com/.'));
+      return;
+    }
     setSubmitting(true);
     connectionsAPI.startEmailOAuth(projectUuid, { name: name.trim(), config: _config }).then((res) => {
       const authorizationUrl = res.data?.auth_url;

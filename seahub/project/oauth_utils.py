@@ -1,5 +1,4 @@
 import json
-from urllib.parse import urlparse
 
 from django.utils import timezone
 from django.core.validators import validate_email
@@ -9,7 +8,7 @@ from rest_framework import status
 from seahub import settings
 from seahub.api2.utils import api_error
 from seahub.project.constants import EMAIL_OAUTH_SESSION_KEY, EMAIL_OAUTH_SESSION_TIMEOUT, \
-    EMAIL_ACCOUNT_TYPE_PERSONAL, EMAIL_ACCOUNT_TYPE_SHARED, EMAIL_OAUTH_CONFIGS
+    EMAIL_ACCOUNT_TYPE_PERSONAL, EMAIL_ACCOUNT_TYPE_SHARED, EMAIL_OAUTH_CONFIGS, MICROSOFT_OAUTH_URL_PREFIX
 from seahub.project.utils import is_oauth_email_provider
 
 
@@ -162,9 +161,12 @@ class EmailOAuthUtils(CommonOAuthUtils):
                 value = config.get(key)
                 if value in (None, ''):
                     continue
-                if not isinstance(value, str) or urlparse(value).scheme not in ('http', 'https') or not urlparse(value).netloc:
+                if not isinstance(value, str):
                     return None, api_error(status.HTTP_400_BAD_REQUEST, f'{key} invalid.')
-                connection_config[key] = value.strip()
+                value = value.strip()
+                if not value.startswith(MICROSOFT_OAUTH_URL_PREFIX):
+                    return None, api_error(status.HTTP_400_BAD_REQUEST, f'{key} invalid.')
+                connection_config[key] = value
 
         sender_email = (config.get('sender_email') or '').strip()
         if not sender_email:

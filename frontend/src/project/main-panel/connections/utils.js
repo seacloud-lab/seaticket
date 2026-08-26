@@ -7,7 +7,7 @@ import {
   SUPPORT_LINK_EXISTING_TICKET_CONNECTION_TYPES, GENERAL_TASK_STATUS_NAME_MAP, GENERAL_TASK_SIZE_NAME_MAP,
   GENERAL_TASK_PRIORITY_NAME_MAP, CONNECTION_PREDEFINED_COLUMN_CONFIG, GITHUB_STATE_REASON_NAME_MAP,
   GITHUB_STATE_OPTION_NAME_MAP,
-  CONNECTION_FIELD_TYPE, EMAIL_SERVER_PROVIDER, EMAIL_ACCOUNT_TYPE,
+  CONNECTION_FIELD_TYPE, EMAIL_SERVER_PROVIDER, EMAIL_ACCOUNT_TYPE, MICROSOFT_OAUTH_URL_PREFIX,
 } from './constants';
 import { getColumnByName, getColumnOptions, getOption } from '@/sea-metadata/utils/column';
 import { getRowById } from '@/sea-metadata/utils/row';
@@ -45,6 +45,17 @@ export const getEmailProvider = (config = {}) => {
 
 export const isOAuthEmailProvider = (provider) => {
   return provider === EMAIL_SERVER_PROVIDER.MICROSOFT || provider === EMAIL_SERVER_PROVIDER.GMAIL;
+};
+
+export const hasValidMicrosoftOAuthUrls = (config = {}) => {
+  if (getEmailProvider(config) !== EMAIL_SERVER_PROVIDER.MICROSOFT ||
+      config.account_type !== EMAIL_ACCOUNT_TYPE.SHARED) {
+    return true;
+  }
+  return ['authority_url', 'token_url'].every((key) => {
+    const value = config[key];
+    return !value || (typeof value === 'string' && value.trim().startsWith(MICROSOFT_OAUTH_URL_PREFIX));
+  });
 };
 
 export const sanitizeEmailConfigByProvider = (config = {}) => {

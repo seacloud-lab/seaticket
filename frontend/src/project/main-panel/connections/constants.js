@@ -9,6 +9,8 @@ export const EMAIL_SERVER_PROVIDER = {
   MICROSOFT: 'Microsoft',
 };
 
+export const MICROSOFT_OAUTH_URL_PREFIX = 'https://login.microsoftonline.com/';
+
 export const DEFAULT_SHARED_GOOGLE_OAUTH_CONFIG = {
   AUTH_URL: 'https://accounts.google.com/o/oauth2/v2/auth',
   TOKEN_URL: 'https://oauth2.googleapis.com/token',

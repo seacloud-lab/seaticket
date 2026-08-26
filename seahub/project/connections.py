@@ -1988,6 +1988,22 @@ class ProjectConnectionDeleteEmailView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         config = decrypt_config(json.loads(project_connection.config))
+        oauth_token = None
+        oauth_config = None
+        if is_oauth_email_provider(config.get('server_provider')):
+            oauth_record = ProjectConnectionOauth.objects.get_by_connection_id(project_uuid, connection_id)
+            if not oauth_record:
+                return api_error(status.HTTP_400_BAD_REQUEST, 'Email OAuth authorization is required.')
+            oauth_token = {
+                'access_token': oauth_record.access_token,
+                'refresh_token': oauth_record.refresh_token,
+                'expires_at': oauth_record.expires_at.timestamp(),
+            }
+            oauth_config = EmailOAuthUtils._get_oauth_config(
+                config.get('server_provider'),
+                config.get('account_type', EMAIL_ACCOUNT_TYPE_PERSONAL),
+                config,
+            )
 
         seadb_api = SeaDBAPI()
         email_seadb_api = EmailSeaDBAPI(project_uuid, seadb_api=seadb_api)
@@ -2032,7 +2048,15 @@ class ProjectConnectionDeleteEmailView(APIView):
                 if server_provider == 'general_email_provider':
                     move_emails_to_trash(config, need_deleted_emails_info)
                 else:
-                    move_emails_to_trash(config, need_deleted_message_ids)
+                    move_result = move_emails_to_trash(
+                        config, need_deleted_message_ids, oauth_token, oauth_config
+                    )
+                    if move_result.get('oauth_updated'):
+                        oauth_token = move_result['oauth_token']
+                        ProjectConnectionOauth.objects.upsert_connection_token(
+                            project_uuid, connection_id, oauth_token['access_token'], oauth_token['expires_at'],
+                            oauth_token['refresh_token']
+                        )
                 email_seadb_api.mark_emails_deleted(connection_id, email_pks)
                 email_seadb_api.mark_thread_deleted(connection_id, thread_id)
         except Exception as e:

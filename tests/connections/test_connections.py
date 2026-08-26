@@ -12,6 +12,7 @@ from seahub.project.connections import (
     ProjectConnectionDetailsView,
     ProjectConnectionMetaView,
     ProjectConnectionLogView,
+    ProjectConnectionDeleteEmailView,
     ProjectConnectionsStatusView,
     ProjectConfluenceOauthStatusView,
     ProjectConnectionRecordView,
@@ -130,7 +131,7 @@ class TestEmailOAuthUtils:
         assert payload['oauth_config']['authority_url'] == EMAIL_OAUTH_CONFIGS['Microsoft']['authority_url']
         assert payload['oauth_config']['token_url'] == EMAIL_OAUTH_CONFIGS['Microsoft']['token_url']
 
-    def test_shared_microsoft_rejects_invalid_endpoint(self, factory):
+    def test_shared_microsoft_strips_tenant_endpoints(self, factory):
         request = factory.post('/', data={
             'name': 'shared-mail',
             'config': {
@@ -139,14 +140,38 @@ class TestEmailOAuthUtils:
                 'client_id': 'client-id',
                 'client_secret': 'client-secret',
                 'sender_email': 'shared@example.com',
-                'authority_url': 'not-a-url',
+                'authority_url': ' https://login.microsoftonline.com/tenant-id/oauth2/v2.0/authorize ',
+                'token_url': ' https://login.microsoftonline.com/tenant-id/oauth2/v2.0/token ',
             },
         }, format='json')
 
         payload, error_response = EmailOAuthUtils.build_email_oauth_config(request)
 
-        assert payload is None
-        assert error_response.status_code == 400
+        assert error_response is None
+        assert payload['config']['authority_url'] == 'https://login.microsoftonline.com/tenant-id/oauth2/v2.0/authorize'
+        assert payload['config']['token_url'] == 'https://login.microsoftonline.com/tenant-id/oauth2/v2.0/token'
+
+    def test_shared_microsoft_rejects_non_microsoft_endpoint(self, factory):
+        for key, endpoint in (
+                ('authority_url', 'http://169.254.169.254/latest/meta-data/'),
+                ('token_url', 'https://login.microsoftonline.com.evil.example/token'),
+        ):
+            request = factory.post('/', data={
+                'name': 'shared-mail',
+                'config': {
+                    'server_provider': 'Microsoft',
+                    'account_type': 'shared',
+                    'client_id': 'client-id',
+                    'client_secret': 'client-secret',
+                    'sender_email': 'shared@example.com',
+                    key: endpoint,
+                },
+            }, format='json')
+
+            payload, error_response = EmailOAuthUtils.build_email_oauth_config(request)
+
+            assert payload is None
+            assert error_response.status_code == 400
 
 
 
@@ -745,6 +770,84 @@ class TestProjectConnectionReplyEmailView:
         assert 'refresh_token' not in saved_config
 
 
+class TestProjectConnectionDeleteEmailView:
+
+    def test_delete_oauth_email_persists_refreshed_tokens(
+            self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        config = {
+            'server_provider': 'Gmail',
+            'account_type': 'personal',
+            'sender_email': 'sender@example.com',
+        }
+        connection = connection_factory(connection_type='email', config=config)
+        request = factory.post(
+            f'/api/v1/project/{project.uuid}/connections/{connection.id}/delete-email/',
+            data={'thread_id': 10}, format='json',
+        )
+        request.user = project_creator
+
+        email_seadb_api = Mock()
+        email_seadb_api.get_emails_by_thread_id.return_value = [{
+            '_pk': 1, 'message_id': '<message-1@example.com>', 'is_sender': False,
+        }]
+        oauth_record = Mock(
+            access_token='old-access', refresh_token='old-refresh', expires_at=datetime.datetime.now()
+        )
+        refreshed_token = {
+            'access_token': 'new-access',
+            'refresh_token': 'new-refresh',
+            'expires_at': 999999,
+        }
+
+        with patch('seahub.project.connections.SeaDBAPI'), \
+                patch('seahub.project.connections.EmailSeaDBAPI', return_value=email_seadb_api), \
+                patch('seahub.project.connections.ProjectConnectionOauth.objects.get_by_connection_id',
+                      return_value=oauth_record), \
+                patch('seahub.project.connections.EmailOAuthUtils._get_oauth_config',
+                      return_value={'client_id': 'cid'}), \
+                patch('seahub.project.connections.move_emails_to_trash', return_value={
+                    'moved_count': 1, 'oauth_updated': True, 'oauth_token': refreshed_token,
+                }) as move_mock, \
+                patch('seahub.project.connections.ProjectConnectionOauth.objects.upsert_connection_token') as upsert_mock:
+            resp = ProjectConnectionDeleteEmailView.as_view()(
+                request, project_uuid=project.uuid, connection_id=connection.id
+            )
+
+        assert resp.status_code == 200
+        move_mock.assert_called_once_with(
+            config, ['<message-1@example.com>'],
+            {'access_token': 'old-access', 'refresh_token': 'old-refresh', 'expires_at': oauth_record.expires_at.timestamp()},
+            {'client_id': 'cid'},
+        )
+        upsert_mock.assert_called_once_with(
+            project.uuid, connection.id, 'new-access', 999999, 'new-refresh'
+        )
+        email_seadb_api.mark_emails_deleted.assert_called_once_with(connection.id, [1])
+
+    def test_delete_oauth_email_requires_authorization(
+            self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        connection = connection_factory(connection_type='email', config={
+            'server_provider': 'Microsoft', 'account_type': 'personal', 'sender_email': 'sender@example.com',
+        })
+        request = factory.post(
+            f'/api/v1/project/{project.uuid}/connections/{connection.id}/delete-email/',
+            data={'thread_id': 10}, format='json',
+        )
+        request.user = project_creator
+
+        with patch('seahub.project.connections.ProjectConnectionOauth.objects.get_by_connection_id', return_value=None), \
+                patch('seahub.project.connections.move_emails_to_trash') as move_mock:
+            resp = ProjectConnectionDeleteEmailView.as_view()(
+                request, project_uuid=project.uuid, connection_id=connection.id
+            )
+
+        assert resp.status_code == 400
+        assert resp.data['error_msg'] == 'Email OAuth authorization is required.'
+        move_mock.assert_not_called()
+
+
 class TestAgentActionConfirmView:
 
     def test_confirm_email_reply_persists_refreshed_oauth_tokens(self, factory, project_creator, real_project, connection_factory):
@@ -927,6 +1030,108 @@ class TestAgentActionConfirmView:
         assert 'no matching remote message was moved' in resp.data['result']
         move_mock.assert_called_once_with(config, ['<spam-1@example.com>'])
         email_seadb_api.mark_thread_deleted.assert_not_called()
+
+    def test_confirm_move_oauth_email_to_spam_persists_refreshed_tokens(
+            self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        config = {
+            'server_provider': 'Microsoft',
+            'account_type': 'personal',
+            'sender_email': 'sender@example.com',
+        }
+        connection = connection_factory(connection_type='email', config=config)
+        request = factory.post(
+            f"/api/v1/project/{project.uuid}/agent/runs/1/actions/2/confirm/",
+            data={}, format='json',
+        )
+        request.user = project_creator
+
+        seadb_api = Mock()
+        seadb_api.query_rows.return_value = {
+            'results': [{
+                'run_id': 1,
+                'status': 'pending',
+                'tool_name': 'suggest_move_to_spam',
+                'target_item_type': 'email',
+                'target_item_id': f'{connection.id}_10',
+                'result': '',
+                'suggestion_content': 'spam detection reason',
+            }]
+        }
+        email_seadb_api = Mock()
+        email_seadb_api.get_thread_by_pk.return_value = {'_pk': 10, 'linked_ticket': None}
+        email_seadb_api.get_emails_by_thread_id.return_value = [{
+            '_pk': 1,
+            'message_id': '<spam-1@example.com>',
+            'is_sender': False,
+        }]
+        oauth_record = Mock(
+            access_token='old-access', refresh_token='old-refresh', expires_at=datetime.datetime.now()
+        )
+        refreshed_token = {
+            'access_token': 'new-access',
+            'refresh_token': 'new-refresh',
+            'expires_at': 999999,
+        }
+
+        with patch('seahub.project.agent.agent.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.project.agent.action_executor.EmailSeaDBAPI', return_value=email_seadb_api), \
+                patch('seahub.project.agent.action_executor.ProjectConnectionOauth.objects.get_by_connection_id',
+                      return_value=oauth_record), \
+                patch('seahub.project.agent.action_executor.EmailOAuthUtils._get_oauth_config',
+                      return_value={'client_id': 'cid'}), \
+                patch('seahub.project.agent.action_executor.move_emails_to_junk', return_value={
+                    'moved_count': 1, 'oauth_updated': True, 'oauth_token': refreshed_token,
+                }) as move_mock, \
+                patch('seahub.project.agent.action_executor.ProjectConnectionOauth.objects.upsert_connection_token') as upsert_mock:
+            resp = AgentActionConfirmView.as_view()(request, project_uuid=project.uuid, run_id='1', action_id='2')
+
+        assert resp.status_code == 200
+        move_mock.assert_called_once_with(
+            config, ['<spam-1@example.com>'],
+            {'access_token': 'old-access', 'refresh_token': 'old-refresh', 'expires_at': oauth_record.expires_at.timestamp()},
+            {'client_id': 'cid'},
+        )
+        upsert_mock.assert_called_once_with(
+            project.uuid, connection.id, 'new-access', 999999, 'new-refresh'
+        )
+
+    def test_confirm_move_oauth_email_to_spam_requires_authorization(
+            self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        connection = connection_factory(connection_type='email', config={
+            'server_provider': 'Gmail', 'account_type': 'personal', 'sender_email': 'sender@example.com',
+        })
+        request = factory.post(
+            f"/api/v1/project/{project.uuid}/agent/runs/1/actions/2/confirm/",
+            data={}, format='json',
+        )
+        request.user = project_creator
+
+        seadb_api = Mock()
+        seadb_api.query_rows.return_value = {
+            'results': [{
+                'run_id': 1, 'status': 'pending', 'tool_name': 'suggest_move_to_spam',
+                'target_item_type': 'email', 'target_item_id': f'{connection.id}_10', 'result': '',
+            }]
+        }
+        email_seadb_api = Mock()
+        email_seadb_api.get_thread_by_pk.return_value = {'_pk': 10, 'linked_ticket': None}
+        email_seadb_api.get_emails_by_thread_id.return_value = [{
+            '_pk': 1, 'message_id': '<spam-1@example.com>', 'is_sender': False,
+        }]
+
+        with patch('seahub.project.agent.agent.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.project.agent.action_executor.EmailSeaDBAPI', return_value=email_seadb_api), \
+                patch('seahub.project.agent.action_executor.ProjectConnectionOauth.objects.get_by_connection_id',
+                      return_value=None), \
+                patch('seahub.project.agent.action_executor.move_emails_to_junk') as move_mock:
+            resp = AgentActionConfirmView.as_view()(request, project_uuid=project.uuid, run_id='1', action_id='2')
+
+        assert resp.status_code == 200
+        assert resp.data['status'] == 'failed'
+        assert 'OAuth authorization is required' in resp.data['result']
+        move_mock.assert_not_called()
 
 
 class TestProjectConnectionSyncView:
