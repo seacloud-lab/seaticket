@@ -15,7 +15,11 @@ export const DEFAULT_SHARED_GOOGLE_OAUTH_CONFIG = {
   AUTH_KWARGS: {
     access_type: 'offline',
     prompt: 'consent',
-  }
+  },
+  SCOPES: [
+    'https://www.googleapis.com/auth/gmail.readonly',
+    'https://www.googleapis.com/auth/gmail.send',
+  ],
 };
 
 export const DEFAULT_SHARED_MICROSOFT_OAUTH_CONFIG = {
@@ -24,7 +28,12 @@ export const DEFAULT_SHARED_MICROSOFT_OAUTH_CONFIG = {
   AUTH_KWARGS: {
     response_mode: 'query',
     prompt: 'consent',
-  }
+  },
+  SCOPES: [
+    'offline_access',
+    'Mail.Read.Shared',
+    'Mail.Send.Shared',
+  ],
 };
 
 export const EMAIL_ACCOUNT_TYPE = {
@@ -135,9 +144,9 @@ export const CONNECTION_FIELDS = {
       tip: gettext('The display name is an arbitrary description prepended to an email address. When a display name is used, the email address is enclosed in angle brackets. Example: \'Bill Smith <william.smith@example.com>\''),
     }, {
       key: 'sender_email',
-      name: gettext('"From" address (optional)'),
+      name: gettext('"From" address'),
       type: CONNECTION_FIELD_TYPE.TEXT,
-      is_required: false,
+      is_required: true,
       is_display: true,
       is_custom: true,
       providers: [EMAIL_SERVER_PROVIDER.GENERAL, EMAIL_SERVER_PROVIDER.GMAIL, EMAIL_SERVER_PROVIDER.MICROSOFT],
@@ -171,7 +180,7 @@ export const CONNECTION_FIELDS = {
       is_display: true,
       is_custom: true,
       is_edit_readonly: true,
-      providers: [EMAIL_SERVER_PROVIDER.GMAIL, EMAIL_SERVER_PROVIDER.MICROSOFT],
+      providers: [EMAIL_SERVER_PROVIDER.MICROSOFT],
       account_types: [EMAIL_ACCOUNT_TYPE.SHARED],
       is_advanced_option: true,
     }, {
@@ -182,7 +191,7 @@ export const CONNECTION_FIELDS = {
       is_display: true,
       is_custom: true,
       is_edit_readonly: true,
-      providers: [EMAIL_SERVER_PROVIDER.GMAIL, EMAIL_SERVER_PROVIDER.MICROSOFT],
+      providers: [EMAIL_SERVER_PROVIDER.MICROSOFT],
       account_types: [EMAIL_ACCOUNT_TYPE.SHARED],
       is_advanced_option: true,
     }, {

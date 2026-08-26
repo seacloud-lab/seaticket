@@ -26,7 +26,7 @@ from seahub.project.oauth_utils import EmailOAuthUtils
 from seahub.project.utils import get_email_oauth_callback_url
 from seahub.project.agent import AgentActionConfirmView
 from seahub.project.models import ProjectConnectionOauth
-from seahub.project.constants import ConnectionType
+from seahub.project.constants import ConnectionType, EMAIL_ACCOUNT_TYPE_SHARED, EMAIL_OAUTH_CONFIGS
 from seahub.utils.storage import FileNotFound
 from seahub.settings import GITHUB_WEBHOOK_SECRET
 
@@ -55,6 +55,98 @@ class TestEmailOAuthUtils:
             'active-state': {'created_at': current_timestamp},
         }
         assert request.session.modified is True
+
+    def test_shared_gmail_uses_server_endpoints_and_scopes(self, factory):
+        request = factory.post('/', data={
+            'name': 'shared-mail',
+            'config': {
+                'server_provider': 'Gmail',
+                'account_type': 'shared',
+                'client_id': 'client-id',
+                'client_secret': 'client-secret',
+                'sender_email': 'shared@example.com',
+                'authority_url': 'https://ignored.example.com/authorize',
+                'token_url': 'https://ignored.example.com/token',
+                'scopes': ['ignored'],
+                'authority_args': {'ignored': 'value'},
+            },
+        }, format='json')
+
+        payload, error_response = EmailOAuthUtils.build_email_oauth_config(request)
+
+        assert error_response is None
+        assert payload['config'] == {
+            'server_provider': 'Gmail',
+            'account_type': 'shared',
+            'client_id': 'client-id',
+            'client_secret': 'client-secret',
+            'sender_email': 'shared@example.com',
+            'sender_name': '',
+        }
+        assert payload['oauth_config']['authority_url'] == EMAIL_OAUTH_CONFIGS['Gmail']['authority_url']
+        assert payload['oauth_config']['token_url'] == EMAIL_OAUTH_CONFIGS['Gmail']['token_url']
+        assert payload['oauth_config']['scopes'] == EMAIL_OAUTH_CONFIGS['Gmail']['scopes'][EMAIL_ACCOUNT_TYPE_SHARED]
+        assert payload['oauth_config']['authority_args'] == EMAIL_OAUTH_CONFIGS['Gmail']['authority_args']
+
+    def test_shared_microsoft_allows_tenant_endpoints(self, factory):
+        request = factory.post('/', data={
+            'name': 'shared-mail',
+            'config': {
+                'server_provider': 'Microsoft',
+                'account_type': 'shared',
+                'client_id': 'client-id',
+                'client_secret': 'client-secret',
+                'sender_email': 'shared@example.com',
+                'authority_url': 'https://login.microsoftonline.com/tenant-id/oauth2/v2.0/authorize',
+                'token_url': 'https://login.microsoftonline.com/tenant-id/oauth2/v2.0/token',
+            },
+        }, format='json')
+
+        payload, error_response = EmailOAuthUtils.build_email_oauth_config(request)
+
+        assert error_response is None
+        assert payload['config']['authority_url'].endswith('/tenant-id/oauth2/v2.0/authorize')
+        assert payload['config']['token_url'].endswith('/tenant-id/oauth2/v2.0/token')
+        assert payload['oauth_config']['scopes'] == EMAIL_OAUTH_CONFIGS['Microsoft']['scopes'][EMAIL_ACCOUNT_TYPE_SHARED]
+        assert payload['oauth_config']['authority_args'] == EMAIL_OAUTH_CONFIGS['Microsoft']['authority_args']
+
+    def test_shared_microsoft_defaults_missing_endpoints(self, factory):
+        request = factory.post('/', data={
+            'name': 'shared-mail',
+            'config': {
+                'server_provider': 'Microsoft',
+                'account_type': 'shared',
+                'client_id': 'client-id',
+                'client_secret': 'client-secret',
+                'sender_email': 'shared@example.com',
+            },
+        }, format='json')
+
+        payload, error_response = EmailOAuthUtils.build_email_oauth_config(request)
+
+        assert error_response is None
+        assert 'authority_url' not in payload['config']
+        assert 'token_url' not in payload['config']
+        assert payload['oauth_config']['authority_url'] == EMAIL_OAUTH_CONFIGS['Microsoft']['authority_url']
+        assert payload['oauth_config']['token_url'] == EMAIL_OAUTH_CONFIGS['Microsoft']['token_url']
+
+    def test_shared_microsoft_rejects_invalid_endpoint(self, factory):
+        request = factory.post('/', data={
+            'name': 'shared-mail',
+            'config': {
+                'server_provider': 'Microsoft',
+                'account_type': 'shared',
+                'client_id': 'client-id',
+                'client_secret': 'client-secret',
+                'sender_email': 'shared@example.com',
+                'authority_url': 'not-a-url',
+            },
+        }, format='json')
+
+        payload, error_response = EmailOAuthUtils.build_email_oauth_config(request)
+
+        assert payload is None
+        assert error_response.status_code == 400
 
 
 
@@ -568,7 +660,7 @@ class TestProjectEmailOAuthViews:
         oauth_session = Mock()
         oauth_session.authorization_url.return_value = ('https://provider.example/authorize?state=state-1', 'state-1')
 
-        with patch('seahub.project.oauth_utils.EmailOAuthUtils._get_personal_oauth_config', return_value={
+        with patch('seahub.project.oauth_utils.EmailOAuthUtils._get_oauth_config', return_value={
             'client_id': 'cid', 'client_secret': 'secret',
             'authority_url': 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
             'token_url': 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
@@ -641,7 +733,7 @@ class TestProjectConnectionReplyEmailView:
                 patch('seahub.project.connections.ProjectConnectionOauth.objects.get_by_connection_id', return_value=Mock(
                     access_token='old-access', refresh_token='old-refresh', expires_at=datetime.datetime.now()
                 )), \
-                patch('seahub.project.connections.EmailOAuthUtils._get_personal_oauth_config', return_value={'client_id': 'cid'}), \
+                patch('seahub.project.connections.EmailOAuthUtils._get_oauth_config', return_value={'client_id': 'cid'}), \
                 patch('seahub.project.connections.toggle_send_email', side_effect=mutate_config):
             from seahub.project.connections import ProjectConnectionReplyEmailView
             resp = ProjectConnectionReplyEmailView.as_view()(request, project_uuid=project.uuid, connection_id=connection.id)
@@ -713,7 +805,7 @@ class TestAgentActionConfirmView:
                 patch('seahub.project.agent.action_executor.ProjectConnectionOauth.objects.get_by_connection_id', return_value=Mock(
                     access_token='old-access', refresh_token='old-refresh', expires_at=datetime.datetime.now()
                 )), \
-                patch('seahub.project.agent.action_executor.EmailOAuthUtils._get_personal_oauth_config', return_value={'client_id': 'cid'}), \
+                patch('seahub.project.agent.action_executor.EmailOAuthUtils._get_oauth_config', return_value={'client_id': 'cid'}), \
                 patch('seahub.project.agent.action_executor.toggle_send_email', side_effect=mutate_config):
             resp = AgentActionConfirmView.as_view()(request, project_uuid=project.uuid, run_id='1', action_id='2')
 

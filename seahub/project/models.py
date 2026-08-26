@@ -42,11 +42,6 @@ def get_required_connection_fields(connection_type, config=None):
         return [
             {'key': 'client_id', 'is_required': True, 'is_unique': False},
             {'key': 'client_secret', 'is_required': True, 'is_unique': False},
-            {'key': 'authority_url', 'is_required': True, 'is_unique': False},
-            {'key': 'token_url', 'is_required': True, 'is_unique': False},
-            {'key': 'scopes', 'is_required': True, 'is_unique': False},
-            {'key': 'authority_args', 'is_required': True, 'is_unique': False},
-            {'key': 'refresh_token', 'is_required': True, 'is_unique': False},
         ]
 
     return [field for field in CONNECTION_FIELDS.get(connection_type, []) if field.get('is_required')]

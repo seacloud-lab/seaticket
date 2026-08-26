@@ -43,17 +43,23 @@ EMAIL_ACCOUNT_TYPE_SHARED = 'shared'
 
 OAUTH_EMAIL_PROVIDERS = [MICROSOFT_EMAIL_PROVIDER, GMAIL_EMAIL_PROVIDER]
 
-PERSONAL_EMAIL_OAUTH_CONFIGS = {
+EMAIL_OAUTH_CONFIGS = {
     GMAIL_EMAIL_PROVIDER: {
         'client_id_setting': 'GOOGLE_EMAIL_CLIENT_ID',
         'client_secret_setting': 'GOOGLE_EMAIL_CLIENT_SECRET',
         'authority_url': 'https://accounts.google.com/o/oauth2/v2/auth',
         'token_url': 'https://oauth2.googleapis.com/token',
-        'scopes': [
-            'https://www.googleapis.com/auth/gmail.readonly',
-            'https://www.googleapis.com/auth/gmail.send',
-            'https://www.googleapis.com/auth/gmail.settings.basic',
-        ],
+        'scopes': {
+            EMAIL_ACCOUNT_TYPE_PERSONAL: [
+                'https://www.googleapis.com/auth/gmail.readonly',
+                'https://www.googleapis.com/auth/gmail.send',
+                'https://www.googleapis.com/auth/gmail.settings.basic',
+            ],
+            EMAIL_ACCOUNT_TYPE_SHARED: [
+                'https://www.googleapis.com/auth/gmail.readonly',
+                'https://www.googleapis.com/auth/gmail.send',
+            ],
+        },
         'authority_args': {'access_type': 'offline', 'prompt': 'consent'},
     },
     MICROSOFT_EMAIL_PROVIDER: {
@@ -61,7 +67,10 @@ PERSONAL_EMAIL_OAUTH_CONFIGS = {
         'client_secret_setting': 'MICROSOFT_EMAIL_CLIENT_SECRET',
         'authority_url': 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
         'token_url': 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
-        'scopes': ['openid', 'profile', 'email', 'offline_access', 'User.Read', 'Mail.Read', 'Mail.Send'],
+        'scopes': {
+            EMAIL_ACCOUNT_TYPE_PERSONAL: ['openid', 'profile', 'email', 'offline_access', 'User.Read', 'Mail.Read', 'Mail.Send'],
+            EMAIL_ACCOUNT_TYPE_SHARED: ['offline_access', 'Mail.Read.Shared', 'Mail.Send.Shared'],
+        },
         'authority_args': {'response_mode': 'query', 'prompt': 'consent'},
     },
 }

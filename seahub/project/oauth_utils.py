@@ -1,4 +1,5 @@
 import json
+from urllib.parse import urlparse
 
 from django.utils import timezone
 from django.core.validators import validate_email
@@ -8,7 +9,7 @@ from rest_framework import status
 from seahub import settings
 from seahub.api2.utils import api_error
 from seahub.project.constants import EMAIL_OAUTH_SESSION_KEY, EMAIL_OAUTH_SESSION_TIMEOUT, \
-    EMAIL_ACCOUNT_TYPE_PERSONAL, EMAIL_ACCOUNT_TYPE_SHARED, PERSONAL_EMAIL_OAUTH_CONFIGS
+    EMAIL_ACCOUNT_TYPE_PERSONAL, EMAIL_ACCOUNT_TYPE_SHARED, EMAIL_OAUTH_CONFIGS
 from seahub.project.utils import is_oauth_email_provider
 
 
@@ -35,22 +36,36 @@ class CommonOAuthUtils:
 
 class EmailOAuthUtils(CommonOAuthUtils):
     @staticmethod
-    def _get_personal_oauth_config(provider):
-        config = PERSONAL_EMAIL_OAUTH_CONFIGS.get(provider)
+    def _get_oauth_config(provider, account_type, connection_config=None):
+        config = EMAIL_OAUTH_CONFIGS.get(provider)
         if not config:
             return None
 
-        client_id = getattr(settings, config['client_id_setting'], '')
-        client_secret = getattr(settings, config['client_secret_setting'], '')
+        connection_config = connection_config or {}
+        if account_type == EMAIL_ACCOUNT_TYPE_PERSONAL:
+            client_id = getattr(settings, config['client_id_setting'], '')
+            client_secret = getattr(settings, config['client_secret_setting'], '')
+        else:
+            client_id = connection_config.get('client_id')
+            client_secret = connection_config.get('client_secret')
+
         if not client_id or not client_secret:
             return None
+
+        authority_url = config['authority_url']
+        token_url = config['token_url']
+        # Shared Microsoft apps may use tenant-specific endpoints. Gmail endpoints
+        # are provider-owned and always come from the server configuration.
+        if provider == 'Microsoft' and account_type == EMAIL_ACCOUNT_TYPE_SHARED:
+            authority_url = connection_config.get('authority_url') or authority_url
+            token_url = connection_config.get('token_url') or token_url
 
         return {
             'client_id': client_id,
             'client_secret': client_secret,
-            'authority_url': config['authority_url'],
-            'token_url': config['token_url'],
-            'scopes': list(config['scopes']),
+            'authority_url': authority_url,
+            'token_url': token_url,
+            'scopes': list(config['scopes'][account_type]),
             'authority_args': dict(config['authority_args']),
         }
 
@@ -128,7 +143,7 @@ class EmailOAuthUtils(CommonOAuthUtils):
             connection_config['sync_years'] = config['sync_years']
 
         if account_type == EMAIL_ACCOUNT_TYPE_PERSONAL:
-            oauth_config = cls._get_personal_oauth_config(provider)
+            oauth_config = cls._get_oauth_config(provider, account_type)
             if not oauth_config:
                 return None, api_error(status.HTTP_400_BAD_REQUEST, 'Email OAuth provider is not configured.')
             return {
@@ -137,19 +152,19 @@ class EmailOAuthUtils(CommonOAuthUtils):
                 'oauth_config': oauth_config,
             }, None
 
-        required_fields = ['client_id', 'client_secret', 'authority_url', 'token_url', 'scopes', 'authority_args']
-        for key in required_fields:
-            value = config.get(key)
-            if value in (None, '', []):
+        for key in ('client_id', 'client_secret'):
+            if not isinstance(config.get(key), str) or not config[key].strip():
                 return None, api_error(status.HTTP_400_BAD_REQUEST, f'{key} invalid.')
+            connection_config[key] = config[key].strip()
 
-        if not isinstance(config.get('scopes'), list):
-            return None, api_error(status.HTTP_400_BAD_REQUEST, 'scopes invalid.')
-
-        if not isinstance(config.get('authority_args'), dict):
-            return None, api_error(status.HTTP_400_BAD_REQUEST, 'authority_args invalid.')
-        if not config.get('authority_args'):
-            return None, api_error(status.HTTP_400_BAD_REQUEST, 'authority_args invalid.')
+        if provider == 'Microsoft':
+            for key in ('authority_url', 'token_url'):
+                value = config.get(key)
+                if value in (None, ''):
+                    continue
+                if not isinstance(value, str) or urlparse(value).scheme not in ('http', 'https') or not urlparse(value).netloc:
+                    return None, api_error(status.HTTP_400_BAD_REQUEST, f'{key} invalid.')
+                connection_config[key] = value.strip()
 
         sender_email = (config.get('sender_email') or '').strip()
         if not sender_email:
@@ -159,12 +174,13 @@ class EmailOAuthUtils(CommonOAuthUtils):
         except ValidationError:
             return None, api_error(status.HTTP_400_BAD_REQUEST, 'sender_email invalid.')
 
-        config['server_provider'] = provider
-        config['account_type'] = account_type
-        config['sender_email'] = sender_email
-        config['sender_name'] = (config.get('sender_name') or '').strip()
+        connection_config['sender_email'] = sender_email
+        connection_config['sender_name'] = (config.get('sender_name') or '').strip()
+        oauth_config = cls._get_oauth_config(provider, account_type, connection_config)
+        if not oauth_config:
+            return None, api_error(status.HTTP_400_BAD_REQUEST, 'Email OAuth provider is not configured.')
         return {
             'name': name,
-            'config': config,
-            'oauth_config': config,
+            'config': connection_config,
+            'oauth_config': oauth_config,
         }, None

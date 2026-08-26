@@ -1907,9 +1907,11 @@ class ProjectConnectionReplyEmailView(APIView):
                     'refresh_token': oauth_record.refresh_token,
                     'expires_at': oauth_record.expires_at.timestamp(),
                 }
-                oauth_config = (EmailOAuthUtils._get_personal_oauth_config(config.get('server_provider'))
-                                if config.get('account_type', EMAIL_ACCOUNT_TYPE_PERSONAL) == EMAIL_ACCOUNT_TYPE_PERSONAL
-                                else config)
+                oauth_config = EmailOAuthUtils._get_oauth_config(
+                    config.get('server_provider'),
+                    config.get('account_type', EMAIL_ACCOUNT_TYPE_PERSONAL),
+                    config,
+                )
             send_res = toggle_send_email(config, send_info, oauth_token, oauth_config)
         except EmailConfigError as e:
             logger.error('email config error, connection_id: %s, error: %s', connection_id, e)

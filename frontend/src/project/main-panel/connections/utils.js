@@ -53,8 +53,6 @@ export const sanitizeEmailConfigByProvider = (config = {}) => {
 
   if (isOAuthEmailProvider(provider)) {
     nextConfig.account_type = nextConfig.account_type || EMAIL_ACCOUNT_TYPE.PERSONAL;
-    delete nextConfig.sender_name;
-    delete nextConfig.sender_email;
     delete nextConfig.smtp_host;
     delete nextConfig.smtp_port;
     delete nextConfig.imap_host;
@@ -62,12 +60,21 @@ export const sanitizeEmailConfigByProvider = (config = {}) => {
     delete nextConfig.username;
     delete nextConfig.password;
     if (nextConfig.account_type === EMAIL_ACCOUNT_TYPE.PERSONAL) {
+      delete nextConfig.sender_name;
+      delete nextConfig.sender_email;
       delete nextConfig.client_id;
       delete nextConfig.client_secret;
       delete nextConfig.authority_url;
       delete nextConfig.token_url;
       delete nextConfig.authority_args;
       delete nextConfig.scopes;
+    } else {
+      delete nextConfig.scopes;
+      delete nextConfig.authority_args;
+      if (provider === EMAIL_SERVER_PROVIDER.GMAIL) {
+        delete nextConfig.authority_url;
+        delete nextConfig.token_url;
+      }
     }
     return nextConfig;
   }
