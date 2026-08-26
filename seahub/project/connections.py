@@ -5,6 +5,7 @@ import logging
 import json
 import datetime
 import os
+import re
 from email.utils import formatdate, make_msgid
 from urllib.parse import urlparse
 
@@ -74,6 +75,113 @@ SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 logger = logging.getLogger(__name__)
 
 
+def _unfold_ics(value):
+    return re.sub(r'\r?\n[ \t]', '', value or '')
+
+
+def _ics_property(lines, property_name):
+    prefix = property_name.upper() + ':'
+    for line in lines:
+        if line.upper().startswith(prefix) or line.upper().startswith(property_name.upper() + ';'):
+            return line
+    return ''
+
+
+def _ics_property_value(line):
+    return line.split(':', 1)[1] if ':' in line else ''
+
+
+def _normalize_calendar_email(value):
+    value = (value or '').strip()
+    value = value.removeprefix('mailto:').strip()
+    return value.lower()
+
+
+def _extract_calendar_attendee_email(calendar_content, candidate_emails):
+    candidates = {_normalize_calendar_email(email) for email in candidate_emails if email}
+    for line in _unfold_ics(calendar_content).splitlines():
+        if not line.upper().startswith('ATTENDEE') or ':' not in line:
+            continue
+        attendee_email = _normalize_calendar_email(_ics_property_value(line).split(';', 1)[0])
+        if attendee_email in candidates:
+            return attendee_email
+    return ''
+
+
+def _ics_with_partstat(line, partstat, email):
+    name, value = line.split(':', 1)
+    params = name.split(';')[1:]
+    params = [param for param in params if not param.upper().startswith('PARTSTAT=')]
+    params.append(f'PARTSTAT={partstat}')
+    return 'ATTENDEE;' + ';'.join(params) + ':' + value
+
+
+def _update_calendar_attendee_partstat(calendar_content, partstat, attendee_email):
+    lines = _unfold_ics(calendar_content).splitlines()
+    normalized_email = _normalize_calendar_email(attendee_email)
+    event_start = next((index for index, line in enumerate(lines) if line.upper() == 'BEGIN:VEVENT'), None)
+    event_end = next((index for index, line in enumerate(lines) if line.upper() == 'END:VEVENT'), None)
+    if event_start is None or event_end is None:
+        return ''
+
+    for index in range(event_start + 1, event_end):
+        line = lines[index]
+        if not line.upper().startswith('ATTENDEE') or ':' not in line:
+            continue
+        value = _ics_property_value(line).split(';', 1)[0]
+        if _normalize_calendar_email(value) == normalized_email:
+            lines[index] = _ics_with_partstat(line, partstat, attendee_email)
+            return '\r\n'.join(lines) + '\r\n'
+    return ''
+
+
+def _calendar_reply_ics(calendar_content, partstat, attendee_email):
+    """Build a small RFC 5546 RSVP reply from the original invitation."""
+    lines = _unfold_ics(calendar_content).splitlines()
+    event_start = next((index for index, line in enumerate(lines) if line.upper() == 'BEGIN:VEVENT'), None)
+    event_end = next((index for index, line in enumerate(lines) if line.upper() == 'END:VEVENT'), None)
+    if event_start is None or event_end is None or event_end <= event_start:
+        return ''
+
+    event_lines = lines[event_start + 1:event_end]
+    attendee_email = _normalize_calendar_email(attendee_email)
+    attendee_line = next(
+        (line for line in event_lines
+         if line.upper().startswith('ATTENDEE') and
+         _normalize_calendar_email(_ics_property_value(line).split(';', 1)[0]) == attendee_email),
+        '',
+    )
+    if not attendee_line:
+        return ''
+
+    event_properties = []
+    for property_name in ('UID', 'DTSTART', 'DTEND', 'DTSTAMP', 'SUMMARY', 'DESCRIPTION', 'LOCATION',
+                          'SEQUENCE', 'STATUS', 'ORGANIZER'):
+        line = _ics_property(event_lines, property_name)
+        if line and property_name != 'DTSTAMP':
+            event_properties.append(line)
+    event_properties.append('DTSTAMP:' + datetime.datetime.now(datetime.UTC).strftime('%Y%m%dT%H%M%SZ'))
+    event_properties.append(_ics_with_partstat(attendee_line, partstat, attendee_email))
+
+    timezone_start = next((index for index, line in enumerate(lines) if line.upper() == 'BEGIN:VTIMEZONE'), None)
+    timezone_end = next((index for index, line in enumerate(lines) if line.upper() == 'END:VTIMEZONE'), None)
+    timezone_lines = lines[timezone_start:timezone_end + 1] if timezone_start is not None and timezone_end else []
+
+    return '\r\n'.join([
+        'BEGIN:VCALENDAR',
+        'PRODID:-//SeaQA//Calendar Reply//EN',
+        'VERSION:2.0',
+        'CALSCALE:GREGORIAN',
+        'METHOD:REPLY',
+        *timezone_lines,
+        'BEGIN:VEVENT',
+        *event_properties,
+        'END:VEVENT',
+        'END:VCALENDAR',
+        '',
+    ])
+
+
 
 class GitHubIssueUpdateError(Exception):
     def __init__(self, error_msg, status_code):
@@ -107,7 +215,7 @@ def update_github_issue_record(
     state_reason=None,
     seadb_api=None,
 ):
-    project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+    project_connection = ProjectConnections.objects.filter(id=connection_id, project_uuid=project_uuid).first()
     if not project_connection:
         raise GitHubIssueUpdateError(
             f'project_connection {connection_id} not found.',
@@ -586,10 +694,9 @@ class ProjectConnectionView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.filter(id=connection_id, project_uuid=project.uuid).first()
         if not project_connection:
-            error_msg = f'project_connection {connection_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            return api_error(status.HTTP_404_NOT_FOUND, 'Connection not found in this project.')
 
         return Response({'record': project_connection.to_dict()}, status=status.HTTP_200_OK)
 
@@ -619,10 +726,9 @@ class ProjectConnectionView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.filter(id=connection_id, project_uuid=project.uuid).first()
         if not project_connection:
-            error_msg = f'project_connection {connection_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            return api_error(status.HTTP_404_NOT_FOUND, 'Connection not found in this project.')
 
         # argument check
         if new_config:
@@ -704,10 +810,9 @@ class ProjectConnectionSyncView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.filter(id=connection_id, project_uuid=project.uuid).first()
         if not project_connection:
-            error_msg = f'Connection {connection_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            return api_error(status.HTTP_404_NOT_FOUND, 'Connection not found in this project.')
 
         # check connection status
         connection_type = project_connection.type
@@ -774,10 +879,9 @@ class ProjectConnectionDetailsView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.filter(id=connection_id, project_uuid=project.uuid).first()
         if not project_connection:
-            error_msg = f'project_connection {connection_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            return api_error(status.HTTP_404_NOT_FOUND, 'Connection not found in this project.')
         start = request.GET.get('start', 0)
         limit = request.GET.get('limit', 1000)
 
@@ -854,10 +958,9 @@ class ProjectConnectionMetaView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.filter(id=connection_id, project_uuid=project.uuid).first()
         if not project_connection:
-            error_msg = f'project_connection {connection_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            return api_error(status.HTTP_404_NOT_FOUND, 'Connection not found in this project.')
 
         if project_connection.type not in (ConnectionType.GENERAL_TASK.value, ConnectionType.CONFLUENCE.value, ConnectionType.JIRA_ISSUE.value):
             error_msg = 'Only general task and confluence connections support related users.'
@@ -1088,10 +1191,9 @@ class ProjectConnectionLogView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.filter(id=connection_id, project_uuid=project.uuid).first()
         if not project_connection:
-            error_msg = f'project_connection {connection_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            return api_error(status.HTTP_404_NOT_FOUND, 'Connection not found in this project.')
 
         last_sync_log = project_connection.last_sync_log or ''
         if last_sync_log:
@@ -1225,10 +1327,9 @@ class ProjectConnectionRecordView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.filter(id=connection_id, project_uuid=project.uuid).first()
         if not project_connection:
-            error_msg = f'project_connection {connection_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            return api_error(status.HTTP_404_NOT_FOUND, 'Connection not found in this project.')
 
         seadb_api = SeaDBAPI()
         if project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
@@ -1296,10 +1397,9 @@ class ProjectConnectionRecordView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.filter(id=connection_id, project_uuid=project.uuid).first()
         if not project_connection:
-            error_msg = f'project_connection {connection_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            return api_error(status.HTTP_404_NOT_FOUND, 'Connection not found in this project.')
 
         # Get table class based on connection type
         supported_types = [
@@ -1492,10 +1592,9 @@ class ProjectConnectionUnreadEmailView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.filter(id=connection_id, project_uuid=project.uuid).first()
         if not project_connection:
-            error_msg = f'project_connection {connection_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            return api_error(status.HTTP_404_NOT_FOUND, 'Connection not found in this project.')
         if project_connection.type != ConnectionType.EMAIL.value:
             error_msg = 'Connection type invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -1568,9 +1667,9 @@ class ProjectConnectionRecordsView(APIView):
         if not check_project_permission(username, workspace.owner):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.filter(id=connection_id, project_uuid=project.uuid).first()
         if not project_connection:
-            return api_error(status.HTTP_404_NOT_FOUND, f'project_connection {connection_id} not found.')
+            return api_error(status.HTTP_404_NOT_FOUND, 'Connection not found in this project.')
         if project_connection.type != ConnectionType.GENERAL_TASK.value:
             return api_error(status.HTTP_400_BAD_REQUEST, 'Only general task connections support record creation.')
 
@@ -1694,10 +1793,9 @@ class ProjectConnectionRecordsView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.filter(id=connection_id, project_uuid=project.uuid).first()
         if not project_connection:
-            error_msg = f'project_connection {connection_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            return api_error(status.HTTP_404_NOT_FOUND, 'Connection not found in this project.')
 
         # Get table class based on connection type
         supported_types = [
@@ -1943,10 +2041,9 @@ class ProjectConnectionReplyEmailView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.filter(id=connection_id, project_uuid=project.uuid).first()
         if not project_connection:
-            error_msg = f'project_connection {connection_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            return api_error(status.HTTP_404_NOT_FOUND, 'Connection not found in this project.')
 
         if project_connection.type != ConnectionType.EMAIL.value:
             error_msg = f'Connection type {project_connection.type} does not support replying email.'
@@ -2059,6 +2156,91 @@ class ProjectConnectionReplyEmailView(APIView):
         return Response(email_data, status=status.HTTP_200_OK)
 
 
+class ProjectConnectionCalendarReplyView(ProjectConnectionReplyEmailView):
+    """Send an RFC 6047 RSVP reply to the invitation organizer."""
+
+    @require_org_context
+    def post(self, request, project_uuid, connection_id):
+        partstat = (request.data.get('partstat') or '').upper()
+        if partstat not in ('ACCEPTED', 'TENTATIVE', 'DECLINED'):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'partstat invalid.')
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        
+        if not check_project_permission(request.user.username, project.workspace.owner):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+        
+        project_connection = ProjectConnections.objects.filter(id=connection_id, project_uuid=project.uuid).first()
+        if not project_connection:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Connection not found in this project.')
+            
+        if project_connection.type != ConnectionType.EMAIL.value:
+            error_msg = f'Connection type {project_connection.type} does not support replying email.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        config = decrypt_config(json.loads(project_connection.config))
+        email_api = EmailSeaDBAPI(project_uuid)
+        email_id = request.data.get('email_id')
+        try:
+            target = email_api.get_email_by_pk(connection_id, int(email_id))
+        except (TypeError, ValueError):
+            target = {}
+        ics = target.get('calendar_content') or ''
+        if not target or not ics:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Calendar invitation not found.')
+
+        sender_email = config.get('sender_email') or config.get('username')
+        recipient_emails = extract_email_addresses(target.get('email_to') or '')
+        attendee_email = _extract_calendar_attendee_email(
+            ics,
+            [*recipient_emails, sender_email],
+        )
+        if not attendee_email:
+            return api_error(
+                status.HTTP_400_BAD_REQUEST,
+                'Unable to match the calendar attendee to the email recipient.',
+            )
+        unfolded_ics = _unfold_ics(ics)
+        organizer_line = _ics_property(unfolded_ics.splitlines(), 'ORGANIZER')
+        organizer = re.search(r'(?i):mailto:([^\r\n]+)$', organizer_line)
+        if not organizer:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Calendar organizer not found.')
+        organizer_email = organizer.group(1).strip()
+        reply_ics = _calendar_reply_ics(ics, partstat, attendee_email)
+        if not reply_ics:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Invalid calendar invitation.')
+        message_id = make_msgid(domain=sender_email.split('@')[-1])
+        send_info = {
+            'message': '', 'send_to': [organizer_email],
+            'subject': 'Re: ' + (target.get('title') or 'Meeting invitation'),
+            'in_reply_to': target.get('message_id'), 'message_id': message_id,
+            'calendar_content': reply_ics, 'calendar_method': 'REPLY',
+        }
+        try:
+            send_res = toggle_send_email(config, send_info)
+        except (EmailConfigError, EmailSendError):
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to send calendar reply.')
+        thread_id = target.get('thread_id')
+        if not thread_id:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'No thread_id found in email.')
+        email_data = {
+            'sender_name': config.get('sender_name', ''), 'sender_email': sender_email,
+            'email_to': organizer_email, 'subject': send_info['subject'],
+            'content': '', 'html_content': '', 'reply_to_message_id': target.get('message_id'),
+            'origin_thread_id': send_res.get('origin_thread_id') or target.get('origin_thread_id'),
+            'message_id': message_id, 'email_id': send_res.get('email_id'),
+            'calendar_content': reply_ics,
+        }
+        email_data['_pk'] = email_api.save_reply_email(project_uuid, connection_id, thread_id, email_data)
+        updated_calendar_content = _update_calendar_attendee_partstat(ics, partstat, attendee_email)
+        if updated_calendar_content:
+            email_api.update_calendar_content(connection_id, int(email_id), updated_calendar_content)
+        return Response(email_data, status=status.HTTP_200_OK)
+
+
 class ProjectConnectionDeleteEmailView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
@@ -2078,10 +2260,9 @@ class ProjectConnectionDeleteEmailView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.filter(id=connection_id, project_uuid=project.uuid).first()
         if not project_connection:
-            error_msg = f'project_connection {connection_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            return api_error(status.HTTP_404_NOT_FOUND, 'Connection not found in this project.')
 
         if project_connection.type != ConnectionType.EMAIL.value:
             error_msg = f'Connection type {project_connection.type} does not support deleting email.'
@@ -2163,10 +2344,9 @@ class ProjectConnectionReplyDiscourseView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.filter(id=connection_id, project_uuid=project.uuid).first()
         if not project_connection:
-            error_msg = f'project_connection {connection_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+            return api_error(status.HTTP_404_NOT_FOUND, 'Connection not found in this project.')
 
         if project_connection.type != ConnectionType.DISCOURSE_FORUM.value:
             error_msg = f'Connection type {project_connection.type} does not support replying to Discourse topic.'

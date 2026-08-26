@@ -9,7 +9,7 @@ from .apis import ProjectRelatedUsersView, ProjectItemsSearchView, ProjectGithub
 from .connections import ProjectConnectionsView, ProjectConnectionView, ProjectConnectionSyncView, \
     ProjectConnectionDetailsView, ProjectConnectionMetaView, GithubWebhookView, DiscourseWebhookView, \
     ProjectConnectionsStatusView, ProjectConnectionLogView, ProjectConnectionRecordView, ProjectConnectionRecordsView, \
-    ProjectConnectionReplyEmailView, ProjectConnectionDeleteEmailView, ProjectConnectionReplyDiscourseView, \
+     ProjectConnectionReplyEmailView, ProjectConnectionCalendarReplyView, ProjectConnectionDeleteEmailView, ProjectConnectionReplyDiscourseView, \
     ConnectionFileView, GithubIssueView, \
     ProjectEmailOAuthLoginView, ProjectEmailOAuthQueryView, ProjectEmailOAuthCallbackView, \
     DownloadEmailAttachments, ZipEmailAttachments, QueryIOStatus, ProjectLinearOauthStatusView, ProjectConfluenceOauthStatusView, ProjectConnectionUnreadEmailView, ProjectJiraOauthStatusView
@@ -107,6 +107,7 @@ urlpatterns = [
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/records/$', ProjectConnectionRecordsView.as_view(), name='api-v1-connection-records'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/records/(?P<record_id>\d+)/$', ProjectConnectionRecordView.as_view(), name='api-v1-connection-record'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/reply-email/$', ProjectConnectionReplyEmailView.as_view(), name='api-v1-connection-reply-email'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/calendar-reply/$', ProjectConnectionCalendarReplyView.as_view(), name='api-v1-connection-calendar-reply'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/unread-email/$', ProjectConnectionUnreadEmailView.as_view(), name='api-v1-connection-unread-email'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/delete-email/$', ProjectConnectionDeleteEmailView.as_view(), name='api-v1-connection-delete-email'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/github-issue/$', GithubIssueView.as_view(), name='api-v1-connection-github-issue'),

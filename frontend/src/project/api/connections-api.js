@@ -343,6 +343,11 @@ class ConnectionsAPI {
     return this.req.post(url, payload);
   }
 
+  replyConnectionCalendar(projectUuid, connectionID, payload) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/calendar-reply/';
+    return this.req.post(url, payload);
+  }
+
   deleteConnectionEmail(projectUuid, connectionID, payload) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/delete-email/';
     return this.req.post(url, payload);

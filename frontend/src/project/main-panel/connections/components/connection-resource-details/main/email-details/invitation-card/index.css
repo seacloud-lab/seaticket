@@ -1,0 +1,67 @@
+.seaqa-invitation-card {
+  max-width: 560px;
+  padding: 18px;
+  border: 1px solid #d9e2ec;
+  border-radius: 10px;
+  background: #f8fbff;
+}
+
+.seaqa-invitation-card-title {
+  margin-bottom: 12px;
+  color: #1f2937;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.seaqa-invitation-card-row,
+.seaqa-invitation-card-description {
+  margin-top: 6px;
+  color: #52606d;
+  white-space: pre-wrap;
+}
+
+.seaqa-invitation-card-section {
+  margin-top: 14px;
+  color: #52606d;
+}
+
+.seaqa-invitation-card-note {
+  max-height: 220px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}
+
+.seaqa-invitation-card-label {
+  margin-bottom: 4px;
+  color: #1f2937;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.seaqa-invitation-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.seaqa-invitation-card-status {
+  margin-right: 8px;
+  color: #52606d;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.seaqa-invitation-card-status.accepted {
+  color: #16803c;
+}
+
+.seaqa-invitation-card-status.tentative {
+  color: #b7791f;
+}
+
+.seaqa-invitation-card-status.declined {
+  color: #c53030;
+}

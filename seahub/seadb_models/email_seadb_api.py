@@ -41,11 +41,18 @@ class EmailSeaDBAPI:
 
     def get_email_by_pk(self, connection_id, _pk):
         table_name = SchemaTables.EMAIL.table_name(connection_id)
-        sql = "SELECT `_pk`, `thread_id`, `title`, `email_from`, `message_id`, `origin_thread_id`, attachments " \
+        sql = "SELECT `_pk`, `thread_id`, `title`, `email_from`, `email_to`, `message_id`, `origin_thread_id`, attachments, calendar_content " \
               f"FROM `{table_name}` WHERE `_pk` = {_pk}"
         response = self.seadb_api.query_rows(self.base_id, sql)
         result = response.get('results', [])
         return result[0] if result else {}
+
+    def update_calendar_content(self, connection_id, _pk, calendar_content):
+        table_name = SchemaTables.EMAIL.table_name(connection_id)
+        self.seadb_api.update_rows(self.base_id, table_name, [{
+            'pk': int(_pk),
+            'row': {SchemaTables.EMAIL.column.calendar_content.name: calendar_content},
+        }])
 
     def get_emails_by_thread_id(self, connection_id, thread_id, limit=None):
         table_name = SchemaTables.EMAIL.table_name(connection_id)
@@ -246,6 +253,7 @@ class EmailSeaDBAPI:
             SchemaTables.EMAIL.column.thread_id.name: thread_id,
             SchemaTables.EMAIL.column.message_id.name: email_data.get('message_id') or '',
             SchemaTables.EMAIL.column.origin_thread_id.name: email_data.get('origin_thread_id') or '',
+            SchemaTables.EMAIL.column.calendar_content.name: email_data.get('calendar_content') or '',
             SchemaTables.EMAIL.column.email_id.name: email_data.get('email_id') or '',
             SchemaTables.EMAIL.column.modified_time.name: now,
         }
