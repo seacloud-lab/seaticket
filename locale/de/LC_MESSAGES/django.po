@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: seaqa-web\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-23 11:18+0800\n"
-"PO-Revision-Date: 2026-07-23 03:22\n"
+"POT-Creation-Date: 2026-08-26 09:43+0800\n"
+"PO-Revision-Date: 2026-08-26 01:55\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -63,7 +63,7 @@ msgstr "Gruppe nicht gefunden."
 
 #: seahub/api2/endpoints/admin/group_projects.py:90
 #: seahub/api2/endpoints/org_admin/groups.py:722
-#: seahub/project/connections.py:388
+#: seahub/project/connections.py:392
 msgid "Project not found."
 msgstr "Projekt nicht gefunden."
 
@@ -206,8 +206,8 @@ msgid "%(ext)s is an invalid file extension. Authorized extensions are : %(valid
 msgstr "%(ext)s ist eine ungültige Dateiendung. Autorisierte Endungen sind: %(valid_exts_list)s"
 
 #: seahub/api2/endpoints/org_admin/settings.py:91
-#: seahub/api2/endpoints/user_avatar.py:43 seahub/portal/apis.py:135
-#: seahub/utils/error_msg.py:13
+#: seahub/api2/endpoints/user_avatar.py:43 seahub/portal/apis.py:136
+#: seahub/portal/apis.py:197 seahub/utils/error_msg.py:13
 #, python-format
 msgid "Your file is too big (%(size)s), the maximum allowed size is %(max_valid_size)s"
 msgstr "Ihre Datei ist zu groß (%(size)s), die maximal zulässige Größe beträgt %(max_valid_size)s"
@@ -221,14 +221,14 @@ msgstr "Benutzer %s existiert bereits."
 
 #: seahub/api2/endpoints/org_admin/users.py:580
 #: seahub/api2/endpoints/org_admin/users.py:622 seahub/auth/forms.py:135
-#: seahub/portal/apis.py:1867
+#: seahub/portal/apis.py:1958
 msgid "Failed to send email, email service is not properly configured, please contact administrator."
 msgstr "E-Mail konnte nicht gesendet werden, der E-Mail-Dienst ist nicht ordnungsgemäß konfiguriert, bitte kontaktieren Sie den Administrator."
 
-#: seahub/api2/endpoints/project.py:189 seahub/portal/views.py:66
-#: seahub/portal/views.py:153 seahub/portal/views.py:167
-#: seahub/portal/views.py:192 seahub/portal/views.py:286
-#: seahub/project/views.py:58
+#: seahub/api2/endpoints/project.py:189 seahub/portal/views.py:67
+#: seahub/portal/views.py:156 seahub/portal/views.py:170
+#: seahub/portal/views.py:195 seahub/portal/views.py:291
+#: seahub/project/views.py:65
 msgid "This project does not exist"
 msgstr "Dieses Projekt existiert nicht"
 
@@ -237,34 +237,34 @@ msgstr "Dieses Projekt existiert nicht"
 msgid "Project %s already exists in this workspace."
 msgstr "Projekt %s existiert bereits in diesem Arbeitsbereich."
 
-#: seahub/api2/endpoints/project.py:338 seahub/api2/endpoints/project.py:488
+#: seahub/api2/endpoints/project.py:338 seahub/api2/endpoints/project.py:489
 msgid "Project name contains illegal characters"
 msgstr "Projektname enthält ungültige Zeichen"
 
-#: seahub/api2/endpoints/project.py:382
+#: seahub/api2/endpoints/project.py:383
 msgid "Project name is invalid"
 msgstr "Projektname ist ungültig"
 
-#: seahub/api2/endpoints/project.py:402
+#: seahub/api2/endpoints/project.py:403
 #, python-brace-format
 msgid "Project {project_name} not found."
 msgstr "Projekt {project_name} nicht gefunden."
 
-#: seahub/api2/endpoints/project.py:406
+#: seahub/api2/endpoints/project.py:407
 #, python-brace-format
 msgid "{new_project_name} exists."
 msgstr "{new_project_name} existiert."
 
-#: seahub/api2/endpoints/project.py:442
+#: seahub/api2/endpoints/project.py:443
 #, python-brace-format
 msgid "{target_project_name} exists."
 msgstr "{target_project_name} existiert."
 
-#: seahub/api2/endpoints/project.py:465
+#: seahub/api2/endpoints/project.py:466
 msgid "Project prompt contains disallowed tag-like content."
 msgstr "Projekt-Prompt enthält nicht zulässige tag-ähnliche Inhalte."
 
-#: seahub/api2/endpoints/project.py:471
+#: seahub/api2/endpoints/project.py:472
 msgid "Ticket processing rules must be text, and cannot contain tag-like content."
 msgstr "Ticket-Verarbeitungsregeln müssen Text sein und dürfen keine tag-ähnlichen Inhalte enthalten."
 
@@ -491,8 +491,8 @@ msgstr "Nur Gruppenmitarbeiter können Mitglieder entfernen"
 msgid "Can not remove myself"
 msgstr "Ich kann mich nicht selbst entfernen"
 
-#: seahub/group/views.py:98 seahub/portal/views.py:171
-#: seahub/portal/views.py:292 seahub/project/views.py:75
+#: seahub/group/views.py:98 seahub/portal/views.py:174
+#: seahub/portal/views.py:297 seahub/project/views.py:82
 msgid "Permission denied"
 msgstr "Zugriff verweigert"
 
@@ -592,22 +592,23 @@ msgid "Passwords don't match"
 msgstr "Passwörter stimmen nicht überein"
 
 #: seahub/invitations/views.py:22 seahub/invitations/views.py:32
-#: seahub/invitations/views.py:59 seahub/portal/views.py:248
-#: seahub/portal/views.py:253
+#: seahub/invitations/views.py:59 seahub/portal/views.py:253
+#: seahub/portal/views.py:258
 msgid "Invitation link is invalid or expired."
 msgstr "Einladungslink ist ungültig oder abgelaufen."
 
-#: seahub/knowledge_base/knowledge_base.py:175 seahub/portal/apis.py:215
-#: seahub/portal/apis.py:608 seahub/portal/apis.py:1261
-#: seahub/project/connections.py:805 seahub/tickets/tickets.py:183
+#: seahub/knowledge_base/knowledge_base.py:175 seahub/portal/apis.py:273
+#: seahub/portal/apis.py:666 seahub/portal/apis.py:1319
+#: seahub/project/connections.py:809 seahub/tickets/tickets.py:187
 msgid "There are errors with the filters. Please correct them."
 msgstr "Es gibt Fehler bei den Filtern. Bitte korrigieren Sie diese."
 
-#: seahub/knowledge_base/models.py:89 seahub/project/constants.py:297
-#: seahub/project/constants.py:316 seahub/project/constants.py:335
-#: seahub/project/constants.py:354 seahub/project/constants.py:373
-#: seahub/project/constants.py:392 seahub/project/constants.py:411
-#: seahub/project/constants.py:430 seahub/project/constants.py:449
+#: seahub/knowledge_base/models.py:89 seahub/project/constants.py:304
+#: seahub/project/constants.py:323 seahub/project/constants.py:342
+#: seahub/project/constants.py:361 seahub/project/constants.py:380
+#: seahub/project/constants.py:399 seahub/project/constants.py:418
+#: seahub/project/constants.py:437 seahub/project/constants.py:456
+#: seahub/project/constants.py:475
 msgid "All"
 msgstr "Alle"
 
@@ -714,47 +715,49 @@ msgstr "E-Mail konnte nicht gesendet werden"
 msgid "Internal Server Error"
 msgstr "Interner Serverfehler"
 
-#: seahub/portal/apis.py:1863
+#: seahub/portal/apis.py:1954
 msgid "The user is already a member of your team. Cannot invite the user to the portal."
 msgstr "Der Benutzer ist bereits Mitglied Ihres Teams. Er kann nicht zum Portal eingeladen werden."
 
-#: seahub/portal/apis.py:1893
+#: seahub/portal/apis.py:1984
 msgid "Support Portal Invitation"
 msgstr "Einladung zum Support-Portal"
 
-#: seahub/portal/apis.py:2015 seahub/templates/portal_login.html:43
+#: seahub/portal/apis.py:2106 seahub/templates/portal_login.html:43
 msgid "If the email is eligible, a login code has been sent."
 msgstr "Wenn die E-Mail berechtigt ist, wurde ein Anmeldecode gesendet."
 
-#: seahub/portal/apis.py:2041 seahub/templates/portal/email_login_code.html:4
+#: seahub/portal/apis.py:2132 seahub/templates/portal/email_login_code.html:4
 msgid "Your login code"
 msgstr "Ihr Anmeldecode"
 
-#: seahub/portal/views.py:74 seahub/portal/views.py:155
-#: seahub/portal/views.py:169 seahub/portal/views.py:198
-#: seahub/portal/views.py:259 seahub/portal/views.py:301
-#: seahub/project/views.py:80
+#: seahub/portal/views.py:75 seahub/portal/views.py:158
+#: seahub/portal/views.py:172 seahub/portal/views.py:201
+#: seahub/portal/views.py:264 seahub/portal/views.py:306
+#: seahub/project/views.py:87
 msgid "Portal is not enabled"
 msgstr "Portal ist nicht aktiviert"
 
-#: seahub/portal/views.py:162
+#: seahub/portal/views.py:165
 msgid "Preview link is invalid or expired."
 msgstr ""
 
-#: seahub/portal/views.py:233 seahub/portal/views.py:238
+#: seahub/portal/views.py:238 seahub/portal/views.py:243
 msgid "Password invalid"
 msgstr "Passwort ungültig"
 
 #: seahub/profile/forms.py:24 seahub/profile/views.py:164
-#: seahub/profile/views.py:169 seahub/project/connections.py:394
-#: seahub/project/views.py:115 seahub/project/views.py:147
-#: seahub/project/views.py:171 seahub/project/views.py:214
-#: seahub/project/views.py:270 seahub/project/views.py:324
+#: seahub/profile/views.py:169 seahub/project/connections.py:398
+#: seahub/project/views.py:122 seahub/project/views.py:154
+#: seahub/project/views.py:178 seahub/project/views.py:221
+#: seahub/project/views.py:277 seahub/project/views.py:332
+#: seahub/project/views.py:397 seahub/project/views.py:458
+#: seahub/project/views.py:537 seahub/project/views.py:581
 msgid "Permission denied."
 msgstr "Zugriff verweigert."
 
 #: seahub/profile/templates/profile/set_profile_react.html:5
-#: seahub/templates/base.html:62
+#: seahub/templates/base.html:61
 msgid "Personal settings"
 msgstr "Persönliche Einstellungen"
 
@@ -793,44 +796,77 @@ msgstr "Zurück zu SeaTicket"
 msgid "Contact email has been updated."
 msgstr "Kontakt-E-Mail wurde aktualisiert."
 
-#: seahub/project/connections.py:380
+#: seahub/project/connections.py:384
 msgid "Request not found"
 msgstr "Anfrage nicht gefunden"
 
-#: seahub/project/views.py:106 seahub/project/views.py:110
-#: seahub/project/views.py:138 seahub/project/views.py:142
-#: seahub/project/views.py:162 seahub/project/views.py:166
-#: seahub/project/views.py:205 seahub/project/views.py:209
-#: seahub/project/views.py:261 seahub/project/views.py:265
-#: seahub/project/views.py:315 seahub/project/views.py:319
+#: seahub/project/views.py:113 seahub/project/views.py:117
+#: seahub/project/views.py:145 seahub/project/views.py:149
+#: seahub/project/views.py:169 seahub/project/views.py:173
+#: seahub/project/views.py:212 seahub/project/views.py:216
+#: seahub/project/views.py:268 seahub/project/views.py:272
+#: seahub/project/views.py:323 seahub/project/views.py:327
+#: seahub/project/views.py:388 seahub/project/views.py:392
+#: seahub/project/views.py:449 seahub/project/views.py:453
+#: seahub/project/views.py:528 seahub/project/views.py:532
+#: seahub/project/views.py:572 seahub/project/views.py:576
 msgid "Please install through the address provided by sea-ticket."
 msgstr "Bitte installieren Sie über die von SeaTicket bereitgestellte Adresse."
 
-#: seahub/project/views.py:174 seahub/project/views.py:217
+#: seahub/project/views.py:181 seahub/project/views.py:224
 msgid "Linear OAuth settings are invalid."
 msgstr "Linear OAuth-Einstellungen sind ungültig."
 
-#: seahub/project/views.py:202
+#: seahub/project/views.py:209
 msgid "Invalid Linear OAuth state."
 msgstr "Ungültiger Linear OAuth-Status."
 
-#: seahub/project/views.py:231 seahub/project/views.py:235
-#: seahub/project/views.py:243
+#: seahub/project/views.py:238 seahub/project/views.py:242
+#: seahub/project/views.py:250
 msgid "Failed to authorize Linear."
 msgstr "Autorisierung für Linear fehlgeschlagen."
 
-#: seahub/project/views.py:276 seahub/project/views.py:330
+#: seahub/project/views.py:283 seahub/project/views.py:338
 msgid "Confluence OAuth settings are invalid."
 msgstr "Confluence OAuth-Einstellungen sind ungültig."
 
-#: seahub/project/views.py:312
+#: seahub/project/views.py:320
 msgid "Invalid Confluence OAuth state."
 msgstr "Ungültiger Confluence OAuth-Status."
 
-#: seahub/project/views.py:344 seahub/project/views.py:348
-#: seahub/project/views.py:355
+#: seahub/project/views.py:352 seahub/project/views.py:356
+#: seahub/project/views.py:363
 msgid "Failed to authorize Confluence."
 msgstr "Autorisierung für Confluence fehlgeschlagen."
+
+#: seahub/project/views.py:400 seahub/project/views.py:461
+msgid "Discord OAuth settings are invalid."
+msgstr ""
+
+#: seahub/project/views.py:443
+msgid "Invalid Discord OAuth state."
+msgstr ""
+
+#: seahub/project/views.py:446
+msgid "Discord server information was not returned."
+msgstr ""
+
+#: seahub/project/views.py:476 seahub/project/views.py:480
+msgid "Failed to authorize Discord."
+msgstr ""
+
+#: seahub/project/views.py:540 seahub/project/views.py:584
+msgid "Jira OAuth settings are invalid."
+msgstr ""
+
+#: seahub/project/views.py:569
+msgid "Invalid Jira OAuth state."
+msgstr ""
+
+#: seahub/project/views.py:598 seahub/project/views.py:602
+#: seahub/project/views.py:609
+msgid "Failed to authorize Jira."
+msgstr ""
 
 #: seahub/saml/utils.py:49
 msgid "SAML login relevant settings invalid."
@@ -900,37 +936,37 @@ msgstr "SeaTicket - Probleme mit KI lösen"
 msgid "File, Collaboration, Team, Organization"
 msgstr "Datei, Zusammenarbeit, Team, Organisation"
 
-#: seahub/templates/base.html:41
+#: seahub/templates/base.html:40
 msgid "Side nav menu"
 msgstr "Seitliches Navigationsmenü"
 
-#: seahub/templates/base.html:48 seahub/templates/base.html:51
+#: seahub/templates/base.html:47 seahub/templates/base.html:50
 msgid "View profile and more"
 msgstr "Profil ansehen und mehr"
 
-#: seahub/templates/base.html:65
+#: seahub/templates/base.html:64
 msgid "System admin"
 msgstr "Systemadministrator"
 
-#: seahub/templates/base.html:68 seahub/templates/base.html:71
+#: seahub/templates/base.html:67 seahub/templates/base.html:70
 msgid "Admin"
 msgstr "Admin"
 
-#: seahub/templates/base.html:68
+#: seahub/templates/base.html:67
 msgid "Team admin"
 msgstr "Teamadministrator"
 
-#: seahub/templates/base.html:74
+#: seahub/templates/base.html:73
 #: seahub/templates/registration/logged_out.html:4
 #: seahub/templates/registration/logout.html:4
 msgid "Log out"
 msgstr "Abmelden"
 
-#: seahub/templates/base.html:120
+#: seahub/templates/base.html:119
 msgid "Yes"
 msgstr "Ja"
 
-#: seahub/templates/base.html:121
+#: seahub/templates/base.html:120
 msgid "No"
 msgstr "Nein"
 
