@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: seaqa-web\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-08-26 09:43+0800\n"
-"PO-Revision-Date: 2026-08-26 01:55\n"
+"PO-Revision-Date: 2026-08-26 02:20\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -590,27 +590,27 @@ msgstr "Kontakt-E-Mail verknüpfen"
 
 #: frontend/src/components/dialog/token-credit-used-detail-dialog/index.js:268
 msgid "Credit used detail"
-msgstr ""
+msgstr "Details der verwendeten Credits"
 
 #: frontend/src/components/dialog/token-credit-used-detail-dialog/index.js:276
 msgid "Group by"
-msgstr ""
+msgstr "Gruppieren nach"
 
 #: frontend/src/components/dialog/token-credit-used-detail-dialog/index.js:285
 msgid "Scenario"
-msgstr ""
+msgstr "Szenario"
 
 #: frontend/src/components/dialog/token-credit-used-detail-dialog/index.js:294
 msgid "Model"
-msgstr ""
+msgstr "Modell"
 
 #: frontend/src/components/dialog/token-credit-used-detail-dialog/index.js:294
 msgid "selected"
-msgstr ""
+msgstr "ausgewählt"
 
 #: frontend/src/components/dialog/token-credit-used-detail-dialog/index.js:300
 msgid "Date range: "
-msgstr ""
+msgstr "Datumbereich: "
 
 #: frontend/src/components/dialog/token-credit-used-detail-dialog/index.js:331
 #: frontend/src/project/components/thought-process/process-details/index.js:103
@@ -905,51 +905,51 @@ msgstr "Symbol"
 
 #: frontend/src/home/components/project-setting-content/index.js:143
 msgid "View All"
-msgstr ""
+msgstr "Alle anzeigen"
 
 #: frontend/src/home/components/select-project-icon-content/index.js:11
 msgid "Common Icons"
-msgstr ""
+msgstr "Allgemeine Symbole"
 
 #: frontend/src/home/components/select-project-icon-content/index.js:12
 msgid "System & Devices Icons"
-msgstr ""
+msgstr "System- & Gerätesymbole"
 
 #: frontend/src/home/components/select-project-icon-content/index.js:13
 msgid "Transport & Location Icons"
-msgstr ""
+msgstr "Transport- & Standortsymbole"
 
 #: frontend/src/home/components/select-project-icon-content/index.js:14
 msgid "Entertainment & Games Icons"
-msgstr ""
+msgstr "Unterhaltungs- & Spielsymbole"
 
 #: frontend/src/home/components/select-project-icon-content/index.js:15
 msgid "Medical & Health Icons"
-msgstr ""
+msgstr "Medizin- & Gesundheitssymbole"
 
 #: frontend/src/home/components/select-project-icon-content/index.js:16
 msgid "Design & Geometry Icons"
-msgstr ""
+msgstr "Design- & Geometriesymbole"
 
 #: frontend/src/home/components/select-project-icon-content/index.js:17
 msgid "Objects & Daily Life Icons"
-msgstr ""
+msgstr "Gegenstands- & Alltagssymbole"
 
 #: frontend/src/home/components/select-project-icon-content/index.js:18
 msgid "Nature & Science Icons"
-msgstr ""
+msgstr "Natur- & Wissenschaftssymbole"
 
 #: frontend/src/home/components/select-project-icon-content/index.js:19
 msgid "Business & Finance Icons"
-msgstr ""
+msgstr "Geschäfts- & Finanzsymbole"
 
 #: frontend/src/home/components/select-project-icon-content/index.js:87
 msgid "Search icons"
-msgstr ""
+msgstr "Symbole durchsuchen"
 
 #: frontend/src/home/components/select-project-icon-content/index.js:125
 msgid "No icons"
-msgstr ""
+msgstr "Keine Symbole"
 
 #: frontend/src/home/components/select-project-icon-content/index.js:128
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/connection-dialog-footer.js:18
@@ -1159,11 +1159,11 @@ msgstr "Gruppe umbenennen in"
 #: frontend/src/project/main-panel/portal-issues/view/issue/index.js:453
 #: frontend/src/project/main-panel/portal-issues/view/issue/index.js:454
 msgid "Back"
-msgstr ""
+msgstr "Zurück"
 
 #: frontend/src/home/dialog/select-project-icon-dialog.js:52
 msgid "Select Icon"
-msgstr ""
+msgstr "Symbol auswählen"
 
 #: frontend/src/home/dialog/transfer-group-dialog.js:52
 msgid "Transfer group"
@@ -1292,7 +1292,7 @@ msgstr "Alle als gelesen markieren"
 #: frontend/src/home/main-panel/pc-main-panel/all-workspaces/org-ai-limit-prompt.js:15
 #, javascript-format
 msgid "AI credit limit exceeded — You’ve used %s credits beyond your limit. Add credits now to restore full access."
-msgstr ""
+msgstr "AI Credit Limit überschritten — Sie haben %s Credits über Ihr Limit hinaus verwendet. Jetzt Credits hinzufügen, um den vollen Zugriff wiederherzustellen."
 
 #: frontend/src/home/main-panel/pc-main-panel/index.js:68
 msgid "Main panel"
@@ -1409,12 +1409,12 @@ msgstr "Alle Arbeitsbereiche erweitern"
 
 #: frontend/src/home/side-panel/index.js:237
 msgid "Help and resources"
-msgstr ""
+msgstr "Hilfe und Ressourcen"
 
 #: frontend/src/home/side-panel/index.js:244
 #: frontend/src/home/side-panel/index.js:248
 msgid "Manual"
-msgstr ""
+msgstr "Handbuch"
 
 #: frontend/src/home/workspace/body/project-item-dropdown-menu/index.js:44
 msgid "Edit name and icon"
@@ -2112,11 +2112,11 @@ msgstr "Validierung..."
 
 #: frontend/src/portal/left-bar/index.js:32
 msgid "Portal preview URL is unavailable."
-msgstr ""
+msgstr "Portal-Vorschau-URL ist nicht verfügbar."
 
 #: frontend/src/portal/left-bar/index.js:51
 msgid "Go to portal"
-msgstr ""
+msgstr "Zum Portal"
 
 #: frontend/src/portal/left-bar/index.js:98
 msgid "External users management"
@@ -2192,56 +2192,56 @@ msgstr "Verlauf"
 
 #: frontend/src/portal/main-panel/home/card-edit-panel.js:64
 msgid "Edit panel"
-msgstr ""
+msgstr "Panel bearbeiten"
 
 #: frontend/src/portal/main-panel/home/card-edit-panel.js:67
 msgid "Card settings"
-msgstr ""
+msgstr "Karteneinstellungen"
 
 #: frontend/src/portal/main-panel/home/card-edit-panel.js:77
 msgid "Card title"
-msgstr ""
+msgstr "Kartentitel"
 
 #: frontend/src/portal/main-panel/home/card-edit-panel.js:83
 #: frontend/src/portal/main-panel/home/edit-panel.js:132
 msgid "Enter title"
-msgstr ""
+msgstr "Titel eingeben"
 
 #: frontend/src/portal/main-panel/home/card-edit-panel.js:88
 msgid "Card description"
-msgstr ""
+msgstr "Kartenbeschreibung"
 
 #: frontend/src/portal/main-panel/home/card-edit-panel.js:96
 #: frontend/src/portal/main-panel/home/edit-panel.js:153
 msgid "Enter description"
-msgstr ""
+msgstr "Beschreibung eingeben"
 
 #: frontend/src/portal/main-panel/home/card-edit-panel.js:101
 msgid "Card link"
-msgstr ""
+msgstr "Kartenlink"
 
 #: frontend/src/portal/main-panel/home/card-edit-panel.js:107
 msgid "Enter link"
-msgstr ""
+msgstr "Link eingeben"
 
 #: frontend/src/portal/main-panel/home/card-edit-panel.js:112
 msgid "Card icon"
-msgstr ""
+msgstr "Kartensymbol"
 
 #: frontend/src/portal/main-panel/home/card-edit-panel.js:119
 msgid "Select icon"
-msgstr ""
+msgstr "Symbol auswählen"
 
 #: frontend/src/portal/main-panel/home/card-edit-panel.js:173
 msgid "Delete card"
-msgstr ""
+msgstr "Karte löschen"
 
 #: frontend/src/portal/main-panel/home/chat-input.js:17
 #: frontend/src/portal/main-panel/home/chat-input.js:23
 #: frontend/src/portal/main-panel/home/edit-panel.js:35
 #: frontend/src/portal/main-panel/home/utils.js:49
 msgid "Chat with AI"
-msgstr ""
+msgstr "Mit KI chatten"
 
 #: frontend/src/portal/main-panel/home/chat-input.js:25
 #: frontend/src/project/main-panel/ask/chat-input/index.js:597
@@ -2252,23 +2252,23 @@ msgstr "Senden"
 #: frontend/src/portal/main-panel/home/edit-panel.js:35
 #: frontend/src/portal/main-panel/home/utils.js:48
 msgid "Hey 👋, how can we help?"
-msgstr ""
+msgstr "Hallo 👋, wie können wir helfen?"
 
 #: frontend/src/portal/main-panel/home/edit-panel.js:80
 msgid "The image is too large. Allowed maximum size is 5MB."
-msgstr ""
+msgstr "Das Bild ist zu groß. Die zulässige Maximalgröße beträgt 5 MB."
 
 #: frontend/src/portal/main-panel/home/edit-panel.js:84
 msgid "The image type must be PNG or JPG."
-msgstr ""
+msgstr "Der Bildtyp muss PNG oder JPG sein."
 
 #: frontend/src/portal/main-panel/home/edit-panel.js:92
 msgid "Failed to get uploaded image URL"
-msgstr ""
+msgstr "URL des hochgeladenen Bildes konnte nicht abgerufen werden"
 
 #: frontend/src/portal/main-panel/home/edit-panel.js:116
 msgid "Page settings"
-msgstr ""
+msgstr "Seiteneinstellungen"
 
 #: frontend/src/portal/main-panel/home/edit-panel.js:126
 #: frontend/src/portal/main-panel/knowledge-base/constants.js:19
@@ -2300,31 +2300,31 @@ msgstr "Titel"
 
 #: frontend/src/portal/main-panel/home/edit-panel.js:137
 msgid "Title size"
-msgstr ""
+msgstr "Titelgröße"
 
 #: frontend/src/portal/main-panel/home/edit-panel.js:142
 msgid "Select size"
-msgstr ""
+msgstr "Größe auswählen"
 
 #: frontend/src/portal/main-panel/home/edit-panel.js:147
 msgid "Chat placeholder"
-msgstr ""
+msgstr "Chat-Platzhalter"
 
 #: frontend/src/portal/main-panel/home/edit-panel.js:158
 msgid "Header background"
-msgstr ""
+msgstr "Header-Hintergrund"
 
 #: frontend/src/portal/main-panel/home/edit-panel.js:161
 msgid "Use solid color"
-msgstr ""
+msgstr "Einfarbige Farbe verwenden"
 
 #: frontend/src/portal/main-panel/home/edit-panel.js:192
 msgid "Use cover image"
-msgstr ""
+msgstr "Coverbild verwenden"
 
 #: frontend/src/portal/main-panel/home/edit-panel.js:203
 msgid "Background image preview"
-msgstr ""
+msgstr "Hintergrundbild-Vorschau"
 
 #: frontend/src/portal/main-panel/home/edit-panel.js:213
 #: frontend/src/project/main-panel/ask/chat-input/index.js:600
@@ -2333,43 +2333,43 @@ msgstr "Wird hochgeladen..."
 
 #: frontend/src/portal/main-panel/home/edit-panel.js:214
 msgid "Change image"
-msgstr ""
+msgstr "Bild ändern"
 
 #: frontend/src/portal/main-panel/home/edit-panel.js:214
 msgid "Upload custom image"
-msgstr ""
+msgstr "Benutzerdefiniertes Bild hochladen"
 
 #: frontend/src/portal/main-panel/home/edit-panel.js:218
 msgid "Remove image"
-msgstr ""
+msgstr "Bild entfernen"
 
 #: frontend/src/portal/main-panel/home/edit-panel.js:222
 msgid "PNG or JPG, up to 5MB. Recommended size: 1600*300px."
-msgstr ""
+msgstr "PNG oder JPG, bis zu 5 MB. Empfohlene Größe: 1600*300 px."
 
 #: frontend/src/portal/main-panel/home/edit-panel.js:229
 msgid "Card layout"
-msgstr ""
+msgstr "Kartenlayout"
 
 #: frontend/src/portal/main-panel/home/edit-panel.js:234
 msgid "Select layout"
-msgstr ""
+msgstr "Layout auswählen"
 
 #: frontend/src/portal/main-panel/home/index.js:93
 msgid "Portal features"
-msgstr ""
+msgstr "Portal-Funktionen"
 
 #: frontend/src/portal/main-panel/home/index.js:122
 msgid "Add card"
-msgstr ""
+msgstr "Karte hinzufügen"
 
 #: frontend/src/portal/main-panel/home/utils.js:8
 msgid "New card"
-msgstr ""
+msgstr "Neue Karte"
 
 #: frontend/src/portal/main-panel/home/utils.js:9
 msgid "Enter card description"
-msgstr ""
+msgstr "Kartenbeschreibung eingeben"
 
 #: frontend/src/portal/main-panel/knowledge-base/constants.js:24
 #: frontend/src/project/constants/bar.js:111
@@ -2481,7 +2481,7 @@ msgstr "Einträge"
 
 #: frontend/src/portal/main-panel/my-issues/mobile-issue-cards.js:62
 msgid "No issues"
-msgstr ""
+msgstr "Keine Probleme"
 
 #: frontend/src/portal/main-panel/settings/constants.js:14
 msgid "Portal customization"
@@ -2493,11 +2493,11 @@ msgstr "Offener Zugang"
 
 #: frontend/src/portal/main-panel/settings/constants.js:20
 msgid "Portal domain"
-msgstr ""
+msgstr "Portal-Domain"
 
 #: frontend/src/portal/main-panel/settings/constants.js:23
 msgid "Custom domain"
-msgstr ""
+msgstr "Benutzerdefinierte Domain"
 
 #: frontend/src/portal/main-panel/settings/customization-settings/index.js:11
 msgid "File invalid!"
@@ -2557,44 +2557,44 @@ msgstr "Speichern"
 
 #: frontend/src/portal/main-panel/settings/index.js:71
 msgid "Custom domain allows you to serve your portal from a domain other than {domain}."
-msgstr ""
+msgstr "Mit einer benutzerdefinierten Domain können Sie Ihr Portal von einer anderen Domain als {domain} aus bereitstellen."
 
 #: frontend/src/portal/main-panel/settings/index.js:72
 msgid "Custom domain allows you to serve your portal from a domain other than your current portal domain."
-msgstr ""
+msgstr "Mit einer benutzerdefinierten Domain können Sie Ihr Portal von einer anderen Domain als Ihrer aktuellen Portal-Domain aus bereitstellen."
 
 #: frontend/src/portal/main-panel/settings/index.js:174
 msgid "Save failed"
-msgstr ""
+msgstr "Speichern fehlgeschlagen"
 
 #: frontend/src/portal/main-panel/settings/index.js:269
 #: frontend/src/portal/main-panel/settings/index.js:312
 #: frontend/src/portal/main-panel/settings/index.js:343
 #: frontend/src/portal/main-panel/settings/index.js:368
 msgid "Saved"
-msgstr ""
+msgstr "Gespeichert"
 
 #: frontend/src/portal/main-panel/settings/index.js:295
 msgid "Removed"
-msgstr ""
+msgstr "Entfernt"
 
 #: frontend/src/portal/main-panel/settings/index.js:325
 msgid "Password must be at least 8 characters"
-msgstr ""
+msgstr "Das Passwort muss mindestens 8 Zeichen lang sein"
 
 #: frontend/src/portal/main-panel/settings/index.js:329
 msgid "Passwords do not match"
-msgstr ""
+msgstr "Passwörter stimmen nicht überein"
 
 #: frontend/src/portal/main-panel/settings/index.js:407
 #: frontend/src/portal/main-panel/settings/index.js:513
 msgid "Your current portal domain is"
-msgstr ""
+msgstr "Ihre aktuelle Portal-Domain ist"
 
 #: frontend/src/portal/main-panel/settings/index.js:414
 #: frontend/src/portal/main-panel/settings/index.js:520
 msgid "Portal service root domain is not configured"
-msgstr ""
+msgstr "Portal-Dienst-Root-Domain ist nicht konfiguriert"
 
 #: frontend/src/portal/main-panel/settings/index.js:420
 #: frontend/src/portal/main-panel/settings/index.js:526
@@ -2606,28 +2606,28 @@ msgstr "URL kopieren"
 
 #: frontend/src/portal/main-panel/settings/index.js:428
 msgid "Open preview"
-msgstr ""
+msgstr "Vorschau öffnen"
 
 #: frontend/src/portal/main-panel/settings/index.js:435
 msgid "Portal service root domain is not configured, so the default portal URL is unavailable."
-msgstr ""
+msgstr "Die Root-Domain des Portal-Dienstes ist nicht konfiguriert, daher ist die Standard-Portal-URL nicht verfügbar."
 
 #: frontend/src/portal/main-panel/settings/index.js:442
 msgid "Allow anonymous access"
-msgstr ""
+msgstr "Anonymen Zugriff erlauben"
 
 #: frontend/src/portal/main-panel/settings/index.js:452
 msgid "Enable password protection"
-msgstr ""
+msgstr "Passwortschutz aktivieren"
 
 #: frontend/src/portal/main-panel/settings/index.js:463
 #: frontend/src/portal/main-panel/settings/index.js:483
 msgid "Password (at least 8 characters)"
-msgstr ""
+msgstr "Passwort (mindestens 8 Zeichen)"
 
 #: frontend/src/portal/main-panel/settings/index.js:474
 msgid "Replace password"
-msgstr ""
+msgstr "Passwort ersetzen"
 
 #: frontend/src/portal/main-panel/settings/index.js:500
 msgid "Re-enter password"
@@ -2635,15 +2635,15 @@ msgstr "Passwort erneut eingeben"
 
 #: frontend/src/portal/main-panel/settings/index.js:533
 msgid "Portal service root domain is not configured, so the portal domain is unavailable."
-msgstr ""
+msgstr "Die Root-Domain des Portal-Dienstes ist nicht konfiguriert, daher ist die Portal-Domain nicht verfügbar."
 
 #: frontend/src/portal/main-panel/settings/index.js:538
 msgid "Customize the prefix:"
-msgstr ""
+msgstr "Präfix anpassen:"
 
 #: frontend/src/portal/main-panel/settings/index.js:545
 msgid "my-brand"
-msgstr ""
+msgstr "meine-marke"
 
 #: frontend/src/portal/main-panel/settings/index.js:558
 #: frontend/src/portal/main-panel/settings/index.js:581
@@ -2653,35 +2653,35 @@ msgstr "Wird gespeichert..."
 
 #: frontend/src/portal/main-panel/settings/index.js:576
 msgid "support.example.com"
-msgstr ""
+msgstr "support.example.com"
 
 #: frontend/src/portal/main-panel/settings/index.js:592
 msgid "Add a CNAME record in your DNS hosting provider to make custom domain work. The CNAME record should be as following:"
-msgstr ""
+msgstr "Fügen Sie einen CNAME-Eintrag bei Ihrem DNS-Hosting-Anbieter hinzu, damit die benutzerdefinierte Domain funktioniert. Der CNAME-Eintrag sollte wie folgt lauten:"
 
 #: frontend/src/portal/main-panel/settings/index.js:617
 msgid "You also need to add a TXT record to verify the ownership of your custom domain."
-msgstr ""
+msgstr "Sie müssen außerdem einen TXT-Eintrag hinzufügen, um den Besitz Ihrer benutzerdefinierten Domain zu bestätigen."
 
 #: frontend/src/portal/main-panel/settings/index.js:623
 msgid "TXT record name"
-msgstr ""
+msgstr "TXT-Eintragsname"
 
 #: frontend/src/portal/main-panel/settings/index.js:635
 msgid "TXT record value"
-msgstr ""
+msgstr "TXT-Eintragswert"
 
 #: frontend/src/portal/main-panel/settings/index.js:655
 msgid "Verifying..."
-msgstr ""
+msgstr "Wird bestätigt..."
 
 #: frontend/src/portal/main-panel/settings/index.js:668
 msgid "Save the custom domain before verification."
-msgstr ""
+msgstr "Speichern Sie die benutzerdefinierte Domain vor der Bestätigung."
 
 #: frontend/src/portal/main-panel/settings/index.js:675
 msgid "Display"
-msgstr ""
+msgstr "Anzeige"
 
 #: frontend/src/portal/main-panel/settings/index.js:681
 msgid "Show knowledge base"
@@ -2689,7 +2689,7 @@ msgstr "Wissensdatenbank anzeigen"
 
 #: frontend/src/portal/main-panel/settings/index.js:688
 msgid "Chat sources"
-msgstr ""
+msgstr "Chat-Quellen"
 
 #: frontend/src/portal/main-panel/settings/index.js:690
 msgid "Select which data sources can be used for AI responses in the portal."
@@ -2697,11 +2697,11 @@ msgstr "Wählen Sie aus, welche Datenquellen für KI-Antworten im Portal verwend
 
 #: frontend/src/portal/main-panel/settings/index.js:713
 msgid "Remove custom domain"
-msgstr ""
+msgstr "Benutzerdefinierte Domain entfernen"
 
 #: frontend/src/portal/main-panel/settings/index.js:714
 msgid "Are you sure you want to remove this custom domain?"
-msgstr ""
+msgstr "Sind Sie sicher, dass Sie diese benutzerdefinierte Domain entfernen möchten?"
 
 #: frontend/src/portal/main-panel/submit-issue.js:47
 #: frontend/src/project/main-panel/agent/components/run-log-details/run-details/action/suggestion-action/index.js:75
@@ -3178,7 +3178,7 @@ msgstr "Aktualisieren"
 
 #: frontend/src/project/components/resource-details-dialog/index.js:122
 msgid "Link copied"
-msgstr ""
+msgstr "Link kopiert"
 
 #: frontend/src/project/components/resource-details-dialog/index.js:154
 msgid "Previous record"
@@ -3292,7 +3292,7 @@ msgstr "Inhalt konnte nicht aktualisiert werden"
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/index.js:319
 msgid "Open the panel"
-msgstr ""
+msgstr "Panel öffnen"
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/index.js:334
 msgid "No agent runs"
@@ -3300,7 +3300,7 @@ msgstr "Keine Agenten-Durchläufe"
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/index.js:345
 msgid "% runs"
-msgstr ""
+msgstr "% Ausführungen"
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/index.js:346
 msgid "more"
@@ -3308,7 +3308,7 @@ msgstr "mehr"
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/index.js:351
 msgid "Display more runs"
-msgstr ""
+msgstr "Mehr Ausführungen anzeigen"
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/run-details/action/index.js:99
 msgid "Event"
@@ -3367,7 +3367,7 @@ msgstr "Verwerfen"
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/run-details/action/suggestion-action/index.js:258
 msgid "Executing..."
-msgstr ""
+msgstr "Wird ausgeführt..."
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/run-details/index.js:55
 msgid "No action needed"
@@ -3375,7 +3375,7 @@ msgstr "Keine Aktion erforderlich"
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/run-details/index.js:68
 msgid "Running"
-msgstr ""
+msgstr "Wird ausgeführt"
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/run-details/index.js:78
 #: frontend/src/project/main-panel/ask/components/attachments/attachment/index.js:85
@@ -3407,7 +3407,7 @@ msgstr "Denkprozess"
 #: frontend/src/project/main-panel/agent/components/run-log-details/run-details/run-statistics-dialog/index.js:27
 #: frontend/src/project/main-panel/agent/components/run-log-details/run-details/thought-process-dialog/index.js:24
 msgid "Prelude"
-msgstr ""
+msgstr "Vorspiel"
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/run-details/run-statistics-dialog/index.js:29
 #: frontend/src/project/main-panel/agent/components/run-log-details/run-details/thought-process-dialog/index.js:26
@@ -3462,7 +3462,7 @@ msgstr "Eingabe"
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/run-details/thought-process-dialog/index.js:120
 msgid "Actions"
-msgstr ""
+msgstr "Aktionen"
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/run-details/thought-process-dialog/index.js:177
 msgid "No thought process details"
@@ -3474,7 +3474,7 @@ msgstr "Inhalt bearbeiten..."
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/suggestion-detail-panel/ticket-detail/index.js:62
 msgid "Draft"
-msgstr ""
+msgstr "Entwurf"
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/suggestion-detail-panel/ticket-detail/index.js:100
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/others/general-task-details/index.js:67
@@ -3523,55 +3523,55 @@ msgstr "Keine Teilnehmer"
 
 #: frontend/src/project/main-panel/agent/components/run-logs/index.js:98
 msgid "Run logs"
-msgstr ""
+msgstr "Ausführungsprotokolle"
 
 #: frontend/src/project/main-panel/agent/components/run-logs/index.js:105
 msgid "Close the panel"
-msgstr ""
+msgstr "Panel schließen"
 
 #: frontend/src/project/main-panel/agent/components/run-logs/run-log/index.js:19
 msgid "Runs"
-msgstr ""
+msgstr "Ausführungen"
 
 #: frontend/src/project/main-panel/agent/constants.js:74
 msgid "New GitHub issue"
-msgstr ""
+msgstr "Neues GitHub-Issue"
 
 #: frontend/src/project/main-panel/agent/constants.js:75
 msgid "New issue comment"
-msgstr ""
+msgstr "Neuer Issue-Kommentar"
 
 #: frontend/src/project/main-panel/agent/constants.js:76
 msgid "New forum topic"
-msgstr ""
+msgstr "Neues Forenthema"
 
 #: frontend/src/project/main-panel/agent/constants.js:77
 msgid "New topic comment"
-msgstr ""
+msgstr "Neuer Themenkommentar"
 
 #: frontend/src/project/main-panel/agent/constants.js:78
 msgid "New email thread"
-msgstr ""
+msgstr "Neuer E-Mail-Thread"
 
 #: frontend/src/project/main-panel/agent/constants.js:79
 msgid "New email message"
-msgstr ""
+msgstr "Neue E-Mail-Nachricht"
 
 #: frontend/src/project/main-panel/agent/constants.js:80
 msgid "Ticket due soon"
-msgstr ""
+msgstr "Ticket demnächst fällig"
 
 #: frontend/src/project/main-panel/agent/constants.js:81
 msgid "Ticket overdue"
-msgstr ""
+msgstr "Ticket überfällig"
 
 #: frontend/src/project/main-panel/agent/constants.js:82
 msgid "Internal task finished"
-msgstr ""
+msgstr "Interne Aufgabe abgeschlossen"
 
 #: frontend/src/project/main-panel/agent/index.js:40
 msgid "No agent logs"
-msgstr ""
+msgstr "Keine Agent-Protokolle"
 
 #: frontend/src/project/main-panel/agent/index.js:41
 msgid "Enable the agent in settings to start"
@@ -3579,47 +3579,47 @@ msgstr "Aktivieren Sie den Agenten in den Einstellungen, um zu starten"
 
 #: frontend/src/project/main-panel/agent/utils.js:94
 msgid "Send a reply"
-msgstr ""
+msgstr "Antwort senden"
 
 #: frontend/src/project/main-panel/agent/utils.js:96
 msgid "Send a reply to the linked external record"
-msgstr ""
+msgstr "Antwort an den verknüpften externen Datensatz senden"
 
 #: frontend/src/project/main-panel/agent/utils.js:98
 msgid "Create an internal ticket from this record"
-msgstr ""
+msgstr "Internes Ticket aus diesem Datensatz erstellen"
 
 #: frontend/src/project/main-panel/agent/utils.js:103
 msgid "Change the type from \"%(current)s\" to \"%(suggested)s\" for this GitHub issue"
-msgstr ""
+msgstr "Typ für dieses GitHub-Issue von \"%(current)s\" auf \"%(suggested)s\" ändern"
 
 #: frontend/src/project/main-panel/agent/utils.js:108
 msgid "Change the type to \"%(suggested)s\" for this GitHub issue"
-msgstr ""
+msgstr "Typ für dieses GitHub-Issue auf \"%(suggested)s\" ändern"
 
 #: frontend/src/project/main-panel/agent/utils.js:111
 msgid "Suggest a more suitable issue type for this GitHub issue"
-msgstr ""
+msgstr "Schlagen Sie einen geeigneteren Issue-Typ für dieses GitHub-Issue vor"
 
 #: frontend/src/project/main-panel/agent/utils.js:116
 msgid "Assign labels %(labels)s to this GitHub issue"
-msgstr ""
+msgstr "Labels %(labels)s diesem GitHub-Issue zuweisen"
 
 #: frontend/src/project/main-panel/agent/utils.js:119
 msgid "Assign labels to this GitHub issue"
-msgstr ""
+msgstr "Labels diesem GitHub-Issue zuweisen"
 
 #: frontend/src/project/main-panel/agent/utils.js:122
 msgid "Notify assignees of the ticket"
-msgstr ""
+msgstr "Zuständige des Tickets benachrichtigen"
 
 #: frontend/src/project/main-panel/agent/utils.js:124
 msgid "Move this email thread to the spam folder"
-msgstr ""
+msgstr "Diesen E-Mail-Thread in den Spam-Ordner verschieben"
 
 #: frontend/src/project/main-panel/agent/utils.js:126
 msgid "Close this ticket"
-msgstr ""
+msgstr "Dieses Ticket schließen"
 
 #: frontend/src/project/main-panel/analyze/components/connection-setting/index.js:80
 msgid "Add connections"
@@ -3928,7 +3928,7 @@ msgstr "Discourse-Forum"
 
 #: frontend/src/project/main-panel/ask/models/attachment-object.js:51
 msgid "Page content"
-msgstr ""
+msgstr "Seiteninhalt"
 
 #: frontend/src/project/main-panel/ask/sessions/index.js:61
 msgid "No chats"
@@ -4037,35 +4037,35 @@ msgstr "An"
 
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/main/email-details/item.js:277
 msgid "Mark Read"
-msgstr ""
+msgstr "Als gelesen markieren"
 
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/main/email-details/item.js:277
 msgid "Mark unread"
-msgstr ""
+msgstr "Als ungelesen markieren"
 
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/main/email-details/reply-email/index.js:34
 msgid "Please fill in the recipient's address before sending"
-msgstr ""
+msgstr "Bitte geben Sie die Empfängeradresse ein, bevor Sie senden"
 
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/main/email-details/reply-email/index.js:40
 msgid "This email address is invalid: "
-msgstr ""
+msgstr "Diese E-Mail-Adresse ist ungültig: "
 
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/main/email-details/reply-email/index.js:44
 msgid "These email addresses are invalid: "
-msgstr ""
+msgstr "Diese E-Mail-Adressen sind ungültig: "
 
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/main/email-details/reply-email/index.js:48
 msgid "Please enter the email content before sending"
-msgstr ""
+msgstr "Bitte geben Sie den E-Mail-Inhalt ein, bevor Sie senden"
 
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/main/email-details/reply-email/index.js:52
 msgid "Please modify the recipients or email content before sending"
-msgstr ""
+msgstr "Bitte ändern Sie die Empfänger oder den E-Mail-Inhalt, bevor Sie senden"
 
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/main/email-details/reply-email/index.js:80
 msgid "Cc"
-msgstr ""
+msgstr "Cc"
 
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/main/index.js:202
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/main/index.js:233
@@ -4183,7 +4183,7 @@ msgstr "Letzte Synchronisierungszeit"
 #: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:57
 #: frontend/src/project/main-panel/tickets/view/new-ticket/index.js:104
 msgid "Substate invalid."
-msgstr ""
+msgstr "Unterzustand ungültig."
 
 #: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:92
 msgid "Ticket created"
@@ -4266,7 +4266,7 @@ msgstr "Prüfung des Linear-Autorisierungsstatus fehlgeschlagen."
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:542
 msgid "Failed to check Jira authorization status."
-msgstr ""
+msgstr "Status der Jira-Autorisierung konnte nicht geprüft werden."
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:678
 #: frontend/src/project/main-panel/connections/constants.js:481
@@ -4275,7 +4275,7 @@ msgstr "Team auswählen"
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:678
 msgid "Please connect Linear first"
-msgstr ""
+msgstr "Bitte verbinden Sie zuerst Linear"
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:689
 #: frontend/src/project/main-panel/connections/constants.js:447
@@ -4284,31 +4284,31 @@ msgstr "Arbeitsbereich auswählen"
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:689
 msgid "Please connect Confluence first"
-msgstr ""
+msgstr "Bitte verbinden Sie zuerst Confluence"
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:700
 #: frontend/src/project/main-panel/connections/constants.js:498
 msgid "Select a channel"
-msgstr ""
+msgstr "Wählen Sie einen Kanal aus"
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:700
 msgid "Please install Discord Bot first"
-msgstr ""
+msgstr "Bitte installieren Sie zuerst den Discord-Bot"
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:711
 #: frontend/src/project/main-panel/connections/constants.js:322
 msgid "Select a Jira site"
-msgstr ""
+msgstr "Wählen Sie eine Jira-Site aus"
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:711
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:722
 msgid "Please connect Jira first"
-msgstr ""
+msgstr "Bitte verbinden Sie zuerst Jira"
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:722
 #: frontend/src/project/main-panel/connections/constants.js:330
 msgid "Select a Jira project"
-msgstr ""
+msgstr "Wählen Sie ein Jira-Projekt aus"
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:754
 #: frontend/src/project/main-panel/connections/components/top-bar/index.js:142
@@ -4325,11 +4325,11 @@ msgstr "Autorisierung"
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:810
 msgid "Reinstall Discord"
-msgstr ""
+msgstr "Discord neu installieren"
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:810
 msgid "Install Discord Bot"
-msgstr ""
+msgstr "Discord-Bot installieren"
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:846
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:874
@@ -4385,15 +4385,15 @@ msgstr "Keine Spaces in diesem Arbeitsbereich gefunden."
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:945
 msgid "Reconnect Jira"
-msgstr ""
+msgstr "Jira erneut verbinden"
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:945
 msgid "Connect Jira"
-msgstr ""
+msgstr "Jira verbinden"
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:954
 msgid "Waiting for Jira authorization to complete..."
-msgstr ""
+msgstr "Warten auf den Abschluss der Jira-Autorisierung..."
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/selected-connection-header.js:16
 msgid "Help Docs"
@@ -4526,7 +4526,7 @@ msgstr "Repository auswählen"
 
 #: frontend/src/project/main-panel/connections/constants.js:321
 msgid "Jira site"
-msgstr ""
+msgstr "Jira-Site"
 
 #: frontend/src/project/main-panel/connections/constants.js:346
 #: frontend/src/project/main-panel/connections/constants.js:383
@@ -4581,7 +4581,7 @@ msgstr "API-Basis-URL"
 
 #: frontend/src/project/main-panel/connections/constants.js:497
 msgid "Channel"
-msgstr ""
+msgstr "Kanal"
 
 #: frontend/src/project/main-panel/connections/constants.js:520
 msgid "Tasks"
@@ -4605,11 +4605,11 @@ msgstr "Nur Admin-/Besitzer-Konten von GitHub-Organisationen oder Repositories k
 
 #: frontend/src/project/main-panel/connections/constants.js:542
 msgid "Jira"
-msgstr ""
+msgstr "Jira"
 
 #: frontend/src/project/main-panel/connections/constants.js:543
 msgid "Authorize SeaTicket with your Atlassian account, then select the Jira site and project to sync issues from. If any problem occurs, check the"
-msgstr ""
+msgstr "Autorisieren Sie SeaTicket mit Ihrem Atlassian-Konto, dann wählen Sie die Jira-Site und das Projekt aus, von dem Issues synchronisiert werden sollen. Falls Probleme auftreten, prüfen Sie die"
 
 #: frontend/src/project/main-panel/connections/constants.js:549
 #: frontend/src/project/main-panel/connections/view/connection/records/index.js:90
@@ -4663,11 +4663,11 @@ msgstr "Halten Sie den Verbindungsnamen bereit und schließen Sie die Linear-OAu
 
 #: frontend/src/project/main-panel/connections/constants.js:598
 msgid "Discord"
-msgstr ""
+msgstr "Discord"
 
 #: frontend/src/project/main-panel/connections/constants.js:599
 msgid "Connect your Discord server by authorizing the SeaTicket bot. The bot will sync messages from the selected channel. If any problem occurs, check the"
-msgstr ""
+msgstr "Verbinden Sie Ihren Discord-Server, indem Sie den SeaTicket-Bot autorisieren. Der Bot synchronisiert Nachrichten aus dem ausgewählten Kanal. Falls Probleme auftreten, prüfen Sie die"
 
 #: frontend/src/project/main-panel/connections/constants.js:621
 msgid "Reopen"
@@ -4757,7 +4757,7 @@ msgstr "Schließungszeit"
 
 #: frontend/src/project/main-panel/connections/constants.js:814
 msgid "Issue key"
-msgstr ""
+msgstr "Issue-Schlüssel"
 
 #: frontend/src/project/main-panel/connections/constants.js:843
 #: frontend/src/project/main-panel/connections/constants.js:1041
@@ -4787,7 +4787,7 @@ msgstr "ungelesen"
 #: frontend/src/project/main-panel/connections/constants.js:925
 #: frontend/src/sea-metadata/constants/column/icon.js:50
 msgid "Reply status"
-msgstr ""
+msgstr "Antwortstatus"
 
 #: frontend/src/project/main-panel/connections/constants.js:951
 #: frontend/src/project/main-panel/connections/constants.js:984
@@ -4825,7 +4825,7 @@ msgstr "Sind Sie sicher, dass Sie {placeholder} löschen möchten?"
 
 #: frontend/src/project/main-panel/connections/utils.js:270
 msgid "Unassigned"
-msgstr ""
+msgstr "Nicht zugewiesen"
 
 #: frontend/src/project/main-panel/connections/utils.js:344
 msgid "Chat task"
@@ -4960,7 +4960,7 @@ msgstr "E-Mail-Threads wurden in den Papierkorb verschoben."
 
 #: frontend/src/project/main-panel/connections/view/connection/records/index.js:348
 msgid "Mark as read"
-msgstr ""
+msgstr "Als gelesen markieren"
 
 #: frontend/src/project/main-panel/connections/view/connection/records/index.js:499
 msgid "Delete emails"
@@ -5183,31 +5183,31 @@ msgstr "Starten Sie oben Ihre Suche, um Ergebnisse zu finden"
 
 #: frontend/src/project/main-panel/settings/agent-auto-confirm-settings/index.js:11
 msgid "Notify assignees"
-msgstr ""
+msgstr "Zuständige benachrichtigen"
 
 #: frontend/src/project/main-panel/settings/agent-auto-confirm-settings/index.js:12
 msgid "Automatically send assignee reminders without manual approval."
-msgstr ""
+msgstr "Automatisch Erinnerungen an Zuständige senden ohne manuelle Genehmigung."
 
 #: frontend/src/project/main-panel/settings/agent-auto-confirm-settings/index.js:18
 msgid "Create internal ticket"
-msgstr ""
+msgstr "Internes Ticket erstellen"
 
 #: frontend/src/project/main-panel/settings/agent-auto-confirm-settings/index.js:19
 msgid "Automatically create a ticket from AI suggestions."
-msgstr ""
+msgstr "Automatisch ein Ticket aus KI-Vorschlägen erstellen."
 
 #: frontend/src/project/main-panel/settings/agent-auto-confirm-settings/index.js:20
 msgid "Use with caution"
-msgstr ""
+msgstr "Mit Vorsicht verwenden"
 
 #: frontend/src/project/main-panel/settings/agent-auto-confirm-settings/index.js:41
 msgid "Auto-approve actions"
-msgstr ""
+msgstr "Aktionen automatisch genehmigen"
 
 #: frontend/src/project/main-panel/settings/agent-auto-confirm-settings/index.js:43
 msgid "When enabled, matching suggestions are executed automatically without clicking Approve in run logs."
-msgstr ""
+msgstr "Wenn aktiviert, werden passende Vorschläge automatisch ausgeführt, ohne in den Ausführungsprotokollen auf Genehmigen zu klicken."
 
 #: frontend/src/project/main-panel/settings/github-issue-type-mapping/index.js:27
 msgid "Sync GitHub issue type"
@@ -5224,12 +5224,12 @@ msgstr "Synchronisierung abgeschlossen"
 #: frontend/src/project/main-panel/settings/github-issue-type-mapping/index.js:119
 #: frontend/src/translation.js:22
 msgid "Agent issue type"
-msgstr ""
+msgstr "Agent-Issue-Typ"
 
 #: frontend/src/project/main-panel/settings/github-issue-type-mapping/index.js:125
 #: frontend/src/translation.js:21
 msgid "GitHub issue type"
-msgstr ""
+msgstr "GitHub-Issue-Typ"
 
 #: frontend/src/project/main-panel/settings/github-issue-type-mapping/index.js:153
 #: frontend/src/sea-metadata/components/cell-editors/date-editor.js:229
@@ -5244,7 +5244,7 @@ msgstr "Prompt bearbeiten"
 
 #: frontend/src/project/main-panel/settings/index.js:39
 msgid "Add prompt"
-msgstr ""
+msgstr "Prompt hinzufügen"
 
 #: frontend/src/project/main-panel/settings/index.js:45
 msgid "Enable support portal"
@@ -5269,11 +5269,11 @@ msgstr "Definieren Sie eigene zusätzliche Regeln für die Ticket-Verarbeitung i
 
 #: frontend/src/project/main-panel/settings/index.js:82
 msgid "Edit ticket processing rules"
-msgstr ""
+msgstr "Ticketverarbeitungsregeln bearbeiten"
 
 #: frontend/src/project/main-panel/settings/index.js:82
 msgid "Add ticket processing rules"
-msgstr ""
+msgstr "Ticketverarbeitungsregeln hinzufügen"
 
 #: frontend/src/project/main-panel/settings/index.js:83
 msgid "Example:\n"
@@ -5290,7 +5290,7 @@ msgstr "Ticket-Verarbeitungsregeln dürfen keine tag-ähnlichen Inhalte wie <sys
 #: frontend/src/project/main-panel/settings/language-settings/index.js:36
 #: frontend/src/project/main-panel/settings/language-settings/index.js:41
 msgid "Language for AI output"
-msgstr ""
+msgstr "Sprache für KI-Ausgabe"
 
 #: frontend/src/project/main-panel/settings/prompt-settings/index.js:14
 msgid "Project prompt"
@@ -5389,11 +5389,11 @@ msgstr "Verknüpfte GitHub-Issues schließen"
 
 #: frontend/src/project/main-panel/tickets/components/close-linked-github-issues-warning-dialog/index.js:69
 msgid "Close ticket only"
-msgstr ""
+msgstr "Nur Ticket schließen"
 
 #: frontend/src/project/main-panel/tickets/components/close-linked-github-issues-warning-dialog/index.js:77
 msgid "Close ticket & GitHub issues"
-msgstr ""
+msgstr "Ticket & GitHub-Issues schließen"
 
 #: frontend/src/project/main-panel/tickets/components/comment/index.js:132
 msgid "SeaTicket AI"
@@ -5595,12 +5595,12 @@ msgstr "Antworten"
 
 #: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:664
 msgid "updated Discord thread"
-msgstr ""
+msgstr "Discord-Thread aktualisiert"
 
 #: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:668
 #: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:681
 msgid "Discord thread"
-msgstr ""
+msgstr "Discord-Thread"
 
 #: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:682
 #: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:694
@@ -5648,7 +5648,7 @@ msgstr "Verknüpfte Einträge"
 #: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:34
 #: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:35
 msgid "Back to All tickets"
-msgstr ""
+msgstr "Zurück zu Alle Tickets"
 
 #: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:84
 #: frontend/src/project/main-panel/tickets/components/tickets-dialog/index.js:175
@@ -5875,7 +5875,7 @@ msgstr "Einträge aus XLSX importieren"
 
 #: frontend/src/project/utils.js:33
 msgid "Portal issue"
-msgstr ""
+msgstr "Portal-Issue"
 
 #: frontend/src/sea-metadata/components/cell-editors/date-editor.js:205
 #: frontend/src/sea-metadata/components/popover/filter-popover/advanced-filters/filter-calendar.js:124
@@ -6324,7 +6324,7 @@ msgstr "Erstellungszeit"
 
 #: frontend/src/sea-metadata/constants/column/icon.js:49
 msgid "Read status"
-msgstr ""
+msgstr "Lesestatus"
 
 #: frontend/src/sea-metadata/constants/column/icon.js:51
 msgid "Link"
@@ -7136,47 +7136,47 @@ msgstr "Aktueller Browser"
 
 #: frontend/src/translation.js:16
 msgid "Support portal allows external users to self-service and obtain support information, including documentation, knowledge base articles, and ticket management. It acts as the customer-facing interface for your support services."
-msgstr ""
+msgstr "Das Support-Portal ermöglicht externen Benutzern die Selbstbedienung und den Erhalt von Supportinformationen, einschließlich Dokumentation, Wissensdatenbankartikeln und Ticketverwaltung. Es dient als kundenorientierte Oberfläche für Ihre Supportdienste."
 
 #: frontend/src/translation.js:17
 msgid "How can I help you?"
-msgstr ""
+msgstr "Wie kann ich helfen?"
 
 #: frontend/src/translation.js:18
 msgid "Total issues"
-msgstr ""
+msgstr "Gesamte Issues"
 
 #: frontend/src/translation.js:19
 msgid "Included Al credits"
-msgstr ""
+msgstr "Inkludierte AI-Credits"
 
 #: frontend/src/translation.js:20
 msgid "Additional credits"
-msgstr ""
+msgstr "Zusätzliche Credits"
 
 #: frontend/src/translation.js:23
 msgid "Agent issue type to GitHub issue type"
-msgstr ""
+msgstr "Agent-Issue-Typ zu GitHub-Issue-Typ"
 
 #: frontend/src/translation.js:24
 msgid "Please connect a GitHub repository first."
-msgstr ""
+msgstr "Bitte verbinden Sie zuerst ein GitHub-Repository."
 
 #: frontend/src/translation.js:25
 msgid "Current GitHub connection is invalid."
-msgstr ""
+msgstr "Aktuelle GitHub-Verbindung ist ungültig."
 
 #: frontend/src/translation.js:26
 msgid "GitHub App missing \"Issue Types\" permission."
-msgstr ""
+msgstr "GitHub-App fehlt die Berechtigung für \"Issue-Typen\"."
 
 #: frontend/src/translation.js:27
 msgid "Failed to load GitHub issue types."
-msgstr ""
+msgstr "GitHub-Issue-Typen konnten nicht geladen werden."
 
 #: frontend/src/translation.js:28
 msgid "GitHub issue types are only available for organizations."
-msgstr ""
+msgstr "GitHub-Issue-Typen sind nur für Organisationen verfügbar."
 
 #: frontend/src/utils/role-status-utils.js:32
 msgid "Default admin"

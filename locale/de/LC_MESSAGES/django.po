@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: seaqa-web\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-08-26 09:43+0800\n"
-"PO-Revision-Date: 2026-08-26 01:55\n"
+"PO-Revision-Date: 2026-08-26 02:20\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -386,7 +386,7 @@ msgstr "Abgemeldet"
 
 #: seahub/auth/views.py:387 seahub/organizations/views.py:231
 msgid "Cloudflare Turnstile check failed. Please refresh and try again."
-msgstr ""
+msgstr "Cloudflare Turnstile-Prüfung fehlgeschlagen. Bitte aktualisieren Sie die Seite und versuchen Sie es erneut."
 
 #: seahub/auth/views.py:402
 msgid "Failed to send email, please contact administrator."
@@ -740,7 +740,7 @@ msgstr "Portal ist nicht aktiviert"
 
 #: seahub/portal/views.py:165
 msgid "Preview link is invalid or expired."
-msgstr ""
+msgstr "Vorschau-Link ist ungültig oder abgelaufen."
 
 #: seahub/portal/views.py:238 seahub/portal/views.py:243
 msgid "Password invalid"
@@ -841,32 +841,32 @@ msgstr "Autorisierung für Confluence fehlgeschlagen."
 
 #: seahub/project/views.py:400 seahub/project/views.py:461
 msgid "Discord OAuth settings are invalid."
-msgstr ""
+msgstr "Discord OAuth-Einstellungen sind ungültig."
 
 #: seahub/project/views.py:443
 msgid "Invalid Discord OAuth state."
-msgstr ""
+msgstr "Ungültiger Discord OAuth-Zustand."
 
 #: seahub/project/views.py:446
 msgid "Discord server information was not returned."
-msgstr ""
+msgstr "Discord-Serverinformationen wurden nicht zurückgegeben."
 
 #: seahub/project/views.py:476 seahub/project/views.py:480
 msgid "Failed to authorize Discord."
-msgstr ""
+msgstr "Autorisierung von Discord fehlgeschlagen."
 
 #: seahub/project/views.py:540 seahub/project/views.py:584
 msgid "Jira OAuth settings are invalid."
-msgstr ""
+msgstr "Jira OAuth-Einstellungen sind ungültig."
 
 #: seahub/project/views.py:569
 msgid "Invalid Jira OAuth state."
-msgstr ""
+msgstr "Ungültiger Jira OAuth-Zustand."
 
 #: seahub/project/views.py:598 seahub/project/views.py:602
 #: seahub/project/views.py:609
 msgid "Failed to authorize Jira."
-msgstr ""
+msgstr "Autorisierung von Jira fehlgeschlagen."
 
 #: seahub/saml/utils.py:49
 msgid "SAML login relevant settings invalid."
