@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import classnames from 'classnames';
-import { OptionsEditor } from '@/components';
-import SelectOption from '@/sea-metadata/components/cell-formatter/select-option';
+import { OptionsEditor, RemoveButton, Option } from '@/components';
 import { gettext } from '@/constants';
 import { useTypesData } from '@/sea-metadata/hooks';
 import { getTypesOptions } from '@/sea-metadata/utils/column';
@@ -12,15 +11,16 @@ const TypeFilter = ({ readOnly = true, value = [], onChange: onChangeAPI }) => {
   const typeFilterRef = useRef(null);
   const { typesData } = useTypesData();
 
+  const validOptions = useMemo(() => getTypesOptions(typesData), [typesData]);
+
   const options = useMemo(() => {
-    const _options = getTypesOptions(typesData);
-    if (!Array.isArray(_options) || _options.length === 0) return [];
-    return _options.map(option => ({
+    if (!Array.isArray(validOptions) || validOptions.length === 0) return [];
+    return validOptions.map(option => ({
       value: option.id,
       name: option.name,
-      label: (<SelectOption option={option} className="single-select-option ml-0" />),
+      label: (<Option option={option} />),
     }));
-  }, [typesData]);
+  }, [validOptions]);
 
   const openEditor = useCallback(() => {
     if (readOnly) return;
@@ -55,7 +55,20 @@ const TypeFilter = ({ readOnly = true, value = [], onChange: onChangeAPI }) => {
           sameWidthWithTarget={300}
           onChange={onChangeAPI}
           onToggle={closeEditor}
-        />
+        >
+          {({ value, onChange }) => {
+            if (value.length === 0) return null;
+            return value.map(item => {
+              const option = validOptions.find(c => c.id === item);
+              if (!option) return null;
+              return (
+                <Option option={option}>
+                  <RemoveButton callback={() => onChange(item)} size={10} iconStyle={{ color: option.text_color }} />
+                </Option>
+              );
+            });
+          }}
+        </OptionsEditor>
       )}
     </>
   );

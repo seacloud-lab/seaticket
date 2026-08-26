@@ -57,7 +57,7 @@
   flex-shrink: 0;
 }
 
-.sea-metadata-filters-list .filter-term input {
+.sea-metadata-filters-list .filter-term .sea-metadata-filter-input {
   display: flex;
   min-width: 200px;
   max-width: 300px;
@@ -69,26 +69,25 @@
   font-size: 0.875rem;
 }
 
-.sea-metadata-filters-list .filter-term input:disabled:hover {
+.sea-metadata-filters-list .filter-term .sea-metadata-filter-input:disabled:hover {
   border-color: rgba(0, 40, 100, 0.12);
 }
 
-.sea-metadata-filters-list .filter-term input:hover:focus {
+.sea-metadata-filters-list .filter-term .sea-metadata-filter-input:hover:focus {
   border-color: var(--bs-custom-select-focus-border-color);
 }
 
-.sea-metadata-filters-list .filter-term input:focus {
-  color: #495057;
+.sea-metadata-filters-list .filter-term .sea-metadata-filter-input:focus {
   background: var(--bs-body-bg);
   border-color: var(--bs-custom-select-focus-border-color);
   outline: 0;
 }
 
-.sea-metadata-filters-list .filter-term input[type='checkbox'] {
+.sea-metadata-filters-list .filter-term .sea-metadata-filter-input[type='checkbox'] {
   width: inherit;
 }
 
-.sea-metadata-filters-list .filter-term input[type='checkbox']:focus {
+.sea-metadata-filters-list .filter-term .sea-metadata-filter-input[type='checkbox']:focus {
   border: 0;
   box-shadow: none;
 }
@@ -105,13 +104,12 @@
   cursor: default;
 }
 
-.sea-metadata-filters-list .filter-term .date-picker-container input {
+.sea-metadata-filters-list .filter-term .rc-calendar-date-input-wrap input {
   height: 32px;
   line-height: 30px;
 }
 
-.sea-metadata-filters-list .filter-term .date-picker-container input:focus {
-  color: #495057;
+.sea-metadata-filters-list .filter-term .rc-calendar-date-input-wrap input:focus {
   background: var(--bs-body-bg);
   outline: 0;
   box-shadow: none;
@@ -132,7 +130,8 @@
 .sea-metadata-columns-select-container,
 .sea-metadata-filter-predicate-container,
 .sea-metadata-filter-term-modifier-container,
-.sea-metadata-filter-conjunction-select-container {
+.sea-metadata-filter-conjunction-select-container,
+.sea-metadata-state-select-container {
   min-width: 200px;
   max-width: 300px;
 }

@@ -41,6 +41,7 @@ const StateFilter = ({ readOnly = true, value = [], column, onChange: onChangeAP
       disabled={readOnly}
       supportMultipleSelect={true}
       className={classnames('sea-metadata-basic-filters-select', { 'highlighted': value.length > 0 })}
+      containerClassName="border-radius-8 sea-metadata-state-select-container"
       value={value}
       options={options}
       onChange={onChange}

@@ -60,3 +60,7 @@
   cursor: pointer;
   border-radius: 4px;
 }
+
+.seaqa-select-options-container .seaqa-customize-select-empty-tip {
+  height: 32px;
+}

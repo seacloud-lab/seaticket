@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
+import classnames from 'classnames';
 import { CollaboratorEditor, Collaborator } from '@/components';
 import { gettext } from '@/constants';
 import SelectTrigger from '@/components/customize-select/select-trigger';
@@ -41,7 +42,7 @@ const getCollaboratorSelectorText = (filterColumnName, key) => {
   return textMap[key];
 };
 
-const CollaboratorSelector = ({ readOnly, value, collaborators, predicate, onChange, column }) => {
+const CollaboratorSelector = ({ readOnly, className, value, collaborators, predicate, column, onChange }) => {
   const [isShowEditor, setIsShowEditor] = useState(false);
   const collaboratorSelectorRef = useRef(null);
 
@@ -100,7 +101,7 @@ const CollaboratorSelector = ({ readOnly, value, collaborators, predicate, onCha
           sameWidthWithTarget={300}
           target={collaboratorSelectorRef}
           value={value}
-          className="sea-metadata-data-filter-popover"
+          className={classnames('sea-metadata-data-filter-popover', className)}
           placeholder={gettext('Search users')}
           emptyTip={gettext('No users available')}
           collaborators={collaborators}

@@ -10,7 +10,6 @@ import './index.css';
 
 const Options = ({
   isLoading = false,
-  displayOptions = [],
   options = [],
   maxHeight,
   isAsyncSearch,
@@ -42,25 +41,25 @@ const Options = ({
   const onEnter = useCallback((event) => {
     event.preventDefault();
     let option;
-    if (displayOptions.length === 1) {
-      option = displayOptions[0];
+    if (options.length === 1) {
+      option = options[0];
     } else if (highlightIndex > -1) {
-      option = displayOptions[highlightIndex];
+      option = options[highlightIndex];
     }
     if (!option || option.disabled) return;
     onToggleOption(option.value);
-  }, [displayOptions, highlightIndex, onToggleOption]);
+  }, [options, highlightIndex, onToggleOption]);
 
   const getEnabledIndex = useCallback((startIndex, step) => {
     let index = startIndex;
-    while (index >= 0 && index < displayOptions.length) {
-      if (!displayOptions[index].disabled) return index;
+    while (index >= 0 && index < options.length) {
+      if (!options[index].disabled) return index;
       index += step;
     }
     return -1;
-  }, [displayOptions]);
+  }, [options]);
 
-  const displayOptionsLength = displayOptions.length;
+  const displayOptionsLength = options.length;
 
   const onUpArrow = useCallback((event) => {
     event.preventDefault();
@@ -124,23 +123,23 @@ const Options = ({
 
   useEffect(() => {
     setHighlightIndex(defaultHighlightIndex);
-  }, [displayOptions, defaultHighlightIndex]);
+  }, [options, defaultHighlightIndex]);
 
   return (
     <div
-      className={classnames('options-editor-content', { 'empty': displayOptions.length === 0 })}
+      className={classnames('options-editor-content', { 'empty': options.length === 0 })}
       style={{ maxHeight, minHeight: isNumber(optionHeight) ? optionHeight : 20 }}
       ref={optionsRef}
     >
       {isLoading && (
         <CenteredLoading style={{ minHeight: '100px' }} />
       )}
-      {!isLoading && displayOptions.length === 0 && (
-        <Tip isAsyncSearch={isAsyncSearch} height={optionHeight} options={options} searchValue={searchValue} tip={emptyTip}/>
+      {!isLoading && options.length === 0 && (
+        <Tip isAsyncSearch={isAsyncSearch} searchValue={searchValue} tip={emptyTip}/>
       )}
-      {!isLoading && displayOptions.length > 0 && (
+      {!isLoading && options.length > 0 && (
         <>
-          {displayOptions.map((option, i) => {
+          {options.map((option, i) => {
             const isSelected = value && Array.isArray(value) ? value.includes(option.value) : value === option.value;
             return (
               <Option

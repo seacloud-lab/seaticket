@@ -10,6 +10,7 @@
   max-width: 100%;
   overflow: hidden;
   flex-shrink: 0;
+  gap: 4px;
 }
 
 .collaborator .collaborator-avatar,
@@ -27,7 +28,6 @@
 }
 
 .collaborator .collaborator-name {
-  margin-left: 4px;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;

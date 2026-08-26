@@ -1,8 +1,7 @@
 import React, { useMemo } from 'react';
-import OptionsEditorContainer from '../options-editor/sync-options-editor/container';
+import OptionsEditorContainer from '../options-editor/static-options-editor/container';
 import Collaborator from '../collaborator/collaborator';
-
-const RemoveBtn = Collaborator.RemoveBtn;
+import RemoveButton from '../remove-btn';
 
 const Container = ({
   innerRef,
@@ -52,7 +51,7 @@ const Container = ({
           if (!collaborator) return null;
           return (
             <Collaborator key={item} collaborator={collaborator} className="mr-0">
-              <RemoveBtn callback={() => onChange(item)} />
+              <RemoveButton callback={() => onChange(item)} />
             </Collaborator>
           );
         });

@@ -5,16 +5,12 @@
   border-style: solid;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   border-radius: 10px;
-  max-width: 140px;
+  max-width: min(calc(100%), 250px);
   width: fit-content;
   overflow: hidden;
-}
-
-.seaqa-ui-option .seaqa-ui-option-name {
-  font-size: 13px;
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  padding: 0 8px;
+  gap: 4px;
+  flex-shrink: 0;
 }

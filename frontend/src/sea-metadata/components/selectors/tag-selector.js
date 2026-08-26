@@ -1,15 +1,15 @@
 import React, { useMemo } from 'react';
-import { CustomizePopover } from '@/components';
+import classnames from 'classnames';
+import { OptionsEditor, RemoveButton } from '@/components';
 import { useTagsData } from '@/sea-metadata/hooks';
 import { getTagsOptions } from '@/sea-metadata/utils/column';
 import Tag from '@/sea-metadata/components/tag';
 import { getRowById } from '@/sea-metadata/utils/row';
 import { gettext } from '@/constants';
-import Container from '@/components/options-editor/sync-options-editor/container';
-import RemoveBtn from '@/sea-metadata/components/tag/remove-btn';
 
 const TagSelector = ({
   isMultiple = true,
+  className,
   value,
   target,
   modifiers = [
@@ -32,36 +32,32 @@ const TagSelector = ({
   }, [tagsData]);
 
   return (
-    <CustomizePopover
+    <OptionsEditor
+      className={classnames('sea-metadata-data-filter-popover', className)}
       target={target}
-      className="options-editor-popover sea-metadata-data-filter-popover"
       modifiers={modifiers}
       sameWidthWithTarget={300}
-      hidePopover={onToggle}
-      hidePopoverWithEsc={onToggle}
+      onToggle={onToggle}
+      isMultiple={isMultiple}
+      placeholder={gettext('Search tags')}
+      emptyTip={gettext('No tags available')}
+      value={Array.isArray(value) ? value.map(v => String(v)) : []}
+      options={options}
+      onChange={onChange}
     >
-      <Container
-        isMultiple={isMultiple}
-        placeholder={gettext('Search tags')}
-        emptyTip={gettext('No tags available')}
-        value={Array.isArray(value) ? value.map(v => String(v)) : []}
-        options={options}
-        onChange={onChange}
-      >
-        {({ value: selectedTagIds, onChange }) => {
-          if (!Array.isArray(selectedTagIds) || selectedTagIds.length === 0) return null;
-          return selectedTagIds.map(tagId => {
-            const tag = getRowById(tagsData, tagId);
-            if (!tag) return null;
-            return (
-              <Tag tag={tag} key={tagId} className="mr-0">
-                <RemoveBtn callback={() => onChange(tagId)} />
-              </Tag>
-            );
-          });
-        }}
-      </Container>
-    </CustomizePopover>
+      {({ value: selectedTagIds, onChange }) => {
+        if (!Array.isArray(selectedTagIds) || selectedTagIds.length === 0) return null;
+        return selectedTagIds.map(tagId => {
+          const tag = getRowById(tagsData, tagId);
+          if (!tag) return null;
+          return (
+            <Tag tag={tag} key={tagId} className="mr-0">
+              <RemoveButton callback={() => onChange(tagId)} />
+            </Tag>
+          );
+        });
+      }}
+    </OptionsEditor>
   );
 };
 

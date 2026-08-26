@@ -282,6 +282,7 @@ class FilterItem extends React.Component {
         return (
           <CollaboratorSelector
             readOnly={readOnly}
+            className="border-radius-4"
             value={filter_term || []}
             predicate={filter_predicate}
             collaborators={creators}
@@ -313,6 +314,7 @@ class FilterItem extends React.Component {
         const options = type === CellType.SINGLE_SELECT ? getSelectColumnOptions(filterColumn) : getTypesOptions(typesData);
         return (
           <OptionSelector
+            className="border-radius-4"
             readOnly={readOnly}
             value={filter_term}
             predicate={filter_predicate}
@@ -328,6 +330,7 @@ class FilterItem extends React.Component {
         return (
           <CollaboratorSelector
             readOnly={readOnly}
+            className="border-radius-4"
             value={filter_term || []}
             predicate={filter_predicate}
             collaborators={allCollaborators}
@@ -341,6 +344,7 @@ class FilterItem extends React.Component {
         return (
           <OptionSelector
             readOnly={readOnly}
+            className="border-radius-4"
             value={filter_term}
             predicate={filter_predicate}
             options={options}
@@ -353,6 +357,7 @@ class FilterItem extends React.Component {
         return (
           <TagsFilter
             readOnly={readOnly}
+            className="border-radius-4"
             value={filter_term}
             predicate={filter_predicate}
             onChange={this.onFilterTermChanged}
@@ -364,6 +369,7 @@ class FilterItem extends React.Component {
       case CellType.PRIORITY: {
         return (
           <PrioritySelector
+            className="border-radius-4"
             readOnly={readOnly}
             value={Number(filter_term) || 0}
             onChange={this.onFilterTermChanged}

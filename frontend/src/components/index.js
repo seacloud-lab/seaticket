@@ -64,6 +64,7 @@ import CopyInput from './copy-input';
 import ImagePreviewer from './image-previewer';
 import IconPopoverTip from './icon-popover-tip';
 import LanguageSelect from './language-select';
+import RemoveButton from './remove-btn';
 
 export {
   FixedWidthTable,
@@ -135,4 +136,5 @@ export {
   ImagePreviewer,
   IconPopoverTip,
   LanguageSelect,
+  RemoveButton,
 };

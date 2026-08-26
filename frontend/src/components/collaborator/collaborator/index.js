@@ -1,6 +1,5 @@
 import React from 'react';
 import classnames from 'classnames';
-import RemoveBtn from '../remove-btn';
 
 import './index.css';
 
@@ -21,9 +20,4 @@ const Collaborator = ({ collaborator, className, children }) => {
   );
 };
 
-Collaborator.RemoveBtn = RemoveBtn;
-
 export default Collaborator;
-export {
-  RemoveBtn,
-};

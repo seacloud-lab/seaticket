@@ -2,14 +2,14 @@ import React, { forwardRef, useMemo, useImperativeHandle, useCallback, useRef, u
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import context from '@/sea-metadata/context';
-import Container from '@/components/options-editor/sync-options-editor/container';
+import Container from '@/components/options-editor/static-options-editor/container';
 import { gettext } from '@/constants';
 import { SELECT_OPTION_COLORS } from '../../../constants';
 import { useTagsData } from '../../../hooks';
 import { isCellValueChanged } from '@/sea-metadata/utils/cell';
 import { getRowById } from '@/sea-metadata/utils/row';
 import Tag from '@/sea-metadata/components/tag';
-import RemoveBtn from '@/sea-metadata/components/tag/remove-btn';
+import { RemoveButton } from '@/components';
 
 import './index.css';
 
@@ -119,7 +119,7 @@ const TagsEditor = forwardRef(({
             if (!tag) return null;
             return (
               <Tag tag={tag} key={tagId} className="mr-0">
-                <RemoveBtn callback={() => onChange(tagId)} />
+                <RemoveButton callback={() => onChange(tagId)} />
               </Tag>
             );
           });

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
+import classnames from 'classnames';
 import { PriorityEditor } from '@/components';
 import { PRIORITIES } from '@/sea-metadata/constants';
 import PriorityFormatter from '@/sea-metadata/components/cell-formatter/priority';
@@ -6,6 +7,7 @@ import SelectTrigger from '@/components/customize-select/select-trigger';
 
 const PrioritySelector = ({
   readOnly,
+  className,
   value,
   onChange,
 }) => {
@@ -36,7 +38,7 @@ const PrioritySelector = ({
       />
       {!readOnly && isShowEditor && (
         <PriorityEditor
-          className="sea-metadata-data-filter-popover"
+          className={classnames('sea-metadata-data-filter-popover', className)}
           target={prioritySelectorRef}
           priorities={PRIORITIES}
           value={value}

@@ -5,11 +5,12 @@ import Option from './option';
 import SearchInput from '../../search-input';
 import { KeyCodes } from '@/constants/keyCodes';
 import ClickOutside from '../../click-outside';
-import Tip from '../../options-editor/tip';
+import EmptyTip from '@/components/empty-tip';
 import { isNumber, isString } from '@/utils/type-detection';
 import { searchOptions } from '@/utils/search';
 
 import './index.css';
+import { gettext } from '@/constants';
 
 const OPTION_HEIGHT = 32;
 const INDENT = 4;
@@ -66,14 +67,12 @@ class Options extends Component {
       return;
     }
     if (height + top > window.innerHeight) {
-      const borderWidth = 2;
-      this.optionGroupRef.style.top = -1 * (height + borderWidth + offset[1]) + 'px';
+      const { height: parentNodeHeight, top: parentNodeTop } = this.optionGroupRef.parentNode.getBoundingClientRect();
+      this.optionGroupRef.style.top = 'unset';
+      this.optionGroupRef.style.bottom = parentNodeHeight + offset[1] + 'px';
       setTimeout(() => {
         const { top } = this.optionGroupRef.getBoundingClientRect();
         if (top < 0) {
-          const { height: parentNodeHeight, top: parentNodeTop } = this.optionGroupRef.parentNode.getBoundingClientRect();
-          this.optionGroupRef.style.top = 'unset';
-          this.optionGroupRef.style.bottom = parentNodeHeight + offset[1] + 'px';
           this.optionGroupRef.style.maxHeight = parentNodeTop - offset[1] - 10 + 'px';
         }
       }, 1);
@@ -164,7 +163,9 @@ class Options extends Component {
     const { noOptionsPlaceholder, onChange, value, supportMultipleSelect, options } = this.props;
     this.filterOptions = searchOptions(options, searchVal);
     if (this.filterOptions.length === 0) {
-      return (<Tip height={OPTION_HEIGHT} searchValue={searchVal} tip={noOptionsPlaceholder} />);
+      return (
+        <EmptyTip text={searchVal ? noOptionsPlaceholder : gettext('No results')} className="seaqa-customize-select-empty-tip" />
+      );
     }
     return this.filterOptions.map((opt, i) => {
       const key = opt.value.column ? opt.value.column.key : i;
@@ -215,7 +216,7 @@ class Options extends Component {
       <ClickOutside onClickOutside={this.props.onClickOutside}>
         <div
           className={classnames('seaqa-select-options-container', className, { 'searchable': searchable })}
-          ref={(ref) => this.optionGroupRef = ref}
+          ref={ref => this.optionGroupRef = ref}
           style={style}
           onMouseDown={this.onMouseDown}
         >

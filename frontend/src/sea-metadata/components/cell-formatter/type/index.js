@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import SelectOption from '../select-option';
+import { Option } from '@/components';
 import { useTypesData } from '@/sea-metadata/hooks';
 import { getRowById } from '@/sea-metadata/utils/row';
 
@@ -18,7 +18,7 @@ const TypeFormatter = ({ value, fontSize, className, children: emptyFormatter })
 
   return (
     <div className={classnames('sea-metadata-ui cell-formatter-container single-select-formatter type-formatter', className)}>
-      <SelectOption option={option} fontSize={fontSize} />
+      <Option option={option} fontSize={fontSize} />
     </div>
   );
 };

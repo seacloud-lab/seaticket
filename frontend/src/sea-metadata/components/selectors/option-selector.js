@@ -1,9 +1,9 @@
 import React, { useMemo, useState, useRef, useCallback } from 'react';
+import classnames from 'classnames';
 import {
   DELETED_OPTION_BACKGROUND_COLOR, DELETED_OPTION_TIPS,
 } from '../../constants';
-import { OptionsEditor } from '@/components';
-import SelectOption from '@/sea-metadata/components/cell-formatter/select-option';
+import { OptionsEditor, RemoveButton, Option } from '@/components';
 import { getOption } from '@/sea-metadata/utils/column';
 import { gettext } from '@/constants';
 import SelectTrigger from '@/components/customize-select/select-trigger';
@@ -11,9 +11,10 @@ import { isFilterTermArray } from '@/sea-metadata/utils/filter';
 
 const OptionSelector = ({
   readOnly,
+  className,
   column,
   value: filterTerm,
-  options,
+  options = [],
   predicate,
   onChange,
 }) => {
@@ -21,23 +22,25 @@ const OptionSelector = ({
 
   const optionSelectorRef = useRef(null);
 
-  const isMultiple = useMemo(() => {
-    return isFilterTermArray(column, predicate);
-  }, [column, predicate]);
+  const isMultiple = useMemo(() => isFilterTermArray(column, predicate), [column, predicate]);
 
   const valueForSelectOptions = useMemo(() => {
     if (Array.isArray(filterTerm)) return filterTerm;
     return filterTerm ? [filterTerm] : [];
   }, [filterTerm]);
 
-  const optionsForSelector = useMemo(() => {
+  const validOptions = useMemo(() => {
     if (!Array.isArray(options) || options.length === 0) return [];
-    return options.map(option => ({
+    return options;
+  }, [options]);
+
+  const optionsForSelector = useMemo(() => {
+    return validOptions.map(option => ({
       value: option.id,
       name: option.name,
-      label: (<SelectOption option={option} className="single-select-option ml-0" />),
+      label: (<Option option={option} />),
     }));
-  }, [options]);
+  }, [validOptions]);
 
   const openEditor = useCallback(() => {
     if (readOnly) return;
@@ -54,7 +57,7 @@ const OptionSelector = ({
         <span className="selected-option-show">
           {valueForSelectOptions.map(item => {
             const option = getOption(options, item) || { color: DELETED_OPTION_BACKGROUND_COLOR, name: DELETED_OPTION_TIPS };
-            return (<SelectOption key={item} option={option} />);
+            return (<Option key={item} option={option} />);
           })}
         </span>
       ) : (
@@ -74,7 +77,7 @@ const OptionSelector = ({
       />
       {isShowEditor && (
         <OptionsEditor
-          className="sea-metadata-data-filter-popover"
+          className={classnames('sea-metadata-data-filter-popover', className)}
           value={filterTerm}
           isMultiple={isMultiple}
           target={optionSelectorRef}
@@ -84,7 +87,20 @@ const OptionSelector = ({
           sameWidthWithTarget={300}
           onChange={onChange}
           onToggle={closeEditor}
-        />
+        >
+          {isMultiple ? ({ value, onChange }) => {
+            if (value.length === 0) return null;
+            return value.map(item => {
+              const option = validOptions.find(c => c.id === item);
+              if (!option) return null;
+              return (
+                <Option option={option}>
+                  <RemoveButton callback={() => onChange(item)} size={10} iconStyle={{ color: option.text_color }} />
+                </Option>
+              );
+            });
+          } : null}
+        </OptionsEditor>
       )}
     </>
   );

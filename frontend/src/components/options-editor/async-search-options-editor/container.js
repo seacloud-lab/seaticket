@@ -8,7 +8,7 @@ import toaster from '../../toaster';
 import Options from '../options';
 import { getSearchValueLength } from '@/utils/search';
 
-import '../sync-options-editor/container/index.css';
+import '../static-options-editor/container/index.css';
 
 const Container = forwardRef(({
   isMultiple = false,
@@ -138,7 +138,6 @@ const Container = forwardRef(({
         isLoading={isLoading}
         isAsyncSearch={true}
         displayOptions={options}
-        options={options}
         maxHeight={maxHeight - 26} // 26: padding-top(12) + padding-bottom(12) + border(2)
         isSearchEnabled={true}
         searchValue={searchValue}

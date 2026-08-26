@@ -1,7 +1,7 @@
 import React, { forwardRef, useMemo, useImperativeHandle, useCallback, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { getTypesOptions } from '../../../utils/column';
-import Container from '@/components/options-editor/sync-options-editor/container';
+import Container from '@/components/options-editor/static-options-editor/container';
 import { useTypesData } from '../../../hooks';
 import { gettext } from '@/constants';
 

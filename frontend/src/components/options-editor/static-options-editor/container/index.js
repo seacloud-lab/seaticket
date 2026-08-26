@@ -138,8 +138,7 @@ const Container = forwardRef(({
         </div>
       )}
       <Options
-        displayOptions={displayOptions}
-        options={options}
+        options={displayOptions}
         maxHeight={validMaxHeight}
         isAsyncSearch={isAsyncSearch}
         isSearchEnabled={isSearchEnabled}

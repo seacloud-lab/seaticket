@@ -89,7 +89,7 @@ const AttachmentsSelector = ({
       {canAddSources && isShowSelector && (
         <OptionsEditor
           className="seaqa-ai-chat-selector-display-editor"
-          isAsync={true}
+          isAsyncSearch={true}
           target={ref}
           isMultiple={true}
           placeholder={gettext('Search')}

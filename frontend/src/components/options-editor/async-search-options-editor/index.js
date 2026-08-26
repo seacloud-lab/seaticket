@@ -4,34 +4,22 @@ import CustomizePopover from '../../customize-popover';
 import Container from './container';
 import { areArraysEqual } from '@/utils/array-utils';
 
-const SyncOptionsEditor = ({
-  id,
+const AsyncSearchOptionsEditor = ({
   target,
-  isCloseSubmit = false,
   isMultiple = false,
-  isAsyncSearch = false,
-  isSearchEnabled = true,
-  sameWidthWithTarget = false,
+  isCloseSubmit = false,
+  placement,
   checkPlacement = 'right',
   optionClassName = '',
   contentClassName = '',
   placeholder,
-  placement,
   emptyTip,
   value,
+  children,
   className,
-  options = [],
-  optionHeight,
-  modifiers = [
-    { name: 'preventOverflow', options: { boundary: document.body } },
-    { name: 'offset', options: { offset: [0, 4] } }
-  ],
   onChange,
   onToggle,
-  onCreate,
-  defaultHighlightIndex,
-  isShowSearchIcon = false,
-  searchHeight,
+  onSearch,
 }) => {
   const containerRef = useRef(null);
 
@@ -57,35 +45,27 @@ const SyncOptionsEditor = ({
     <CustomizePopover
       target={target}
       className={classnames('options-editor-popover', className)}
-      placement={placement}
-      modifiers={modifiers}
-      sameWidthWithTarget={sameWidthWithTarget}
       hidePopover={handleClose}
       hidePopoverWithEsc={handleClose}
+      placement={placement}
     >
       <Container
-        id={id}
         ref={containerRef}
         isMultiple={isMultiple}
         placeholder={placeholder}
-        isAsyncSearch={isAsyncSearch}
-        isSearchEnabled={isSearchEnabled}
+        emptyTip={emptyTip}
+        value={value}
         checkPlacement={checkPlacement}
         optionClassName={optionClassName}
         className={contentClassName}
-        emptyTip={emptyTip}
-        value={value}
-        options={options}
-        optionHeight={optionHeight}
         onChange={isCloseSubmit ? () => {} : onChange}
         onToggle={onToggle}
-        onCreate={onCreate}
-        defaultHighlightIndex={defaultHighlightIndex}
-        isShowSearchIcon={isShowSearchIcon}
-        searchHeight={searchHeight}
-      />
+        onSearch={onSearch}
+      >
+        {children}
+      </Container>
     </CustomizePopover>
   );
 };
 
-export default SyncOptionsEditor;
+export default AsyncSearchOptionsEditor;

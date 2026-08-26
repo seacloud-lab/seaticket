@@ -110,9 +110,8 @@ class SortPopover extends Component {
     this.updateSorts(newSorts);
   };
 
-  onSelectSortType = (value, index) => {
+  onSelectSortType = (newSortType, index) => {
     const sorts = this.state.sorts.slice(0);
-    const newSortType = value.sortType;
     if (newSortType === sorts[index].sort_type) {
       return;
     }

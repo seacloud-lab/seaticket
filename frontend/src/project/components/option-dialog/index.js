@@ -1,12 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Modal, ModalBody, ModalFooter, Button, FormGroup, Label, Input, Alert } from 'reactstrap';
 import classnames from 'classnames';
-import { ColorSelectorPopover, CustomizeSelect, IconButton, ModalHeader } from '@/components';
+import { ColorSelectorPopover, CustomizeSelect, IconButton, ModalHeader, Option } from '@/components';
 import { gettext, SELECT_OPTION_COLORS } from '@/constants';
-import Option from '../option';
 import { validateName } from '@/utils/validate';
 import { isHexColor, isDarkColor } from '@/utils/color-utils';
-import SelectOption from '@/sea-metadata/components/cell-formatter/select-option';
 import ObjectUtils from '@/utils/object-utils';
 
 import './index.css';
@@ -42,7 +40,7 @@ const OptionDialog = ({
         value: option._id,
         name: option.display_name || option.name,
         label: (
-          <SelectOption option={option} className="single-select-option ml-0" />
+          <Option option={option} />
         ),
       };
     });

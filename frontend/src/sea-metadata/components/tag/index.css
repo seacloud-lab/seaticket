@@ -11,6 +11,7 @@
   padding: 0 8px 0 4px;
   max-width: 100%;
   overflow: hidden;
+  gap: 4px;
 }
 
 .sea-metadata-tag .sea-metadata-tag-text {
@@ -26,7 +27,6 @@
   display: inline-block;
   width: 16px;
   height: 16px;
-  margin-right: -6px;
   border-radius: 50%;
   flex-shrink: 0;
   border: 2px solid #fff;

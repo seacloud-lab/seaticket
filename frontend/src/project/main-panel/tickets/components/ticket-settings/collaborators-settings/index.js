@@ -1,7 +1,7 @@
 import React, { useCallback, useRef, useState, useEffect } from 'react';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
-import { Collaborator, AsyncCollaborator, CollaboratorEditor, CustomizeLabel } from '@/components';
+import { Collaborator, AsyncCollaborator, CollaboratorEditor, CustomizeLabel, RemoveButton } from '@/components';
 import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { isEsc, isA } from '@/utils/hotkey';
 
@@ -90,7 +90,7 @@ const CollaboratorsSettings = ({
             return (
               <CollaboratorComponent key={email} value={email} collaborator={collaborator} { ...CollaboratorComponentProps }>
                 {!isReadonly && (
-                  <Collaborator.RemoveBtn callback={(event) => deleteAssignee(event, assignee)}/>
+                  <RemoveButton callback={(event) => deleteAssignee(event, assignee)}/>
                 )}
               </CollaboratorComponent>
             );
