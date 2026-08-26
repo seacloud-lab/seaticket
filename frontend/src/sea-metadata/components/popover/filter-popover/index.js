@@ -68,8 +68,9 @@ class FilterPopover extends Component {
     const { readOnly, columns } = this.props;
     const { filters, filterConjunction, basicFilters } = this.state;
     const isChanged = !ObjectUtils.isSameObject(this.initData, {
-      ...this.state,
-      filters: getValidFilters(filters, columns)
+      basicFilters,
+      filters: getValidFilters(filters, columns),
+      filterConjunction,
     });
     if (!readOnly && isChanged) {
       const update = { filters, filter_conjunction: filterConjunction, basic_filters: basicFilters };
