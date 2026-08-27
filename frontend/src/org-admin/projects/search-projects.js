@@ -64,8 +64,8 @@ const SearchProjects = ({ onCloseSidePanel }) => {
             { name: 'ID', key: 'uuid', width: 0.28 },
             { name: gettext('Owner'), key: 'owner', width: 0.2 },
             { name: gettext('Issues'), key: 'issues_count', width: 0.1 },
+            { name: gettext('Storage'), key: 'storage_usage', type: 'storage', width: 0.1 },
             { name: gettext('Created at'), key: 'created_at', type: 'date', width: 0.16 },
-            { name: '', key: 'placeholder', width: 0.1 },
             { name: '', key: 'op', width: 44, isFixed: true }
           ]}
           api={(page, perPage) => onSearch(searchValue, page, perPage)}

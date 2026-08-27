@@ -282,8 +282,11 @@ class OrgAdminSearchProjectsView(APIView):
         project_uuids = [str(p.uuid) for p in projects_queryset]
         stats = ProjectIssuesStatistics.objects.filter(project_uuid__in=project_uuids)
         issues_stats_dict = {str(s.project_uuid): s.total_issues_count for s in stats}
+        storage_stats = ProjectStorageStatistics.objects.filter(project_uuid__in=project_uuids)
+        storage_stats_dict = {str(s.project_uuid): s for s in storage_stats}
 
         return Response({
-            'projects': [_get_project_info(project, include_deleted=False, issues_stats_dict=issues_stats_dict) for project in projects_queryset],
+            'projects': [_get_project_info(project, include_deleted=False, issues_stats_dict=issues_stats_dict,
+                                           storage_stats_dict=storage_stats_dict) for project in projects_queryset],
             'count': projects_count
         })
