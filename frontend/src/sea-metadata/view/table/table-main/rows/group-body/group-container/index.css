@@ -217,6 +217,12 @@
   margin-right: 0;
 }
 
+.canvas-groups-rows .group-title .group-cell-value .collaborators-formatter {
+  padding: 0;
+  margin: 0;
+  min-height: fit-content;
+}
+
 .canvas-groups-rows .collaborator-avatar,
 .canvas-groups-rows .sea-metadata-ui.collaborator-item .collaborator-avatar {
   height: 16px;
