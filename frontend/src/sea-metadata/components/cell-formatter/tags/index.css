@@ -21,7 +21,7 @@
 .sea-metadata-ui.tags-formatter .sea-metadata-tags-operation-add-btn .seaqa-icon-svg-add-table {
   height: 12px;
   width: 12px;
-  color: #212519;
+  color: var(--bs-body-color);
 }
 
 .sea-metadata-ui.tags-formatter .sea-metadata-ui-tags-container {
