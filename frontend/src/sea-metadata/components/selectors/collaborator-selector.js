@@ -62,7 +62,6 @@ const CollaboratorSelector = ({
   }, [column]);
 
   const selectedCollaboratorEmails = useMemo(() => {
-    console.log(isMultiple);
     if (isMultiple) {
       return Array.isArray(value) ? value.map(item => `${item}`).filter(Boolean) : [];
     }
