@@ -142,6 +142,7 @@ const StatusToggleButton = ({
         <OptionsEditor
           target={downBtn}
           className="seaqa-project-ticket-state-toggle-popover"
+          isSearchEnabled={false}
           value={`${state}--${substate}`}
           options={options}
           onToggle={closePopover}

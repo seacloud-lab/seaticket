@@ -5,10 +5,6 @@
   min-height: 118px;
 }
 
-.seaqa-project-ticket-state-toggle-popover .options-editor-search-wrapper {
-  display: none;
-}
-
 .seaqa-project-ticket-state-toggle-popover.options-editor-popover .options-editor-content .options-editor-option {
   height: fit-content;
   align-items: flex-start;
