@@ -9,7 +9,6 @@ const CollaboratorEditor = ({
   target,
   className,
   placement,
-  isShowDeleteArea = true,
   isSearchEnabled = true,
   isMultiple = true,
   isCloseSubmit = false,
@@ -59,14 +58,13 @@ const CollaboratorEditor = ({
       <Container
         id={id}
         innerRef={containerRef}
-        isShowDeleteArea={isShowDeleteArea}
         isMultiple={isMultiple}
         placeholder={placeholder}
         isSearchEnabled={isSearchEnabled}
         emptyTip={emptyTip}
         collaborators={collaborators}
         value={value}
-        onChange={isCloseSubmit && !isMultiple ? () => {} : onChange}
+        onChange={isCloseSubmit && isMultiple ? () => {} : onChange}
         onToggle={onToggle}
         { ...props }
       />

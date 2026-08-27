@@ -17,43 +17,42 @@ const CollaboratorsSettings = ({
   useCollaborators,
   onChange,
 }) => {
-  const [isShowAssigneesEditor, setIsShowAssigneesEditor] = useState(false);
+  const [isShowEditor, setIsShowEditor] = useState(false);
 
   const assigneesRef = useRef(null);
 
   const { collaborators, collaboratorsCache, updateCollaboratorsCache, queryUser } = useCollaborators();
 
-  const deleteAssignee = useCallback((event, email) => {
+  const deleteCollaborator = useCallback((event, email) => {
     event.stopPropagation();
     event.nativeEvent.stopImmediatePropagation();
     const newValue = value.filter(i => i !== email);
     onChange(newValue);
   }, [value, onChange]);
 
-  const onAssigneesChange = useCallback((assignees) => {
+  const onCollaboratorsChange = useCallback((assignees) => {
     onChange(assignees);
-    setIsShowAssigneesEditor(false);
   }, [onChange]);
 
-  const openAssigneesEditor = useCallback((event) => {
+  const openEditor = useCallback((event) => {
     if (isReadonly) return;
     event.preventDefault();
     event.stopPropagation();
-    setIsShowAssigneesEditor(true);
+    setIsShowEditor(true);
   }, [isReadonly]);
 
-  const closeAssigneesEditor = useCallback(() => {
-    setIsShowAssigneesEditor(false);
+  const closeEditor = useCallback(() => {
+    setIsShowEditor(false);
   }, []);
 
   const onHotKey = useCallback((event) => {
     if (isInputOrEditorActive() || isActiveOtherPopover('assignees-editor-popover')) return;
     if (isA(event)) {
-      openAssigneesEditor(event);
+      openEditor(event);
     } else if (isEsc(event)) {
-      closeAssigneesEditor();
+      closeEditor();
     }
-  }, [openAssigneesEditor, closeAssigneesEditor]);
+  }, [openEditor, closeEditor]);
 
   useEffect(() => {
     document.addEventListener('keydown', onHotKey);
@@ -79,7 +78,7 @@ const CollaboratorsSettings = ({
         </CustomizeLabel>
         <div
           className={classnames('collaborators-formatter', { 'valid': value.length > 0 })}
-          onClick={openAssigneesEditor}
+          onClick={openEditor}
           ref={assigneesRef}
         >
           {value.length > 0 ? value.map(assignee => {
@@ -90,14 +89,14 @@ const CollaboratorsSettings = ({
             return (
               <CollaboratorComponent key={email} value={email} collaborator={collaborator} { ...CollaboratorComponentProps }>
                 {!isReadonly && (
-                  <RemoveButton callback={(event) => deleteAssignee(event, assignee)}/>
+                  <RemoveButton callback={(event) => deleteCollaborator(event, assignee)}/>
                 )}
               </CollaboratorComponent>
             );
           }) : (<div className="seaqa-tip-default">{tip}</div>)}
         </div>
       </div>
-      {!isReadonly && isShowAssigneesEditor && (
+      {!isReadonly && isShowEditor && (
         <CollaboratorEditor
           id={id}
           isCloseSubmit={true}
@@ -108,8 +107,8 @@ const CollaboratorsSettings = ({
           placeholder={gettext('Search users')}
           emptyTip={gettext('No users available')}
           collaborators={collaborators}
-          onChange={onAssigneesChange}
-          onClose={closeAssigneesEditor}
+          onChange={onCollaboratorsChange}
+          onClose={closeEditor}
         />
       )}
     </>

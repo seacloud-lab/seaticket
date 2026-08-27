@@ -42,7 +42,16 @@ const getCollaboratorSelectorText = (filterColumnName, key) => {
   return textMap[key];
 };
 
-const CollaboratorSelector = ({ readOnly, className, value, collaborators, predicate, column, onChange }) => {
+const CollaboratorSelector = ({
+  readOnly,
+  isCloseSubmit = true,
+  className,
+  value,
+  collaborators,
+  predicate,
+  column,
+  onChange,
+}) => {
   const [isShowEditor, setIsShowEditor] = useState(false);
   const collaboratorSelectorRef = useRef(null);
 
@@ -106,6 +115,7 @@ const CollaboratorSelector = ({ readOnly, className, value, collaborators, predi
           emptyTip={gettext('No users available')}
           collaborators={collaborators}
           isMultiple={isMultiple}
+          isCloseSubmit={isCloseSubmit}
           onChange={onChange}
           onClose={closeEditor}
         />

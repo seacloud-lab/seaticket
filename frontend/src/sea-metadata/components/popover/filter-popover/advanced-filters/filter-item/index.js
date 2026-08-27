@@ -276,18 +276,21 @@ class FilterItem extends React.Component {
       }
       case CellType.CREATOR:
       case CellType.LAST_MODIFIER: {
-        if (filter_predicate === FILTER_PREDICATE_TYPE.INCLUDE_ME) {
-          return null;
-        }
-        const creators = collaborators;
+        if (filter_predicate === FILTER_PREDICATE_TYPE.INCLUDE_ME) return null;
+        const isMultiple = ![FILTER_PREDICATE_TYPE.IS, FILTER_PREDICATE_TYPE.IS_NOT].includes(filter_predicate);
+        const value = isMultiple ? (filter_term || []) : Array.isArray(filter_term) ? filter_term[0] || '' : '';
         return (
           <CollaboratorSelector
             readOnly={readOnly}
             className="border-radius-4"
-            value={filter_term || []}
+            value={value}
             predicate={filter_predicate}
-            collaborators={creators}
-            onChange={this.onFilterTermChanged}
+            collaborators={collaborators}
+            isCloseSubmit={isMultiple}
+            onChange={(value) => {
+              const newValue = isMultiple ? value : value ? [value] : [];
+              this.onFilterTermChanged(newValue);
+            }}
             column={filterColumn}
           />
         );
