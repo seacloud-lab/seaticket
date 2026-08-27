@@ -96,6 +96,14 @@ export const getSuggestionTitle = (action) => {
       return gettext('Send a reply to the linked external record');
     case 'suggest_create_ticket':
       return gettext('Create an internal ticket from this record');
+    case 'suggest_link_existing_ticket': {
+      const relatedTicket = Number(payload.related_ticket);
+      if (Number.isInteger(relatedTicket) && relatedTicket > 0) {
+        return gettext('Link this record to an existing internal ticket #%(ticket)s')
+          .replace('%(ticket)s', String(relatedTicket));
+      }
+      return gettext('Link this record to an existing internal ticket');
+    }
     case 'suggest_modify_type': {
       const currentType = typeof payload.current_issue_type === 'string' ? payload.current_issue_type.trim() : '';
       const suggestedType = typeof payload.suggested_type === 'string' ? payload.suggested_type.trim() : '';
