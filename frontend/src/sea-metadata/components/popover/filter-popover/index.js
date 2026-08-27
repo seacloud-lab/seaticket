@@ -39,29 +39,23 @@ class FilterPopover extends Component {
       basicFilters: initData.basicFilters,
       filters: initData.filters,
       filterConjunction: initData.filterConjunction,
-      shouldScroll: false,
     };
     this.isSelectOpen = false;
+    this.popoverInnerRef = null;
+    this.filtersContainerRef = null;
   }
 
   componentDidMount() {
-    this.popoverRef && this.popoverRef.click();
+    this.popoverInnerRef && this.popoverInnerRef.click();
     document.addEventListener('click', this.hidePopoverByClick, true);
     document.addEventListener('keydown', this.onHotKey);
     this.unsubscribeOpenSelect = context.eventBus.subscribe(EVENT_BUS_TYPE.OPEN_SELECT, this.setSelectStatus);
-    window.addEventListener('resize', this.syncPopoverScrollState);
-    window.requestAnimationFrame(this.syncPopoverScrollState);
   }
 
   componentWillUnmount() {
     document.removeEventListener('click', this.hidePopoverByClick, true);
     document.removeEventListener('keydown', this.onHotKey);
-    window.removeEventListener('resize', this.syncPopoverScrollState);
     this.unsubscribeOpenSelect();
-  }
-
-  componentDidUpdate() {
-    this.syncPopoverScrollState();
   }
 
   onClosePopover = () => {
@@ -91,7 +85,7 @@ class FilterPopover extends Component {
 
   hidePopoverByClick = (e) => {
     if (document.getElementsByClassName('sea-metadata-data-filter-popover').length > 0) return;
-    if (this.popoverRef && !getEventClassName(e).includes('popover') && !this.popoverRef.contains(e.target)) {
+    if (this.popoverInnerRef && !getEventClassName(e).includes('popover') && !this.popoverInnerRef.contains(e.target)) {
       e.preventDefault();
       e.stopPropagation();
       this.onClosePopover();
@@ -99,8 +93,12 @@ class FilterPopover extends Component {
     }
   };
 
-  update = (filters) => {
-    this.setState({ filters });
+  update = (filters, isAddFilter = false) => {
+    this.setState({ filters }, () => {
+      if (!isAddFilter) return;
+      if (!this.filtersContainerRef) return;
+      this.filtersContainerRef.scrollTo({ top: this.filtersContainerRef.scrollHeight, behavior: 'smooth' });
+    });
   };
 
   deleteFilter = (filterIndex, scheduleUpdate) => {
@@ -135,7 +133,7 @@ class FilterPopover extends Component {
       scheduleUpdate();
     }
     filters.push(filter);
-    this.update(filters);
+    this.update(filters, true);
   };
 
   onPopoverInsideClick = (e) => {
@@ -146,24 +144,12 @@ class FilterPopover extends Component {
     this.setState({ basicFilters: value });
   };
 
-  syncPopoverScrollState = () => {
-    if (!this.popoverRef) return;
-
-    const availableHeight = window.innerHeight - 100;
-    const shouldScroll = this.popoverRef.scrollHeight > availableHeight;
-
-    if (shouldScroll !== this.state.shouldScroll) {
-      this.setState({ shouldScroll });
-    }
-  };
-
   render() {
-    const { readOnly, target, columns, placement = 'auto-start', viewType, filtersClassName = '' } = this.props;
-    const { filters, filterConjunction, basicFilters, shouldScroll } = this.state;
+    const { readOnly, target, columns, placement = 'auto-start', viewType } = this.props;
+    const { filters, filterConjunction, basicFilters } = this.state;
     const canAddFilter = columns.length > 0;
     const advancedFilterColumns = columns.filter(c => !basicFilters.find(basicFilter => basicFilter.column_key === c.key));
     const isValidBasicFilters = basicFilters.length > 0;
-    const popoverStyle = shouldScroll ? { maxHeight: 'calc(100vh - 100px)', overflowY: 'auto' } : { overflowY: 'visible' };
 
     return (
       <UncontrolledPopover
@@ -172,36 +158,42 @@ class FilterPopover extends Component {
         target={target}
         fade={false}
         hideArrow={true}
-        className="sea-metadata-filter-popover"
+        className={classnames('sea-metadata-filter-popover', { 'disabled': readOnly })}
         boundariesElement={document.body}
       >
         {({ update: scheduleUpdate }) => (
-          <div ref={ref => this.popoverRef = ref} onClick={this.onPopoverInsideClick} className={filtersClassName} style={popoverStyle}>
-            {isValidBasicFilters && (
-              <BasicFilters readOnly={readOnly} columns={columns} filters={basicFilters} onChange={this.onBasicFilterChange} viewType={viewType}/>
-            )}
-            <FormGroup className="filter-group-advanced filter-group px-4 mb-0">
+          <div
+            ref={ref => this.popoverInnerRef = ref}
+            onClick={this.onPopoverInsideClick}
+            className="sea-metadata-filters"
+          >
+            <div className="sea-metadata-filters-container" ref={ref => this.filtersContainerRef = ref}>
               {isValidBasicFilters && (
-                <Label className="filter-group-name mb-3">{gettext('Advanced')}</Label>
+                <BasicFilters readOnly={readOnly} columns={columns} filters={basicFilters} onChange={this.onBasicFilterChange} viewType={viewType}/>
               )}
-              <div className={classnames('filter-group-container', { 'pt-4': !isValidBasicFilters })}>
-                <AdvancedFilters
-                  filterConjunction={filterConjunction}
-                  filters={filters}
-                  columns={advancedFilterColumns}
-                  emptyPlaceholder={gettext('No filters')}
-                  updateFilter={this.updateFilter}
-                  deleteFilter={this.deleteFilter}
-                  modifyFilterConjunction={this.modifyFilterConjunction}
-                  collaborators={this.props.collaborators}
-                  typesData={this.props.typesData}
-                  tagsData={this.props.tagsData}
-                  readOnly={readOnly}
-                  scheduleUpdate={scheduleUpdate}
-                  isPre={this.props.isPre}
-                />
-              </div>
-            </FormGroup>
+              <FormGroup className="filter-group-advanced filter-group px-4 mb-0">
+                {isValidBasicFilters && (
+                  <Label className="filter-group-name mb-3">{gettext('Advanced')}</Label>
+                )}
+                <div className={classnames('filter-group-container', { 'pt-4': !isValidBasicFilters })}>
+                  <AdvancedFilters
+                    filterConjunction={filterConjunction}
+                    filters={filters}
+                    columns={advancedFilterColumns}
+                    emptyPlaceholder={gettext('No filters')}
+                    updateFilter={this.updateFilter}
+                    deleteFilter={this.deleteFilter}
+                    modifyFilterConjunction={this.modifyFilterConjunction}
+                    collaborators={this.props.collaborators}
+                    typesData={this.props.typesData}
+                    tagsData={this.props.tagsData}
+                    readOnly={readOnly}
+                    scheduleUpdate={scheduleUpdate}
+                    isPre={this.props.isPre}
+                  />
+                </div>
+              </FormGroup>
+            </div>
             {!readOnly && (
               <div className="sea-metadata-filter-popover-add-btns">
                 <CustomizeAddTool

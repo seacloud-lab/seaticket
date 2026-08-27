@@ -30,8 +30,8 @@ const getValidRules = (rules = []) => {
 const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = [], hidePopover, modifyRowColor }) => {
   const [editingRuleIndex, setEditingRuleIndex] = useState(null);
   const [colorSelectorIndex, setColorSelectorIndex] = useState(null);
-  const bodyRef = useRef(null);
-  const [shouldScroll, setShouldScroll] = useState(false);
+
+  const containerRef = useRef(null);
 
   const excludedColumnKeys = useMemo(() => {
     return new Set([
@@ -57,28 +57,6 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
     setRules(colorRules);
   }, [colorRules]);
 
-  const syncPopoverScrollState = useCallback(() => {
-    if (!bodyRef.current) return;
-
-    const availableHeight = window.innerHeight - 200;
-    const nextShouldScroll = bodyRef.current.scrollHeight > availableHeight;
-
-    setShouldScroll((prevShouldScroll) => prevShouldScroll === nextShouldScroll ? prevShouldScroll : nextShouldScroll);
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener('resize', syncPopoverScrollState);
-    window.requestAnimationFrame(syncPopoverScrollState);
-
-    return () => {
-      window.removeEventListener('resize', syncPopoverScrollState);
-    };
-  }, [syncPopoverScrollState]);
-
-  useEffect(() => {
-    window.requestAnimationFrame(syncPopoverScrollState);
-  }, [syncPopoverScrollState, rules, editingRuleIndex, colorSelectorIndex]);
-
   const canAddRule = useMemo(() => {
     if (validColumns.length === 0) return false;
     if (rules.length === 0) return true;
@@ -91,7 +69,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
     return Array.isArray(lastRule?.filters) && lastRule.filters.length > 0 && hasValidFilters;
   }, [rules, validColumns]);
 
-  const updateRules = useCallback((updater) => {
+  const updateRules = useCallback((updater, isAddRule = false) => {
     setRules((prevRules) => {
       const newRules = typeof updater === 'function' ? updater(prevRules) : updater;
       modifyRowColor({
@@ -100,6 +78,9 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
       });
       return newRules;
     });
+    if (!isAddRule) return;
+    if (!containerRef.current) return;
+    containerRef.current.scrollTo({ top: containerRef.current.scrollHeight, behavior: 'smooth' });
   }, [modifyRowColor]);
 
   const addRule = useCallback(() => {
@@ -109,7 +90,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
     const filter = getFilterByColumn(defaultColumn);
     const defaultRule = getDefaultRowColorRule(validColumns, filter, SELECT_OPTION_COLORS[rules.length % SELECT_OPTION_COLORS.length].COLOR);
     if (!defaultRule) return;
-    updateRules(prevRules => [...prevRules, defaultRule]);
+    updateRules(prevRules => [...prevRules, defaultRule], true);
     setEditingRuleIndex(rules.length);
   }, [canAddRule, validColumns, rules, updateRules]);
 
@@ -185,7 +166,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
   return (
     <CustomizePopover
       target={target}
-      className="seaqa-row-color-popover"
+      className={classnames('seaqa-row-color-popover', { 'disabled': readOnly })}
       hidePopover={hidePopover}
       hidePopoverWithEsc={hidePopover}
       placement="bottom-end"
@@ -195,13 +176,9 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
       ]}
     >
       <div
-        ref={bodyRef}
         className="seaqa-row-color-body px-2 pt-2 pb-0"
-        style={{
-          minWidth: rules.length === 0 ? '450px' : '550px',
-          overflowY: shouldScroll ? 'auto' : 'visible',
-          maxHeight: shouldScroll ? 'calc(100vh - 200px)' : 'none',
-        }}
+        style={{ minWidth: rules.length === 0 ? '450px' : '550px' }}
+        ref={containerRef}
       >
         {rules.length === 0 &&
           <div className="seaqa-row-color-empty d-flex justify-content-center align-items-center">{gettext('No rules')}</div>
