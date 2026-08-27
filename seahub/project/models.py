@@ -399,10 +399,9 @@ class DeletedProjects(models.Model):
 
 class ProjectStorageStatistics(models.Model):
     project_uuid = models.UUIDField(unique=True)
-    org_id = models.IntegerField(default=-1, db_index=True)
+    org_id = models.IntegerField(db_index=True)
     file_size = models.BigIntegerField(default=0)
     crawl_data_size = models.BigIntegerField(default=0)
-    total_size = models.BigIntegerField(default=0)
     calculated_at = models.DateTimeField()
 
     class Meta:

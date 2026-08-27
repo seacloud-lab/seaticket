@@ -11,7 +11,6 @@ from seahub.api2.endpoints.org_admin.projects import _storage_usage_dict as org_
 ])
 def test_storage_usage_response_contains_only_s3_components(serializer):
     stat = SimpleNamespace(
-        total_size=50,
         file_size=20,
         crawl_data_size=30,
         calculated_at=datetime(2026, 7, 23, 1, 2, 3, tzinfo=timezone.utc),

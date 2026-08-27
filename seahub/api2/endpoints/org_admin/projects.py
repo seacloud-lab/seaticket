@@ -38,7 +38,7 @@ def _storage_usage_dict(stat):
     if not stat:
         return None
     return {
-        'total_size': str(stat.total_size),
+        'total_size': str(stat.file_size + stat.crawl_data_size),
         'file_size': str(stat.file_size),
         'crawl_data_size': str(stat.crawl_data_size),
         'calculated_at': stat.calculated_at.isoformat().replace('+00:00', 'Z'),
