@@ -14,7 +14,7 @@ from .connections import ProjectConnectionsView, ProjectConnectionView, ProjectC
     ConnectionFileView, GithubIssueView, \
     ProjectEmailOAuthLoginView, ProjectEmailOAuthQueryView, ProjectEmailOAuthCallbackView, \
     DownloadEmailAttachments, ZipEmailAttachments, QueryIOStatus, ProjectLinearOauthStatusView, ProjectConfluenceOauthStatusView, ProjectConnectionUnreadEmailView, ProjectJiraOauthStatusView, \
-    ProjectFirebaseCrashOauthStatusView, ProjectFirebaseCrashProjectsView, ProjectFirebaseCrashDatasetsView, ProjectFirebaseCrashAppsView
+    ProjectFirebaseCrashOauthStatusView, ProjectFirebaseCrashProjectsView, ProjectFirebaseCrashAppsView
 from .files import ProjectUploadFileAPIView, GetProjectUploadFileView, \
     ProjectFileAPIView, GetProjectFileView
 from .connections_views import ConnectionViewsAPI, ConnectionViewAPI, \
@@ -98,7 +98,6 @@ urlpatterns = [
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/jira-oauth/$', ProjectJiraOauthStatusView.as_view(), name='api-v1-project-jira-oauth-status'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/firebase-crash-oauth/$', ProjectFirebaseCrashOauthStatusView.as_view(), name='api-v1-project-firebase-crash-oauth-status'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/firebase-crash/projects/$', ProjectFirebaseCrashProjectsView.as_view(), name='api-v1-project-firebase-crash-projects'),
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/firebase-crash/datasets/$', ProjectFirebaseCrashDatasetsView.as_view(), name='api-v1-project-firebase-crash-datasets'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/firebase-crash/apps/$', ProjectFirebaseCrashAppsView.as_view(), name='api-v1-project-firebase-crash-apps'),
 
     # connections

@@ -1136,7 +1136,7 @@ def get_firebase_crash_issue_by_pk(seadb_api, project_uuid, connection_id, _pk):
     table_name = SchemaTables.FIREBASE_CRASH_ISSUES.table_name(connection_id)
     sql = (
         f"SELECT `_pk`, `issue_id`, `title`, `subtitle`, `content`, `error_type`, "
-        f"`app_version`, `is_fatal`, `occurrence_count`, `affected_users`, "
+        f"`app_version`, `occurrence_count`, `affected_users`, "
         f"`first_seen_time`, `last_seen_time`, `linked_ticket`, `outdated`, `ai_summary` "
         f"FROM `{table_name}` WHERE _pk = {_pk}"
     )

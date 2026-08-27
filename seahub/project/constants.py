@@ -583,7 +583,7 @@ CONNECTION_DISPLAY_ALL_COLUMNS = {
     ConnectionType.DISCORD.value: ['_pk', 'title', 'created_time', 'modified_time', 'ai_summary',
                                    'ai_processed_time', 'linked_ticket', 'outdated'],
     ConnectionType.FIREBASE_CRASH.value: ['_pk', 'issue_id', 'title', 'subtitle', 'content', 'error_type',
-                                          'app_version', 'is_fatal',
+                                          'app_version',
                                           'occurrence_count', 'affected_users', 'first_seen_time', 'last_seen_time',
                                           'ai_summary', 'ai_processed_time', 'linked_ticket', 'outdated'],
 }

@@ -1192,8 +1192,6 @@ tables:
         column_type: text
       app_version:
         column_type: text
-      is_fatal:
-        column_type: bool
       occurrence_count:
         column_type: int64
       affected_users:

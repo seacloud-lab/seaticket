@@ -606,7 +606,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     }, 2000);
   }, []);
 
-  const listJiraSites = useCallback((signal) => {
   const fetchFirebaseCrashOauthStatus = useCallback(() => {
     setCheckingFirebaseCrashOauth(true);
     return connectionsAPI.getFirebaseCrashOauthStatus(projectUuid).then(res => {
@@ -620,11 +619,11 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     });
   }, []);
 
-  const listFirebaseCrashProjects = useCallback(() => {
+  const listFirebaseCrashProjects = useCallback((signal) => {
     if (!isFirebaseCrashOauthConnected) {
       return Promise.resolve({ data: { options: [] } });
     }
-    return connectionsAPI.listFirebaseCrashProjects(projectUuid).then(res => {
+    return connectionsAPI.listFirebaseCrashProjects(projectUuid, signal).then(res => {
       const projects = res?.data?.projects || [];
       return {
         data: {
@@ -641,13 +640,13 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     });
   }, [isFirebaseCrashOauthConnected]);
 
-  const listFirebaseCrashApps = useCallback(() => {
+  const listFirebaseCrashApps = useCallback((signal) => {
     const projectId = getSelectedOptionValue(config.project_id);
     if (!isFirebaseCrashOauthConnected || !projectId) {
       return Promise.resolve({ data: { options: [] } });
     }
     void firebaseCrashAppsVersion;
-    return connectionsAPI.listFirebaseCrashApps(projectUuid, projectId).then(res => {
+    return connectionsAPI.listFirebaseCrashApps(projectUuid, projectId, signal).then(res => {
       const apps = res?.data?.apps || [];
       return {
         data: {
@@ -713,7 +712,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     }, 2000);
   }, [stopFirebaseCrashOAuthPolling]);
 
-  const listJiraSites = useCallback(() => {
+  const listJiraSites = useCallback((signal) => {
     if (!isJiraOauthConnected) {
       return Promise.resolve({ data: { options: [] } });
     }

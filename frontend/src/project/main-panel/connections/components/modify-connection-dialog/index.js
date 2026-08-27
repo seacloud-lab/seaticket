@@ -128,11 +128,11 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
     });
   }, []);
 
-  const listFirebaseCrashProjects = useCallback(() => {
+  const listFirebaseCrashProjects = useCallback((signal) => {
     if (!isFirebaseCrashOauthConnected) {
       return Promise.resolve({ data: { options: [] } });
     }
-    return connectionsAPI.listFirebaseCrashProjects(projectUuid).then(res => {
+    return connectionsAPI.listFirebaseCrashProjects(projectUuid, signal).then(res => {
       const projects = res?.data?.projects || [];
       return {
         data: {
@@ -149,13 +149,13 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
     });
   }, [isFirebaseCrashOauthConnected]);
 
-  const listFirebaseCrashApps = useCallback(() => {
+  const listFirebaseCrashApps = useCallback((signal) => {
     const projectId = getSelectedOptionValue(config.project_id);
     if (!isFirebaseCrashOauthConnected || !projectId) {
       return Promise.resolve({ data: { options: [] } });
     }
     void firebaseCrashAppsVersion;
-    return connectionsAPI.listFirebaseCrashApps(projectUuid, projectId).then(res => {
+    return connectionsAPI.listFirebaseCrashApps(projectUuid, projectId, signal).then(res => {
       const apps = res?.data?.apps || [];
       return {
         data: {

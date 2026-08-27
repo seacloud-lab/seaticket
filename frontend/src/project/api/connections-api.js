@@ -141,19 +141,19 @@ class ConnectionsAPI {
     return this.req.get(url, { params: { site_id: siteId }, signal });
   }
 
-    getFirebaseCrashOauthStatus(projectUuid) {
+  getFirebaseCrashOauthStatus(projectUuid) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/firebase-crash-oauth/';
     return this.req.get(url);
   }
 
-  listFirebaseCrashProjects(projectUuid) {
+  listFirebaseCrashProjects(projectUuid, signal) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/firebase-crash/projects/';
-    return this.req.get(url);
+    return this.req.get(url, { signal });
   }
 
-  listFirebaseCrashApps(projectUuid, projectId) {
+  listFirebaseCrashApps(projectUuid, projectId, signal) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/firebase-crash/apps/';
-    return this.req.get(url, { params: { project_id: projectId } });
+    return this.req.get(url, { params: { project_id: projectId }, signal });
   }
 
   getConnection(projectUuid, connectionID) {

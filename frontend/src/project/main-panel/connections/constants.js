@@ -739,7 +739,6 @@ export const CONNECTION_PREDEFINED_COLUMN_NAME = {
   SUBTITLE: 'subtitle',
   ERROR_TYPE: 'error_type',
   APP_VERSION: 'app_version',
-  IS_FATAL: 'is_fatal',
   OCCURRENCE_COUNT: 'occurrence_count',
   AFFECTED_USERS: 'affected_users',
   FIRST_SEEN_TIME: 'first_seen_time',
@@ -920,11 +919,6 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
     },
     [CONNECTION_PREDEFINED_COLUMN_NAME.APP_VERSION]: {
       display_name: gettext('App version'),
-      is_predefined: true,
-    },
-    [CONNECTION_PREDEFINED_COLUMN_NAME.IS_FATAL]: {
-      display_name: gettext('Fatal'),
-      type: CellType.CHECKBOX,
       is_predefined: true,
     },
     [CONNECTION_PREDEFINED_COLUMN_NAME.OCCURRENCE_COUNT]: {

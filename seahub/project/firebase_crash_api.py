@@ -12,18 +12,8 @@ logger = logging.getLogger(__name__)
 
 GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
 FIREBASE_PROJECTS_URL = 'https://firebase.googleapis.com/v1beta1/projects'
-BIGQUERY_DATASETS_URL = 'https://bigquery.googleapis.com/bigquery/v2/projects/{project_id}/datasets'
-BIGQUERY_TABLES_URL = (
-    'https://bigquery.googleapis.com/bigquery/v2/projects/{project_id}/datasets/{dataset_id}/tables'
-)
 OAUTH_TOKEN_EXPIRY_BUFFER_SECONDS = 60
-# Firebase derives export table names from the app's package or bundle identifier,
-# replacing periods with underscores. Bundle identifiers may also contain hyphens.
-APP_TABLE_PATTERN = re.compile(r'^[A-Za-z0-9_-]+_(ANDROID|IOS)$')
 PROJECT_ID_PATTERN = re.compile(r'^[a-z][a-z0-9-]{4,28}[a-z0-9]$')
-DATASET_ID_PATTERN = re.compile(r'^[A-Za-z_][A-Za-z0-9_]{0,1023}$')
-# Crashlytics exports to a single fixed BigQuery dataset per project.
-FIREBASE_CRASHLYTICS_DATASET_ID = 'firebase_crashlytics'
 FIREBASE_ANDROID_APPS_URL = 'https://firebase.googleapis.com/v1beta1/projects/{project_id}/androidApps'
 FIREBASE_IOS_APPS_URL = 'https://firebase.googleapis.com/v1beta1/projects/{project_id}/iosApps'
 
@@ -49,13 +39,9 @@ class FirebaseCrashOAuthAPI:
         }
 
     @staticmethod
-    def _validate_resource_ids(project_id, dataset_id=None):
+    def _validate_resource_ids(project_id):
         if not isinstance(project_id, str) or not PROJECT_ID_PATTERN.fullmatch(project_id):
             raise FirebaseCrashOAuthError('The Firebase project ID is invalid.')
-        if dataset_id is not None and (
-            not isinstance(dataset_id, str) or not DATASET_ID_PATTERN.fullmatch(dataset_id)
-        ):
-            raise FirebaseCrashOAuthError('The BigQuery dataset ID is invalid.')
 
     def _refresh_access_token(self):
         if not all([FIREBASE_CRASH_CLIENT_ID, FIREBASE_CRASH_CLIENT_SECRET, self.refresh_token]):
@@ -174,44 +160,6 @@ class FirebaseCrashOAuthAPI:
             key=lambda project: (project['name'].lower(), project['project_id']),
         )
 
-    def list_datasets(self, project_id):
-        self._validate_resource_ids(project_id)
-        datasets = []
-        page_token = None
-        visited_page_tokens = set()
-        url = BIGQUERY_DATASETS_URL.format(project_id=project_id)
-        while True:
-            if page_token:
-                if page_token in visited_page_tokens:
-                    raise FirebaseCrashOAuthError(
-                        'BigQuery dataset API returned a repeated page token.'
-                    )
-                visited_page_tokens.add(page_token)
-            params = {'maxResults': 1000}
-            if page_token:
-                params['pageToken'] = page_token
-            data = self._get(url, params=params)
-            datasets.extend(data.get('datasets') or [])
-            page_token = data.get('nextPageToken')
-            if not page_token:
-                break
-
-        return sorted(
-            [
-                {
-                    'dataset_id': dataset.get('datasetReference', {}).get('datasetId'),
-                    'name': dataset.get('friendlyName') or dataset.get('datasetReference', {}).get('datasetId'),
-                }
-                for dataset in datasets
-                if dataset.get('datasetReference', {}).get('datasetId')
-            ],
-            key=lambda dataset: (
-                dataset['dataset_id'] != FIREBASE_CRASHLYTICS_DATASET_ID,
-                dataset['name'].lower(),
-                dataset['dataset_id'],
-            ),
-        )
-
     def list_apps(self, project_id):
         self._validate_resource_ids(project_id)
         apps = []
@@ -251,79 +199,3 @@ class FirebaseCrashOAuthAPI:
             apps,
             key=lambda app: (app['name'].lower(), app['platform'], app['app_id']),
         )
-
-    def _list_dataset_tables(self, project_id, dataset_id):
-        self._validate_resource_ids(project_id, dataset_id)
-        tables = []
-        page_token = None
-        visited_page_tokens = set()
-        url = BIGQUERY_TABLES_URL.format(project_id=project_id, dataset_id=dataset_id)
-        while True:
-            if page_token:
-                if page_token in visited_page_tokens:
-                    raise FirebaseCrashOAuthError(
-                        'BigQuery table API returned a repeated page token.'
-                    )
-                visited_page_tokens.add(page_token)
-            params = {'maxResults': 1000}
-            if page_token:
-                params['pageToken'] = page_token
-            data = self._get(url, params=params)
-            tables.extend(data.get('tables') or [])
-            page_token = data.get('nextPageToken')
-            if not page_token:
-                break
-        return tables
-
-    @staticmethod
-    def _field_paths(fields, prefix=''):
-        paths = set()
-        for field in fields or []:
-            name = field.get('name')
-            if not name:
-                continue
-            path = f'{prefix}.{name}' if prefix else name
-            paths.add(path)
-            paths.update(FirebaseCrashOAuthAPI._field_paths(field.get('fields'), path))
-        return paths
-
-    def validate_connection_config(self, project_id, dataset_id):
-        self._validate_resource_ids(project_id, dataset_id)
-        project = self._get(f'{FIREBASE_PROJECTS_URL}/{project_id}')
-        if not project.get('projectId'):
-            raise FirebaseCrashOAuthError('The selected Firebase project was not found.')
-
-        dataset = self._get(
-            f'{BIGQUERY_DATASETS_URL.format(project_id=project_id)}/{dataset_id}'
-        )
-        if not dataset.get('datasetReference', {}).get('datasetId'):
-            raise FirebaseCrashOAuthError('The selected BigQuery dataset was not found.')
-
-        crashlytics_table_ids = [
-            table.get('tableReference', {}).get('tableId')
-            for table in self._list_dataset_tables(project_id, dataset_id)
-            if table.get('type', 'TABLE') == 'TABLE'
-            and APP_TABLE_PATTERN.fullmatch(table.get('tableReference', {}).get('tableId') or '')
-        ]
-        if not crashlytics_table_ids:
-            raise FirebaseCrashOAuthError(
-                'The selected BigQuery dataset does not contain Firebase Crashlytics export tables.'
-            )
-
-        table_url = (
-            BIGQUERY_TABLES_URL.format(project_id=project_id, dataset_id=dataset_id)
-            + '/{table_id}'
-        )
-        invalid_table_ids = []
-        for table_id in crashlytics_table_ids:
-            table = self._get(table_url.format(table_id=table_id))
-            fields = self._field_paths(table.get('schema', {}).get('fields'))
-            required_fields = {'event_id', 'issue_id', 'event_timestamp', 'error_type'}
-            if not required_fields.issubset(fields):
-                invalid_table_ids.append(table_id)
-
-        if invalid_table_ids:
-            raise FirebaseCrashOAuthError(
-                'The selected BigQuery dataset contains invalid Firebase Crashlytics '
-                'export tables: ' + ', '.join(sorted(invalid_table_ids))
-            )

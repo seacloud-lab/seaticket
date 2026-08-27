@@ -58,7 +58,7 @@ from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_tick
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES, send_connection_data_event
 from seahub.settings import GITHUB_WEBHOOK_SECRET
 from seahub.project.github_issues_api import GitHubAPI, GitHubAppNotInstalled
-from seahub.project.firebase_crash_api import FirebaseCrashOAuthAPI, FirebaseCrashOAuthError, FIREBASE_CRASHLYTICS_DATASET_ID
+from seahub.project.firebase_crash_api import FirebaseCrashOAuthAPI, FirebaseCrashOAuthError
 from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
 from seahub.utils.mailbox_manager import move_emails_to_trash
 from seahub.project.discourse_api import DiscourseForumAPI, DiscourseForumAPIException
@@ -72,80 +72,6 @@ from seahub.seadb_models.models import SchemaTables
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
 logger = logging.getLogger(__name__)
-
-
-FIREBASE_CRASH_MUTABLE_FIELDS = frozenset(('outdated', 'linked_ticket'))
-
-
-def _validate_firebase_crash_record_update(row_data):
-    unsupported_fields = sorted(set(row_data) - FIREBASE_CRASH_MUTABLE_FIELDS)
-    if unsupported_fields:
-        return (
-            'Firebase Crashlytics records only support updating: '
-            + ', '.join(sorted(FIREBASE_CRASH_MUTABLE_FIELDS))
-        )
-    return None
-
-
-def _validate_firebase_crash_batch_record(record):
-    if not isinstance(record, dict):
-        return 'Each Firebase Crashlytics record must be an object.'
-    if 'row_id' not in record:
-        return 'Each Firebase Crashlytics record must include row_id.'
-    if 'row' not in record or not isinstance(record.get('row'), dict):
-        return 'Each Firebase Crashlytics record must include a row object.'
-
-    row_id = record.get('row_id')
-    if isinstance(row_id, bool):
-        return 'Firebase Crashlytics row_id invalid.'
-    try:
-        row_id = int(row_id)
-    except (TypeError, ValueError):
-        return 'Firebase Crashlytics row_id invalid.'
-    if row_id <= 0:
-        return 'Firebase Crashlytics row_id invalid.'
-    return None
-
-
-
-def _get_firebase_crash_oauth_api(project_uuid):
-    oauth = ProjectConnectionOauth.objects.get_by_project_uuid(
-        project_uuid, ConnectionType.FIREBASE_CRASH.value
-    )
-    if not oauth:
-        return None
-    return FirebaseCrashOAuthAPI(oauth.access_token, oauth.refresh_token, oauth.expires_at)
-
-
-def _persist_firebase_crash_oauth(project_uuid, api):
-    if not api.tokens_updated:
-        return
-    ProjectConnectionOauth.objects.upsert_token(
-        project_uuid,
-        ConnectionType.FIREBASE_CRASH.value,
-        api.access_token,
-        api.expires_at,
-        api.refresh_token,
-    )
-
-
-def _validate_firebase_crash_connection_config(project_uuid, config):
-    firebase_crash_api = _get_firebase_crash_oauth_api(project_uuid)
-    if not firebase_crash_api:
-        raise FirebaseCrashOAuthError('Firebase Crashlytics OAuth authorization is required.')
-
-    project_id = config.get('project_id')
-    if not project_id:
-        raise FirebaseCrashOAuthError('Firebase project is required.')
-
-    app_id = config.get('app_id')
-    if not app_id:
-        raise FirebaseCrashOAuthError('Firebase application is required.')
-
-    try:
-        firebase_crash_api.validate_connection_config(project_id, FIREBASE_CRASHLYTICS_DATASET_ID)
-    finally:
-        _persist_firebase_crash_oauth(project_uuid, firebase_crash_api)
 
 
 class GitHubIssueUpdateError(Exception):
@@ -350,10 +276,8 @@ class ProjectConnectionsView(APIView):
             if not ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.JIRA_ISSUE.value):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Jira OAuth authorization is required.')
         if connection_type == ConnectionType.FIREBASE_CRASH.value:
-            try:
-                _validate_firebase_crash_connection_config(project_uuid, config)
-            except FirebaseCrashOAuthError as e:
-                return api_error(status.HTTP_400_BAD_REQUEST, str(e))
+            if not ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.FIREBASE_CRASH.value):
+                return api_error(status.HTTP_400_BAD_REQUEST, 'Firebase Crashlytics OAuth authorization is required.')
 
         record, error_response = create_connection(project, request.user.username, connection_type, name, config)
         if error_response:
@@ -723,10 +647,6 @@ class ProjectConnectionView(APIView):
                         status.HTTP_400_BAD_REQUEST,
                         'Firebase project or application cannot be changed after the connection has synced. Create a new connection instead.',
                     )
-                try:
-                    _validate_firebase_crash_connection_config(project_uuid, new_config)
-                except FirebaseCrashOAuthError as e:
-                    return api_error(status.HTTP_400_BAD_REQUEST, str(e))
             enable_modify = ProjectConnections.objects.enable_modify(project_connection.type, connection_id, new_config)
             if not enable_modify:
                 error_msg = 'Please check input'
@@ -1344,51 +1264,26 @@ class ProjectFirebaseCrashProjectsView(APIView):
         if not check_project_admin_permission(request.user.username, project.workspace.owner):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
-        firebase_crash_api = _get_firebase_crash_oauth_api(project_uuid)
-        if not firebase_crash_api:
-            return api_error(
-                status.HTTP_400_BAD_REQUEST,
-                'Firebase Crashlytics OAuth authorization is required.',
-            )
+        firebase_oauth = ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.FIREBASE_CRASH.value)
+        if not firebase_oauth:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Firebase Crashlytics OAuth authorization is required.')
+
+        firebase_crash_api = FirebaseCrashOAuthAPI(
+            access_token=firebase_oauth.access_token,
+            refresh_token=firebase_oauth.refresh_token,
+            expires_at=firebase_oauth.expires_at,
+        )
         try:
             projects = firebase_crash_api.list_projects()
         except FirebaseCrashOAuthError as e:
             return api_error(status.HTTP_400_BAD_REQUEST, str(e))
-        finally:
-            _persist_firebase_crash_oauth(project_uuid, firebase_crash_api)
-        return Response({'projects': projects})
 
-
-class ProjectFirebaseCrashDatasetsView(APIView):
-    authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated,)
-    throttle_classes = (UserRateThrottle,)
-
-    @require_org_context
-    def get(self, request, project_uuid):
-        firebase_project_id = request.GET.get('project_id', '')
-        if not firebase_project_id:
-            return api_error(status.HTTP_400_BAD_REQUEST, 'project_id is required.')
-
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            return api_error(status.HTTP_404_NOT_FOUND, f'Project {project_uuid} not found.')
-        if not check_project_admin_permission(request.user.username, project.workspace.owner):
-            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
-
-        firebase_crash_api = _get_firebase_crash_oauth_api(project_uuid)
-        if not firebase_crash_api:
-            return api_error(
-                status.HTTP_400_BAD_REQUEST,
-                'Firebase Crashlytics OAuth authorization is required.',
+        if firebase_crash_api.access_token != firebase_oauth.access_token:
+            ProjectConnectionOauth.objects.upsert_token(
+                project_uuid, ConnectionType.FIREBASE_CRASH.value,
+                firebase_crash_api.access_token, firebase_crash_api.expires_at, firebase_crash_api.refresh_token
             )
-        try:
-            datasets = firebase_crash_api.list_datasets(firebase_project_id)
-        except FirebaseCrashOAuthError as e:
-            return api_error(status.HTTP_400_BAD_REQUEST, str(e))
-        finally:
-            _persist_firebase_crash_oauth(project_uuid, firebase_crash_api)
-        return Response({'datasets': datasets})
+        return Response({'projects': projects})
 
 
 class ProjectFirebaseCrashAppsView(APIView):
@@ -1408,18 +1303,25 @@ class ProjectFirebaseCrashAppsView(APIView):
         if not check_project_admin_permission(request.user.username, project.workspace.owner):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
-        firebase_crash_api = _get_firebase_crash_oauth_api(project_uuid)
-        if not firebase_crash_api:
-            return api_error(
-                status.HTTP_400_BAD_REQUEST,
-                'Firebase Crashlytics OAuth authorization is required.',
-            )
+        firebase_oauth = ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.FIREBASE_CRASH.value)
+        if not firebase_oauth:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Firebase Crashlytics OAuth authorization is required.')
+
+        firebase_crash_api = FirebaseCrashOAuthAPI(
+            access_token=firebase_oauth.access_token,
+            refresh_token=firebase_oauth.refresh_token,
+            expires_at=firebase_oauth.expires_at,
+        )
         try:
             apps = firebase_crash_api.list_apps(firebase_project_id)
         except FirebaseCrashOAuthError as e:
             return api_error(status.HTTP_400_BAD_REQUEST, str(e))
-        finally:
-            _persist_firebase_crash_oauth(project_uuid, firebase_crash_api)
+
+        if firebase_crash_api.access_token != firebase_oauth.access_token:
+            ProjectConnectionOauth.objects.upsert_token(
+                project_uuid, ConnectionType.FIREBASE_CRASH.value,
+                firebase_crash_api.access_token, firebase_crash_api.expires_at, firebase_crash_api.refresh_token
+            )
         return Response({'apps': apps})
 
 
@@ -1540,11 +1442,6 @@ class ProjectConnectionRecordView(APIView):
         if project_connection.type not in supported_types:
             error_msg = f'Connection type {project_connection.type} does not support record editing.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        if project_connection.type == ConnectionType.FIREBASE_CRASH.value:
-            error_msg = _validate_firebase_crash_record_update(row_data)
-            if error_msg:
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
         table_name = None
         if project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
             table_name = SchemaTables.DISCOURSE_TOPICS.table_name(connection_id)
@@ -1947,15 +1844,6 @@ class ProjectConnectionRecordsView(APIView):
         if project_connection.type not in supported_types:
             error_msg = f'Connection type {project_connection.type} does not support record editing.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        if project_connection.type == ConnectionType.FIREBASE_CRASH.value:
-            for record in records_data:
-                error_msg = _validate_firebase_crash_batch_record(record)
-                if error_msg:
-                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-                error_msg = _validate_firebase_crash_record_update(record['row'])
-                if error_msg:
-                    return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
         table_name = None
         if project_connection.type == ConnectionType.DISCOURSE_FORUM.value:
             table_name = SchemaTables.DISCOURSE_TOPICS.table_name(connection_id)
@@ -1987,14 +1875,10 @@ class ProjectConnectionRecordsView(APIView):
         email_unread_by_thread_id = {}
         seadb_api = SeaDBAPI()
         for record in records_data:
-            if project_connection.type == ConnectionType.FIREBASE_CRASH.value:
-                row_id = int(record['row_id'])
-                row_data = record['row']
-            else:
-                row_id = record.get('row_id')
-                row_data = record.get('row', {})
-                if not row_id or not isinstance(row_data, dict):
-                    continue
+            row_id = record.get('row_id')
+            row_data = record.get('row', {})
+            if not row_id or not isinstance(row_data, dict):
+                continue
             update_row = {'pk': int(row_id), 'row': {}}
 
             if project_connection.type == ConnectionType.GENERAL_TASK.value:
