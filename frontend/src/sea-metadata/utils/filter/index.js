@@ -47,8 +47,6 @@ export const FILTER_ERR_MSG_LIST = [
 ];
 
 const MULTIPLE_SELECTOR_COLUMNS = [
-  CellType.CREATOR,
-  CellType.LAST_MODIFIER,
   CellType.MULTIPLE_SELECT,
   CellType.COLLABORATOR,
   CellType.TAGS,
@@ -58,6 +56,10 @@ export const isFilterTermArray = (column, predicate) => {
   const { type } = column;
   if (MULTIPLE_SELECTOR_COLUMNS.includes(type)) {
     return true;
+  }
+
+  if ([CellType.CREATOR, CellType.LAST_MODIFIER].includes(type)) {
+    return [FILTER_PREDICATE_TYPE.CONTAINS, FILTER_PREDICATE_TYPE.NOT_CONTAIN].includes(predicate);
   }
   if ((type === CellType.SINGLE_SELECT || type === CellType.TYPE) && ARRAY_PREDICATE[predicate]) {
     return true;

@@ -5,10 +5,9 @@ import RemoveButton from '../remove-btn';
 
 const Container = ({
   innerRef,
-  isShowDeleteArea,
   id,
   isAsyncSearch = false,
-  isMultiple,
+  isMultiple = true,
   isSearchEnabled,
   placeholder,
   emptyTip,
@@ -46,7 +45,7 @@ const Container = ({
       onToggle={onToggle}
       { ...props }
     >
-      {isShowDeleteArea && Array.isArray(value) ? ({ value, onChange }) => {
+      {isMultiple && Array.isArray(value) ? ({ value, onChange }) => {
         if (value.length === 0) return null;
         return value.map(item => {
           const collaborator = collaborators.find(c => c.email === item);

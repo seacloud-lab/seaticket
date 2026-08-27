@@ -61,7 +61,6 @@ const CollaboratorEditor = forwardRef(({
     >
       <Container
         innerRef={mainRef}
-        isShowDeleteArea={true}
         placeholder={gettext('Search users')}
         value={value}
         collaborators={collaborators}
