@@ -39,24 +39,6 @@ def _coerce_bool(value, field_name='value'):
     raise ValueError(f'{field_name} invalid.')
 
 
-def _encode_metadata(metadata):
-    metadata = metadata or {}
-    if not isinstance(metadata, dict):
-        raise ValueError('metadata invalid.')
-    return json.dumps(metadata, separators=(',', ':'), ensure_ascii=False)
-
-
-def _decode_metadata(value):
-    if isinstance(value, dict):
-        return value
-    if value in (None, ''):
-        return {}
-    metadata = json.loads(value)
-    if not isinstance(metadata, dict):
-        raise ValueError('Stored metadata invalid.')
-    return metadata
-
-
 def _load_project(project_uuid):
     project = Projects.objects.get_project_by_uuid(project_uuid)
     if not project:
@@ -123,6 +105,7 @@ def _serialize_builtin_skill(skill, disabled_builtin_set, include_details=False)
     item = {
         'name': skill.get('name', ''),
         'description': skill.get('description', ''),
+        'support_agent': bool(skill.get('support_agent', False)),
         'source': 'builtin',
         'readonly': True,
         'enabled': skill.get('name') not in disabled_builtin_set,
@@ -131,7 +114,6 @@ def _serialize_builtin_skill(skill, disabled_builtin_set, include_details=False)
     if include_details:
         item.update({
             'content': skill.get('content', ''),
-            'metadata': skill.get('metadata') or {},
         })
     return item
 
@@ -140,6 +122,7 @@ def _serialize_custom_skill(row, include_details=False):
     item = {
         'name': row.get('name', ''),
         'description': row.get('description', ''),
+        'support_agent': bool(row.get('support_agent', False)),
         'source': 'custom',
         'readonly': False,
         'enabled': bool(row.get('enabled', True)),
@@ -152,7 +135,6 @@ def _serialize_custom_skill(row, include_details=False):
     if include_details:
         item.update({
             'content': row['content'],
-            'metadata': _decode_metadata(row.get('metadata')),
         })
     return item
 
@@ -160,7 +142,7 @@ def _serialize_custom_skill(row, include_details=False):
 def _list_custom_skill_rows(seadb_api, project_uuid):
     table_name = SchemaTables.SKILLS.table_name()
     sql = (
-        f"SELECT `_pk`, `name`, `description`, `enabled`, `creator`, `last_modifier`, "
+        f"SELECT `_pk`, `name`, `description`, `support_agent`, `enabled`, `creator`, `last_modifier`, "
         f"`created_time`, `modified_time`, `deleted` FROM `{table_name}` "
         "WHERE (`deleted` = False OR `deleted` IS NULL) ORDER BY `modified_time` DESC"
     )
@@ -170,7 +152,7 @@ def _list_custom_skill_rows(seadb_api, project_uuid):
 def _get_custom_skill_row_by_name(seadb_api, project_uuid, skill_name):
     table_name = SchemaTables.SKILLS.table_name()
     sql = (
-        f"SELECT `_pk`, `name`, `description`, `content`, `metadata`, "
+        f"SELECT `_pk`, `name`, `description`, `content`, `support_agent`, "
         f"`enabled`, `creator`, `last_modifier`, "
         f"`created_time`, `modified_time`, `deleted` FROM `{table_name}` "
         f"WHERE `name` = '{skill_name}' AND (`deleted` = False OR `deleted` IS NULL) LIMIT 1"
@@ -247,7 +229,7 @@ class SkillsAPIView(APIView):
                 SchemaTables.SKILLS.column.name.name: parsed['name'],
                 SchemaTables.SKILLS.column.description.name: parsed['description'],
                 SchemaTables.SKILLS.column.content.name: str(content).strip(),
-                SchemaTables.SKILLS.column.metadata.name: _encode_metadata(parsed.get('metadata')),
+                SchemaTables.SKILLS.column.support_agent.name: bool(parsed.get('support_agent', False)),
                 SchemaTables.SKILLS.column.enabled.name: enabled,
                 SchemaTables.SKILLS.column.creator.name: username,
                 SchemaTables.SKILLS.column.last_modifier.name: username,
@@ -270,7 +252,7 @@ class SkillsAPIView(APIView):
 class SkillCommandsAPIView(APIView):
     """Member-readable list of enabled skill names for the chat command selector.
 
-    Deliberately exposes names only: skill content and metadata remain
+    Deliberately exposes names only: skill content and advanced configuration remain
     restricted to project admins via the other endpoints.
     """
     authentication_classes = (TokenAuthentication, SessionAuthentication)
@@ -397,7 +379,7 @@ class SkillAPIView(APIView):
                 update_row[SchemaTables.SKILLS.column.name.name] = parsed['name']
                 update_row[SchemaTables.SKILLS.column.description.name] = parsed['description']
                 update_row[SchemaTables.SKILLS.column.content.name] = str(content).strip()
-                update_row[SchemaTables.SKILLS.column.metadata.name] = _encode_metadata(parsed.get('metadata'))
+                update_row[SchemaTables.SKILLS.column.support_agent.name] = bool(parsed.get('support_agent', False))
 
             if enabled_raw is not None:
                 enabled = _coerce_bool(enabled_raw, 'enabled')

@@ -120,21 +120,14 @@
   margin-bottom: 6px;
 }
 
+.skill-detail .seaqa-switch .custom-switch-description {
+  font-weight: 600;
+}
+
 .skill-detail-hint {
   font-size: 12px;
   color: #888;
   margin-top: 4px;
-}
-
-.skill-detail-metadata {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  width: 100%;
-  font-size: 12px;
-  line-height: 1.5;
-  min-height: 68px;
-  max-height: 230px;
-  overflow-y: auto;
-  resize: none;
 }
 
 .skill-detail-content {

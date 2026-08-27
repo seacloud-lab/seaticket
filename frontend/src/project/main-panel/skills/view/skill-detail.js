@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Modal, ModalBody, ModalFooter } from 'reactstrap';
 import { gettext } from '@/constants';
 import { CenteredLoading, CommonOperationConfirmationDialog, ModalHeader, toaster } from '@/components';
+import Switch from '@/components/switch';
 import { Utils } from '@/utils/utils';
 import { skillsAPI } from '@/project/api';
 import { SKILLS_PAGE_SLUG_ID } from '../constants';
@@ -10,15 +11,11 @@ import {
   SKILL_NAME_MAX_LENGTH,
   SKILL_NAME_RE,
   composeSkillContent,
-  extractMetadataText,
-  splitSkillContent,
+  extractSkillBody,
 } from './skill-content';
 
 
 const NEW_SKILL_BODY = '# Skill\n';
-
-const METADATA_PLACEHOLDER = `seaticket-agent:
-  enabled: true`;
 
 const SkillDetail = ({ projectUuid, pageSlugId, isProjectAdmin, onSaved, onDeleted, onCancel }) => {
   const isOpen = pageSlugId !== SKILLS_PAGE_SLUG_ID.ALL;
@@ -27,7 +24,7 @@ const SkillDetail = ({ projectUuid, pageSlugId, isProjectAdmin, onSaved, onDelet
   const [skill, setSkill] = useState(null);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [metadataText, setMetadataText] = useState('');
+  const [supportAgent, setSupportAgent] = useState(false);
   const [body, setBody] = useState('');
   const [initialForm, setInitialForm] = useState(null);
   const [enabled, setEnabled] = useState(true);
@@ -47,18 +44,9 @@ const SkillDetail = ({ projectUuid, pageSlugId, isProjectAdmin, onSaved, onDelet
     if (!initialForm) return false;
     return name !== initialForm.name
       || description !== initialForm.description
-      || metadataText !== initialForm.metadataText
+      || supportAgent !== initialForm.supportAgent
       || body !== initialForm.body;
-  }, [body, description, initialForm, metadataText, name]);
-
-  const metadataInputRef = useRef(null);
-
-  useLayoutEffect(() => {
-    const el = metadataInputRef.current;
-    if (!el) return;
-    el.style.height = 'auto';
-    el.style.height = `${el.scrollHeight}px`;
-  }, [metadataText, isLoading, isOpen]);
+  }, [body, description, initialForm, supportAgent, name]);
 
   const canSubmit = canSave && !isSubmitting && !isLoading && (
     isNew
@@ -69,11 +57,11 @@ const SkillDetail = ({ projectUuid, pageSlugId, isProjectAdmin, onSaved, onDelet
   const loadSkill = useCallback(() => {
     if (!isOpen) return;
     if (isNew) {
-      const form = { name: '', description: '', metadataText: '', body: NEW_SKILL_BODY };
+      const form = { name: '', description: '', supportAgent: false, body: NEW_SKILL_BODY };
       setSkill(null);
       setName(form.name);
       setDescription(form.description);
-      setMetadataText(form.metadataText);
+      setSupportAgent(form.supportAgent);
       setBody(form.body);
       setInitialForm(form);
       setEnabled(true);
@@ -83,17 +71,16 @@ const SkillDetail = ({ projectUuid, pageSlugId, isProjectAdmin, onSaved, onDelet
     setLoading(true);
     skillsAPI.getSkill(projectUuid, pageSlugId).then((res) => {
       const nextSkill = res?.data?.skill;
-      const { frontmatter, body: skillBody } = splitSkillContent(nextSkill?.content);
       const form = {
         name: nextSkill?.name || '',
         description: nextSkill?.description || '',
-        metadataText: extractMetadataText(frontmatter),
-        body: skillBody,
+        supportAgent: Boolean(nextSkill?.support_agent),
+        body: extractSkillBody(nextSkill?.content),
       };
       setSkill(nextSkill);
       setName(form.name);
       setDescription(form.description);
-      setMetadataText(form.metadataText);
+      setSupportAgent(form.supportAgent);
       setBody(form.body);
       setInitialForm(form);
       setEnabled(Boolean(nextSkill?.enabled));
@@ -135,7 +122,7 @@ const SkillDetail = ({ projectUuid, pageSlugId, isProjectAdmin, onSaved, onDelet
     if (!canSubmit || !validateForm()) return;
     setSubmitting(true);
     const complete = () => setSubmitting(false);
-    const content = composeSkillContent({ name, description, metadataText, body });
+    const content = composeSkillContent({ name, description, supportAgent, body });
 
     if (isNew) {
       skillsAPI.createSkill(projectUuid, { content, enabled }).then((res) => {
@@ -156,7 +143,7 @@ const SkillDetail = ({ projectUuid, pageSlugId, isProjectAdmin, onSaved, onDelet
     }).catch((error) => {
       toaster.danger(Utils.getErrorMsg(error));
     }).finally(complete);
-  }, [canSubmit, validateForm, isNew, projectUuid, name, description, metadataText, body, enabled, onSaved, pageSlugId, skill?.revision]);
+  }, [canSubmit, validateForm, isNew, projectUuid, name, description, supportAgent, body, enabled, onSaved, pageSlugId, skill?.revision]);
 
   const executeDelete = useCallback(() => {
     if (!canDelete) return;
@@ -220,19 +207,13 @@ const SkillDetail = ({ projectUuid, pageSlugId, isProjectAdmin, onSaved, onDelet
                 />
               </div>
               <div className="skill-detail-field">
-                <label className="skill-detail-label" htmlFor="skill-metadata-input">{gettext('Metadata (YAML, optional)')}</label>
-                <textarea
-                  id="skill-metadata-input"
-                  ref={metadataInputRef}
-                  className="form-control skill-detail-metadata"
-                  value={metadataText}
-                  placeholder={METADATA_PLACEHOLDER}
-                  onChange={(e) => setMetadataText(e.target.value)}
+                <Switch
+                  checked={supportAgent}
+                  onChange={(event) => setSupportAgent(Boolean(event?.target?.checked))}
+                  placeholder={gettext('Support agent')}
+                  textPosition="right"
                   disabled={isSubmitting || !canEditContent}
                 />
-                <div className="skill-detail-hint">
-                  {gettext('Advanced options such as seaticket-agent. Leave empty if not needed.')}
-                </div>
               </div>
               <div className="skill-detail-field">
                 <label className="skill-detail-label" htmlFor="skill-body-input">{gettext('Instructions (Markdown)')}</label>

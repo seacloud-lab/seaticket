@@ -567,8 +567,8 @@ tables:
         column_type: text
       description:
         column_type: text
-      metadata:
-        column_type: text
+      support_agent:
+        column_type: bool
       content:
         column_type: text
         column_data:
