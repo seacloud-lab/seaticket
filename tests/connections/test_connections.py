@@ -971,7 +971,7 @@ class TestAgentActionConfirmView:
 
         assert resp.status_code == 200
         assert resp.data['status'] == 'executed'
-        move_mock.assert_called_once_with(config, ['<spam-1@example.com>'])
+        move_mock.assert_called_once_with(config, ['<spam-1@example.com>'], None, None)
         email_seadb_api.mark_thread_deleted.assert_called_once_with(connection.id, 10)
 
     def test_confirm_move_email_to_spam_fails_when_no_remote_message_matched(self, factory, project_creator, real_project, connection_factory):
@@ -1028,7 +1028,7 @@ class TestAgentActionConfirmView:
         assert resp.status_code == 200
         assert resp.data['status'] == 'failed'
         assert 'no matching remote message was moved' in resp.data['result']
-        move_mock.assert_called_once_with(config, ['<spam-1@example.com>'])
+        move_mock.assert_called_once_with(config, ['<spam-1@example.com>'], None, None)
         email_seadb_api.mark_thread_deleted.assert_not_called()
 
     def test_confirm_move_oauth_email_to_spam_persists_refreshed_tokens(
