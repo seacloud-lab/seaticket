@@ -177,9 +177,15 @@ class ChatAPI {
     return this.req.get(url);
   }
 
-  listAdminChatSessions(projectUuid, page = 1, perPage = 50) {
+  listAdminChatSessions(projectUuid, { start = 0, limit = 1000, sorts } = {}) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/admin/chat/sessions/';
-    return this.req.get(url, { params: { page, per_page: perPage } });
+    let form = new FormData();
+    form.append('start', start);
+    form.append('limit', limit);
+    form.append('config', JSON.stringify({
+      sorts: sorts || []
+    }));
+    return this._sendPostRequest(url, form);
   }
 
   getAdminChatMessages(projectUuid, sessionUuid) {

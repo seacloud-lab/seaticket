@@ -5,6 +5,7 @@ export * from './table';
 export const VIEW_TYPE = {
   TABLE: 'table',
   CARD: 'card',
+  STATISTIC: 'statistic',
 };
 
 export const FACE_RECOGNITION_VIEW_ID = '_face_recognition';

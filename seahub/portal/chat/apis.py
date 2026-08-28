@@ -1,6 +1,7 @@
 import logging
 import time
 import mimetypes
+import json
 
 from django.core.cache import cache
 from django.http import FileResponse, StreamingHttpResponse
@@ -257,31 +258,31 @@ class PortalAdminChatSessionsView(APIView):
     throttle_classes = (UserRateThrottle,)
 
     @portal_endpoint
-    def get(self, request, project_uuid):
+    def post(self, request, project_uuid):
         try:
             try:
-                current_page = int(request.GET.get('page', 1))
-                per_page = int(request.GET.get('per_page', 50))
+                start = int(request.POST.get('start', 0))
+                limit = int(request.POST.get('limit', 1000))
+                view_config = request.POST.get('config', '{}')
+                view_config = json.loads(view_config)
             except (TypeError, ValueError):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'per_page or page invalid')
+            end = start + limit
 
-            if current_page < 1 or per_page < 1:
-                return api_error(status.HTTP_400_BAD_REQUEST, 'per_page or page invalid')
+            sorts = view_config.get('sorts', [])
+            if not sorts:
+                sorts = [ { 'column_key': 'updated_at', 'sort_type': 'down' } ]
 
-            per_page = min(per_page, 100)
-            start = (current_page - 1) * per_page
-            end = start + per_page
+            sorts = [
+                f'-{s["column_key"]}' if s['sort_type'] == 'down' else s['column_key']
+                for s in sorts
+            ]
 
             sessions = PortalChatSessions.objects.filter(
                 project_uuid=project_uuid,
-            ).order_by('-updated_at')[start:end]
+            ).order_by(*sorts)[start:end]
             return Response({
                 'sessions': [session.to_dict() for session in sessions],
-                'pagination': {
-                    'page': current_page,
-                    'per_page': per_page,
-                    'has_next': len(sessions) == per_page,
-                },
             })
         except Exception as e:
             logger.error(e)

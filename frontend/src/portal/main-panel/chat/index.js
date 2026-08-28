@@ -40,7 +40,7 @@ const Main = ({ title, settings, isEditMode }) => {
         {isLoading ? (
           <CenteredLoading />
         ) : (
-          <>
+          <DocumentsProvider sessionId={pageSlugId} openDocumentCallback={closeShowSessions}>
             <div className="d-flex o-hidden flex-1">
               <Chat
                 sessionId={pageSlugId}
@@ -80,7 +80,7 @@ const Main = ({ title, settings, isEditMode }) => {
               />
             )}
             {isShowSessions && (<Sessions sessionId={pageSlugId} permission={permission} />)}
-          </>
+          </DocumentsProvider>
         )}
       </div>
     </>
@@ -115,9 +115,7 @@ const Ask = ({ title = gettext('Chat') }) => {
   return (
     <AskPageProvider resetURL={resetURL} getInitialPageSlugId={getInitialPageSlugId} >
       <SessionsProvider projectUuid={projectUuid} api={chatAPI}>
-        <DocumentsProvider>
-          <Main title={title} settings={settings} isEditMode={isEditMode} />
-        </DocumentsProvider>
+        <Main title={title} settings={settings} isEditMode={isEditMode} />
       </SessionsProvider>
     </AskPageProvider>
   );

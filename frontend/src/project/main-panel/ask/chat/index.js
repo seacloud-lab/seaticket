@@ -12,10 +12,11 @@ import { useAskPage, useSessions, useDocuments } from '../hooks';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '@/project/constants';
 import ChatHeader from '../chat-header';
+import { initMessages } from '../utils';
 
 import './index.css';
 
-const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allowedAttachmentSources, canSelectModel, enableSkills = true, api, renderOperation, customHeaderTitle, readOnly: forceReadOnly = false, hideInput = false, hideHeader = false }) => {
+const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allowedAttachmentSources, canSelectModel, enableSkills = true, api, renderOperation, customHeaderTitle }) => {
   const [isReply, setReply] = useState(false);
   const [loading, setLoading] = useState(true);
   const [chatHistories, setChatHistories] = useState([]);
@@ -53,9 +54,8 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
   }, [session]);
 
   const readOnly = useMemo(() => {
-    if (forceReadOnly) return true;
     return Boolean(session?.running_task || isSharedByOther);
-  }, [forceReadOnly, session?.running_task, isSharedByOther]);
+  }, [session?.running_task, isSharedByOther]);
 
   const jumpToBottom = useCallback((delay = 1) => {
     if (timer.current) {
@@ -189,46 +189,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
         setFetchedSession(new ChatSession({ ...sessionData, running_task: Boolean(running_task) }));
         modifyLocalSession(sessionId, { running_task: Boolean(running_task) });
       }
-      let messages = Array.isArray(historyMessages) ? historyMessages.map(item => {
-        if (item.role === 'user') {
-          let attachments = item?.attachments || [];
-          return new ChatMessage({
-            _id: item.id,
-            message: {
-              [CHAT_MESSAGE_TYPE.TEXT]: item.content,
-              [CHAT_MESSAGE_TYPE.ATTACHMENTS]: attachments,
-            },
-            isUserSpeak: true,
-          });
-        } else if (item.role === 'chat_manager') {
-          return new ChatMessage({
-            _id: item.id,
-            message: item.content,
-          });
-        }
-
-        let msgContent;
-        try {
-          msgContent = {
-            ai_reply: item.content,
-            sources: Array.isArray(item.sources) ? item.sources : [],
-            thought_process: item.thought_process
-          };
-        } catch (e) {
-          console.error(e);
-          msgContent = { ai_reply: item.content, sources: [] };
-        }
-        let newChatData = {
-          [CHAT_MESSAGE_TYPE.AI_REPLY]: msgContent.ai_reply,
-          [CHAT_MESSAGE_TYPE.SOURCES]: msgContent.sources,
-          [CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]: msgContent.thought_process,
-        };
-        return new ChatMessage({
-          _id: item.id,
-          message: newChatData,
-          type: CHAT_MESSAGE_TYPE.GROUP
-        });
-      }) : [];
+      let messages = initMessages(historyMessages);
 
       if (running_task) {
         setReply(true);
@@ -558,7 +519,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
       {operationContent && (
         <div className="chat-header-operation-wrapper">{operationContent}</div>
       )}
-      {!isNewChat && !hideHeader && (
+      {!isNewChat && (
         <div className="seaqa-ai-ask-chats-header">
           <ChatHeader
             isReply={_isReply}
@@ -598,35 +559,33 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
           {loading && (<CenteredLoading className="flex-1" />)}
         </div>
       </div>
-      {!hideInput && (
-        <div className="seaqa-ai-ask-chats-footer">
-          {isSharedByOther && !session?.running_task && startChatFromConversation ? (
-            <div className="seaqa-ai-ask-shared-readonly-footer">
-              <SecondaryBtn
-                icon={isStartingChatFromConversation ? 'loading' : 'copy'}
-                text={gettext('Start a new chat from this conversation')}
-                doing={isStartingChatFromConversation}
-                onClick={handleStartChatFromConversation}
-              />
-            </div>
-          ) : (
-            <ChatInput
-              ref={messageInputRef}
-              isReply={_isReply}
-              readOnly={readOnly}
-              projectUuid={projectUuid}
-              placeholder={isEmpty ? undefined : ''}
-              allowedAttachmentSources={allowedAttachmentSources}
-              canSelectModel={canSelectModel}
-              enableSkills={enableSkills}
-              sendMessage={sendMessage}
-              clearContext={clearContext}
-              resetClearContext={resetClearContext}
-              api={api}
+      <div className="seaqa-ai-ask-chats-footer">
+        {isSharedByOther && !session?.running_task && startChatFromConversation ? (
+          <div className="seaqa-ai-ask-shared-readonly-footer">
+            <SecondaryBtn
+              icon={isStartingChatFromConversation ? 'loading' : 'copy'}
+              text={gettext('Start a new chat from this conversation')}
+              doing={isStartingChatFromConversation}
+              onClick={handleStartChatFromConversation}
             />
-          )}
-        </div>
-      )}
+          </div>
+        ) : (
+          <ChatInput
+            ref={messageInputRef}
+            isReply={_isReply}
+            readOnly={readOnly}
+            projectUuid={projectUuid}
+            placeholder={isEmpty ? undefined : ''}
+            allowedAttachmentSources={allowedAttachmentSources}
+            canSelectModel={canSelectModel}
+            enableSkills={enableSkills}
+            sendMessage={sendMessage}
+            clearContext={clearContext}
+            resetClearContext={resetClearContext}
+            api={api}
+          />
+        )}
+      </div>
     </div>
   );
 };
