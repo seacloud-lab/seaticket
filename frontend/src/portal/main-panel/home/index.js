@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import classnames from 'classnames';
 import slugid from 'slugid';
-import { Icon, IconButton } from '@/components';
+import { CenteredLoading, Icon, IconButton } from '@/components';
 import { DEFAULT_PROJECT_ICON, gettext, PROJECT_ICON_ALL_LIST } from '@/constants';
 import { usePortalSettings } from '@/portal/hooks/settings';
 import { isMobile } from '@/utils/utils';
@@ -9,16 +9,24 @@ import PortalCardEditPanel from './card-edit-panel';
 import PortalHomeChatInput from './chat-input';
 import PortalHomeEditPanel from './edit-panel';
 import { CARD_LAYOUT_OPTIONS, DEFAULT_NEW_CARD, getSafeCardLink, normalizeHomePageStyle } from './utils';
+import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
+import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
+import { portalAPI } from '@/portal/api';
+import { KNOWLEDGE_BASE_TYPE } from '@/project/main-panel/knowledge-base/constants';
 
 import './index.css';
 
 const { isEditMode, portalHomeSettings } = window.app.pageOptions;
 
-const PortalHome = ({ onHomeChatSend }) => {
+const PortalHome = ({ projectUuid, onHomeChatSend }) => {
   const [isEdit, setIsEdit] = useState(false);
   const [homePageStyle, setHomePageStyle] = useState(() => normalizeHomePageStyle(portalHomeSettings));
   const [activeCard, setActiveCard] = useState('');
-  const { updateHomeSetting } = usePortalSettings();
+  const [selectedFeaturedArticle, setSelectedFeaturedArticle] = useState(null);
+  const { updateHomeSetting, featuredArticles, isFeaturedArticlesLoading } = usePortalSettings();
+  const { columns = [], records = [] } = featuredArticles || {};
+  const titleColumn = columns.find(column => column.name === 'title');
+  const columnTitles = records.map(record => ({ record, title: getCellValueByColumn(record, titleColumn) })).filter(({ title }) => title);
 
   const heroSection = homePageStyle['portal_home_hero_section'];
   const cardsSection = homePageStyle['portal_home_cards_section'];
@@ -64,6 +72,10 @@ const PortalHome = ({ onHomeChatSend }) => {
     if (safeLink) {
       window.open(safeLink, '_blank', 'noopener,noreferrer');
     }
+  };
+
+  const handleFeaturedArticleClick = (record) => {
+    setSelectedFeaturedArticle({ ...record, _id: record._id || record._pk, type: KNOWLEDGE_BASE_TYPE });
   };
 
   return (
@@ -123,8 +135,42 @@ const PortalHome = ({ onHomeChatSend }) => {
               </article>
             )}
           </section>
-        </main>
 
+          <section className="portal-home-featured-articles">
+            {isFeaturedArticlesLoading ? (
+              <CenteredLoading />
+            ) : (
+              <>
+                <h2 className="portal-home-featured-articles-title">Featured articles</h2>
+                <div className="portal-home-featured-articles-list">
+                  {columnTitles.map(({ record, title }) => (
+                    <div
+                      className="portal-home-featured-article-card"
+                      onClick={() => handleFeaturedArticleClick(record)}
+                      role="button"
+                      tabIndex="0"
+                      title={title}
+                      key={record._pk}
+                    >
+                      <Icon symbol="knowledge-base" className="portal-home-featured-article-icon" aria-hidden="true" />
+                      <div className="portal-home-featured-article-title">{title}</div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </section>
+        </main>
+        {selectedFeaturedArticle && (
+          <ResourceDetailsDialog
+            projectUuid={projectUuid}
+            resource={selectedFeaturedArticle}
+            columns={columns}
+            getKB={(projectUuid, knowledgeID) => portalAPI.getKBRecord(projectUuid, knowledgeID)}
+            onToggle={() => setSelectedFeaturedArticle(null)}
+            isShowInternalIcon={false}
+          />
+        )}
         {isEditMode && isEdit && !activeCard && (
           <PortalHomeEditPanel
             homePageStyle={homePageStyle}

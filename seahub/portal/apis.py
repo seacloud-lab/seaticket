@@ -33,7 +33,7 @@ from seahub.utils.storage import FileNotFound, upload_portal_files_to_s3, delete
 from seahub.utils.hasher import AESPasswordHasher
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
-from seahub.project.constants import DataEventType, PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_TIMEOUT, PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_PREFIX
+from seahub.project.constants import DataEventType, PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_TIMEOUT, PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_PREFIX, KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS
 from seahub.seadb_models.utils import list_knowledge_base_records, list_my_portal_issues, list_portal_issues_view_records, list_trash_portal_issues, list_portal_issue_comments_records, list_portal_issues_view_records
 from seahub.tickets.ticket_utils import check_ticket_creation_interval, get_column_from_columns_by_name, \
     build_linked_ticket_titles_map, TABLE_TICKETS, get_ticket, sync_links_in_connection,\
@@ -1355,17 +1355,6 @@ class PortalKnowledgeBaseViewsView(APIView):
 
     def get(self, request, project_uuid):
         try:
-            project = request.project
-            project_settings = json.loads(project.settings) if project.settings else {}
-            portal_settings = project_settings.get('portal', {})
-            show_kb = bool(portal_settings.get('show_knowledge_base', False))
-        except Exception:
-            show_kb = False
-        if not show_kb:
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        try:
             views = KnowledgeBaseViews.objects.list_views(project_uuid)
         except Exception as e:
             logger.error(e)
@@ -1394,17 +1383,6 @@ class PortalKnowledgeBaseRecordsView(APIView):
             error_msg = 'view_id is invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        try:
-            project = request.project
-            project_settings = json.loads(project.settings) if project.settings else {}
-            portal_settings = project_settings.get('portal', {})
-            show_kb = bool(portal_settings.get('show_knowledge_base', False))
-        except Exception:
-            show_kb = False
-        if not show_kb:
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         username = request.user.username if request.user.is_authenticated else ''
         try:
             seadb_api = SeaDBAPI()
@@ -1423,23 +1401,51 @@ class PortalKnowledgeBaseRecordsView(APIView):
         return Response({'records': records, 'columns': columns})
 
 
+class PortalKnowledgeBaseFeaturedArticlesView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (PortalKnowledgeBasePermission,)
+    throttle_classes = (UserRateThrottle,)
+
+    def get(self, request, project_uuid):
+        project = request.project
+        start = request.GET.get('start', 0)
+        limit = request.GET.get('limit', 100)
+        try:
+            start = int(start)
+            limit = int(limit)
+        except Exception:
+            start = 0
+            limit = 100
+
+        if start < 0:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'start invalid')
+        if limit < 0:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'limit invalid')
+
+        try:
+            query_fields = ', '.join(KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS)
+            table_name = SchemaTables.KNOWLEDGE_BASE.table_name()
+            sql = (
+                f"SELECT {query_fields} FROM `{table_name}` "
+                f"WHERE `featured_articles` = True AND (`deleted` = False OR `deleted` IS NULL) "
+                f"LIMIT {limit} OFFSET {start}"
+            )
+            seadb_api = SeaDBAPI()
+            res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
+        except Exception as e:
+            logger.error(e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        records = [_serialize_portal_kb_record(project_uuid, record) for record in res.get('results', [])]
+        return Response({'records': records, 'columns': res.get('metadata') or []})
+
+
 class PortalKnowledgeBaseRecordView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (PortalKnowledgeBasePermission,)
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request, project_uuid, knowledge_id):
-        try:
-            project = request.project
-            project_settings = json.loads(project.settings) if project.settings else {}
-            portal_settings = project_settings.get('portal', {})
-            show_kb = bool(portal_settings.get('show_knowledge_base', False))
-        except Exception:
-            show_kb = False
-        if not show_kb:
-            error_msg = 'Feature is not enabled.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         username = getattr(request.user, 'username', '')
         try:
             seadb_api = SeaDBAPI()

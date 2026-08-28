@@ -12,6 +12,7 @@ export const KNOWLEDGE_PREDEFINED_COLUMN_NAME = {
   CREATED_TIME: 'created_time',
   LAST_MODIFIER: 'last_modifier',
   MODIFIED_TIME: 'modified_time',
+  FEATURED_ARTICLES: 'featured_articles',
 };
 
 export const KNOWLEDGE_PREDEFINED_COLUMN_CONFIG = {
@@ -50,6 +51,12 @@ export const KNOWLEDGE_PREDEFINED_COLUMN_CONFIG = {
   [KNOWLEDGE_PREDEFINED_COLUMN_NAME.MODIFIED_TIME]: {
     display_name: gettext('Last modified time'),
     type: CellType.MTIME,
+  },
+  [KNOWLEDGE_PREDEFINED_COLUMN_NAME.FEATURED_ARTICLES]: {
+    display_name: gettext('Featured articles'),
+    type: CellType.CHECKBOX,
+    editable: true,
+    modify_data_able: true,
   },
 };
 

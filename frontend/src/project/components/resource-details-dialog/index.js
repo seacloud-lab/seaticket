@@ -46,6 +46,7 @@ const ResourceDetailsDialog = ({
   createMoreOptions,
   getTicket,
   getKB,
+  isShowInternalIcon = true,
   getIssue = (projectUuid, issueID) => portalAPI.getPortalIssue(projectUuid, issueID),
 }) => {
   const [resourceDetails, setResourceDetails] = useState(null);
@@ -172,7 +173,7 @@ const ResourceDetailsDialog = ({
             </div>
           )}
           <div className="text-truncate" title={title}>{title}</div>
-          {internalNetworkAddress && (
+          {isShowInternalIcon && internalNetworkAddress && (
             <IconButton
               className="open-in-new-tab-btn"
               icon="view-issue"
