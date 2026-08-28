@@ -166,7 +166,7 @@ const PortalHome = ({ projectUuid, onHomeChatSend }) => {
             projectUuid={projectUuid}
             resource={selectedFeaturedArticle}
             columns={columns}
-            getKB={(projectUuid, knowledgeID) => portalAPI.getKBRecord(projectUuid, knowledgeID)}
+            getKB={(projectUuid, knowledgeID) => portalAPI.getKBRecord(projectUuid, knowledgeID, { isSupportPortal: true })}
             onToggle={() => setSelectedFeaturedArticle(null)}
             isShowInternalIcon={false}
           />

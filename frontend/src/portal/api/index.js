@@ -226,9 +226,10 @@ class PortalAPI {
     return this.req.get(url);
   }
 
-  getKBRecord(projectUuid, recordId) {
+  getKBRecord(projectUuid, recordId, { isSupportPortal = false } = {}) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/knowledge-bases/' + recordId + '/';
-    return this.req.get(url);
+    const params = isSupportPortal ? { is_support_portal: true } : undefined;
+    return this.req.get(url, { params });
   }
 
   listUserInfo(userIdList) {
