@@ -1354,18 +1354,16 @@ class PortalKnowledgeBaseViewsView(APIView):
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request, project_uuid):
-        is_support_portal = request.GET.get('is_support_portal') == 'true'
-        if not is_support_portal:
-            try:
-                project = request.project
-                project_settings = json.loads(project.settings) if project.settings else {}
-                portal_settings = project_settings.get('portal', {})
-                show_kb = bool(portal_settings.get('show_knowledge_base', False))
-            except Exception:
-                show_kb = False
-            if not show_kb:
-                error_msg = 'Feature is not enabled.'
-                return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+        # try:
+        #     project = request.project
+        #     project_settings = json.loads(project.settings) if project.settings else {}
+        #     portal_settings = project_settings.get('portal', {})
+        #     show_kb = bool(portal_settings.get('show_knowledge_base', False))
+        # except Exception:
+        #     show_kb = False
+        # if not show_kb:
+        #     error_msg = 'Feature is not enabled.'
+        #     return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
             views = KnowledgeBaseViews.objects.list_views(project_uuid)
@@ -1396,18 +1394,16 @@ class PortalKnowledgeBaseRecordsView(APIView):
             error_msg = 'view_id is invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         
-        is_support_portal = request.GET.get('is_support_portal') == 'true'
-        if not is_support_portal:
-            try:
-                project = request.project
-                project_settings = json.loads(project.settings) if project.settings else {}
-                portal_settings = project_settings.get('portal', {})
-                show_kb = bool(portal_settings.get('show_knowledge_base', False))
-            except Exception:
-                show_kb = False
-            if not show_kb:
-                error_msg = 'Feature is not enabled.'
-                return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+        # try:
+        #     project = request.project
+        #     project_settings = json.loads(project.settings) if project.settings else {}
+        #     portal_settings = project_settings.get('portal', {})
+        #     show_kb = bool(portal_settings.get('show_knowledge_base', False))
+        # except Exception:
+        #     show_kb = False
+        # if not show_kb:
+        #     error_msg = 'Feature is not enabled.'
+        #     return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         username = request.user.username if request.user.is_authenticated else ''
         try:
@@ -1472,18 +1468,16 @@ class PortalKnowledgeBaseRecordView(APIView):
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request, project_uuid, knowledge_id):
-        is_support_portal = request.GET.get('is_support_portal') == 'true'
-        if not is_support_portal:
-            try:
-                project = request.project
-                project_settings = json.loads(project.settings) if project.settings else {}
-                portal_settings = project_settings.get('portal', {})
-                show_kb = bool(portal_settings.get('show_knowledge_base', False))
-            except Exception:
-                show_kb = False
-            if not show_kb:
-                error_msg = 'Feature is not enabled.'
-                return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+        # try:
+        #     project = request.project
+        #     project_settings = json.loads(project.settings) if project.settings else {}
+        #     portal_settings = project_settings.get('portal', {})
+        #     show_kb = bool(portal_settings.get('show_knowledge_base', False))
+        # except Exception:
+        #     show_kb = False
+        # if not show_kb:
+        #     error_msg = 'Feature is not enabled.'
+        #     return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
             seadb_api = SeaDBAPI()
