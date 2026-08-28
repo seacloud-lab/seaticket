@@ -16,6 +16,10 @@ OAUTH_TOKEN_EXPIRY_BUFFER_SECONDS = 60
 PROJECT_ID_PATTERN = re.compile(r'^[a-z][a-z0-9-]{4,28}[a-z0-9]$')
 FIREBASE_ANDROID_APPS_URL = 'https://firebase.googleapis.com/v1beta1/projects/{project_id}/androidApps'
 FIREBASE_IOS_APPS_URL = 'https://firebase.googleapis.com/v1beta1/projects/{project_id}/iosApps'
+BIGQUERY_TABLES_URL = (
+    'https://bigquery.googleapis.com/bigquery/v2/projects/{project_id}/datasets/{dataset_id}/tables'
+)
+FIREBASE_CRASHLYTICS_DATASET_ID = 'firebase_crashlytics'
 
 
 class FirebaseCrashOAuthError(Exception):
@@ -199,3 +203,37 @@ class FirebaseCrashOAuthAPI:
             apps,
             key=lambda app: (app['name'].lower(), app['platform'], app['app_id']),
         )
+
+    @staticmethod
+    def _table_id_for_app(identifier, platform):
+        normalized_identifier = (identifier or '').replace('.', '_')
+        return f'{normalized_identifier}_{platform}' if normalized_identifier else ''
+
+    @staticmethod
+    def _field_paths(fields, prefix=''):
+        paths = set()
+        for field in fields or []:
+            name = field.get('name')
+            if not name:
+                continue
+            path = f'{prefix}.{name}' if prefix else name
+            paths.add(path)
+            paths.update(FirebaseCrashOAuthAPI._field_paths(field.get('fields'), path))
+        return paths
+
+    def validate_app_table(self, project_id, bundle_identifier, platform):
+        self._validate_resource_ids(project_id)
+        table_id = self._table_id_for_app(bundle_identifier, platform)
+        if not table_id:
+            raise FirebaseCrashOAuthError('The Firebase application identifier is invalid.')
+
+        table_url = (
+            f'{BIGQUERY_TABLES_URL.format(project_id=project_id, dataset_id=FIREBASE_CRASHLYTICS_DATASET_ID)}/{table_id}'
+        )
+        table = self._get(table_url)
+        fields = self._field_paths(table.get('schema', {}).get('fields'))
+        required_fields = {'event_id', 'issue_id', 'event_timestamp', 'error_type'}
+        if not required_fields.issubset(fields):
+            raise FirebaseCrashOAuthError(
+                f'The selected Firebase application does not have a valid Crashlytics export table: {table_id}'
+            )

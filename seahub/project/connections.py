@@ -276,8 +276,27 @@ class ProjectConnectionsView(APIView):
             if not ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.JIRA_ISSUE.value):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Jira OAuth authorization is required.')
         if connection_type == ConnectionType.FIREBASE_CRASH.value:
-            if not ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.FIREBASE_CRASH.value):
+            firebase_oauth = ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.FIREBASE_CRASH.value)
+            if not firebase_oauth:
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Firebase Crashlytics OAuth authorization is required.')
+
+            firebase_crash_api = FirebaseCrashOAuthAPI(
+                access_token=firebase_oauth.access_token,
+                refresh_token=firebase_oauth.refresh_token,
+                expires_at=firebase_oauth.expires_at,
+            )
+            try:
+                firebase_crash_api.validate_app_table(
+                    config.get('project_id'), config.get('bundle_identifier'), config.get('platform')
+                )
+            except FirebaseCrashOAuthError as e:
+                return api_error(status.HTTP_400_BAD_REQUEST, str(e))
+
+            if firebase_crash_api.access_token != firebase_oauth.access_token:
+                ProjectConnectionOauth.objects.upsert_token(
+                    project_uuid, ConnectionType.FIREBASE_CRASH.value,
+                    firebase_crash_api.access_token, firebase_crash_api.expires_at, firebase_crash_api.refresh_token
+                )
 
         record, error_response = create_connection(project, request.user.username, connection_type, name, config)
         if error_response:
