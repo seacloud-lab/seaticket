@@ -1,6 +1,9 @@
-from unittest.mock import Mock
+import json
+from unittest.mock import Mock, patch
 
 from seahub.project.agent.action_executor import AgentActionExecutor
+from seahub.seadb_models.models import SchemaTables
+from seahub.tickets.ticket_utils import TicketLinkValidationError
 
 
 def test_parse_suggestion_payload_accepts_dict():
@@ -132,3 +135,107 @@ def test_github_assign_labels_fails_without_suggested_labels_payload():
 
     assert result['success'] is False
     assert result['status'] == 'failed'
+
+
+def test_link_existing_ticket_success_for_github_issue():
+    executor = AgentActionExecutor()
+    seadb_api = Mock()
+    project = Mock()
+
+    ticket = {'title': 'Tracked issue', 'linked_connection_records': []}
+    sync_plan = Mock()
+    connections = [Mock()]
+    with patch(
+        'seahub.project.agent.action_executor.get_ticket',
+        return_value=(ticket, None),
+    ), patch(
+        'seahub.project.agent.action_executor.check_ticket_link_changes',
+        return_value=(sync_plan, connections),
+    ) as mock_check, patch(
+        'seahub.project.agent.action_executor.sync_links_in_connection',
+    ) as mock_sync, patch(
+        'seahub.project.agent.action_executor.build_ticket_related_url',
+        return_value='https://example.com/tickets/88',
+    ):
+        result = executor._execute_link_existing_ticket(
+            seadb_api=seadb_api,
+            project=project,
+            project_uuid='project-uuid',
+            source_type='github_issue',
+            source_id='1_2',
+            suggestion_payload={'related_ticket': 88},
+            request=Mock(),
+        )
+
+    assert result['success'] is True
+    payload = json.loads(result['result'])
+    assert payload['ticket']['ticket_pk'] == 88
+    assert payload['ticket']['ticket_url'] == 'https://example.com/tickets/88'
+    assert 'linked to ticket #88' in payload['message']
+
+    mock_check.assert_called_once_with(seadb_api, 'project-uuid', {88: (['1_2'], [])})
+    mock_sync.assert_called_once_with(seadb_api, 'project-uuid', sync_plan, connections)
+    seadb_api.update_rows.assert_called_once_with(
+        'project-uuid',
+        SchemaTables.TICKETS.table_name(),
+        [{'pk': 88, 'row': {'linked_connection_records': ['1_2']}}],
+    )
+
+
+def test_link_existing_ticket_fails_without_related_ticket():
+    executor = AgentActionExecutor()
+
+    result = executor._execute_link_existing_ticket(
+        seadb_api=Mock(),
+        project=Mock(),
+        project_uuid='project-uuid',
+        source_type='github_issue',
+        source_id='1_2',
+        suggestion_payload={},
+    )
+
+    assert result['success'] is False
+    assert result['status'] == 'failed'
+    assert 'related_ticket' in result['result']
+
+
+def test_link_existing_ticket_fails_when_target_ticket_not_found():
+    executor = AgentActionExecutor()
+
+    with patch('seahub.project.agent.action_executor.get_ticket', return_value=(None, None)):
+        result = executor._execute_link_existing_ticket(
+            seadb_api=Mock(),
+            project=Mock(),
+            project_uuid='project-uuid',
+            source_type='github_issue',
+            source_id='1_2',
+            suggestion_payload={'related_ticket': 88},
+        )
+
+    assert result['success'] is False
+    assert result['status'] == 'failed'
+    assert 'Ticket #88 not found' in result['result']
+
+
+def test_link_existing_ticket_fails_when_record_already_linked():
+    executor = AgentActionExecutor()
+
+    with patch(
+        'seahub.project.agent.action_executor.get_ticket',
+        return_value=({'title': 'Ticket'}, None),
+    ), patch(
+        'seahub.project.agent.action_executor.check_ticket_link_changes',
+        side_effect=TicketLinkValidationError('This record is already linked to a ticket.'),
+    ):
+        result = executor._execute_link_existing_ticket(
+            seadb_api=Mock(),
+            project=Mock(),
+            project_uuid='project-uuid',
+            source_type='github_issue',
+            source_id='1_2',
+            suggestion_payload={'related_ticket': 88},
+        )
+
+    assert result['success'] is False
+    assert result['status'] == 'failed'
+    assert 'already linked' in result['result']

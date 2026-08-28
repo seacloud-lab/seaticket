@@ -25,6 +25,9 @@ from seahub.tickets.ticket_utils import (
     record_ticket_activities,
     build_ticket_close_payloads_from_client,
     convert_select_field_option_ids_to_names,
+    check_ticket_link_changes,
+    sync_links_in_connection,
+    TicketLinkValidationError,
 )
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.seadb_models.discord_seadb_api import DiscordSeaDBAPI
@@ -217,6 +220,8 @@ class AgentActionExecutor:
             )
         if tool_name == 'suggest_create_ticket':
             return self._execute_github_create_ticket(seadb_api, project, project_uuid, source_id, suggestion_content, operator, request=request, auto_executed=auto_executed)
+        if tool_name == 'suggest_link_existing_ticket':
+            return self._execute_link_existing_ticket(seadb_api, project, project_uuid, ConnectionType.GITHUB_ISSUE.value, source_id, suggestion_payload, request=request)
         logger.warning('Unknown github_issue tool_name: %r', tool_name)
         return self._failed_execution(f'Unknown tool_name: {tool_name}')
 
@@ -228,6 +233,7 @@ class AgentActionExecutor:
         source_id,
         tool_name,
         suggestion_content,
+        suggestion_payload,
         operator,
         request=None,
         auto_executed=False,
@@ -238,6 +244,8 @@ class AgentActionExecutor:
             )
         if tool_name == 'suggest_create_ticket':
             return self._execute_discourse_create_ticket(seadb_api, project, project_uuid, source_id, suggestion_content, operator, request=request, auto_executed=auto_executed)
+        if tool_name == 'suggest_link_existing_ticket':
+            return self._execute_link_existing_ticket(seadb_api, project, project_uuid, ConnectionType.DISCOURSE_FORUM.value, source_id, suggestion_payload, request=request)
         logger.warning('Unknown discourse_topic tool_name: %r', tool_name)
         return self._failed_execution(f'Unknown tool_name: {tool_name}')
 
@@ -249,6 +257,7 @@ class AgentActionExecutor:
         source_id,
         tool_name,
         suggestion_content,
+        suggestion_payload,
         operator,
         request=None,
         auto_executed=False,
@@ -259,6 +268,8 @@ class AgentActionExecutor:
             return self._execute_email_create_ticket(seadb_api, project, project_uuid, source_id, suggestion_content, operator, request=request, auto_executed=auto_executed)
         if tool_name == 'suggest_move_to_spam':
             return self._execute_email_move_to_spam(seadb_api, project_uuid, source_id)
+        if tool_name == 'suggest_link_existing_ticket':
+            return self._execute_link_existing_ticket(seadb_api, project, project_uuid, ConnectionType.EMAIL.value, source_id, suggestion_payload, request=request)
         logger.warning('Unknown email tool_name: %r', tool_name)
         return self._failed_execution(f'Unknown tool_name: {tool_name}')
 
@@ -270,6 +281,7 @@ class AgentActionExecutor:
         source_id,
         tool_name,
         suggestion_content,
+        suggestion_payload,
         operator,
         request=None,
         auto_executed=False,
@@ -287,6 +299,8 @@ class AgentActionExecutor:
                 request=request,
                 auto_executed=auto_executed,
             )
+        if tool_name == 'suggest_link_existing_ticket':
+            return self._execute_link_existing_ticket(seadb_api, project, project_uuid, ConnectionType.DISCORD.value, source_id, suggestion_payload, request=request)
         logger.warning('Unknown discord tool_name: %r', tool_name)
         return self._failed_execution(f'Unknown tool_name: {tool_name}')
 
@@ -343,6 +357,7 @@ class AgentActionExecutor:
                 source_id,
                 tool_name,
                 suggestion_content,
+                suggestion_payload,
                 effective_operator,
                 request=request,
                 auto_executed=auto_executed,
@@ -355,6 +370,7 @@ class AgentActionExecutor:
                 source_id,
                 tool_name,
                 suggestion_content,
+                suggestion_payload,
                 effective_operator,
                 request=request,
                 auto_executed=auto_executed,
@@ -367,6 +383,7 @@ class AgentActionExecutor:
                 source_id,
                 tool_name,
                 suggestion_content,
+                suggestion_payload,
                 effective_operator,
                 request=request,
                 auto_executed=auto_executed,
@@ -906,6 +923,83 @@ class AgentActionExecutor:
         return self._successful_execution(json.dumps({
             'message': message,
             'ticket': ticket,
+        }, ensure_ascii=False))
+
+    def _execute_link_existing_ticket(
+        self,
+        seadb_api,
+        project,
+        project_uuid,
+        source_type,
+        source_id,
+        suggestion_payload=None,
+        request=None,
+    ):
+        suggestion_payload = self._parse_suggestion_payload(suggestion_payload)
+        raw_related_ticket = suggestion_payload.get('related_ticket')
+        try:
+            related_ticket = int(raw_related_ticket)
+        except (TypeError, ValueError):
+            return self._failed_execution('related_ticket must be a positive integer.')
+        if related_ticket <= 0:
+            return self._failed_execution('related_ticket must be a positive integer.')
+
+        ticket, _ = get_ticket(seadb_api, project_uuid, related_ticket)
+        if not ticket:
+            return self._failed_execution(f'Ticket #{related_ticket} not found.')
+
+        connection_id, record_id = self._parse_connection_source_id(source_id, source_type)
+        if connection_id is None or record_id is None:
+            return self._failed_execution(f'Invalid source_id format: {source_id}')
+
+        try:
+            sync_plan, connections = check_ticket_link_changes(
+                seadb_api,
+                project_uuid,
+                {related_ticket: ([source_id], [])},
+            )
+        except TicketLinkValidationError as e:
+            return self._failed_execution(str(e))
+
+        try:
+            sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections)
+        except Exception as e:
+            logger.error('Failed to link record %s to ticket #%s: %s', source_id, related_ticket, e)
+            return self._failed_execution(f'Failed to link this record to ticket #{related_ticket}: {e}')
+
+        linked_source_ids = ticket.get(SchemaTables.TICKETS.column.linked_connection_records.name) or []
+        linked_source_ids = [
+            item for item in linked_source_ids
+            if isinstance(item, str) and item.strip()
+        ]
+        if source_id not in linked_source_ids:
+            linked_source_ids.append(source_id)
+            try:
+                seadb_api.update_rows(
+                    project_uuid,
+                    SchemaTables.TICKETS.table_name(),
+                    [{
+                        'pk': related_ticket,
+                        'row': {
+                            SchemaTables.TICKETS.column.linked_connection_records.name: linked_source_ids,
+                        },
+                    }],
+                )
+            except Exception as e:
+                logger.warning(
+                    'Linked record %s to ticket #%s but failed to update linked_connection_records: %s',
+                    source_id, related_ticket, e
+                )
+                return self._failed_execution(f'Linked record {source_id} to ticket #{related_ticket} but failed to update linked_connection_records: {e}')
+
+        ticket_info = {
+            'ticket_pk': related_ticket,
+            'ticket_title': ticket.get(SchemaTables.TICKETS.column.title.name) or f'Ticket #{related_ticket}',
+            'ticket_url': build_ticket_related_url(request, project, related_ticket),
+        }
+        return self._successful_execution(json.dumps({
+            'message': f'Record linked to ticket #{related_ticket}.',
+            'ticket': ticket_info,
         }, ensure_ascii=False))
 
     def _execute_github_create_ticket(

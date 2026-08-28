@@ -92,6 +92,9 @@ const SuggestionAction = ({
       case 'suggest_create_ticket': {
         return 'ticket-filled';
       }
+      case 'suggest_link_existing_ticket': {
+        return 'ticket-filled';
+      }
       case 'suggest_modify_type': {
         return 'suitable-issue-type-or-labels';
       }
