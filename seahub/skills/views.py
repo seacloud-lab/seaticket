@@ -15,11 +15,12 @@ from seahub.project.utils import check_project_permission, check_project_admin_p
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.seadb_models.models import SchemaTables
 from seahub.seadb_models.utils import ensure_skills_seadb_table
-from seahub.utils.ai_client import get_builtin_skill, parse_skill
+from seahub.utils.ai_client import get_builtin_skill
 from seahub.utils.decorators import require_org_context
 from seahub.skills.utils import (
     SKILL_NAME_RE,
     _coerce_bool,
+    parse_skill_markdown,
     _get_custom_skill_row_by_name,
     _get_disabled_builtin_skills,
     _list_custom_skill_rows,
@@ -84,7 +85,7 @@ class SkillsAPIView(APIView):
         enabled_raw = request.data.get('enabled', True)
         try:
             enabled = _coerce_bool(enabled_raw, 'enabled')
-            parsed = parse_skill(content)
+            parsed = parse_skill_markdown(content)
         except ValueError as e:
             return api_error(status.HTTP_400_BAD_REQUEST, str(e))
 
@@ -249,7 +250,7 @@ class SkillAPIView(APIView):
 
             update_row = {}
             if content is not None:
-                parsed = parse_skill(content, expected_name=skill_name)
+                parsed = parse_skill_markdown(content, expected_name=skill_name)
                 update_row[SchemaTables.SKILLS.column.name.name] = parsed['name']
                 update_row[SchemaTables.SKILLS.column.description.name] = parsed['description']
                 update_row[SchemaTables.SKILLS.column.content.name] = str(content).strip()

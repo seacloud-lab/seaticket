@@ -96,18 +96,3 @@ def get_builtin_skill(name):
     if resp.status_code != 200:
         raise Exception(f'get builtin skill error status: {resp.status_code} body: {resp.text}')
     return resp.json().get('skill')
-
-
-def parse_skill(content, expected_name=None):
-    headers = _build_headers()
-    url = urljoin(SEAQA_AI_INNER_SERVER_URL, '/internal/skills/parse')
-    payload = {'content': content}
-    if expected_name:
-        payload['expected_name'] = expected_name
-    resp = requests.post(url, json=payload, headers=headers, timeout=AI_REPLY_TIMEOUT)
-    if resp.status_code == 400:
-        error_msg = resp.json().get('error_msg', 'Invalid skill content.')
-        raise ValueError(error_msg)
-    if resp.status_code != 200:
-        raise Exception(f'parse skill error status: {resp.status_code} body: {resp.text}')
-    return resp.json().get('skill')
