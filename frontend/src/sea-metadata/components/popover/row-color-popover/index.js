@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import CustomizePopover from '@/components/customize-popover';
@@ -32,6 +32,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
   const [colorSelectorIndex, setColorSelectorIndex] = useState(null);
 
   const containerRef = useRef(null);
+  const shouldScrollAfterAddRef = useRef(false);
 
   const excludedColumnKeys = useMemo(() => {
     return new Set([
@@ -57,6 +58,13 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
     setRules(colorRules);
   }, [colorRules]);
 
+  useLayoutEffect(() => {
+    if (!shouldScrollAfterAddRef.current || !containerRef.current) return;
+
+    shouldScrollAfterAddRef.current = false;
+    containerRef.current.scrollTo({ top: containerRef.current.scrollHeight, behavior: 'smooth' });
+  }, [rules, editingRuleIndex]);
+
   const canAddRule = useMemo(() => {
     if (validColumns.length === 0) return false;
     if (rules.length === 0) return true;
@@ -69,7 +77,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
     return Array.isArray(lastRule?.filters) && lastRule.filters.length > 0 && hasValidFilters;
   }, [rules, validColumns]);
 
-  const updateRules = useCallback((updater, isAddRule = false) => {
+  const updateRules = useCallback((updater) => {
     setRules((prevRules) => {
       const newRules = typeof updater === 'function' ? updater(prevRules) : updater;
       modifyRowColor({
@@ -78,9 +86,6 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
       });
       return newRules;
     });
-    if (!isAddRule) return;
-    if (!containerRef.current) return;
-    containerRef.current.scrollTo({ top: containerRef.current.scrollHeight, behavior: 'smooth' });
   }, [modifyRowColor]);
 
   const addRule = useCallback(() => {
@@ -90,7 +95,8 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
     const filter = getFilterByColumn(defaultColumn);
     const defaultRule = getDefaultRowColorRule(validColumns, filter, SELECT_OPTION_COLORS[rules.length % SELECT_OPTION_COLORS.length].COLOR);
     if (!defaultRule) return;
-    updateRules(prevRules => [...prevRules, defaultRule], true);
+    shouldScrollAfterAddRef.current = true;
+    updateRules(prevRules => [...prevRules, defaultRule]);
     setEditingRuleIndex(rules.length);
   }, [canAddRule, validColumns, rules, updateRules]);
 
