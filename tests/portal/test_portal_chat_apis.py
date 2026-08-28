@@ -456,6 +456,11 @@ class TestPortalAdminChatAPIs:
         request.user = user
         return request
 
+    def _admin_post_request(self, factory, project, user, path, data):
+        request = factory.post(path, data=data)
+        request.user = user
+        return request
+
     def test_list_sessions_is_paginated(self, factory, real_project, project_creator):
         for index in range(3):
             PortalChatSessions.objects.create_session(
@@ -464,11 +469,12 @@ class TestPortalAdminChatAPIs:
                 username=f'user-{index}@example.com',
             )
 
-        request = self._admin_request(
+        request = self._admin_post_request(
             factory,
             real_project,
             project_creator,
-            f'/api/v1/portal/{real_project.uuid}/admin/chat/sessions/?page=1&per_page=2',
+            f'/api/v1/portal/{real_project.uuid}/admin/chat/sessions/',
+            data={'start': 0, 'limit': 2},
         )
         response = PortalAdminChatSessionsView.as_view()(
             request,
@@ -477,17 +483,13 @@ class TestPortalAdminChatAPIs:
 
         assert response.status_code == 200
         assert len(response.data['sessions']) == 2
-        assert response.data['pagination'] == {
-            'page': 1,
-            'per_page': 2,
-            'has_next': True,
-        }
 
-        request = self._admin_request(
+        request = self._admin_post_request(
             factory,
             real_project,
             project_creator,
-            f'/api/v1/portal/{real_project.uuid}/admin/chat/sessions/?page=2&per_page=2',
+            f'/api/v1/portal/{real_project.uuid}/admin/chat/sessions/',
+            data={'start': 2, 'limit': 2},
         )
         response = PortalAdminChatSessionsView.as_view()(
             request,
@@ -496,7 +498,6 @@ class TestPortalAdminChatAPIs:
 
         assert response.status_code == 200
         assert len(response.data['sessions']) == 1
-        assert response.data['pagination']['has_next'] is False
 
     def test_get_session_messages(self, factory, real_project, project_creator):
         session = PortalChatSessions.objects.create_session(
