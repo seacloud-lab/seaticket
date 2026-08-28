@@ -286,16 +286,24 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
       const stringValue = String(val) || null;
       return (removed && stringValue) ? (<span className="seaqa-log-text-removed">{stringValue}</span>) : stringValue;
     };
+    const renderStatusOption = (value, removed) => (
+      <Option
+        option={{ name: value, color: '#9c9c9e', text_color: 'var(--bs-body-bg)' }}
+        className={removed ? 'seaqa-log-removed' : ''}
+      />
+    );
     const renderChangeNodes = (oldVal, newVal, labelMap, taskUserMap = null) => {
       const oldObj = (oldVal && typeof oldVal === 'object') ? oldVal : {};
       const newObj = (newVal && typeof newVal === 'object') ? newVal : {};
       const allFields = [...new Set([...Object.keys(newObj), ...Object.keys(oldObj)])];
       return allFields.map(field => {
         const label = labelMap[field] || field;
-        const hasOld = !isEmptyValue(oldObj[field]);
-        const hasNew = !isEmptyValue(newObj[field]);
-        const o = renderValueNode(field, oldObj[field], true, taskUserMap);
-        const n = renderValueNode(field, newObj[field], false, taskUserMap);
+        const oldValue = field === 'status' && oldObj[field]?.status !== undefined ? oldObj[field].status : oldObj[field];
+        const newValue = field === 'status' && newObj[field]?.status !== undefined ? newObj[field].status : newObj[field];
+        const hasOld = !isEmptyValue(oldValue);
+        const hasNew = !isEmptyValue(newValue);
+        const o = field === 'status' && hasOld ? renderStatusOption(oldValue, true) : renderValueNode(field, oldValue, true, taskUserMap);
+        const n = field === 'status' && hasNew ? renderStatusOption(newValue, false) : renderValueNode(field, newValue, false, taskUserMap);
         if (!hasOld && hasNew) return <span key={field}>{' '}{label} {gettext('added')}: <span>{n}</span></span>;
         if (hasOld && !hasNew) return <span key={field}>{' '}{label} {gettext('removed')}: <span className="seaqa-log-removed">{o}</span></span>;
         if (hasOld && hasNew) return <span key={field}>{' '}{label} {gettext('changed from')} <span className="seaqa-log-removed">{o}</span> {gettext('to')} <span>{n}</span></span>;
