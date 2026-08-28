@@ -6,7 +6,23 @@
 .sea-metadata-filter-popover .sea-metadata-filters {
   display: flex;
   flex-direction: column;
+  width: fit-content;
+  max-height: calc(100vh - 112px);
+  overflow: hidden;
+}
+
+.sea-metadata-filter-popover.disabled .sea-metadata-filters {
+  max-height: calc(100vh - 160px);
+}
+
+.sea-metadata-filter-popover .sea-metadata-filters-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
   min-width: 400px;
+  overflow-y: auto;
 }
 
 .sea-metadata-filter-popover .filter-group-name {
@@ -32,6 +48,7 @@
   height: 48px;
   padding: 0 8px;
   border-top: 1px solid var(--bs-border-secondary-color);
+  flex-shrink: 0;
 }
 
 .sea-metadata-filter-popover .customize-add-tool.popover-add-tool {

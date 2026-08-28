@@ -39,7 +39,6 @@ class SortPopover extends Component {
     this.initSorts = getDisplaySorts(sorts, columns);
     this.state = {
       sorts: [...this.initSorts],
-      shouldScroll: false,
     };
     this.isSelectOpen = false;
   }
@@ -48,19 +47,12 @@ class SortPopover extends Component {
     document.addEventListener('click', this.hideDTablePopover, true);
     document.addEventListener('keydown', this.onHotKey);
     this.unsubscribeOpenSelect = context.eventBus.subscribe(EVENT_BUS_TYPE.OPEN_SELECT, this.setSelectStatus);
-    window.addEventListener('resize', this.syncPopoverScrollState);
-    window.requestAnimationFrame(this.syncPopoverScrollState);
   }
 
   componentWillUnmount() {
     document.removeEventListener('click', this.hideDTablePopover, true);
     document.removeEventListener('keydown', this.onHotKey);
-    window.removeEventListener('resize', this.syncPopoverScrollState);
     this.unsubscribeOpenSelect();
-  }
-
-  componentDidUpdate() {
-    this.syncPopoverScrollState();
   }
 
   hideDTablePopover = (e) => {
@@ -93,7 +85,7 @@ class SortPopover extends Component {
   addSort = () => {
     const { sorts } = this.state;
     const newSorts = execSortsOperation(SORT_OPERATION.ADD_SORT, { sorts });
-    this.updateSorts(newSorts);
+    this.updateSorts(newSorts, true);
   };
 
   deleteSort = (event, index) => {
@@ -119,8 +111,12 @@ class SortPopover extends Component {
     this.updateSorts(newSorts);
   };
 
-  updateSorts = (sorts) => {
-    this.setState({ sorts });
+  updateSorts = (sorts, isAddSort = false) => {
+    this.setState({ sorts }, () => {
+      if (!isAddSort) return;
+      if (!this.sortsListRef) return;
+      this.sortsListRef.scrollTo({ top: this.sortsListRef.scrollHeight, behavior: 'smooth' });
+    });
   };
 
   onClosePopover = () => {
@@ -182,22 +178,10 @@ class SortPopover extends Component {
     e.stopPropagation();
   };
 
-  syncPopoverScrollState = () => {
-    if (!this.sortPopoverRef) return;
-
-    const availableHeight = window.innerHeight - 100;
-    const shouldScroll = this.sortPopoverRef.scrollHeight > availableHeight;
-
-    if (shouldScroll !== this.state.shouldScroll) {
-      this.setState({ shouldScroll });
-    }
-  };
-
   render() {
     const { target, readOnly = false } = this.props;
-    const { sorts, shouldScroll } = this.state;
+    const { sorts } = this.state;
     const isEmpty = isSortsEmpty(sorts);
-    const popoverStyle = shouldScroll ? { maxHeight: 'calc(100vh - 100px)', overflowY: 'auto' } : { overflowY: 'visible' };
     return (
       <UncontrolledPopover
         placement="bottom-end"
@@ -205,11 +189,14 @@ class SortPopover extends Component {
         target={target}
         fade={false}
         hideArrow={true}
-        className="sea-metadata-sort-popover"
+        className={classnames('sea-metadata-sort-popover', { 'disabled': readOnly })}
         boundariesElement={document.body}
       >
-        <div ref={ref => this.sortPopoverRef = ref} onClick={this.onPopoverInsideClick} style={popoverStyle}>
-          <div className={classnames('sorts-list', { 'empty-sorts-container d-flex align-items-center justify-content-center': isEmpty })} >
+        <div ref={ref => this.sortPopoverRef = ref} onClick={this.onPopoverInsideClick}>
+          <div
+            className={classnames('sorts-list', { 'empty-sorts-container d-flex align-items-center justify-content-center': isEmpty })}
+            ref={ref => this.sortsListRef = ref}
+          >
             {isEmpty ?
               <div className="seaqa-tip-default font-size-14 line-height-22">{gettext('No sorts')}</div> :
               this.renderSortsList()

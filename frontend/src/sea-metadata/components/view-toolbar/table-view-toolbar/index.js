@@ -43,7 +43,6 @@ const TableViewToolbar = ({
       {tools.includes(VIEW_TOOL.FILTERS) && (
         <FilterSetter
           wrapperClass="sea-metadata-view-tool-filter"
-          filtersClassName="sea-metadata-filters"
           target="sea-metadata-filter-popover"
           readOnly={isReadOnly}
           filterConjunction={view.filter_conjunction}

@@ -19,7 +19,6 @@ const FilterSetter = ({
   filters: propsFilters,
   isPre,
   collaborators,
-  filtersClassName,
   target = 'sea-metadata-filter-popover',
   filterConjunction,
   basicFilters = [],
@@ -88,7 +87,6 @@ const FilterSetter = ({
       {isShowSetter &&
         <FilterPopover
           placement="bottom-end"
-          filtersClassName={filtersClassName}
           target={target}
           readOnly={readOnly}
           columns={columns}

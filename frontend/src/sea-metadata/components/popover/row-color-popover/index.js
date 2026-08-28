@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import CustomizePopover from '@/components/customize-popover';
@@ -30,8 +30,9 @@ const getValidRules = (rules = []) => {
 const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = [], hidePopover, modifyRowColor }) => {
   const [editingRuleIndex, setEditingRuleIndex] = useState(null);
   const [colorSelectorIndex, setColorSelectorIndex] = useState(null);
-  const bodyRef = useRef(null);
-  const [shouldScroll, setShouldScroll] = useState(false);
+
+  const containerRef = useRef(null);
+  const shouldScrollAfterAddRef = useRef(false);
 
   const excludedColumnKeys = useMemo(() => {
     return new Set([
@@ -57,27 +58,12 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
     setRules(colorRules);
   }, [colorRules]);
 
-  const syncPopoverScrollState = useCallback(() => {
-    if (!bodyRef.current) return;
+  useLayoutEffect(() => {
+    if (!shouldScrollAfterAddRef.current || !containerRef.current) return;
 
-    const availableHeight = window.innerHeight - 200;
-    const nextShouldScroll = bodyRef.current.scrollHeight > availableHeight;
-
-    setShouldScroll((prevShouldScroll) => prevShouldScroll === nextShouldScroll ? prevShouldScroll : nextShouldScroll);
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener('resize', syncPopoverScrollState);
-    window.requestAnimationFrame(syncPopoverScrollState);
-
-    return () => {
-      window.removeEventListener('resize', syncPopoverScrollState);
-    };
-  }, [syncPopoverScrollState]);
-
-  useEffect(() => {
-    window.requestAnimationFrame(syncPopoverScrollState);
-  }, [syncPopoverScrollState, rules, editingRuleIndex, colorSelectorIndex]);
+    shouldScrollAfterAddRef.current = false;
+    containerRef.current.scrollTo({ top: containerRef.current.scrollHeight, behavior: 'smooth' });
+  }, [rules, editingRuleIndex]);
 
   const canAddRule = useMemo(() => {
     if (validColumns.length === 0) return false;
@@ -109,6 +95,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
     const filter = getFilterByColumn(defaultColumn);
     const defaultRule = getDefaultRowColorRule(validColumns, filter, SELECT_OPTION_COLORS[rules.length % SELECT_OPTION_COLORS.length].COLOR);
     if (!defaultRule) return;
+    shouldScrollAfterAddRef.current = true;
     updateRules(prevRules => [...prevRules, defaultRule]);
     setEditingRuleIndex(rules.length);
   }, [canAddRule, validColumns, rules, updateRules]);
@@ -185,7 +172,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
   return (
     <CustomizePopover
       target={target}
-      className="seaqa-row-color-popover"
+      className={classnames('seaqa-row-color-popover', { 'disabled': readOnly })}
       hidePopover={hidePopover}
       hidePopoverWithEsc={hidePopover}
       placement="bottom-end"
@@ -195,13 +182,9 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
       ]}
     >
       <div
-        ref={bodyRef}
         className="seaqa-row-color-body px-2 pt-2 pb-0"
-        style={{
-          minWidth: rules.length === 0 ? '450px' : '550px',
-          overflowY: shouldScroll ? 'auto' : 'visible',
-          maxHeight: shouldScroll ? 'calc(100vh - 200px)' : 'none',
-        }}
+        style={{ minWidth: rules.length === 0 ? '450px' : '550px' }}
+        ref={containerRef}
       >
         {rules.length === 0 &&
           <div className="seaqa-row-color-empty d-flex justify-content-center align-items-center">{gettext('No rules')}</div>

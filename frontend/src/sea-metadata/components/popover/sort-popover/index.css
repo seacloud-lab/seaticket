@@ -5,8 +5,13 @@
 
 .sea-metadata-sort-popover .sorts-list {
   min-height: 120px;
-  max-height: 100%;
+  max-height: calc(100vh - 160px);
   padding: 16px;
+  overflow-y: auto;
+}
+
+.sea-metadata-sort-popover.disabled .sorts-list {
+  max-height: calc(100vh - 112px);
 }
 
 .sea-metadata-sort-popover .sorts-list.empty-sorts-container {
