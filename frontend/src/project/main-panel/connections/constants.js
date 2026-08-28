@@ -98,6 +98,7 @@ export const CONNECTION_TYPE = {
   LINEAR: 'linear',
   CONFLUENCE: 'confluence',
   DISCORD: 'discord',
+  FIREBASE_CRASH: 'firebase_crash',
 };
 
 export const DOCUMENT_CONNECTION_TYPE_MAP = {
@@ -113,6 +114,7 @@ export const ISSUE_CONNECTION_TYPE_MAP = {
   [CONNECTION_TYPE.JIRA_ISSUE]: true,
   [CONNECTION_TYPE.DISCOURSE_FORUM]: true,
   [CONNECTION_TYPE.DISCORD]: true,
+  [CONNECTION_TYPE.FIREBASE_CRASH]: true,
 };
 
 export const TASK_CONNECTION_TYPE_MAP = {
@@ -334,6 +336,31 @@ export const CONNECTION_FIELDS = {
       is_custom: true,
     },
   ],
+  [CONNECTION_TYPE.FIREBASE_CRASH]: [
+    {
+      key: 'name',
+      name: gettext('Name'),
+      type: CONNECTION_FIELD_TYPE.TEXT,
+      is_required: true,
+      is_display: true,
+    }, {
+      key: 'project_id',
+      name: gettext('Firebase project'),
+      placeholder: gettext('Select a Firebase project'),
+      type: CONNECTION_FIELD_TYPE.SYNC_SELECT,
+      is_required: true,
+      is_display: true,
+      is_custom: true,
+    }, {
+      key: 'app_id',
+      name: gettext('Firebase application'),
+      placeholder: gettext('Select a Firebase application'),
+      type: CONNECTION_FIELD_TYPE.SYNC_SELECT,
+      is_required: true,
+      is_display: true,
+      is_custom: true,
+    },
+  ],
   [CONNECTION_TYPE.DISCOURSE_FORUM]: [
     {
       key: 'name',
@@ -544,6 +571,13 @@ export const CONNECTION_TYPES = [
     help_link: HELP_WEB_URL + 'Jira',
     sub_types: CONNECTION_SUB_TYPE_MAP.issues,
   }, {
+    type: CONNECTION_TYPE.FIREBASE_CRASH,
+    icon: 'sites',
+    name: gettext('Firebase Crashlytics'),
+    help_text: gettext('Authorize a Google account that can access the Firebase project and run BigQuery queries against its Crashlytics export. If any problem occurs, check the'),
+    help_link: HELP_WEB_URL + 'Firebase-Crashlytics',
+    sub_types: CONNECTION_SUB_TYPE_MAP.issues,
+  }, {
     type: CONNECTION_TYPE.DISCOURSE_FORUM,
     icon: 'discourse-logo',
     name: gettext('Discourse forums'),
@@ -702,6 +736,13 @@ export const CONNECTION_PREDEFINED_COLUMN_NAME = {
   VERSION: 'version',
   OTHERS: 'others',
   ISSUE_ID: 'issue_id',
+  SUBTITLE: 'subtitle',
+  ERROR_TYPE: 'error_type',
+  APP_VERSION: 'app_version',
+  OCCURRENCE_COUNT: 'occurrence_count',
+  AFFECTED_USERS: 'affected_users',
+  FIRST_SEEN_TIME: 'first_seen_time',
+  LAST_SEEN_TIME: 'last_seen_time',
   IDENTIFIER: 'identifier',
   MESSAGE_ID: 'message_id',
   THREAD_ID: 'thread_id',
@@ -853,6 +894,53 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
     [CONNECTION_PREDEFINED_COLUMN_NAME.CREATED_TIME]: {
       display_name: gettext('Created time'),
       type: CellType.CTIME,
+      is_predefined: true,
+    },
+    ...CONNECTION_PREDEFINED_COLUMN,
+  },
+  [CONNECTION_TYPE.FIREBASE_CRASH]: {
+    [CONNECTION_PREDEFINED_COLUMN_NAME.TITLE]: {
+      display_name: gettext('Title'),
+      is_name_column: true,
+      frozen: true,
+      is_predefined: true,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.ISSUE_ID]: {
+      display_name: gettext('Issue ID'),
+      is_predefined: true,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.SUBTITLE]: {
+      display_name: gettext('Subtitle'),
+      is_predefined: true,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.ERROR_TYPE]: {
+      display_name: gettext('Error type'),
+      is_predefined: true,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.APP_VERSION]: {
+      display_name: gettext('App version'),
+      is_predefined: true,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.OCCURRENCE_COUNT]: {
+      display_name: gettext('Occurrences'),
+      type: CellType.NUMBER,
+      is_predefined: true,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.AFFECTED_USERS]: {
+      display_name: gettext('Affected users'),
+      type: CellType.NUMBER,
+      is_predefined: true,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.FIRST_SEEN_TIME]: {
+      display_name: gettext('First seen'),
+      type: CellType.DATE,
+      data: { format: 'YYYY-MM-DD HH:mm:ss' },
+      is_predefined: true,
+    },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.LAST_SEEN_TIME]: {
+      display_name: gettext('Last seen'),
+      type: CellType.DATE,
+      data: { format: 'YYYY-MM-DD HH:mm:ss' },
       is_predefined: true,
     },
     ...CONNECTION_PREDEFINED_COLUMN,
@@ -1139,6 +1227,7 @@ export const SUPPORT_ROW_DETAILS_CONNECTION_TYPES = [
   CONNECTION_TYPE.GENERAL_TASK,
   CONNECTION_TYPE.CONFLUENCE,
   CONNECTION_TYPE.DISCORD,
+  CONNECTION_TYPE.FIREBASE_CRASH,
 ];
 
 export const SUPPORT_ROW_DETAILS_SETTINGS_CONNECTION_TYPES = [
@@ -1159,6 +1248,7 @@ export const SUPPORT_OPEN_ORIGINAL_PAGE_CONNECTION_TYPES = [
   CONNECTION_TYPE.CONFLUENCE,
   CONNECTION_TYPE.DISCORD,
   CONNECTION_TYPE.JIRA_ISSUE,
+  CONNECTION_TYPE.FIREBASE_CRASH,
 ];
 
 export const SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES = [
@@ -1167,6 +1257,7 @@ export const SUPPORT_CREATE_RELATED_TICKET_CONNECTION_TYPES = [
   CONNECTION_TYPE.JIRA_ISSUE,
   CONNECTION_TYPE.EMAIL,
   CONNECTION_TYPE.DISCORD,
+  CONNECTION_TYPE.FIREBASE_CRASH,
 ];
 
 export const SUPPORT_LINK_EXISTING_TICKET_CONNECTION_TYPES = [
@@ -1177,6 +1268,7 @@ export const SUPPORT_LINK_EXISTING_TICKET_CONNECTION_TYPES = [
   CONNECTION_TYPE.LINEAR,
   CONNECTION_TYPE.DISCORD,
   CONNECTION_TYPE.JIRA_ISSUE,
+  CONNECTION_TYPE.FIREBASE_CRASH,
 ];
 
 export const SUPPORT_AI_CONNECTION_TYPES = [
@@ -1190,6 +1282,7 @@ export const SUPPORT_AI_CONNECTION_TYPES = [
   CONNECTION_TYPE.GENERAL_TASK,
   CONNECTION_TYPE.LINEAR,
   CONNECTION_TYPE.DISCORD,
+  CONNECTION_TYPE.FIREBASE_CRASH,
 ];
 
 export const SUPPORT_FIND_RELATED_ISSUES_CONNECTION_TYPES = [
@@ -1210,6 +1303,7 @@ export const SUPPORT_MARK_OUTDATED_CONNECTION_TYPES = [
   CONNECTION_TYPE.CONFLUENCE,
   CONNECTION_TYPE.LINEAR,
   CONNECTION_TYPE.DISCORD,
+  CONNECTION_TYPE.FIREBASE_CRASH,
 ];
 
 export const SUPPORT_MODIFY_CONNECTION_RECORDS_TYPES = [
@@ -1223,4 +1317,5 @@ export const SUPPORT_MODIFY_CONNECTION_RECORDS_TYPES = [
   CONNECTION_TYPE.GENERAL_TASK,
   CONNECTION_TYPE.LINEAR,
   CONNECTION_TYPE.DISCORD,
+  CONNECTION_TYPE.FIREBASE_CRASH,
 ];

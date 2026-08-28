@@ -2,7 +2,8 @@
 from django.urls import re_path
 
 from .views import project_view, github_install, github_installation_setup, linear_oauth, linear_oauth_callback, \
-    confluence_oauth, confluence_oauth_callback, discord_oauth, discord_oauth_callback, jira_oauth, jira_oauth_callback
+    confluence_oauth, confluence_oauth_callback, discord_oauth, discord_oauth_callback, jira_oauth, jira_oauth_callback, \
+    firebase_crash_oauth, firebase_crash_oauth_callback
 
 from .apis import ProjectRelatedUsersView, ProjectItemsSearchView, ProjectGithubRepositories, ProjectLinearTeams, ProjectConfluenceWorkspaces, \
     ProjectConfluenceSpaces, ProjectDiscordChannels,ProjectJiraSites, ProjectJiraProjects
@@ -12,7 +13,8 @@ from .connections import ProjectConnectionsView, ProjectConnectionView, ProjectC
     ProjectConnectionReplyEmailView, ProjectConnectionDeleteEmailView, ProjectConnectionReplyDiscourseView, \
     ConnectionFileView, GithubIssueView, \
     ProjectEmailOAuthLoginView, ProjectEmailOAuthQueryView, ProjectEmailOAuthCallbackView, \
-    DownloadEmailAttachments, ZipEmailAttachments, QueryIOStatus, ProjectLinearOauthStatusView, ProjectConfluenceOauthStatusView, ProjectConnectionUnreadEmailView, ProjectJiraOauthStatusView
+    DownloadEmailAttachments, ZipEmailAttachments, QueryIOStatus, ProjectLinearOauthStatusView, ProjectConfluenceOauthStatusView, ProjectConnectionUnreadEmailView, ProjectJiraOauthStatusView, \
+    ProjectFirebaseCrashOauthStatusView, ProjectFirebaseCrashProjectsView, ProjectFirebaseCrashAppsView
 from .files import ProjectUploadFileAPIView, GetProjectUploadFileView, \
     ProjectFileAPIView, GetProjectFileView
 from .connections_views import ConnectionViewsAPI, ConnectionViewAPI, \
@@ -58,6 +60,8 @@ urlpatterns = [
     re_path(r'^confluence/oauth/callback/$', confluence_oauth_callback, name='project_confluence_oauth_callback'),
     re_path(r'^jira/oauth/$', jira_oauth, name='project_jira_oauth'),
     re_path(r'^jira/oauth/callback/$', jira_oauth_callback, name='project_jira_oauth_callback'),
+    re_path(r'^firebase-crash/oauth/$', firebase_crash_oauth, name='project_firebase_crash_oauth'),
+    re_path(r'^firebase-crash/oauth/callback/$', firebase_crash_oauth_callback, name='project_firebase_crash_oauth_callback'),
 
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/$', project_view, name='project_view'),
 
@@ -92,6 +96,9 @@ urlpatterns = [
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/jira/sites/$', ProjectJiraSites.as_view(), name='api-v1-project-jira-sites'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/jira/projects/$', ProjectJiraProjects.as_view(), name='api-v1-project-jira-projects'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/jira-oauth/$', ProjectJiraOauthStatusView.as_view(), name='api-v1-project-jira-oauth-status'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/firebase-crash-oauth/$', ProjectFirebaseCrashOauthStatusView.as_view(), name='api-v1-project-firebase-crash-oauth-status'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/firebase-crash/projects/$', ProjectFirebaseCrashProjectsView.as_view(), name='api-v1-project-firebase-crash-projects'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/firebase-crash/apps/$', ProjectFirebaseCrashAppsView.as_view(), name='api-v1-project-firebase-crash-apps'),
 
     # connections
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/$', ProjectConnectionsView.as_view(), name='api-v1-connections'),
