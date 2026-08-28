@@ -608,7 +608,7 @@ def check_ticket_comment_creation_interval(seadb_api, project_uuid, username, ti
     return True
 
 def get_ticket(seadb_api, project_uuid, ticket_id):
-    sql = f"SELECT `_pk`, `title`, `content`, `state`, `substate`, `type`, `tags`, `assignees`, `participants`, `linked_connection_records`, `priority`, `creator`, `created_time`, `modified_time`, `due_date` FROM `{TABLE_TICKETS}` WHERE `_pk` = {ticket_id}"
+    sql = f"SELECT `_pk`, `title`, `content`, `state`, `substate`, `type`, `tags`, `assignees`, `participants`, `linked_connection_records`, `priority`, `creator`, `created_time`, `modified_time`, `due_date` FROM `{TABLE_TICKETS}` WHERE `_pk` = {ticket_id} AND (`deleted` = False OR `deleted` IS NULL)"
     res = seadb_api.query_rows(project_uuid, sql)
     rows = res.get('results')
     return rows[0] if rows else None, res.get('metadata')
