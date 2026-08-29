@@ -36,6 +36,7 @@ export const PORTAL_ISSUE_PAGE_SLUG_ID = {
   ALL: 'all',
   TYPES: 'types',
   SUBSTATES: 'substates',
+  ANALYSIS: 'analysis',
   TRASH: 'trash',
 };
 
@@ -105,5 +106,7 @@ export const PORTAL_ISSUE_COLUMNS_WIDTH_CONFIG = {
 };
 
 export const PORTAL_ISSUE_TABLE_NAME = 'portal_issues';
+
+export const PORTAL_CHAT_TABLE_NAME = 'portal_chat';
 
 export const PORTAL_ISSUE_TYPE = 'portal_issue';

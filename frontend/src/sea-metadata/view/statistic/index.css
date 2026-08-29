@@ -1,0 +1,13 @@
+.sea-metadata-statistics-view {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px 0;
+}
+
+.sea-metadata-statistics-view .sea-metadata-statistic {
+  background-color: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-secondary-color);
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+  border-radius: 16px;
+}

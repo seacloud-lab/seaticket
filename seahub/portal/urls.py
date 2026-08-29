@@ -13,6 +13,7 @@ from .portal_issue_substates import PortalIssueSubstatesAPIView, PortalIssueSubs
 from .chat.apis import (
     PortalChatSessionsView, PortalChatSessionView, PortalChatMessagesView,
     PortalChatView, PortalChatSessionTitleView, PortalChatImageView,
+    PortalAdminChatSessionsView, PortalAdminChatMessagesView, PortalAdminChatStatisticsView
 )
 from .files import (
     PortalUploadFileView, GetPortalUploadFileView, PortalFileView,
@@ -29,6 +30,8 @@ urlpatterns = [
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/chat/(?P<session_uuid>[-0-9a-f]{36})/$', portal_edit_view, name='portal_edit_view'),
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/chat/$', portal_edit_view, name='portal_edit_view'),
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/home/$', portal_edit_view, name='portal_edit_view'),
+    re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/all-chat/(?P<session_uuid>[-0-9a-f]{36})/$', portal_edit_view, name='portal_edit_view'),
+    re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/all-chat/$', portal_edit_view, name='portal_edit_view'),
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/$', portal_edit_view, name='portal_edit_view'),
 
     # portal page
@@ -37,6 +40,7 @@ urlpatterns = [
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/portal-issues/trash/$', project_view, name='project_portal_issues_trash_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/portal-issues/types/$', project_view, name='project_portal_issues_types_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/portal-issues/substates/$', project_view, name='project_portal_issues_substates_view'),
+    re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/portal-issues/analysis/$', project_view, name='project_portal_issues_analysis_view'),
     
     # portal API
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/tags/$', PortalTagsView.as_view(), name='api-v1-portal-tags'),
@@ -92,4 +96,7 @@ urlpatterns = [
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/chat/sessions/(?P<session_uuid>[-0-9a-f]+)/$', PortalChatSessionView.as_view(), name='api-v1-portal-chat-session'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/chat/sessions/(?P<session_uuid>[-0-9a-f]+)/generate-title/$', PortalChatSessionTitleView.as_view(), name='api-v1-portal-chat-session-generate-title'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/chat/sessions/(?P<session_uuid>[-0-9a-f]+)/messages/$', PortalChatMessagesView.as_view(), name='api-v1-portal-chat-messages'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/admin/chat/sessions/$', PortalAdminChatSessionsView.as_view(), name='api-v1-portal-admin-chat-sessions'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/admin/chat/sessions/(?P<session_uuid>[-0-9a-f]{36})/messages/$', PortalAdminChatMessagesView.as_view(), name='api-v1-portal-admin-chat-messages'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/admin/chat/statistics/$', PortalAdminChatStatisticsView.as_view(), name='api-v1-portal-admin-chat-statistics'),
 ]

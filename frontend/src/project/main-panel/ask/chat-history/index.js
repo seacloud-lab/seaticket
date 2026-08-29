@@ -6,17 +6,18 @@ import { CHAT_MESSAGE_TYPE } from '../constants';
 
 import './index.css';
 
-const ChatHistory = ({ chat, settings, projectUuid, projectName, workspaceID }) => {
+const ChatHistory = ({ chat, settings, projectUuid, projectName, workspaceID, displayOperations = true }) => {
   const { _id, message, isUserSpeak, type } = chat;
 
   const chatId = useMemo(() => _id || '', [_id]);
 
   const showOperations = useMemo(() => {
+    if (!displayOperations) return false;
     if (isUserSpeak) return false;
     if (type === CHAT_MESSAGE_TYPE.TIP) return false;
     if (chatId === 'typing') return false;
     return true;
-  }, [chatId, isUserSpeak, type]);
+  }, [displayOperations, chatId, isUserSpeak, type]);
 
   if (Object.keys(message).length === 0) return null;
 

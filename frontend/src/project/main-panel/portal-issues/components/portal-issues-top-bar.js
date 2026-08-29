@@ -21,54 +21,35 @@ const PortalIssuesTopBar = ({ title, permission, type }) => {
       );
     }
 
-    const toggleBtn = (
-      <IconButton
-        icon="arrow-down"
-        className="rotate-icon-90 seaqa-project-toggle-tickets-btn"
-        onClick={() => togglePageSlugId(PORTAL_ISSUE_PAGE_SLUG_ID.ALL)}
-      />
-    );
     if (pageSlugId === PORTAL_ISSUE_PAGE_SLUG_ID.TYPES) {
-      return (
-        <>
-          <IconButton
-            icon="arrow-down"
-            className="rotate-icon-90 seaqa-project-toggle-tickets-btn"
-            onClick={() => togglePageSlugId(PORTAL_ISSUE_PAGE_SLUG_ID.ALL)}
-          />
-          <span className="text-truncate" title={gettext('Types')}>{gettext('Types')}</span>
-        </>
-      );
+      return (<span className="text-truncate" title={gettext('Types')}>{gettext('Types')}</span>);
     }
     if (pageSlugId === PORTAL_ISSUE_PAGE_SLUG_ID.TRASH) {
-      return (
-        <>
-          <IconButton
-            icon="arrow-down"
-            className="rotate-icon-90 seaqa-project-toggle-tickets-btn"
-            onClick={() => togglePageSlugId(PORTAL_ISSUE_PAGE_SLUG_ID.ALL)}
-          />
-          <span className="text-truncate" title={gettext('Trash')}>{gettext('Trash')}</span>
-        </>
-      );
+      return (<span className="text-truncate" title={gettext('Trash')}>{gettext('Trash')}</span>);
     }
     if (pageSlugId === PORTAL_ISSUE_PAGE_SLUG_ID.SUBSTATES) {
+      return (<span className="text-truncate" title={gettext('Substates')}>{gettext('Substates')}</span>);
+    }
+    if (pageSlugId === PORTAL_ISSUE_PAGE_SLUG_ID.ANALYSIS) {
       return (
         <>
-          <IconButton
-            icon="arrow-down"
-            className="rotate-icon-90 seaqa-project-toggle-tickets-btn"
-            onClick={() => togglePageSlugId(PORTAL_ISSUE_PAGE_SLUG_ID.ALL)}
-          />
-          <span className="text-truncate" title={gettext('Substates')}>{gettext('Substates')}</span>
+          <span className="text-truncate" title={gettext('Portal chat analysis')}>
+            {gettext('Portal chat analysis')}
+          </span>
+          <RefreshBtn onClick={onRefresh} />
         </>
       );
     }
+
     // Issue detail page
     const issueTitle = gettext('Issues from portal') + ' / #' + pageSlugId;
     return (
       <>
-        {toggleBtn}
+        <IconButton
+          icon="arrow-down"
+          className="rotate-icon-90 seaqa-project-toggle-tickets-btn"
+          onClick={() => togglePageSlugId(PORTAL_ISSUE_PAGE_SLUG_ID.ALL)}
+        />
         <span className="text-truncate" title={issueTitle}>{issueTitle}</span>
       </>
     );

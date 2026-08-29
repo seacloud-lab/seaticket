@@ -3,6 +3,7 @@ import CenteredLoading from '@/components/centered-loading';
 import toaster from '@/components/toaster';
 import Table from './table';
 import Card from './card';
+import Statistic from './statistic';
 import { useMetadata } from '../hooks';
 import { PER_LOAD_NUMBER, VIEW_TYPE } from '../constants';
 import { Utils } from '@/utils/utils';
@@ -47,6 +48,9 @@ const View = ({ CustomView, onCustomViewRowClick, ...props }) => {
       }
       case VIEW_TYPE.CARD: {
         return (<Card { ...props } />);
+      }
+      case VIEW_TYPE.STATISTIC: {
+        return (<Statistic { ...props } />);
       }
       default: {
         return (<Table { ...props } />);

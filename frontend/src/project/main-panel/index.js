@@ -76,7 +76,8 @@ const Container = ({ activeBar, settings, modifySettings, toggleBar, modifyLocal
     case BAR_TYPE.PORTAL_ISSUES:
     case BAR_TYPE.PORTAL_ISSUES_TRASH:
     case BAR_TYPE.PORTAL_ISSUE_TYPES:
-    case BAR_TYPE.PORTAL_ISSUE_SUBSTATES: {
+    case BAR_TYPE.PORTAL_ISSUE_SUBSTATES:
+    case BAR_TYPE.PORTAL_CHAT_ANALYSIS: {
       return (<PortalIssues key={barKey} title={title} toggleBar={toggleBar} type={barKey} />);
     }
     default:

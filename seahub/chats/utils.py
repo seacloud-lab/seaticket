@@ -177,19 +177,22 @@ def format_chat_title(title, fallback=''):
     return fallback
 
 
-def _generate_session_title(session, project_uuid, org_id, query, ai_reply, scenario):
+def _generate_session_title(session, project_uuid, org_id, query, ai_reply, scenario, session_uuid=None):
     if not session:
         return ''
 
     fallback = query or session.session_name
     try:
-        generated_title = get_chat_title({
+        title_params = {
             'project_uuid': project_uuid,
             'org_id': org_id,
             'query': query,
             'ai_reply': ai_reply,
             'scenario': scenario,
-        })
+        }
+        if session_uuid:
+            title_params['session_uuid'] = session_uuid
+        generated_title = get_chat_title(title_params)
     except Exception as e:
         logger.warning(f'Generate chat title failed: {e}')
         generated_title = ''
@@ -224,6 +227,7 @@ def generate_portal_session_title(session_uuid, project_uuid, org_id, query, ai_
         query=query,
         ai_reply=ai_reply,
         scenario=AIScenario.PORTAL_CHAT.value,
+        session_uuid=session_uuid,
     )
 
 def get_attachments(seadb_api, project_uuid, attachments):

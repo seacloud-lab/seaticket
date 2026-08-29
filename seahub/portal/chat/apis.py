@@ -1,12 +1,14 @@
 import logging
 import time
 import mimetypes
+import json
 
 from django.core.cache import cache
 from django.http import FileResponse, StreamingHttpResponse
+from django.db.models import Count, Sum
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
-from seahub.portal.permissions import PortalChatPermission
+from seahub.portal.permissions import PortalChatPermission, PortalAdminPermission
 from seahub.portal.utils import portal_endpoint
 from rest_framework import status
 from rest_framework.response import Response
@@ -16,9 +18,9 @@ from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import uuid_str_to_32_chars
 from seahub.utils.storage import upload_portal_files_to_s3
-from seahub.project.models import Projects
+from seahub.project.models import AIUsageStatistics
 from seahub.project.constants import AIScenario
-from seahub.project.utils import check_ai_limit, check_same_org_permission, delete_portal_sessions
+from seahub.project.utils import check_ai_limit, check_same_org_permission, check_project_admin_permission, delete_portal_sessions, convert_cost_to_credit
 from seahub.utils.ip import get_remote_ip
 from seahub.portal.chat.utils import (
     build_portal_message_result,
@@ -37,7 +39,9 @@ from seahub.portal.chat.utils import (
     normalize_portal_chat_image_file_path,
     process_portal_stream_ai_reply,
     rewrite_portal_chat_image_urls,
+    rewrite_portal_chat_admin_image_urls,
 )
+from seahub.portal.chat.constants import PORTAL_CHAT_ADMIN_IMAGE_TOKEN_TYPE
 from seahub.portal.models import PortalChatSessions, PortalChatMessages
 from seahub.chats.utils import (
     build_ai_images_payload,
@@ -202,6 +206,114 @@ class PortalChatMessagesView(APIView):
             if results['running_task']:
                 results['user_input'] = chat_task_info['user_input']
             return Response(results)
+        except Exception as e:
+            logger.error(e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+
+class PortalAdminChatMessagesView(APIView):
+    """Return a portal chat session and its messages for an administrator."""
+
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (PortalAdminPermission,)
+    throttle_classes = (UserRateThrottle,)
+
+    @portal_endpoint
+    def get(self, request, project_uuid, session_uuid):
+        session = PortalChatSessions.objects.filter(
+            project_uuid=project_uuid,
+            session_uuid=session_uuid,
+        ).first()
+        if not session:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Session not found.')
+
+        try:
+            messages_data = []
+            for message in PortalChatMessages.objects.get_messages_by_session(session_uuid):
+                message_data = message.to_dict()
+                if message_data.get('role') == 'assistant':
+                    message_data['content'] = rewrite_portal_chat_admin_image_urls(
+                        project_uuid,
+                        message_data.get('content'),
+                        session_uuid,
+                        message_data.get('message_id'),
+                        request.user.username,
+                        session.username,
+                    )
+                messages_data.append(message_data)
+            return Response({
+                'session': session.to_dict(),
+                'messages': messages_data,
+            })
+        except Exception as e:
+            logger.error(e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+
+class PortalAdminChatSessionsView(APIView):
+    """List all portal chat sessions for a project in read-only admin mode."""
+
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (PortalAdminPermission,)
+    throttle_classes = (UserRateThrottle,)
+
+    @portal_endpoint
+    def post(self, request, project_uuid):
+        try:
+            try:
+                start = int(request.POST.get('start', 0))
+                limit = int(request.POST.get('limit', 1000))
+                view_config = request.POST.get('config', '{}')
+                view_config = json.loads(view_config)
+            except (TypeError, ValueError):
+                return api_error(status.HTTP_400_BAD_REQUEST, 'per_page or page invalid')
+            end = start + limit
+
+            sorts = view_config.get('sorts', [])
+            if not sorts:
+                sorts = [ { 'column_key': 'updated_at', 'sort_type': 'down' } ]
+
+            sorts = [
+                f'-{s["column_key"]}' if s['sort_type'] == 'down' else s['column_key']
+                for s in sorts
+            ]
+
+            sessions = PortalChatSessions.objects.filter(
+                project_uuid=project_uuid,
+            ).order_by(*sorts)[start:end]
+            return Response({
+                'sessions': [session.to_dict() for session in sessions],
+            })
+        except Exception as e:
+            logger.error(e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+
+class PortalAdminChatStatisticsView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (PortalAdminPermission,)
+    throttle_classes = (UserRateThrottle,)
+
+    @portal_endpoint
+    def get(self, request, project_uuid):
+        try:
+
+            user_count_res = PortalChatSessions.objects.filter(
+                project_uuid=project_uuid
+            ).aggregate(
+                user_count=Count("username", distinct=True)
+            )
+
+            statistic_res = AIUsageStatistics.objects.filter(
+                project_uuid=uuid_str_to_32_chars(project_uuid),
+                scenario=AIScenario.PORTAL_CHAT.value
+            ).aggregate(
+                input_tokens=Sum("input_tokens", default=0),
+                output_tokens=Sum("output_tokens", default=0),
+                total_credit_used=convert_cost_to_credit(Sum("cost", default=0)),
+            )
+
+            return Response({**user_count_res, **statistic_res})
         except Exception as e:
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
@@ -450,14 +562,25 @@ class PortalChatImageView(APIView):
         if payload.get('project_uuid') != str(project_uuid):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
-        username = request.identity['username']
-        if payload.get('username') != username:
-            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
-
         session_uuid = payload.get('session_uuid')
-        session, error = _get_session_or_error(session_uuid, username)
-        if error:
-            return error
+        token_type = payload.get('token_type')
+        username = request.identity['username']
+        if token_type == PORTAL_CHAT_ADMIN_IMAGE_TOKEN_TYPE:
+            if not request.user.is_authenticated or not check_project_admin_permission(
+                    request.user.username, request.project.workspace.owner):
+                return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+            if payload.get('username') != request.user.username:
+                return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+            
+            session, error = _get_session_or_error(session_uuid, payload.get('session_username'))
+            if error:
+                return error
+        else:
+            if payload.get('username') != username:
+                return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+            session, error = _get_session_or_error(session_uuid, username)
+            if error:
+                return error
         if str(session.project_uuid) != str(project_uuid):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 

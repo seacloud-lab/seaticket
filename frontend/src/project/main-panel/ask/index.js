@@ -19,7 +19,7 @@ const {
 
 const Main = ({ title, settings }) => {
   const { isLoading: isAskPageLoading, pageSlugId, togglePageSlugId } = useAskPage();
-  const { isLoading: isSessionsLoading, isShowSessions, toggleIsShowSessions } = useSessions();
+  const { isLoading: isSessionsLoading, isShowSessions, toggleIsShowSessions, closeShowSessions } = useSessions();
 
   const isLoading = isAskPageLoading || isSessionsLoading;
 
@@ -51,7 +51,7 @@ const Main = ({ title, settings }) => {
         {isLoading ? (
           <CenteredLoading />
         ) : (
-          <>
+          <DocumentsProvider sessionId={pageSlugId} openDocumentCallback={closeShowSessions}>
             <div className="d-flex o-hidden flex-1">
               <Chat
                 sessionId={pageSlugId}
@@ -64,7 +64,7 @@ const Main = ({ title, settings }) => {
               <Documents />
             </div>
             {isShowSessions && (<Sessions sessionId={pageSlugId} permission={permission} />)}
-          </>
+          </DocumentsProvider>
         )}
       </div>
     </>
@@ -100,9 +100,7 @@ const Ask = ({ title, settings }) => {
   return (
     <AskPageProvider resetURL={resetURL} getInitialPageSlugId={getInitialPageSlugId} >
       <SessionsProvider projectUuid={projectUuid} api={chatAPI} >
-        <DocumentsProvider>
-          <Main title={title} settings={settings} />
-        </DocumentsProvider>
+        <Main title={title} settings={settings} />
       </SessionsProvider>
     </AskPageProvider>
   );

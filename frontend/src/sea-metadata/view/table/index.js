@@ -14,9 +14,8 @@ import './index.css';
 
 const Table = ({ fixedColumnCount, expandRow, children }) => {
   const [isLoadingMore, setLoadingMore] = useState(false);
-  const [isShowRowExpand, setIsShowRowExpand] = useState(false);
+  const [expandedRow, setExpandedRow] = useState(null);
 
-  const expandRowRef = useRef(null);
   const containerRef = useRef(null);
 
   const {
@@ -151,19 +150,16 @@ const Table = ({ fixedColumnCount, expandRow, children }) => {
       expandRow(row);
       return;
     }
-    expandRowRef.current = row || null;
-    setIsShowRowExpand(true);
+    setExpandedRow(row || null);
   }, [expandRow]);
 
   const closeRowExpand = useCallback(() => {
-    expandRowRef.current = null;
-    setIsShowRowExpand(false);
+    setExpandedRow(null);
   }, []);
 
   useEffect(() => {
     const expandRowSubscribe = context.eventBus.subscribe(EVENT_BUS_TYPE.EXPAND_ROW, (row = null) => {
-      expandRowRef.current = row;
-      setIsShowRowExpand(true);
+      setExpandedRow(row);
     });
     return () => {
       expandRowSubscribe();
@@ -171,52 +167,50 @@ const Table = ({ fixedColumnCount, expandRow, children }) => {
   }, []);
 
   return (
-    <>
-      <div className="sea-metadata-container sea-metadata-container-transform" ref={containerRef}>
-        <TableMain
-          isGroupView={isGroupView}
-          isLoadingMore={isLoadingMore}
-          isShowRowExpandBtn={Boolean(expandRow)}
-          fixedColumnCount={fixedColumnCount}
-          loadMore={loadMore}
-          metadata={metadata}
-          tagsData={tagsData}
-          collaborators={collaborators}
-          modifyRow={modifyRow}
-          modifyRowTags={modifyRowTags}
-          modifyRows={modifyRows}
-          deleteRow={deleteRow}
-          deleteRows={deleteRows}
-          deleteLocalRows={deleteLocalRows}
-          rowGetterById={rowGetterById}
-          rowGetterByIndex={rowGetterByIndex}
-          getTableContentRect={getTableContentRect}
-          getAdjacentRowsIds={getAdjacentRowsIds}
-          insertColumn={insertColumn}
-          renameColumn={renameColumn}
-          deleteColumn={deleteColumn}
-          modifyColumnData={modifyColumnData}
-          modifyColumnWidth={modifyColumnWidth}
-          modifyColumnOrder={modifyColumnOrder}
-          onGridKeyDown={onHotKey}
-          onGridKeyUp={onHotKeyUp}
-          createContextMenuOptions={createContextMenuOptions}
-          onRowExpand={onRowExpand}
-          updateSelectedRowIds={updateSelectedRowIds}
-          updateLocalRow={updateLocalRow}
-          generatorRowClassName={generatorRowClassName}
-        />
-      </div>
-      {isShowRowExpand && isValidElement(children) && (
+    <div className="sea-metadata-container sea-metadata-container-transform" ref={containerRef}>
+      <TableMain
+        isGroupView={isGroupView}
+        isLoadingMore={isLoadingMore}
+        isShowRowExpandBtn={Boolean(expandRow)}
+        fixedColumnCount={fixedColumnCount}
+        loadMore={loadMore}
+        metadata={metadata}
+        tagsData={tagsData}
+        collaborators={collaborators}
+        modifyRow={modifyRow}
+        modifyRowTags={modifyRowTags}
+        modifyRows={modifyRows}
+        deleteRow={deleteRow}
+        deleteRows={deleteRows}
+        deleteLocalRows={deleteLocalRows}
+        rowGetterById={rowGetterById}
+        rowGetterByIndex={rowGetterByIndex}
+        getTableContentRect={getTableContentRect}
+        getAdjacentRowsIds={getAdjacentRowsIds}
+        insertColumn={insertColumn}
+        renameColumn={renameColumn}
+        deleteColumn={deleteColumn}
+        modifyColumnData={modifyColumnData}
+        modifyColumnWidth={modifyColumnWidth}
+        modifyColumnOrder={modifyColumnOrder}
+        onGridKeyDown={onHotKey}
+        onGridKeyUp={onHotKeyUp}
+        createContextMenuOptions={createContextMenuOptions}
+        onRowExpand={onRowExpand}
+        updateSelectedRowIds={updateSelectedRowIds}
+        updateLocalRow={updateLocalRow}
+        generatorRowClassName={generatorRowClassName}
+      />
+      {expandedRow && isValidElement(children) && (
         <>
           {cloneElement(children, {
-            row: expandRowRef.current,
+            row: expandedRow,
             onToggle: closeRowExpand,
-            onSubmit: expandRowRef.current ? (...params) => modifyRowByRowExpand(expandRowRef.current._id, ...params) : insertRow
+            onSubmit: expandedRow ? (...params) => modifyRowByRowExpand(expandedRow._id, ...params) : insertRow
           })}
         </>
       )}
-    </>
+    </div>
   );
 };
 

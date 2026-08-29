@@ -36,6 +36,7 @@ from .constants import (
     PORTAL_ANON_CHAT_IP_DAILY_LIMIT,
     PORTAL_ANON_CHAT_DAILY_TTL,
     PORTAL_CHAT_DAILY_CREDIT_LIMIT_DEFAULT,
+    PORTAL_CHAT_ADMIN_IMAGE_TOKEN_TYPE,
     PORTAL_CHAT_IMAGE_TOKEN_AUDIENCE,
     PORTAL_CHAT_IMAGE_TOKEN_TTL,
     PORTAL_CHAT_PROXY_IMAGE_ATTACHMENT_PREFIXES,
@@ -247,6 +248,23 @@ def encode_portal_chat_image_token(project_uuid, file_path, session_uuid, messag
     return jwt.encode(payload, _get_portal_chat_image_jwt_secret(), algorithm='HS256')
 
 
+def encode_portal_chat_admin_image_token(project_uuid, file_path, session_uuid, message_id, admin_username, session_username):
+    now = int(time.time())
+    payload = {
+        'aud': PORTAL_CHAT_IMAGE_TOKEN_AUDIENCE,
+        'token_type': PORTAL_CHAT_ADMIN_IMAGE_TOKEN_TYPE,
+        'project_uuid': str(project_uuid),
+        'file_path': file_path,
+        'session_uuid': session_uuid,
+        'message_id': message_id,
+        'username': admin_username,
+        'session_username': session_username,
+        'iat': now,
+        'exp': now + PORTAL_CHAT_IMAGE_TOKEN_TTL,
+    }
+    return jwt.encode(payload, _get_portal_chat_image_jwt_secret(), algorithm='HS256')
+
+
 def decode_portal_chat_image_token(token):
     return jwt.decode(
         token,
@@ -258,6 +276,14 @@ def decode_portal_chat_image_token(token):
 
 def build_portal_chat_image_url(project_uuid, file_path, session_uuid, message_id, username):
     token = encode_portal_chat_image_token(project_uuid, file_path, session_uuid, message_id, username)
+    return f'/file/portal-chat-image/{project_uuid}/?token={quote(token, safe="")}'
+
+
+def build_portal_chat_admin_image_url(project_uuid, file_path, session_uuid, message_id, admin_username, session_username):
+    token = encode_portal_chat_admin_image_token(
+        project_uuid, file_path, session_uuid, message_id,
+        admin_username, session_username,
+    )
     return f'/file/portal-chat-image/{project_uuid}/?token={quote(token, safe="")}'
 
 
@@ -278,6 +304,30 @@ def rewrite_portal_chat_image_urls(project_uuid, value, session_uuid, message_id
         if not file_path or not is_portal_chat_proxy_image_file_path(file_path):
             return match.group(0)
         return build_portal_chat_image_url(project_uuid, file_path, session_uuid, message_id, username)
+
+    return pattern.sub(replace, value)
+
+
+def rewrite_portal_chat_admin_image_urls(project_uuid, value, session_uuid, message_id, admin_username, session_username):
+    if not isinstance(value, str) or not value:
+        return value
+    if not session_uuid or not message_id or not admin_username or not session_username:
+        return value
+
+    project_uuid = str(project_uuid)
+    pattern = re.compile(
+        r'/file/project/%s/'
+        r'(?P<file_path>attachments/[^\s\)\\\]"\']+)' % re.escape(project_uuid)
+    )
+
+    def replace(match):
+        file_path = normalize_portal_chat_image_file_path(match.group('file_path'))
+        if not file_path or not is_portal_chat_proxy_image_file_path(file_path):
+            return match.group(0)
+        return build_portal_chat_admin_image_url(
+            project_uuid, file_path, session_uuid, message_id,
+            admin_username, session_username,
+        )
 
     return pattern.sub(replace, value)
 

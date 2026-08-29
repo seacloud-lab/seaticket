@@ -5,6 +5,7 @@ import Substates from './view/substates';
 import AllIssues from './view/all-issues';
 import TrashIssues from './view/trash-issues';
 import Issue from './view/issue';
+import ChatAnalysis from './view/chat-analysis';
 import { PORTAL_ISSUE_PAGE_SLUG_ID } from './constants';
 import TopBar from './components/portal-issues-top-bar';
 import { ticketsAPI } from '../../api';
@@ -36,6 +37,9 @@ const Page = ({ toggleBar, type }) => {
   }
   if (pageSlugId === PORTAL_ISSUE_PAGE_SLUG_ID.ALL) {
     return (<AllIssues { ...props } />);
+  }
+  if (pageSlugId === PORTAL_ISSUE_PAGE_SLUG_ID.ANALYSIS) {
+    return (<ChatAnalysis { ...props } />);
   }
   return (<Issue { ...props } issueID={pageSlugId} editorAPI={longtextAPI} onRefresh={onRefresh} togglePageSlugId={togglePageSlugId} />);
 };

@@ -27,7 +27,7 @@ export const PortalIssuesPageProvider = ({ workspaceID, projectName, type, child
       return;
     }
 
-    if (pageSlugId === PORTAL_ISSUE_PAGE_SLUG_ID.ALL) {
+    if (pageSlugId === PORTAL_ISSUE_PAGE_SLUG_ID.ALL || pageSlugId === PORTAL_ISSUE_PAGE_SLUG_ID.ANALYSIS) {
       const currentUrlParams = new URLSearchParams(window.location.search);
       const currentQueryString = currentUrlParams.toString();
       const queryString = currentQueryString || listQueryStringRef.current;
@@ -85,7 +85,10 @@ export const PortalIssuesPageProvider = ({ workspaceID, projectName, type, child
       if (childrenPageSlugIdFromURL !== PORTAL_ISSUE_CHILDREN_PAGE_SLUG_ID.ALL) {
         childrenPageSlugId = childrenPageSlugIdFromURL || PORTAL_ISSUE_CHILDREN_PAGE_SLUG_ID.ALL;
       }
-    } else if (pageIdFromURL === PORTAL_ISSUE_PAGE_SLUG_ID.TRASH) {
+    } else if (pageIdFromURL === PORTAL_ISSUE_PAGE_SLUG_ID.ANALYSIS) {
+      pageSlugId = PORTAL_ISSUE_PAGE_SLUG_ID.ANALYSIS;
+    }
+    else if (pageIdFromURL === PORTAL_ISSUE_PAGE_SLUG_ID.TRASH) {
       pageSlugId = PORTAL_ISSUE_PAGE_SLUG_ID.TRASH;
     } else {
       const ticketNumber = Number(pageIdFromURL);

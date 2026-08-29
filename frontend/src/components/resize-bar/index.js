@@ -112,6 +112,7 @@ class ResizeBar extends Component {
   onChangeWidth = (evt) => {
     const { min, max } = this.props;
     const width = this.getWidthFromMouseEvent(evt);
+    console.log(width);
     if (width <= min || width >= max) {
       return;
     }

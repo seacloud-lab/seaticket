@@ -1,10 +1,14 @@
 import json
 from io import BytesIO
+from datetime import date
 from unittest.mock import Mock, patch
 
 import pytest
 
 from seahub.portal.chat.apis import (
+    PortalAdminChatMessagesView,
+    PortalAdminChatSessionsView,
+    PortalAdminChatStatisticsView,
     PortalChatImageView,
     PortalChatMessagesView,
     PortalChatSessionsView,
@@ -14,6 +18,9 @@ from seahub.portal.chat.apis import (
 from seahub.portal.chat.utils import encode_portal_chat_image_token, rewrite_portal_chat_image_urls
 from seahub.portal.visitor_session import create_visitor_session
 from seahub.portal.models import PortalChatSessions, PortalChatMessages
+from seahub.project.constants import AIScenario
+from seahub.project.models import AIUsageStatistics
+from seahub.utils import uuid_str_to_32_chars
 
 
 def _set_portal_settings(project, **kwargs):
@@ -439,3 +446,150 @@ class TestPortalChatSessionTitleViewAnonymous:
 
         assert resp_missing_query.status_code == 400
         assert resp_missing_ai_reply.status_code == 400
+
+
+@pytest.mark.usefixtures('portal_mode_settings')
+class TestPortalAdminChatAPIs:
+
+    def _admin_request(self, factory, project, user, path):
+        request = factory.get(path)
+        request.user = user
+        return request
+
+    def _admin_post_request(self, factory, project, user, path, data):
+        request = factory.post(path, data=data)
+        request.user = user
+        return request
+
+    def test_list_sessions_is_paginated(self, factory, real_project, project_creator):
+        for index in range(3):
+            PortalChatSessions.objects.create_session(
+                project_uuid=str(real_project.uuid),
+                session_name=f'session-{index}',
+                username=f'user-{index}@example.com',
+            )
+
+        request = self._admin_post_request(
+            factory,
+            real_project,
+            project_creator,
+            f'/api/v1/portal/{real_project.uuid}/admin/chat/sessions/',
+            data={'start': 0, 'limit': 2},
+        )
+        response = PortalAdminChatSessionsView.as_view()(
+            request,
+            project_uuid=str(real_project.uuid),
+        )
+
+        assert response.status_code == 200
+        assert len(response.data['sessions']) == 2
+
+        request = self._admin_post_request(
+            factory,
+            real_project,
+            project_creator,
+            f'/api/v1/portal/{real_project.uuid}/admin/chat/sessions/',
+            data={'start': 2, 'limit': 2},
+        )
+        response = PortalAdminChatSessionsView.as_view()(
+            request,
+            project_uuid=str(real_project.uuid),
+        )
+
+        assert response.status_code == 200
+        assert len(response.data['sessions']) == 1
+
+    def test_get_session_messages(self, factory, real_project, project_creator):
+        session = PortalChatSessions.objects.create_session(
+            project_uuid=str(real_project.uuid),
+            session_name='customer question',
+            username='customer@example.com',
+        )
+        PortalChatMessages.objects.create_message(
+            session.session_uuid, 'abcd', 'user', 'How do I reset my password?'
+        )
+        PortalChatMessages.objects.create_message(
+            session.session_uuid, 'abcd', 'assistant', 'Use the password reset page.'
+        )
+
+        request = self._admin_request(
+            factory,
+            real_project,
+            project_creator,
+            f'/api/v1/portal/{real_project.uuid}/admin/chat/sessions/{session.session_uuid}/messages/',
+        )
+        response = PortalAdminChatMessagesView.as_view()(
+            request,
+            project_uuid=str(real_project.uuid),
+            session_uuid=session.session_uuid,
+        )
+
+        assert response.status_code == 200
+        assert response.data['session']['session_uuid'] == session.session_uuid
+        assert [message['content'] for message in response.data['messages']] == [
+            'How do I reset my password?',
+            'Use the password reset page.',
+        ]
+
+    def test_statistics_only_include_portal_chat_usage(self, factory, real_project, project_creator):
+        project_uuid = uuid_str_to_32_chars(str(real_project.uuid))
+        common_data = {
+            'date': date.today(),
+            'project_uuid': project_uuid,
+            'owner': 'customer@example.com',
+            'org_id': real_project.workspace.org_id,
+            'group_id': None,
+            'model': 'gpt-4',
+        }
+        AIUsageStatistics.objects.create(
+            **common_data,
+            scenario=AIScenario.PORTAL_CHAT.value,
+            input_tokens=100,
+            output_tokens=40,
+            cost=1.5,
+        )
+        AIUsageStatistics.objects.create(
+            **common_data,
+            scenario=AIScenario.CHAT.value,
+            input_tokens=900,
+            output_tokens=800,
+            cost=9.0,
+        )
+
+        PortalChatSessions.objects.create_session(
+            project_uuid=str(real_project.uuid),
+            session_name='customer question',
+            username='customer@example.com',
+        )
+
+        request = self._admin_request(
+            factory,
+            real_project,
+            project_creator,
+            f'/api/v1/portal/{real_project.uuid}/admin/chat/statistics/',
+        )
+        response = PortalAdminChatStatisticsView.as_view()(
+            request,
+            project_uuid=str(real_project.uuid),
+        )
+
+        assert response.status_code == 200
+        assert response.data['user_count'] == 1
+        assert response.data['input_tokens'] == 100
+        assert response.data['output_tokens'] == 40
+        assert response.data['total_credit_used'] == 150
+
+    def test_admin_chat_apis_reject_non_admin(self, factory, real_project, auth_user):
+        request = self._admin_request(
+            factory,
+            real_project,
+            auth_user,
+            f'/api/v1/portal/{real_project.uuid}/admin/chat/sessions/',
+        )
+
+        response = PortalAdminChatSessionsView.as_view()(
+            request,
+            project_uuid=str(real_project.uuid),
+        )
+
+        assert response.status_code == 403

@@ -1,16 +1,11 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { useAskPage } from './page-type';
-import { useSessions } from './sessions';
 
 const DocumentsContext = React.createContext(null);
 
-export const DocumentsProvider = ({ children }) => {
+export const DocumentsProvider = ({ children, sessionId, openDocumentCallback }) => {
   const [isShowDocuments, setIsShowDocuments] = useState(false);
   const [documents, setDocuments] = useState([]);
   const [currentDocument, setCurrentDocument] = useState(null);
-
-  const { pageSlugId } = useAskPage();
-  const { closeShowSessions } = useSessions();
 
   const openDocument = useCallback((document) => {
     setIsShowDocuments(true);
@@ -20,8 +15,8 @@ export const DocumentsProvider = ({ children }) => {
     if (currentDocument?.url !== document.url) {
       setCurrentDocument(document);
     }
-    closeShowSessions();
-  }, [documents, currentDocument, closeShowSessions]);
+    openDocumentCallback && openDocumentCallback();
+  }, [documents, currentDocument, openDocumentCallback]);
 
   const closeDocument = useCallback((document) => {
     const documentIndex = documents.findIndex(d => d.url === document.url);
@@ -45,7 +40,7 @@ export const DocumentsProvider = ({ children }) => {
   useEffect(() => {
     setDocuments([]);
     setCurrentDocument(null);
-  }, [pageSlugId]);
+  }, [sessionId]);
 
   return (
     <DocumentsContext.Provider value={{

@@ -15,6 +15,7 @@ export const BAR_TYPE = {
   PORTAL_ISSUES_TRASH: 'portal-issues/trash',
   PORTAL_ISSUE_TYPES: 'portal-issues/types',
   PORTAL_ISSUE_SUBSTATES: 'portal-issues/substates',
+  PORTAL_CHAT_ANALYSIS: 'portal-issues/analysis',
   INBOX: 'inbox',
   KNOWLEDGE: 'knowledge-base',
   KNOWLEDGE_TRASH: 'knowledge/trash',
@@ -71,6 +72,11 @@ export const BAR_TYPE_CONFIG = {
   [BAR_TYPE.PORTAL_ISSUE_SUBSTATES]: {
     key: BAR_TYPE.PORTAL_ISSUE_SUBSTATES,
     name: gettext('Manage substates')
+  },
+  [BAR_TYPE.PORTAL_CHAT_ANALYSIS]: {
+    key: BAR_TYPE.PORTAL_CHAT_ANALYSIS,
+    name: gettext('Portal chat analysis'),
+    icon: 'chat'
   },
   [BAR_TYPE.ANALYZE]: {
     key: BAR_TYPE.ANALYZE,

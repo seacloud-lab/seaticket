@@ -1,0 +1,21 @@
+.sea-metadata-statistic-card {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: calc((100% - 48px) / 4);
+}
+
+.sea-metadata-statistic-card .sea-metadata-statistic-name {
+  height: 24px;
+  width: 100%;
+  line-height: 24px;
+}
+
+.sea-metadata-statistic-card .sea-metadata-statistic-value {
+  height: 36px;
+  width: 100%;
+  line-height: 36px;
+  font-size: 24px;
+}
