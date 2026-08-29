@@ -397,6 +397,17 @@ class DeletedProjects(models.Model):
         db_table = 'deleted_projects'
 
 
+class ProjectStorageStatistics(models.Model):
+    project_uuid = models.UUIDField(unique=True)
+    org_id = models.IntegerField(db_index=True)
+    file_size = models.BigIntegerField(default=0)
+    crawl_data_size = models.BigIntegerField(default=0)
+    calculated_at = models.DateTimeField()
+
+    class Meta:
+        db_table = 'project_storage_statistics'
+
+
 class ProjectGroupOrdersManager(models.Manager):
     def get_group_order_by_username(self, username):
         try:

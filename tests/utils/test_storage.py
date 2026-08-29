@@ -1,7 +1,8 @@
-from django.core.files.uploadedfile import SimpleUploadedFile
+import json
 from types import SimpleNamespace
 
-from seahub.utils.storage import delete_record_attachments_from_s3, upload_portal_background_image_file_to_s3, upload_portal_files_to_s3, upload_portal_logo_file_to_s3
+from seahub.utils.storage import delete_record_attachments_from_s3, upload_portal_background_image_file_to_s3, upload_portal_files_to_s3, upload_portal_logo_file_to_s3, delete_project_dir_from_s3
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 
 def test_upload_portal_logo_file_to_s3_uses_project_path(tmp_path, monkeypatch):
@@ -15,6 +16,7 @@ def test_upload_portal_logo_file_to_s3_uses_project_path(tmp_path, monkeypatch):
     )
 
     called = {}
+    published = []
 
     def _fake_upload_file(local_path, bucket, key, ExtraArgs=None):
         called["local_path"] = local_path
@@ -26,12 +28,20 @@ def test_upload_portal_logo_file_to_s3_uses_project_path(tmp_path, monkeypatch):
         "seahub.utils.storage.s3_client",
         SimpleNamespace(upload_file=_fake_upload_file),
     )
+    monkeypatch.setattr(
+        "seahub.utils.storage.mq",
+        SimpleNamespace(publish=lambda channel, payload: published.append((channel, payload))),
+    )
 
     file_url = upload_portal_logo_file_to_s3(project_uuid, upload_file)
 
     assert called["local_path"] == str(tmp_upload_file)
     assert called["key"] == f"/projects/{project_uuid}/portal/logo"
     assert called["extra_args"] == {"ContentType": "image/png"}
+    assert published == [(
+        'project_storage_update',
+        json.dumps({'project_uuid': project_uuid.replace('-', '')}),
+    )]
     assert file_url.startswith(f"/api/v1/portal/{project_uuid}/logo/?v=")
     assert not tmp_upload_file.exists()
 
