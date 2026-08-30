@@ -6,6 +6,7 @@ import context from '@/sea-metadata/context';
 import { VIEW_TYPE } from '@/sea-metadata/constants';
 import SidePanelChat from '@/project/main-panel/ask/side-panel-chat';
 import { useData } from '@/project/hooks';
+import { Utils } from '@/utils/utils';
 import { PORTAL_CHAT_TABLE_NAME } from '../../constants';
 
 const viewTools = [
@@ -21,6 +22,8 @@ const settings = {
   isSortComputedOnServer: true,
   canManageView: false,
 };
+
+const formatTokenCount = (count) => Utils.formatSize({ bytes: count, precision: 0 }).replace('B', '');
 
 const ChatAnalysis = ({
   projectUuid,
@@ -101,10 +104,38 @@ const ChatAnalysis = ({
         return {
           data: {
             records: [
-              { _pk: 1, name: gettext('Users'), column_key: 'user', summary_type: 'count', value: user_count, type: 'card' },
-              { _pk: 2, name: gettext('Input tokens'), column_key: 'input_tokens', summary_type: 'count', value: input_tokens, type: 'card' },
-              { _pk: 3, name: gettext('Output tokens'), column_key: 'output_tokens', summary_type: 'count', value: output_tokens, type: 'card' },
-              { _pk: 4, name: gettext('Credit used'), column_key: 'credit_used', summary_type: 'count', value: total_credit_used ? total_credit_used.toFixed(0) : total_credit_used ?? 0 , type: 'card' },
+              {
+                _pk: 1,
+                name: gettext('Users'),
+                column_key: 'user',
+                summary_type: 'count',
+                value: user_count,
+                type: 'card',
+              },
+              {
+                _pk: 2,
+                name: gettext('Input tokens'),
+                column_key: 'input_tokens',
+                summary_type: 'count',
+                value: formatTokenCount(input_tokens),
+                type: 'card',
+              },
+              {
+                _pk: 3,
+                name: gettext('Output tokens'),
+                column_key: 'output_tokens',
+                summary_type: 'count',
+                value: formatTokenCount(output_tokens),
+                type: 'card',
+              },
+              {
+                _pk: 4,
+                name: gettext('Credit used'),
+                column_key: 'credit_used',
+                summary_type: 'count',
+                value: total_credit_used ? total_credit_used.toFixed(0) : total_credit_used ?? 0,
+                type: 'card',
+              },
             ],
           },
         };
