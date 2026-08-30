@@ -72,7 +72,7 @@ const ChatAnalysis = ({
         key: 'output_tokens',
         type: CellType.NUMBER,
       }, {
-        name: gettext('Cost'),
+        name: gettext('Credit used'),
         key: 'credit_used',
         type: CellType.NUMBER,
       }, {
@@ -104,7 +104,7 @@ const ChatAnalysis = ({
               { _pk: 1, name: gettext('Users'), column_key: 'user', summary_type: 'count', value: user_count, type: 'card' },
               { _pk: 2, name: gettext('Input tokens'), column_key: 'input_tokens', summary_type: 'count', value: input_tokens, type: 'card' },
               { _pk: 3, name: gettext('Output tokens'), column_key: 'output_tokens', summary_type: 'count', value: output_tokens, type: 'card' },
-              { _pk: 4, name: gettext('Credit used'), column_key: 'credit_used', summary_type: 'count', value: total_credit_used, type: 'card' },
+              { _pk: 4, name: gettext('Credit used'), column_key: 'credit_used', summary_type: 'count', value: total_credit_used ? total_credit_used.toFixed(0) : total_credit_used ?? 0 , type: 'card' },
             ],
           },
         };
