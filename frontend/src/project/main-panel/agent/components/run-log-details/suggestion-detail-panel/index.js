@@ -14,7 +14,6 @@ const DEFAULT_WIDTH = 400;
 
 const SuggestionDetailPanel = ({
   suggestionDetail,
-  onSave,
   onApprove,
   onClose,
 }) => {
@@ -30,9 +29,8 @@ const SuggestionDetailPanel = ({
     () => suggestionDetail?.action?.suggestion_content || '',
     [suggestionDetail?.action?.suggestion_content]
   );
-  const canSave = useMemo(() => {
+  const canApprove = useMemo(() => {
     if (isSaving) return false;
-    if (initValue === value) return false;
     if (suggestionDetail?.action?.tool_name === 'suggest_create_ticket') {
       try {
         const validValue = JSON.parse(value);
@@ -43,20 +41,8 @@ const SuggestionDetailPanel = ({
         return false;
       }
     }
-    return true;
-  }, [isSaving, initValue, value, suggestionDetail]);
-  const isTicket = useMemo(() => suggestionDetail?.action?.tool_name === 'suggest_create_ticket', [suggestionDetail?.action?.tool_name]);
-  const canApprove = useMemo(() => {
-    if (isSaving) return false;
-    try {
-      const validValue = JSON.parse(value);
-      if (!validValue.title) return false;
-      const validTitle = validValue.title.trim();
-      return !!validTitle;
-    } catch {
-      return false;
-    }
-  }, [isSaving, value]);
+    return !!value.trim();
+  }, [isSaving, value, suggestionDetail?.action?.tool_name]);
   const suggestionKey = useMemo(() => {
     const { action, runId } = suggestionDetail;
     return `${runId}_${action.id}`;
@@ -77,7 +63,6 @@ const SuggestionDetailPanel = ({
     });
   }, [suggestionDetail, value, suggestionKey]);
 
-  const handleSave = useCallback(() => runPanelAction(onSave), [runPanelAction, onSave]);
   const handleApprove = useCallback(() => runPanelAction(onApprove), [runPanelAction, onApprove]);
 
   const onResize = useCallback((width) => {
@@ -116,15 +101,9 @@ const SuggestionDetailPanel = ({
       {isEdit && (
         <div className="seaqa-agent-tool-suggestion-panel-footer">
           <Button color="secondary" onClick={onClose}>{gettext('Cancel')}</Button>
-          {isTicket ? (
-            <Button color="primary" onClick={handleApprove} disabled={!canApprove}>
-              {isSaving ? gettext('Approving...') : gettext('Approve')}
-            </Button>
-          ) : (
-            <Button color="primary" onClick={handleSave} disabled={!canSave}>
-              {isSaving ? gettext('Saving...') : gettext('Save')}
-            </Button>
-          )}
+          <Button color="primary" onClick={handleApprove} disabled={!canApprove}>
+            {isSaving ? gettext('Approving...') : gettext('Approve')}
+          </Button>
         </div>
       )}
       <ResizeBar
