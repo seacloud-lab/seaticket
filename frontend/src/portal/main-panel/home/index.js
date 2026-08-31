@@ -168,7 +168,7 @@ const PortalHome = ({ projectUuid, onHomeChatSend }) => {
             columns={columns}
             getKB={(projectUuid, knowledgeID) => portalAPI.getKBRecord(projectUuid, knowledgeID)}
             onToggle={() => setSelectedFeaturedArticle(null)}
-            isShowInternalIcon={false}
+            isSupportPortal={true}
           />
         )}
         {isEditMode && isEdit && !activeCard && (
