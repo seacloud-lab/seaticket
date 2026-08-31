@@ -32,6 +32,10 @@ const DefaultMoreNav = ({ onClick }) => {
         className="position-fixed"
         modifiers={[{ name: 'preventOverflow', options: { boundary: document.body } }]}
       >
+        <CustomizeDropdownItem onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.ANALYZE].key)}>
+          <CustomizeDropdownItemIcon symbol={BAR_TYPE_CONFIG[BAR_TYPE.ANALYZE].icon} />
+          <CustomizeDropdownItemText>{BAR_TYPE_CONFIG[BAR_TYPE.ANALYZE].name}</CustomizeDropdownItemText>
+        </CustomizeDropdownItem>
         <CustomizeDropdownItem onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.SEARCH].key)}>
           <CustomizeDropdownItemIcon symbol={BAR_TYPE_CONFIG[BAR_TYPE.SEARCH].icon} />
           <CustomizeDropdownItemText>{BAR_TYPE_CONFIG[BAR_TYPE.SEARCH].name}</CustomizeDropdownItemText>
