@@ -14,7 +14,7 @@ const DEFAULT_WIDTH = 400;
 
 const SuggestionDetailPanel = ({
   suggestionDetail,
-  onSave,
+  onApprove,
   onClose,
 }) => {
   const [value, setValue] = useState(suggestionDetail?.action?.suggestion_content || '');
@@ -29,9 +29,8 @@ const SuggestionDetailPanel = ({
     () => suggestionDetail?.action?.suggestion_content || '',
     [suggestionDetail?.action?.suggestion_content]
   );
-  const canSave = useMemo(() => {
+  const canApprove = useMemo(() => {
     if (isSaving) return false;
-    if (initValue === value) return false;
     if (suggestionDetail?.action?.tool_name === 'suggest_create_ticket') {
       try {
         const validValue = JSON.parse(value);
@@ -42,8 +41,8 @@ const SuggestionDetailPanel = ({
         return false;
       }
     }
-    return true;
-  }, [isSaving, initValue, value, suggestionDetail]);
+    return !!value.trim();
+  }, [isSaving, value, suggestionDetail?.action?.tool_name]);
   const suggestionKey = useMemo(() => {
     const { action, runId } = suggestionDetail;
     return `${runId}_${action.id}`;
@@ -51,18 +50,20 @@ const SuggestionDetailPanel = ({
 
   const ref = useRef(null);
 
-  const handleSave = useCallback(() => {
+  const runPanelAction = useCallback((actionFn) => {
     const { action, runId } = suggestionDetail;
-    if (!isFunction(onSave)) return;
+    if (!isFunction(actionFn)) return;
     setIsSaving(true);
-    onSave(runId, action.id, value).then((key) => {
+    actionFn(runId, action.id, value).then((key) => {
       if (key !== suggestionKey) return;
       setIsSaving(false);
     }).catch(key => {
       if (key !== suggestionKey) return;
       setIsSaving(false);
     });
-  }, [suggestionDetail, value, suggestionKey, onSave]);
+  }, [suggestionDetail, value, suggestionKey]);
+
+  const handleApprove = useCallback(() => runPanelAction(onApprove), [runPanelAction, onApprove]);
 
   const onResize = useCallback((width) => {
     localStorage.setItem('project_agent_action_suggestion_panel_width', window.innerWidth - width - 8);
@@ -100,8 +101,8 @@ const SuggestionDetailPanel = ({
       {isEdit && (
         <div className="seaqa-agent-tool-suggestion-panel-footer">
           <Button color="secondary" onClick={onClose}>{gettext('Cancel')}</Button>
-          <Button color="primary" onClick={handleSave} disabled={!canSave}>
-            {isSaving ? gettext('Saving...') : gettext('Save')}
+          <Button color="primary" onClick={handleApprove} disabled={!canApprove}>
+            {isSaving ? gettext('Approving...') : gettext('Approve')}
           </Button>
         </div>
       )}

@@ -188,17 +188,29 @@ const RunLogDetails = ({
     });
   }, [findActionContext, openCloseLinkedGitHubIssuesWarningDialog, updateRunAction, owner_source_id, owner_source_type, updateRunLog]);
 
-  const handleUpdateContent = useCallback((runId, actionId, suggestionContent) => {
-    return agentAPI.updateAgentAction(projectUuid, runId, actionId, { suggestion_content: suggestionContent }).then((res) => {
-      toaster.success(gettext('Content updated'));
-      updateRunAction(runId, actionId, { suggestion_content: res.data.suggestion_content });
-      return `${runId}_${actionId}`;
-    }).catch(err => {
-      console.error('Failed to update action content:', err);
-      toaster.danger(gettext('Failed to update content'));
-      return `${runId}_${actionId}`;
-    });
-  }, [updateRunAction]);
+  const handleApproveAction = useCallback((runId, actionId, suggestionContent) => {
+    const key = `${runId}_${actionId}`;
+    const currentContent = findActionContext(actionId)?.action?.suggestion_content;
+
+    const savePromise = currentContent === suggestionContent
+      ? Promise.resolve()
+      : agentAPI.updateAgentAction(projectUuid, runId, actionId, { suggestion_content: suggestionContent }).then((res) => {
+        updateRunAction(runId, actionId, { suggestion_content: res.data.suggestion_content });
+      }).catch((err) => {
+        console.error('Failed to update action content:', err);
+        toaster.danger(gettext('Failed to update content'));
+        throw err;
+      });
+
+    return savePromise.then(() => {
+      return Promise.resolve(onConfirmAction(actionId)).then((result) => {
+        if (result?.success) {
+          closeSuggestionDetailPanel();
+        }
+        return key;
+      });
+    }).catch(() => key);
+  }, [findActionContext, onConfirmAction, updateRunAction, closeSuggestionDetailPanel]);
 
   const onCancelAction = useCallback((actionId) => {
     for (const run of runs) {
@@ -377,7 +389,7 @@ const RunLogDetails = ({
               {suggestionDetail && (
                 <SuggestionDetailPanel
                   suggestionDetail={suggestionDetail}
-                  onSave={handleUpdateContent}
+                  onApprove={handleApproveAction}
                   onClose={closeSuggestionDetailPanel}
                 />
               )}
