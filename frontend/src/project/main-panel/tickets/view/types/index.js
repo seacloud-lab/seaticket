@@ -210,7 +210,7 @@ const AllTypes = ({
 
   useEffect(() => {
     const unsubscribeNewType = eventBus.subscribe(EVENT_BUS_TYPE.NEW_TYPE, () => {
-      context.eventBus.dispatch('expand_row');
+      context.eventBus.dispatch('expand_row', {});
     });
     return () => {
       unsubscribeNewType();
