@@ -215,7 +215,7 @@ const Tags = ({ projectUuid, permission }) => {
 
   useEffect(() => {
     const unsubscribeNewTag = eventBus.subscribe(EVENT_BUS_TYPE.NEW_TAG, () => {
-      context.eventBus.dispatch('expand_row');
+      context.eventBus.dispatch('expand_row', {});
     });
     return () => {
       unsubscribeNewTag();

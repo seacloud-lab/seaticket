@@ -206,7 +206,7 @@ const Table = ({ fixedColumnCount, expandRow, children }) => {
           {cloneElement(children, {
             row: expandedRow,
             onToggle: closeRowExpand,
-            onSubmit: expandedRow ? (...params) => modifyRowByRowExpand(expandedRow._id, ...params) : insertRow
+            onSubmit: expandedRow?._id ? (...params) => modifyRowByRowExpand(expandedRow._id, ...params) : insertRow
           })}
         </>
       )}

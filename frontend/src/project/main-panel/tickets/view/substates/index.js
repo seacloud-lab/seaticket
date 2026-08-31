@@ -217,7 +217,7 @@ const AllSubstates = ({
 
   useEffect(() => {
     const unsubscribeNew = eventBus.subscribe(EVENT_BUS_TYPE.NEW_SUBSTATE, () => {
-      context.eventBus.dispatch('expand_row');
+      context.eventBus.dispatch('expand_row', {});
     });
     return () => {
       unsubscribeNew && unsubscribeNew();
