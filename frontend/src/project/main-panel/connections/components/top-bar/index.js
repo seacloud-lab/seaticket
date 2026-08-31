@@ -145,14 +145,11 @@ const TopBar = ({ title, modifyLocalBar }) => {
     if (isConnectionRecordsView(pageSlugId) && childrenPageSlugId) return null;
     return (
       <>
-        {isSyncing
-          ?
-          (
-            <Button className='seaqa-project-syncing-connections-btn' disabled={true} color="primary">
-              <CenteredLoading className='mr-2' />
-              <span>{gettext('Syncing')}</span>
-            </Button>
-          )
+        {isSyncing ?
+          <Button className='seaqa-project-syncing-connections-btn' disabled={true} color="primary">
+            <CenteredLoading className='mr-2' />
+            <span className="flex-shrink-0">{gettext('Syncing')}</span>
+          </Button>
           : <AddButton onClick={() => onManualSync(pageSlugId)} text={gettext('Sync now')} icon="sync" />}
       </>
     );
