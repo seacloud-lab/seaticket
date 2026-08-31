@@ -1354,17 +1354,6 @@ class PortalKnowledgeBaseViewsView(APIView):
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request, project_uuid):
-        # try:
-        #     project = request.project
-        #     project_settings = json.loads(project.settings) if project.settings else {}
-        #     portal_settings = project_settings.get('portal', {})
-        #     show_kb = bool(portal_settings.get('show_knowledge_base', False))
-        # except Exception:
-        #     show_kb = False
-        # if not show_kb:
-        #     error_msg = 'Feature is not enabled.'
-        #     return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         try:
             views = KnowledgeBaseViews.objects.list_views(project_uuid)
         except Exception as e:
@@ -1394,17 +1383,6 @@ class PortalKnowledgeBaseRecordsView(APIView):
             error_msg = 'view_id is invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
         
-        # try:
-        #     project = request.project
-        #     project_settings = json.loads(project.settings) if project.settings else {}
-        #     portal_settings = project_settings.get('portal', {})
-        #     show_kb = bool(portal_settings.get('show_knowledge_base', False))
-        # except Exception:
-        #     show_kb = False
-        # if not show_kb:
-        #     error_msg = 'Feature is not enabled.'
-        #     return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         username = request.user.username if request.user.is_authenticated else ''
         try:
             seadb_api = SeaDBAPI()
@@ -1468,17 +1446,6 @@ class PortalKnowledgeBaseRecordView(APIView):
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request, project_uuid, knowledge_id):
-        # try:
-        #     project = request.project
-        #     project_settings = json.loads(project.settings) if project.settings else {}
-        #     portal_settings = project_settings.get('portal', {})
-        #     show_kb = bool(portal_settings.get('show_knowledge_base', False))
-        # except Exception:
-        #     show_kb = False
-        # if not show_kb:
-        #     error_msg = 'Feature is not enabled.'
-        #     return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         try:
             seadb_api = SeaDBAPI()
             record, columns = get_knowledge_base_record_by_pk(seadb_api, project_uuid, knowledge_id)
@@ -1577,7 +1544,6 @@ class PortalSettingsView(APIView):
         portal_settings = project_settings.get('portal', {})
         allow_anonymous = bool(portal_settings.get('allow_anonymous', False))
         enable_password_protection = bool(portal_settings.get('enable_password_protection', False))
-        show_knowledge_base = bool(portal_settings.get('show_knowledge_base', False))
         portal_home_settings = portal_settings.get('portal_home_settings', {})
         if not isinstance(portal_home_settings, dict):
             portal_home_settings = {}
@@ -1599,7 +1565,6 @@ class PortalSettingsView(APIView):
         return Response({
             'allow_anonymous': allow_anonymous,
             'enable_password_protection': enable_password_protection,
-            'show_knowledge_base': show_knowledge_base,
             'chat_allowed_sources': chat_allowed_sources,
             'daily_chat_credit_limit': daily_chat_credit_limit,
             'portal_home_settings': portal_home_settings,
@@ -1618,7 +1583,6 @@ class PortalSettingsView(APIView):
 
         raw_allow_anonymous = request.data.get('allow_anonymous')
         raw_enable_password_protection = request.data.get('enable_password_protection')
-        raw_show_knowledge_base = request.data.get('show_knowledge_base')
         raw_daily_chat_credit_limit = request.data.get('daily_chat_credit_limit')
         password = request.data.get('password', '')
         portal_name = request.data.get('portal_name')
@@ -1629,7 +1593,6 @@ class PortalSettingsView(APIView):
         bool_field_mapping = {
             'allow_anonymous': raw_allow_anonymous,
             'enable_password_protection': raw_enable_password_protection,
-            'show_knowledge_base': raw_show_knowledge_base,
         }
         bool_updates = {}
         try:
@@ -1677,6 +1640,7 @@ class PortalSettingsView(APIView):
 
         portal_settings = project_settings.get('portal', {})
         old_home_settings = portal_settings.get('portal_home_settings', {})
+        portal_settings.pop('show_knowledge_base', None)
         portal_settings.update(bool_updates)
 
         if chat_allowed_sources is not None:

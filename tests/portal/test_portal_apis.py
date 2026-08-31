@@ -35,13 +35,12 @@ from seahub.portal.portal_issue_substates import PortalIssueSubstateAPIView
 
 
 def _set_portal_settings(project, *, enable_portal=True, allow_anonymous=False,
-                         enable_password_protection=False, show_knowledge_base=False, password=None):
+                         enable_password_protection=False, password=None):
     settings_dict = json.loads(project.settings) if project.settings else {}
     portal = settings_dict.get('portal', {})
     portal['enable_portal'] = bool(enable_portal)
     portal['allow_anonymous'] = bool(allow_anonymous)
     portal['enable_password_protection'] = bool(enable_password_protection)
-    portal['show_knowledge_base'] = bool(show_knowledge_base)
     if password is not None:
         portal['password'] = password
     settings_dict['portal'] = portal
@@ -339,20 +338,9 @@ class TestPortalTagsView:
 @pytest.mark.django_db
 class TestPortalKnowledgeBaseViewsView:
 
-    def test_get_feature_not_enabled(self, factory, project_creator, real_project):
-        project = real_project
-        _set_portal_settings(project, allow_anonymous=False, show_knowledge_base=False)
-
-        request = factory.get(f"/api/v1/portal/{project.uuid}/knowledge-base/views/")
-        request.user = project_creator
-
-        resp = PortalKnowledgeBaseViewsView.as_view()(request, project_uuid=str(project.uuid))
-
-        assert resp.status_code == 403
-
     def test_get_success(self, factory, project_creator, real_project):
         project = real_project
-        _set_portal_settings(project, allow_anonymous=False, show_knowledge_base=True)
+        _set_portal_settings(project, allow_anonymous=False)
 
         request = factory.get(f"/api/v1/portal/{project.uuid}/knowledge-base/views/")
         request.user = project_creator
@@ -369,7 +357,7 @@ class TestPortalKnowledgeBaseRecordsView:
 
     def test_get_missing_view_id(self, factory, project_creator, real_project):
         project = real_project
-        _set_portal_settings(project, allow_anonymous=False, show_knowledge_base=True)
+        _set_portal_settings(project, allow_anonymous=False)
 
         request = factory.get(f"/api/v1/portal/{project.uuid}/knowledge-bases/")
         request.user = project_creator
@@ -378,20 +366,9 @@ class TestPortalKnowledgeBaseRecordsView:
 
         assert resp.status_code == 400
 
-    def test_get_feature_not_enabled(self, factory, project_creator, real_project):
-        project = real_project
-        _set_portal_settings(project, allow_anonymous=False, show_knowledge_base=False)
-
-        request = factory.get(f"/api/v1/portal/{project.uuid}/knowledge-bases/", {'view_id': 'v1'})
-        request.user = project_creator
-
-        resp = PortalKnowledgeBaseRecordsView.as_view()(request, project_uuid=str(project.uuid))
-
-        assert resp.status_code == 403
-
     def test_get_success(self, factory, project_creator, real_project):
         project = real_project
-        _set_portal_settings(project, allow_anonymous=False, show_knowledge_base=True)
+        _set_portal_settings(project, allow_anonymous=False)
 
         request = factory.get(f"/api/v1/portal/{project.uuid}/knowledge-bases/", {'view_id': 'v1', 'start': 'a', 'limit': 'b'})
         request.user = project_creator
@@ -453,7 +430,7 @@ class TestPortalSettingsView:
 
     def test_get_success(self, factory, project_creator, real_project):
         project = real_project
-        _set_portal_settings(project, allow_anonymous=True, enable_password_protection=False, show_knowledge_base=True)
+        _set_portal_settings(project, allow_anonymous=True, enable_password_protection=False)
 
         request = factory.get(f"/api/v1/portal/{project.uuid}/settings/")
         request.user = project_creator
@@ -462,7 +439,7 @@ class TestPortalSettingsView:
 
         assert resp.status_code == 200
         assert resp.data['allow_anonymous'] is True
-        assert resp.data['show_knowledge_base'] is True
+        assert 'show_knowledge_base' not in resp.data
 
     def test_post_permission_denied(self, factory, auth_user, real_project):
         project = real_project
@@ -512,7 +489,7 @@ class TestPortalSettingsView:
         project = real_project
         request = factory.post(
             f"/api/v1/portal/{project.uuid}/settings/",
-            data={'allow_anonymous': 1, 'enable_password_protection': 0, 'show_knowledge_base': 1, 'custom_domain': 'support.local.test'},
+            data={'allow_anonymous': 1, 'enable_password_protection': 0, 'custom_domain': 'support.local.test'},
             format='json'
         )
         request.user = project_creator
@@ -526,7 +503,7 @@ class TestPortalSettingsView:
         portal_settings = settings_dict.get('portal', {})
         assert portal_settings.get('allow_anonymous') is True
         assert portal_settings.get('enable_password_protection') is False
-        assert portal_settings.get('show_knowledge_base') is True
+        assert 'show_knowledge_base' not in portal_settings
         assert 'password' not in portal_settings
         assert PortalCustomDomain.objects.filter(project_uuid=str(project.uuid)).first() is None
 
@@ -559,7 +536,7 @@ class TestPortalSettingsView:
         portal_settings = settings_dict.get('portal', {})
         assert portal_settings.get('allow_anonymous') is True
         assert portal_settings.get('enable_password_protection') is False
-        assert portal_settings.get('show_knowledge_base') is True
+        assert 'show_knowledge_base' not in portal_settings
         assert portal_settings.get('portal_name') == 'Custom support'
         assert portal_settings.get('portal_logo') == f'/api/v1/portal/{project.uuid}/logo/?v=1'
 

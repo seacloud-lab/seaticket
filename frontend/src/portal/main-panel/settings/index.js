@@ -14,7 +14,7 @@ import { normalizeChatAllowedSources, isConnectionActive } from './utils';
 
 import './index.css';
 
-const { projectUuid, showKBInPortal } = window.app.pageOptions;
+const { projectUuid } = window.app.pageOptions;
 const getHostFromUrl = (value) => {
   if (!value) return '';
   try {
@@ -46,9 +46,6 @@ const Settings = () => {
   const [serverChatAllowedSources, setServerChatAllowedSources] = useState(null);
   const [isSavingChat, setIsSavingChat] = useState(false);
 
-  // kb
-  const [showKB, setShowKB] = useState(showKBInPortal === true);
-  const [isSavingKB, setIsSavingKB] = useState(false);
   const [customDomain, setCustomDomain] = useState('');
   const [savedCustomDomain, setSavedCustomDomain] = useState('');
   const [customDomainVerified, setCustomDomainVerified] = useState(false);
@@ -76,10 +73,6 @@ const Settings = () => {
     setEnablePassword(!!data.enable_password_protection);
     setHasSavedPassword(!!data.enable_password_protection);
     setIsEditingPassword(false);
-    const kbEnabled = !!data.show_knowledge_base;
-    setShowKB(kbEnabled);
-    window.app.pageOptions.showKBInPortal = kbEnabled;
-
     setServerChatAllowedSources(data.chat_allowed_sources);
   }, []);
 
@@ -152,29 +145,6 @@ const Settings = () => {
 
     setChatSettings(normalizeChatAllowedSources(serverChatAllowedSources, connections));
   }, [connections, hasLoadedPortalSettings, isConnectionsLoading, serverChatAllowedSources]);
-
-  const onToggleKB = useCallback(() => {
-    if (isSavingKB) return;
-    const next = !showKB;
-    setIsSavingKB(true);
-    setShowKB(next);
-    const needPwd = allowAnonymous && enablePassword;
-    portalAPI.updateSettings(projectUuid, {
-      allow_anonymous: allowAnonymous ? 1 : 0,
-      enable_password_protection: needPwd ? 1 : 0,
-      password: '',
-      show_knowledge_base: next ? 1 : 0,
-    })
-      .then(() => {
-        window.app.pageOptions.showKBInPortal = next;
-        window.dispatchEvent(new CustomEvent('portal:kb-visibility', { detail: { enabled: next } }));
-      })
-      .catch(() => {
-        setShowKB(!next);
-        toaster.danger(gettext('Save failed'));
-      })
-      .finally(() => setIsSavingKB(false));
-  }, [showKB, allowAnonymous, enablePassword, isSavingKB]);
 
   const onCopyUrl = useCallback((value) => {
     if (!value) return;
@@ -334,7 +304,6 @@ const Settings = () => {
       allow_anonymous: allowAnonymous ? 1 : 0,
       enable_password_protection: needPwd ? 1 : 0,
       password: shouldSendPassword ? password : '',
-      show_knowledge_base: showKB ? 1 : 0,
     };
     portalAPI.updateSettings(projectUuid, payload).then(() => {
       return portalAPI.getSettings(projectUuid);
@@ -348,7 +317,7 @@ const Settings = () => {
     }).catch((error) => {
       toaster.danger(Utils.getErrorMsg(error));
     });
-  }, [allowAnonymous, enablePassword, password, confirmPassword, isEditingPassword, hasSavedPassword, showKB, applyLoadedSettings]);
+  }, [allowAnonymous, enablePassword, password, confirmPassword, isEditingPassword, hasSavedPassword, applyLoadedSettings]);
 
   const handleSourceChange = useCallback((value) => {
     setChatSettings(value);
@@ -666,19 +635,6 @@ const Settings = () => {
                 {gettext('Save the custom domain before verification.')}
               </p>
             )}
-          </div>
-        </TabPane>
-        <TabPane tabId={SETTING_TAB.KNOWLEDGE_BASE}>
-          <div className="portal-settings-content">
-            <label className="portal-settings-label">{gettext('Display')}</label>
-            <Switch
-              checked={showKB}
-              disabled={isSavingKB}
-              onChange={onToggleKB}
-              textPosition="right"
-              placeholder={gettext('Show knowledge base')}
-              className="portal-settings-switch"
-            />
           </div>
         </TabPane>
         <TabPane tabId={SETTING_TAB.CHAT}>
