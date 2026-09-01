@@ -14,7 +14,7 @@ import { isString } from '@/utils/type-detection';
 import './index.css';
 
 const Item = ({
-  isLast, isExpand,
+  isLast, isExpand, isFocused, containerRef,
   detail, projectUuid, connection_id, setIsLastExpanded, recordId, permission,
   handleReplyEmailSuccess, onUnreadChange
 }) => {
@@ -227,7 +227,7 @@ const Item = ({
   if (!isExpanded || isShowReply) {
     return (
       <>
-        <div className="seaqa-connection-email-record-details collapsed" onClick={openExpanded}>
+        <div ref={containerRef} className={classnames('seaqa-connection-email-record-details collapsed', { focused: isFocused })} onClick={openExpanded}>
           <div className="email-avatar">
             <img alt='' src={`${mediaUrl}avatars/default.png`}/>
           </div>
@@ -254,7 +254,7 @@ const Item = ({
   }
 
   return (
-    <div className="seaqa-connection-email-record-details expanded">
+    <div ref={containerRef} className={classnames('seaqa-connection-email-record-details expanded', { focused: isFocused })}>
       <div className="email-header" onClick={() => setIsExpanded(false)}>
         <div className="email-avatar">
           <img alt='' src={`${mediaUrl}avatars/default.png`}/>

@@ -64,6 +64,10 @@ const RUN_EVENT = {
   EMAIL_THREAD_ADDED: 'email_thread_added',
   EMAIL_MESSAGE_ADDED: 'email_message_added',
 
+  // discord
+  DISCORD_THREAD_ADDED: 'discord_thread_added',
+  DISCORD_THREAD_MESSAGE_ADDED: 'discord_thread_message_added',
+
   // ticket
   TICKET_DUE_SOON: 'ticket_due_soon',
   TICKET_OVER_DUE: 'ticket_over_due',
@@ -77,13 +81,30 @@ const RUN_EVENT_NAME = {
   [RUN_EVENT.DISCOURSE_TOPIC_COMMENT_ADDED]: gettext('New topic comment'),
   [RUN_EVENT.EMAIL_THREAD_ADDED]: gettext('New email thread'),
   [RUN_EVENT.EMAIL_MESSAGE_ADDED]: gettext('New email message'),
+  [RUN_EVENT.DISCORD_THREAD_ADDED]: gettext('New Discord thread'),
+  [RUN_EVENT.DISCORD_THREAD_MESSAGE_ADDED]: gettext('New Discord message'),
   [RUN_EVENT.TICKET_DUE_SOON]: gettext('Ticket due soon'),
   [RUN_EVENT.TICKET_OVER_DUE]: gettext('Ticket overdue'),
   [RUN_EVENT.TICKET_TASK_FINISHED]: gettext('Internal task finished'),
 };
 
+const RUN_EVENT_VIEW_SOURCE_TEXT = {
+  [RUN_EVENT.EMAIL_THREAD_ADDED]: gettext('View email'),
+  [RUN_EVENT.EMAIL_MESSAGE_ADDED]: gettext('View email'),
+  [RUN_EVENT.GITHUB_ISSUE_ADDED]: gettext('View issue'),
+  [RUN_EVENT.GITHUB_ISSUE_COMMENT_ADDED]: gettext('View comment'),
+  [RUN_EVENT.DISCOURSE_TOPIC_ADDED]: gettext('View topic'),
+  [RUN_EVENT.DISCOURSE_TOPIC_COMMENT_ADDED]: gettext('View comment'),
+  [RUN_EVENT.DISCORD_THREAD_ADDED]: gettext('View thread'),
+  [RUN_EVENT.DISCORD_THREAD_MESSAGE_ADDED]: gettext('View comment'),
+  [RUN_EVENT.TICKET_DUE_SOON]: gettext('View ticket'),
+  [RUN_EVENT.TICKET_OVER_DUE]: gettext('View ticket'),
+  [RUN_EVENT.TICKET_TASK_FINISHED]: gettext('View ticket'),
+};
+
+const DEFAULT_VIEW_SOURCE_TEXT = gettext('View source');
 
 export {
   ACTION_STATUS, ACTION_TYPE, SUGGESTION_TOOL_NAME_MAP, ACTION_ICON_MAPPER,
-  RUN_STATUS, RUN_EVENT_NAME, SUGGESTIONS_STATUS,
+  RUN_STATUS, RUN_EVENT, RUN_EVENT_NAME, RUN_EVENT_VIEW_SOURCE_TEXT, DEFAULT_VIEW_SOURCE_TEXT, SUGGESTIONS_STATUS,
 };

@@ -28,7 +28,7 @@ import './index.css';
 
 const { projectUuid } = window.app.pageOptions;
 
-const ResourceTitle = ({ displayDetails = true, resource, className }) => {
+const ResourceTitle = ({ displayDetails = true, resource, className, renderTrigger }) => {
   const [isShowDetails, setIsShowDetails] = useState(false);
   const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
   const [isTicketDialogOpen, setTicketDialogOpen] = useState(false);
@@ -193,17 +193,20 @@ const ResourceTitle = ({ displayDetails = true, resource, className }) => {
     });
   }, [modifyRowLink]);
 
-  const hasDetails = resource.type === TICKET_TYPE || (resource.connection_id && resource._id);
+  const hasDetails = resource?.type === TICKET_TYPE || (resource?.connection_id && resource?._id);
+  const canOpen = hasDetails && displayDetails;
 
   return (
     <>
-      <div
-        className={classnames(className, { 'seaqa-agent-resource-title': displayDetails && hasDetails })}
-        title={resource?.title}
-        onClick={hasDetails && displayDetails ? openDetails : () => {}}
-      >
-        {resource?.title}
-      </div>
+      {renderTrigger ? renderTrigger({ openDetails, canOpen }) : (
+        <div
+          className={classnames(className, { 'seaqa-agent-resource-title': canOpen })}
+          title={resource?.title}
+          onClick={canOpen ? openDetails : () => {}}
+        >
+          {resource?.title}
+        </div>
+      )}
       {isShowDetails && (
         <ResourceDetailsDialog
           projectUuid={projectUuid}

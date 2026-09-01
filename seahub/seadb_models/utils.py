@@ -496,7 +496,7 @@ def list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id,
         topic_record = topics_res.get('results')[0] if topics_res.get('results') else {}
         column_metadata = topics_res.get('metadata')
         topic_id = topic_record.get('topic_id')
-        replies_sql = f"SELECT author,content,modified_time FROM `{replies_table_name}` WHERE topic_id = {topic_id} ORDER BY post_number ASC"
+        replies_sql = f"SELECT author,content,modified_time,post_number FROM `{replies_table_name}` WHERE topic_id = {topic_id} ORDER BY post_number ASC"
         replies_res = seadb_api.query_rows(project_uuid, replies_sql)
         replies_records = replies_res.get('results')
         topic_record['replies'] = replies_records
@@ -797,7 +797,7 @@ def list_email_record_details(seadb_api, project_uuid, connection_id, _pk):
         thread_record, column_metadata, linked_ticket_title = get_email_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
         email_sql = f"""
         SELECT
-        email_from, email_to, title, cc, text_content as content, modified_time, is_sender, html_content, email_id, origin_thread_id, attachments, _pk, unread
+        email_from, email_to, title, cc, text_content as content, modified_time, is_sender, html_content, email_id, origin_thread_id, attachments, _pk, unread, message_id
         FROM `{email_table_name}`
         WHERE thread_id = {_pk} AND deleted = false
         ORDER BY modified_time ASC, _pk ASC
@@ -1112,7 +1112,7 @@ def list_discord_thread_record_details(seadb_api, project_uuid, connection_id, _
         record = res.get('results')[0]
         column_metadata = res.get('metadata')
         thread_id = record.get('thread_id')
-        replies_sql = f"SELECT author, content, modified_time FROM `{replies_table_name}` WHERE thread_id = '{thread_id}' ORDER BY message_id ASC"
+        replies_sql = f"SELECT author, content, modified_time, message_id FROM `{replies_table_name}` WHERE thread_id = '{thread_id}' ORDER BY message_id ASC"
         replies_res = seadb_api.query_rows(project_uuid, replies_sql)
         replies_records = replies_res.get('results')
         record['replies'] = replies_records

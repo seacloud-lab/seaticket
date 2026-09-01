@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import classnames from 'classnames';
 import { gettext } from '@constants';
 import { EmptyTip, IconButton, toaster } from '@/components';
@@ -16,9 +16,16 @@ const DiscourseDetails = ({
   connection_id,
   recordId,
   permission,
-  handleReplyDiscourseSuccess
+  handleReplyDiscourseSuccess,
+  focus,
 }) => {
   const [isShowReply, setIsShowReply] = useState(false);
+  const focusRef = useRef(null);
+
+  useEffect(() => {
+    if (!focus?.postNumber || !focusRef.current) return;
+    focusRef.current.scrollIntoView({ block: 'center' });
+  }, [focus?.postNumber]);
 
   const onSubmit = useCallback(({ content }, callback) => {
     const payload = {
@@ -47,13 +54,22 @@ const DiscourseDetails = ({
         <EmptyTip />
       ) : (
         <>
-          {details.map((detail, index) => (
-            <CommonDetailItem
-              key={detail._pk ?? `discourse-${index}`} // Avoid raw index if possible
-              type="discourse_forum"
-              detail={detail}
-            />
-          ))}
+          {details.map((detail, index) => {
+            const isFocused = Boolean(focus?.postNumber && detail.post_number != null && String(detail.post_number) === String(focus.postNumber));
+            return (
+              <div
+                key={detail.post_number ?? detail._pk ?? `discourse-${index}`}
+                id={detail.post_number != null ? `post-${detail.post_number}` : undefined}
+                ref={isFocused ? focusRef : undefined}
+                className={classnames({ 'seaqa-connection-detail-focused': isFocused })}
+              >
+                <CommonDetailItem
+                  type="discourse_forum"
+                  detail={detail}
+                />
+              </div>
+            );
+          })}
 
           {permission && (
             isShowReply ? (

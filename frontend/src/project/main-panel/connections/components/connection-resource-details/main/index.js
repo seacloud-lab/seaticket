@@ -211,6 +211,7 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
           permission={permission}
           handleReplyEmailSuccess={handleReplyEmailSuccess}
           onUnreadChange={handleEmailUnreadChange}
+          focus={resource.focus}
         />
       );
     }
@@ -222,6 +223,7 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
         className={`seaqa-connection-resource-details seaqa-connection-${type}-resource-details pt-4 pb-4`}
         details={details}
         isSmallScreen={isSmallScreen}
+        focus={resource.focus}
       />
     );
   }
@@ -241,6 +243,7 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
           recordId={resource._id}
           permission={permission}
           handleReplyDiscourseSuccess={handleReplyDiscourseSuccess}
+          focus={resource.focus}
         />
       );
     }

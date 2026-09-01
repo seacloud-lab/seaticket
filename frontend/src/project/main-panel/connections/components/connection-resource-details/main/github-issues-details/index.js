@@ -1,11 +1,17 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import classnames from 'classnames';
 import { EmptyTip } from '@/components';
 import { Comment } from '@/project/main-panel/tickets/components';
 import { mediaUrl } from '@/constants';
 import dayjs from '@/utils/dayjs';
 
-const GitHubIssuesDetails = ({ details, className, isSmallScreen }) => {
+const GitHubIssuesDetails = ({ details, className, isSmallScreen, focus }) => {
+  const focusRef = useRef(null);
+
+  useEffect(() => {
+    if (!focus?.commentId || !focusRef.current) return;
+    focusRef.current.scrollIntoView({ block: 'center' });
+  }, [focus?.commentId]);
 
   if (details.length === 0) {
     return (
@@ -28,16 +34,23 @@ const GitHubIssuesDetails = ({ details, className, isSmallScreen }) => {
           content: detail.content,
           comment_id: detail.comment_id,
         };
+        const isFocused = Boolean(focus?.commentId && comment.comment_id && String(comment.comment_id) === String(focus.commentId));
 
         return (
-          <Comment
+          <div
             key={comment.comment_id || index}
-            isSmallScreen={isSmallScreen}
-            comment={comment}
-            isShowStatus={true}
-            readonly={true}
-            className="d-none-after"
-          />
+            id={comment.comment_id ? `comment-${comment.comment_id}` : undefined}
+            ref={isFocused ? focusRef : undefined}
+            className={classnames({ 'seaqa-connection-detail-focused': isFocused })}
+          >
+            <Comment
+              isSmallScreen={isSmallScreen}
+              comment={comment}
+              isShowStatus={true}
+              readonly={true}
+              className="d-none-after"
+            />
+          </div>
         );
       })}
     </div>

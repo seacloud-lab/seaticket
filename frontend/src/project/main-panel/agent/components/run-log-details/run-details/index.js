@@ -9,7 +9,7 @@ import ThoughtProcessDialog from './thought-process-dialog';
 import { IconTooltip, SecondaryBtn } from '@/components';
 import DateFormatter from '@/project/main-panel/connections/components/cell-formatter/date-formatter';
 import { FROM_NOW } from '@/sea-metadata/constants';
-import { getDisplayActions } from '../../../utils';
+import { getAgentResource, getDisplayActions, getEventFocus } from '../../../utils';
 
 import './index.css';
 
@@ -114,6 +114,10 @@ const RunDetail = ({
 
   const { id, started_at, actions = [], event } = run;
   const displayActions = getDisplayActions(actions);
+  const resource = useMemo(() => ({
+    ...getAgentResource(run),
+    focus: getEventFocus(run),
+  }), [run]);
 
   return (
     <>
@@ -167,6 +171,8 @@ const RunDetail = ({
                     key={action.id || actionIndex}
                     action={action}
                     runId={id}
+                    resource={resource}
+                    eventType={event?.type}
                     onConfirm={onConfirmAction}
                     onCancel={onCancelAction}
                     onViewContent={onViewContent}
