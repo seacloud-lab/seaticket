@@ -2,10 +2,14 @@ import logging
 import time
 import mimetypes
 import json
+from datetime import datetime, timedelta
 
+from dateutil.relativedelta import relativedelta
 from django.core.cache import cache
+from django.db.models.functions import TruncDate
 from django.http import FileResponse, StreamingHttpResponse
 from django.db.models import Count, Sum
+from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
 from seahub.portal.permissions import PortalChatPermission, PortalAdminPermission
@@ -304,6 +308,26 @@ class PortalAdminChatStatisticsView(APIView):
                 user_count=Count("username", distinct=True)
             )
 
+            today = timezone.localdate()
+            start_date = today - relativedelta(months=1) + timedelta(days=1)
+            start_time = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))
+            session_counts = PortalChatSessions.objects.filter(
+                project_uuid=project_uuid,
+                created_at__gte=start_time,
+            ).annotate(
+                date=TruncDate('created_at'),
+            ).values('date').annotate(
+                count=Count('id'),
+            ).order_by('date')
+            session_counts_by_date = {item['date']: item['count'] for item in session_counts}
+            daily_session_counts = [
+                {
+                    'date': (start_date + timedelta(days=offset)).isoformat(),
+                    'count': session_counts_by_date.get(start_date + timedelta(days=offset), 0),
+                }
+                for offset in range((today - start_date).days + 1)
+            ]
+
             statistic_res = AIUsageStatistics.objects.filter(
                 project_uuid=uuid_str_to_32_chars(project_uuid),
                 scenario=AIScenario.PORTAL_CHAT.value
@@ -313,7 +337,11 @@ class PortalAdminChatStatisticsView(APIView):
                 total_credit_used=convert_cost_to_credit(Sum("cost", default=0)),
             )
 
-            return Response({**user_count_res, **statistic_res})
+            return Response({
+                **user_count_res,
+                **statistic_res,
+                'daily_session_counts': daily_session_counts,
+            })
         except Exception as e:
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')

@@ -3,7 +3,7 @@ import { gettext, PERMISSION_TYPES } from '@/constants';
 import SeaMetadata, { CellType, VIEW_TOOL, EVENT_BUS_TYPE } from '@/sea-metadata';
 import { chatAPI } from '@/portal/api/chat-api';
 import context from '@/sea-metadata/context';
-import { VIEW_TYPE } from '@/sea-metadata/constants';
+import { VIEW_TYPE, STATISTIC_TYPE } from '@/sea-metadata/constants';
 import SidePanelChat from '@/project/main-panel/ask/side-panel-chat';
 import { useData } from '@/project/hooks';
 import { Utils } from '@/utils/utils';
@@ -100,7 +100,7 @@ const ChatAnalysis = ({
         });
       }
       return chatAPI.getAdminChatStatistics(projectUuid).then(res => {
-        const { input_tokens, output_tokens, total_credit_used, user_count } = res.data;
+        const { input_tokens, output_tokens, total_credit_used, user_count, daily_session_counts } = res.data;
         return {
           data: {
             records: [
@@ -110,7 +110,7 @@ const ChatAnalysis = ({
                 column_key: 'user',
                 summary_type: 'count',
                 value: user_count,
-                type: 'card',
+                type: STATISTIC_TYPE.CARD,
               },
               {
                 _pk: 2,
@@ -118,7 +118,7 @@ const ChatAnalysis = ({
                 column_key: 'input_tokens',
                 summary_type: 'count',
                 value: formatTokenCount(input_tokens),
-                type: 'card',
+                type: STATISTIC_TYPE.CARD,
               },
               {
                 _pk: 3,
@@ -126,7 +126,7 @@ const ChatAnalysis = ({
                 column_key: 'output_tokens',
                 summary_type: 'count',
                 value: formatTokenCount(output_tokens),
-                type: 'card',
+                type: STATISTIC_TYPE.CARD,
               },
               {
                 _pk: 4,
@@ -134,8 +134,17 @@ const ChatAnalysis = ({
                 column_key: 'credit_used',
                 summary_type: 'count',
                 value: total_credit_used ? total_credit_used.toFixed(0) : total_credit_used ?? 0,
-                type: 'card',
+                type: STATISTIC_TYPE.CARD,
               },
+              {
+                _pk: 5,
+                name: gettext('Daily conversations in the past month'),
+                column_key: 'date',
+                summary_type: 'count',
+                summary_column_key: 'count',
+                value: daily_session_counts || [],
+                type: STATISTIC_TYPE.LINE,
+              }
             ],
           },
         };

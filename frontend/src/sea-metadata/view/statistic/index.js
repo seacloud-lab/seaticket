@@ -1,8 +1,10 @@
 import React from 'react';
-import { useMetadata } from '@/sea-metadata/hooks';
 import { EmptyTip } from '@/components';
 import { gettext, mediaUrl } from '@/constants';
+import { useMetadata } from '@/sea-metadata/hooks';
 import Card from './card';
+import Line from './line';
+import { STATISTIC_TYPE } from '@/sea-metadata/constants';
 
 import './index.css';
 
@@ -15,9 +17,10 @@ const Statistic = () => {
   }
 
   return (
-    <div className="sea-metadata-statistics-view">
+    <div className="sea-metadata-statistics-view w-100 h-100 py-4 d-flex flex-wrap">
       {rows.map(row => {
-        if (row.type === 'card') return (<Card statistic={row} key={row._id} />);
+        if (row.type === STATISTIC_TYPE.CARD) return (<Card statistic={row} key={row._id} />);
+        if (row.type === STATISTIC_TYPE.LINE) return (<Line statistic={row} key={row._id} />);
         return null;
       })}
     </div>
