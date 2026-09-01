@@ -224,7 +224,7 @@ def get_project_file_head_from_s3(project_uuid, file_path):
         return s3_client.head_object(Bucket=S3_FILE_BUCKET, Key=s3_file_path)
     except ClientError as e:
         error_code = e.response['Error']['Code']
-        if error_code == 'NoSuchKey':
+        if error_code in ('NoSuchKey', '404'):
             raise FileNotFound()
         raise
 
@@ -235,7 +235,7 @@ def get_connection_file_head_from_s3(project_uuid, site_id, filename):
         return s3_client.head_object(Bucket=S3_WEB_CRAWL_BUCKET, Key=s3_file_path)
     except ClientError as e:
         error_code = e.response['Error']['Code']
-        if error_code == 'NoSuchKey':
+        if error_code in ('NoSuchKey', '404'):
             raise FileNotFound()
         raise
 
@@ -246,7 +246,7 @@ def get_connection_file_from_s3(project_uuid, connection_id, filename):
         response = s3_client.get_object(Bucket=S3_WEB_CRAWL_BUCKET, Key=s3_file_path)
     except ClientError as e:
         error_code = e.response['Error']['Code']
-        if error_code == 'NoSuchKey':
+        if error_code in ('NoSuchKey', '404'):
             raise FileNotFound()
         raise
     return response['Body']
