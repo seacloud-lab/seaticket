@@ -53,7 +53,7 @@ export const KNOWLEDGE_PREDEFINED_COLUMN_CONFIG = {
     type: CellType.MTIME,
   },
   [KNOWLEDGE_PREDEFINED_COLUMN_NAME.FEATURED_ARTICLES]: {
-    display_name: gettext('Featured articles'),
+    display_name: gettext('Featured'),
     type: CellType.CHECKBOX,
     editable: true,
     modify_data_able: true,

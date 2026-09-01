@@ -141,7 +141,7 @@ const PortalHome = ({ projectUuid, onHomeChatSend }) => {
               <CenteredLoading />
             ) : (
               <>
-                <h2 className="portal-home-featured-articles-title">Featured articles</h2>
+                <h2 className="portal-home-featured-articles-title">{gettext('Featured')}</h2>
                 <div className="portal-home-featured-articles-list">
                   {columnTitles.map(({ record, title }) => (
                     <div
