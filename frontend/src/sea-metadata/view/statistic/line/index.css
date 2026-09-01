@@ -1,0 +1,9 @@
+.sea-metadata-statistic-line {
+  padding: 24px;
+  width: 100%;
+  height: fit-content;
+}
+
+.sea-metadata-statistic-line .sea-metadata-statistic-line-title {
+  font-size: 20px;
+}

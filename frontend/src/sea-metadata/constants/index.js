@@ -12,6 +12,7 @@ export * from './sort';
 export * from './error';
 export * from './view';
 export * from './search';
+export * from './statistic';
 
 export {
   EVENT_BUS_TYPE,

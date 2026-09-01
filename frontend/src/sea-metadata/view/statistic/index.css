@@ -1,8 +1,7 @@
 .sea-metadata-statistics-view {
-  display: flex;
-  flex-wrap: wrap;
   gap: 16px;
-  padding: 16px 0;
+  overflow-y: auto;
+  align-content: flex-start;
 }
 
 .sea-metadata-statistics-view .sea-metadata-statistic {

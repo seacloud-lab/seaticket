@@ -33,7 +33,13 @@ const Project = () => {
     if ((bar === BAR_TYPE.TICKET || bar === BAR_TYPE.CONNECTION || bar === BAR_TYPE.CHAT || bar === BAR_TYPE.KNOWLEDGE || bar === BAR_TYPE.PORTAL_ISSUES) && validChildren.length > 0) {
       url = url + validChildren.join('/') + '/';
     }
-    if ((bar === BAR_TYPE.TICKET || bar === BAR_TYPE.MY_TICKET || bar === BAR_TYPE.CONNECTION || bar === BAR_TYPE.KNOWLEDGE || bar === BAR_TYPE.PORTAL_ISSUES) && isKeepSearch) {
+    if ((bar === BAR_TYPE.TICKET
+      || bar === BAR_TYPE.MY_TICKET
+      || bar === BAR_TYPE.CONNECTION
+      || bar === BAR_TYPE.KNOWLEDGE
+      || bar === BAR_TYPE.PORTAL_ISSUES
+      || bar === BAR_TYPE.PORTAL_CHAT_ANALYSIS
+    ) && isKeepSearch) {
       url = url + (search || '');
     }
     history.replaceState(null, null, url);

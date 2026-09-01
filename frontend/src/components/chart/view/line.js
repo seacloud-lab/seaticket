@@ -7,7 +7,7 @@ import { gettext } from '@/constants';
 
 import './index.css';
 
-const Line = ({ data }) => {
+const Line = ({ data, tooltipTitle = gettext('Amount') }) => {
   const [tooltipData, setTooltipData] = useState(null);
   const [toolTipPosition, setToolTipPosition] = useState(null);
   const ref = useRef(null);
@@ -24,7 +24,7 @@ const Line = ({ data }) => {
   const showTooltip = (position, data) => {
     const { offsetX, offsetY } = position;
     const newTooltipData = {
-      title: gettext('Amount'),
+      title: tooltipTitle,
       items: [
         {
           color: CHART_STYLE_COLORS[0],
@@ -40,7 +40,7 @@ const Line = ({ data }) => {
   const moveTooltip = (position, data) => {
     const { offsetX, offsetY } = position;
     const newTooltipData = {
-      title: gettext('Amount'),
+      title: tooltipTitle,
       items: [
         {
           color: CHART_STYLE_COLORS[0],
@@ -62,7 +62,8 @@ const Line = ({ data }) => {
     const theme = CHART_THEME_COLOR;
 
     // Y axis
-    const niceEnd = d3.nice(0, d3.max(data, (d) => d.value), 5)[1];
+    const maxValue = d3.max(data, (d) => d.value);
+    const niceEnd = maxValue > 0 ? d3.nice(0, maxValue, 5)[1] : 1;
     const y = d3.scaleLinear()
       .domain([0, niceEnd])
       .range([chartHeight - insertPadding, insertPadding]);
@@ -79,7 +80,7 @@ const Line = ({ data }) => {
       .domain(xDomain)
       .range([insertPadding + container.horizontalOverflowOffset, chartWidth - insertPadding])
       .paddingInner(0.4)
-      .paddingOuter(0.1);
+      .paddingOuter(0.5);
 
     chart.append('g')
       .attr('class', 'x-axis-wrapper')

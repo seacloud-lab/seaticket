@@ -1,9 +1,10 @@
 import json
 from io import BytesIO
-from datetime import date
+from datetime import date, datetime, timedelta
 from unittest.mock import Mock, patch
 
 import pytest
+from django.utils import timezone
 
 from seahub.portal.chat.apis import (
     PortalAdminChatMessagesView,
@@ -578,6 +579,95 @@ class TestPortalAdminChatAPIs:
         assert response.data['input_tokens'] == 100
         assert response.data['output_tokens'] == 40
         assert response.data['total_credit_used'] == 150
+
+    def test_statistics_include_daily_session_counts_for_last_month(self, factory, real_project, project_creator):
+        today = date(2026, 3, 1)
+        recent_session = PortalChatSessions.objects.create_session(
+            project_uuid=str(real_project.uuid),
+            session_name='recent session',
+            username='customer@example.com',
+        )
+        another_recent_session = PortalChatSessions.objects.create_session(
+            project_uuid=str(real_project.uuid),
+            session_name='another recent session',
+            username='another-customer@example.com',
+        )
+        old_session = PortalChatSessions.objects.create_session(
+            project_uuid=str(real_project.uuid),
+            session_name='old session',
+            username='old-customer@example.com',
+        )
+        other_project_session = PortalChatSessions.objects.create_session(
+            project_uuid='other-project-uuid',
+            session_name='other project session',
+            username='other-customer@example.com',
+        )
+        PortalChatSessions.objects.filter(
+            id__in=[recent_session.id, another_recent_session.id]
+        ).update(created_at=timezone.make_aware(
+            datetime.combine(date(2026, 2, 2), datetime.min.time())
+        ))
+        PortalChatSessions.objects.filter(id=old_session.id).update(created_at=timezone.make_aware(
+            datetime.combine(date(2026, 2, 1), datetime.min.time())
+        ))
+        PortalChatSessions.objects.filter(id=other_project_session.id).update(created_at=timezone.make_aware(
+            datetime.combine(today, datetime.min.time())
+        ))
+
+        request = self._admin_request(
+            factory,
+            real_project,
+            project_creator,
+            f'/api/v1/portal/{real_project.uuid}/admin/chat/statistics/',
+        )
+        with patch('seahub.portal.chat.apis.timezone.localdate', return_value=today):
+            response = PortalAdminChatStatisticsView.as_view()(
+                request,
+                project_uuid=str(real_project.uuid),
+            )
+
+        assert response.status_code == 200
+        assert len(response.data['daily_session_counts']) == 28
+        assert response.data['daily_session_counts'][0] == {
+            'date': '2026-02-02', 'count': 2,
+        }
+        assert response.data['daily_session_counts'][-1] == {
+            'date': today.isoformat(), 'count': 0,
+        }
+        assert response.data['daily_session_counts'][-2] == {
+            'date': (today - timedelta(days=1)).isoformat(), 'count': 0,
+        }
+
+    def test_statistics_exclude_month_end_date_outside_last_month(self, factory, real_project, project_creator):
+        today = date(2026, 3, 31)
+        session = PortalChatSessions.objects.create_session(
+            project_uuid=str(real_project.uuid),
+            session_name='old session',
+            username='customer@example.com',
+        )
+        PortalChatSessions.objects.filter(id=session.id).update(created_at=timezone.make_aware(
+            datetime.combine(date(2026, 2, 28), datetime.min.time())
+        ))
+
+        request = self._admin_request(
+            factory,
+            real_project,
+            project_creator,
+            f'/api/v1/portal/{real_project.uuid}/admin/chat/statistics/',
+        )
+        with patch('seahub.portal.chat.apis.timezone.localdate', return_value=today):
+            response = PortalAdminChatStatisticsView.as_view()(
+                request,
+                project_uuid=str(real_project.uuid),
+            )
+
+        assert response.status_code == 200
+        assert response.data['daily_session_counts'][0] == {
+            'date': '2026-03-01', 'count': 0,
+        }
+        assert response.data['daily_session_counts'][-1] == {
+            'date': '2026-03-31', 'count': 0,
+        }
 
     def test_admin_chat_apis_reject_non_admin(self, factory, real_project, auth_user):
         request = self._admin_request(
