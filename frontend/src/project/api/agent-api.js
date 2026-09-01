@@ -65,6 +65,11 @@ class AgentAPI {
     return this.req.get(url, { params: { owner_source_id, owner_source_type }, signal });
   }
 
+  cancelAgentLogActions(projectUuid, ownerSourceType, ownerSourceId) {
+    const url = this.server + `/api/v1/project/${projectUuid}/agent/logs/${ownerSourceType}/${ownerSourceId}/cancel-all-actions`;
+    return this.req.post(url);
+  }
+
   getAgentRunDetails(projectUuid, runId) {
     const url = this.server + `/api/v1/project/${projectUuid}/agent/runs/${runId}/`;
     return this.req.get(url);

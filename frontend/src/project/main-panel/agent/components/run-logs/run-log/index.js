@@ -11,6 +11,7 @@ import { IconButton } from '@/components';
 
 const RunLog = ({
   active,
+  index,
   runLog,
   onClick,
 }) => {
@@ -26,6 +27,7 @@ const RunLog = ({
   return (
     <div
       key={`${owner_source_type}_${owner_source_id}`}
+      data-index={index}
       className={classnames('seaqa-agent-run-log w-100 d-flex flex-column position-relative', { 'active': active })}
       onClick={onClick}
     >

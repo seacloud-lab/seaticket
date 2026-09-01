@@ -25,7 +25,7 @@ from .token_connections import ProjectConnectionListByTokenView, ProjectConnecti
 from .search import SearchTicketsView, SearchTicketsAndDocumentsView
 from .tags import TagsAPIView, TagAPIView
 from .agent import (
-    AgentLogsView, AgentLogRunsView, AgentRunDetailView,
+    AgentLogsView, AgentLogRunsView, AgentLogCancelAllActionsView, AgentRunDetailView,
     AgentActionConfirmView, AgentActionCancelView, AgentActionUpdateView,
     AgentActionAutoExecuteView, GithubIssueTypesView,
 )
@@ -136,6 +136,7 @@ urlpatterns = [
     # agent
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/agent/logs/$', AgentLogsView.as_view(), name='api-v1-project-agent-logs'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/agent/log/runs/$', AgentLogRunsView.as_view(), name='api-v1-project-agent-log-runs'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/agent/logs/(?P<owner_source_type>[-0-9a-zA-Z_]+)/(?P<owner_source_id>[^/]+)/cancel-all-actions$', AgentLogCancelAllActionsView.as_view(), name='api-v1-project-agent-log-cancel-all-actions'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/agent/runs/(?P<run_id>\d+)/$', AgentRunDetailView.as_view(), name='api-v1-project-agent-run-detail'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/agent/runs/(?P<run_id>\d+)/actions/(?P<action_id>\d+)/confirm/$', AgentActionConfirmView.as_view(), name='api-v1-project-agent-action-confirm'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/agent/runs/(?P<run_id>\d+)/actions/(?P<action_id>\d+)/cancel/$', AgentActionCancelView.as_view(), name='api-v1-project-agent-action-cancel'),

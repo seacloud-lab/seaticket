@@ -34,12 +34,13 @@ from seahub.project.agent.utils import (
     ACTION_STATUS_PENDING,
     ACTION_STATUS_EXECUTING,
     ACTION_STATUS_CANCELLED,
-    _update_action_status_and_refresh_run,
-    _refresh_run_suggestions_status_safely,
-    _sync_issue_type_column_options,
+    update_action_status_and_refresh_run,
+    refresh_run_suggestions_status_safely,
+    sync_issue_type_column_options,
     get_agent_run_detail,
     get_agent_log_runs,
     list_agent_logs,
+    cancel_agent_log_pending_actions,
 )
 
 
@@ -124,6 +125,47 @@ class AgentLogRunsView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, str(e))
         except Exception as e:
             logger.error(f'Error getting agent log runs: {e}')
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        return Response(result, status=status.HTTP_200_OK)
+
+
+class AgentLogCancelAllActionsView(APIView):
+    """Cancel all pending actions for the runs owned by one log item."""
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated, )
+    throttle_classes = (UserRateThrottle, )
+
+    @require_org_context
+    def post(self, request, project_uuid, owner_source_type, owner_source_id):
+        valid_source_types = (
+            {item.value for item in ConnectionType}
+            | {item.value for item in ExtraSourceType}
+        )
+        if owner_source_type not in valid_source_types:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Invalid owner_source_type.')
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
+
+        username = request.user.username
+        if not check_project_permission(username, project.workspace.owner):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        try:
+            result = cancel_agent_log_pending_actions(
+                SeaDBAPI(),
+                project_uuid,
+                owner_source_id,
+                owner_source_type,
+                f'Cancelled by {email2nickname(username)}',
+                timezone.now().isoformat(),
+            )
+        except ValueError as e:
+            return api_error(status.HTTP_404_NOT_FOUND, str(e))
+        except Exception as e:
+            logger.exception('Error cancelling agent log actions: %s', e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
         return Response(result, status=status.HTTP_200_OK)
@@ -228,7 +270,7 @@ class AgentActionConfirmView(APIView):
             if action['status'] != ACTION_STATUS_PENDING:
                 return api_error(status.HTTP_400_BAD_REQUEST, f'Action is not pending: {action["status"]}')
 
-            _update_action_status_and_refresh_run(
+            update_action_status_and_refresh_run(
                 seadb_api,
                 project_uuid,
                 action_run_id,
@@ -248,7 +290,7 @@ class AgentActionConfirmView(APIView):
                     request=request,
                 )
             except MappingRequiredError as mapping_error:
-                suggestions_status = _update_action_status_and_refresh_run(
+                suggestions_status = update_action_status_and_refresh_run(
                     seadb_api,
                     project_uuid,
                     action_run_id,
@@ -273,7 +315,7 @@ class AgentActionConfirmView(APIView):
 
             # 4. Update action status in SeaDB
             now = timezone.now().isoformat()
-            suggestions_status = _update_action_status_and_refresh_run(
+            suggestions_status = update_action_status_and_refresh_run(
                 seadb_api,
                 project_uuid,
                 action_run_id,
@@ -393,7 +435,7 @@ class AgentActionAutoExecuteView(APIView):
                 'success': True,
                 'status': action_status,
                 'result': 'Skipped: action is not pending.',
-                'suggestions_status': _refresh_run_suggestions_status_safely(
+                'suggestions_status': refresh_run_suggestions_status_safely(
                     seadb_api, project_uuid, run_id
                 ),
             }
@@ -407,13 +449,13 @@ class AgentActionAutoExecuteView(APIView):
                 'success': False,
                 'status': ACTION_STATUS_PENDING,
                 'result': 'Skipped: tool is not enabled for auto-confirm.',
-                'suggestions_status': _refresh_run_suggestions_status_safely(
+                'suggestions_status': refresh_run_suggestions_status_safely(
                     seadb_api, project_uuid, run_id
                 ),
             }
 
         # 4. Move to executing (concurrency guard)
-        _update_action_status_and_refresh_run(
+        update_action_status_and_refresh_run(
             seadb_api,
             project_uuid,
             run_id,
@@ -434,7 +476,7 @@ class AgentActionAutoExecuteView(APIView):
             )
         except MappingRequiredError as e:
             # Auto-execution cannot prompt for mapping; keep pending for manual handling
-            suggestions_status = _update_action_status_and_refresh_run(
+            suggestions_status = update_action_status_and_refresh_run(
                 seadb_api,
                 project_uuid,
                 run_id,
@@ -463,7 +505,7 @@ class AgentActionAutoExecuteView(APIView):
 
         # 7. Update action status
         now = timezone.now().isoformat()
-        suggestions_status = _update_action_status_and_refresh_run(
+        suggestions_status = update_action_status_and_refresh_run(
             seadb_api,
             project_uuid,
             run_id,
@@ -585,7 +627,7 @@ class AgentActionCancelView(APIView):
             now = timezone.now().isoformat()
             nickname = email2nickname(username)
             result_message = f'Cancelled by {nickname}'
-            suggestions_status = _update_action_status_and_refresh_run(
+            suggestions_status = update_action_status_and_refresh_run(
                 seadb_api,
                 project_uuid,
                 action_run_id,
@@ -711,7 +753,7 @@ class GithubIssueTypesView(APIView):
                     'GitHub App is not installed.'
                 )
             try:
-                added, added_names, updated, deleted = _sync_issue_type_column_options(
+                added, added_names, updated, deleted = sync_issue_type_column_options(
                     seadb_api, project_uuid, connection.id, github_api, owner, repo
                 )
             except requests.HTTPError as e:
@@ -737,4 +779,3 @@ class GithubIssueTypesView(APIView):
         except Exception as e:
             logger.exception(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
-

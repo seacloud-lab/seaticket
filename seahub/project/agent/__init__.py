@@ -3,6 +3,7 @@
 from seahub.project.agent.agent import (
     AgentLogsView,
     AgentLogRunsView,
+    AgentLogCancelAllActionsView,
     AgentRunDetailView,
     AgentActionConfirmView,
     AgentActionCancelView,
@@ -29,6 +30,7 @@ from seahub.project.agent.utils import (
 __all__ = [
     'AgentLogsView',
     'AgentLogRunsView',
+    'AgentLogCancelAllActionsView',
     'AgentRunDetailView',
     'AgentActionConfirmView',
     'AgentActionCancelView',
