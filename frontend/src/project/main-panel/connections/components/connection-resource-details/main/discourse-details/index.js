@@ -23,9 +23,10 @@ const DiscourseDetails = ({
   const focusRef = useRef(null);
 
   useEffect(() => {
-    if (!focus?.postNumber || !focusRef.current) return;
+    if (!focus?.postNumber && !focus?.first) return;
+    if (!focusRef.current) return;
     focusRef.current.scrollIntoView({ block: 'center' });
-  }, [focus?.postNumber]);
+  }, [focus?.postNumber, focus?.first]);
 
   const onSubmit = useCallback(({ content }, callback) => {
     const payload = {
@@ -55,7 +56,10 @@ const DiscourseDetails = ({
       ) : (
         <>
           {details.map((detail, index) => {
-            const isFocused = Boolean(focus?.postNumber && detail.post_number != null && String(detail.post_number) === String(focus.postNumber));
+            const isFocused = Boolean(
+              (focus?.first && index === 0) ||
+              (focus?.postNumber && detail.post_number != null && String(detail.post_number) === String(focus.postNumber))
+            );
             return (
               <div
                 key={detail.post_number ?? detail._pk ?? `discourse-${index}`}

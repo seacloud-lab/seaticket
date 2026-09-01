@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useCallback, useRef, useState } from 'react';
+import classnames from 'classnames';
 import { EmptyTip, CustomizeMarkdownViewer, CenteredLoading, CenteredError, toaster } from '@/components';
 import { gettext, mediaUrl, PERMISSION_TYPES } from '@/constants';
 import { CONNECTION_TYPE } from '../../../constants';
@@ -11,6 +12,35 @@ import { Utils } from '@/utils/utils';
 import { connectionsAPI } from '@/project/api';
 
 import './index.css';
+
+const FocusedRecordList = ({ details, type, className, focus }) => {
+  const focusRef = useRef(null);
+
+  useEffect(() => {
+    if (!focus || !focusRef.current) return;
+    focusRef.current.scrollIntoView({ block: 'center' });
+  }, [focus]);
+
+  return (
+    <div className={className}>
+      {details.map((detail, index) => {
+        const isFocused = Boolean(
+          (focus?.first && index === 0) ||
+          (focus?.messageId && detail.message_id && String(detail.message_id) === String(focus.messageId))
+        );
+        return (
+          <div
+            key={detail.message_id ?? detail._pk ?? index}
+            ref={isFocused ? focusRef : undefined}
+            className={classnames({ 'seaqa-connection-detail-focused': isFocused })}
+          >
+            <CommonDetailItem detail={detail} type={type} />
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 const ConnectionResourceDetails = ({ resource, projectUuid, permission, connection, isSmallScreen, updateResource, onThreadUnreadChange, setIsContentEmpty }) => {
   const [status, setStatus] = useState('loading'); // loading / error / loaded
@@ -254,13 +284,12 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
       return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No content')} />);
     } else {
       return (
-        <div className={`seaqa-connection-resource-details seaqa-connection-${type}-resource-details`}>
-          {details.map((detail, index) => {
-            return (
-              <CommonDetailItem detail={detail} type={type} key={index} />
-            );
-          })}
-        </div>
+        <FocusedRecordList
+          className={`seaqa-connection-resource-details seaqa-connection-${type}-resource-details`}
+          details={details}
+          type={type}
+          focus={resource.focus}
+        />
       );
     }
   }

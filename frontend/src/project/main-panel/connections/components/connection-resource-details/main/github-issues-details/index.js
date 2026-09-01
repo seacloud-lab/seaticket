@@ -9,9 +9,10 @@ const GitHubIssuesDetails = ({ details, className, isSmallScreen, focus }) => {
   const focusRef = useRef(null);
 
   useEffect(() => {
-    if (!focus?.commentId || !focusRef.current) return;
+    if (!focus?.commentId && !focus?.first) return;
+    if (!focusRef.current) return;
     focusRef.current.scrollIntoView({ block: 'center' });
-  }, [focus?.commentId]);
+  }, [focus?.commentId, focus?.first]);
 
   if (details.length === 0) {
     return (
@@ -34,7 +35,10 @@ const GitHubIssuesDetails = ({ details, className, isSmallScreen, focus }) => {
           content: detail.content,
           comment_id: detail.comment_id,
         };
-        const isFocused = Boolean(focus?.commentId && comment.comment_id && String(comment.comment_id) === String(focus.commentId));
+        const isFocused = Boolean(
+          (focus?.first && index === 0) ||
+          (focus?.commentId && comment.comment_id && String(comment.comment_id) === String(focus.commentId))
+        );
 
         return (
           <div

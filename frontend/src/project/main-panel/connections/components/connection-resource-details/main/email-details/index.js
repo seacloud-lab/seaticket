@@ -10,6 +10,7 @@ import './index.css';
 const EmailDetails = ({ details, className, focus, ...props }) => {
   const lastIndex = details.length - 1;
   const targetIndex = useMemo(() => {
+    if (focus?.first) return details.length > 0 ? 0 : -1;
     if (!focus?.messageId) return -1;
     return details.findIndex(item => item?.message_id && String(item.message_id) === String(focus.messageId));
   }, [details, focus]);

@@ -4,16 +4,21 @@ import { CONNECTION_TYPES } from '../connections/constants';
 import { getResourceIconURL, getResourceTypeName } from '@/project/utils';
 
 export const getEventFocus = (run) => {
+  const eventType = run?.event?.type;
   const newValue = run?.event?.new_value;
-  if (!newValue) return null;
-  switch (run.event.type) {
+  switch (eventType) {
+    case RUN_EVENT.EMAIL_THREAD_ADDED:
+    case RUN_EVENT.GITHUB_ISSUE_ADDED:
+    case RUN_EVENT.DISCOURSE_TOPIC_ADDED:
+    case RUN_EVENT.DISCORD_THREAD_ADDED:
+      return { first: true };
     case RUN_EVENT.EMAIL_MESSAGE_ADDED:
     case RUN_EVENT.DISCORD_THREAD_MESSAGE_ADDED:
-      return newValue.message_id ? { messageId: newValue.message_id } : null;
+      return newValue?.message_id ? { messageId: newValue.message_id } : null;
     case RUN_EVENT.GITHUB_ISSUE_COMMENT_ADDED:
-      return newValue.comment_id ? { commentId: newValue.comment_id } : null;
+      return newValue?.comment_id ? { commentId: newValue.comment_id } : null;
     case RUN_EVENT.DISCOURSE_TOPIC_COMMENT_ADDED:
-      return newValue.post_number ? { postNumber: newValue.post_number } : null;
+      return newValue?.post_number ? { postNumber: newValue.post_number } : null;
     default:
       return null;
   }
