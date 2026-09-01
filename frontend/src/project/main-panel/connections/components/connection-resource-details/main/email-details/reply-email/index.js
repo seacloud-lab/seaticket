@@ -2,8 +2,8 @@ import React, { useCallback, useRef, useState } from 'react';
 import SeaEmailEditor from '@seafile/sea-email-editor';
 import { Button } from 'reactstrap';
 import { gettext } from '@/constants';
-import SendTo from './send-to';
-import { Loading, toaster } from '@/components';
+import ReplyTo from './reply-to';
+import { Icon, IconTooltip, Loading, toaster } from '@/components';
 import { areArraysEqual } from '@/utils/array-utils';
 import { isValidEmail } from '@/utils/validate';
 
@@ -68,30 +68,33 @@ const ReplyEmail = ({
   }, [emailContent, initialEmailCC, initialEmailTo, initValue, onToggle, onSubmit]);
 
   return (
-    <div className="seaqa-email-replay-container">
-      <div className="seaqa-email-replay-to">
-        <div className="seaqa-email-replay-to-title">
-          {gettext('To')}
-        </div>
-        <SendTo ref={emailToRef} value={initialEmailTo || []}/>
-      </div>
-      <div className="seaqa-email-replay-to">
-        <div className="seaqa-email-replay-to-title">
-          {gettext('Cc')}
-        </div>
-        <SendTo ref={emailCCRef} value={initialEmailCC || []}/>
-      </div>
-      <SeaEmailEditor
-        value={emailContent}
-        isHtmlValue={isHtmlValue}
-        assetURLPrefix={assetURLPrefix}
-        onChange={onReplyChange}
-      />
-      <div className="seaqa-email-replay-op-btns">
-        <Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>
-        <Button color="primary" disabled={isSubmitting} onClick={handleSubmit}>
-          {isSubmitting ? (<Loading />) : (<>{gettext('Submit')}</>)}
+    <div className="seaqa-email-reply-container">
+      <div className="seaqa-email-reply-header">
+        <Button color="primary" className="seaqa-email-reply-send-btn" disabled={isSubmitting} onClick={handleSubmit}>
+          {isSubmitting ? (<Loading />) : (<Icon symbol="send-stroked" />)}
+          {isSubmitting ? gettext('Sending') : gettext('Send')}
         </Button>
+        <IconTooltip
+          icon="close"
+          onClick={onToggle}
+          size={{ btn: 24, icon: 16 }}
+          hoverBackground={true}
+          tip={gettext('Cancel')}
+          className="mx-0"
+          placement="bottom"
+        />
+      </div>
+      <div className="seaqa-email-reply-body">
+        <div className="seaqa-email-reply-to-container">
+          <ReplyTo title={gettext('To')} ref={emailToRef} value={initialEmailTo || []} />
+          <ReplyTo title={gettext('Cc')} ref={emailCCRef} value={initialEmailCC || []} />
+        </div>
+        <SeaEmailEditor
+          value={emailContent}
+          isHtmlValue={isHtmlValue}
+          assetURLPrefix={assetURLPrefix}
+          onChange={onReplyChange}
+        />
       </div>
     </div>
   );

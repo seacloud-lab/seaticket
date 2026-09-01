@@ -8,7 +8,8 @@ import { isValidEmail } from '@/utils/validate';
 
 import './index.css';
 
-const SendTo = ({
+const ReplyTo = ({
+  title,
   value,
   readonly = false,
   className,
@@ -67,41 +68,41 @@ const SendTo = ({
 
   return (
     <ClickOutside onClickOutside={() => setFocus(false)}>
-      <div className={classnames('seaqa-email-to-container', className, { 'focus': focus })}>
-        {emails.length > 0 && (
-          <div className="seaqa-email-to-value">
-            {emails.map(email => {
-              return (
-                <div className={classnames('seaqa-email-to-user', { 'invalid': !isValidEmail(email) })} key={email}>
-                  <div className="seaqa-email-to-user-email">{email}</div>
-                  {!readonly && (
-                    <IconTooltip
-                      hoverBackground={true}
-                      icon="close"
-                      className="mr-0 seaqa-email-to-user-remove-btn"
-                      tip={gettext('Remove')}
-                      size={{ btn: 20, icon: 12 }}
-                      onClick={() => handleRemove(email)}
-                      placement="top"
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-        {!readonly && (
-          <Input
-            className="seaqa-email-to-user-input"
-            value={email}
-            onChange={onEmailChange}
-            onFocus={() => setFocus(true)}
-            onBlur={formatToEmail}
-          />
-        )}
+      <div className={classnames('seaqa-email-reply-to', className, { 'focus': focus })}>
+        <div className="seaqa-email-reply-to-title text-truncate" title={title}>
+          {title}
+        </div>
+        <div className="seaqa-email-reply-to-users">
+          {emails.length > 0 && emails.map(email => {
+            return (
+              <div className={classnames('seaqa-email-to-user', { 'invalid': !isValidEmail(email) })} key={email}>
+                <div className="flex-1 text-truncate">{email}</div>
+                {!readonly && (
+                  <IconTooltip
+                    icon="close"
+                    className="mx-0 seaqa-email-to-user-remove-btn"
+                    tip={gettext('Remove')}
+                    size={{ btn: 20, icon: 12 }}
+                    onClick={() => handleRemove(email)}
+                    placement="top"
+                  />
+                )}
+              </div>
+            );
+          })}
+          {!readonly && (
+            <Input
+              className="seaqa-email-to-user-input"
+              value={email}
+              onChange={onEmailChange}
+              onFocus={() => setFocus(true)}
+              onBlur={formatToEmail}
+            />
+          )}
+        </div>
       </div>
     </ClickOutside>
   );
 };
 
-export default forwardRef(SendTo);
+export default forwardRef(ReplyTo);
