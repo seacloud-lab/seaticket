@@ -184,7 +184,5 @@ export const getRunLogStatusByRuns = (runs) => {
   if (suggestionsStatuses.some(item => [SUGGESTIONS_STATUS.PENDING, SUGGESTIONS_STATUS.FAILED, ''].includes(item))) {
     return '';
   }
-  if (suggestionsStatuses.some(item => item === SUGGESTIONS_STATUS.RESOLVED)) return 'done';
-  if (suggestionsStatuses.every(item => item === SUGGESTIONS_STATUS.NONE)) return 'no_action_needed';
-  return '';
+  return 'done';
 };

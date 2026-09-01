@@ -17,11 +17,11 @@ def _update_action_status(seadb_api, project_uuid, action_id, row):
     seadb_api.update_rows(project_uuid, SchemaTables.AGENT_ACTIONS.table_name(), update_data)
 
 
-def _update_action_status_and_refresh_run(seadb_api, project_uuid, run_id, action_id, row):
+def update_action_status_and_refresh_run(seadb_api, project_uuid, run_id, action_id, row):
     if run_id is None:
         return ''
     _update_action_status(seadb_api, project_uuid, action_id, row)
-    return _refresh_run_suggestions_status_safely(seadb_api, project_uuid, int(run_id))
+    return refresh_run_suggestions_status_safely(seadb_api, project_uuid, int(run_id))
 
 
 def _parse_action_references(raw_references):
@@ -183,7 +183,6 @@ SUGGESTIONS_STATUS_RESOLVED = 'resolved'
 SUGGESTIONS_STATUS_FAILED = 'failed'
 
 LOG_STATUS_DONE = 'done'
-LOG_STATUS_NO_ACTION_NEEDED = 'no_action_needed'
 
 
 def _is_suggestion_action(action):
@@ -213,6 +212,7 @@ def _query_log_summary_rows(seadb_api, project_uuid, page, per_page):
         "COUNT(*) AS `num_of_runs`, "
         "MAX(`started_at`) AS `last_active_at` "
         f"FROM `{runs_table}` "
+        "WHERE `owner_source_id` IS NOT NULL "
         "GROUP BY `owner_source_id`, `owner_source_type` "
         "ORDER BY `last_active_at` DESC, `owner_source_type` DESC "
         f"LIMIT {offset}, {per_page + 1}"
@@ -332,7 +332,7 @@ def _refresh_run_suggestions_status(seadb_api, project_uuid, run_id):
     return suggestions_status
 
 
-def _refresh_run_suggestions_status_safely(seadb_api, project_uuid, run_id):
+def refresh_run_suggestions_status_safely(seadb_api, project_uuid, run_id):
     try:
         return _refresh_run_suggestions_status(seadb_api, project_uuid, run_id)
     except Exception:
@@ -349,8 +349,7 @@ def _calculate_log_status(summary_row):
 
     Returns '' (no badge) while any run is incomplete or still has open
     suggestions, 'done' once all runs completed and at least one resolved its
-    suggestions, and 'no_action_needed' when all runs completed without any
-    resolved suggestion.
+    suggestions, and 'done' once all runs completed without open suggestions.
     """
     if not summary_row.get('num_of_runs'):
         return ''
@@ -358,9 +357,7 @@ def _calculate_log_status(summary_row):
         return ''
     if summary_row.get('open_suggestion_runs'):
         return ''
-    if summary_row.get('resolved_runs'):
-        return LOG_STATUS_DONE
-    return LOG_STATUS_NO_ACTION_NEEDED
+    return LOG_STATUS_DONE
 
 
 def list_agent_logs(seadb_api, project_uuid, page=1, per_page=20):
@@ -451,6 +448,43 @@ def get_agent_log_runs(seadb_api, project_uuid, owner_source_id, owner_source_ty
     }
 
 
+def cancel_agent_log_pending_actions(seadb_api, project_uuid, owner_source_id, owner_source_type, result_message, executed_at):
+    """Cancel pending actions for every run owned by one log item."""
+    runs = _query_owned_runs(seadb_api, project_uuid, owner_source_id, owner_source_type)
+    if not runs:
+        raise ValueError('Item not found.')
+
+    run_ids = [int(run['_pk']) for run in runs if run.get('_pk') is not None]
+    if not run_ids:
+        return get_agent_log_runs(seadb_api, project_uuid, owner_source_id, owner_source_type)
+
+    actions_table = SchemaTables.AGENT_ACTIONS.table_name()
+    run_ids_str = ','.join(map(str, run_ids))
+    sql = (
+        "SELECT `_pk`, `run_id` "
+        f"FROM `{actions_table}` "
+        f"WHERE `run_id` IN ({run_ids_str}) AND `status` = '{ACTION_STATUS_PENDING}'"
+    )
+    pending_actions = seadb_api.query_rows(project_uuid, sql).get('results', [])
+    if pending_actions:
+        seadb_api.update_rows(
+            project_uuid,
+            actions_table,
+            [{
+                'pk': int(action['_pk']),
+                'row': {
+                    'status': ACTION_STATUS_CANCELLED,
+                    'result': result_message,
+                    'executed_at': executed_at,
+                },
+            } for action in pending_actions],
+        )
+        for run_id in {int(action['run_id']) for action in pending_actions}:
+            refresh_run_suggestions_status_safely(seadb_api, project_uuid, run_id)
+
+    return get_agent_log_runs(seadb_api, project_uuid, owner_source_id, owner_source_type)
+
+
 _GITHUB_ISSUE_TYPE_COLOR_MAP = {
     'gray': '#5A5F66',
     'blue': '#E0F0FF',
@@ -462,7 +496,7 @@ _GITHUB_ISSUE_TYPE_COLOR_MAP = {
     'purple': '#F3E5F5',
 }
 
-def _sync_issue_type_column_options(seadb_api, project_uuid, connection_id, github_api, owner, repo):
+def sync_issue_type_column_options(seadb_api, project_uuid, connection_id, github_api, owner, repo):
     """Mirror the seaqa-indexer's `add_or_update_issue_type_column_options`."""
     github_issue_types = github_api.get_all_issue_types(owner, repo)
 

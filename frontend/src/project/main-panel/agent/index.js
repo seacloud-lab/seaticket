@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import TopBar from '../top-bar';
 import { useAgentRunLogs } from './hooks/useAgentRunLogs';
 import { gettext, mediaUrl } from '@/constants';
@@ -11,6 +11,7 @@ import './index.css';
 const Agent = ({ title, settings, modifySettings }) => {
   const [isShowLogs, setIsShowLogs] = useState(true);
   const [activeLogIndex, setActiveLogIndex] = useState(0);
+  const [updatedRuns, setUpdatedRuns] = useState(null);
 
   const {
     runLogs,
@@ -22,6 +23,9 @@ const Agent = ({ title, settings, modifySettings }) => {
   } = useAgentRunLogs();
 
   const enabledAgent = useMemo(() => settings?.agent.enabled, [settings?.agent]);
+  const onRunsUpdated = useCallback((owner_source_id, owner_source_type, runs) => {
+    setUpdatedRuns({ owner_source_id, owner_source_type, runs });
+  }, []);
 
   return (
     <>
@@ -54,6 +58,8 @@ const Agent = ({ title, settings, modifySettings }) => {
               activeLogIndex={activeLogIndex}
               setActiveLogIndex={setActiveLogIndex}
               hideLogs={() => setIsShowLogs(false)}
+              updateRunLog={updateRunLog}
+              onRunsUpdated={onRunsUpdated}
             />
             <RunLogDetails
               isShowLogs={isShowLogs}
@@ -63,6 +69,7 @@ const Agent = ({ title, settings, modifySettings }) => {
               settings={settings}
               modifySettings={modifySettings}
               updateRunLog={updateRunLog}
+              updatedRuns={updatedRuns}
             />
           </>
         )}

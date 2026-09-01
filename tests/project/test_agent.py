@@ -8,6 +8,7 @@ from seahub.project.agent.utils import (
     _calculate_suggestions_status,
     _query_run_status_counts,
     _reformat_actions,
+    cancel_agent_log_pending_actions,
     get_agent_log_runs,
     list_agent_logs,
 )
@@ -80,7 +81,7 @@ def test_calculate_suggestions_status(statuses, expected):
         ({'num_of_runs': 1, 'incomplete_runs': 1, 'open_suggestion_runs': 1, 'resolved_runs': 0}, ''),
         ({'num_of_runs': 1, 'incomplete_runs': 0, 'open_suggestion_runs': 1, 'resolved_runs': 0}, ''),
         ({'num_of_runs': 1, 'incomplete_runs': 1, 'open_suggestion_runs': 0, 'resolved_runs': 1}, ''),
-        ({'num_of_runs': 1, 'incomplete_runs': 0, 'open_suggestion_runs': 0, 'resolved_runs': 0}, 'no_action_needed'),
+        ({'num_of_runs': 1, 'incomplete_runs': 0, 'open_suggestion_runs': 0, 'resolved_runs': 0}, 'done'),
         ({'num_of_runs': 1, 'incomplete_runs': 0, 'open_suggestion_runs': 0, 'resolved_runs': 1}, 'done'),
         ({'num_of_runs': 2, 'incomplete_runs': 0, 'open_suggestion_runs': 0, 'resolved_runs': 1}, 'done'),
     ],
@@ -145,7 +146,7 @@ def test_list_agent_logs_counts_run_statuses_per_owner():
         (log['owner_source_type'], str(log['owner_source_id'])): log['status']
         for log in result['logs']
     }
-    assert statuses[('github_issue', '1_9')] == 'no_action_needed'
+    assert statuses[('github_issue', '1_9')] == 'done'
     assert statuses[('ticket', '42')] == 'done'
 
     assert seadb_api.query_rows.call_count == 2
@@ -339,3 +340,79 @@ def test_get_agent_log_runs_raises_when_owner_not_found():
     seadb_api.query_rows.return_value = {'results': []}
     with pytest.raises(ValueError, match='Item not found.'):
         get_agent_log_runs(seadb_api, 'project-1', '1_9', 'github_issue')
+
+
+def test_cancel_agent_log_pending_actions_cancels_only_pending_actions():
+    seadb_api = Mock()
+    seadb_api.query_rows.side_effect = [
+        {'results': [{
+            '_pk': 7,
+            'owner_source_id': '42',
+            'owner_source_type': 'ticket',
+        }]},
+        {'results': [
+            {'_pk': 1, 'run_id': 7},
+            {'_pk': 2, 'run_id': 7},
+        ]},
+        {'results': [
+            {'status': 'cancelled'},
+        ]},
+        {'results': [{
+            '_pk': 7,
+            'status': 'completed',
+            'suggestions_status': 'resolved',
+            'owner_source_id': '42',
+            'owner_source_type': 'ticket',
+            'owner_source_title': 'Ticket 42',
+            'started_at': None,
+            'finished_at': None,
+            'error_message': '',
+            'event': '{}',
+        }]},
+        {'results': []},
+    ]
+
+    result = cancel_agent_log_pending_actions(
+        seadb_api,
+        'project-1',
+        '42',
+        'ticket',
+        'Cancelled by Alice',
+        '2026-09-01T00:00:00+00:00',
+    )
+
+    assert result == {'runs': [{
+        'id': 7,
+        'status': 'completed',
+        'suggestions_status': 'resolved',
+        'owner_source_type': 'ticket',
+        'owner_source_id': '42',
+        'owner_source_title': 'Ticket 42',
+        'started_at': None,
+        'finished_at': None,
+        'error_message': '',
+        'event': {},
+        'actions': [],
+    }]}
+    pending_actions_sql = seadb_api.query_rows.call_args_list[1].args[1]
+    assert "`status` = 'pending'" in pending_actions_sql
+    assert '`run_id` IN (7)' in pending_actions_sql
+    assert seadb_api.update_rows.call_args_list[0].args[2] == [
+        {
+            'pk': 1,
+            'row': {
+                'status': 'cancelled',
+                'result': 'Cancelled by Alice',
+                'executed_at': '2026-09-01T00:00:00+00:00',
+            },
+        },
+        {
+            'pk': 2,
+            'row': {
+                'status': 'cancelled',
+                'result': 'Cancelled by Alice',
+                'executed_at': '2026-09-01T00:00:00+00:00',
+            },
+        },
+    ]
+    assert seadb_api.update_rows.call_count == 2

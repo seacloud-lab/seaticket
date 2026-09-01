@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { agentAPI, ticketsAPI } from '@/project/api';
 import { CenteredLoading, IconTooltip, toaster, EmptyTip } from '@/components';
@@ -23,6 +23,7 @@ const RunLogDetails = ({
   modifySettings,
   hideLogs,
   updateRunLog,
+  updatedRuns,
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [runs, setRuns] = useState([]);
@@ -30,6 +31,7 @@ const RunLogDetails = ({
   const [suggestionInfo, setSuggestionInfo] = useState(null);
   const { openCloseLinkedGitHubIssuesWarningDialog } = useCloseLinkedIssues();
   const [isShowAll, setIsShowAll] = useState(true);
+  const runsRequestVersionRef = useRef(0);
 
   const { owner_source_id, owner_source_type } = useMemo(() => ({
     owner_source_id: runLog?.owner_source_id,
@@ -287,6 +289,7 @@ const RunLogDetails = ({
 
   useEffect(() => {
     const controller = new AbortController();
+    const requestVersion = ++runsRequestVersionRef.current;
 
     if (!owner_source_id || !owner_source_type) {
       setIsLoading(false);
@@ -301,7 +304,7 @@ const RunLogDetails = ({
     setSuggestionInfo(null);
     setPendingMapping(null);
     agentAPI.listAgentLogRuns(projectUuid, owner_source_id, owner_source_type, controller.signal).then(res => {
-      if (controller.signal.aborted) return;
+      if (controller.signal.aborted || requestVersion !== runsRequestVersionRef.current) return;
       const runs = res.data?.runs || [];
       setRuns(runs);
       const status = getRunLogStatusByRuns(runs);
@@ -313,13 +316,26 @@ const RunLogDetails = ({
       toaster.danger(errorMessage);
       setRuns([]);
     }).finally(() => {
-      if (controller.signal.aborted) return;
+      if (controller.signal.aborted || requestVersion !== runsRequestVersionRef.current) return;
       setIsLoading(false);
     });
 
     return () => controller.abort();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [owner_source_id, owner_source_type]);
+
+  useEffect(() => {
+    if (!updatedRuns) return;
+    if (
+      updatedRuns.owner_source_id !== owner_source_id ||
+      updatedRuns.owner_source_type !== owner_source_type
+    ) return;
+    runsRequestVersionRef.current += 1;
+    setRuns(updatedRuns.runs);
+    setSuggestionInfo(null);
+    setPendingMapping(null);
+    setIsShowAll(updatedRuns.runs.length <= 8);
+  }, [owner_source_id, owner_source_type, updatedRuns]);
 
   return (
     <>
