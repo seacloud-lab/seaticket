@@ -44,18 +44,19 @@ class SortPopover extends Component {
   }
 
   componentDidMount() {
-    document.addEventListener('click', this.hideDTablePopover, true);
+    document.addEventListener('click', this.hidePopover, true);
     document.addEventListener('keydown', this.onHotKey);
     this.unsubscribeOpenSelect = context.eventBus.subscribe(EVENT_BUS_TYPE.OPEN_SELECT, this.setSelectStatus);
   }
 
   componentWillUnmount() {
-    document.removeEventListener('click', this.hideDTablePopover, true);
+    document.removeEventListener('click', this.hidePopover, true);
     document.removeEventListener('keydown', this.onHotKey);
     this.unsubscribeOpenSelect();
   }
 
-  hideDTablePopover = (e) => {
+  hidePopover = (e) => {
+    if (document.getElementsByClassName('seaqa-select-options-container').length > 0) return;
     if (this.sortPopoverRef && !getEventClassName(e).includes('popover') && !this.sortPopoverRef.contains(e.target)) {
       this.onClosePopover();
       e.preventDefault();

@@ -27,6 +27,7 @@ const GroupbysPopover = ({ groupbys: propsGroupBys, readOnly, hidePopover, onCha
   }, [propsGroupBys, groupbys, onChange, hidePopover]);
 
   const hide = useCallback((event) => {
+    if (document.getElementsByClassName('seaqa-select-options-container').length > 0) return;
     if (popoverRef.current && !getEventClassName(event).includes('popover') && !popoverRef.current.contains(event.target)) {
       onClosePopover();
       event.preventDefault();
