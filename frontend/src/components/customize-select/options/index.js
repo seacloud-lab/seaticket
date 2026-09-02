@@ -59,8 +59,10 @@ class Options extends Component {
     const offset = initOffset(this.props.offset);
     const { top, height } = this.optionGroupRef.getBoundingClientRect();
     if (isInModal) {
-      if (position.y + position.height + height > window.innerHeight) {
-        this.optionGroupRef.style.top = (position.y - height - offset[1]) + 'px';
+      if (position.y + position.height + height + 10 > window.innerHeight) {
+        const maxHeight = Math.min(height, position.top - 10, 300);
+        this.optionGroupRef.style.top = (position.y - maxHeight - offset[1]) + 'px';
+        this.optionGroupRef.style.maxHeight = maxHeight + 'px';
       }
       this.optionGroupRef.style.opacity = 1;
       this.searchInputRef.current && this.searchInputRef.current.inputRef.focus();
