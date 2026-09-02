@@ -83,8 +83,8 @@ class EmailSeaDBAPI:
 
         table_name = SchemaTables.EMAIL.table_name(connection_id)
         thread_ids_str = ', '.join(str(thread_id) for thread_id in thread_ids)
-        sql = "SELECT `message_id`, `thread_id`, `email_from`, `email_to`, `cc`, `content`, `modified_time` " \
-            f"FROM `{table_name}` WHERE `thread_id` in ({thread_ids_str}) ORDER BY `thread_id` ASC, `modified_time` ASC"
+        sql = "SELECT `message_id`, `thread_id`, `email_from`, `email_to`, `cc`, `content`, `modified_time`, `is_sender` " \
+            f"FROM `{table_name}` WHERE `thread_id` in ({thread_ids_str}) AND deleted = false ORDER BY `thread_id` ASC, `modified_time` ASC"
         emails = self.seadb_api.query_rows(self.base_id, sql).get('results', [])
         result = {}
         for email in emails:

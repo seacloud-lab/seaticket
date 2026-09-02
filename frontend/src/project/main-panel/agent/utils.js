@@ -98,6 +98,67 @@ export const parseSuggestionPayload = (payload) => {
   }
 };
 
+const normalizeEmailAddressList = (value) => {
+  if (Array.isArray(value)) {
+    return value.map(item => String(item || '').trim()).filter(Boolean);
+  }
+  const text = String(value || '').trim();
+  return text ? [text] : [];
+};
+
+export const getEmailReplyDefaultTo = (event) => {
+  if (!event || typeof event !== 'object') return [];
+  const type = String(event.type || '');
+  if (!type.startsWith('email_')) return [];
+  return extractEmailAddresses(event.new_value?.email_from);
+};
+
+export const extractEmailAddresses = (addressText) => {
+  if (!addressText) return [];
+  const regex = /([^<,]*?)\s*<([^@\s>,]+@[^>\s,]+)>|([^\s,;<>]+@[^\s,;<>]+)/g;
+  const result = [];
+  const seen = new Set();
+  let match;
+  while ((match = regex.exec(addressText)) !== null) {
+    const name = (match[1] || '').trim();
+    const address = (match[2] || match[3] || '').trim();
+    if (!address || seen.has(address.toLowerCase())) continue;
+    seen.add(address.toLowerCase());
+    result.push(name ? `${name} <${address}>` : address);
+  }
+  return result;
+};
+
+export const parseEmailReplySuggestion = (suggestionContent, defaultReplyTo = []) => {
+  const fallbackTo = normalizeEmailAddressList(defaultReplyTo);
+  if (typeof suggestionContent === 'string') {
+    const trimmed = suggestionContent.trim();
+    if (trimmed.startsWith('{')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+          && ('to' in parsed || 'cc' in parsed || 'is_html' in parsed)) {
+          const to = normalizeEmailAddressList(parsed.to);
+          return {
+            to: to.length > 0 ? to : fallbackTo,
+            cc: normalizeEmailAddressList(parsed.cc),
+            content: typeof parsed.content === 'string' ? parsed.content : '',
+            is_html: Boolean(parsed.is_html),
+          };
+        }
+      } catch {
+        // fall through to plain text
+      }
+    }
+  }
+  return {
+    to: fallbackTo,
+    cc: [],
+    content: typeof suggestionContent === 'string' ? suggestionContent : '',
+    is_html: false,
+  };
+};
+
 const normalizeSuggestionLabels = (labels) => {
   if (!Array.isArray(labels)) return [];
   const seen = new Set();

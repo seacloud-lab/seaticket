@@ -1,0 +1,71 @@
+.suggestion-email-preview-wrapper {
+  margin-top: 8px;
+  padding: 16px;
+  background-color: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-secondary-color);
+  border-radius: 8px;
+}
+
+.suggestion-email-preview-recipients {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.suggestion-email-preview-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.suggestion-email-preview-label {
+  flex-shrink: 0;
+  min-width: 48px;
+  height: 24px;
+  line-height: 24px;
+  font-size: 14px;
+  color: var(--bs-body-color);
+}
+
+.suggestion-email-preview-tags {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.suggestion-email-preview-tag {
+  max-width: 240px;
+  height: 24px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background-color: #F7F7F5;
+  color: #212529;
+  font-size: 13px;
+  line-height: 16px;
+  box-sizing: border-box;
+}
+
+.suggestion-email-preview-content {
+  max-height: 160px;
+  min-height: 48px;
+  padding-top: 12px;
+  border-top: 1px solid #EEE;
+  overflow-y: auto;
+  font-size: 14px;
+  line-height: 24px;
+  color: #212529;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.suggestion-email-preview-content.is-html {
+  white-space: normal;
+}
+
+.suggestion-email-preview-content.display-mask {
+  -webkit-mask-image: linear-gradient(to bottom, var(--bs-body-secondary-bg) calc(100% - 24px), transparent);
+  mask-image: linear-gradient(to bottom, var(--bs-body-secondary-bg) calc(100% - 24px), transparent);
+}

@@ -48,7 +48,7 @@ const RunLogDetails = ({
     if (!Array.isArray(actions) || actions.length === 0) return null;
     const action = actions.find(action => action.id === actionId);
     if (!action) return null;
-    return { runId, action, mode };
+    return { runId, action, mode, event: run.event };
   }, [runs, suggestionInfo]);
 
   const openSuggestionDetailPanel = useCallback((runId, actionId, mode = 'view') => {

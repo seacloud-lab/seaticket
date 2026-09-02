@@ -173,6 +173,7 @@ const RunDetail = ({
                     resource={resource}
                     trigger={trigger}
                     eventType={event?.type}
+                    event={event}
                     onConfirm={onConfirmAction}
                     onCancel={onCancelAction}
                     onViewContent={onViewContent}

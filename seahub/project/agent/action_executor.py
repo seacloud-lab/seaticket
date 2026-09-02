@@ -802,6 +802,56 @@ class AgentActionExecutor:
             }
         return None
 
+    @staticmethod
+    def _normalize_email_address_list(value):
+        if isinstance(value, list):
+            parts = [str(item or '').strip() for item in value if str(item or '').strip()]
+            address_text = ', '.join(parts)
+        elif isinstance(value, str):
+            address_text = value.strip()
+        else:
+            return []
+        if not address_text:
+            return []
+        return extract_email_addresses(address_text)
+
+    @staticmethod
+    def _parse_email_suggestion_content(suggestion_content):
+        if not isinstance(suggestion_content, str):
+            return None
+
+        normalized = suggestion_content.replace('\r\n', '\n').strip()
+        if not normalized:
+            return None
+
+        try:
+            parsed = json.loads(normalized)
+        except Exception:
+            return None
+        if not isinstance(parsed, dict):
+            return None
+        if not any(key in parsed for key in ('to', 'cc', 'is_html')):
+            return None
+        return {
+            'to': AgentActionExecutor._normalize_email_address_list(parsed.get('to')),
+            'cc': AgentActionExecutor._normalize_email_address_list(parsed.get('cc')),
+            'content': str(parsed.get('content') or ''),
+            'is_html': bool(parsed.get('is_html')),
+        }
+
+    @staticmethod
+    def _latest_inbound_email(emails):
+        if not emails:
+            return None
+        return next((email for email in reversed(emails) if not email.get('is_sender')), None)
+
+    @staticmethod
+    def default_reply_to_from_emails(emails):
+        target_email = AgentActionExecutor._latest_inbound_email(emails)
+        if not target_email:
+            return []
+        return extract_email_addresses(target_email.get('email_from') or '')
+
     def _create_ticket(
         self,
         seadb_api,
@@ -1170,8 +1220,14 @@ class AgentActionExecutor:
         )
 
     def _execute_email_suggest_reply(self, seadb_api, project_uuid, source_id, reply_content):
-        reply_content = (reply_content or '').strip()
-        if not reply_content:
+        draft = self._parse_email_suggestion_content(reply_content)
+        if draft:
+            content = (draft.get('content') or '').strip()
+            is_html = bool(draft.get('is_html'))
+        else:
+            content = (reply_content or '').strip()
+            is_html = False
+        if not content:
             return self._failed_execution('Cannot send reply email: empty content.')
 
         connection_id, thread_id = self._parse_connection_source_id(source_id, ConnectionType.EMAIL.value)
@@ -1190,15 +1246,17 @@ class AgentActionExecutor:
             logger.error(f'Invalid email connection config for {project_connection.id}: {e}')
             return self._failed_execution('Email connection config is invalid.')
 
-        target_email = next((email for email in reversed(emails) if not email.get('is_sender')), None)
+        target_email = self._latest_inbound_email(emails)
         if not target_email:
             return self._failed_execution(f'No inbound email found for thread {source_id}.')
 
-        to_text = target_email.get('email_from') or ''
-        to_emails = extract_email_addresses(to_text)
+        default_to = self.default_reply_to_from_emails(emails)
+        to_emails = (draft.get('to') if draft else None) or default_to
+        cc_emails = draft.get('cc') if draft else []
         if not to_emails:
             logger.warning(
-                'Failed to resolve recipient for thread %s: email_from=%r (email pk=%s)', source_id, to_text, target_email.get('_pk'),
+                'Failed to resolve recipient for thread %s: email_from=%r (email pk=%s)',
+                source_id, target_email.get('email_from'), target_email.get('_pk'),
             )
             return self._failed_execution(f'Failed to resolve recipient for thread {source_id}.')
 
@@ -1219,11 +1277,12 @@ class AgentActionExecutor:
         domain = sender_email.split('@')[1] if '@' in sender_email else None
         message_id = make_msgid(domain=domain)
 
+        html_content = content if is_html else None
         send_info = {
-            'message': reply_content,
-            'html_message': None,
+            'message': '' if is_html else content,
+            'html_message': html_content,
             'send_to': to_emails,
-            'copy_to': [],
+            'copy_to': cc_emails or [],
             'subject': subject,
             'in_reply_to': target_message_id,
             'message_id': message_id,
@@ -1261,15 +1320,17 @@ class AgentActionExecutor:
                 oauth_token['refresh_token']
             )
 
+        to_text = ', '.join(to_emails)
+        cc_text = ', '.join(cc_emails) if cc_emails else ''
         email_seadb_api = EmailSeaDBAPI(project_uuid, seadb_api=seadb_api)
         email_data = {
             'sender_name': config.get('sender_name', ''),
             'sender_email': sender_email,
             'email_to': to_text,
-            'cc': '',
+            'cc': cc_text,
             'subject': subject,
-            'content': reply_content,
-            'html_content': None,
+            'content': '' if is_html else content,
+            'html_content': html_content,
             'reply_to_message_id': target_message_id,
             'origin_thread_id': send_res.get('origin_thread_id') or target_email.get('origin_thread_id'),
             'message_id': message_id,

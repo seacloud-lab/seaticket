@@ -3,7 +3,8 @@ import { Button } from 'reactstrap';
 import { IconButton, ResizeBar } from '@/components';
 import { gettext } from '@/constants';
 import { isFunction } from '@/utils/type-detection';
-import { getSuggestionTitle } from '../../../utils';
+import { isValidEmail } from '@/utils/validate';
+import { getSuggestionTitle, parseEmailReplySuggestion, getEmailReplyDefaultTo } from '../../../utils';
 import Detail from './detail';
 
 import './index.css';
@@ -28,6 +29,11 @@ const SuggestionDetailPanel = ({
     () => suggestionDetail?.action?.suggestion_content || '',
     [suggestionDetail?.action?.suggestion_content]
   );
+  const isEmailReply = useMemo(() => (
+    suggestionDetail?.action?.tool_name === 'suggest_reply'
+    && suggestionDetail?.action?.target_item_type === 'email'
+  ), [suggestionDetail?.action?.tool_name, suggestionDetail?.action?.target_item_type]);
+  const defaultReplyTo = useMemo(() => getEmailReplyDefaultTo(suggestionDetail?.event), [suggestionDetail?.event]);
   const canApprove = useMemo(() => {
     if (isSaving) return false;
     if (suggestionDetail?.action?.tool_name === 'suggest_create_ticket') {
@@ -40,8 +46,14 @@ const SuggestionDetailPanel = ({
         return false;
       }
     }
+    if (isEmailReply) {
+      const draft = parseEmailReplySuggestion(value, defaultReplyTo);
+      if (!draft.to.length || !draft.content.trim()) return false;
+      const allEmails = [...draft.to, ...draft.cc];
+      return allEmails.every(email => isValidEmail(email));
+    }
     return !!value.trim();
-  }, [isSaving, value, suggestionDetail?.action?.tool_name]);
+  }, [isSaving, value, suggestionDetail?.action?.tool_name, isEmailReply, defaultReplyTo]);
   const suggestionKey = useMemo(() => {
     const { action, runId } = suggestionDetail;
     return `${runId}_${action.id}`;
@@ -90,10 +102,13 @@ const SuggestionDetailPanel = ({
       </div>
       <div className="seaqa-agent-tool-suggestion-panel-body">
         <Detail
+          key={suggestionKey}
           type={suggestionDetail?.action?.tool_name}
+          sourceType={suggestionDetail?.action?.target_item_type}
           isEdit={isEdit}
           isSaving={isSaving}
           value={initValue}
+          defaultReplyTo={defaultReplyTo}
           onChange={setValue}
         />
       </div>
