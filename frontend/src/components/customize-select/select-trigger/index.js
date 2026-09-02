@@ -27,7 +27,7 @@ const SelectTrigger = ({
       <div className="seaqa-select-container">
         <div className="selected-option">
           {selectedValue}
-          {!disabled && (<Icon symbol="arrow-down" />)}
+          <Icon symbol="arrow-down" />
         </div>
       </div>
       {children}
