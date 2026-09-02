@@ -16,6 +16,7 @@
   border-radius: 8px;
   background-image: linear-gradient(to bottom right, rgba(255, 128, 0, 0.05), rgba(255, 128, 0, 0.04), rgba(255, 255, 255, 0.03));
   box-shadow: inset 0 0 0 1.5px rgba(255, 128, 0, 0.2);
+  width: calc((100% - 32px) / 3);
 }
 
 .overview-chart-header .credit-header-item .title {
@@ -87,7 +88,7 @@
 }
 
 .overview-chart-header .credit-header-item.month-on-month .icon .seaqa-icon-svg {
-  fill: #1588fc;
+  color: #1588fc;
 }
 
 .overview-chart-header .credit-header-item.month-on-month .value {
@@ -104,6 +105,10 @@
 
 .overview-chart-center {
   gap: 16px;
+}
+
+.overview-chart-center .chart-wrapper {
+  width: calc((100% - 16px) / 2);
 }
 
 .chart-wrapper {

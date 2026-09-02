@@ -1,13 +1,13 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import * as d3 from 'd3';
-import { initChart, destroyChart, resolveSideOverlap } from '../utils';
+import { resolveSideOverlap } from '../utils';
 import { STYLE_COLORS, DEFAULT_LABEL_FONT_SIZE, DEFAULT_LABEL_COLOR } from '../constants';
+import useChartDraw from './use-chart-redraw';
 
 import './index.css';
 
 const Ring = ({ data }) => {
   const ref = useRef(null);
-  const chartRef = useRef(null);
 
   const drawChart = (chart, container, data = []) => {
     const { width: chartWidth, height: chartHeight, insertPadding } = container.chartBoundingClientRect;
@@ -111,22 +111,13 @@ const Ring = ({ data }) => {
       });
   };
 
-  useEffect(() => {
-    const initConfig = { insertPadding: 30 };
-    initChart(ref, chartRef, 'ring', initConfig);
-
-    return () => {
-      destroyChart(chartRef);
-      chartRef.current = null;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!Array.isArray(data) || data.length === 0) return;
-    if (!chartRef.current || !ref.current) return;
-
-    drawChart(chartRef.current, ref.current, data);
-  }, [data]);
+  useChartDraw({
+    target: ref,
+    data,
+    chartId: 'ring',
+    options: { insertPadding: 30 },
+    draw: drawChart,
+  });
 
   return (
     <div className="chart-svg-wrapper flex-1" ref={ref}></div>

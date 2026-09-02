@@ -210,9 +210,11 @@ const Overview = () => {
       <div className="overview-chart-header">
         {creditSummaryData.map((item) => (
           <div key={item.key} className={`credit-header-item ${item.key}`}>
-            <div className="d-flex align-items-center justify-content-between">
+            <div className="d-flex align-items-center justify-content-between gap-4">
               <div className="title">{item.name}</div>
-              <div className="icon d-flex align-items-center justify-content-center"><Icon symbol={item.icon} /></div>
+              <div className="icon d-flex align-items-center justify-content-center flex-shrink-0">
+                <Icon symbol={item.icon} />
+              </div>
             </div>
             <div className="tip">{item.key === 'month-on-month' ? monthOnMonthTip : ''}</div>
             <div className="value">
@@ -238,7 +240,7 @@ const Overview = () => {
         </div>
       </div>
       <div className="overview-chart-footer">
-        <div className="chart-wrapper d-flex flex-column">
+        <div className="chart-wrapper d-flex flex-column w-100">
           <div className="chart-name">{gettext('Daily credit consumption trend this month')}</div>
           {renderSectionContent(requestStatus[REQUEST_KEYS.DATE], <Line data={lineData} />)}
         </div>
