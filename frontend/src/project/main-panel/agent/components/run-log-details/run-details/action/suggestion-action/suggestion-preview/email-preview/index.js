@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
-import { parseEmailReplySuggestion } from '../../../../../../../utils';
+import { parseEmailReplySuggestion, sanitizeEmailHtml } from '../../../../../../../utils';
 
 import './index.css';
 
@@ -27,6 +27,7 @@ const EmailPreview = ({ value, defaultReplyTo }) => {
     () => parseEmailReplySuggestion(value, defaultReplyTo),
     [value, defaultReplyTo]
   );
+  const safeContent = useMemo(() => (is_html ? sanitizeEmailHtml(content) : content), [content, is_html]);
 
   useEffect(() => {
     const dom = previewRef.current;
@@ -48,9 +49,9 @@ const EmailPreview = ({ value, defaultReplyTo }) => {
         })}
       >
         {is_html ? (
-          <div dangerouslySetInnerHTML={{ __html: content }} />
+          <div dangerouslySetInnerHTML={{ __html: safeContent }} />
         ) : (
-          content
+          safeContent
         )}
       </div>
     </div>

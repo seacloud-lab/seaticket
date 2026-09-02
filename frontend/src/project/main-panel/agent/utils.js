@@ -159,6 +159,62 @@ export const parseEmailReplySuggestion = (suggestionContent, defaultReplyTo = []
   };
 };
 
+const EMAIL_SANITIZE_ALLOWED_TAGS = new Set([
+  'a', 'b', 'blockquote', 'br', 'div', 'em', 'h1', 'h2', 'h3', 'h4', 'hr', 'i', 'img',
+  'li', 'ol', 'p', 's', 'span', 'strong', 'table', 'tbody', 'td', 'th', 'thead', 'tr', 'u', 'ul',
+]);
+const EMAIL_SANITIZE_ALLOWED_ATTRS = new Set(['alt', 'href', 'src', 'style', 'title']);
+const EMAIL_SANITIZE_SAFE_URL = /^(?:https?:|mailto:|data:image\/)/i;
+
+// Sanitize by parsing then rebuilding the DOM with only whitelisted tags/attrs,
+// so any unlisted vector (on* handlers, javascript: URLs, iframes, ...) is dropped.
+export const sanitizeEmailHtml = (html) => {
+  if (!html || typeof html !== 'string') return '';
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const sanitizeNode = (node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      return document.createTextNode(node.textContent || '');
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) return null;
+    const tag = node.tagName.toLowerCase();
+    if (!EMAIL_SANITIZE_ALLOWED_TAGS.has(tag)) {
+      const fragment = document.createDocumentFragment();
+      Array.from(node.childNodes).forEach(child => {
+        const clean = sanitizeNode(child);
+        if (clean) fragment.appendChild(clean);
+      });
+      return fragment;
+    }
+    const el = document.createElement(tag);
+    Array.from(node.attributes).forEach(attr => {
+      const name = attr.name.toLowerCase();
+      if (!EMAIL_SANITIZE_ALLOWED_ATTRS.has(name)) return;
+      const value = attr.value || '';
+      if (['href', 'src'].includes(name)) {
+        if (!EMAIL_SANITIZE_SAFE_URL.test(value.trim())) return;
+        el.setAttribute(name, value);
+        if (tag === 'a') {
+          el.setAttribute('rel', 'noopener noreferrer');
+          el.setAttribute('target', '_blank');
+        }
+        return;
+      }
+      el.setAttribute(name, value);
+    });
+    Array.from(node.childNodes).forEach(child => {
+      const clean = sanitizeNode(child);
+      if (clean) el.appendChild(clean);
+    });
+    return el;
+  };
+  const container = document.createElement('div');
+  Array.from(doc.body.childNodes).forEach(child => {
+    const clean = sanitizeNode(child);
+    if (clean) container.appendChild(clean);
+  });
+  return container.innerHTML;
+};
+
 const normalizeSuggestionLabels = (labels) => {
   if (!Array.isArray(labels)) return [];
   const seen = new Set();

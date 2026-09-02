@@ -3,7 +3,7 @@ import classnames from 'classnames';
 import SeaEmailEditor from '@seafile/sea-email-editor';
 import { gettext } from '@/constants';
 import ReplyTo from '@/project/main-panel/connections/components/connection-resource-details/main/email-details/reply-email/reply-to';
-import { parseEmailReplySuggestion } from '../../../../utils';
+import { parseEmailReplySuggestion, sanitizeEmailHtml } from '../../../../utils';
 
 import './index.css';
 
@@ -38,6 +38,10 @@ const EmailDetail = ({ isEdit, isSaving, value, defaultReplyTo, onChange }) => {
   const editorValue = useMemo(() => (
     draft.is_html ? draft.content : plainTextToEmailHtml(draft.content)
   ), [draft.content, draft.is_html]);
+  const safeHtmlContent = useMemo(
+    () => (draft.is_html ? sanitizeEmailHtml(draft.content) : draft.content),
+    [draft.content, draft.is_html]
+  );
 
   const emitChange = useCallback((nextDraft) => {
     setDraft(nextDraft);
@@ -86,9 +90,9 @@ const EmailDetail = ({ isEdit, isSaving, value, defaultReplyTo, onChange }) => {
       ) : (
         <div className={classnames('seaqa-email-reply-suggestion-content', { 'is-html': draft.is_html })}>
           {draft.is_html ? (
-            <div dangerouslySetInnerHTML={{ __html: draft.content }} />
+            <div dangerouslySetInnerHTML={{ __html: safeHtmlContent }} />
           ) : (
-            draft.content
+            safeHtmlContent
           )}
         </div>
       )}
