@@ -54,26 +54,28 @@ class Options extends Component {
   }
 
   resetMenuStyle = () => {
-    if (!this.optionGroupRef) return;
+    if (!this.optionsContainerRef) return;
     const { isInModal, position } = this.props;
     const offset = initOffset(this.props.offset);
-    const { top, height } = this.optionGroupRef.getBoundingClientRect();
+    const { top, height } = this.optionsContainerRef.getBoundingClientRect();
     if (isInModal) {
-      if (position.y + position.height + height > window.innerHeight) {
-        this.optionGroupRef.style.top = (position.y - height - offset[1]) + 'px';
+      if (position.y + position.height + height + 10 > window.innerHeight) {
+        const maxHeight = Math.min(height, position.top - 10, 300);
+        this.optionsContainerRef.style.top = (position.y - maxHeight - offset[1]) + 'px';
+        this.optionsContainerRef.style.maxHeight = maxHeight + 'px';
       }
-      this.optionGroupRef.style.opacity = 1;
+      this.optionsContainerRef.style.opacity = 1;
       this.searchInputRef.current && this.searchInputRef.current.inputRef.focus();
       return;
     }
     if (height + top > window.innerHeight) {
-      const { height: parentNodeHeight, top: parentNodeTop } = this.optionGroupRef.parentNode.getBoundingClientRect();
-      this.optionGroupRef.style.top = 'unset';
-      this.optionGroupRef.style.bottom = parentNodeHeight + offset[1] + 'px';
+      const { height: parentNodeHeight, top: parentNodeTop } = this.optionsContainerRef.parentNode.getBoundingClientRect();
+      this.optionsContainerRef.style.top = 'unset';
+      this.optionsContainerRef.style.bottom = parentNodeHeight + offset[1] + 'px';
       setTimeout(() => {
-        const { top } = this.optionGroupRef.getBoundingClientRect();
+        const { top } = this.optionsContainerRef.getBoundingClientRect();
         if (top < 0) {
-          this.optionGroupRef.style.maxHeight = parentNodeTop - offset[1] - 10 + 'px';
+          this.optionsContainerRef.style.maxHeight = parentNodeTop - offset[1] - 10 + 'px';
         }
       }, 1);
     }
@@ -216,7 +218,7 @@ class Options extends Component {
       <ClickOutside onClickOutside={this.props.onClickOutside}>
         <div
           className={classnames('seaqa-select-options-container', className, { 'searchable': searchable })}
-          ref={ref => this.optionGroupRef = ref}
+          ref={ref => this.optionsContainerRef = ref}
           style={style}
           onMouseDown={this.onMouseDown}
         >

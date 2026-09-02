@@ -13,6 +13,7 @@ const SortSelector = ({ disabled, value, onChange }) => {
     <CustomizeSelect
       disabled={disabled}
       value={value}
+      isInModal={true}
       options={SORT_TYPES}
       containerClassName="sea-metadata-sort-select-container"
       onChange={handleChange}
