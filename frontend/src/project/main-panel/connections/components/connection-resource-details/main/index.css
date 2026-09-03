@@ -5,9 +5,24 @@
 }
 
 .seaqa-connection-detail-focused {
-  outline: 2px solid var(--bs-primary);
-  outline-offset: 1px;
+  border: 1px solid #FF8000;
   border-radius: 8px;
+  box-shadow: 0 6px 14px 0 rgba(255, 128, 0, 0.10);
+  padding: 8px;
+  margin-bottom: 8px;
+}
+
+.seaqa-connection-detail-focused .seaqa-resource-detail-item {
+  margin: 0;
+  border-bottom: none;
+}
+
+.seaqa-connection-detail-focused .seaqa-resource-detail-item .seaqa-resource-detail-item-content {
+  padding-bottom: 0;
+}
+
+.seaqa-connection-detail-focused .seaqa-project-ticket-comment {
+  margin: 0;
 }
 
 .seaqa-connection-github-comment-editor {

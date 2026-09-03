@@ -117,9 +117,11 @@
   margin-bottom: 0;
 }
 
-.seaqa-connection-email-record-details.focused {
-  outline: 2px solid var(--bs-primary);
-  outline-offset: 1px;
+.seaqa-connection-email-record-details.focused,
+.seaqa-connection-email-record-details.expanded.focused {
+  border: 1px solid #FF8000;
+  border-radius: 8px;
+  box-shadow: 0 6px 14px 0 rgba(255, 128, 0, 0.10);
 }
 
 .seaqa-connection-email-record-details.expanded .email-header {
