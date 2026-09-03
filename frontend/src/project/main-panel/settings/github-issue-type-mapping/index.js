@@ -161,7 +161,7 @@ const GitHubIssueTypeMappingSettings = ({ className, value, onChange }) => {
         </div>
       </div>
       {warningText && (
-        <p className="seaqa-tip-default m-0 mt-2 font-size-12 line-height-20">
+        <p className="seaqa-tip-default m-0 mt-2 font-size-12 line-height-20 d-flex align-items-center">
           <Icon symbol="exclamation-triangle-filled" className="github-issue-type-mapping-tip-icon" />
           {warningText}
         </p>
