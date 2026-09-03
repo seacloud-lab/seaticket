@@ -360,7 +360,8 @@ class TestChatView:
         )
         request.user = group_project_owner
 
-        with patch('seahub.chats.view.get_ai_reply', return_value={'ai_reply': 'ok', 'sources': []}):
+        with patch('seahub.chats.view.validate_chat_input', return_value={'valid': True, 'reason': ''}), \
+                patch('seahub.chats.view.get_ai_reply', return_value={'ai_reply': 'ok', 'sources': []}):
             resp = ChatView.as_view()(request)
 
         assert resp.status_code == 200
@@ -375,7 +376,8 @@ class TestChatView:
         )
         request.user = project_creator
 
-        with patch('seahub.chats.view.get_ai_reply', side_effect=Exception('ai down')):
+        with patch('seahub.chats.view.validate_chat_input', return_value={'valid': True, 'reason': ''}), \
+                patch('seahub.chats.view.get_ai_reply', side_effect=Exception('ai down')):
             resp = ChatView.as_view()(request)
 
         assert resp.status_code == 200
@@ -397,11 +399,54 @@ class TestChatView:
 
         ai_response = {'ai_reply': 'ok', 'sources': [{'connection_id': site_connection.id}]}
 
-        with patch('seahub.chats.view.get_ai_reply', return_value=ai_response):
+        with patch('seahub.chats.view.validate_chat_input', return_value={'valid': True, 'reason': ''}), \
+                patch('seahub.chats.view.get_ai_reply', return_value=ai_response):
             resp = ChatView.as_view()(request)
 
         assert resp.status_code == 200
         assert resp.data['sources'][0]['connection_id'] == site_connection.id
+
+    def test_post_input_validation_rejected_before_message_creation(self, factory, project_creator, real_project):
+        project = real_project
+        request = factory.post(
+            '/api/v1/ai/chat/',
+            data={'project_uuid': str(project.uuid), 'query': 'disallowed request', 'stream': False},
+            format='json'
+        )
+        request.user = project_creator
+
+        with patch('seahub.chats.view.validate_chat_input', return_value={'valid': False, 'reason': 'Request is not allowed.'}) as mock_validate, \
+                patch('seahub.chats.view.get_ai_reply') as mock_get_ai_reply:
+            resp = ChatView.as_view()(request)
+
+        assert resp.status_code == 400
+        assert resp.data['error_msg'] == 'Request is not allowed.'
+        assert ChatMessages.objects.filter(session_uuid=mock_validate.call_args.args[0]['session_uuid']).count() == 0
+        mock_validate.assert_called_once()
+        mock_get_ai_reply.assert_not_called()
+
+    def test_post_input_validation_forwards_project_prompt(self, factory, project_creator, real_project):
+        project = real_project
+        project.settings = '{"prompt": "Only answer Seafile support questions."}'
+        project.save(update_fields=['settings'])
+        request = factory.post(
+            '/api/v1/ai/chat/',
+            data={'project_uuid': str(project.uuid), 'query': 'How do I fix sync?', 'stream': False},
+            format='json'
+        )
+        request.user = project_creator
+
+        with patch('seahub.chats.view.validate_chat_input', return_value={'valid': True, 'reason': ''}) as mock_validate, \
+                patch('seahub.chats.view.get_ai_reply', return_value={'ai_reply': 'ok', 'sources': []}):
+            resp = ChatView.as_view()(request)
+
+        assert resp.status_code == 200
+        validation_params = mock_validate.call_args.args[0]
+        assert validation_params['project_prompt'] == 'Only answer Seafile support questions.'
+        assert validation_params['portal_chat_prompt'] == ''
+        assert validation_params['attachments'] == []
+        assert validation_params['is_external_portal'] is False
+        assert validation_params['scenario'] == 'chat'
 
 
 class TestChatSessionTitleView:

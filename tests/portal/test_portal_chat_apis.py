@@ -146,7 +146,8 @@ class TestPortalChatViewAnonymous:
         from seahub.portal.visitor_session import _sign_visitor_uuid
         request.COOKIES['portal_visitor_session'] = _sign_visitor_uuid(visitor['visitor_uuid'])
 
-        with patch('seahub.portal.chat.apis.get_ai_reply') as mock_get_ai_reply, \
+        with patch('seahub.portal.chat.apis.validate_chat_input', return_value={'valid': True, 'reason': ''}), \
+                patch('seahub.portal.chat.apis.get_ai_reply') as mock_get_ai_reply, \
                 patch('seahub.portal.chat.apis.check_ai_limit', return_value=False):
             mock_get_ai_reply.return_value = Mock(
                 iter_lines=lambda: [
@@ -187,7 +188,8 @@ class TestPortalChatViewAnonymous:
         from seahub.portal.visitor_session import _sign_visitor_uuid
         request.COOKIES['portal_visitor_session'] = _sign_visitor_uuid(visitor['visitor_uuid'])
 
-        with patch('seahub.portal.chat.apis.get_ai_reply') as mock_get_ai_reply, \
+        with patch('seahub.portal.chat.apis.validate_chat_input', return_value={'valid': True, 'reason': ''}), \
+                patch('seahub.portal.chat.apis.get_ai_reply') as mock_get_ai_reply, \
                 patch('seahub.portal.chat.apis.check_ai_limit', return_value=False):
             mock_get_ai_reply.return_value = {
                 'ai_reply': 'hello world',
@@ -201,6 +203,66 @@ class TestPortalChatViewAnonymous:
         assert 'ai_reply_message_id' in resp.data
         assert resp.data['user_message_id'] is not None
         assert resp.data['ai_reply_message_id'] is not None
+
+    def test_input_validation_rejected_before_message_creation(self, factory, real_project):
+        _set_portal_settings(real_project, allow_anonymous=True, enable_password_protection=False)
+        visitor = create_visitor_session()
+        session = PortalChatSessions.objects.create_session(
+            project_uuid=str(real_project.uuid), session_name='test', username=visitor['visitor_uuid']
+        )
+        request = factory.post(
+            f'/api/v1/portal/{real_project.uuid}/chat/',
+            data=json.dumps({'query': 'disallowed request', 'session_uuid': session.session_uuid, 'stream': False}),
+            content_type='application/json',
+        )
+        from seahub.portal.visitor_session import _sign_visitor_uuid
+        request.COOKIES['portal_visitor_session'] = _sign_visitor_uuid(visitor['visitor_uuid'])
+
+        with patch('seahub.portal.chat.apis.check_ai_limit', return_value=False), \
+                patch('seahub.portal.chat.apis.validate_chat_input', return_value={'valid': False, 'reason': 'Request is not allowed.'}) as mock_validate, \
+                patch('seahub.portal.chat.apis.get_ai_reply') as mock_get_ai_reply:
+            resp = PortalChatView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert resp.status_code == 400
+        assert resp.data['error_msg'] == 'Request is not allowed.'
+        assert PortalChatMessages.objects.filter(session_uuid=session.session_uuid).count() == 0
+        mock_validate.assert_called_once()
+        mock_get_ai_reply.assert_not_called()
+
+    def test_input_validation_forwards_project_and_portal_prompts(self, factory, real_project):
+        _set_portal_settings(
+            real_project,
+            allow_anonymous=True,
+            enable_password_protection=False,
+            chat_prompt='Answer only product support questions.',
+        )
+        settings = json.loads(real_project.settings)
+        settings['prompt'] = 'The project is Seafile support.'
+        real_project.settings = json.dumps(settings)
+        real_project.save(update_fields=['settings'])
+        visitor = create_visitor_session()
+        session = PortalChatSessions.objects.create_session(
+            project_uuid=str(real_project.uuid), session_name='test', username=visitor['visitor_uuid']
+        )
+        request = factory.post(
+            f'/api/v1/portal/{real_project.uuid}/chat/',
+            data=json.dumps({'query': 'How do I fix sync?', 'session_uuid': session.session_uuid, 'stream': False}),
+            content_type='application/json',
+        )
+        from seahub.portal.visitor_session import _sign_visitor_uuid
+        request.COOKIES['portal_visitor_session'] = _sign_visitor_uuid(visitor['visitor_uuid'])
+
+        with patch('seahub.portal.chat.apis.check_ai_limit', return_value=False), \
+                patch('seahub.portal.chat.apis.validate_chat_input', return_value={'valid': True, 'reason': ''}) as mock_validate, \
+                patch('seahub.portal.chat.apis.get_ai_reply', return_value={'ai_reply': 'ok', 'sources': []}):
+            resp = PortalChatView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert resp.status_code == 200
+        validation_params = mock_validate.call_args.args[0]
+        assert validation_params['project_prompt'] == 'The project is Seafile support.'
+        assert validation_params['portal_chat_prompt'] == 'Answer only product support questions.'
+        assert validation_params['is_external_portal'] is True
+        assert validation_params['scenario'] == AIScenario.PORTAL_CHAT.value
 
 @pytest.mark.usefixtures('portal_mode_settings')
 class TestPortalChatImageRewriteAnonymous:

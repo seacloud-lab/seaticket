@@ -25,6 +25,7 @@ from seahub.chats.utils import get_ai_reply, gen_message_id, gen_chat_task_id, g
     ImageProcessingError, generate_session_title, build_page_content_attachments
 from django.utils.translation import gettext as _
 from seahub.utils.decorators import require_org_context
+from seahub.utils.ai_client import validate_chat_input
 from seahub.project.constants import AIScenario
 
 logger = logging.getLogger(__name__)
@@ -504,6 +505,14 @@ class ChatView(APIView):
             error_msg = 'AI credit not enough.'
             return api_error(status.HTTP_402_PAYMENT_REQUIRED, error_msg)
 
+        project_prompt = ''
+        if project.settings:
+            try:
+                project_settings = json.loads(project.settings)
+                project_prompt = project_settings.get('prompt', '')
+            except json.JSONDecodeError:
+                pass
+
         raw_attachments = request.data.get('attachments', [])
         temp_image_paths, page_content_attachments, other_attachments = split_attachments(project_uuid, raw_attachments)
         # Extra contents
@@ -534,8 +543,6 @@ class ChatView(APIView):
                 else:
                     error_msg = 'Permission denied. You can only access your own sessions or shared team sessions.'
                 return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-            elif clear_context:
-                ChatMessages.objects.clear_context(session_uuid)
         
         chat_task_id_info = gen_chat_task_id(session_uuid)
         if cache.get(chat_task_id_info) is not None:
@@ -574,15 +581,6 @@ class ChatView(APIView):
         if page_content_attachments:
             attachments = attachments + build_page_content_attachments(page_content_attachments)
 
-        # Read project-level custom prompt from settings
-        project_prompt = ''
-        if project.settings:
-            try:
-                project_settings = json.loads(project.settings)
-                project_prompt = project_settings.get('prompt', '')
-            except json.JSONDecodeError:
-                pass
-
         try:
             ai_images_payload = build_ai_images_payload(project_uuid, permanent_image_paths)
         except ImageProcessingError as e:
@@ -601,6 +599,26 @@ class ChatView(APIView):
             else:
                 # a: {type, record_id, content/comments/emails, ...}
                 ai_attachments.append(a)
+
+        try:
+            validation = validate_chat_input({
+                'project_uuid': uuid_str_to_32_chars(project_uuid),
+                'session_uuid': session.session_uuid,
+                'query': query,
+                'attachments': ai_attachments,
+                'org_id': org_id,
+                'project_prompt': project_prompt,
+                'portal_chat_prompt': '',
+                'is_external_portal': False,
+                'scenario': AIScenario.CHAT.value,
+            })
+        except Exception as e:
+            logger.exception(f'Chat input validation failed: {e}')
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal server error')
+        if not validation['valid']:
+            return api_error(status.HTTP_400_BAD_REQUEST, validation['reason'])
+        if clear_context:
+            ChatMessages.objects.clear_context(session_uuid)
 
         params = {
             'project_uuid': uuid_str_to_32_chars(project_uuid),

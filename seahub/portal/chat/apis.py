@@ -55,6 +55,7 @@ from seahub.chats.utils import (
     generate_portal_session_title,
 )
 from seahub.chats.constants import AI_REPLY_TIMEOUT
+from seahub.utils.ai_client import validate_chat_input
 from seahub.utils.storage import FileNotFound, get_project_file_from_s3, get_project_file_head_from_s3
 
 logger = logging.getLogger(__name__)
@@ -441,13 +442,19 @@ class PortalChatView(APIView):
             return error
 
         current_session_uuid = session.session_uuid
-        if clear_context:
-            PortalChatMessages.objects.clear_context(current_session_uuid)
 
         # Check AI quota of org
         org_id = getattr(getattr(request.project, 'workspace', None), 'org_id', -1) or -1
         if check_ai_limit(org_id):
             return api_error(status.HTTP_402_PAYMENT_REQUIRED, 'AI credit not enough.')
+
+        project_prompt = ''
+        if request.project.settings:
+            try:
+                project_settings = json.loads(request.project.settings)
+                project_prompt = project_settings.get('prompt', '')
+            except json.JSONDecodeError:
+                pass
 
         try:
             message_id = gen_portal_message_id(current_session_uuid)
@@ -499,6 +506,26 @@ class PortalChatView(APIView):
 
             image_data_by_name = {img['name']: img for img in ai_images_payload}
             ai_attachments = [{**a, **image_data_by_name.get(a['name'], {})} for a in attachments]
+
+        try:
+            validation = validate_chat_input({
+                'project_uuid': uuid_str_to_32_chars(project_uuid),
+                'session_uuid': current_session_uuid,
+                'query': query,
+                'attachments': ai_attachments,
+                'org_id': org_id,
+                'project_prompt': project_prompt,
+                'portal_chat_prompt': portal_settings['chat_prompt'],
+                'is_external_portal': True,
+                'scenario': AIScenario.PORTAL_CHAT.value,
+            })
+        except Exception as e:
+            logger.exception(f'Portal chat input validation failed: {e}')
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal server error')
+        if not validation['valid']:
+            return api_error(status.HTTP_400_BAD_REQUEST, validation['reason'])
+        if clear_context:
+            PortalChatMessages.objects.clear_context(current_session_uuid)
 
         chat_sources = portal_settings['chat_allowed_sources']
 
