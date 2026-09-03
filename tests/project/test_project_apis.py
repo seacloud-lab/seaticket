@@ -170,3 +170,23 @@ class TestProjectConfluenceWorkspaces:
         updated_oauth = ProjectConnectionOauth.objects.get_by_project_uuid(project.uuid, ConnectionType.CONFLUENCE.value)
         assert updated_oauth.access_token == 'fresh-token'
         assert updated_oauth.expires_at == new_expires_at
+
+
+@pytest.mark.django_db
+class TestProjectConnectionOauthManager:
+
+    @pytest.mark.parametrize('expires_at', [1788343471.4274027, '1788343471.4274027'])
+    def test_upsert_token_converts_timestamp_to_datetime(self, real_project, expires_at):
+
+        ProjectConnectionOauth.objects.upsert_token(
+            real_project.uuid,
+            ConnectionType.EMAIL.value,
+            'access-token',
+            expires_at,
+            'refresh-token',
+        )
+
+        oauth = ProjectConnectionOauth.objects.get_by_project_uuid(
+            real_project.uuid, ConnectionType.EMAIL.value
+        )
+        assert oauth.expires_at == datetime.datetime.fromtimestamp(expires_at, tz=datetime.timezone.utc)

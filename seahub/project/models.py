@@ -38,6 +38,9 @@ def get_required_connection_fields(connection_type, config=None):
     provider = config.get('server_provider') or GENERAL_EMAIL_PROVIDER
     account_type = config.get('account_type') or EMAIL_ACCOUNT_TYPE_PERSONAL
 
+    if provider in OAUTH_EMAIL_PROVIDERS and account_type == EMAIL_ACCOUNT_TYPE_PERSONAL:
+        return []
+
     if provider in OAUTH_EMAIL_PROVIDERS and account_type == EMAIL_ACCOUNT_TYPE_SHARED:
         return [
             {'key': 'client_id', 'is_required': True, 'is_unique': False},
@@ -983,6 +986,11 @@ class ProjectAPIToken(models.Model):
 class ProjectConnectionOauthManager(models.Manager):
     @staticmethod
     def _normalize_expires_at(expires_at):
+        if isinstance(expires_at, str):
+            try:
+                expires_at = float(expires_at)
+            except ValueError:
+                return expires_at
         if isinstance(expires_at, (int, float)):
             return datetime.datetime.fromtimestamp(expires_at, tz=datetime.timezone.utc)
         return expires_at

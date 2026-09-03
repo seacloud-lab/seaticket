@@ -321,8 +321,14 @@ class TestProjectConnectionsView:
         assert resp.data['record']['id'] == 11
         add_task_mock.assert_called_once()
 
-    def test_post_email_associates_callback_oauth_record(self, factory, project_creator, real_project):
+    def test_post_email_associates_callback_oauth_record(
+            self, factory, project_creator, real_project, connection_factory):
         state = 'state-1'
+        connection_factory(
+            connection_type='email',
+            name='existing-mail-conn',
+            config={'username': 'existing@example.com', 'password': 'password'},
+        )
         request = factory.post(
             f'/api/v1/project/{real_project.uuid}/connections/',
             data={
