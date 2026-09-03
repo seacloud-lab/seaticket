@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import requests
 
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -21,6 +22,7 @@ from seahub.project.utils import check_project_permission, check_project_admin_p
 from seahub.project.constants import ConnectionType, ITEMS_SEARCH_QUERY_TYPES_SUPPORT
 from seahub.project.github_issues_api import GitHubAPI
 from seahub.project.discord_api import DiscordAPI
+from seahub.project.slack_api import SlackAPI
 from seahub.settings import JIRA_CLIENT_ID, JIRA_CLIENT_SECRET
 from seahub.project.jira_api import JiraAPI
 
@@ -336,6 +338,62 @@ class ProjectDiscordChannels(APIView):
             return api_error(discord_status, 'Discord API error.')
         except requests.RequestException as e:
             logger.error('Failed to connect to Discord API for guild %s: %s', guild_id, e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        return Response({'channels': channels})
+
+
+class ProjectSlackChannels(APIView):
+    """List Slack channels in the workspace using the stored OAuth bot token."""
+
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def post(self, request, project_uuid):
+        """List channels for the Slack workspace.
+
+        Body params:
+            team_id: Slack workspace (team) ID
+        """
+        # resource check
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        # permission check
+        username = request.user.username
+        if not check_project_admin_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        team_id = (request.data.get('team_id') or '').strip()
+        if not team_id:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'team_id is required.')
+
+        oauth = ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.SLACK.value)
+        if not oauth:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Slack OAuth authorization is required.')
+
+        slack_api = SlackAPI(oauth.access_token)
+
+        try:
+            channels = slack_api.list_channels()
+        except requests.HTTPError as e:
+            slack_status = e.response.status_code
+            logger.error('Slack API error listing channels for team %s (HTTP %s): %s', team_id, slack_status, e)
+            if slack_status == 401:
+                return api_error(status.HTTP_401_UNAUTHORIZED, 'Invalid Slack bot token')
+            if slack_status == 403:
+                return api_error(status.HTTP_403_FORBIDDEN, 'Bot does not have access to this workspace')
+            if slack_status == 429:
+                return api_error(status.HTTP_429_TOO_MANY_REQUESTS, 'Slack API rate limited. Please try again later')
+            return api_error(slack_status, 'Slack API error.')
+        except requests.RequestException as e:
+            logger.error('Failed to connect to Slack API for team %s: %s', team_id, e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
         return Response({'channels': channels})

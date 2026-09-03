@@ -131,6 +131,11 @@ class ConnectionsAPI {
     return this.req.get(url);
   }
 
+  getSlackOauthStatus(projectUuid) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/slack-oauth/';
+    return this.req.get(url);
+  }
+
   listJiraSites(projectUuid, signal) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/jira/sites/';
     return this.req.get(url, { signal });
@@ -330,6 +335,12 @@ class ConnectionsAPI {
   listDiscordChannels(projectUuid, guildId, signal) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/discord-channels/';
     const data = { guild_id: guildId };
+    return this.req.post(url, data, { signal });
+  }
+
+  listSlackChannels(projectUuid, teamId, signal) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/slack-channels/';
+    const data = { team_id: teamId };
     return this.req.post(url, data, { signal });
   }
 
