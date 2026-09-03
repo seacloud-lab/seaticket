@@ -39,6 +39,7 @@ const Project = () => {
       || bar === BAR_TYPE.KNOWLEDGE
       || bar === BAR_TYPE.PORTAL_ISSUES
       || bar === BAR_TYPE.PORTAL_CHAT_ANALYSIS
+      || bar === BAR_TYPE.SETTINGS
     ) && isKeepSearch) {
       url = url + (search || '');
     }
