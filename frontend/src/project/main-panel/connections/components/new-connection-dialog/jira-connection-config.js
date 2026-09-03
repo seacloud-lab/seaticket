@@ -21,6 +21,13 @@ const JiraConfig = ({
   return (
     <div className="seaqa-project-new-connection-config">
       <FormGroup>
+        <Label>
+          {gettext('Connection name')}
+          <span className="required-tip" title={gettext('Required')}>{'*'}</span>
+        </Label>
+        <Input value={name} onChange={onNameChange} disabled={isSubmitting} />
+      </FormGroup>
+      <FormGroup>
         <Label>{gettext('Authorization')}</Label>
         <div className="seaqa-project-jira-oauth">
           <span className={classnames('jira-oauth-status', { connected: isJiraOauthConnected })}>
@@ -38,13 +45,6 @@ const JiraConfig = ({
           </Button>
           {jiraOauthError && (<div className="text-danger">{jiraOauthError}</div>)}
         </div>
-      </FormGroup>
-      <FormGroup>
-        <Label>
-          {gettext('Connection name')}
-          <span className="required-tip" title={gettext('Required')}>{'*'}</span>
-        </Label>
-        <Input value={name} onChange={onNameChange} disabled={isSubmitting} />
       </FormGroup>
       {basicCustomColumns.map(renderConnectionField)}
       <Modal

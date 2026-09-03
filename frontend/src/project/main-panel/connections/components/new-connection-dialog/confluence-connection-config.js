@@ -24,6 +24,13 @@ const ConfluenceConfig = ({
 }) => (
   <div className="seaqa-project-new-connection-config">
     <FormGroup>
+      <Label>
+        {gettext('Connection name')}
+        <span className="required-tip" title={gettext('Required')}>{'*'}</span>
+      </Label>
+      <Input value={name} onChange={onNameChange} disabled={isSubmitting} />
+    </FormGroup>
+    <FormGroup>
       <Label>{gettext('Authorization')}</Label>
       <div className="seaqa-project-connection-oauth-status">
         <span className="oauth-status-badge d-flex align-items-center">
@@ -40,13 +47,6 @@ const ConfluenceConfig = ({
         </Button>
       </div>
       {confluenceOauthError && <div className="text-danger mt-2">{confluenceOauthError}</div>}
-    </FormGroup>
-    <FormGroup>
-      <Label>
-        {gettext('Connection name')}
-        <span className="required-tip" title={gettext('Required')}>{'*'}</span>
-      </Label>
-      <Input value={name} onChange={onNameChange} disabled={isSubmitting} />
     </FormGroup>
     {basicCustomColumns.map(renderConnectionField)}
     {isConfluenceOauthConnected && config.workspace_id && (

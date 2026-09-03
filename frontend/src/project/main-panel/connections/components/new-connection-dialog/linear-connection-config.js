@@ -20,6 +20,13 @@ const LinearConfig = ({
 }) => (
   <div className="seaqa-project-new-connection-config">
     <FormGroup>
+      <Label>
+        {gettext('Connection name')}
+        <span className="required-tip" title={gettext('Required')}>{'*'}</span>
+      </Label>
+      <Input value={name} onChange={onNameChange} disabled={isSubmitting} />
+    </FormGroup>
+    <FormGroup>
       <Label>{gettext('Authorization')}</Label>
       <div className="seaqa-project-linear-oauth">
         <span className={classnames('linear-oauth-status', { connected: isLinearOauthConnected })}>
@@ -37,13 +44,6 @@ const LinearConfig = ({
         </Button>
         {linearOauthError && (<div className="text-danger mt-2">{linearOauthError}</div>)}
       </div>
-    </FormGroup>
-    <FormGroup>
-      <Label>
-        {gettext('Connection name')}
-        <span className="required-tip" title={gettext('Required')}>{'*'}</span>
-      </Label>
-      <Input value={name} onChange={onNameChange} disabled={isSubmitting} />
     </FormGroup>
     {basicCustomColumns.map(renderConnectionField)}
     <Modal
