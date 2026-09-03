@@ -137,18 +137,31 @@ export const getSuggestionTitle = (action) => {
   }
 };
 
-const getResourceValue = (target, field) => {
-  if (target[field] !== undefined) return target[field];
-  if (target[`owner_${field}`] !== undefined) return target[`owner_${field}`];
-  if (target[`target_${field}`] !== undefined) return target[`target_${field}`];
-  return '';
+const getSourceInfoFromRunOrLog = (target) => {
+  if (!target) return null;
+  if (target.owner_source_type === undefined && target.owner_source_id === undefined && target.owner_source_title === undefined) {
+    return null;
+  }
+  return {
+    source_type: target.owner_source_type || '',
+    source_id: target.owner_source_id || '',
+    source_title: target.owner_source_title || '',
+  };
 };
 
-export const getAgentResource = (target) => {
-  if (!target) return {};
-  const source_type = getResourceValue(target, 'source_type');
-  const source_id = getResourceValue(target, 'source_id');
-  const source_title = getResourceValue(target, 'source_title');
+const getSourceInfoFromAction = (target) => {
+  if (!target) return null;
+  if (target.target_item_type === undefined && target.target_item_id === undefined && target.target_item_title === undefined) {
+    return null;
+  }
+  return {
+    source_type: target.target_item_type || '',
+    source_id: target.target_item_id || '',
+    source_title: target.target_item_title || '',
+  };
+};
+
+const buildResourceFromSourceInfo = ({ source_type, source_id, source_title }) => {
   if (!source_id) return {};
   const icon = getResourceIconURL(source_type);
   const sourceId = String(source_id || '');
@@ -173,6 +186,13 @@ export const getAgentResource = (target) => {
     title: source_title,
     icon,
   };
+};
+
+export const getAgentResource = (target) => {
+  if (!target) return {};
+  const sourceInfo = getSourceInfoFromAction(target) || getSourceInfoFromRunOrLog(target);
+  if (!sourceInfo) return {};
+  return buildResourceFromSourceInfo(sourceInfo);
 };
 
 export const getRunLogStatusByRuns = (runs) => {
