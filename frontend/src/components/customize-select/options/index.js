@@ -4,10 +4,12 @@ import PropTypes from 'prop-types';
 import Option from './option';
 import SearchInput from '../../search-input';
 import { KeyCodes } from '@/constants/keyCodes';
+import { getTarget } from '@/utils/dom';
 import ClickOutside from '../../click-outside';
 import EmptyTip from '@/components/empty-tip';
 import { isNumber, isString } from '@/utils/type-detection';
 import { searchOptions } from '@/utils/search';
+import { getMenuPlacement } from './placement';
 
 import './index.css';
 import { gettext } from '@/constants';
@@ -26,6 +28,27 @@ const initOffset = (offset) => {
   return [0, INDENT];
 };
 
+const getInitStyle = (props) => {
+  const { minWidth, isInModal, target } = props;
+  const offset = initOffset(props.offset);
+  const targetElement = getTarget(target);
+  const targetPosition = targetElement.getBoundingClientRect();
+  const style = isInModal ? {
+    position: 'fixed',
+    left: targetPosition.x,
+    top: targetPosition.y + targetPosition.height + offset[1],
+    minWidth: targetPosition.width,
+    opacity: 0,
+  } : {
+    left: offset[0],
+    top: targetPosition.height + offset[1],
+  };
+  if (minWidth) {
+    style.minWidth = minWidth;
+  }
+  return style;
+};
+
 class Options extends Component {
 
   constructor(props) {
@@ -38,34 +61,101 @@ class Options extends Component {
     this.filterOptions = null;
     this.timer = null;
     this.searchInputRef = React.createRef();
+    this.initStyle = getInitStyle(props);
+    this.isFlipped = false;
   }
 
   componentDidMount() {
     window.addEventListener('keydown', this.onHotKey);
+    if (this.props.isInModal) {
+      window.addEventListener('resize', this.onWindowResize);
+      document.addEventListener('scroll', this.onDocumentScroll, true);
+      this.observeTarget();
+    }
     setTimeout(() => {
-      this.resetMenuStyle();
+      this.resetMenuStyle(false);
+      this.searchInputRef.current && this.searchInputRef.current.inputRef.focus();
     }, 1);
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (!this.props.isInModal) return;
+    if (prevProps.target !== this.props.target) {
+      this.disconnectTargetObserver();
+      this.observeTarget();
+      this.resetMenuStyle(true);
+    }
   }
 
   componentWillUnmount() {
     this.filterOptions = null;
     this.timer && clearTimeout(this.timer);
     window.removeEventListener('keydown', this.onHotKey);
+    if (this.props.isInModal) {
+      window.removeEventListener('resize', this.onWindowResize);
+      document.removeEventListener('scroll', this.onDocumentScroll, true);
+      this.disconnectTargetObserver();
+    }
   }
 
-  resetMenuStyle = () => {
+  getTargetPosition = () => {
+    const { target } = this.props;
+    const targetElement = getTarget(target);
+    return targetElement.getBoundingClientRect();
+  };
+
+  observeTarget = () => {
+    const target = getTarget(this.props.target);
+    if (!target || typeof ResizeObserver === 'undefined') return;
+    this.targetObserver = new ResizeObserver(this.onTargetResize);
+    this.targetObserver.observe(target);
+  };
+
+  disconnectTargetObserver = () => {
+    this.targetObserver && this.targetObserver.disconnect();
+    this.targetObserver = null;
+  };
+
+  onWindowResize = () => {
+    this.resetMenuStyle(Boolean(this.state.searchVal));
+  };
+
+  onDocumentScroll = () => {
+    this.resetMenuStyle(Boolean(this.state.searchVal));
+  };
+
+  onTargetResize = () => {
+    this.resetMenuStyle(false);
+  };
+
+  resetMenuStyle = (keepFlipped) => {
     if (!this.optionsContainerRef) return;
-    const { isInModal, position } = this.props;
+    const { isInModal } = this.props;
+    const position = this.getTargetPosition();
     const offset = initOffset(this.props.offset);
     const { top, height } = this.optionsContainerRef.getBoundingClientRect();
     if (isInModal) {
-      if (position.y + position.height + height + 10 > window.innerHeight) {
-        const maxHeight = Math.min(height, position.top - 10, 300);
-        this.optionsContainerRef.style.top = (position.y - maxHeight - offset[1]) + 'px';
-        this.optionsContainerRef.style.maxHeight = maxHeight + 'px';
+      this.optionsContainerRef.style.left = position.x + 'px';
+      this.optionsContainerRef.style.minWidth = position.width + 'px';
+      const placement = getMenuPlacement({
+        position,
+        viewportHeight: window.innerHeight,
+        offset: offset[1],
+        menuHeight: height,
+        isFlipped: this.isFlipped,
+        keepFlipped,
+      });
+      this.isFlipped = placement.isFlipped;
+      if (this.isFlipped) {
+        this.optionsContainerRef.style.top = 'unset';
+        this.optionsContainerRef.style.bottom = (window.innerHeight - position.top + offset[1]) + 'px';
+        this.optionsContainerRef.style.maxHeight = placement.maxHeight + 'px';
+      } else {
+        this.optionsContainerRef.style.top = (position.y + position.height + offset[1]) + 'px';
+        this.optionsContainerRef.style.bottom = 'unset';
+        this.optionsContainerRef.style.maxHeight = placement.maxHeight + 'px';
       }
       this.optionsContainerRef.style.opacity = 1;
-      this.searchInputRef.current && this.searchInputRef.current.inputRef.focus();
       return;
     }
     if (height + top > window.innerHeight) {
@@ -197,29 +287,14 @@ class Options extends Component {
   };
 
   render() {
-    const { searchable, searchPlaceholder, top, left, minWidth, isInModal, position,
-      className } = this.props;
+    const { searchable, searchPlaceholder, className } = this.props;
     let { searchVal } = this.state;
-    const offset = initOffset(this.props.offset);
-    let style = isInModal ? {
-      position: 'fixed',
-      left: position.x,
-      top: position.y + position.height + offset[1],
-      minWidth: position.width,
-      opacity: 0,
-    } : {
-      left: (left || 0) + offset[0],
-      top: (top || 0) + offset[1],
-    };
-    if (minWidth) {
-      style['minWidth'] = minWidth;
-    }
     return (
       <ClickOutside onClickOutside={this.props.onClickOutside}>
         <div
           className={classnames('seaqa-select-options-container', className, { 'searchable': searchable })}
           ref={ref => this.optionsContainerRef = ref}
-          style={style}
+          style={this.initStyle}
           onMouseDown={this.onMouseDown}
         >
           {searchable && (
@@ -246,8 +321,6 @@ class Options extends Component {
 }
 
 Options.propTypes = {
-  top: PropTypes.number,
-  left: PropTypes.number,
   minWidth: PropTypes.number,
   options: PropTypes.array,
   onChange: PropTypes.func,
@@ -259,7 +332,7 @@ Options.propTypes = {
   closeSelector: PropTypes.func.isRequired,
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.array, PropTypes.number]),
   isInModal: PropTypes.bool,
-  position: PropTypes.object,
+  target: PropTypes.object.isRequired,
   className: PropTypes.string,
 };
 

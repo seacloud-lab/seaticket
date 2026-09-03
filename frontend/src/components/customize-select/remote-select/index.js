@@ -115,17 +115,6 @@ const RemoteSelect = ({
     setIsShowSelector(false);
   }, []);
 
-  const getTriggerTop = useCallback(() => {
-    if (!selectTriggerRef.current) return 38;
-    const { height } = selectTriggerRef.current?.getBoundingClientRect() || {};
-    return height;
-  }, []);
-
-  const getTriggerPosition = useCallback(() => {
-    if (!selectTriggerRef.current) return {};
-    return selectTriggerRef.current?.getBoundingClientRect() || {};
-  }, []);
-
   const OptionsShell = isInModal ? ModalPortal : Fragment;
 
   return (
@@ -146,8 +135,7 @@ const RemoteSelect = ({
                 className={containerClassName}
                 offset={offset}
                 value={value}
-                top={getTriggerTop()}
-                position={getTriggerPosition()}
+                target={selectTriggerRef}
                 options={allOptions}
                 onChange={handleChange}
                 searchable={searchable}

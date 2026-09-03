@@ -55,17 +55,6 @@ const StaticSelect = ({
     setIsShowSelector(false);
   }, []);
 
-  const getTriggerTop = useCallback(() => {
-    if (!selectTriggerRef.current) return 38;
-    const { height } = selectTriggerRef.current?.getBoundingClientRect() || {};
-    return height;
-  }, []);
-
-  const getTriggerPosition = useCallback(() => {
-    if (!selectTriggerRef.current) return {};
-    return selectTriggerRef.current?.getBoundingClientRect() || {};
-  }, []);
-
   const renderSelectedValue = useCallback(() => {
     if (children) {
       return (
@@ -109,8 +98,7 @@ const StaticSelect = ({
             isInModal={isInModal}
             offset={offset}
             value={value}
-            top={getTriggerTop()}
-            position={getTriggerPosition()}
+            target={selectTriggerRef}
             options={options}
             onChange={onChange}
             searchable={searchable}
