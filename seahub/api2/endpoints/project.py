@@ -465,6 +465,12 @@ class ProjectView(APIView):
                 if not is_safe_prompt(project_prompt):
                     error_msg = _('Project prompt contains disallowed tag-like content.')
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+                portal_settings = update_settings.get('portal')
+                if isinstance(portal_settings, dict):
+                    portal_chat_prompt = portal_settings.get('chat_prompt')
+                    if not is_safe_prompt(portal_chat_prompt):
+                        error_msg = _('Portal chat prompt contains disallowed tag-like content.')
+                        return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
                 agent_settings = update_settings.get('agent')
                 if isinstance(agent_settings, dict):
                     ticket_rules = agent_settings.get('ticket_rules')
