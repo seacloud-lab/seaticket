@@ -85,6 +85,7 @@ class FilterPopover extends Component {
 
   hidePopoverByClick = (e) => {
     if (document.getElementsByClassName('sea-metadata-data-filter-popover').length > 0) return;
+    if (document.getElementsByClassName('seaqa-select-options-container').length > 0) return;
     if (this.popoverInnerRef && !getEventClassName(e).includes('popover') && !this.popoverInnerRef.contains(e.target)) {
       e.preventDefault();
       e.stopPropagation();

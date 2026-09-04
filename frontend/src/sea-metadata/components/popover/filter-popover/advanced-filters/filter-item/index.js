@@ -210,6 +210,7 @@ class FilterItem extends React.Component {
         return (
           <CustomizeSelect
             disabled={readOnly}
+            isInModal={true}
             value={filterConjunction}
             containerClassName="sea-metadata-filter-conjunction-select-container"
             options={FILTER_CONJUNCTION_TYPES}
@@ -457,6 +458,7 @@ class FilterItem extends React.Component {
             <div className={`filter-predicate ${_isCheckboxColumn ? 'filter-checkbox-predicate' : ''}`}>
               <CustomizeSelect
                 disabled={readOnly}
+                isInModal={true}
                 containerClassName="sea-metadata-filter-predicate-container"
                 value={filter_predicate}
                 options={filterPredicateOptions}
@@ -467,6 +469,7 @@ class FilterItem extends React.Component {
               <div className="filter-term-modifier">
                 <CustomizeSelect
                   disabled={readOnly}
+                  isInModal={true}
                   containerClassName="sea-metadata-filter-term-modifier-container"
                   value={filter_term_modifier}
                   options={filterTermModifierOptions}

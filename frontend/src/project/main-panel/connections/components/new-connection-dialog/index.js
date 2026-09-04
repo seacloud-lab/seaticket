@@ -1,14 +1,13 @@
 import React, { useCallback, useMemo, useState, useEffect, useRef } from 'react';
-import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, FormGroup, Label, Row } from 'reactstrap';
 import { gettext } from '@/constants';
 import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, STEP, STEPS, EMAIL_SERVER_PROVIDER, getAvailableConnectionTypes } from '../../constants';
-import { getVisibleEmailFields, getEmailProvider, sanitizeEmailConfigByProvider, isOAuthEmailProvider, hasValidMicrosoftOAuthUrls } from '../../utils';
+import { getVisibleEmailFields, getEmailProvider, isOAuthEmailProvider, hasValidMicrosoftOAuthUrls, sanitizeEmailConfigByProvider } from '../../utils';
 import { ModalHeader, Loading, toaster, Icon } from '@/components';
 import ConnectionConfigEditor from '../connection-config-editor';
 import ConnectionDialogFooter from './connection-dialog-footer';
-import GithubConnectionConfig from './github-connection-config';
+import { ConfluenceConfig, DiscordConfig, GithubConfig, JiraConfig, LinearConfig } from './connection-config';
 import ConnectionTypeSections from './connection-type-sections';
 import SelectedConnectionHeader from './selected-connection-header';
 import { connectionsAPI } from '@/project/api';
@@ -69,6 +68,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   // eslint-disable-next-line no-unused-vars
   const [linearTeamsVersion, setLinearTeamsVersion] = useState(0);
   const [isLinearOauthConnected, setLinearOauthConnected] = useState(false);
+  const [isWaitingLinearOAuth, setWaitingLinearOAuth] = useState(false);
   const [isCheckingLinearOauth, setCheckingLinearOauth] = useState(false);
   const [linearOauthError, setLinearOauthError] = useState('');
   const confluenceOauthIntervalRef = useRef(null);
@@ -156,7 +156,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       return true;
     }) : true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [name, config, customColumns, isLinear, isLinearOauthConnected, isConfluence, isConfluenceOauthConnected, isDiscord, isOAuthEmail, emailOAuthState]);
+  }, [name, config, customColumns, isLinear, isLinearOauthConnected, isConfluence, isConfluenceOauthConnected, isDiscord, isOAuthEmail, emailOAuthState, isJira, isJiraOauthConnected]);
 
   useEffect(() => {
     const handleDiscordOAuthMessage = (event) => {
@@ -530,6 +530,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     const next = window.location.href;
     const oauthUrl = `${server}/linear/oauth/?project_uuid=${projectUuid}&next=${encodeURIComponent(next)}`;
     oauthWindowRef.current = window.open(oauthUrl, 'linear-oauth', 'width=800,height=700');
+    setWaitingLinearOAuth(true);
 
     // Start polling for OAuth status
     clearInterval(pollingIntervalRef.current);
@@ -538,6 +539,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         if (res?.data?.connected) {
           setLinearOauthConnected(true);
           setLinearOauthError('');
+          setWaitingLinearOAuth(false);
           setLinearTeamsVersion(v => v + 1);
           clearInterval(pollingIntervalRef.current);
           if (oauthWindowRef.current && !oauthWindowRef.current.closed) {
@@ -546,6 +548,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         }
       }).catch(() => {
         // Silently retry on next interval
+        setWaitingLinearOAuth(false);
       });
     }, 2000);
   }, []);
@@ -783,14 +786,14 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     >
       <ModalHeader toggle={onToggle}>{gettext('New connection')}</ModalHeader>
       <ModalBody className="seaqa-project-connection-body">
-        {stepIndex === 0 && (
+        {step.key === STEP.TYPE && (
           <ConnectionTypeSections
             availableConnectionTypes={availableConnectionTypes}
             selectedType={type}
             onSelectType={onTypeChange}
           />
         )}
-        {stepIndex === 1 && (
+        {step.key === STEP.CONFIG && (
           <SelectedConnectionHeader
             connection={typeOption}
             hasGithubRepositories={githubRepositories.length > 0}
@@ -798,7 +801,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
           />
         )}
         {step.key === STEP.CONFIG && isGithub && (
-          <GithubConnectionConfig
+          <GithubConfig
             isLoadingRepositories={isLoadingRepositories}
             githubRepositories={githubRepositories}
             installGitHubAppURL={installGitHubAppURL}
@@ -809,7 +812,68 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
             renderConnectionField={renderConnectionField}
           />
         )}
-        {step.key === STEP.CONFIG && !isGithub && (
+        {step.key === STEP.CONFIG && isJira && (
+          <JiraConfig
+            isJiraOauthConnected={isJiraOauthConnected}
+            isSubmitting={isSubmitting}
+            isCheckingJiraOauth={isCheckingJiraOauth}
+            isWaitingJiraOAuth={isWaitingJiraOAuth}
+            setWaitingJiraOAuth={setWaitingJiraOAuth}
+            jiraOauthError={jiraOauthError}
+            handleConnectJira={handleConnectJira}
+            name={name}
+            onNameChange={onNameChange}
+            basicCustomColumns={basicCustomColumns}
+            renderConnectionField={renderConnectionField}
+          />
+        )}
+        {step.key === STEP.CONFIG && isConfluence && (
+          <ConfluenceConfig
+            isConfluenceOauthConnected={isConfluenceOauthConnected}
+            isSubmitting={isSubmitting}
+            isCheckingConfluenceOauth={isCheckingConfluenceOauth}
+            isWaitingConfluenceOAuth={isWaitingConfluenceOAuth}
+            setWaitingConfluenceOAuth={setWaitingConfluenceOAuth}
+            handleConnectConfluence={handleConnectConfluence}
+            confluenceOauthError={confluenceOauthError}
+            config={config}
+            name={name}
+            onNameChange={onNameChange}
+            basicCustomColumns={basicCustomColumns}
+            renderConnectionField={renderConnectionField}
+            isLoadingConfluenceSpaces={isLoadingConfluenceSpaces}
+            confluenceSpaces={confluenceSpaces}
+            selectedSpaceKeys={selectedSpaceKeys}
+            toggleSpaceSelection={toggleSpaceSelection}
+          />
+        )}
+        {step.key === STEP.CONFIG && isLinear && (
+          <LinearConfig
+            isLinearOauthConnected={isLinearOauthConnected}
+            isWaitingLinearOAuth={isWaitingLinearOAuth}
+            setWaitingLinearOAuth={setWaitingLinearOAuth}
+            isSubmitting={isSubmitting}
+            isCheckingLinearOauth={isCheckingLinearOauth}
+            handleConnectLinear={handleConnectLinear}
+            linearOauthError={linearOauthError}
+            name={name}
+            onNameChange={onNameChange}
+            basicCustomColumns={basicCustomColumns}
+            renderConnectionField={renderConnectionField}
+          />
+        )}
+        {step.key === STEP.CONFIG && isDiscord && (
+          <DiscordConfig
+            isSubmitting={isSubmitting}
+            config={config}
+            name={name}
+            onNameChange={onNameChange}
+            basicCustomColumns={basicCustomColumns}
+            renderConnectionField={renderConnectionField}
+            handleConnectDiscord={handleConnectDiscord}
+          />
+        )}
+        {step.key === STEP.CONFIG && !isGithub && !isJira && !isConfluence && !isLinear && !isDiscord && (
           <div className="seaqa-project-new-connection-config">
             <FormGroup>
               <Label>
@@ -866,6 +930,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
                 </div>
               </FormGroup>
             )}
+
             {isConfluence && (
               <FormGroup>
                 <Label>{gettext('Authorization')}</Label>
@@ -892,103 +957,12 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
                 <div className="mt-3">{gettext('Waiting for OAuth authorization to complete...')}</div>
               </div>
             )}
-            {isLinear && (
-              <FormGroup>
-                <Label>{gettext('Authorization')}</Label>
-                <div className="seaqa-project-linear-oauth">
-                  <span className={classnames('linear-oauth-status', { connected: isLinearOauthConnected })}>
-                    <span className="linear-status-icon d-flex">
-                      <Icon symbol={isLinearOauthConnected ? 'check-circle-filled' : 'close-circle-filled'} />
-                    </span>
-                    {isLinearOauthConnected ? gettext('Connected') : gettext('Not connected')}
-                  </span>
-                  <Button
-                    color={isLinearOauthConnected ? 'secondary' : 'primary'}
-                    disabled={isSubmitting || isCheckingLinearOauth}
-                    onClick={handleConnectLinear}
-                  >
-                    {isLinearOauthConnected ? gettext('Reconnect Linear') : gettext('Connect Linear')}
-                  </Button>
-                  {linearOauthError && (<div className="text-danger mt-2">{linearOauthError}</div>)}
-                </div>
-              </FormGroup>
-            )}
-            {isWaitingConfluenceOAuth && (
-              <div className="seaqa-project-connection-oauth-pending">
-                <Loading />
-                <div className="mt-3">{gettext('Waiting for Confluence authorization to complete...')}</div>
-              </div>
-            )}
-            {isConfluence && isConfluenceOauthConnected && config.workspace_id && (
-              <FormGroup>
-                <Label>{gettext('Spaces (optional)')}</Label>
-                <div className="text-muted mb-2" style={{ fontSize: '0.85em' }}>
-                  {gettext('Select specific spaces to sync. Leave empty to sync all spaces in the workspace.')}
-                </div>
-                {isLoadingConfluenceSpaces ? (
-                  <div className="d-flex align-items-center" style={{ gap: 8 }}>
-                    <Loading /><span>{gettext('Loading spaces...')}</span>
-                  </div>
-                ) : confluenceSpaces.length === 0 ? (
-                  <div className="text-muted">{gettext('No spaces found in this workspace.')}</div>
-                ) : (
-                  <div className="seaqa-confluence-spaces-list" style={{ maxHeight: 200, overflowY: 'auto', border: '1px solid #dee2e6', borderRadius: 4, padding: '4px 0' }}>
-                    {confluenceSpaces.map(space => (
-                      <div
-                        key={space.key || space.id}
-                        className="seaqa-confluence-space-item d-flex align-items-center"
-                        style={{ padding: '6px 12px', cursor: 'pointer' }}
-                        onClick={() => toggleSpaceSelection(space.key)}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedSpaceKeys.includes(space.key)}
-                          onChange={() => toggleSpaceSelection(space.key)}
-                          style={{ marginRight: 8 }}
-                        />
-                        <div className="d-flex flex-column">
-                          <span>{space.name}</span>
-                          <span className="text-muted" style={{ fontSize: '0.8em' }}>{space.key} · {space.type}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </FormGroup>
-            )}
-            {isJira && (
-              <FormGroup>
-                <Label>{gettext('Authorization')}</Label>
-                <div className="seaqa-project-jira-oauth">
-                  <span className={classnames('jira-oauth-status', { connected: isJiraOauthConnected })}>
-                    <span className="jira-status-icon d-flex">
-                      <Icon symbol={isJiraOauthConnected ? 'check-circle-filled' : 'close-circle-filled'} />
-                    </span>
-                    {isJiraOauthConnected ? gettext('Connected') : gettext('Not connected')}
-                  </span>
-                  <Button
-                    color={isJiraOauthConnected ? 'secondary' : 'primary'}
-                    disabled={isSubmitting || isCheckingJiraOauth || isWaitingJiraOAuth}
-                    onClick={handleConnectJira}
-                  >
-                    {isJiraOauthConnected ? gettext('Reconnect Jira') : gettext('Connect Jira')}
-                  </Button>
-                  {jiraOauthError && (<div className="text-danger">{jiraOauthError}</div>)}
-                </div>
-              </FormGroup>
-            )}
-            {isWaitingJiraOAuth && (
-              <div className="seaqa-project-connection-oauth-pending">
-                <Loading />
-                <div className="mt-3">{gettext('Waiting for Jira authorization to complete...')}</div>
-              </div>
-            )}
           </div>
         )}
       </ModalBody>
       <ConnectionDialogFooter
         stepIndex={stepIndex}
-        isSubmitDisabled={isSubmitting || isWaitingEmailOAuth || isWaitingConfluenceOAuth || isWaitingJiraOAuth || !isValid || !name}
+        isSubmitDisabled={isSubmitting || isWaitingEmailOAuth || isWaitingConfluenceOAuth || isWaitingJiraOAuth || isWaitingLinearOAuth || !isValid || !name}
         onToggle={onToggle}
         setStepIndex={setStepIndex}
         onSubmit={handleSubmit}

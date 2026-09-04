@@ -1,9 +1,10 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import * as d3 from 'd3';
-import { initChart, destroyChart, drawYaxis, getMinDistanceItem, clearOldVerticalAnnotation, addVerticalAnnotation, checkTickOverlap } from '../utils';
+import { drawYaxis, getMinDistanceItem, clearOldVerticalAnnotation, addVerticalAnnotation, checkTickOverlap } from '../utils';
 import { CHART_THEME_COLOR, CHART_STYLE_COLORS } from '../constants';
 import ChartTooltip from '../chart-tooltip';
 import { gettext } from '@/constants';
+import useChartDraw from './use-chart-redraw';
 
 import './index.css';
 
@@ -11,13 +12,12 @@ const Line = ({ data, tooltipTitle = gettext('Amount') }) => {
   const [tooltipData, setTooltipData] = useState(null);
   const [toolTipPosition, setToolTipPosition] = useState(null);
   const ref = useRef(null);
-  const chartRef = useRef(null);
 
   const getPointerPosition = (event) => {
-    if (!chartRef.current?.node) {
+    if (!event.currentTarget) {
       return { offsetX: event.offsetX, offsetY: event.offsetY };
     }
-    const [offsetX, offsetY] = d3.pointer(event, chartRef.current.node());
+    const [offsetX, offsetY] = d3.pointer(event, event.currentTarget);
     return { offsetX, offsetY };
   };
 
@@ -157,27 +157,17 @@ const Line = ({ data, tooltipTitle = gettext('Amount') }) => {
       });
   };
 
-  useEffect(() => {
-    const initConfig = { insertPadding: 20 };
-    initChart(ref, chartRef, 'line', initConfig);
-
-    return () => {
-      destroyChart(chartRef);
-      chartRef.current = null;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!Array.isArray(data) || data.length === 0) return;
-    if (!chartRef.current || !ref.current) return;
-
-    drawChart(chartRef.current, ref.current, data);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data]);
+  const chart = useChartDraw({
+    target: ref,
+    data,
+    chartId: 'line',
+    options: { insertPadding: 20 },
+    draw: drawChart,
+  });
 
   return (
     <div className="chart-svg-wrapper flex-1" ref={ref}>
-      <ChartTooltip tooltipData={tooltipData} toolTipPosition={toolTipPosition} chart={chartRef.current} />
+      <ChartTooltip tooltipData={tooltipData} toolTipPosition={toolTipPosition} chart={chart} />
     </div>
   );
 };

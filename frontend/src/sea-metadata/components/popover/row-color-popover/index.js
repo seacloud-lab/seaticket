@@ -169,12 +169,18 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
     });
   }, [validColumns, updateRules]);
 
+  const handleHide = useCallback(() => {
+    if (document.getElementsByClassName('sea-metadata-data-filter-popover').length > 0) return;
+    if (document.getElementsByClassName('seaqa-select-options-container').length > 0) return;
+    hidePopover && hidePopover();
+  }, [hidePopover]);
+
   return (
     <CustomizePopover
       target={target}
       className={classnames('seaqa-row-color-popover', { 'disabled': readOnly })}
-      hidePopover={hidePopover}
-      hidePopoverWithEsc={hidePopover}
+      hidePopover={handleHide}
+      hidePopoverWithEsc={handleHide}
       placement="bottom-end"
       modifiers={[
         { name: 'preventOverflow', options: { boundary: document.body } },

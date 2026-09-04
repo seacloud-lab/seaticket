@@ -4,7 +4,7 @@ import { Button, FormGroup, Input, Label } from 'reactstrap';
 import { gettext } from '@/constants';
 import { Loading } from '@/components';
 
-const GithubConnectionConfig = ({
+const GithubConfig = ({
   isLoadingRepositories,
   githubRepositories,
   installGitHubAppURL,
@@ -50,7 +50,7 @@ const GithubConnectionConfig = ({
   );
 };
 
-GithubConnectionConfig.propTypes = {
+GithubConfig.propTypes = {
   isLoadingRepositories: PropTypes.bool.isRequired,
   githubRepositories: PropTypes.array.isRequired,
   installGitHubAppURL: PropTypes.string.isRequired,
@@ -61,4 +61,4 @@ GithubConnectionConfig.propTypes = {
   renderConnectionField: PropTypes.func.isRequired,
 };
 
-export default GithubConnectionConfig;
+export default GithubConfig;
