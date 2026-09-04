@@ -47,6 +47,19 @@ const Settings = ({
                   onChange={(value, callback) => modifySettings({ portal: Object.assign({}, settings.portal, { 'enable_portal': value }) }, callback)}
                 />
               </SettingsItem>
+              {settings.portal?.enable_portal && (
+                <PromptSettings
+                  value={settings.portal?.chat_prompt || ''}
+                  title={gettext('Portal chat prompt')}
+                  tip={gettext('Define rules for AI conversations with external support portal users.')}
+                  dialogTitle={settings.portal?.chat_prompt ? gettext('Edit portal chat prompt') : gettext('Add portal chat prompt')}
+                  placeholder={gettext('Define rules for AI conversations with external support portal users. Specify response tone, information boundaries, escalation guidance, and any topics the AI should avoid.')}
+                  validationMessage={gettext('Portal chat prompt cannot contain tag-like content such as <system-reminder>.')}
+                  onChange={(value, callback) => modifySettings({
+                    portal: Object.assign({}, settings.portal, { chat_prompt: value }),
+                  }, callback)}
+                />
+              )}
               <LanguageSettings
                 value={settings.lang || 'en'}
                 onChange={(value, callback) => modifySettings({ lang: value }, callback)}

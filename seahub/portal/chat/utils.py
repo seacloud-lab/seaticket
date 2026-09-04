@@ -173,12 +173,16 @@ def get_portal_chat_settings(project):
         daily_chat_credit_limit = PORTAL_CHAT_DAILY_CREDIT_LIMIT_DEFAULT
     if daily_chat_credit_limit < 0:
         daily_chat_credit_limit = PORTAL_CHAT_DAILY_CREDIT_LIMIT_DEFAULT
+    chat_prompt = portal_settings.get('chat_prompt', '')
+    if not isinstance(chat_prompt, str):
+        chat_prompt = ''
     return {
         'chat_allowed_sources': {
             'connection_ids': chat_allowed_sources.get('connection_ids') or [],
             'extra_sources': chat_allowed_sources.get('extra_sources') or [],
         },
         'daily_chat_credit_limit': daily_chat_credit_limit,
+        'chat_prompt': chat_prompt,
     }
 
 

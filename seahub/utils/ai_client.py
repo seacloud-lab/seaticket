@@ -59,3 +59,20 @@ def get_chat_title(params):
     if resp.status_code != 200:
         raise Exception(f'generate chat title error status: {resp.status_code} body: {resp.text}')
     return resp.json().get('title', '')
+
+
+def validate_chat_input(params):
+    headers = _build_headers()
+    url = urljoin(SEAQA_AI_INNER_SERVER_URL, '/validate-chat-input')
+    resp = requests.post(url, json=params, headers=headers, timeout=AI_REPLY_TIMEOUT)
+    if resp.status_code != 200:
+        raise Exception(f'validate chat input error status: {resp.status_code} body: {resp.text}')
+
+    result = resp.json()
+    if not isinstance(result, dict) or not isinstance(result.get('valid'), bool) or not isinstance(result.get('reason'), str):
+        raise Exception('validate chat input returned an invalid response')
+    if result['valid'] and result['reason']:
+        raise Exception('validate chat input returned an invalid allowed response')
+    if not result['valid'] and not result['reason']:
+        raise Exception('validate chat input returned an invalid rejected response')
+    return result
