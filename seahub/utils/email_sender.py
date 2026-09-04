@@ -49,6 +49,8 @@ class _EmailSenderBase:
         message_id = send_info.get('message_id', '')
         in_reply_to = send_info.get('in_reply_to', '')
         image_cid_url_map = send_info.get('image_cid_url_map', {})
+        calendar_content = send_info.get('calendar_content', '')
+        calendar_method = send_info.get('calendar_method', 'REPLY')
 
         sender_email = self.sender_email
         if not sender_email:
@@ -62,7 +64,7 @@ class _EmailSenderBase:
             logger.warning(error_msg)
             raise EmailConfigError(error_msg)
 
-        if not msg and not html_msg:
+        if not msg and not html_msg and not calendar_content:
             logger.warning('Email message invalid. message: %s, html_message: %s', msg, html_msg)
             raise EmailConfigError('Email message invalid')
 
@@ -92,6 +94,13 @@ class _EmailSenderBase:
         if html_msg:
             html_content_body = MIMEText(html_msg, 'html')
             msg_obj.attach(html_content_body)
+
+        if calendar_content:
+            calendar_body = MIMEText(calendar_content, 'calendar', 'utf-8')
+            calendar_body.set_param('method', calendar_method, header='Content-Type')
+            calendar_body.add_header('Content-Disposition', 'inline')
+            calendar_body['Content-Class'] = 'urn:content-classes:calendarmessage'
+            msg_obj.attach(calendar_body)
 
         if html_msg and image_cid_url_map:
             for cid, image_url in image_cid_url_map.items():
@@ -135,7 +144,7 @@ class SMTPEmailSender(_EmailSenderBase):
         self.imap_password = imap_password or smtp_password
 
         if not all([self.smtp_host, self.smtp_port, self.smtp_user, self.smtp_password]):
-            logger.error('Email config is invalid. smtp_host: %s, smtp_port: %s, smtp_user: %s',
+            logger.warning('Email config is invalid. smtp_host: %s, smtp_port: %s, smtp_user: %s',
                         self.smtp_host, self.smtp_port, self.smtp_user)
             raise EmailConfigError('Email configuration is incomplete')
 

@@ -10,6 +10,7 @@ import ReplyEmail from './reply-email';
 import { connectionsAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
 import { isString } from '@/utils/type-detection';
+import InvitationCard from './invitation-card';
 
 import './index.css';
 
@@ -31,6 +32,7 @@ const Item = ({
   const { sender, email } = useMemo(() => getInfoByEmailFrom(detail['email_from']), [detail]);
   const isReadonly = useMemo(() => permission === PERMISSION_TYPES.READ_ONLY, [permission]);
   const isUnread = Boolean(detail.unread);
+  const isCalendar = Boolean(detail.calendar_content);
 
   const contentStart = useMemo(() => {
     const hrefReg = /\[.+\]\(\S+\)|<img( width=[\\|/]?"(\d)+[\\|/|]?")? src="(\S+)" .?\/>|!\[\]\(\S+\)|!\[\]\((\S+)\)|<\S+>/g;
@@ -286,7 +288,9 @@ const Item = ({
         </div>
       </div>
       <div className="email-body" ref={ref}>
-        {isHTMLContent ? (
+        {isCalendar ? (
+          <InvitationCard detail={detail} projectUuid={projectUuid} connectionId={connection_id} isReadonly={isReadonly} />
+        ) : isHTMLContent ? (
           <HTMLContentWrapper
             projectUuid={projectUuid}
             connectionId={connection_id}
