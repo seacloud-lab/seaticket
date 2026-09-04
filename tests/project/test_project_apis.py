@@ -189,7 +189,7 @@ class TestProjectConnectionOauthManager:
         oauth = ProjectConnectionOauth.objects.get_by_project_uuid(
             real_project.uuid, ConnectionType.EMAIL.value
         )
-        assert oauth.expires_at == datetime.datetime.fromtimestamp(expires_at, tz=datetime.timezone.utc)
+        assert oauth.expires_at == datetime.datetime.fromtimestamp(float(expires_at), tz=datetime.timezone.utc)
 
     def test_upsert_connection_token_keeps_other_email_connection_tokens(self, real_project):
         first = ProjectConnectionOauth.objects.upsert_connection_token(
