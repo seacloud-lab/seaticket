@@ -561,20 +561,29 @@ class ChatView(APIView):
         if temp_image_paths:
             image_names = [path.rsplit('/', 1)[-1] for path in temp_image_paths if isinstance(path, str)]
             if len(image_names) != len(set(image_names)):
-                return api_error(status.HTTP_400_BAD_REQUEST, _('Images with the same name are not allowed.'))
+                return Response(record_message_to_db({
+                    'ai_reply': _('Images with the same name are not allowed.'),
+                    'sources': [],
+                }, session_uuid, message_id, query, attachments))
             try:
                 record_id = f'{session.session_uuid}/{message_id}'
                 new_url_map = upload_files_to_s3(project_uuid, temp_image_paths, username, 'chat', record_id)
                 permanent_image_paths = list(new_url_map.keys())
             except Exception as e:
                 logger.exception(f'Failed to upload images to S3: {e}')
-                return api_error(status.HTTP_400_BAD_REQUEST, 'Failed to upload image. Please try again.')
+                return Response(record_message_to_db({
+                    'ai_reply': 'Failed to upload image. Please try again.',
+                    'sources': [],
+                }, session_uuid, message_id, query, attachments))
 
             if len(permanent_image_paths) != len(temp_image_paths):
                 logger.warning(
                     f'Image upload incomplete: requested={len(temp_image_paths)} succeeded={len(permanent_image_paths)}'
                 )
-                return api_error(status.HTTP_400_BAD_REQUEST, 'Failed to upload image. Please try again.')
+                return Response(record_message_to_db({
+                    'ai_reply': 'Failed to upload image. Please try again.',
+                    'sources': [],
+                }, session_uuid, message_id, query, attachments))
 
             attachments = attachments + build_image_attachments(permanent_image_paths)
 
@@ -585,7 +594,10 @@ class ChatView(APIView):
             ai_images_payload = build_ai_images_payload(project_uuid, permanent_image_paths)
         except ImageProcessingError as e:
             logger.warning(f'Image processing failed: {e}')
-            return api_error(status.HTTP_400_BAD_REQUEST, str(e))
+            return Response(record_message_to_db({
+                'ai_reply': str(e),
+                'sources': [],
+            }, session_uuid, message_id, query, attachments))
 
         image_data_by_name = {img['name']: img for img in ai_images_payload}
         ai_attachments = []
@@ -608,15 +620,20 @@ class ChatView(APIView):
                 'attachments': ai_attachments,
                 'org_id': org_id,
                 'project_prompt': project_prompt,
-                'portal_chat_prompt': '',
                 'is_external_portal': False,
                 'scenario': AIScenario.CHAT.value,
             })
         except Exception as e:
             logger.exception(f'Chat input validation failed: {e}')
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal server error')
+            return Response(record_message_to_db({
+                'ai_reply': 'Input validation service is temporarily unavailable, please try again later.',
+                'sources': [],
+            }, session_uuid, message_id, query, attachments))
         if not validation['valid']:
-            return api_error(status.HTTP_400_BAD_REQUEST, validation['reason'])
+            return Response(record_message_to_db({
+                'ai_reply': validation['reason'],
+                'sources': [],
+            }, session_uuid, message_id, query, attachments))
         if clear_context:
             ChatMessages.objects.clear_context(session_uuid)
 
@@ -653,21 +670,24 @@ class ChatView(APIView):
                     }
                 )
             except Exception as e:
-                # the exceptions in process_stream_ai_reply will not be catched in here, so it should be a 500 error
                 logger.exception(f'Failure to make stream: {e}')
-                error_msg = 'Internal server error'
                 cache.delete(chat_task_id_info)
-                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+                return Response(record_message_to_db({
+                    'ai_reply': 'AI service is temporarily unavailable, please try again later.',
+                    'sources': [],
+                }, session_uuid, message_id, query, attachments))
         
         # non-stream response
         try:
             ai_response = get_ai_reply(params)
         except Exception as e:
             logger.warning(f'AI service error: {e}')
-            ai_response = {
+            response = record_message_to_db({
                 'ai_reply': 'Sorry, the AI service is temporarily unavailable, please try again later.',
-                'sources': []
-            }
+                'sources': [],
+            }, session_uuid, message_id, query, attachments)
+            cache.delete(chat_task_id_info)
+            return Response(response)
 
         response = record_message_to_db(ai_response, session_uuid, message_id, query, attachments)
         cache.delete(chat_task_id_info)

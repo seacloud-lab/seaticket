@@ -204,7 +204,7 @@ class TestPortalChatViewAnonymous:
         assert resp.data['user_message_id'] is not None
         assert resp.data['ai_reply_message_id'] is not None
 
-    def test_input_validation_rejected_before_message_creation(self, factory, real_project):
+    def test_input_validation_rejected_records_mock_reply(self, factory, real_project):
         _set_portal_settings(real_project, allow_anonymous=True, enable_password_protection=False)
         visitor = create_visitor_session()
         session = PortalChatSessions.objects.create_session(
@@ -223,11 +223,41 @@ class TestPortalChatViewAnonymous:
                 patch('seahub.portal.chat.apis.get_ai_reply') as mock_get_ai_reply:
             resp = PortalChatView.as_view()(request, project_uuid=str(real_project.uuid))
 
-        assert resp.status_code == 400
-        assert resp.data['error_msg'] == 'Request is not allowed.'
-        assert PortalChatMessages.objects.filter(session_uuid=session.session_uuid).count() == 0
+        assert resp.status_code == 200
+        assert resp.data['ai_reply'] == 'Request is not allowed.'
+        assert PortalChatMessages.objects.filter(session_uuid=session.session_uuid).count() == 2
         mock_validate.assert_called_once()
         mock_get_ai_reply.assert_not_called()
+
+    def test_duplicate_image_names_records_mock_reply(self, factory, real_project):
+        _set_portal_settings(real_project, allow_anonymous=True, enable_password_protection=False)
+        visitor = create_visitor_session()
+        session = PortalChatSessions.objects.create_session(
+            project_uuid=str(real_project.uuid), session_name='test', username=visitor['visitor_uuid']
+        )
+        image_url = f'/upload-file/portal/{real_project.uuid}/same-name.png'
+        request = factory.post(
+            f'/api/v1/portal/{real_project.uuid}/chat/',
+            data=json.dumps({
+                'query': 'check these images',
+                'session_uuid': session.session_uuid,
+                'stream': False,
+                'attachments': [
+                    {'type': 'image', 'path': image_url},
+                    {'type': 'image', 'path': image_url},
+                ],
+            }),
+            content_type='application/json',
+        )
+        from seahub.portal.visitor_session import _sign_visitor_uuid
+        request.COOKIES['portal_visitor_session'] = _sign_visitor_uuid(visitor['visitor_uuid'])
+
+        with patch('seahub.portal.chat.apis.check_ai_limit', return_value=False):
+            resp = PortalChatView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert resp.status_code == 200
+        assert resp.data['ai_reply'] == 'Images with the same name are not allowed.'
+        assert PortalChatMessages.objects.filter(session_uuid=session.session_uuid).count() == 2
 
     def test_input_validation_forwards_project_and_portal_prompts(self, factory, real_project):
         _set_portal_settings(
@@ -263,6 +293,11 @@ class TestPortalChatViewAnonymous:
         assert validation_params['portal_chat_prompt'] == 'Answer only product support questions.'
         assert validation_params['is_external_portal'] is True
         assert validation_params['scenario'] == AIScenario.PORTAL_CHAT.value
+        chat_params = mock_get_ai_reply.call_args.args[0]
+        assert chat_params['project_prompt'] == 'The project is Seafile support.'
+        assert chat_params['portal_chat_prompt'] == 'Answer only product support questions.'
+        assert chat_params['is_external_portal'] is True
+        assert chat_params['scenario'] == AIScenario.PORTAL_CHAT.value
 
 @pytest.mark.usefixtures('portal_mode_settings')
 class TestPortalChatImageRewriteAnonymous:

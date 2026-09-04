@@ -406,7 +406,7 @@ class TestChatView:
         assert resp.status_code == 200
         assert resp.data['sources'][0]['connection_id'] == site_connection.id
 
-    def test_post_input_validation_rejected_before_message_creation(self, factory, project_creator, real_project):
+    def test_post_input_validation_rejected_records_mock_reply(self, factory, project_creator, real_project):
         project = real_project
         request = factory.post(
             '/api/v1/ai/chat/',
@@ -419,11 +419,35 @@ class TestChatView:
                 patch('seahub.chats.view.get_ai_reply') as mock_get_ai_reply:
             resp = ChatView.as_view()(request)
 
-        assert resp.status_code == 400
-        assert resp.data['error_msg'] == 'Request is not allowed.'
-        assert ChatMessages.objects.filter(session_uuid=mock_validate.call_args.args[0]['session_uuid']).count() == 0
+        assert resp.status_code == 200
+        assert resp.data['ai_reply'] == 'Request is not allowed.'
+        assert ChatMessages.objects.filter(session_uuid=mock_validate.call_args.args[0]['session_uuid']).count() == 2
         mock_validate.assert_called_once()
         mock_get_ai_reply.assert_not_called()
+
+    def test_post_duplicate_image_names_records_mock_reply(self, factory, project_creator, real_project):
+        project = real_project
+        image_path = f'/upload-file/project/{project.uuid}/same-name.png'
+        request = factory.post(
+            '/api/v1/ai/chat/',
+            data={
+                'project_uuid': str(project.uuid),
+                'query': 'check these images',
+                'stream': False,
+                'attachments': [
+                    {'type': 'image', 'path': image_path},
+                    {'type': 'image', 'path': image_path},
+                ],
+            },
+            format='json'
+        )
+        request.user = project_creator
+
+        resp = ChatView.as_view()(request)
+
+        assert resp.status_code == 200
+        assert resp.data['ai_reply'] == 'Images with the same name are not allowed.'
+        assert ChatMessages.objects.filter(session_uuid=resp.data['session_uuid']).count() == 2
 
     def test_post_input_validation_forwards_project_prompt(self, factory, project_creator, real_project):
         project = real_project
