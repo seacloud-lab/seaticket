@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import Option from './option';
 import SearchInput from '../../search-input';
 import { KeyCodes } from '@/constants/keyCodes';
+import { gettext } from '@/constants';
 import { getTarget } from '@/utils/dom';
 import ClickOutside from '../../click-outside';
 import EmptyTip from '@/components/empty-tip';
@@ -12,7 +13,6 @@ import { searchOptions } from '@/utils/search';
 import { getMenuPlacement } from './placement';
 
 import './index.css';
-import { gettext } from '@/constants';
 
 const OPTION_HEIGHT = 32;
 const INDENT = 4;
