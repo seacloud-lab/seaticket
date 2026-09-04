@@ -284,7 +284,7 @@ class TestPortalChatViewAnonymous:
 
         with patch('seahub.portal.chat.apis.check_ai_limit', return_value=False), \
                 patch('seahub.portal.chat.apis.validate_chat_input', return_value={'valid': True, 'reason': ''}) as mock_validate, \
-                patch('seahub.portal.chat.apis.get_ai_reply', return_value={'ai_reply': 'ok', 'sources': []}):
+                patch('seahub.portal.chat.apis.get_ai_reply', return_value={'ai_reply': 'ok', 'sources': []}) as mock_get_ai_reply:
             resp = PortalChatView.as_view()(request, project_uuid=str(real_project.uuid))
 
         assert resp.status_code == 200

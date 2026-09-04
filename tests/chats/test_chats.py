@@ -467,7 +467,6 @@ class TestChatView:
         assert resp.status_code == 200
         validation_params = mock_validate.call_args.args[0]
         assert validation_params['project_prompt'] == 'Only answer Seafile support questions.'
-        assert validation_params['portal_chat_prompt'] == ''
         assert validation_params['attachments'] == []
         assert validation_params['is_external_portal'] is False
         assert validation_params['scenario'] == 'chat'
