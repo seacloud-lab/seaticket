@@ -299,23 +299,12 @@ def email_oauth_callback(request):
         EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
         return render(request, 'error.html', {'error_msg': _(error_msg)})
 
-    try:
-        ProjectConnectionOauth.objects.upsert_token(
-            project_uuid,
-            ConnectionType.EMAIL.value,
-            token.get('access_token') or '',
-            token.get('expires_at') or timezone.now().timestamp(),
-            refresh_token,
-        )
-    except Exception as e:
-        logger.exception('Failed to persist Email OAuth tokens: %s', e)
-        error_msg = 'Failed to save OAuth authorization.'
-        EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
-        return render(request, 'error.html', {'error_msg': _(error_msg)})
-
     oauth_data['status'] = 'authorized'
     oauth_data['sender_name'] = final_config.get('sender_name', '')
     oauth_data['sender_email'] = final_config.get('sender_email', '')
+    oauth_data['access_token'] = token.get('access_token') or ''
+    oauth_data['refresh_token'] = refresh_token
+    oauth_data['expires_at'] = token.get('expires_at') or timezone.now().timestamp()
     oauth_data.pop('oauth_config', None)
     oauth_data['config'] = final_config
     oauth_data['error_msg'] = ''

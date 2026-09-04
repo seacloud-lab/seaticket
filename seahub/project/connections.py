@@ -278,8 +278,7 @@ class ProjectConnectionsView(APIView):
                     authorized_config.get('account_type', EMAIL_ACCOUNT_TYPE_PERSONAL) !=
                     config.get('account_type', EMAIL_ACCOUNT_TYPE_PERSONAL)):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'OAuth authorization does not match connection configuration.')
-            oauth_record = ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.EMAIL.value)
-            if not oauth_record or not oauth_record.access_token or not oauth_record.refresh_token:
+            if not email_oauth_data.get('access_token') or not email_oauth_data.get('refresh_token'):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Email OAuth authorization is required.')
             config = authorized_config
 
@@ -297,11 +296,14 @@ class ProjectConnectionsView(APIView):
         if error_response:
             return error_response
 
-        oauth_record = ProjectConnectionOauth.objects.get_by_project_uuid(project.uuid, connection_type)
-        if oauth_record:
-            ProjectConnectionOauth.objects.set_connection_id(project.uuid, connection_type, record.id)
-
         if email_oauth_data: # for OAuth Email connection
+            ProjectConnectionOauth.objects.upsert_connection_token(
+                project.uuid,
+                record.id,
+                email_oauth_data['access_token'],
+                email_oauth_data['expires_at'],
+                email_oauth_data['refresh_token'],
+            )
             email_oauth_data['status'] = 'success'
             email_oauth_data['connection_id'] = record.id
             email_oauth_data.pop('access_token', None)

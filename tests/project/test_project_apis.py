@@ -190,3 +190,22 @@ class TestProjectConnectionOauthManager:
             real_project.uuid, ConnectionType.EMAIL.value
         )
         assert oauth.expires_at == datetime.datetime.fromtimestamp(expires_at, tz=datetime.timezone.utc)
+
+    def test_upsert_connection_token_keeps_other_email_connection_tokens(self, real_project):
+        first = ProjectConnectionOauth.objects.upsert_connection_token(
+            real_project.uuid, 1, 'first-access-token', 1788343471, 'first-refresh-token'
+        )
+        second = ProjectConnectionOauth.objects.upsert_connection_token(
+            real_project.uuid, 2, 'second-access-token', 1788343472, 'second-refresh-token'
+        )
+
+        ProjectConnectionOauth.objects.upsert_connection_token(
+            real_project.uuid, 2, 'updated-access-token', 1788343473, 'updated-refresh-token'
+        )
+
+        first.refresh_from_db()
+        second.refresh_from_db()
+        assert first.access_token == 'first-access-token'
+        assert first.refresh_token == 'first-refresh-token'
+        assert second.access_token == 'updated-access-token'
+        assert second.refresh_token == 'updated-refresh-token'

@@ -347,22 +347,23 @@ class TestProjectConnectionsView:
                     'status': 'authorized',
                     'name': 'mail-conn',
                     'config': {'server_provider': 'Microsoft', 'account_type': 'personal'},
+                    'access_token': 'access-token',
+                    'refresh_token': 'refresh-token',
+                    'expires_at': 123456,
                 },
             },
         })
 
         record = Mock(id=11)
         record.to_dict.return_value = {'id': 11, 'name': 'mail-conn', 'type': 'email'}
-        oauth_record = Mock(access_token='access-token', refresh_token='refresh-token')
         with patch('seahub.project.connections.create_connection', return_value=(record, None)), \
-                patch('seahub.project.connections.ProjectConnectionOauth.objects.get_by_project_uuid', return_value=oauth_record), \
-                patch('seahub.project.connections.ProjectConnectionOauth.objects.set_connection_id') as set_connection_id_mock, \
                 patch('seahub.project.connections.ProjectConnectionOauth.objects.upsert_connection_token') as upsert_connection_token_mock:
             resp = ProjectConnectionsView.as_view()(request, project_uuid=real_project.uuid)
 
         assert resp.status_code == 201
-        set_connection_id_mock.assert_called_once_with(real_project.uuid, ConnectionType.EMAIL.value, 11)
-        upsert_connection_token_mock.assert_not_called()
+        upsert_connection_token_mock.assert_called_once_with(
+            real_project.uuid, 11, 'access-token', 123456, 'refresh-token'
+        )
         oauth_data = request.session['oauth_email_connection'][state]
         assert oauth_data['status'] == 'success'
         assert oauth_data['connection_id'] == 11
@@ -625,7 +626,10 @@ class TestProjectEmailOAuthCallbackView:
         fetch_sender_mock.assert_called_once()
         assert oauth_session.fetch_token.call_args.kwargs['authorization_response'] == \
             get_email_oauth_callback_url() + '?state=state-1'
-        upsert_mock.assert_called_once()
+        upsert_mock.assert_not_called()
+        assert request.session['oauth_email_connection']['state-1']['access_token'] == 'access-1'
+        assert request.session['oauth_email_connection']['state-1']['refresh_token'] == 'refresh-1'
+        assert request.session['oauth_email_connection']['state-1']['expires_at'] == 123456
         assert request.session['oauth_email_connection']['state-1']['status'] == 'authorized'
 
     def test_callback_failure_is_saved_without_type_error(self, factory, project_creator, real_project):
@@ -702,6 +706,7 @@ class TestProjectEmailOAuthViews:
         assert resp.status_code == 200
         assert json.loads(resp.content)['state'] == 'state-1'
         assert request.session['oauth_email_connection']['state-1']['project_uuid'] == real_project.uuid
+        assert oauth_session_cls.call_args.kwargs['scope'] == ['User.Read']
         assert oauth_session_cls.call_args.kwargs['redirect_uri'] == get_email_oauth_callback_url()
 
     def test_query_requires_matching_transaction_project(self, factory, project_creator, real_project):
