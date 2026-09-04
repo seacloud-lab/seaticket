@@ -1,9 +1,10 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import * as d3 from 'd3';
-import { initChart, destroyChart, drawYaxis, addClipPath, checkTickOverlap } from '../utils';
+import { drawYaxis, addClipPath, checkTickOverlap } from '../utils';
 import { STYLE_COLORS, CHART_THEME_COLOR } from '../constants';
 import ChartTooltip from '../chart-tooltip';
 import { gettext } from '@/constants';
+import useChartDraw from './use-chart-redraw';
 
 import './index.css';
 
@@ -11,7 +12,6 @@ const Bar = ({ data }) => {
   const [tooltipData, setTooltipData] = useState(null);
   const [toolTipPosition, setToolTipPosition] = useState(null);
   const ref = useRef(null);
-  const chartRef = useRef(null);
 
   const showTooltip = (event, data, color) => {
     const { offsetX, offsetY } = event;
@@ -113,27 +113,17 @@ const Bar = ({ data }) => {
       });
   };
 
-  useEffect(() => {
-    const initConfig = { insertPadding: 20, borderRadius: 0.2, };
-    initChart(ref, chartRef, 'bar', initConfig);
-
-    return () => {
-      destroyChart(chartRef);
-      chartRef.current = null;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!Array.isArray(data) || data.length === 0) return;
-    if (!chartRef.current || !ref.current) return;
-
-    drawChart(chartRef.current, ref.current, data);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data]);
+  const chart = useChartDraw({
+    target: ref,
+    data,
+    chartId: 'bar',
+    options: { insertPadding: 20, borderRadius: 0.2 },
+    draw: drawChart,
+  });
 
   return (
     <div className="chart-svg-wrapper flex-1" ref={ref}>
-      <ChartTooltip tooltipData={tooltipData} toolTipPosition={toolTipPosition} chart={chartRef.current} />
+      <ChartTooltip tooltipData={tooltipData} toolTipPosition={toolTipPosition} chart={chart} />
     </div>
   );
 };
