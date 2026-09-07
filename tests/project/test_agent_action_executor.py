@@ -293,6 +293,9 @@ def test_link_existing_ticket_normalizes_portal_issue_key():
         return_value=(sync_plan, None),
     ) as mock_check, patch(
         'seahub.project.agent.action_executor.sync_links_in_connection',
+    ), patch(
+        'seahub.project.agent.action_executor.build_ticket_related_url',
+        return_value='https://example.com/tickets/88',
     ):
         result = executor._execute_link_existing_ticket(
             seadb_api=seadb_api,
