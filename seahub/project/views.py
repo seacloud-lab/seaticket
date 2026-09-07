@@ -621,30 +621,17 @@ def slack_oauth_callback(request):
     except Exception as e:
         logger.warning('Failed to fetch Slack team domain: %s', e)
 
+    request.session['slack_oauth_team'] = {
+        'team_id': str(team_id),
+        'team_name': team_name,
+        'team_domain': team_domain,
+    }
+
     request.session.pop('slack_oauth_state', None)
     request.session.pop('slack_oauth_project_uuid', None)
     request.session.pop('slack_oauth_return_to', None)
 
-    message = json.dumps({
-        'type': 'slack-oauth-success',
-        'team_id': str(team_id),
-        'team_name': team_name,
-        'team_domain': team_domain,
-    }).replace('<', '\\u003c')
-    fallback_url = json.dumps(return_to).replace('<', '\\u003c')
-    response_html = f'''<!doctype html>
-        <html><body><script>
-        (function() {{
-        var message = {message};
-        if (window.opener && !window.opener.closed) {{
-            window.opener.postMessage(message, window.location.origin);
-            window.close();
-        }} else {{
-            window.location.replace({fallback_url});
-        }}
-        }})();
-        </script></body></html>'''
-    return HttpResponse(response_html)
+    return redirect(return_to)
 
 
 def _calc_jira_expires_at(expires_in):

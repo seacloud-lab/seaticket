@@ -281,7 +281,7 @@ class ProjectConnectionsView(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Jira OAuth authorization is required.')
 
         if connection_type == ConnectionType.SLACK.value:
-            slack_oauth = ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.SLACK.value)
+            slack_oauth = ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.SLACK.value, 0)
             if not slack_oauth:
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Slack OAuth authorization is required.')
 
@@ -312,6 +312,10 @@ class ProjectConnectionsView(APIView):
         record, error_response = create_connection(project, request.user.username, connection_type, name, config)
         if error_response:
             return error_response
+
+        if connection_type == ConnectionType.SLACK.value:
+            slack_oauth.connection_id = record.id
+            slack_oauth.save(update_fields=['connection_id'])
 
         return Response({'record': record.to_dict()}, status=status.HTTP_201_CREATED)
 
@@ -1256,8 +1260,14 @@ class ProjectSlackOauthStatusView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        connected = ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.SLACK.value) is not None
-        return Response({'connected': connected})
+        connected = ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.SLACK.value, 0) is not None
+        team_info = request.session.get('slack_oauth_team', {})
+        return Response({
+            'connected': connected,
+            'team_id': team_info.get('team_id', ''),
+            'team_name': team_info.get('team_name', ''),
+            'team_domain': team_info.get('team_domain', ''),
+        })
 
 
 class ProjectConnectionRecordView(APIView):

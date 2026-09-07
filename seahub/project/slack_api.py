@@ -39,16 +39,11 @@ class SlackAPI(object):
             page_params = dict(params)
             if cursor:
                 page_params['cursor'] = cursor
-            try:
-                resp = requests.get(url, headers=self.headers, params=page_params, timeout=self.timeout)
-                resp.raise_for_status()
-                data = resp.json()
-                if not data.get('ok'):
-                    logger.error('Slack conversations.list failed: %s', data.get('error'))
-                    raise requests.HTTPError(f"Slack error: {data.get('error')}", response=resp)
-            except requests.exceptions.RequestException as e:
-                logger.error('Failed to list Slack channels: %s', e)
-                raise
+            resp = requests.get(url, headers=self.headers, params=page_params, timeout=self.timeout)
+            resp.raise_for_status()
+            data = resp.json()
+            if not data.get('ok'):
+                raise requests.HTTPError(f"Slack error: {data.get('error')}", response=resp)
 
             channels.extend([
                 {
@@ -72,16 +67,12 @@ class SlackAPI(object):
     def get_team_domain(self):
         """Fetch the workspace domain (used to construct permalinks)."""
         url = f'{SLACK_API_BASE_URL}/team.info'
-        try:
-            resp = requests.get(url, headers=self.headers, timeout=self.timeout)
-            resp.raise_for_status()
-            data = resp.json()
-            if not data.get('ok'):
-                return ''
-            return (data.get('team') or {}).get('domain', '')
-        except requests.exceptions.RequestException as e:
-            logger.error('Failed to fetch Slack team info: %s', e)
+        resp = requests.get(url, headers=self.headers, timeout=self.timeout)
+        resp.raise_for_status()
+        data = resp.json()
+        if not data.get('ok'):
             return ''
+        return (data.get('team') or {}).get('domain', '')
 
     def join_channel(self, channel_id):
         """Join the bot to a public channel via conversations.join.

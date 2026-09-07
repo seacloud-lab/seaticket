@@ -183,27 +183,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     return () => window.removeEventListener('message', handleDiscordOAuthMessage);
   }, []);
 
-  useEffect(() => {
-    const handleSlackOAuthMessage = (event) => {
-      if (event.origin !== window.location.origin) return;
-      const data = event.data || {};
-      if (data.type !== 'slack-oauth-success' || !data.team_id) return;
-
-      setConfig(prevConfig => ({
-        ...prevConfig,
-        team_id: String(data.team_id),
-        team_name: data.team_name || '',
-        team_domain: data.team_domain || '',
-      }));
-      if (oauthWindowRef.current && !oauthWindowRef.current.closed) {
-        oauthWindowRef.current.close();
-      }
-    };
-
-    window.addEventListener('message', handleSlackOAuthMessage);
-    return () => window.removeEventListener('message', handleSlackOAuthMessage);
-  }, []);
-
   const callbackUrl = useMemo(() => {
     return getEmailOAuthCallbackUrl(projectUuid);
   }, []);
@@ -578,6 +557,23 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     const next = window.location.href;
     const oauthUrl = `${server}/slack/oauth/?project_uuid=${projectUuid}&next=${encodeURIComponent(next)}`;
     oauthWindowRef.current = window.open(oauthUrl, 'slack-oauth', 'width=800,height=700');
+    clearInterval(pollingIntervalRef.current);
+    pollingIntervalRef.current = setInterval(() => {
+      connectionsAPI.getSlackOauthStatus(projectUuid).then(res => {
+        if (res?.data?.connected) {
+          clearInterval(pollingIntervalRef.current);
+          setConfig(prevConfig => ({
+            ...prevConfig,
+            team_id: res.data.team_id || '',
+            team_name: res.data.team_name || '',
+            team_domain: res.data.team_domain || '',
+          }));
+          if (oauthWindowRef.current && !oauthWindowRef.current.closed) {
+            oauthWindowRef.current.close();
+          }
+        }
+      }).catch(() => {});
+    }, 2000);
   }, []);
 
   useEffect(() => {

@@ -184,6 +184,7 @@ const getSlackOriginalPageUrl = (connection, row, columns) => {
   const { team_domain, channel_id } = connection.config;
   const messageIdColumn = getColumnByName(columns, 'message_id');
   const messageId = getCellValueByColumn(row, messageIdColumn);
+  if (!team_domain || !channel_id || !messageId) return '';
   return `https://${team_domain}.slack.com/archives/${channel_id}/p${messageId.replace('.', '')}`;
 };
 
@@ -275,10 +276,10 @@ export const initConnectionResourceDetails = (type, record) => {
     return Array.isArray(replies) ? replies : [];
   }
   if (type === CONNECTION_TYPE.SLACK) {
-    const { author, created_time, content, replies } = record;
+    const { author, modified_time, content, replies } = record;
     const mainPost = {
       author,
-      created_time,
+      modified_time,
       content: content || '',
     };
     const initReplies = Array.isArray(replies) ? replies : [];
