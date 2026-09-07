@@ -12,8 +12,10 @@ from django.conf import settings
 from django.core.cache import cache
 from django.db.models import Sum, Value
 from django.db.models.functions import Coalesce
+from django.http import StreamingHttpResponse
 from django.utils import timezone
 from rest_framework import status
+from rest_framework.response import Response
 
 from seahub.api2.utils import api_error
 from seahub.project.constants import AIScenario
@@ -365,6 +367,27 @@ def build_portal_message_result(ai_result, project_uuid, session_uuid, message_i
         project_uuid, ai_result['ai_reply'], session_uuid, message_id, username
     )
     return ai_result
+
+
+def build_portal_chat_error_response(stream, ai_result, project_uuid, session_uuid, message_id, query, username, attachments=None):
+    result = build_portal_message_result(
+        ai_result, project_uuid, session_uuid, message_id, query, username, attachments,
+    )
+    if not stream:
+        return Response(result)
+
+    def event_stream():
+        yield f'data: {json.dumps({"results": result})}\n\n'
+        yield 'data: [DONE]\n\n'
+
+    return StreamingHttpResponse(
+        event_stream(),
+        content_type='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'X-Accel-Buffering': 'no',
+        },
+    )
 
 
 def process_portal_stream_ai_reply(chat_task_id_info, ai_response, project_uuid, session_uuid, message_id, query, username, attachments=None):

@@ -10,6 +10,8 @@ import uuid
 import time
 from copy import deepcopy
 from django.core.cache import cache
+from django.http import StreamingHttpResponse
+from rest_framework.response import Response
 from urllib.parse import urljoin
 from trafilatura import extract
 from bs4 import BeautifulSoup
@@ -76,6 +78,26 @@ def record_message_to_db(ai_result, session_uuid, message_id, query, attachments
         logger.warning(f'Failure to record messages to db: {e}')
 
     return ai_result
+
+
+def build_chat_error_response(stream, ai_result, session_uuid, message_id, query, attachments):
+    result = record_message_to_db(ai_result, session_uuid, message_id, query, attachments)
+    if not stream:
+        return Response(result)
+
+    def event_stream():
+        yield f'data: {json.dumps({"results": result})}\n\n'
+        yield 'data: [DONE]\n\n'
+
+    return StreamingHttpResponse(
+        event_stream(),
+        content_type='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'X-Accel-Buffering': 'no',
+        },
+    )
+
 
 def process_stream_ai_reply(chat_task_id_info, ai_response, session_uuid, message_id, query, attachments):
     has_recorded_result = False

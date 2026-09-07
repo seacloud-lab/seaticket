@@ -71,8 +71,6 @@ def validate_chat_input(params):
     result = resp.json()
     if not isinstance(result, dict) or not isinstance(result.get('valid'), bool) or not isinstance(result.get('reason'), str):
         raise Exception('validate chat input returned an invalid response')
-    if result['valid'] and result['reason']:
-        raise Exception('validate chat input returned an invalid allowed response')
     if not result['valid'] and not result['reason']:
         raise Exception('validate chat input returned an invalid rejected response')
     return result
