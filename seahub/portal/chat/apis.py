@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 
 from dateutil.relativedelta import relativedelta
 from django.core.cache import cache
-from django.db.models.functions import TruncDate
 from django.http import FileResponse, StreamingHttpResponse
 from django.db.models import Count, Sum
 from django.utils import timezone
@@ -312,15 +311,14 @@ class PortalAdminChatStatisticsView(APIView):
             today = timezone.localdate()
             start_date = today - relativedelta(months=1) + timedelta(days=1)
             start_time = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))
-            session_counts = PortalChatSessions.objects.filter(
+            session_created_times = PortalChatSessions.objects.filter(
                 project_uuid=project_uuid,
                 created_at__gte=start_time,
-            ).annotate(
-                date=TruncDate('created_at'),
-            ).values('date').annotate(
-                count=Count('id'),
-            ).order_by('date')
-            session_counts_by_date = {item['date']: item['count'] for item in session_counts}
+            ).values_list('created_at', flat=True)
+            session_counts_by_date = {}
+            for created_at in session_created_times:
+                date = timezone.localtime(created_at).date()
+                session_counts_by_date[date] = session_counts_by_date.get(date, 0) + 1
             daily_session_counts = [
                 {
                     'date': (start_date + timedelta(days=offset)).isoformat(),

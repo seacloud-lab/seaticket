@@ -735,6 +735,35 @@ class TestPortalAdminChatAPIs:
             'date': (today - timedelta(days=1)).isoformat(), 'count': 0,
         }
 
+    def test_statistics_daily_counts_do_not_use_database_timezone_conversion(self, factory, real_project, project_creator):
+        today = date(2026, 3, 1)
+        session = PortalChatSessions.objects.create_session(
+            project_uuid=str(real_project.uuid),
+            session_name='recent session',
+            username='customer@example.com',
+        )
+        PortalChatSessions.objects.filter(id=session.id).update(created_at=timezone.make_aware(
+            datetime.combine(date(2026, 2, 2), datetime.min.time())
+        ))
+
+        request = self._admin_request(
+            factory,
+            real_project,
+            project_creator,
+            f'/api/v1/portal/{real_project.uuid}/admin/chat/statistics/',
+        )
+        with patch('seahub.portal.chat.apis.timezone.localdate', return_value=today), \
+                patch('django.db.models.query.QuerySet.annotate', side_effect=RuntimeError('timezone conversion unavailable')):
+            response = PortalAdminChatStatisticsView.as_view()(
+                request,
+                project_uuid=str(real_project.uuid),
+            )
+
+        assert response.status_code == 200
+        assert response.data['daily_session_counts'][0] == {
+            'date': '2026-02-02', 'count': 1,
+        }
+
     def test_statistics_exclude_month_end_date_outside_last_month(self, factory, real_project, project_creator):
         today = date(2026, 3, 31)
         session = PortalChatSessions.objects.create_session(
