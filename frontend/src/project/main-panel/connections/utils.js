@@ -184,7 +184,6 @@ const getSlackOriginalPageUrl = (connection, row, columns) => {
   const { team_domain, channel_id } = connection.config;
   const messageIdColumn = getColumnByName(columns, 'message_id');
   const messageId = getCellValueByColumn(row, messageIdColumn);
-  if (!team_domain || !channel_id || !messageId) return '';
   return `https://${team_domain}.slack.com/archives/${channel_id}/p${messageId.replace('.', '')}`;
 };
 

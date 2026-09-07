@@ -368,6 +368,8 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       const channel = _config.channel_id;
       if (channel && channel.value) {
         _config['channel_id'] = channel.value;
+        _config['channel_is_private'] = channel.is_private;
+        _config['channel_is_member'] = channel.is_member;
       }
     }
     if (isJira) {
@@ -502,7 +504,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       const channels = (res && res.data && res.data.channels) || [];
       return {
         data: {
-          options: channels.map(c => ({ value: c.id, label: c.name, name: c.name })),
+          options: channels.map(c => ({ value: c.id, label: c.name, name: c.name, is_private: c.is_private, is_member: c.is_member })),
         }
       };
     });

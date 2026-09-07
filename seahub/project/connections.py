@@ -286,10 +286,13 @@ class ProjectConnectionsView(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Slack OAuth authorization is required.')
 
             # Auto-join the bot to the selected channel so it can read its history.
+            # Only public channels the bot is not yet a member of need (and can) be
+            # joined via conversations.join; private channels and already-joined
+            # public channels are skipped.
             slack_channel_id = config.get('channel_id')
-            if isinstance(slack_channel_id, dict):
-                slack_channel_id = slack_channel_id.get('value', '')
-            if slack_channel_id:
+            channel_is_private = config.get('channel_is_private')
+            channel_is_member = config.get('channel_is_member')
+            if slack_channel_id and not channel_is_private and not channel_is_member:
                 try:
                     SlackAPI(slack_oauth.access_token).join_channel(slack_channel_id)
                 except requests.HTTPError as e:

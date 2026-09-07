@@ -51,7 +51,12 @@ class SlackAPI(object):
                 raise
 
             channels.extend([
-                {'id': str(ch['id']), 'name': ch['name']}
+                {
+                    'id': str(ch['id']),
+                    'name': ch['name'],
+                    'is_private': bool(ch.get('is_private')),
+                    'is_member': bool(ch.get('is_member')),
+                }
                 for ch in data.get('channels', [])
                 if ch.get('name')
             ])
