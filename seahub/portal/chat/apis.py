@@ -24,9 +24,10 @@ from seahub.utils import uuid_str_to_32_chars
 from seahub.utils.storage import upload_portal_files_to_s3
 from seahub.project.models import AIUsageStatistics
 from seahub.project.constants import AIScenario
-from seahub.project.utils import check_ai_limit, check_same_org_permission, check_project_admin_permission, delete_portal_sessions, convert_cost_to_credit
+from seahub.project.utils import check_ai_limit, check_project_admin_permission, delete_portal_sessions, convert_cost_to_credit
 from seahub.utils.ip import get_remote_ip
 from seahub.portal.chat.utils import (
+    build_portal_chat_error_response,
     build_portal_message_result,
     check_anonymous_chat_rate_limit,
     check_external_chat_rate_limit,
@@ -35,7 +36,6 @@ from seahub.portal.chat.utils import (
     gen_portal_chat_task_id,
     gen_portal_message_id,
     get_portal_chat_settings,
-    get_portal_external_username,
     get_project_portal_chat_credit_used,
     is_portal_chat_proxy_image_file_path,
     mark_anonymous_chat_rate_limit,
@@ -470,10 +470,10 @@ class PortalChatView(APIView):
         if temp_image_urls:
             image_names = [u.rsplit('/', 1)[-1] for u in temp_image_urls if isinstance(u, str)]
             if len(image_names) != len(set(image_names)):
-                return Response(build_portal_message_result({
+                return build_portal_chat_error_response(stream, {
                     'ai_reply': 'Images with the same name are not allowed.',
                     'sources': [],
-                }, project_uuid, current_session_uuid, message_id, query, username, attachments))
+                }, project_uuid, current_session_uuid, message_id, query, username, attachments)
 
             try:
                 record_id = f'{current_session_uuid}/{message_id}'
@@ -481,19 +481,19 @@ class PortalChatView(APIView):
                 permanent_image_paths = list(new_url_map.keys())
             except Exception as e:
                 logger.exception(f'Failed to upload images to S3: {e}')
-                return Response(build_portal_message_result({
+                return build_portal_chat_error_response(stream, {
                     'ai_reply': 'Failed to upload image. Please try again.',
                     'sources': [],
-                }, project_uuid, current_session_uuid, message_id, query, username, attachments))
+                }, project_uuid, current_session_uuid, message_id, query, username, attachments)
 
             if len(permanent_image_paths) != len(temp_image_urls):
                 logger.warning(
                     f'Image upload incomplete: requested={len(temp_image_urls)} succeeded={len(permanent_image_paths)}'
                 )
-                return Response(build_portal_message_result({
+                return build_portal_chat_error_response(stream, {
                     'ai_reply': 'Failed to upload image. Please try again.',
                     'sources': [],
-                }, project_uuid, current_session_uuid, message_id, query, username, attachments))
+                }, project_uuid, current_session_uuid, message_id, query, username, attachments)
 
             attachments = build_image_attachments(permanent_image_paths)
 
@@ -511,10 +511,10 @@ class PortalChatView(APIView):
                 ai_images_payload = build_ai_images_payload(project_uuid, ai_payload_paths)
             except ImageProcessingError as e:
                 logger.warning(f'Image processing failed: {e}')
-                return Response(build_portal_message_result({
+                return build_portal_chat_error_response(stream, {
                     'ai_reply': str(e),
                     'sources': [],
-                }, project_uuid, current_session_uuid, message_id, query, username, attachments))
+                }, project_uuid, current_session_uuid, message_id, query, username, attachments)
 
             image_data_by_name = {img['name']: img for img in ai_images_payload}
             ai_attachments = [{**a, **image_data_by_name.get(a['name'], {})} for a in attachments]
@@ -533,15 +533,15 @@ class PortalChatView(APIView):
             })
         except Exception as e:
             logger.exception(f'Portal chat input validation failed: {e}')
-            return Response(build_portal_message_result({
+            return build_portal_chat_error_response(stream, {
                 'ai_reply': 'Input validation service is temporarily unavailable, please try again later.',
                 'sources': [],
-            }, project_uuid, current_session_uuid, message_id, query, username, attachments))
+            }, project_uuid, current_session_uuid, message_id, query, username, attachments)
         if not validation['valid']:
-            return Response(build_portal_message_result({
+            return build_portal_chat_error_response(stream, {
                 'ai_reply': validation['reason'],
                 'sources': [],
-            }, project_uuid, current_session_uuid, message_id, query, username, attachments))
+            }, project_uuid, current_session_uuid, message_id, query, username, attachments)
         if clear_context:
             PortalChatMessages.objects.clear_context(current_session_uuid)
 
@@ -602,10 +602,10 @@ class PortalChatView(APIView):
             except Exception as e:
                 logger.exception(f'Failure to make portal stream: {e}')
                 cache.delete(chat_task_id_info)
-                return Response(build_portal_message_result({
+                return build_portal_chat_error_response(stream, {
                     'ai_reply': 'AI service is temporarily unavailable, please try again later.',
                     'sources': [],
-                }, project_uuid, current_session_uuid, message_id, query, username, attachments))
+                }, project_uuid, current_session_uuid, message_id, query, username, attachments)
 
         try:
             ai_response = get_ai_reply(params)

@@ -229,6 +229,36 @@ class TestPortalChatViewAnonymous:
         mock_validate.assert_called_once()
         mock_get_ai_reply.assert_not_called()
 
+    def test_stream_input_validation_rejected_returns_sse_result(self, factory, real_project):
+        _set_portal_settings(real_project, allow_anonymous=True, enable_password_protection=False)
+        visitor = create_visitor_session()
+        session = PortalChatSessions.objects.create_session(
+            project_uuid=str(real_project.uuid), session_name='test', username=visitor['visitor_uuid']
+        )
+        request = factory.post(
+            f'/api/v1/portal/{real_project.uuid}/chat/',
+            data=json.dumps({'query': 'disallowed request', 'session_uuid': session.session_uuid, 'stream': True}),
+            content_type='application/json',
+        )
+        from seahub.portal.visitor_session import _sign_visitor_uuid
+        request.COOKIES['portal_visitor_session'] = _sign_visitor_uuid(visitor['visitor_uuid'])
+
+        with patch('seahub.portal.chat.apis.check_ai_limit', return_value=False), \
+                patch('seahub.portal.chat.apis.validate_chat_input', return_value={'valid': False, 'reason': 'Request is not allowed.'}) as mock_validate, \
+                patch('seahub.portal.chat.apis.get_ai_reply') as mock_get_ai_reply:
+            resp = PortalChatView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        content = b''.join(resp.streaming_content).decode('utf-8')
+
+        assert resp.status_code == 200
+        assert resp['Content-Type'].startswith('text/event-stream')
+        assert 'data: {"results": ' in content
+        assert 'Request is not allowed.' in content
+        assert 'data: [DONE]' in content
+        assert PortalChatMessages.objects.filter(session_uuid=session.session_uuid).count() == 2
+        mock_validate.assert_called_once()
+        mock_get_ai_reply.assert_not_called()
+
     def test_duplicate_image_names_records_mock_reply(self, factory, real_project):
         _set_portal_settings(real_project, allow_anonymous=True, enable_password_protection=False)
         visitor = create_visitor_session()
