@@ -113,6 +113,43 @@ def test_execute_action_parses_suggestion_payload_json():
     )
 
 
+def test_execute_action_dispatches_portal_issue():
+    executor = AgentActionExecutor()
+    executor._execute_portal_issue_action = Mock(
+        return_value={'success': True, 'result': 'ok'}
+    )
+    seadb_api = Mock()
+    project = Mock()
+
+    result = executor.execute_action(
+        seadb_api=seadb_api,
+        project=project,
+        project_uuid='project-uuid',
+        action={
+            '_pk': 1,
+            'tool_name': 'suggest_reply',
+            'target_item_type': 'portal_issue',
+            'target_item_id': '42',
+            'suggestion_content': 'reply content',
+        },
+        operator='user@example.com',
+    )
+
+    assert result['success'] is True
+    executor._execute_portal_issue_action.assert_called_once_with(
+        seadb_api,
+        project,
+        'project-uuid',
+        '42',
+        'suggest_reply',
+        'reply content',
+        {},
+        'user@example.com',
+        request=None,
+        auto_executed=False,
+    )
+
+
 def test_github_modify_type_fails_without_suggested_type_payload():
     executor = AgentActionExecutor()
     executor._get_github_issue_context = Mock(return_value={'record_id': '1_2'})
@@ -239,3 +276,105 @@ def test_link_existing_ticket_fails_when_record_already_linked():
     assert result['success'] is False
     assert result['status'] == 'failed'
     assert 'already linked' in result['result']
+
+
+def test_link_existing_ticket_normalizes_portal_issue_key():
+    executor = AgentActionExecutor()
+    seadb_api = Mock()
+    project = Mock()
+    ticket = {'title': 'Tracked issue', 'linked_connection_records': []}
+    sync_plan = Mock()
+
+    with patch(
+        'seahub.project.agent.action_executor.get_ticket',
+        return_value=(ticket, None),
+    ), patch(
+        'seahub.project.agent.action_executor.check_ticket_link_changes',
+        return_value=(sync_plan, None),
+    ) as mock_check, patch(
+        'seahub.project.agent.action_executor.sync_links_in_connection',
+    ):
+        result = executor._execute_link_existing_ticket(
+            seadb_api=seadb_api,
+            project=project,
+            project_uuid='project-uuid',
+            source_type='portal_issue',
+            source_id='42',
+            suggestion_payload={'related_ticket': 88},
+        )
+
+    assert result['success'] is True
+    mock_check.assert_called_once_with(
+        seadb_api, 'project-uuid', {88: (['portal_42'], [])}
+    )
+    seadb_api.update_rows.assert_called_once_with(
+        'project-uuid',
+        SchemaTables.TICKETS.table_name(),
+        [{'pk': 88, 'row': {'linked_connection_records': ['portal_42']}}],
+    )
+
+
+def test_portal_issue_reply_inserts_comment_and_updates_issue():
+    executor = AgentActionExecutor()
+    seadb_api = Mock()
+    seadb_api.insert_rows.return_value = {'pks': [9]}
+    seadb_api.query_rows.return_value = {'results': [{'count': 3}]}
+
+    with patch(
+        'seahub.project.agent.action_executor.get_portal_issue',
+        return_value=({'_pk': 42, 'title': 'Portal report'}, None),
+    ):
+        result = executor._execute_portal_issue_suggest_reply(
+            seadb_api,
+            'project-uuid',
+            '42',
+            'Thanks for the details.',
+            'Agent',
+        )
+
+    assert result['success'] is True
+    inserted_comment = seadb_api.insert_rows.call_args.args[2][0]
+    assert inserted_comment['issue_id'] == 42
+    assert inserted_comment['creator'] == 'Agent'
+    assert inserted_comment['content'] == 'Thanks for the details.'
+    assert inserted_comment['via_agent'] is True
+    seadb_api.update_rows.assert_called_once()
+    updated_issue = seadb_api.update_rows.call_args.args[2][0]
+    assert updated_issue['pk'] == 42
+    assert updated_issue['row']['comment_count'] == 3
+
+
+def test_portal_issue_create_ticket_uses_portal_link_key():
+    executor = AgentActionExecutor()
+    executor._create_ticket = Mock(return_value=({
+        'ticket_pk': 88,
+        'ticket_title': 'Portal report',
+        'ticket_url': '/tickets/88/',
+    }, None))
+    seadb_api = Mock()
+    project = Mock()
+
+    with patch(
+        'seahub.project.agent.action_executor.get_portal_issue',
+        return_value=({'_pk': 42, 'title': 'Portal report', 'linked_ticket': None}, None),
+    ), patch(
+        'seahub.project.agent.action_executor.build_portal_issue_related_url',
+        return_value='/portal-issues/42/',
+    ):
+        result = executor._execute_portal_issue_create_ticket(
+            seadb_api,
+            project,
+            'project-uuid',
+            '42',
+            '{"title": "Portal report", "content": "Details"}',
+            'Agent',
+        )
+
+    assert result['success'] is True
+    assert executor._create_ticket.call_args.kwargs['source_id'] == 'portal_42'
+    assert executor._create_ticket.call_args.kwargs['related_url'] == '/portal-issues/42/'
+    seadb_api.update_rows.assert_called_once_with(
+        'project-uuid',
+        SchemaTables.PORTAL_ISSUES.table_name(),
+        [{'pk': 42, 'row': {'linked_ticket': 88}}],
+    )
