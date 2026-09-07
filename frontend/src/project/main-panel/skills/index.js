@@ -1,13 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Button } from 'reactstrap';
 import TopBar from '../top-bar';
-import { CenteredLoading, toaster } from '@/components';
+import { CenteredLoading, Icon, toaster } from '@/components';
 import { gettext } from '@/constants';
 import { Utils } from '@/utils/utils';
 import { skillsAPI } from '@/project/api';
 import { SkillsPageProvider, useSkillsPage } from './hooks/skills-page';
-import { SKILLS_PAGE_SLUG_ID } from './constants';
+import { SKILL_DETAIL_MODE, SKILLS_PAGE_SLUG_ID } from './constants';
 import SkillsList from './view/skills-list';
-import SkillDetail from './view/skill-detail';
+import SkillDetailDialog from './view/skill-detail-dialog';
 
 import './index.css';
 
@@ -18,6 +19,7 @@ const Content = ({ title }) => {
   const [isDataLoading, setLoading] = useState(true);
   const [skills, setSkills] = useState([]);
   const [togglingSkillNameMap, setTogglingSkillNameMap] = useState({});
+  const [detailMode, setDetailMode] = useState(SKILL_DETAIL_MODE.EDIT);
 
   const loadSkills = useCallback(() => {
     setLoading(true);
@@ -53,8 +55,23 @@ const Content = ({ title }) => {
   }, [loadSkills, togglePageSlugId]);
 
   const onCreate = useCallback(() => {
+    setDetailMode(SKILL_DETAIL_MODE.EDIT);
     togglePageSlugId(SKILLS_PAGE_SLUG_ID.NEW);
   }, [togglePageSlugId]);
+
+  const onPreviewSkill = useCallback((skillName) => {
+    setDetailMode(SKILL_DETAIL_MODE.PREVIEW);
+    togglePageSlugId(skillName);
+  }, [togglePageSlugId]);
+
+  const onEditSkill = useCallback((skillName) => {
+    setDetailMode(SKILL_DETAIL_MODE.EDIT);
+    togglePageSlugId(skillName);
+  }, [togglePageSlugId]);
+
+  const onEditCurrentSkill = useCallback(() => {
+    setDetailMode(SKILL_DETAIL_MODE.EDIT);
+  }, []);
 
   const onToggleSkill = useCallback((skill) => {
     if (!isProjectAdmin) return;
@@ -84,32 +101,35 @@ const Content = ({ title }) => {
       <TopBar>
         <div className="w-100 text-truncate">{title}</div>
         {isProjectAdmin && (
-          <button className="btn btn-primary btn-sm" onClick={onCreate}>
-            {gettext('New')}
-          </button>
+          <Button color="primary" className="btn-sm create-skill-btn" onClick={onCreate}>
+            <Icon symbol="plus" className="mr-1" aria-hidden="true" />
+            {gettext('New skill')}
+          </Button>
         )}
       </TopBar>
       {isLoading ? (
         <CenteredLoading />
       ) : (
-        <div className="skills-page">
-          <SkillsList
-            skills={skills}
-            activeSkillName={activeSkillName}
-            onSelectSkill={togglePageSlugId}
-            onToggleSkill={onToggleSkill}
-            isProjectAdmin={isProjectAdmin}
-            togglingSkillNameMap={togglingSkillNameMap}
-          />
-        </div>
+        <SkillsList
+          skills={skills}
+          activeSkillName={activeSkillName}
+          onSelectSkill={onPreviewSkill}
+          onEditSkill={onEditSkill}
+          onToggleSkill={onToggleSkill}
+          onDeleted={onDeleted}
+          projectUuid={projectUuid}
+          isProjectAdmin={isProjectAdmin}
+          togglingSkillNameMap={togglingSkillNameMap}
+        />
       )}
       {pageSlugId !== SKILLS_PAGE_SLUG_ID.ALL && (
-        <SkillDetail
+        <SkillDetailDialog
           projectUuid={projectUuid}
           pageSlugId={pageSlugId}
+          mode={pageSlugId === SKILLS_PAGE_SLUG_ID.NEW ? SKILL_DETAIL_MODE.EDIT : detailMode}
           isProjectAdmin={isProjectAdmin}
           onSaved={onSaved}
-          onDeleted={onDeleted}
+          onEdit={onEditCurrentSkill}
           onCancel={() => togglePageSlugId(SKILLS_PAGE_SLUG_ID.ALL)}
         />
       )}

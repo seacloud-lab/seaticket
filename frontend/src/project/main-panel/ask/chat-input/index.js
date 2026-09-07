@@ -106,6 +106,7 @@ const ChatInput = forwardRef(({
   const [containerFocus, setContainerFocus] = useState(true);
   const inputUtils = useMemo(() => new InputUtils(), []);
   const [value, setValue] = useState('');
+  const [selectedSkillCommandRange, setSelectedSkillCommandRange] = useState(null);
   const [selectedModel, setSelectedModel] = useState(null);
   const [width, setWidth] = useState(0);
   const [isDragging, setDragging] = useState(false);
@@ -234,8 +235,14 @@ const ChatInput = forwardRef(({
   const onValueChange = useCallback((event) => {
     const nextValue = event.target.value;
     setValue(nextValue);
+    if (selectedSkillCommandRange) {
+      const { start, end } = selectedSkillCommandRange;
+      if (start >= nextValue.length || nextValue.slice(start, end) !== value.slice(start, end)) {
+        setSelectedSkillCommandRange(null);
+      }
+    }
     updateSkillCommandSelector(nextValue, event.target.selectionStart);
-  }, [updateSkillCommandSelector]);
+  }, [selectedSkillCommandRange, updateSkillCommandSelector, value]);
 
   const onSkillCommandChange = useCallback((skillId) => {
     if (!skillId) {
@@ -251,6 +258,7 @@ const ChatInput = forwardRef(({
 
     isSelectingSkillCommandRef.current = true;
     setValue(nextValue);
+    setSelectedSkillCommandRange({ start: range.start, end: range.start + command.length });
     closeSkillCommandSelector();
     setTimeout(() => {
       textarea && textarea.focus();
@@ -260,6 +268,19 @@ const ChatInput = forwardRef(({
       isSelectingSkillCommandRef.current = false;
     }, 0);
   }, [value, skillCommandRange, closeSkillCommandSelector]);
+
+  const renderInputPreview = useCallback(() => {
+    if (!selectedSkillCommandRange) return value;
+    const { start, end } = selectedSkillCommandRange;
+    if (start < 0 || end > value.length || start >= end) return value;
+    return (
+      <>
+        {value.slice(0, start)}
+        <span className="message-input-skill-command">{value.slice(start, end)}</span>
+        {value.slice(end)}
+      </>
+    );
+  }, [selectedSkillCommandRange, value]);
 
   const inputFocus = useCallback(() => {
     // set cursor at end
@@ -286,6 +307,7 @@ const ChatInput = forwardRef(({
     });
 
     setValue(text);
+    setSelectedSkillCommandRange(null);
     closeSkillCommandSelector();
 
     inputFocus();
@@ -460,12 +482,6 @@ const ChatInput = forwardRef(({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    if (inputRef.current && previewContentRef.current) {
-      previewContentRef.current.innerText = value;
-    }
-  }, [value]);
-
   useImperativeHandle(ref, () => ({
 
     clearInput: () => {
@@ -542,7 +558,7 @@ const ChatInput = forwardRef(({
           <div className="seaqa-ai-ask-chat-input-content" ref={inputContentRef}>
             <textarea
               autoFocus
-              className="message-input-value message-input"
+              className={classnames('message-input-value message-input', { 'message-input-value-highlighted': selectedSkillCommandRange })}
               ref={inputRef}
               value={value}
               onKeyDown={onKeyDown}
@@ -555,10 +571,10 @@ const ChatInput = forwardRef(({
               rows={1}
               disabled={disabled}
             />
-            <div ref={previewContentRef} className="message-input message-input-preview"></div>
+            <div ref={previewContentRef} className="message-input message-input-preview">{renderInputPreview()}</div>
             {isShowSkillCommandSelector && !disabled && (
               <OptionsEditor
-                className="seaqa-ai-chat-selector-display-editor"
+                className="seaqa-ai-chat-selector-display-editor seaqa-skill-command-selector"
                 target={inputContentRef}
                 isMultiple={false}
                 isSearchEnabled={false}

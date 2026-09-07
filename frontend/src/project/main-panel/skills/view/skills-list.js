@@ -1,60 +1,33 @@
 import React from 'react';
-import classnames from 'classnames';
-import { gettext } from '@/constants';
-import { EmptyTip, Switch } from '@/components';
+import { gettext, mediaUrl } from '@/constants';
+import { EmptyTip } from '@/components';
+import SkillsListItem from './skills-list-item';
 
+import './skills-list.css';
 
-const SkillsList = ({ skills, activeSkillName, onSelectSkill, onToggleSkill, isProjectAdmin, togglingSkillNameMap }) => {
+const SkillsList = ({ skills, activeSkillName, onSelectSkill, onEditSkill, onToggleSkill, onDeleted, projectUuid, isProjectAdmin, togglingSkillNameMap }) => {
   if (!Array.isArray(skills) || skills.length === 0) {
     return (
-      <EmptyTip className="skills-empty-tip" text={gettext('No skills yet.')} />
+      <EmptyTip text={gettext('No skills yet.')} src={`${mediaUrl}img/no-items-tip.png`} />
     );
   }
 
   return (
     <div className="skills-list">
-      {skills.map((skill) => {
-        const isActive = skill.name === activeSkillName;
-        const isToggling = Boolean(togglingSkillNameMap?.[skill.name]);
-        const isToggleDisabled = !isProjectAdmin || isToggling;
-
-        return (
-          <div
-            key={`${skill.source}-${skill.name}`}
-            className={classnames('skills-list-item', { active: isActive })}
-            onClick={() => onSelectSkill(skill.name)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                onSelectSkill(skill.name);
-              }
-            }}
-            role="button"
-            tabIndex={0}
-          >
-            <div className="skills-list-item-switch" onClick={(event) => event.stopPropagation()}>
-              <Switch
-                checked={Boolean(skill.enabled)}
-                onChange={(event) => {
-                  event.stopPropagation();
-                  if (isToggleDisabled) return;
-                  onToggleSkill && onToggleSkill(skill);
-                }}
-                disabled={isToggleDisabled}
-              />
-            </div>
-            <div className="skills-list-item-content">
-              <div className="skills-list-item-header">
-                <span className="skills-name">/{skill.name}</span>
-                <span className={classnames('skills-source', skill.source)}>
-                  {skill.source === 'builtin' ? gettext('Builtin') : gettext('Custom')}
-                </span>
-              </div>
-              <div className="skills-desc">{skill.description || gettext('No description')}</div>
-            </div>
-          </div>
-        );
-      })}
+      {skills.map((skill) => (
+        <SkillsListItem
+          key={`${skill.source}-${skill.name}`}
+          skill={skill}
+          isActive={skill.name === activeSkillName}
+          onSelectSkill={onSelectSkill}
+          onEditSkill={onEditSkill}
+          onToggleSkill={onToggleSkill}
+          onDeleted={onDeleted}
+          projectUuid={projectUuid}
+          isProjectAdmin={isProjectAdmin}
+          isToggling={Boolean(togglingSkillNameMap?.[skill.name])}
+        />
+      ))}
     </div>
   );
 };

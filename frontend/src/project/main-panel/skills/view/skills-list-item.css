@@ -1,0 +1,106 @@
+.skills-list-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 16px 24px 16px 16px;
+  border: 1px solid #eaeaea;
+  border-radius: 8px;
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.2s ease;
+}
+
+.skills-list-item:hover,
+.skills-list-item:focus,
+.skills-list-item.active {
+  border: 1px solid #EEEEEE;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.skills-list-item .skills-list-item-switch {
+  margin-left: 0;
+  margin-right: 16px;
+}
+
+.skills-list-item .skills-list-item-switch .seaqa-switch {
+  display: flex;
+  align-self: flex-start;
+  margin-top: 6px;
+}
+
+.skills-list-item .skills-list-item-content {
+  min-width: 0;
+  width: 100%;
+  max-width: 720px;
+  flex: 1 1 720px;
+}
+
+.skills-list-item .skills-list-item-chat-status {
+  flex: 0 0 auto;
+  margin-left: auto;
+  margin-right: 0;
+  padding-left: 64px;
+  color: var(--bs-body-secondary-color);
+  font-size: 12px;
+  line-height: 22px;
+  align-self: center;
+  white-space: nowrap;
+}
+
+.skills-list-item .skills-list-item-more {
+  flex: 0 0 auto;
+  margin-left: 64px;
+  align-self: center;
+}
+
+.skills-list-item .skills-list-item-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.skills-list-item .skills-list-item-header .skills-name {
+  font-size: 16px;
+  margin-right: 8px;
+  color: var(--bs-body-color);
+  font-weight: 500;
+  line-height: 24px;
+}
+
+.skills-list-item .skills-list-item-header .skills-source {
+  padding: 2px 8px;
+  color: var(--bs-body-secondary-color);
+  font-size: 12px;
+  border-radius: 4px;
+}
+
+.skills-list-item .skills-list-item-header .skills-source.builtin {
+  border: 1px solid rgba(0, 40, 100, 0.12);
+  background-color: #FAFAFA;
+}
+
+.skills-list-item .skills-list-item-header .skills-source.custom {
+  border: 1px solid rgba(62, 132, 247, 0.12);
+  background-color: rgba(62, 132, 247, 0.08);
+}
+
+.skills-list-item .skills-desc {
+  color: var(--bs-body-secondary-color);
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: 400;
+  margin-bottom: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .skills-list-item .skills-list-item-chat-status {
+    padding-left: 16px;
+  }
+
+  .skills-list-item .skills-list-item-more {
+    margin-left: 16px;
+  }
+}

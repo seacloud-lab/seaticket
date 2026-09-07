@@ -55,7 +55,7 @@ export const BAR_TYPE_CONFIG = {
   [BAR_TYPE.SKILLS]: {
     key: BAR_TYPE.SKILLS,
     name: gettext('Skills'),
-    icon: 'tool-call'
+    icon: 'skills'
   },
   [BAR_TYPE.SUPPORT_PORTAL]: {
     key: BAR_TYPE.SUPPORT_PORTAL,

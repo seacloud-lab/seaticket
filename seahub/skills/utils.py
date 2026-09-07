@@ -30,12 +30,13 @@ def _parse_bool(value, default=False, key_name='support_agent'):
             return True
         if normalized in ('0', 'false', 'no', 'off'):
             return False
-    raise ValueError(f'{key_name} invalid.')
+    field_label = key_name.replace('_', ' ').capitalize()
+    raise ValueError(f'{field_label} must be a boolean value.')
 
 
 def split_skill_document(content):
     if not isinstance(content, str):
-        raise ValueError('content invalid.')
+        raise ValueError('Content must be a string.')
     normalized = content.replace('\r\n', '\n').replace('\r', '\n').replace('\ufeff', '', 1)
     header, separator, body = normalized.partition(SKILL_HEADER_SEPARATOR)
     if not separator:
@@ -45,37 +46,43 @@ def split_skill_document(content):
 
 def parse_skill_markdown(content, expected_name=None):
     if not isinstance(content, str):
-        raise ValueError('content invalid.')
+        raise ValueError('Content must be a string.')
     if not content.strip():
-        raise ValueError('content invalid.')
+        raise ValueError('Content cannot be empty.')
     if len(content.encode('utf-8')) > MAX_SKILL_MARKDOWN_SIZE:
-        raise ValueError('content too large.')
+        raise ValueError(f'Content cannot exceed {MAX_SKILL_MARKDOWN_SIZE} bytes.')
 
     header_text, body = split_skill_document(content)
 
     try:
         frontmatter = yaml.safe_load(header_text) or {}
     except Exception:
-        raise ValueError('SKILL.md frontmatter invalid.')
+        raise ValueError('SKILL.md frontmatter must be valid YAML.')
 
     if not isinstance(frontmatter, dict):
-        raise ValueError('SKILL.md frontmatter invalid.')
+        raise ValueError('SKILL.md frontmatter must be a mapping.')
 
     name = frontmatter.get('name')
     if not isinstance(name, str):
-        raise ValueError('name invalid.')
+        raise ValueError('Skill name must be a string.')
     name = name.strip()
-    if not name or len(name) > MAX_NAME_LENGTH or not SKILL_NAME_RE.match(name):
-        raise ValueError('name invalid.')
+    if not name:
+        raise ValueError('Skill name cannot be empty.')
+    if len(name) > MAX_NAME_LENGTH:
+        raise ValueError(f'Skill name cannot exceed {MAX_NAME_LENGTH} characters.')
+    if not SKILL_NAME_RE.match(name):
+        raise ValueError('Skill name must use lowercase letters, digits and hyphens.')
     if expected_name and name != expected_name:
-        raise ValueError('name does not match target skill.')
+        raise ValueError('Skill name does not match the target skill.')
 
     description = frontmatter.get('description')
     if not isinstance(description, str):
-        raise ValueError('description invalid.')
+        raise ValueError('Skill description must be a string.')
     description = description.strip()
-    if not description or len(description) > MAX_DESCRIPTION_LENGTH:
-        raise ValueError('description invalid.')
+    if not description:
+        raise ValueError('Skill description cannot be empty.')
+    if len(description) > MAX_DESCRIPTION_LENGTH:
+        raise ValueError(f'Skill description cannot exceed {MAX_DESCRIPTION_LENGTH} characters.')
 
     support_agent = _parse_bool(frontmatter.get('support_agent'), default=False, key_name='support_agent')
 
@@ -98,7 +105,8 @@ def _coerce_bool(value, field_name='value'):
             return True
         if normalized in ('0', 'false', 'no', 'off'):
             return False
-    raise ValueError(f'{field_name} invalid.')
+    field_label = field_name.replace('_', ' ').capitalize()
+    raise ValueError(f'{field_label} must be a boolean value.')
 
 
 def _load_project(project_uuid):
