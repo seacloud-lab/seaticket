@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import TopBar from '../top-bar';
 import LanguageSettings from './language-settings';
 import { gettext } from '@/constants';
@@ -7,10 +7,10 @@ import GitHubIssueTypeMappingSettings from './github-issue-type-mapping';
 import AgentAutoConfirmSettings from './agent-auto-confirm-settings';
 import { SETTINGS_TAB_TYPE, SETTINGS_TABS } from './constants';
 import { CustomizeTabs } from '@/components';
-
-import './index.css';
 import SettingsItem from './settings-item';
 import SwitchSettings from './switch-settings';
+
+import './index.css';
 
 const Settings = ({
   title,
@@ -18,6 +18,20 @@ const Settings = ({
   modifySettings,
 }) => {
   const [tab, setTab] = useState(SETTINGS_TAB_TYPE.GENERAL);
+
+  const handleTab = useCallback((tab) => {
+    setTab(tab);
+    const url = `${location.origin}${location.pathname}?tab=${tab}`;
+    history.replaceState(null, null, url);
+  }, []);
+
+  useEffect(() => {
+    const currentUrlParams = new URLSearchParams(window.location.search);
+    let initTab = currentUrlParams.get('tab');
+    initTab = initTab === SETTINGS_TAB_TYPE.AGENT ? SETTINGS_TAB_TYPE.AGENT : SETTINGS_TAB_TYPE.GENERAL;
+    handleTab(initTab);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <>
@@ -29,7 +43,7 @@ const Settings = ({
           className="seaqa-project-settings-tabs"
           tabs={SETTINGS_TABS}
           value={tab}
-          onChange={setTab}
+          onChange={handleTab}
         />
         <div className="seaqa-project-settings-body-container flex-1 w-100 d-flex flex-column">
           {tab === SETTINGS_TAB_TYPE.GENERAL && (
@@ -78,12 +92,6 @@ const Settings = ({
               </SettingsItem>
               {settings.agent?.enabled && (
                 <>
-                  <GitHubIssueTypeMappingSettings
-                    value={settings?.agent?.github_issue_type_mapping || {}}
-                    onChange={(value, callback) => modifySettings({
-                      agent: Object.assign({}, settings.agent, { github_issue_type_mapping: value }),
-                    }, callback)}
-                  />
                   <PromptSettings
                     value={settings?.agent?.ticket_rules || ''}
                     onChange={(value, callback) => modifySettings({
@@ -101,6 +109,12 @@ const Settings = ({
                     value={settings?.agent?.auto_confirm || {}}
                     onChange={(value, callback) => modifySettings({
                       agent: Object.assign({}, settings.agent, { auto_confirm: value }),
+                    }, callback)}
+                  />
+                  <GitHubIssueTypeMappingSettings
+                    value={settings?.agent?.github_issue_type_mapping || {}}
+                    onChange={(value, callback) => modifySettings({
+                      agent: Object.assign({}, settings.agent, { github_issue_type_mapping: value }),
                     }, callback)}
                   />
                 </>
