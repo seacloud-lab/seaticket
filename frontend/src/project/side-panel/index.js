@@ -63,7 +63,7 @@ const SidePanel = ({ activeBar, toggleBar, settings }) => {
                 <div className="seaqa-project-side-panel-subtitle">{gettext('Support portal')}</div>
                 <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.SUPPORT_PORTAL]} {...commonProps} />
                 <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_ISSUES]} {...commonProps} />
-                <PortalIssuesMoreNav onClick={toggleBar} />
+                <PortalIssuesMoreNav onClick={toggleBar} isProjectAdmin={isProjectAdmin} />
               </>
             )}
           </div>
