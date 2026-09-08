@@ -30,7 +30,7 @@ class SkillsAPI {
   }
 
   getSkill(projectUuid, skillName) {
-    const url = this.server + '/api/v1/project/' + projectUuid + '/skills/' + skillName + '/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/skills/detail/' + skillName + '/';
     return this.req.get(url);
   }
 
@@ -40,12 +40,12 @@ class SkillsAPI {
   }
 
   updateSkill(projectUuid, skillName, data) {
-    const url = this.server + '/api/v1/project/' + projectUuid + '/skills/' + skillName + '/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/skills/detail/' + skillName + '/';
     return this.req.put(url, data);
   }
 
   deleteSkill(projectUuid, skillName) {
-    const url = this.server + '/api/v1/project/' + projectUuid + '/skills/' + skillName + '/';
+    const url = this.server + '/api/v1/project/' + projectUuid + '/skills/detail/' + skillName + '/';
     return this.req.delete(url);
   }
 }
