@@ -14,6 +14,7 @@ new providers can be added incrementally:
 import imaplib
 import logging
 import re
+from urllib.parse import quote
 
 import requests
 
@@ -433,18 +434,30 @@ class GmailMailboxManager(OAuthMailboxManager):
 class MicrosoftMailboxManager(OAuthMailboxManager):
     """Microsoft Graph API mailbox manager."""
 
-    SEARCH_ENDPOINT = 'https://graph.microsoft.com/v1.0/me/messages'
-    MOVE_ENDPOINT = 'https://graph.microsoft.com/v1.0/me/messages/{ms_id}/move'
+    GRAPH_ENDPOINT = 'https://graph.microsoft.com/v1.0/{principal}/messages'
 
     # Graph well-known folder names.
     _TRASH_LABEL = 'deleteditems'
     _JUNK_LABEL = 'junkemail'
 
+    def __init__(self, config, oauth_token=None, oauth_config=None):
+        super().__init__(config, oauth_token, oauth_config)
+        if self.config.get('account_type') == 'shared' and not self.config.get('sender_email'):
+            raise MailboxConfigError('Shared email sender address is required.')
+
+    @property
+    def messages_endpoint(self):
+        if self.config.get('account_type') == 'shared':
+            principal = f"users/{quote(self.config['sender_email'], safe='')}"
+        else:
+            principal = 'me'
+        return self.GRAPH_ENDPOINT.format(principal=principal)
+
     def _find_provider_message_id(self, message_id):
         # OData filter strings escape single quotes by doubling them.
         safe_message_id = message_id.replace("'", "''")
         search_resp = requests.get(
-            self.SEARCH_ENDPOINT,
+            self.messages_endpoint,
             params={
                 '$filter': f"internetMessageId eq '{safe_message_id}'",
                 '$select': 'id',
@@ -458,7 +471,7 @@ class MicrosoftMailboxManager(OAuthMailboxManager):
 
     def _move_to_well_known_folder(self, provider_message_id, destination_id):
         move_resp = requests.post(
-            self.MOVE_ENDPOINT.format(ms_id=provider_message_id),
+            f'{self.messages_endpoint}/{provider_message_id}/move',
             json={'destinationId': destination_id},
             headers=self._auth_headers({'Content-Type': 'application/json'}),
         )

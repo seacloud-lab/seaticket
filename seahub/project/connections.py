@@ -271,8 +271,6 @@ class ProjectConnectionsView(APIView):
                 return api_error(status.HTTP_404_NOT_FOUND, 'OAuth request not found.')
             if email_oauth_data.get('status') != 'authorized':
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Email OAuth authorization is required.')
-            if email_oauth_data.get('name') != name:
-                return api_error(status.HTTP_400_BAD_REQUEST, 'OAuth authorization does not match connection name.')
             authorized_config = email_oauth_data.get('config') or {}
             if (authorized_config.get('server_provider') != config.get('server_provider') or
                     authorized_config.get('account_type', EMAIL_ACCOUNT_TYPE_PERSONAL) !=

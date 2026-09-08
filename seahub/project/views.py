@@ -190,8 +190,6 @@ def email_oauth(request, project_uuid):
     name = oauth_payload['name']
     config = oauth_payload['config']
     oauth_config = oauth_payload['oauth_config']
-    if ProjectConnections.objects.filter(project_uuid=project.uuid, name=name, deleted=False).exists():
-        return JsonResponse({'error_msg': f'Connection name {name} already exists.'}, status=400)
 
     callback_url = get_email_oauth_callback_url()
     try:

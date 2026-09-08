@@ -38,6 +38,14 @@ class DummySession(dict):
 
 class TestEmailOAuthUtils:
 
+    def test_oauth_scopes_include_mailbox_write_permissions(self):
+        assert EMAIL_OAUTH_CONFIGS['Gmail']['scopes']['personal'][0] == \
+            'https://www.googleapis.com/auth/gmail.modify'
+        assert EMAIL_OAUTH_CONFIGS['Gmail']['scopes'][EMAIL_ACCOUNT_TYPE_SHARED][0] == \
+            'https://www.googleapis.com/auth/gmail.modify'
+        assert 'Mail.ReadWrite' in EMAIL_OAUTH_CONFIGS['Microsoft']['scopes']['personal']
+        assert 'Mail.ReadWrite.Shared' in EMAIL_OAUTH_CONFIGS['Microsoft']['scopes'][EMAIL_ACCOUNT_TYPE_SHARED]
+
     def test_get_oauth_session_removes_expired_transactions(self):
         now = datetime.datetime(2026, 8, 3, tzinfo=datetime.timezone.utc)
         current_timestamp = now.timestamp()
