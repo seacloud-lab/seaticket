@@ -6,7 +6,6 @@ import context from '@/sea-metadata/context';
 import { VIEW_TYPE, STATISTIC_TYPE } from '@/sea-metadata/constants';
 import SidePanelChat from '@/project/main-panel/ask/side-panel-chat';
 import { useData } from '@/project/hooks';
-import { Utils } from '@/utils/utils';
 import { PORTAL_CHAT_TABLE_NAME } from '../../constants';
 
 const viewTools = [
@@ -23,7 +22,27 @@ const settings = {
   canManageView: false,
 };
 
-const formatTokenCount = (count) => Utils.formatSize({ bytes: count, precision: 0 }).replace('B', '');
+const formatTokenCount = (count) => Number(count) || 0;
+
+const formatCreditCount = (count) => {
+  const value = Number(count) || 0;
+  return value.toFixed(8).replace(/\.?(0+)$/, '');
+};
+
+const formatComparison = (changePercent) => {
+  if (changePercent === null || changePercent === undefined || Number.isNaN(Number(changePercent))) {
+    return { value: '--', status: 'neutral' };
+  }
+
+  const value = Number(changePercent);
+  if (value > 0) {
+    return { value: `↑ ${value.toFixed(2)}%`, status: 'increase' };
+  }
+  if (value < 0) {
+    return { value: `↓ ${Math.abs(value).toFixed(2)}%`, status: 'decrease' };
+  }
+  return { value: '0%', status: 'neutral' };
+};
 
 const ChatAnalysis = ({
   projectUuid,
@@ -100,7 +119,12 @@ const ChatAnalysis = ({
         });
       }
       return chatAPI.getAdminChatStatistics(projectUuid).then(res => {
-        const { input_tokens, output_tokens, total_credit_used, user_count, daily_session_counts } = res.data;
+        const {
+          daily_session_counts,
+          current = {},
+          change_percent: changePercent = {},
+        } = res.data;
+        const comparisonLabel = gettext('vs. past month');
         return {
           data: {
             records: [
@@ -109,7 +133,8 @@ const ChatAnalysis = ({
                 name: gettext('Users'),
                 column_key: 'user',
                 summary_type: 'count',
-                value: user_count,
+                value: current.users || 0,
+                comparison: { ...formatComparison(changePercent.users), label: comparisonLabel },
                 type: STATISTIC_TYPE.CARD,
               },
               {
@@ -117,7 +142,8 @@ const ChatAnalysis = ({
                 name: gettext('Input tokens'),
                 column_key: 'input_tokens',
                 summary_type: 'count',
-                value: formatTokenCount(input_tokens),
+                value: formatTokenCount(current.input_tokens || 0),
+                comparison: { ...formatComparison(changePercent.input_tokens), label: comparisonLabel },
                 type: STATISTIC_TYPE.CARD,
               },
               {
@@ -125,7 +151,8 @@ const ChatAnalysis = ({
                 name: gettext('Output tokens'),
                 column_key: 'output_tokens',
                 summary_type: 'count',
-                value: formatTokenCount(output_tokens),
+                value: formatTokenCount(current.output_tokens || 0),
+                comparison: { ...formatComparison(changePercent.output_tokens), label: comparisonLabel },
                 type: STATISTIC_TYPE.CARD,
               },
               {
@@ -133,7 +160,8 @@ const ChatAnalysis = ({
                 name: gettext('Credit used'),
                 column_key: 'credit_used',
                 summary_type: 'count',
-                value: total_credit_used ? total_credit_used.toFixed(0) : total_credit_used ?? 0,
+                value: formatCreditCount(current.credit_used),
+                comparison: { ...formatComparison(changePercent.credit_used), label: comparisonLabel },
                 type: STATISTIC_TYPE.CARD,
               },
               {

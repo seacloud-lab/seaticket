@@ -660,9 +660,10 @@ class TestPortalAdminChatAPIs:
         ]
 
     def test_statistics_only_include_portal_chat_usage(self, factory, real_project, project_creator):
+        today = date(2026, 3, 21)
         project_uuid = uuid_str_to_32_chars(str(real_project.uuid))
         common_data = {
-            'date': date.today(),
+            'date': today,
             'project_uuid': project_uuid,
             'owner': 'customer@example.com',
             'org_id': real_project.workspace.org_id,
@@ -684,10 +685,13 @@ class TestPortalAdminChatAPIs:
             cost=9.0,
         )
 
-        PortalChatSessions.objects.create_session(
+        session = PortalChatSessions.objects.create_session(
             project_uuid=str(real_project.uuid),
             session_name='customer question',
             username='customer@example.com',
+        )
+        PortalChatSessions.objects.filter(id=session.id).update(
+            created_at=timezone.make_aware(datetime(2026, 3, 21, 23, 59, 59, 999999))
         )
 
         request = self._admin_request(
@@ -696,16 +700,147 @@ class TestPortalAdminChatAPIs:
             project_creator,
             f'/api/v1/portal/{real_project.uuid}/admin/chat/statistics/',
         )
-        response = PortalAdminChatStatisticsView.as_view()(
-            request,
-            project_uuid=str(real_project.uuid),
-        )
+        with patch('seahub.portal.chat.apis.timezone.localdate', return_value=today):
+            response = PortalAdminChatStatisticsView.as_view()(
+                request,
+                project_uuid=str(real_project.uuid),
+            )
 
         assert response.status_code == 200
-        assert response.data['user_count'] == 1
-        assert response.data['input_tokens'] == 100
-        assert response.data['output_tokens'] == 40
-        assert response.data['total_credit_used'] == 150
+        assert response.data['current'] == {
+            'users': 1,
+            'input_tokens': 100,
+            'output_tokens': 40,
+            'credit_used': 150,
+        }
+        assert 'user_count' not in response.data
+        assert 'total_credit_used' not in response.data
+
+    def test_statistics_include_current_month_and_previous_same_period(self, factory, real_project, project_creator):
+        today = date(2026, 3, 21)
+        current_user = PortalChatSessions.objects.create_session(
+            project_uuid=str(real_project.uuid),
+            session_name='current session',
+            username='current@example.com',
+        )
+        current_user_second_session = PortalChatSessions.objects.create_session(
+            project_uuid=str(real_project.uuid),
+            session_name='current second session',
+            username='current@example.com',
+        )
+        previous_user = PortalChatSessions.objects.create_session(
+            project_uuid=str(real_project.uuid),
+            session_name='previous session',
+            username='previous@example.com',
+        )
+        PortalChatSessions.objects.filter(id=current_user.id).update(
+            created_at=timezone.make_aware(datetime(2026, 3, 5))
+        )
+        PortalChatSessions.objects.filter(id=current_user_second_session.id).update(
+            created_at=timezone.make_aware(datetime(2026, 3, 21, 23, 59, 59, 999999))
+        )
+        PortalChatSessions.objects.filter(id=previous_user.id).update(
+            created_at=timezone.make_aware(datetime(2026, 2, 10))
+        )
+
+        common_data = {
+            'project_uuid': uuid_str_to_32_chars(str(real_project.uuid)),
+            'owner': 'project-owner@example.com',
+            'org_id': real_project.workspace.org_id,
+            'group_id': None,
+            'model': 'gpt-4',
+            'scenario': AIScenario.PORTAL_CHAT.value,
+        }
+        AIUsageStatistics.objects.create(
+            **common_data,
+            date=date(2026, 3, 5),
+            input_tokens=300,
+            output_tokens=100,
+            cost=2.5,
+        )
+        AIUsageStatistics.objects.create(
+            **common_data,
+            date=date(2026, 2, 10),
+            input_tokens=200,
+            output_tokens=80,
+            cost=1.5,
+        )
+        AIUsageStatistics.objects.create(
+            **common_data,
+            date=date(2026, 2, 25),
+            input_tokens=900,
+            output_tokens=400,
+            cost=9.0,
+        )
+
+        request = self._admin_request(
+            factory,
+            real_project,
+            project_creator,
+            f'/api/v1/portal/{real_project.uuid}/admin/chat/statistics/',
+        )
+        with patch('seahub.portal.chat.apis.timezone.localdate', return_value=today):
+            response = PortalAdminChatStatisticsView.as_view()(
+                request,
+                project_uuid=str(real_project.uuid),
+            )
+
+        assert response.status_code == 200
+        assert response.data['current'] == {
+            'users': 1,
+            'input_tokens': 300,
+            'output_tokens': 100,
+            'credit_used': 250,
+        }
+        assert response.data['change_percent'] == {
+            'users': 0,
+            'input_tokens': 50.0,
+            'output_tokens': 25.0,
+            'credit_used': round((250 - 150) * 100 / 150, 2),
+        }
+
+    def test_statistics_monthly_change_returns_100_when_previous_is_zero(self, factory, real_project, project_creator):
+        today = date(2026, 3, 1)
+        session = PortalChatSessions.objects.create_session(
+            project_uuid=str(real_project.uuid),
+            session_name='current session',
+            username='current@example.com',
+        )
+        PortalChatSessions.objects.filter(id=session.id).update(
+            created_at=timezone.make_aware(datetime(2026, 3, 1))
+        )
+        AIUsageStatistics.objects.create(
+            date=today,
+            project_uuid=uuid_str_to_32_chars(str(real_project.uuid)),
+            owner='project-owner@example.com',
+            org_id=real_project.workspace.org_id,
+            group_id=None,
+            model='gpt-4',
+            scenario=AIScenario.PORTAL_CHAT.value,
+            input_tokens=100,
+            output_tokens=20,
+            cost=1,
+        )
+
+        request = self._admin_request(
+            factory,
+            real_project,
+            project_creator,
+            f'/api/v1/portal/{real_project.uuid}/admin/chat/statistics/',
+        )
+        with patch('seahub.portal.chat.apis.timezone.localdate', return_value=today):
+            response = PortalAdminChatStatisticsView.as_view()(
+                request,
+                project_uuid=str(real_project.uuid),
+            )
+
+        assert response.status_code == 200
+        assert response.data['change_percent'] == {
+            'users': 100,
+            'input_tokens': 100,
+            'output_tokens': 100,
+            'credit_used': 100,
+        }
 
     def test_statistics_include_daily_session_counts_for_last_month(self, factory, real_project, project_creator):
         today = date(2026, 3, 1)

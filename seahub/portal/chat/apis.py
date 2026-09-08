@@ -69,6 +69,41 @@ def _get_session_or_error(session_uuid, username):
     return session, None
 
 
+def _get_portal_chat_usage(project_uuid, start_date, end_date):
+    """Return Portal Chat usage and users for an inclusive date range."""
+    usage = AIUsageStatistics.objects.filter(
+        project_uuid=uuid_str_to_32_chars(project_uuid),
+        scenario=AIScenario.PORTAL_CHAT.value,
+        date__range=(start_date, end_date),
+    ).aggregate(
+        input_tokens=Sum('input_tokens', default=0),
+        output_tokens=Sum('output_tokens', default=0),
+        total_cost=Sum('cost', default=0),
+    )
+    start_time = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))
+    end_time = timezone.make_aware(datetime.combine(end_date + timedelta(days=1), datetime.min.time()))
+    user_count = PortalChatSessions.objects.filter(
+        project_uuid=project_uuid,
+        created_at__gte=start_time,
+        created_at__lt=end_time,
+    ).aggregate(
+        user_count=Count('username', distinct=True),
+    )['user_count'] or 0
+
+    return {
+        'users': user_count,
+        'input_tokens': usage['input_tokens'] or 0,
+        'output_tokens': usage['output_tokens'] or 0,
+        'credit_used': convert_cost_to_credit(usage['total_cost'] or 0),
+    }
+
+
+def _get_percentage_change(current, previous):
+    if not previous:
+        return None if not current else 100
+    return round((current - previous) * 100 / previous, 2)
+
+
 class PortalChatSessionsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (PortalChatPermission,)
@@ -302,12 +337,6 @@ class PortalAdminChatStatisticsView(APIView):
     def get(self, request, project_uuid):
         try:
 
-            user_count_res = PortalChatSessions.objects.filter(
-                project_uuid=project_uuid
-            ).aggregate(
-                user_count=Count("username", distinct=True)
-            )
-
             today = timezone.localdate()
             start_date = today - relativedelta(months=1) + timedelta(days=1)
             start_time = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))
@@ -327,19 +356,27 @@ class PortalAdminChatStatisticsView(APIView):
                 for offset in range((today - start_date).days + 1)
             ]
 
-            statistic_res = AIUsageStatistics.objects.filter(
-                project_uuid=uuid_str_to_32_chars(project_uuid),
-                scenario=AIScenario.PORTAL_CHAT.value
-            ).aggregate(
-                input_tokens=Sum("input_tokens", default=0),
-                output_tokens=Sum("output_tokens", default=0),
-                total_credit_used=convert_cost_to_credit(Sum("cost", default=0)),
+            current_month_start = today.replace(day=1)
+            previous_month_end = today - relativedelta(months=1)
+            previous_month_start = previous_month_end.replace(day=1)
+
+            current_month = _get_portal_chat_usage(
+                project_uuid, current_month_start, today
             )
+            previous_same_period = _get_portal_chat_usage(
+                project_uuid, previous_month_start, previous_month_end
+            )
+            change_percent = {
+                metric: _get_percentage_change(
+                    current_month[metric], previous_same_period[metric]
+                )
+                for metric in ('users', 'input_tokens', 'output_tokens', 'credit_used')
+            }
 
             return Response({
-                **user_count_res,
-                **statistic_res,
                 'daily_session_counts': daily_session_counts,
+                'current': current_month,
+                'change_percent': change_percent,
             })
         except Exception as e:
             logger.error(e)

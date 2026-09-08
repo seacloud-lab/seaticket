@@ -2,15 +2,23 @@
   padding: 24px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 8px;
+  align-items: flex-start;
+  gap: 0;
   width: calc((100% - 48px) / 4);
+  background-color: #FFFFFF;
+  border: 1px solid #EEEEEE;
+  border-radius: 16px;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.02);
 }
 
 .sea-metadata-statistic-card .sea-metadata-statistic-name {
   height: 24px;
   width: 100%;
   line-height: 24px;
+  margin-bottom: 8px;
+  color: #212529;
+  font-size: 16px;
+  font-weight: 400;
 }
 
 .sea-metadata-statistic-card .sea-metadata-statistic-value {
@@ -18,4 +26,40 @@
   width: 100%;
   line-height: 36px;
   font-size: 24px;
+  margin-bottom: 32px;
+  color: #212529;
+  font-weight: 600;
+}
+
+.sea-metadata-statistic-card .sea-metadata-statistic-comparison {
+  width: 100%;
+  height: 24px;
+  line-height: 24px;
+  font-size: 14px;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sea-metadata-statistic-card .sea-metadata-statistic-comparison-value {
+  margin-right: 0;
+}
+
+.sea-metadata-statistic-card .sea-metadata-statistic-comparison-value.increase {
+  color: #EC6440;
+}
+
+.sea-metadata-statistic-card .sea-metadata-statistic-comparison-value.decrease {
+  color: #47B881;
+}
+
+.sea-metadata-statistic-card .sea-metadata-statistic-comparison-value.neutral {
+  color: #666666;
+}
+
+.sea-metadata-statistic-card .sea-metadata-statistic-comparison-label {
+  color: #666666;
+  font-size: 14px;
+  font-weight: 400;
 }

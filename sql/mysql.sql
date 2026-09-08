@@ -759,7 +759,7 @@ CREATE TABLE `portal_chat_sessions` (
   `updated_at` DATETIME(6),
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_portal_session_uuid` (`session_uuid`),
-  KEY `idx_portal_chat_project_uuid` (`project_uuid`)
+  KEY `idx_portal_chat_project_created` (`project_uuid`, `created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `portal_chat_messages` (

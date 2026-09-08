@@ -425,6 +425,9 @@ class PortalChatSessions(models.Model):
 
     class Meta:
         db_table = 'portal_chat_sessions'
+        indexes = [
+            models.Index(fields=['project_uuid', 'created_at']),
+        ]
 
     def to_dict(self):
         return {
