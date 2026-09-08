@@ -462,6 +462,7 @@ CREATE TABLE IF NOT EXISTS `project_connection`  (
   `last_ai_processing_time` datetime(6) NULL,
   `ai_indexed_at` datetime(6) NULL,
   `last_cleaned_at` datetime(6) NULL,
+  `last_options_synced_at` datetime NULL,
   `content_vector_status` longtext NULL,
   PRIMARY KEY (`id`),
   KEY `project_connection_created_at_e5618f4b`(`created_at`),

@@ -597,6 +597,7 @@ class ProjectConnections(models.Model):
     content_vector_indexed_at = models.DateTimeField(null=True)
     content_vector_status = models.TextField(null=True)
     last_cleaned_at = models.DateTimeField(null=True)
+    last_options_synced_at = models.DateTimeField(null=True)
 
     objects = ProjectConnectionsManager()
 
