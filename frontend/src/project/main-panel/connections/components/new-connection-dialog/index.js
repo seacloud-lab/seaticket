@@ -8,7 +8,7 @@ import { getVisibleEmailFields, getEmailProvider, populateEmailOAuthDefaults, sa
 import { ModalHeader, Loading, toaster } from '@/components';
 import ConnectionConfigEditor from '../connection-config-editor';
 import ConnectionDialogFooter from './connection-dialog-footer';
-import { ConfluenceConfig, DiscordConfig, GithubConfig, JiraConfig, LinearConfig } from './connection-config';
+import { ConfluenceConfig, DiscordConfig, GithubConfig, JiraConfig, LinearConfig, SlackConfig } from './connection-config';
 import ConnectionTypeSections from './connection-type-sections';
 import SelectedConnectionHeader from './selected-connection-header';
 import { connectionsAPI } from '@/project/api';
@@ -900,7 +900,18 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
             handleConnectDiscord={handleConnectDiscord}
           />
         )}
-        {step.key === STEP.CONFIG && !isGithub && !isJira && !isConfluence && !isLinear && !isDiscord && (
+        {step.key === STEP.CONFIG && isSlack && (
+          <SlackConfig
+            isSubmitting={isSubmitting}
+            config={config}
+            name={name}
+            onNameChange={onNameChange}
+            basicCustomColumns={basicCustomColumns}
+            renderConnectionField={renderConnectionField}
+            handleConnectSlack={handleConnectSlack}
+          />
+        )}
+        {step.key === STEP.CONFIG && !isGithub && !isJira && !isConfluence && !isLinear && !isDiscord && !isSlack && (
           <div className="seaqa-project-new-connection-config">
             <FormGroup>
               <Label>
