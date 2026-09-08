@@ -5,21 +5,36 @@ import { CenteredLoading, Icon, toaster } from '@/components';
 import { gettext } from '@/constants';
 import { Utils } from '@/utils/utils';
 import { skillsAPI } from '@/project/api';
-import { SkillsPageProvider, useSkillsPage } from './hooks/skills-page';
-import { SKILL_DETAIL_MODE, SKILLS_PAGE_SLUG_ID } from './constants';
+import { SKILL_DETAIL_MODE, SKILLS_PAGE_TYPE } from './constants';
 import SkillsList from './view/skills-list';
 import SkillDetailDialog from './view/skill-detail-dialog';
 
 import './index.css';
 
-const { projectUuid, workspaceID, projectName, isProjectAdmin } = window.app.pageOptions;
+const { projectUuid, isProjectAdmin } = window.app.pageOptions;
 
-const Content = ({ title }) => {
-  const { isLoading: isPageLoading, pageSlugId, togglePageSlugId } = useSkillsPage();
-  const [isDataLoading, setLoading] = useState(true);
+const Skills = ({ title }) => {
+  const [isLoading, setLoading] = useState(true);
   const [skills, setSkills] = useState([]);
+  const [skillName, setSkillName] = useState(null);
   const [togglingSkillNameMap, setTogglingSkillNameMap] = useState({});
-  const [detailMode, setDetailMode] = useState(SKILL_DETAIL_MODE.EDIT);
+  const [pageType, setPageType] = useState(SKILLS_PAGE_TYPE.LIST);
+  const [mode, setMode] = useState(SKILL_DETAIL_MODE.EDIT);
+
+  const showSkillList = useCallback(() => {
+    setPageType(SKILLS_PAGE_TYPE.LIST);
+    setSkillName(null);
+  }, []);
+
+  const showCreateSkill = useCallback(() => {
+    setPageType(SKILLS_PAGE_TYPE.CREATE);
+    setSkillName(null);
+  }, []);
+
+  const showSkillDetail = useCallback((nextSkillName) => {
+    setPageType(SKILLS_PAGE_TYPE.DETAIL);
+    setSkillName(nextSkillName);
+  }, []);
 
   const loadSkills = useCallback(() => {
     setLoading(true);
@@ -38,39 +53,39 @@ const Content = ({ title }) => {
   }, [loadSkills]);
 
   const activeSkillName = useMemo(() => {
-    if (pageSlugId === SKILLS_PAGE_SLUG_ID.ALL || pageSlugId === SKILLS_PAGE_SLUG_ID.NEW) {
+    if (pageType !== SKILLS_PAGE_TYPE.DETAIL) {
       return '';
     }
-    return pageSlugId;
-  }, [pageSlugId]);
+    return skillName;
+  }, [pageType, skillName]);
 
   const onSaved = useCallback(() => {
     loadSkills();
-    togglePageSlugId(SKILLS_PAGE_SLUG_ID.ALL);
-  }, [loadSkills, togglePageSlugId]);
+    showSkillList();
+  }, [loadSkills, showSkillList]);
 
   const onDeleted = useCallback(() => {
     loadSkills();
-    togglePageSlugId(SKILLS_PAGE_SLUG_ID.ALL);
-  }, [loadSkills, togglePageSlugId]);
+    showSkillList();
+  }, [loadSkills, showSkillList]);
 
   const onCreate = useCallback(() => {
-    setDetailMode(SKILL_DETAIL_MODE.EDIT);
-    togglePageSlugId(SKILLS_PAGE_SLUG_ID.NEW);
-  }, [togglePageSlugId]);
+    setMode(SKILL_DETAIL_MODE.EDIT);
+    showCreateSkill();
+  }, [showCreateSkill]);
 
   const onPreviewSkill = useCallback((skillName) => {
-    setDetailMode(SKILL_DETAIL_MODE.PREVIEW);
-    togglePageSlugId(skillName);
-  }, [togglePageSlugId]);
+    setMode(SKILL_DETAIL_MODE.PREVIEW);
+    showSkillDetail(skillName);
+  }, [showSkillDetail]);
 
   const onEditSkill = useCallback((skillName) => {
-    setDetailMode(SKILL_DETAIL_MODE.EDIT);
-    togglePageSlugId(skillName);
-  }, [togglePageSlugId]);
+    setMode(SKILL_DETAIL_MODE.EDIT);
+    showSkillDetail(skillName);
+  }, [showSkillDetail]);
 
   const onEditCurrentSkill = useCallback(() => {
-    setDetailMode(SKILL_DETAIL_MODE.EDIT);
+    setMode(SKILL_DETAIL_MODE.EDIT);
   }, []);
 
   const onToggleSkill = useCallback((skill) => {
@@ -93,8 +108,6 @@ const Content = ({ title }) => {
       });
     });
   }, []);
-
-  const isLoading = isPageLoading || isDataLoading;
 
   return (
     <>
@@ -122,26 +135,19 @@ const Content = ({ title }) => {
           togglingSkillNameMap={togglingSkillNameMap}
         />
       )}
-      {pageSlugId !== SKILLS_PAGE_SLUG_ID.ALL && (
+      {pageType !== SKILLS_PAGE_TYPE.LIST && (
         <SkillDetailDialog
           projectUuid={projectUuid}
-          pageSlugId={pageSlugId}
-          mode={pageSlugId === SKILLS_PAGE_SLUG_ID.NEW ? SKILL_DETAIL_MODE.EDIT : detailMode}
+          pageType={pageType}
+          skillName={skillName}
+          mode={pageType === SKILLS_PAGE_TYPE.CREATE ? SKILL_DETAIL_MODE.EDIT : mode}
           isProjectAdmin={isProjectAdmin}
           onSaved={onSaved}
           onEdit={onEditCurrentSkill}
-          onCancel={() => togglePageSlugId(SKILLS_PAGE_SLUG_ID.ALL)}
+          onCancel={showSkillList}
         />
       )}
     </>
-  );
-};
-
-const Skills = ({ title }) => {
-  return (
-    <SkillsPageProvider workspaceID={workspaceID} projectName={projectName}>
-      <Content title={title} />
-    </SkillsPageProvider>
   );
 };
 

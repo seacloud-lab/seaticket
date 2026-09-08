@@ -6,7 +6,7 @@ import { CenteredLoading, IconButton, ModalHeader, Tooltip, toaster } from '@/co
 import Switch from '@/components/switch';
 import { Utils } from '@/utils/utils';
 import { skillsAPI } from '@/project/api';
-import { SKILL_DETAIL_MODE, SKILLS_PAGE_SLUG_ID } from '../constants';
+import { SKILL_DETAIL_MODE, SKILLS_PAGE_TYPE } from '../constants';
 import {
   SKILL_DESCRIPTION_MAX_LENGTH,
   SKILL_NAME_MAX_LENGTH,
@@ -19,9 +19,9 @@ import './skill-detail-dialog.css';
 
 const NEW_SKILL_BODY = '# Skill\n';
 
-const SkillDetailDialog = ({ projectUuid, pageSlugId, mode, isProjectAdmin, onSaved, onEdit, onCancel }) => {
-  const isOpen = pageSlugId !== SKILLS_PAGE_SLUG_ID.ALL;
-  const isNew = pageSlugId === SKILLS_PAGE_SLUG_ID.NEW;
+const SkillDetailDialog = ({ projectUuid, pageType, skillName, mode, isProjectAdmin, onSaved, onEdit, onCancel }) => {
+  const isOpen = pageType !== SKILLS_PAGE_TYPE.LIST;
+  const isNew = pageType === SKILLS_PAGE_TYPE.CREATE;
   const isPreview = mode === SKILL_DETAIL_MODE.PREVIEW && !isNew;
   const [isLoading, setLoading] = useState(false);
   const [skill, setSkill] = useState(null);
@@ -79,7 +79,7 @@ const SkillDetailDialog = ({ projectUuid, pageSlugId, mode, isProjectAdmin, onSa
       return;
     }
     setLoading(true);
-    skillsAPI.getSkill(projectUuid, pageSlugId).then((res) => {
+    skillsAPI.getSkill(projectUuid, skillName).then((res) => {
       const nextSkill = res?.data?.skill;
       const form = {
         name: nextSkill?.name || '',
@@ -99,7 +99,7 @@ const SkillDetailDialog = ({ projectUuid, pageSlugId, mode, isProjectAdmin, onSa
       setLoading(false);
       setFormErrors((prev) => ({ ...prev, name: Utils.getErrorMsg(error) }));
     });
-  }, [clearFormErrors, isNew, isOpen, pageSlugId, projectUuid]);
+  }, [clearFormErrors, isNew, isOpen, skillName, projectUuid]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -148,16 +148,16 @@ const SkillDetailDialog = ({ projectUuid, pageSlugId, mode, isProjectAdmin, onSa
       return;
     }
 
-    skillsAPI.updateSkill(projectUuid, pageSlugId, {
+    skillsAPI.updateSkill(projectUuid, skillName, {
       content,
       revision: skill?.revision,
     }).then(() => {
       toaster.success(gettext('Skill updated.'));
-      onSaved && onSaved(pageSlugId);
+      onSaved && onSaved(skillName);
     }).catch((error) => {
       setFormErrors((prev) => ({ ...prev, name: Utils.getErrorMsg(error) }));
     }).finally(complete);
-  }, [canSubmit, validateForm, isNew, projectUuid, name, description, supportAgent, body, enabled, onSaved, pageSlugId, skill?.revision]);
+  }, [canSubmit, validateForm, isNew, projectUuid, name, description, supportAgent, body, enabled, onSaved, skillName, skill?.revision]);
 
   if (!isOpen) return null;
 

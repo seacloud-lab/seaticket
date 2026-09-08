@@ -1,6 +1,7 @@
-export const SKILLS_PAGE_SLUG_ID = {
-  ALL: 'all',
-  NEW: 'new',
+export const SKILLS_PAGE_TYPE = {
+  LIST: 'list',
+  CREATE: 'create',
+  DETAIL: 'detail',
 };
 
 export const SKILL_DETAIL_MODE = {
