@@ -58,6 +58,7 @@ LINKED_TICKET_SUPPORT_TYPES = [
     ConnectionType.GENERAL_TASK.value,
     ConnectionType.LINEAR.value,
     ConnectionType.DISCORD.value,
+    ConnectionType.SLACK.value,
 ]
 
 
@@ -181,6 +182,9 @@ def create_connection(project, username, connection_type, name, config):
         ),
         ConnectionType.JIRA_ISSUE.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
             [SchemaTables.JIRA_ISSUES, SchemaTables.JIRA_ISSUE_COMMENTS], api, project_uuid, connection_id
+        ),
+        ConnectionType.SLACK.value: lambda api, project_uuid, connection_id: init_seadb_tables_from_schema(
+            [SchemaTables.SLACK_MESSAGES, SchemaTables.SLACK_MESSAGE_REPLIES], api, project_uuid, connection_id
         ),
     }
 

@@ -8,7 +8,7 @@ import { getVisibleEmailFields, getEmailProvider, populateEmailOAuthDefaults, sa
 import { ModalHeader, Loading, toaster } from '@/components';
 import ConnectionConfigEditor from '../connection-config-editor';
 import ConnectionDialogFooter from './connection-dialog-footer';
-import { ConfluenceConfig, DiscordConfig, GithubConfig, JiraConfig, LinearConfig } from './connection-config';
+import { ConfluenceConfig, DiscordConfig, GithubConfig, JiraConfig, LinearConfig, SlackConfig } from './connection-config';
 import ConnectionTypeSections from './connection-type-sections';
 import SelectedConnectionHeader from './selected-connection-header';
 import { connectionsAPI } from '@/project/api';
@@ -120,6 +120,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const isLinear = useMemo(() => type === CONNECTION_TYPE.LINEAR, [type]);
   const isConfluence = useMemo(() => type === CONNECTION_TYPE.CONFLUENCE, [type]);
   const isDiscord = useMemo(() => type === CONNECTION_TYPE.DISCORD, [type]);
+  const isSlack = useMemo(() => type === CONNECTION_TYPE.SLACK, [type]);
   const isJira = useMemo(() => type === CONNECTION_TYPE.JIRA_ISSUE, [type]);
 
   const isMicrosoftEmailProvider = useMemo(() => {
@@ -147,6 +148,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     if (isLinear && !isLinearOauthConnected) return false;
     if (isConfluence && !isConfluenceOauthConnected) return false;
     if (isDiscord && !config.guild_id) return false;
+    if (isSlack && !config.team_id) return false;
     if (isJira && !isJiraOauthConnected) return false;
     return customColumns.length > 0 ? customColumns.every(c => {
       if (c.type === CONNECTION_FIELD_TYPE.GROUP) {
@@ -159,7 +161,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       return true;
     }) : true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [name, config, customColumns, isLinear, isLinearOauthConnected, isConfluence, isConfluenceOauthConnected, isDiscord, isJira, isJiraOauthConnected]);
+  }, [name, config, customColumns, isLinear, isLinearOauthConnected, isConfluence, isConfluenceOauthConnected, isDiscord, isJira, isJiraOauthConnected, isSlack]);
 
   useEffect(() => {
     const handleDiscordOAuthMessage = (event) => {
@@ -341,6 +343,14 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         _config['channel_id'] = channel.value;
       }
     }
+    if (isSlack) {
+      const channel = _config.channel_id;
+      if (channel && channel.value) {
+        _config['channel_id'] = channel.value;
+        _config['channel_is_private'] = channel.is_private;
+        _config['channel_is_member'] = channel.is_member;
+      }
+    }
     if (isJira) {
       const site = _config.site_id;
       if (site && site.site) {
@@ -359,7 +369,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       setSubmitting(false);
     });
     return;
-  }, [name, type, config, isJira, isLinear, onSubmit, stopEmailOAuthPolling, isConfluence, isGithub, selectedSpaceKeys, isDiscord]);
+  }, [name, type, config, isJira, isLinear, onSubmit, stopEmailOAuthPolling, isConfluence, isGithub, selectedSpaceKeys, isDiscord, isSlack]);
 
   const onCopyCallbackUrl = useCallback(() => {
     copy(callbackUrl);
@@ -466,6 +476,19 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     });
   }, [config.guild_id]);
 
+  const listSlackChannels = useCallback((signal) => {
+    const teamId = config.team_id;
+    if (!teamId) return Promise.resolve({ data: { channels: [] } });
+    return connectionsAPI.listSlackChannels(projectUuid, teamId, signal).then(res => {
+      const channels = (res && res.data && res.data.channels) || [];
+      return {
+        data: {
+          options: channels.map(c => ({ value: c.id, label: c.name, name: c.name, is_private: c.is_private, is_member: c.is_member })),
+        }
+      };
+    });
+  }, [config.team_id]);
+
   const typeOption = availableConnectionTypes.find(i => i.type === type) || availableConnectionTypes[0];
   const listLinearTeams = useCallback((signal) => {
     return connectionsAPI.listLinearTeams(projectUuid, signal).then(res => {
@@ -528,6 +551,29 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     const oauthUrl = `${server}/discord/oauth/?project_uuid=${projectUuid}&next=${encodeURIComponent(next)}`;
     oauthWindowRef.current = window.open(oauthUrl, 'discord-oauth', 'width=800,height=700');
 
+  }, []);
+
+  const handleConnectSlack = useCallback(() => {
+    const next = window.location.href;
+    const oauthUrl = `${server}/slack/oauth/?project_uuid=${projectUuid}&next=${encodeURIComponent(next)}`;
+    oauthWindowRef.current = window.open(oauthUrl, 'slack-oauth', 'width=800,height=700');
+    clearInterval(pollingIntervalRef.current);
+    pollingIntervalRef.current = setInterval(() => {
+      connectionsAPI.getSlackOauthStatus(projectUuid).then(res => {
+        if (res?.data?.connected) {
+          clearInterval(pollingIntervalRef.current);
+          setConfig(prevConfig => ({
+            ...prevConfig,
+            team_id: res.data.team_id || '',
+            team_name: res.data.team_name || '',
+            team_domain: res.data.team_domain || '',
+          }));
+          if (oauthWindowRef.current && !oauthWindowRef.current.closed) {
+            oauthWindowRef.current.close();
+          }
+        }
+      }).catch(() => {});
+    }, 2000);
   }, []);
 
   useEffect(() => {
@@ -706,6 +752,17 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         row[key] = row[key].value || row[key];
       }
     }
+    if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && column.key === 'channel_id' && isSlack) {
+      api = config.team_id ? listSlackChannels : null;
+      fieldColumn = {
+        ...column,
+        readonly: !config.team_id,
+        placeholder: config.team_id ? gettext('Select a channel') : gettext('Please connect Slack first'),
+      };
+      if (row[key]) {
+        row[key] = row[key].value || row[key];
+      }
+    }
     if (type === CONNECTION_FIELD_TYPE.SYNC_SELECT && column.key === 'site_id' && isJira) {
       api = isJiraOauthConnected ? listJiraSites : null;
       fieldColumn = {
@@ -743,7 +800,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   }, [
     config, isJira, isSubmitting, isGithub, isConfluence, isConfluenceOauthConnected, isLinear,
     onConfigChange, isJiraOauthConnected, listGitHubRepositories, listConfluenceWorkspaces, listLinearTeams,
-    isDiscord, listDiscordChannels, isLinearOauthConnected, listJiraProjects, listJiraSites,
+    isDiscord, listDiscordChannels, isSlack, listSlackChannels, isLinearOauthConnected, listJiraProjects, listJiraSites,
   ]);
 
   return (
@@ -843,7 +900,18 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
             handleConnectDiscord={handleConnectDiscord}
           />
         )}
-        {step.key === STEP.CONFIG && !isGithub && !isJira && !isConfluence && !isLinear && !isDiscord && (
+        {step.key === STEP.CONFIG && isSlack && (
+          <SlackConfig
+            isSubmitting={isSubmitting}
+            config={config}
+            name={name}
+            onNameChange={onNameChange}
+            basicCustomColumns={basicCustomColumns}
+            renderConnectionField={renderConnectionField}
+            handleConnectSlack={handleConnectSlack}
+          />
+        )}
+        {step.key === STEP.CONFIG && !isGithub && !isJira && !isConfluence && !isLinear && !isDiscord && !isSlack && (
           <div className="seaqa-project-new-connection-config">
             <FormGroup>
               <Label>

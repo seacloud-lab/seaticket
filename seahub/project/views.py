@@ -18,11 +18,12 @@ from seahub.project.models import Workspaces, Projects, ProjectGithubAppInstalla
 from seahub.project.utils import check_project_admin_permission, check_project_permission, update_github_connection_installation_id
 from seahub.project.linear_api import LinearAPI
 from seahub.project.jira_api import JiraAPI
+from seahub.project.slack_api import SlackAPI
 from seahub.utils import render_error
 from seahub.auth.decorators import login_required
 from seahub.settings import MEDIA_URL, LLM_MODELS, GITHUB_APP_NAME, ENABLE_GENERAL_TASK, THOUGHT_PROCESS_ENABLED, \
     LINEAR_CLIENT_ID, LINEAR_CLIENT_SECRET, LINEAR_REDIRECT_URL, DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_REDIRECT_URL, \
-    JIRA_CLIENT_ID, JIRA_CLIENT_SECRET, JIRA_REDIRECT_URL
+    JIRA_CLIENT_ID, JIRA_CLIENT_SECRET, JIRA_REDIRECT_URL, SLACK_CLIENT_ID, SLACK_CLIENT_SECRET, SLACK_REDIRECT_URL, SLACK_SCOPES
 from seahub.group.models import Group
 from seahub.constants import PERMISSION_READ
 from seahub.portal.utils import get_portal_settings
@@ -510,6 +511,128 @@ def discord_oauth_callback(request):
         }})();
         </script></body></html>'''
     return HttpResponse(response_html)
+
+
+@login_required
+def slack_oauth(request):
+    return_to = request.GET.get('next') or '/'
+    project_uuid = request.GET.get('project_uuid')
+
+    project = Projects.objects.get_project_by_uuid(project_uuid) if project_uuid else None
+    if not project:
+        return render_error(request, _('Please install through the address provided by sea-ticket.'))
+    workspace = project.workspace
+
+    username = request.user.username
+    if not check_project_admin_permission(username, workspace.owner):
+        return render_error(request, _('Permission denied.'))
+
+    if not SLACK_CLIENT_ID or not SLACK_CLIENT_SECRET or not SLACK_REDIRECT_URL:
+        return render_error(request, _('Slack OAuth settings are invalid.'))
+
+    state = secrets.token_urlsafe(24)
+    request.session['slack_oauth_state'] = state
+    request.session['slack_oauth_project_uuid'] = project_uuid
+    request.session['slack_oauth_return_to'] = return_to
+
+    params = {
+        'client_id': SLACK_CLIENT_ID,
+        'scope': SLACK_SCOPES,
+        'redirect_uri': SLACK_REDIRECT_URL,
+        'state': state,
+    }
+
+    authorize_url = 'https://slack.com/oauth/v2/authorize' + f"?{urlencode(params)}"
+    return redirect(authorize_url)
+
+
+@login_required
+def slack_oauth_callback(request):
+    """Handle Slack OAuth2 callback after the user installs the app."""
+    code = request.GET.get('code')
+    state = request.GET.get('state')
+
+    session_state = request.session.get('slack_oauth_state')
+    project_uuid = request.session.get('slack_oauth_project_uuid')
+    return_to = request.session.get('slack_oauth_return_to', '/')
+
+    if not code or not state or state != session_state:
+        return render_error(request, _('Invalid Slack OAuth state.'))
+
+    if not project_uuid:
+        return render_error(request, _('Please install through the address provided by sea-ticket.'))
+
+    project = Projects.objects.get_project_by_uuid(project_uuid)
+    if not project:
+        return render_error(request, _('Please install through the address provided by sea-ticket.'))
+    workspace = project.workspace
+
+    username = request.user.username
+    if not check_project_admin_permission(username, workspace.owner):
+        return render_error(request, _('Permission denied.'))
+
+    if not SLACK_CLIENT_ID or not SLACK_CLIENT_SECRET or not SLACK_REDIRECT_URL:
+        return render_error(request, _('Slack OAuth settings are invalid.'))
+
+    token_payload = {
+        'client_id': SLACK_CLIENT_ID,
+        'client_secret': SLACK_CLIENT_SECRET,
+        'code': code,
+        'redirect_uri': SLACK_REDIRECT_URL,
+    }
+
+    try:
+        resp = requests.post('https://slack.com/api/oauth.v2.access', data=token_payload, timeout=10)
+    except Exception as e:
+        logger.error('Slack OAuth token request error: %s', e)
+        return render_error(request, _('Failed to authorize Slack.'))
+
+    token_json = resp.json() if resp.status_code == 200 else {}
+    if resp.status_code != 200 or not token_json.get('ok'):
+        logger.error('Slack OAuth token response invalid: %s %s', resp.status_code, resp.text)
+        return render_error(request, _('Failed to authorize Slack.'))
+
+    access_token = token_json.get('access_token')
+    refresh_token = token_json.get('refresh_token', '')
+    expires_in = token_json.get('expires_in')
+
+    team = token_json.get('team') or {}
+    team_id = team.get('id', '')
+    team_name = team.get('name', '')
+
+    if not access_token or not team_id:
+        return render_error(request, _('Slack workspace information was not returned.'))
+
+    if expires_in:
+        try:
+            expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=int(expires_in) - OAUTH_TOKEN_EXPIRY_BUFFER_SECONDS)
+        except (TypeError, ValueError):
+            expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=3650)
+    else:
+        expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=3650)
+
+    ProjectConnectionOauth.objects.upsert_token(
+        project_uuid, ConnectionType.SLACK.value, access_token, expires_at, refresh_token
+    )
+
+    team_domain = ''
+    try:
+        team_domain = SlackAPI(access_token).get_team_domain()
+    except Exception as e:
+        logger.warning('Failed to fetch Slack team domain: %s', e)
+
+    request.session['slack_oauth_team'] = {
+        'team_id': str(team_id),
+        'team_name': team_name,
+        'team_domain': team_domain,
+    }
+
+    request.session.pop('slack_oauth_state', None)
+    request.session.pop('slack_oauth_project_uuid', None)
+    request.session.pop('slack_oauth_return_to', None)
+
+    return redirect(return_to)
+
 
 def _calc_jira_expires_at(expires_in):
     try:

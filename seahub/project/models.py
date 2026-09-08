@@ -983,11 +983,11 @@ class ProjectAPIToken(models.Model):
 
 
 class ProjectConnectionOauthManager(models.Manager):
-    def get_by_project_uuid(self, project_uuid, type):
-        return self.filter(project_uuid=project_uuid, type=type).first()
+    def get_by_project_uuid(self, project_uuid, type, connection_id=0):
+        return self.filter(project_uuid=project_uuid, type=type, connection_id=connection_id).first()
 
-    def upsert_token(self, project_uuid, type, access_token, expires_at, refresh_token):
-        record = self.filter(project_uuid=project_uuid, type=type).first()
+    def upsert_token(self, project_uuid, type, access_token, expires_at, refresh_token, connection_id=0):
+        record = self.filter(project_uuid=project_uuid, type=type, connection_id=connection_id).first()
         if record:
             record.access_token = access_token
             record.refresh_token = refresh_token
@@ -998,6 +998,7 @@ class ProjectConnectionOauthManager(models.Manager):
         record = super(ProjectConnectionOauthManager, self).create(
             project_uuid=project_uuid,
             type=type,
+            connection_id=connection_id,
             access_token=access_token,
             refresh_token=refresh_token,
             expires_at=expires_at,
@@ -1009,6 +1010,7 @@ class ProjectConnectionOauthManager(models.Manager):
 class ProjectConnectionOauth(models.Model):
     project_uuid = models.UUIDField()
     type = models.CharField(max_length=255, db_index=True)
+    connection_id = models.IntegerField(default=0, db_index=True)
     access_token = models.TextField()
     refresh_token = models.TextField()
     expires_at = models.DateTimeField(db_index=True)
@@ -1017,7 +1019,7 @@ class ProjectConnectionOauth(models.Model):
 
     class Meta:
         db_table = 'project_connection_oauth'
-        unique_together = [['project_uuid', 'type']]
+        unique_together = [['project_uuid', 'type', 'connection_id']]
 
 
 # AI Usage Statistics Models

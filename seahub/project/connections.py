@@ -5,6 +5,7 @@ import logging
 import json
 import datetime
 import os
+import requests
 from email.utils import formatdate, make_msgid
 from urllib.parse import urlparse
 
@@ -40,7 +41,8 @@ from seahub.seadb_models.utils import init_seadb_tables_from_schema, list_discou
     list_connection_view_records, list_github_issue_record_details, list_seafile_record_details, \
     list_site_record_details, list_email_record_details, get_issue_record_by_pk, list_notion_record_details, \
     list_general_task_record_details, build_general_task_row_data, get_connection_columns, list_linear_issue_record_details, \
-   list_confluence_record_details, list_discord_thread_record_details, list_jira_issue_record_details
+   list_confluence_record_details, list_discord_thread_record_details, list_jira_issue_record_details, \
+    list_slack_message_record_details
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
@@ -49,6 +51,7 @@ from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_IN
     EMAIL_ATTACHMENT_TEMP_DIR, EMAIL_ATTACHMENTS_ZIP_NAME, GENERAL_TASK_MUTABLE_FIELDS
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.project.oauth_utils import EmailOAuthUtils
+from seahub.project.slack_api import SlackAPI
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_ticket, \
@@ -277,9 +280,42 @@ class ProjectConnectionsView(APIView):
             if not ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.JIRA_ISSUE.value):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Jira OAuth authorization is required.')
 
+        if connection_type == ConnectionType.SLACK.value:
+            slack_oauth = ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.SLACK.value, 0)
+            if not slack_oauth:
+                return api_error(status.HTTP_400_BAD_REQUEST, 'Slack OAuth authorization is required.')
+
+            # Auto-join the bot to the selected channel so it can read its history.
+            # Only public channels the bot is not yet a member of need (and can) be
+            # joined via conversations.join; private channels and already-joined
+            # public channels are skipped.
+            slack_channel_id = config.get('channel_id')
+            channel_is_private = config.get('channel_is_private')
+            channel_is_member = config.get('channel_is_member')
+            if slack_channel_id and not channel_is_private and not channel_is_member:
+                try:
+                    SlackAPI(slack_oauth.access_token).join_channel(slack_channel_id)
+                except requests.HTTPError as e:
+                    slack_err = ''
+                    try:
+                        slack_err = (e.response.json() or {}).get('error', '')
+                    except Exception:
+                        slack_err = str(e)
+                    logger.error('Failed to join Slack channel %s: %s', slack_channel_id, e)
+                    if slack_err == 'method_not_supported_for_channel_type':
+                        return api_error(status.HTTP_400_BAD_REQUEST, 'The bot cannot join a private channel. Please invite the bot manually with /invite.')
+                    return api_error(status.HTTP_400_BAD_REQUEST, 'Failed to add the bot to the channel: %s' % slack_err)
+                except requests.RequestException as e:
+                    logger.error('Failed to join Slack channel %s: %s', slack_channel_id, e)
+                    return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to add the bot to the channel')
+
         record, error_response = create_connection(project, request.user.username, connection_type, name, config)
         if error_response:
             return error_response
+
+        if connection_type == ConnectionType.SLACK.value:
+            slack_oauth.connection_id = record.id
+            slack_oauth.save(update_fields=['connection_id'])
 
         return Response({'record': record.to_dict()}, status=status.HTTP_201_CREATED)
 
@@ -1206,6 +1242,34 @@ class ProjectJiraOauthStatusView(APIView):
         return Response({'connected': connected})
 
 
+class ProjectSlackOauthStatusView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def get(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_admin_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        connected = ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.SLACK.value, 0) is not None
+        team_info = request.session.get('slack_oauth_team', {})
+        return Response({
+            'connected': connected,
+            'team_id': team_info.get('team_id', ''),
+            'team_name': team_info.get('team_name', ''),
+            'team_domain': team_info.get('team_domain', ''),
+        })
+
+
 class ProjectConnectionRecordView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
@@ -1257,6 +1321,8 @@ class ProjectConnectionRecordView(APIView):
             record, columns, linked_ticket_title = list_linear_issue_record_details(seadb_api, project_uuid, connection_id, record_id)
         elif project_connection.type == ConnectionType.DISCORD.value:
             record, columns, linked_ticket_title = list_discord_thread_record_details(seadb_api, project_uuid, connection_id, record_id)
+        elif project_connection.type == ConnectionType.SLACK.value:
+            record, columns, linked_ticket_title = list_slack_message_record_details(seadb_api, project_uuid, connection_id, record_id)
         elif project_connection.type == ConnectionType.JIRA_ISSUE.value:
             record, columns, linked_ticket_title = list_jira_issue_record_details(seadb_api, project_uuid, connection_id, record_id)
 
@@ -1314,6 +1380,7 @@ class ProjectConnectionRecordView(APIView):
             ConnectionType.GENERAL_TASK.value,
             ConnectionType.LINEAR.value,
             ConnectionType.DISCORD.value,
+            ConnectionType.SLACK.value,
         ]
         if project_connection.type not in supported_types:
             error_msg = f'Connection type {project_connection.type} does not support record editing.'
@@ -1340,6 +1407,8 @@ class ProjectConnectionRecordView(APIView):
             table_name = SchemaTables.LINEAR_ISSUES.table_name(connection_id)
         elif project_connection.type == ConnectionType.DISCORD.value:
             table_name = SchemaTables.DISCORD_THREADS.table_name(connection_id)
+        elif project_connection.type == ConnectionType.SLACK.value:
+            table_name = SchemaTables.SLACK_MESSAGES.table_name(connection_id)
         elif project_connection.type == ConnectionType.JIRA_ISSUE.value:
             table_name = SchemaTables.JIRA_ISSUES.table_name(connection_id)
 
@@ -1712,6 +1781,7 @@ class ProjectConnectionRecordsView(APIView):
             ConnectionType.GENERAL_TASK.value,
             ConnectionType.LINEAR.value,
             ConnectionType.DISCORD.value,
+            ConnectionType.SLACK.value,
         ]
         if project_connection.type not in supported_types:
             error_msg = f'Connection type {project_connection.type} does not support record editing.'
@@ -1738,6 +1808,8 @@ class ProjectConnectionRecordsView(APIView):
             table_name = SchemaTables.CONFLUENCE.table_name(connection_id)
         elif project_connection.type == ConnectionType.DISCORD.value:
             table_name = SchemaTables.DISCORD_THREADS.table_name(connection_id)
+        elif project_connection.type == ConnectionType.SLACK.value:
+            table_name = SchemaTables.SLACK_MESSAGES.table_name(connection_id)
         elif project_connection.type == ConnectionType.JIRA_ISSUE.value:
             table_name = SchemaTables.JIRA_ISSUES.table_name(connection_id)
 

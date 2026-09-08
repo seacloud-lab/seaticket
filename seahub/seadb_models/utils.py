@@ -24,6 +24,7 @@ CONNECTION_TYPE_TO_SCHEMA_TABLE = {
     ConnectionType.CONFLUENCE.value: SchemaTables.CONFLUENCE,
     ConnectionType.DISCORD.value: SchemaTables.DISCORD_THREADS,
     ConnectionType.JIRA_ISSUE.value: SchemaTables.JIRA_ISSUES,
+    ConnectionType.SLACK.value: SchemaTables.SLACK_MESSAGES,
 }
 
 
@@ -1101,6 +1102,25 @@ def get_discord_thread_by_pk(seadb_api, project_uuid, connection_id, _pk):
     return record, column_metadata, linked_ticket_title
 
 
+def get_slack_message_by_pk(seadb_api, project_uuid, connection_id, _pk):
+    from seahub.tickets.ticket_utils import get_ticket_title
+    table_name = SchemaTables.SLACK_MESSAGES.table_name(connection_id)
+    sql = f"SELECT `_pk`, `message_id`, `title`, `author`, `content`, `reply_count`, `created_time`, `modified_time`, `linked_ticket`, `outdated`, `ai_summary` FROM `{table_name}` WHERE _pk = {_pk}"
+    try:
+        res = seadb_api.query_rows(project_uuid, sql)
+        record = res.get('results', [])
+        record = record[0] if record else {}
+        column_metadata = res.get('metadata')
+        linked_ticket = record.get('linked_ticket')
+        linked_ticket_title = get_ticket_title(seadb_api, project_uuid, linked_ticket)
+    except Exception as e:
+        record = {}
+        column_metadata = []
+        linked_ticket_title = ''
+        logger.error(f'SeaDB query error for slack message {table_name}: {e}')
+    return record, column_metadata, linked_ticket_title
+
+
 def list_discord_thread_record_details(seadb_api, project_uuid, connection_id, _pk):
     """Query a Discord message and its thread replies from SeaDB."""
     table_name = SchemaTables.DISCORD_THREADS.table_name(connection_id)
@@ -1126,6 +1146,31 @@ def list_discord_thread_record_details(seadb_api, project_uuid, connection_id, _
     return record, column_metadata, linked_ticket_title
 
 
+def list_slack_message_record_details(seadb_api, project_uuid, connection_id, _pk):
+    """Query a Slack message and its thread replies from SeaDB."""
+    table_name = SchemaTables.SLACK_MESSAGES.table_name(connection_id)
+    replies_table_name = SchemaTables.SLACK_MESSAGE_REPLIES.table_name(connection_id)
+    sql = f"SELECT `message_id`, `title`, `author`, `content`, `reply_count`, `created_time`, `modified_time`, `linked_ticket`, `outdated` FROM `{table_name}` WHERE _pk = {_pk} AND (`deleted` = False OR `deleted` IS NULL)"
+    try:
+        from seahub.tickets.ticket_utils import get_ticket_title
+        res = seadb_api.query_rows(project_uuid, sql)
+        record = res.get('results')[0]
+        column_metadata = res.get('metadata')
+        message_id = record.get('message_id')
+        replies_sql = f"SELECT author, content, modified_time FROM `{replies_table_name}` WHERE message_id = '{message_id}' ORDER BY reply_id ASC"
+        replies_res = seadb_api.query_rows(project_uuid, replies_sql)
+        replies_records = replies_res.get('results')
+        record['replies'] = replies_records
+        linked_ticket = record.get('linked_ticket')
+        linked_ticket_title = get_ticket_title(seadb_api, project_uuid, linked_ticket)
+    except Exception as e:
+        record = {}
+        column_metadata = []
+        linked_ticket_title = ''
+        logger.error(f'SeaDB query error for slack message {table_name}: {e}')
+    return record, column_metadata, linked_ticket_title
+
+
 def get_connection_record_by_pk(seadb_api, project_uuid, connection_type, connection_id, _pk):
     if connection_type == ConnectionType.DISCOURSE_FORUM.value:
         record, columns, linked_ticket_title = get_discourse_topic_by_pk(seadb_api, project_uuid, connection_id, _pk)
@@ -1145,6 +1190,8 @@ def get_connection_record_by_pk(seadb_api, project_uuid, connection_type, connec
         record, columns, linked_ticket_title = get_linear_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
     elif connection_type == ConnectionType.DISCORD.value:
         record, columns, linked_ticket_title = get_discord_thread_by_pk(seadb_api, project_uuid, connection_id, _pk)
+    elif connection_type == ConnectionType.SLACK.value:
+        record, columns, linked_ticket_title = get_slack_message_by_pk(seadb_api, project_uuid, connection_id, _pk)
     elif connection_type == ConnectionType.JIRA_ISSUE.value:
         record, columns, linked_ticket_title = get_jira_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk)
     else:

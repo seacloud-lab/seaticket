@@ -25,6 +25,8 @@ DISCOURSE_TOPIC_ACTIVITY_TYPES = {'discourse_topic_added', 'discourse_topic_upda
 
 DISCORD_THREAD_ACTIVITY_TYPES = {'discord_thread_added', 'discord_thread_updated', 'discord_thread_message_added'}
 
+SLACK_MESSAGE_ACTIVITY_TYPES = {'slack_message_added', 'slack_message_updated', 'slack_message_reply_added'}
+
 EMAIL_ACTIVITY_TYPES = {'email_thread_added', 'email_message_added'}
 
 GENERAL_TASK_ACTIVITY_TYPES = {'general_task_added', 'general_task_updated'}
@@ -89,6 +91,7 @@ class ConnectionType(Enum):
     LINEAR = 'linear'
     CONFLUENCE = 'confluence'
     DISCORD = 'discord'
+    SLACK = 'slack'
 
     @classmethod
     def is_valid(cls, value):
@@ -193,6 +196,13 @@ CONNECTION_FIELDS = {
         ConnectionField('guild_id', True, False).to_dict(),
         ConnectionField('channel_id', True, False).to_dict(),
         ConnectionField('guild_name', False, False).to_dict(),
+    ],
+    ConnectionType.SLACK.value: [
+        ConnectionField('team_id', True, False).to_dict(),
+        ConnectionField('channel_id', True, False).to_dict(),
+        ConnectionField('team_name', False, False).to_dict(),
+        ConnectionField('team_domain', False, False).to_dict(),
+        ConnectionField('channel_name', False, False).to_dict(),
     ]
 }
 
@@ -487,6 +497,25 @@ CONNECTION_DEFAULT_DETAILS = {
             {'_id': '0000', 'type': 'view'},
         ]
     },
+    ConnectionType.SLACK.value: {
+        'views': [
+            {
+                '_id': '0000',
+                'name': _('All'),
+                'type': 'table',
+                'basic_filters': [],
+                'columns_keys': [],
+                'filter_conjunction': 'Or',
+                'filters': [],
+                'sorts': [{ 'column_key': 'modified_time', 'sort_type': 'down' }],
+                'groupbys': [],
+                'hidden_columns': [],
+            }
+        ],
+        'navigation': [
+            {'_id': '0000', 'type': 'view'},
+        ]
+    },
 }
 
 
@@ -557,7 +586,9 @@ CONNECTION_DISPLAY_ALL_COLUMNS = {
     ConnectionType.LINEAR.value: ['_pk', 'title', 'author', 'state', 'state_reason', 'labels', 'priority', 'due_date', 'created_time', 'modified_time', 'closed_time', 'ai_summary', 'ai_processed_time', 'linked_ticket', 'outdated'],
     ConnectionType.CONFLUENCE.value: ['_pk', 'title', 'creator_id', 'modified_time', 'ai_summary', 'ai_processed_time', 'created_time', 'last_modifier_id', 'outdated'],
     ConnectionType.DISCORD.value: ['_pk', 'title', 'created_time', 'modified_time', 'ai_summary',
-                                   'ai_processed_time', 'linked_ticket', 'outdated']
+                                   'ai_processed_time', 'linked_ticket', 'outdated'],
+    ConnectionType.SLACK.value: ['_pk', 'title', 'author', 'reply_count', 'created_time', 'modified_time',
+                                 'ai_summary', 'ai_processed_time', 'linked_ticket', 'outdated']
 }
 
 # These columns are must returned to the front end to make some frontend functions work
@@ -569,6 +600,7 @@ CONNECTION_MUST_RETURN_COLUMNS = {
     ConnectionType.LINEAR.value: ['identifier'],
     ConnectionType.CONFLUENCE.value: ['page_id'],
     ConnectionType.DISCORD.value: ['thread_id'],
+    ConnectionType.SLACK.value: ['message_id', 'channel_id'],
 }
 
 LLM_INPUT_CHARACTERS_LIMIT = 4000
@@ -592,6 +624,7 @@ class ConnectionCategory:
             ConnectionType.GITHUB_ISSUE.value,
             ConnectionType.LINEAR.value,
             ConnectionType.DISCORD.value,
+            ConnectionType.SLACK.value,
             ConnectionType.JIRA_ISSUE.value,
         ],
         DOCUMENT: [

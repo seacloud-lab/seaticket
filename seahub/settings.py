@@ -892,6 +892,11 @@ DISCORD_CLIENT_SECRET = configs.get('DISCORD_CLIENT_SECRET', '')
 DISCORD_BOT_TOKEN = configs.get('DISCORD_BOT_TOKEN', '')
 DISCORD_REDIRECT_URL = configs.get('DISCORD_REDIRECT_URL', '')
 
+SLACK_CLIENT_ID = configs.get('SLACK_CLIENT_ID', '')
+SLACK_CLIENT_SECRET = configs.get('SLACK_CLIENT_SECRET', '')
+SLACK_REDIRECT_URL = configs.get('SLACK_REDIRECT_URL', '')
+SLACK_SCOPES = configs.get('SLACK_SCOPES', 'channels:read,channels:history,channels:join,groups:read,groups:history,users:read,team:read')
+
 # Portal custom domain
 PORTAL_SERVICE_ROOT_DOMAIN = configs.get('PORTAL_SERVICE_ROOT_DOMAIN', '')
 

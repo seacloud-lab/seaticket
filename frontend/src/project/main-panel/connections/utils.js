@@ -180,6 +180,14 @@ const getDiscordOriginalPageUrl = (connection, row, columns) => {
   return `https://discord.com/channels/${guild_id}/${threadId}`;
 };
 
+const getSlackOriginalPageUrl = (connection, row, columns) => {
+  const { team_domain, channel_id } = connection.config;
+  const messageIdColumn = getColumnByName(columns, 'message_id');
+  const messageId = getCellValueByColumn(row, messageIdColumn);
+  if (!team_domain || !channel_id || !messageId) return '';
+  return `https://${team_domain}.slack.com/archives/${channel_id}/p${messageId.replace('.', '')}`;
+};
+
 export const getOriginalPageUrl = (connection, row, columns) => {
   if (!connection || !row || !columns) return '';
   switch (connection.type) {
@@ -213,6 +221,9 @@ export const getOriginalPageUrl = (connection, row, columns) => {
     }
     case CONNECTION_TYPE.DISCORD: {
       return getDiscordOriginalPageUrl(connection, row, columns);
+    }
+    case CONNECTION_TYPE.SLACK: {
+      return getSlackOriginalPageUrl(connection, row, columns);
     }
     default: {
       return '';
@@ -263,6 +274,16 @@ export const initConnectionResourceDetails = (type, record) => {
   if (type === CONNECTION_TYPE.DISCORD) {
     const { replies } = record;
     return Array.isArray(replies) ? replies : [];
+  }
+  if (type === CONNECTION_TYPE.SLACK) {
+    const { author, modified_time, content, replies } = record;
+    const mainPost = {
+      author,
+      modified_time,
+      content: content || '',
+    };
+    const initReplies = Array.isArray(replies) ? replies : [];
+    return [mainPost, ...initReplies];
   }
   if (type === CONNECTION_TYPE.JIRA_ISSUE) {
     const { author, created_time, comments } = record;

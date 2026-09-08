@@ -52,6 +52,15 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
         };
       });
     }
+    if (type === CONNECTION_TYPE.SLACK) {
+      return withEditReadonlyDefaults(_columns.filter(c => c.key !== 'channel_id')).map((field) => {
+        if (field.key !== 'team_id') return field;
+        return {
+          ...field,
+          is_edit_readonly: true,
+        };
+      });
+    }
     if (type === CONNECTION_TYPE.EMAIL) return withEditReadonlyDefaults(getVisibleEmailFields(_columns, getEmailProvider(config), showEmailAdvancedOptions));
     return withEditReadonlyDefaults(_columns);
   }, [type, config, showEmailAdvancedOptions]);
