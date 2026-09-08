@@ -234,7 +234,6 @@ const SkillDetailDialog = ({ projectUuid, pageType, skillName, mode, isProjectAd
                   type="text"
                   className="form-control"
                   value={name}
-                  placeholder="Placeholder"
                   maxLength={SKILL_NAME_MAX_LENGTH}
                   onChange={(e) => {
                     setName(e.target.value);
@@ -270,7 +269,6 @@ const SkillDetailDialog = ({ projectUuid, pageType, skillName, mode, isProjectAd
                 <Input
                   id="skill-description-input"
                   type="textarea"
-                  placeholder="Placeholder"
                   className="skill-detail-dialog-description-input"
                   value={description}
                   maxLength={SKILL_DESCRIPTION_MAX_LENGTH}
