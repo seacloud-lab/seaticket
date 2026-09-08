@@ -6,7 +6,7 @@ import CreateTicketDialog from '../../../components/create-ticket-dialog';
 import RelatedIssuesDialog from '../../../components/related-issues-dialog';
 import { useConnectionsPage, useConnections } from '../../../hooks';
 import { gettext } from '@/constants';
-import { BAR_TYPE, EVENT_BUS_TYPE } from '@/project/constants';
+import { EVENT_BUS_TYPE } from '@/project/constants';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import {
   CONNECTION_TYPE, CONNECTION_PREDEFINED_COLUMN_NAME, SUPPORT_MODIFY_CONNECTION_RECORDS_TYPES,
@@ -22,7 +22,6 @@ import {
   formatColumns,
 } from '../../../utils';
 import { getColumnByName } from '@/sea-metadata/utils/column';
-import { AttachmentObject } from '@/project/main-panel/ask/models';
 import { convertRowToNameValue, convertRowsToNameValue, convertRowToKeyValue } from '@/sea-metadata/utils/row';
 import { useData, useTags, useMetadata } from '@/project/hooks';
 import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
@@ -47,7 +46,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
   const [isShowTicketsDialog, setIsShowTicketsDialog] = useState(false);
 
-  const { updateAttachments } = useAIChatTools();
+  const { handleResolveAttachmentsByAI } = useAIChatTools();
   const { toggleChildrenPageSlugId } = useConnectionsPage();
   const { connections } = useConnections();
   const {
@@ -306,11 +305,9 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   }, []);
 
   const handleResolveIssueByAI = useCallback((attachments = []) => {
-    if (!Array.isArray(attachments) || attachments.length === 0 || !connectionID) return;
-    const newAttachments = attachments.map(attachment => new AttachmentObject(attachment));
-    updateAttachments(newAttachments);
-    toggleBar([BAR_TYPE.CHAT]);
-  }, [connectionID, toggleBar, updateAttachments]);
+    if (!connectionID) return;
+    handleResolveAttachmentsByAI(attachments);
+  }, [connectionID, handleResolveAttachmentsByAI]);
 
   const handleFindRelatedIssues = useCallback((row) => {
     if (!row) return;

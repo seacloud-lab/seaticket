@@ -50,7 +50,7 @@ const AttachmentsFormatter = ({ projectUuid, value = [], onRemove, onReupload })
     const dom = ref.current;
     const handleResize = () => {
       if (!dom) return;
-      const { scrollLeft } = ref.current;
+      const { scrollLeft } = dom;
       setScrollLeft(scrollLeft);
     };
     const resizeObserver = new ResizeObserver(handleResize);
@@ -65,7 +65,7 @@ const AttachmentsFormatter = ({ projectUuid, value = [], onRemove, onReupload })
   return (
     <div className="w-100 px-4 o-hidden position-relative">
       {scrollLeft > 0 && (
-        <div className="seaqa-ai-chat-attachments-scroll-before ">
+        <div className="seaqa-ai-chat-attachments-scroll-before">
           <IconButton icon="arrow-down-b" className="rotate-icon-90 no-hover-bg" onClick={() => onScrollControlClick('prev')} />
         </div>
       )}

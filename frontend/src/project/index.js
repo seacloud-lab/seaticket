@@ -197,6 +197,7 @@ const Project = () => {
       workspaceID={workspaceID}
       enablePortal={settings?.portal?.enable_portal}
       isSubscribeConnectionsSyncStatus={true}
+      toggleBar={toggleBar}
     >
       <I18nextProvider i18n={i18n}>
         <div className="seaqa-project">

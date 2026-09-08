@@ -8,7 +8,7 @@ import {
   TICKET_COLUMNS_ORDER_CONFIG, TICKET_COLUMNS_WIDTH_CONFIG,
   TICKET_TABLE_NAME, TICKET_TYPE, AUTO_UPDATE_PARTICIPANTS_KEY,
 } from '../constants';
-import { BAR_TYPE, EVENT_BUS_TYPE as GLOBAL_EVENT_BUS_TYPE } from '@/project/constants';
+import { EVENT_BUS_TYPE as GLOBAL_EVENT_BUS_TYPE } from '@/project/constants';
 import { gettext } from '@/constants';
 import { CenteredLoading } from '@/components';
 import context from '@/sea-metadata/context';
@@ -36,7 +36,6 @@ import eventBus from '@/utils/event-bus';
 const Tickets = ({
   canFindRelatedIssues = true, isBuiltInView = false,
   projectUuid, workspaceID, projectName, permission,
-  toggleBar = () => {},
   api,
   localStorageNamePrefix: customizeLocalStorageNamePrefix,
   createContextMenuOptions: customizeCreateContextMenuOptions,
@@ -49,7 +48,7 @@ const Tickets = ({
   onRefresh,
   ...props
 }) => {
-  const { updateAttachments } = useAIChatTools();
+  const { handleResolveAttachmentsByAI } = useAIChatTools();
   const {
     typesData, createType,
     substatesData, createSubstate,
@@ -270,11 +269,6 @@ const Tickets = ({
     };
   }, []);
 
-  const chatTicketsByAI = useCallback((tickets) => {
-    updateAttachments(tickets);
-    toggleBar([BAR_TYPE.CHAT]);
-  }, [toggleBar, updateAttachments]);
-
   const findRelatedIssues = useCallback((ticket) => {
     if (!ticket) return;
     setCurrentTicket(ticket);
@@ -324,7 +318,7 @@ const Tickets = ({
       ...props,
       projectName,
       workspaceID,
-      chatTicketsByAI,
+      chatTicketsByAI: handleResolveAttachmentsByAI,
       togglePageSlugId,
       createKnowledgeBaseRecord,
       connections,
@@ -339,7 +333,7 @@ const Tickets = ({
     return generatorTicketsRowsTools(params);
   }, [
     workspaceID, projectName, canFindRelatedIssues, connections,
-    chatTicketsByAI, findRelatedIssues, customizeCreateRowsTools, togglePageSlugId, createKnowledgeBaseRecord, createTask
+    handleResolveAttachmentsByAI, findRelatedIssues, customizeCreateRowsTools, togglePageSlugId, createKnowledgeBaseRecord, createTask
   ]);
 
   const createContextMenuOptions = useCallback((props) => {
@@ -347,7 +341,7 @@ const Tickets = ({
       ...props,
       projectName,
       workspaceID,
-      chatTicketsByAI,
+      chatTicketsByAI: handleResolveAttachmentsByAI,
       togglePageSlugId,
       createKnowledgeBaseRecord,
       connections,
@@ -362,7 +356,7 @@ const Tickets = ({
     return generatorTicketsContextMenuOptions(params);
   }, [
     projectName, workspaceID, canFindRelatedIssues, connections,
-    chatTicketsByAI, findRelatedIssues, customizeCreateContextMenuOptions, togglePageSlugId, createKnowledgeBaseRecord, createTask,
+    handleResolveAttachmentsByAI, findRelatedIssues, customizeCreateContextMenuOptions, togglePageSlugId, createKnowledgeBaseRecord, createTask,
   ]);
 
   const createMoreOptions = useCallback((resource) => {
@@ -380,7 +374,7 @@ const Tickets = ({
       },
       rowGetterByIndex: () => row,
       context,
-      chatTicketsByAI,
+      chatTicketsByAI: handleResolveAttachmentsByAI,
       togglePageSlugId,
       workspaceID,
       projectName,
@@ -391,7 +385,7 @@ const Tickets = ({
     });
   }, [
     workspaceID, projectName, canFindRelatedIssues, connections,
-    chatTicketsByAI, findRelatedIssues, togglePageSlugId, createKnowledgeBaseRecord, metadataAPI, createTask,
+    handleResolveAttachmentsByAI, findRelatedIssues, togglePageSlugId, createKnowledgeBaseRecord, metadataAPI, createTask,
   ]);
 
   const handleSwitchTicket = useCallback((step) => {

@@ -10,7 +10,6 @@ import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialo
 import { useConnections } from '@/project/main-panel/connections/hooks';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import { useData, useMetadata } from '@/project/hooks';
-import { AttachmentObject } from '@/project/main-panel/ask/models';
 import { normalizeContextMenuOptions } from '@/project/utils';
 import {
   generateAIOptions, generateCreateRelatedTicketOption, generateFindRelatedIssuesOption,
@@ -37,7 +36,7 @@ const ResourceTitle = ({ displayDetails = true, resource, className }) => {
   const actionContextRef = useRef(null);
 
   const { connections } = useConnections();
-  const { updateAttachments } = useAIChatTools();
+  const { handleResolveAttachmentsByAI } = useAIChatTools();
   const { modifyRow, modifyRowLink, insertRowByLink } = useData();
 
   const openDetails = useCallback((event) => {
@@ -64,11 +63,6 @@ const ResourceTitle = ({ displayDetails = true, resource, className }) => {
     actionContextRef.current = { row, details, updateResourceDetails, columns, connection };
     setIsShowTicketsDialog(true);
   }, []);
-
-  const handleResolveIssueByAI = useCallback((attachments = []) => {
-    if (!Array.isArray(attachments) || attachments.length === 0) return;
-    updateAttachments(attachments.map(attachment => new AttachmentObject(attachment)));
-  }, [updateAttachments]);
 
   const modifyRowsByDetailsMenu = useCallback((rowIds, idRowUpdates) => {
     const actionContext = actionContextRef.current;
@@ -104,7 +98,7 @@ const ResourceTitle = ({ displayDetails = true, resource, className }) => {
     if (!connection) return [];
 
     const options = [
-      generateAIOptions({ rows: [row], columns, connection }, handleResolveIssueByAI),
+      generateAIOptions({ rows: [row], columns, connection }, handleResolveAttachmentsByAI),
       generateFindRelatedIssuesOption({ row, connection }, (targetRow) => openRelatedIssuesDialog(targetRow, details, updateResourceDetails, columns, connection)),
       generateCreateRelatedTicketOption({ row, columns, connection }, (targetRow) => openCreateTicketDialog(targetRow, details, updateResourceDetails, columns, connection)),
       generateLinkAnExistingTicketOption({ row, columns, connection }, (targetRow) => openTicketsDialog(targetRow, details, updateResourceDetails, columns, connection)),
@@ -124,7 +118,7 @@ const ResourceTitle = ({ displayDetails = true, resource, className }) => {
 
     return normalizeContextMenuOptions(options);
   }, [
-    connections, handleResolveIssueByAI, openRelatedIssuesDialog,
+    connections, handleResolveAttachmentsByAI, openRelatedIssuesDialog,
     openCreateTicketDialog, openTicketsDialog, modifyRowsByDetailsMenu
   ]);
 

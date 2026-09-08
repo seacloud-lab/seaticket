@@ -8,7 +8,6 @@ import { CenteredLoading, toaster, EmptyTip, IconButton } from '@/components';
 import {
   PORTAL_ISSUE_STATE_CONFIG, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME, PORTAL_ISSUE_TABLE_NAME, PORTAL_ISSUE_CHILDREN_PAGE_SLUG_ID,
 } from '../../constants';
-import { BAR_TYPE } from '@/project/constants';
 import { generatorIssuesContextMenuOptions } from '../../utils';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import {
@@ -43,7 +42,6 @@ const Issue = ({
   editorAPI, projectUuid, issueID, permission, isAdmin, projectName, workspaceID,
   canChatWithAI = false,
   isMobile = false,
-  toggleBar = () => {},
   togglePageSlugId = () => {},
   generatorIssuesContextMenuOptions: customGeneratorIssuesContextMenuOptions,
 }) => {
@@ -62,7 +60,7 @@ const Issue = ({
   const { typesData, statesData, substatesData } = usePortalIssuesMetadata();
   const { modifyLocalRow, getTableByName, deleteRow, insertRowByLink, modifyRowLink } = useData();
   const { tagsData, createTag } = useTags();
-  const { updateAttachments } = useAIChatTools();
+  const { handleResolveAttachmentsByAI } = useAIChatTools();
 
   const lastIssueID = useRef('');
   const allColumns = useRef([]);
@@ -151,11 +149,6 @@ const Issue = ({
     });
   }, [projectUuid, issue]);
 
-  const chatIssuesByAI = useCallback((issues) => {
-    updateAttachments(issues);
-    toggleBar([BAR_TYPE.CHAT]);
-  }, [toggleBar, updateAttachments]);
-
   const createTicket = useCallback(() => {
     setIsShowCreateTicketDialog(true);
   }, []);
@@ -184,7 +177,7 @@ const Issue = ({
           });
       },
       rowGetterByIndex: () => row,
-      chatIssuesByAI: canChatWithAI ? chatIssuesByAI : undefined,
+      chatIssuesByAI: canChatWithAI ? handleResolveAttachmentsByAI : undefined,
       createTicket: createTicket,
       linkAnExistingTicket: handleLinkAnExistingTicket,
       togglePageSlugId: () => {},
@@ -211,7 +204,7 @@ const Issue = ({
     }
     return options;
   }, [
-    issue, deleteRow, canChatWithAI, chatIssuesByAI, projectUuid, workspaceID, projectName,
+    issue, deleteRow, canChatWithAI, handleResolveAttachmentsByAI, projectUuid, workspaceID, projectName,
     createTicket, handleLinkAnExistingTicket, customGeneratorIssuesContextMenuOptions, togglePageSlugId,
   ]);
 
