@@ -7,6 +7,10 @@ import os
 import re
 from .config_parser import ConfigParser
 
+# Microsoft does not return offline_access in its token response even when it
+# issues a refresh token, so oauthlib must not require an exact scope echo.
+os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE'] = '1'
+
 # The usage of following three settings should be removed
 SERVICE_URL = 'http://127.0.0.1'
 

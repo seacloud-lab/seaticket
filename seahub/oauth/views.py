@@ -23,7 +23,6 @@ logger = logging.getLogger(__name__)
 OAUTHLIB_INSECURE_TRANSPORT = getattr(settings, 'OAUTH_ENABLE_INSECURE_TRANSPORT', False)
 if OAUTHLIB_INSECURE_TRANSPORT:
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE'] = '1'
 
 #### OAuth Login to Seatable
 ENABLE_OAUTH = getattr(settings, 'ENABLE_OAUTH', False)
@@ -265,4 +264,3 @@ def custom_oauth_callback_view(request):
         return render_error(request, _('Feature is not enabled.'))
 
     return custom_oauth_callback(request)
-

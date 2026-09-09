@@ -2,6 +2,7 @@ import datetime
 import json
 import hmac
 import hashlib
+import os
 from types import SimpleNamespace
 from unittest.mock import Mock, call, patch
 
@@ -37,6 +38,9 @@ class DummySession(dict):
 
 
 class TestEmailOAuthUtils:
+
+    def test_oauthlib_relaxes_token_scope_validation(self):
+        assert os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE'] == '1'
 
     def test_oauth_scopes_include_mailbox_write_permissions(self):
         assert EMAIL_OAUTH_CONFIGS['Gmail']['scopes']['personal'][0] == \
@@ -616,7 +620,7 @@ class TestProjectEmailOAuthCallbackView:
         }
         record = SimpleNamespace(id=123)
 
-        with patch('seahub.project.views.OAuth2Session', return_value=oauth_session), \
+        with patch('seahub.project.views.OAuth2Session', return_value=oauth_session) as oauth_session_cls, \
                 patch('seahub.project.views.fetch_oauth_email_sender_info', return_value={
                     'sender_name': 'Adele Vance',
                     'sender_email': 'adele@example.com',
@@ -626,6 +630,9 @@ class TestProjectEmailOAuthCallbackView:
             resp = email_oauth_callback(request)
 
         assert resp.status_code == 200
+        assert oauth_session_cls.call_args.kwargs['scope'] == [
+            'User.Read', 'Mail.Read', 'Mail.Send', 'offline_access'
+        ]
         final_config = request.session['oauth_email_connection']['state-1']['config']
         assert final_config['sender_name'] == 'Adele Vance'
         assert final_config['sender_email'] == 'adele@example.com'
