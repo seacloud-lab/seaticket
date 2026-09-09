@@ -3,6 +3,8 @@ import React from 'react';
 import './index.css';
 
 const Card = ({ statistic }) => {
+  const comparison = statistic.comparison;
+
   return (
     <div className="sea-metadata-statistic sea-metadata-statistic-card">
       <div className="sea-metadata-statistic-name font-size-16 text-truncate" title={statistic.name}>
@@ -11,6 +13,14 @@ const Card = ({ statistic }) => {
       <div className="sea-metadata-statistic-value font-weight-600 text-truncate" title={statistic.value}>
         {statistic.value}
       </div>
+      {comparison && (
+        <div className="sea-metadata-statistic-comparison text-truncate" title={`${comparison.value} ${comparison.label}`}>
+          <span className={`sea-metadata-statistic-comparison-value ${comparison.status || ''}`}>
+            {comparison.value}
+          </span>
+          <span className="sea-metadata-statistic-comparison-label">{comparison.label}</span>
+        </div>
+      )}
     </div>
   );
 };
