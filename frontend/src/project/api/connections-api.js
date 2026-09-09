@@ -69,12 +69,13 @@ class ConnectionsAPI {
     return this.req.get(url, { params: params });
   }
 
-  createConnection(projectUuid, { type, name, config }) {
+  createConnection(projectUuid, { type, name, config, oauthState }) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/connections/';
     let form = new FormData();
     form.append('name', name);
     form.append('type', type);
     form.append('config', JSON.stringify(config));
+    if (oauthState) form.append('oauth_state', oauthState);
     return this._sendPostRequest(url, form);
   }
 
@@ -83,9 +84,9 @@ class ConnectionsAPI {
     return this.req.post(url, { name, config });
   }
 
-  queryEmailOAuth(projectUuid) {
+  queryEmailOAuth(projectUuid, state) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/connections/email/oauth/query/';
-    return this.req.get(url);
+    return this.req.get(url, { params: { state } });
   }
 
   getConfluenceOauthStatus(projectUuid) {

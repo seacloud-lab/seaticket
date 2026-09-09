@@ -11,7 +11,7 @@ from seahub.utils import uuid_str_to_36_chars
 from seahub.utils.ai_client import (
     convert_record_to_ticket as ai_convert_record_to_ticket,
 )
-from seahub.project.models import ProjectConnections, decrypt_config
+from seahub.project.models import ProjectConnections, ProjectConnectionOauth, decrypt_config
 from seahub.project.github_issues_api import GitHubAPI
 from seahub.project.discourse_api import DiscourseForumAPI, DiscourseForumAPIException
 from seahub.project.discord_api import DiscordAPI
@@ -37,7 +37,6 @@ from seahub.project.utils import (
     extract_email_addresses,
     collect_github_issue_type_options,
     collect_github_issue_label_options,
-    persist_project_connection_config,
     build_ticket_related_url,
     build_connection_record_related_url,
 )
@@ -45,7 +44,9 @@ from seahub.notifications.signal_handler import (
     MSG_TYPE_AGENT_NOTIFY_ASSIGNEE
 )
 from seahub.tickets.signals import agent_notify_assignees
-from seahub.project.constants import AIScenario, ConnectionType, merge_project_settings_defaults
+from seahub.project.constants import AIScenario, ConnectionType, EMAIL_ACCOUNT_TYPE_PERSONAL, \
+    merge_project_settings_defaults
+from seahub.project.oauth_utils import EmailOAuthUtils
 from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
 from seahub.seadb_models.models import SchemaTables
 from seahub.utils.mailbox_manager import (
@@ -1229,7 +1230,23 @@ class AgentActionExecutor:
         }
 
         try:
-            send_res = toggle_send_email(config, send_info)
+            oauth_token = None
+            oauth_config = None
+            if config.get('server_provider') in ('Gmail', 'Microsoft'):
+                oauth_record = ProjectConnectionOauth.objects.get_by_connection_id(project_uuid, project_connection.id)
+                if not oauth_record:
+                    return self._failed_execution('Email OAuth authorization is required.')
+                oauth_token = {
+                    'access_token': oauth_record.access_token,
+                    'refresh_token': oauth_record.refresh_token,
+                    'expires_at': oauth_record.expires_at.timestamp(),
+                }
+                oauth_config = EmailOAuthUtils._get_oauth_config(
+                    config.get('server_provider'),
+                    config.get('account_type', EMAIL_ACCOUNT_TYPE_PERSONAL),
+                    config,
+                )
+            send_res = toggle_send_email(config, send_info, oauth_token, oauth_config)
         except EmailConfigError as e:
             logger.error('Email config error for connection %s: %s', project_connection.id, e)
             return self._failed_execution('Email connection config is invalid.')
@@ -1237,8 +1254,12 @@ class AgentActionExecutor:
             logger.error('Reply email failed for connection %s thread %s: %s', project_connection.id, source_id, e)
             return self._failed_execution('Failed to send email.')
 
-        if send_res.get('config_updated'):
-            persist_project_connection_config(project_connection, config)
+        if send_res.get('oauth_updated'):
+            oauth_token = send_res['oauth_token']
+            ProjectConnectionOauth.objects.upsert_connection_token(
+                project_uuid, project_connection.id, oauth_token['access_token'], oauth_token['expires_at'],
+                oauth_token['refresh_token']
+            )
 
         email_seadb_api = EmailSeaDBAPI(project_uuid, seadb_api=seadb_api)
         email_data = {
@@ -1289,6 +1310,23 @@ class AgentActionExecutor:
             logger.error(f'Invalid email connection config for {project_connection.id}: {e}')
             return self._failed_execution('Email connection config is invalid.')
 
+        oauth_token = None
+        oauth_config = None
+        if config.get('server_provider') in ('Gmail', 'Microsoft'):
+            oauth_record = ProjectConnectionOauth.objects.get_by_connection_id(project_uuid, project_connection.id)
+            if not oauth_record:
+                return self._failed_execution('Email OAuth authorization is required.')
+            oauth_token = {
+                'access_token': oauth_record.access_token,
+                'refresh_token': oauth_record.refresh_token,
+                'expires_at': oauth_record.expires_at.timestamp(),
+            }
+            oauth_config = EmailOAuthUtils._get_oauth_config(
+                config.get('server_provider'),
+                config.get('account_type', EMAIL_ACCOUNT_TYPE_PERSONAL),
+                config,
+            )
+
         inbound_message_ids = []
         for email in emails:
             if email.get('is_sender'):
@@ -1301,7 +1339,7 @@ class AgentActionExecutor:
             return self._failed_execution(f'No inbound message id found for thread {source_id}.')
 
         try:
-            move_result = move_emails_to_junk(config, inbound_message_ids)
+            move_result = move_emails_to_junk(config, inbound_message_ids, oauth_token, oauth_config)
         except MailboxConfigError as e:
             logger.error('Mailbox config error for connection %s: %s', project_connection.id, e)
             return self._failed_execution('Email connection config is invalid.')
@@ -1322,9 +1360,12 @@ class AgentActionExecutor:
                 'Failed to move the email to the spam folder: no matching remote message was moved.'
             )
 
-        # OAuth providers may have refreshed their access token during the move.
-        if (move_result or {}).get('config_updated'):
-            persist_project_connection_config(project_connection, config)
+        if (move_result or {}).get('oauth_updated'):
+            oauth_token = move_result['oauth_token']
+            ProjectConnectionOauth.objects.upsert_connection_token(
+                project_uuid, project_connection.id, oauth_token['access_token'], oauth_token['expires_at'],
+                oauth_token['refresh_token']
+            )
 
         email_seadb_api = EmailSeaDBAPI(project_uuid, seadb_api=seadb_api)
         try:

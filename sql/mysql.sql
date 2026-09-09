@@ -821,11 +821,13 @@ CREATE TABLE `project_connection_oauth` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `project_uuid` char(32) NOT NULL,
   `type` varchar(255) NOT NULL,
+  `connection_id` int(11) NOT NULL DEFAULT 0,
   `access_token` TEXT NOT NULL,
   `refresh_token` TEXT NOT NULL,
   `expires_at` datetime(6) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `project_connection_type` (`type`),
+  KEY `project_connection_oauth_connection_id_idx` (`connection_id`),
   KEY `oauth_expires_at` (`expires_at`),
-  UNIQUE KEY `project_connection_oauth_project_uuid_type_uniq` (`project_uuid`, `type`)
+  UNIQUE KEY `project_connection_oauth_project_type_connection_uniq` (`project_uuid`, `type`, `connection_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

@@ -2,7 +2,8 @@
 from django.urls import re_path
 
 from .views import project_view, github_install, github_installation_setup, linear_oauth, linear_oauth_callback, \
-    confluence_oauth, confluence_oauth_callback, discord_oauth, discord_oauth_callback, jira_oauth, jira_oauth_callback
+    confluence_oauth, confluence_oauth_callback, discord_oauth, discord_oauth_callback, jira_oauth, jira_oauth_callback, \
+    email_oauth, email_oauth_callback
 
 from .apis import ProjectRelatedUsersView, ProjectItemsSearchView, ProjectGithubRepositories, ProjectLinearTeams, ProjectConfluenceWorkspaces, \
     ProjectConfluenceSpaces, ProjectDiscordChannels,ProjectJiraSites, ProjectJiraProjects
@@ -11,7 +12,7 @@ from .connections import ProjectConnectionsView, ProjectConnectionView, ProjectC
     ProjectConnectionsStatusView, ProjectConnectionLogView, ProjectConnectionRecordView, ProjectConnectionRecordsView, \
     ProjectConnectionReplyEmailView, ProjectConnectionDeleteEmailView, ProjectConnectionReplyDiscourseView, \
     ConnectionFileView, GithubIssueView, \
-    ProjectEmailOAuthLoginView, ProjectEmailOAuthQueryView, ProjectEmailOAuthCallbackView, \
+    ProjectEmailOAuthQueryView, \
     DownloadEmailAttachments, ZipEmailAttachments, QueryIOStatus, ProjectLinearOauthStatusView, ProjectConfluenceOauthStatusView, ProjectConnectionUnreadEmailView, ProjectJiraOauthStatusView
 from .files import ProjectUploadFileAPIView, GetProjectUploadFileView, \
     ProjectFileAPIView, GetProjectFileView
@@ -98,9 +99,9 @@ urlpatterns = [
 
     # connections
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/$', ProjectConnectionsView.as_view(), name='api-v1-connections'),
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/email/oauth/login/$', ProjectEmailOAuthLoginView.as_view(), name='api-v1-connection-email-oauth-login'),
+    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/email/oauth/login/$', email_oauth, name='api-v1-connection-email-oauth-login'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/email/oauth/query/$', ProjectEmailOAuthQueryView.as_view(), name='api-v1-connection-email-oauth-query'),
-    re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/email/oauth/callback/$', ProjectEmailOAuthCallbackView.as_view(), name='api-v1-connection-email-oauth-callback'),
+    re_path(r'^api/v1/connections/email/oauth/callback/$', email_oauth_callback, name='api-v1-connection-email-oauth-callback'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/$', ProjectConnectionView.as_view(), name='api-v1-connection'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/sync/$', ProjectConnectionSyncView.as_view(), name='api-v1-connection-sync'),
     re_path(r'^api/v1/project/(?P<project_uuid>[-0-9a-f]{36})/connections/(?P<connection_id>\d+)/details/$', ProjectConnectionDetailsView.as_view(), name='api-v1-connection-details'),

@@ -170,3 +170,42 @@ class TestProjectConfluenceWorkspaces:
         updated_oauth = ProjectConnectionOauth.objects.get_by_project_uuid(project.uuid, ConnectionType.CONFLUENCE.value)
         assert updated_oauth.access_token == 'fresh-token'
         assert updated_oauth.expires_at == new_expires_at
+
+
+@pytest.mark.django_db
+class TestProjectConnectionOauthManager:
+
+    @pytest.mark.parametrize('expires_at', [1788343471.4274027, '1788343471.4274027'])
+    def test_upsert_token_converts_timestamp_to_datetime(self, real_project, expires_at):
+
+        ProjectConnectionOauth.objects.upsert_token(
+            real_project.uuid,
+            ConnectionType.EMAIL.value,
+            'access-token',
+            expires_at,
+            'refresh-token',
+        )
+
+        oauth = ProjectConnectionOauth.objects.get_by_project_uuid(
+            real_project.uuid, ConnectionType.EMAIL.value
+        )
+        assert oauth.expires_at == datetime.datetime.fromtimestamp(float(expires_at), tz=datetime.timezone.utc)
+
+    def test_upsert_connection_token_keeps_other_email_connection_tokens(self, real_project):
+        first = ProjectConnectionOauth.objects.upsert_connection_token(
+            real_project.uuid, 1, 'first-access-token', 1788343471, 'first-refresh-token'
+        )
+        second = ProjectConnectionOauth.objects.upsert_connection_token(
+            real_project.uuid, 2, 'second-access-token', 1788343472, 'second-refresh-token'
+        )
+
+        ProjectConnectionOauth.objects.upsert_connection_token(
+            real_project.uuid, 2, 'updated-access-token', 1788343473, 'updated-refresh-token'
+        )
+
+        first.refresh_from_db()
+        second.refresh_from_db()
+        assert first.access_token == 'first-access-token'
+        assert first.refresh_token == 'first-refresh-token'
+        assert second.access_token == 'updated-access-token'
+        assert second.refresh_token == 'updated-refresh-token'

@@ -6,6 +6,7 @@ import json
 import copy
 import random
 import string
+import datetime
 from copy import deepcopy
 from hashlib import sha1
 import hmac
@@ -15,7 +16,8 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from seahub.project.constants import ORG_STORAGE_SIZE_PREFIX, ORG_STORAGE_SIZE_CACHE_TIMEOUT, \
     CONNECTION_FIELDS, CONNECTION_DEFAULT_DETAILS, ConnectionType, \
-    GENERAL_EMAIL_PROVIDER, OAUTH_EMAIL_PROVIDERS, merge_project_settings_defaults
+    GENERAL_EMAIL_PROVIDER, OAUTH_EMAIL_PROVIDERS, EMAIL_ACCOUNT_TYPE_PERSONAL, \
+    EMAIL_ACCOUNT_TYPE_SHARED, merge_project_settings_defaults
 from seahub.utils import get_no_duplicate_obj_name, uuid_str_to_32_chars, \
     utf8_normalize, is_valid_uuid
 from seahub.utils.hasher import AESPasswordHasher
@@ -34,16 +36,15 @@ def get_required_connection_fields(connection_type, config=None):
 
     config = config or {}
     provider = config.get('server_provider') or GENERAL_EMAIL_PROVIDER
+    account_type = config.get('account_type') or EMAIL_ACCOUNT_TYPE_PERSONAL
 
-    if provider in OAUTH_EMAIL_PROVIDERS:
+    if provider in OAUTH_EMAIL_PROVIDERS and account_type == EMAIL_ACCOUNT_TYPE_PERSONAL:
+        return []
+
+    if provider in OAUTH_EMAIL_PROVIDERS and account_type == EMAIL_ACCOUNT_TYPE_SHARED:
         return [
             {'key': 'client_id', 'is_required': True, 'is_unique': False},
             {'key': 'client_secret', 'is_required': True, 'is_unique': False},
-            {'key': 'authority_url', 'is_required': True, 'is_unique': False},
-            {'key': 'token_url', 'is_required': True, 'is_unique': False},
-            {'key': 'scopes', 'is_required': True, 'is_unique': False},
-            {'key': 'authority_args', 'is_required': True, 'is_unique': False},
-            {'key': 'refresh_token', 'is_required': True, 'is_unique': False},
         ]
 
     return [field for field in CONNECTION_FIELDS.get(connection_type, []) if field.get('is_required')]
@@ -984,11 +985,23 @@ class ProjectAPIToken(models.Model):
 
 
 class ProjectConnectionOauthManager(models.Manager):
+    @staticmethod
+    def _normalize_expires_at(expires_at):
+        if isinstance(expires_at, str):
+            try:
+                expires_at = float(expires_at)
+            except ValueError:
+                return expires_at
+        if isinstance(expires_at, (int, float)):
+            return datetime.datetime.fromtimestamp(expires_at, tz=datetime.timezone.utc)
+        return expires_at
+
     def get_by_project_uuid(self, project_uuid, type):
         return self.filter(project_uuid=project_uuid, type=type).first()
 
     def upsert_token(self, project_uuid, type, access_token, expires_at, refresh_token):
-        record = self.filter(project_uuid=project_uuid, type=type).first()
+        expires_at = self._normalize_expires_at(expires_at)
+        record = self.get_by_project_uuid(project_uuid, type)
         if record:
             record.access_token = access_token
             record.refresh_token = refresh_token
@@ -999,6 +1012,7 @@ class ProjectConnectionOauthManager(models.Manager):
         record = super(ProjectConnectionOauthManager, self).create(
             project_uuid=project_uuid,
             type=type,
+            connection_id=0,
             access_token=access_token,
             refresh_token=refresh_token,
             expires_at=expires_at,
@@ -1006,10 +1020,41 @@ class ProjectConnectionOauthManager(models.Manager):
         record.save()
         return record
 
+    def set_connection_id(self, project_uuid, type, connection_id):
+        record = self.get_by_project_uuid(project_uuid, type)
+        if record:
+            record.connection_id = connection_id
+            record.save(update_fields=['connection_id'])
+        return record
+
+    def get_by_connection_id(self, project_uuid, connection_id, type=ConnectionType.EMAIL.value):
+        return self.filter(project_uuid=project_uuid, type=type, connection_id=connection_id).first()
+
+    def upsert_connection_token(self, project_uuid, connection_id, access_token, expires_at, refresh_token,
+                                type=ConnectionType.EMAIL.value):
+        expires_at = self._normalize_expires_at(expires_at)
+        record = self.get_by_connection_id(project_uuid, connection_id, type)
+        if record:
+            record.access_token = access_token
+            record.refresh_token = refresh_token
+            record.expires_at = expires_at
+            record.save(update_fields=['access_token', 'refresh_token', 'expires_at'])
+            return record
+
+        return super(ProjectConnectionOauthManager, self).create(
+            project_uuid=project_uuid,
+            type=type,
+            connection_id=connection_id,
+            access_token=access_token,
+            refresh_token=refresh_token,
+            expires_at=expires_at,
+        )
+
 
 class ProjectConnectionOauth(models.Model):
     project_uuid = models.UUIDField()
     type = models.CharField(max_length=255, db_index=True)
+    connection_id = models.IntegerField(default=0, db_index=True)
     access_token = models.TextField()
     refresh_token = models.TextField()
     expires_at = models.DateTimeField(db_index=True)
@@ -1018,7 +1063,7 @@ class ProjectConnectionOauth(models.Model):
 
     class Meta:
         db_table = 'project_connection_oauth'
-        unique_together = [['project_uuid', 'type']]
+        unique_together = [['project_uuid', 'type', 'connection_id']]
 
 
 # AI Usage Statistics Models

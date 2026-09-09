@@ -33,12 +33,48 @@ MANUAL_SYNC_INTERVAL = 1 * 60
 MANUAL_CRAWL_INTERVAL = 24 * 60 * 60
 
 EMAIL_OAUTH_SESSION_KEY = 'oauth_email_connection'
+EMAIL_OAUTH_SESSION_TIMEOUT = 10 * 60
 
 GENERAL_EMAIL_PROVIDER = 'general_email_provider'
 MICROSOFT_EMAIL_PROVIDER = 'Microsoft'
+MICROSOFT_OAUTH_URL_PREFIX = 'https://login.microsoftonline.com/'
 GMAIL_EMAIL_PROVIDER = 'Gmail'
+EMAIL_ACCOUNT_TYPE_PERSONAL = 'personal'
+EMAIL_ACCOUNT_TYPE_SHARED = 'shared'
 
 OAUTH_EMAIL_PROVIDERS = [MICROSOFT_EMAIL_PROVIDER, GMAIL_EMAIL_PROVIDER]
+
+EMAIL_OAUTH_CONFIGS = {
+    GMAIL_EMAIL_PROVIDER: {
+        'client_id_setting': 'GOOGLE_EMAIL_CLIENT_ID',
+        'client_secret_setting': 'GOOGLE_EMAIL_CLIENT_SECRET',
+        'authority_url': 'https://accounts.google.com/o/oauth2/v2/auth',
+        'token_url': 'https://oauth2.googleapis.com/token',
+        'scopes': {
+            EMAIL_ACCOUNT_TYPE_PERSONAL: [
+                'https://www.googleapis.com/auth/gmail.modify',
+                'https://www.googleapis.com/auth/gmail.send',
+                'https://www.googleapis.com/auth/gmail.settings.basic',
+            ],
+            EMAIL_ACCOUNT_TYPE_SHARED: [
+                'https://www.googleapis.com/auth/gmail.modify',
+                'https://www.googleapis.com/auth/gmail.send',
+            ],
+        },
+        'authority_args': {'access_type': 'offline', 'prompt': 'consent'},
+    },
+    MICROSOFT_EMAIL_PROVIDER: {
+        'client_id_setting': 'MICROSOFT_EMAIL_CLIENT_ID',
+        'client_secret_setting': 'MICROSOFT_EMAIL_CLIENT_SECRET',
+        'authority_url': 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
+        'token_url': 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
+        'scopes': {
+            EMAIL_ACCOUNT_TYPE_PERSONAL: ['openid', 'profile', 'email', 'offline_access', 'User.Read', 'Mail.ReadWrite', 'Mail.Send'],
+            EMAIL_ACCOUNT_TYPE_SHARED: ['offline_access', 'Mail.ReadWrite.Shared', 'Mail.Send.Shared'],
+        },
+        'authority_args': {'response_mode': 'query', 'prompt': 'consent'},
+    },
+}
 
 DEFAULT_AGENT_AUTO_CONFIRM = {
     'suggest_notify_assignee': True,

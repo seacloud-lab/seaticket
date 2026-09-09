@@ -29,19 +29,21 @@ class OAuthTokenClient:
     Subclasses are expected to also hold a provider-specific configuration and
     call :meth:`_request_access_token` before making authenticated requests.
     The refreshed token is written back into ``self.config`` and
-    ``self.config_updated`` is set so callers can persist it.
+    ``self.oauth_updated`` is set so callers can persist the token record.
     """
 
-    def __init__(self, config):
+    def __init__(self, config, oauth_token=None, oauth_config=None):
         self.config = config
-        self.config_updated = False
-        self.client_id = config.get('client_id')
-        self.client_secret = config.get('client_secret')
-        self.refresh_token = config.get('refresh_token')
-        self.access_token = config.get('access_token')
-        self.expires_at = config.get('expires_at')
-        self.token_url = config.get('token_url')
-        self.scopes = config.get('scopes')
+        self.oauth_updated = False
+        oauth_token = oauth_token or {}
+        oauth_config = oauth_config or config
+        self.client_id = oauth_config.get('client_id')
+        self.client_secret = oauth_config.get('client_secret')
+        self.refresh_token = oauth_token.get('refresh_token')
+        self.access_token = oauth_token.get('access_token')
+        self.expires_at = oauth_token.get('expires_at')
+        self.token_url = oauth_config.get('token_url')
+        self.scopes = oauth_config.get('scopes')
 
     def _has_complete_oauth_config(self):
         return all([
@@ -93,10 +95,12 @@ class OAuthTokenClient:
         self.access_token = new_access_token
         self.expires_at = new_expires_at
         self.refresh_token = new_refresh_token
-        self.config['access_token'] = new_access_token
-        self.config['expires_at'] = new_expires_at
-        self.config['refresh_token'] = new_refresh_token
-        self.config_updated = True
+        self.oauth_token = {
+            'access_token': new_access_token,
+            'expires_at': new_expires_at,
+            'refresh_token': new_refresh_token,
+        }
+        self.oauth_updated = True
 
 
 __all__ = [

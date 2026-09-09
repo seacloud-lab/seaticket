@@ -1,11 +1,10 @@
 import React, { useCallback, useMemo, useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
-import copy from 'copy-to-clipboard';
 import { Button, Modal, Input, ModalBody, FormGroup, Label, Row } from 'reactstrap';
 import { gettext } from '@/constants';
 import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, STEP, STEPS, EMAIL_SERVER_PROVIDER, getAvailableConnectionTypes } from '../../constants';
-import { getVisibleEmailFields, getEmailProvider, populateEmailOAuthDefaults, sanitizeEmailConfigByProvider, isOAuthEmailProvider, getEmailOAuthCallbackUrl } from '../../utils';
-import { ModalHeader, Loading, toaster } from '@/components';
+import { getVisibleEmailFields, getEmailProvider, isOAuthEmailProvider, hasValidMicrosoftOAuthUrls, sanitizeEmailConfigByProvider } from '../../utils';
+import { ModalHeader, Loading, toaster, Icon } from '@/components';
 import ConnectionConfigEditor from '../connection-config-editor';
 import ConnectionDialogFooter from './connection-dialog-footer';
 import { ConfluenceConfig, DiscordConfig, GithubConfig, JiraConfig, LinearConfig } from './connection-config';
@@ -13,9 +12,7 @@ import ConnectionTypeSections from './connection-type-sections';
 import SelectedConnectionHeader from './selected-connection-header';
 import { connectionsAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
-import Connection from '../../models/connection';
 import { useConnections } from '../../hooks/connections';
-import Switch from '@/components/switch';
 
 import './index.css';
 
@@ -49,8 +46,10 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const [isSubmitting, setSubmitting] = useState(false);
   const [githubRepositories, setGithubRepositories] = useState([]);
   const [isLoadingRepositories, setIsLoadingRepositories] = useState(false);
-  const [showEmailAdvancedOptions, setShowEmailAdvancedOptions] = useState(false);
+  const [showEmailAdvancedOptions] = useState(false);
   const [isWaitingEmailOAuth, setWaitingEmailOAuth] = useState(false);
+  const [emailOAuthState, setEmailOAuthState] = useState('');
+  const [emailOAuthSender, setEmailOAuthSender] = useState(null);
   const [isWaitingConfluenceOAuth, setWaitingConfluenceOAuth] = useState(false);
   // eslint-disable-next-line no-unused-vars
   const [confluenceWorkspacesVersion, setConfluenceWorkspacesVersion] = useState(0);
@@ -63,6 +62,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const { updateUrlParams } = useConnections();
   const prevStepIndexRef = useRef(stepIndex);
   const emailOAuthIntervalRef = useRef(null);
+  const emailOauthWindowRef = useRef(null);
   const oauthWindowRef = useRef(null);
   const pollingIntervalRef = useRef(null);
   // eslint-disable-next-line no-unused-vars
@@ -106,7 +106,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     const _columns = CONNECTION_FIELDS[type] || [];
     if (type === CONNECTION_TYPE.GITHUB_ISSUE) return _columns;
     if (type !== CONNECTION_TYPE.EMAIL) return _columns;
-    return getVisibleEmailFields(_columns, getEmailProvider(config), showEmailAdvancedOptions);
+    return getVisibleEmailFields(_columns, getEmailProvider(config), showEmailAdvancedOptions, config.account_type);
   }, [type, config, showEmailAdvancedOptions]);
 
   const customColumns = useMemo(() => columns.filter(c => {
@@ -121,10 +121,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const isConfluence = useMemo(() => type === CONNECTION_TYPE.CONFLUENCE, [type]);
   const isDiscord = useMemo(() => type === CONNECTION_TYPE.DISCORD, [type]);
   const isJira = useMemo(() => type === CONNECTION_TYPE.JIRA_ISSUE, [type]);
-
-  const isMicrosoftEmailProvider = useMemo(() => {
-    return isEmail && getEmailProvider(config) === EMAIL_SERVER_PROVIDER.MICROSOFT;
-  }, [isEmail, config]);
 
   const isOAuthEmail = useMemo(() => {
     return isEmail && isOAuthEmailProvider(getEmailProvider(config));
@@ -148,6 +144,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     if (isConfluence && !isConfluenceOauthConnected) return false;
     if (isDiscord && !config.guild_id) return false;
     if (isJira && !isJiraOauthConnected) return false;
+    if (isOAuthEmail && !emailOAuthState) return false;
     return customColumns.length > 0 ? customColumns.every(c => {
       if (c.type === CONNECTION_FIELD_TYPE.GROUP) {
         return c.children.every(child => {
@@ -159,7 +156,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       return true;
     }) : true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [name, config, customColumns, isLinear, isLinearOauthConnected, isConfluence, isConfluenceOauthConnected, isDiscord, isJira, isJiraOauthConnected]);
+  }, [name, config, customColumns, isLinear, isLinearOauthConnected, isConfluence, isConfluenceOauthConnected, isDiscord, isOAuthEmail, emailOAuthState, isJira, isJiraOauthConnected]);
 
   useEffect(() => {
     const handleDiscordOAuthMessage = (event) => {
@@ -181,10 +178,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     return () => window.removeEventListener('message', handleDiscordOAuthMessage);
   }, []);
 
-  const callbackUrl = useMemo(() => {
-    return getEmailOAuthCallbackUrl(projectUuid);
-  }, []);
-
   const stopEmailOAuthPolling = useCallback(() => {
     if (emailOAuthIntervalRef.current) {
       window.clearInterval(emailOAuthIntervalRef.current);
@@ -203,6 +196,9 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     return () => {
       stopEmailOAuthPolling();
       stopConfluenceOAuthPolling();
+      if (emailOauthWindowRef.current && !emailOauthWindowRef.current.closed) {
+        emailOauthWindowRef.current.close();
+      }
       if (confluenceOauthWindowRef.current && !confluenceOauthWindowRef.current.closed) {
         confluenceOauthWindowRef.current.close();
       }
@@ -218,12 +214,8 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const onTypeChange = useCallback((newType) => {
     if (type === newType) return;
     let nextConfig = initializeConfig(newType);
-    if (newType === CONNECTION_TYPE.EMAIL) {
-      nextConfig = populateEmailOAuthDefaults(nextConfig, getEmailProvider(nextConfig));
-    }
     setConfig(nextConfig);
     setType(newType);
-    setShowEmailAdvancedOptions(false);
 
     if (newType === CONNECTION_TYPE.GITHUB_ISSUE) {
       setIsLoadingRepositories(true);
@@ -264,19 +256,95 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
 
     if (key === 'server_provider') {
       const nextProvider = value || EMAIL_SERVER_PROVIDER.GENERAL;
-      setConfig(populateEmailOAuthDefaults({ ...config, [key]: nextProvider }, nextProvider));
-      setShowEmailAdvancedOptions(false);
+      setConfig({
+        ...config,
+        [key]: nextProvider,
+        ...(isOAuthEmailProvider(nextProvider) ? { account_type: 'personal' } : { account_type: undefined }),
+      });
+      setEmailOAuthState('');
+      setEmailOAuthSender(null);
       return;
     }
 
     setConfig({ ...config, [key]: value });
   }, [config]);
 
+  const handleEmailOAuthLogin = useCallback(() => {
+    let _config = { ...config };
+    _config = sanitizeEmailConfigByProvider(_config);
+    if (!hasValidMicrosoftOAuthUrls(_config)) {
+      toaster.danger(gettext('Microsoft OAuth URLs must start with https://login.microsoftonline.com/.'));
+      return;
+    }
+    setSubmitting(true);
+    connectionsAPI.startEmailOAuth(projectUuid, { name: name.trim(), config: _config }).then((res) => {
+      const authorizationUrl = res.data?.auth_url;
+      const oauthState = res.data?.state;
+      if (!authorizationUrl || !oauthState) {
+        setSubmitting(false);
+        toaster.danger(gettext('Failed to fetch authorization url'));
+        return;
+      }
+
+      emailOauthWindowRef.current = window.open(authorizationUrl, '_blank', 'width=600,height=700');
+      if (!emailOauthWindowRef.current) {
+        setSubmitting(false);
+        toaster.danger(gettext('Failed to open authorization window. Please allow pop-ups and try again.'));
+        return;
+      }
+
+      setWaitingEmailOAuth(true);
+      stopEmailOAuthPolling();
+      emailOAuthIntervalRef.current = window.setInterval(() => {
+        connectionsAPI.queryEmailOAuth(projectUuid, oauthState).then((progressRes) => {
+          const oauthStatus = progressRes.data?.status;
+          if (oauthStatus === 'in-progress') {
+            if (!emailOauthWindowRef.current.closed) return;
+            stopEmailOAuthPolling();
+            setWaitingEmailOAuth(false);
+            setSubmitting(false);
+            toaster.danger(gettext('OAuth authorization was cancelled.'));
+            return;
+          }
+
+          stopEmailOAuthPolling();
+          setWaitingEmailOAuth(false);
+          setSubmitting(false);
+          if (oauthStatus !== 'authorized') {
+            toaster.danger(progressRes.data?.error_msg || gettext('OAuth authorization failed.'));
+            return;
+          }
+          setEmailOAuthState(oauthState);
+          setEmailOAuthSender({
+            sender_name: progressRes.data?.sender_name || '',
+            sender_email: progressRes.data?.sender_email || '',
+          });
+        }).catch((error) => {
+          stopEmailOAuthPolling();
+          setWaitingEmailOAuth(false);
+          setSubmitting(false);
+          toaster.danger(emailOauthWindowRef.current?.closed
+            ? gettext('OAuth authorization was cancelled.')
+            : Utils.getErrorMsg(error));
+        });
+      }, 2000);
+    }).catch((error) => {
+      setSubmitting(false);
+      toaster.danger(Utils.getErrorMsg(error));
+    });
+  }, [config, name, stopEmailOAuthPolling]);
+
   const handleSubmit = useCallback(() => {
     setSubmitting(true);
     let _config = { ...config };
     if (type === CONNECTION_TYPE.EMAIL) {
       _config = sanitizeEmailConfigByProvider(_config);
+      if (isOAuthEmailProvider(_config.server_provider)) {
+        onSubmit({ type, name: name.trim(), config: _config, oauthState: emailOAuthState }, () => {
+          setSubmitting(false);
+        });
+        return;
+      }
     }
     if (isGithub) {
       const repository = _config.repository.repository;
@@ -292,39 +360,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         _config['workspace_url'] = workspace.workspace.url;
       }
       _config['space_keys'] = selectedSpaceKeys;
-    }
-    if (type === CONNECTION_TYPE.EMAIL && isOAuthEmailProvider(_config.server_provider)) {
-      connectionsAPI.startEmailOAuth(projectUuid, { name: name.trim(), config: _config }).then((res) => {
-        const authorizationUrl = res.data?.auth_url;
-        if (!authorizationUrl) {
-          setSubmitting(false);
-          toaster.danger(gettext('Failed to fetch authorization url'));
-          return;
-        }
-
-        window.open(authorizationUrl, '_blank', 'width=600,height=700');
-        setWaitingEmailOAuth(true);
-        stopEmailOAuthPolling();
-        emailOAuthIntervalRef.current = window.setInterval(() => {
-          connectionsAPI.queryEmailOAuth(projectUuid).then((progressRes) => {
-            if (progressRes.data?.status !== 'success') return;
-            stopEmailOAuthPolling();
-            setWaitingEmailOAuth(false);
-            setSubmitting(false);
-            const connection = new Connection(progressRes.data.record);
-            onSubmit({ type, name: name.trim(), config: _config }, null, false, null, connection);
-          }).catch((error) => {
-            stopEmailOAuthPolling();
-            setWaitingEmailOAuth(false);
-            setSubmitting(false);
-            toaster.danger(Utils.getErrorMsg(error));
-          });
-        }, 2000);
-      }).catch((error) => {
-        setSubmitting(false);
-        toaster.danger(Utils.getErrorMsg(error));
-      });
-      return;
     }
     if (isLinear) {
       const team = _config.team_id;
@@ -359,12 +394,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       setSubmitting(false);
     });
     return;
-  }, [name, type, config, isJira, isLinear, onSubmit, stopEmailOAuthPolling, isConfluence, isGithub, selectedSpaceKeys, isDiscord]);
-
-  const onCopyCallbackUrl = useCallback(() => {
-    copy(callbackUrl);
-    toaster.success(gettext('Connection URL has been copied to clipboard'), { duration: 2 });
-  }, [callbackUrl]);
+  }, [name, type, config, isJira, isLinear, onSubmit, isConfluence, isGithub, selectedSpaceKeys, isDiscord, emailOAuthState]);
 
   const listGitHubRepositories = useCallback((signal) => {
     return connectionsAPI.listGitHubRepositories(projectUuid, signal).then(res => {
@@ -852,31 +882,75 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
               </Label>
               <Input value={name} onChange={onNameChange} disabled={isSubmitting} />
             </FormGroup>
-            {isOAuthEmail ? basicCustomColumns.slice(0, 1).map(renderConnectionField) : basicCustomColumns.map(renderConnectionField)}
-            {isOAuthEmail && (
+            {isOAuthEmail ? basicCustomColumns.filter(column => column.key !== 'account_type').map(renderConnectionField) : (
+              isDiscord
+                ? basicCustomColumns.filter(column => column.key !== 'channel_id').map(renderConnectionField)
+                : basicCustomColumns.map(renderConnectionField)
+            )}
+            {isDiscord && (
               <FormGroup>
-                <Label>{gettext('OAuth callback URL')}</Label>
-                <div className="seaqa-project-connection-oauth-tip">{gettext('Use this callback URL in your email provider OAuth app configuration. It is read-only and must match exactly.')}</div>
-                <div className="input-group">
-                  <Input value={callbackUrl} disabled={true} />
-                  <div className="input-group-append">
-                    <Button type="button" onClick={onCopyCallbackUrl}>{gettext('Copy')}</Button>
-                  </div>
+                <Label>{gettext('Authorization')}</Label>
+                <div className="seaqa-project-discord-oauth">
+                  {config.guild_id && (
+                    <span className="oauth-status-text mr-3">
+                      {config.guild_name || config.guild_id}
+                    </span>
+                  )}
+                  <Button
+                    color='primary'
+                    disabled={isSubmitting}
+                    onClick={handleConnectDiscord}
+                  >
+                    {config.guild_id ? gettext('Reinstall Discord') : gettext('Install Discord Bot')}
+                  </Button>
                 </div>
               </FormGroup>
             )}
-            {isOAuthEmail ? basicCustomColumns.slice(1, 4).map(renderConnectionField) : null}
-            {isMicrosoftEmailProvider && (
-              <div className="seaqa-project-connection-advanced-options mb-3">
-                <Switch
-                  checked={showEmailAdvancedOptions}
-                  onChange={() => setShowEmailAdvancedOptions(!showEmailAdvancedOptions)}
-                  placeholder={gettext('Advanced options')}
-                  textPosition="right"
-                />
-              </div>
-            )}
+            {isDiscord && basicCustomColumns.filter(column => column.key === 'channel_id').map(renderConnectionField)}
+            {false && isOAuthEmail && basicCustomColumns.filter(column => column.key === 'account_type').map(renderConnectionField)}
             {advancedCustomColumns.map(renderConnectionField)}
+            {isOAuthEmail && (
+              <FormGroup>
+                <Label>{gettext('Authorization')}</Label>
+                <div className="seaqa-project-connection-oauth-status">
+                  <span className="oauth-status-text mr-3">
+                    {emailOAuthSender
+                      ? (emailOAuthSender.sender_name
+                        ? `${emailOAuthSender.sender_name} <${emailOAuthSender.sender_email}>`
+                        : emailOAuthSender.sender_email)
+                      : gettext('Not logged in')}
+                  </span>
+                  <Button
+                    color={emailOAuthSender ? 'secondary' : 'primary'}
+                    disabled={isSubmitting || isWaitingEmailOAuth || !name.trim()}
+                    onClick={handleEmailOAuthLogin}
+                  >
+                    {gettext('Login')}
+                  </Button>
+                </div>
+              </FormGroup>
+            )}
+
+            {isConfluence && (
+              <FormGroup>
+                <Label>{gettext('Authorization')}</Label>
+                <div className="seaqa-project-connection-oauth-status">
+                  <span className="oauth-status-badge d-flex align-items-center">
+                    <Icon symbol={isConfluenceOauthConnected ? 'check-circle-filled' : 'close-circle-filled'} />
+                    <span className="oauth-status-text">{isConfluenceOauthConnected ? gettext('Connected') : gettext('Not connected')}</span>
+                  </span>
+                  <Button
+                    color={isConfluenceOauthConnected ? 'secondary' : 'primary'}
+                    className="oauth-status-button"
+                    disabled={isSubmitting || isCheckingConfluenceOauth || isWaitingConfluenceOAuth}
+                    onClick={handleConnectConfluence}
+                  >
+                    {isConfluenceOauthConnected ? gettext('Reconnect Confluence') : gettext('Connect Confluence')}
+                  </Button>
+                </div>
+                {confluenceOauthError && <div className="text-danger mt-2">{confluenceOauthError}</div>}
+              </FormGroup>
+            )}
             {isWaitingEmailOAuth && (
               <div className="seaqa-project-connection-oauth-pending">
                 <Loading />

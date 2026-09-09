@@ -61,9 +61,9 @@ LINKED_TICKET_SUPPORT_TYPES = [
 ]
 
 
-def get_email_oauth_callback_url(project_uuid):
+def get_email_oauth_callback_url():
     service_url = SEAQA_WEB_SERVICE_URL.rstrip('/')
-    return f'{service_url}/api/v1/project/{project_uuid}/connections/email/oauth/callback/'
+    return f'{service_url}/api/v1/connections/email/oauth/callback/'
 
 
 def is_oauth_email_provider(provider):
