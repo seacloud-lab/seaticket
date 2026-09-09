@@ -1,9 +1,9 @@
 import React, { useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import IconBtn from '@/components/icon-button';
-import { RowHeightPopover } from '../popover';
 import { gettext } from '@/constants';
 import { isEnter, isSpace } from '@/utils/hotkey';
+import { RowHeightPopover } from '../popover';
 
 const RowHeightSetter = ({ readOnly, wrapperClass, rowHeight, target, modifyRowHeight }) => {
   const [isShowSetter, setShowSetter] = useState(false);

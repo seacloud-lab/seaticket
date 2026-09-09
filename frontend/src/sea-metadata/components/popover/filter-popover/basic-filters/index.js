@@ -1,14 +1,14 @@
 import React, { useCallback, useMemo } from 'react';
-import PropTypes from 'prop-types';
 import { FormGroup, Label } from 'reactstrap';
+import PropTypes from 'prop-types';
 import { gettext } from '@/constants';
+import context from '@/sea-metadata/context';
+import { useTagsData, useTypesData } from '@/sea-metadata/hooks';
+import { getColumnByKey } from '@/sea-metadata/utils/column';
 import { VIEW_TYPE } from '../../../../constants';
 import StateFilter from './state-filter';
-import TypeFilter from './type-filter';
 import TagsFilter from './tags-filter';
-import { getColumnByKey } from '@/sea-metadata/utils/column';
-import { useTagsData, useTypesData } from '@/sea-metadata/hooks';
-import context from '@/sea-metadata/context';
+import TypeFilter from './type-filter';
 
 import './index.css';
 

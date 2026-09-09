@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import SearchResultItem from '../search-result-item';
 import getWorkspaceName from '../../utils/get-workspace-name';
+import SearchResultItem from '../search-result-item';
 
 const SearchedProject = (props) => {
   const { project, selected } = props;

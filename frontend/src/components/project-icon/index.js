@@ -1,6 +1,6 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
+import PropTypes from 'prop-types';
 import { DEFAULT_PROJECT_ICON, PROJECT_ICON_COLORS } from '../../constants';
 
 import './index.css';

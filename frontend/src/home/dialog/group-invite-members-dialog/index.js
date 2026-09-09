@@ -1,11 +1,11 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Button, Modal, ModalBody, Label, Input, InputGroup } from 'reactstrap';
 import copy from 'copy-to-clipboard';
+import PropTypes from 'prop-types';
 import { toaster, ModalHeader, Icon, Tooltip } from '@/components';
 import { gettext } from '@/constants/config';
-import homeAPI from '../../api';
 import { Utils } from '@/utils/utils';
+import homeAPI from '../../api';
 
 import './index.css';
 

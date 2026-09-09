@@ -1,9 +1,9 @@
 import React from 'react';
+import { Button, FormGroup, Input, Label, Modal, ModalBody } from 'reactstrap';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
-import { Button, FormGroup, Input, Label, Modal, ModalBody } from 'reactstrap';
-import { gettext } from '@/constants';
 import { Icon, Loading, ModalHeader } from '@/components';
+import { gettext } from '@/constants';
 
 const JiraConfig = ({
   isJiraOauthConnected,

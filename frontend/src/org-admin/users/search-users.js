@@ -1,12 +1,12 @@
 import React, { Component, Fragment } from 'react';
-import PropTypes from 'prop-types';
 import { Col, Form, FormGroup, Input, Button } from 'reactstrap';
+import PropTypes from 'prop-types';
 import { toaster, EmptyTip, CenteredLoading, CenteredError } from '@/components';
-import OrgUserInfo from '../models/org-user';
-import orgAdminAPI from '../api';
-import { Utils } from '@/utils/utils';
 import { gettext, loginUrl, orgID, mediaUrl } from '@/constants';
+import { Utils } from '@/utils/utils';
+import orgAdminAPI from '../api';
 import { TopBar, Main } from '../main-panel';
+import OrgUserInfo from '../models/org-user';
 import Users from './users';
 
 class SearchUsers extends Component {

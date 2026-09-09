@@ -1,9 +1,9 @@
 import React from 'react';
+import { Button, FormGroup, Input, Label } from 'reactstrap';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
-import { Button, FormGroup, Input, Label } from 'reactstrap';
-import { gettext } from '@/constants';
 import { Icon } from '@/components';
+import { gettext } from '@/constants';
 
 const DiscordConfig = ({
   isSubmitting,

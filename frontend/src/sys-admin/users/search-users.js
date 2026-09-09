@@ -1,14 +1,14 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Button, Form, FormGroup, Col } from 'reactstrap';
 import { navigate } from '@gatsbyjs/reach-router';
-import { Utils } from '@/utils/utils';
+import { toaster, SearchInput, CommonOperationConfirmationDialog } from '@/components';
 import { gettext } from '@/constants';
 import sysAdminAPI from '@/sys-admin/api';
-import { TopBar, Main } from '../main-panel';
-import UsersTable from './users-table';
-import { SelectedUsersProvider, useSelectedUsers } from './selected-users';
 import { isEnter } from '@/utils/hotkey';
-import { toaster, SearchInput, CommonOperationConfirmationDialog } from '@/components';
+import { Utils } from '@/utils/utils';
+import { TopBar, Main } from '../main-panel';
+import { SelectedUsersProvider, useSelectedUsers } from './selected-users';
+import UsersTable from './users-table';
 
 const CustomizeTopBar = ({ onCloseSidePanel, deleteUsers }) => {
   const { selectedUsers } = useSelectedUsers();

@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
 import { CONNECTION_TYPE } from '../../../constants';
-import GitHubIssuesDetails from './github-issues-details';
-import EmailDetails from './email-details';
 import DiscourseForumDetails from './discourse-forum-details';
+import EmailDetails from './email-details';
 import GeneralTaskDetails from './general-task-details';
+import GitHubIssuesDetails from './github-issues-details';
 
 const ConnectionResourceOtherDetails = ({
   connection,

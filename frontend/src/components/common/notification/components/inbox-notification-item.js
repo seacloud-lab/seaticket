@@ -1,13 +1,13 @@
 import React, { useMemo, useCallback } from 'react';
-import PropTypes from 'prop-types';
-import dayjs from 'dayjs';
-import classnames from 'classnames';
-import relativeTime from 'dayjs/plugin/relativeTime';
 import { gettext, siteRoot, mediaUrl } from '@constants/config';
-import { BAR_TYPE } from '@/project/constants';
-import { Utils } from '@/utils/utils';
-import { removeTextMark } from '@/utils/remove-text-mark';
+import classnames from 'classnames';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import PropTypes from 'prop-types';
 import { DEFAULT_COLOR, DEFAULT_PROJECT_ICON } from '@/constants';
+import { BAR_TYPE } from '@/project/constants';
+import { removeTextMark } from '@/utils/remove-text-mark';
+import { Utils } from '@/utils/utils';
 import {
   MSG_TYPE_TICKET_ASSIGNEE_ADDED,
   MSG_TYPE_AGENT_NOTIFY_ASSIGNEE,

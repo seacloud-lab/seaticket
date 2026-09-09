@@ -1,7 +1,7 @@
 import React from 'react';
 import classnames from 'classnames';
-import TopBar from './top-bar';
 import Main from './main';
+import TopBar from './top-bar';
 
 
 const MainPanel = ({

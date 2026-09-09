@@ -1,9 +1,9 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import classnames from 'classnames';
 import { getPreviewContent } from '@seafile/seafile-editor';
-import Preview from './preview';
+import classnames from 'classnames';
+import PropTypes from 'prop-types';
 import { Icon, ModalPortal } from '@/components';
+import Preview from './preview';
 
 import './index.css';
 

@@ -1,15 +1,15 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { RightScrollbar } from '../../../../components/scrollbar';
-import Row from './row';
-import InteractionMasks from '../../masks/interaction-masks';
-import { EVENT_BUS_TYPE, SEQUENCE_COLUMN_WIDTH, ROW_HEIGHT_MAP } from '../../../../constants';
+import context from '@/sea-metadata/context';
 import { isShiftKeyDown } from '@/utils/keyboard-utils';
+import { RightScrollbar } from '../../../../components/scrollbar';
+import { EVENT_BUS_TYPE, SEQUENCE_COLUMN_WIDTH, ROW_HEIGHT_MAP } from '../../../../constants';
 import { isColumnSupportDirectEdit, checkIsColumnEditable } from '../../../../utils/column';
-import { isSelectedCellSupportOpenEditor } from '../../utils/selected-cell-utils';
+import InteractionMasks from '../../masks/interaction-masks';
 import RowMetrics from '../../utils/row-metrics';
 import { getColumnScrollPosition, getColVisibleStartIdx, getColVisibleEndIdx } from '../../utils/rows-body-utils';
-import context from '@/sea-metadata/context';
+import { isSelectedCellSupportOpenEditor } from '../../utils/selected-cell-utils';
+import Row from './row';
 
 const RENDER_MORE_NUMBER = 10;
 const CONTENT_HEIGHT = window.innerHeight - 174;

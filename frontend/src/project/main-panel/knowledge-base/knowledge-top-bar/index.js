@@ -1,10 +1,10 @@
 import React, { useCallback } from 'react';
-import TopBar from '../../top-bar';
-import { useKnowledgePage } from '../hooks/knowledge-page';
-import { KNOWLEDGE_PAGE_SLUG_ID } from '../constants';
 import { IconButton, IconTextBtn, SecondaryBtn } from '@/components';
 import { gettext, PERMISSION_TYPES } from '@/constants';
 import { RefreshBtn } from '@/project/components';
+import TopBar from '../../top-bar';
+import { KNOWLEDGE_PAGE_SLUG_ID } from '../constants';
+import { useKnowledgePage } from '../hooks/knowledge-page';
 
 import './index.css';
 

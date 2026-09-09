@@ -1,14 +1,14 @@
 import React, { useMemo } from 'react';
 import { server } from '@/constants';
-import KnowledgeTopBar from './knowledge-top-bar';
-import { knowledgeBaseAPI } from '../../api';
 import LongTextEditorUtilities from '@/utils/long-text';
-import NewKnowledge from './view/new-knowledge';
+import { knowledgeBaseAPI } from '../../api';
+import { KNOWLEDGE_PAGE_SLUG_ID } from './constants';
+import { KnowledgePageProvider, useKnowledgePage } from './hooks/knowledge-page';
+import KnowledgeTopBar from './knowledge-top-bar';
 import AllKnowledge from './view/all-knowledge';
 import Knowledge from './view/knowledge';
+import NewKnowledge from './view/new-knowledge';
 import TrashKnowledge from './view/trash-knowledge';
-import { KnowledgePageProvider, useKnowledgePage } from './hooks/knowledge-page';
-import { KNOWLEDGE_PAGE_SLUG_ID } from './constants';
 
 const { projectUuid, permission, workspaceID, projectName, isProjectAdmin } = window.app.pageOptions;
 

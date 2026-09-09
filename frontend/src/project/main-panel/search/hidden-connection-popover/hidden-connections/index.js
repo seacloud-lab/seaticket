@@ -1,9 +1,9 @@
 import React, { useMemo, useState, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
+import PropTypes from 'prop-types';
 import IconButton from '@/components/icon-button';
-import HideConnection from './hide-connection';
 import { DOCUMENT_CONNECTION_TYPE_MAP, ISSUE_CONNECTION_TYPE_MAP, TASK_CONNECTION_TYPE_MAP } from '../../../connections/constants';
+import HideConnection from './hide-connection';
 
 const HiddenConnections = ({ readOnly, connections, hiddenConnectionIDs, onChange }) => {
   const [isDocumentsCollapsed, setIsDocumentsCollapsed] = useState(false);

@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
-import { gettext } from '@/constants';
-import { IconButton, Loading, CustomizeSelect } from '@/components';
-import DateRangeSetting from '../date-range-setting';
-import ConnectionSetting from '../connection-setting';
 import { FormGroup, Label } from 'reactstrap';
+import { IconButton, Loading, CustomizeSelect } from '@/components';
+import { gettext } from '@/constants';
+import ConnectionSetting from '../connection-setting';
+import DateRangeSetting from '../date-range-setting';
 
 import './index.css';
 

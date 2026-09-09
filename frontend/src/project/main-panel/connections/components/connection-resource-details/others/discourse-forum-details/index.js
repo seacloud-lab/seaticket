@@ -1,10 +1,10 @@
 import React from 'react';
-import { getColumnByName } from '@/sea-metadata/utils/column';
-import { CONNECTION_PREDEFINED_COLUMN_NAME } from '@/project/main-panel/connections/constants';
-import LinkedTicket from '../linked-ticket';
-import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
-import CheckboxSettings from '../checkbox-settings';
 import { gettext } from '@/constants';
+import { CONNECTION_PREDEFINED_COLUMN_NAME } from '@/project/main-panel/connections/constants';
+import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
+import { getColumnByName } from '@/sea-metadata/utils/column';
+import CheckboxSettings from '../checkbox-settings';
+import LinkedTicket from '../linked-ticket';
 
 const DiscourseForumDetails = ({
   record,

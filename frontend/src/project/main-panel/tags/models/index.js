@@ -1,5 +1,5 @@
-import TagsData from './tags';
 import Tag from './tag';
+import TagsData from './tags';
 
 export {
   TagsData,

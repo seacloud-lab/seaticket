@@ -1,14 +1,14 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
-import dayjs from 'dayjs';
 import { Modal, ModalBody, ModalFooter, Button } from 'reactstrap';
-import { gettext } from '@/constants';
+import dayjs from 'dayjs';
+import PropTypes from 'prop-types';
 import { CenteredLoading, ModalHeader, toaster, Icon } from '@/components';
+import { gettext } from '@/constants';
 import { connectionsAPI } from '@/project/api/connections-api';
-import { Utils } from '@/utils/utils';
-import { Connection } from '../../models';
-import { CONNECTION_TYPE } from '../../constants';
 import { formatWithTimezone } from '@/sea-metadata/utils/column';
+import { Utils } from '@/utils/utils';
+import { CONNECTION_TYPE } from '../../constants';
+import { Connection } from '../../models';
 
 import './index.css';
 

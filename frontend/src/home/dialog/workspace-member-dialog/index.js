@@ -1,12 +1,12 @@
 import React from 'react';
 import { Modal, ModalBody } from 'reactstrap';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
+import PropTypes from 'prop-types';
 import { toaster, ModalHeader, CenteredLoading } from '@/components';
-import homeAPI from '../../api';
-import User from '@/models/user';
 import { gettext } from '@/constants/config';
+import User from '@/models/user';
 import { Utils } from '@/utils/utils';
+import homeAPI from '../../api';
 
 import './index.css';
 

@@ -1,20 +1,20 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import dayjs from '@/utils/dayjs';
 import { Button } from 'reactstrap';
-import { Utils } from '@/utils/utils';
-import { connectionsAPI } from '../../../../api';
-import BasicTopBar from '../../../top-bar';
-import { useConnectionsPage, useConnections } from '../../hooks';
-import { CONNECTION_PAGE_SLUG_ID, CONNECTION_SYNC_STATUS } from '../../constants';
 import { IconButton, toaster, CenteredLoading, IconTextBtn } from '@/components';
 import { gettext } from '@/constants';
-import eventBus from '@/utils/event-bus';
-import { EVENT_BUS_TYPE } from '@/project/constants';
 import { AddButton, RefreshBtn } from '@/project/components';
-import { BAR_TYPE } from '../../../../constants';
-import { initConnectionStatus, isConnectionRecordsView } from '../../utils';
-import context from '@/sea-metadata/context';
+import { EVENT_BUS_TYPE } from '@/project/constants';
 import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
+import context from '@/sea-metadata/context';
+import dayjs from '@/utils/dayjs';
+import eventBus from '@/utils/event-bus';
+import { Utils } from '@/utils/utils';
+import { connectionsAPI } from '../../../../api';
+import { BAR_TYPE } from '../../../../constants';
+import BasicTopBar from '../../../top-bar';
+import { CONNECTION_PAGE_SLUG_ID, CONNECTION_SYNC_STATUS } from '../../constants';
+import { useConnectionsPage, useConnections } from '../../hooks';
+import { initConnectionStatus, isConnectionRecordsView } from '../../utils';
 
 import './index.css';
 

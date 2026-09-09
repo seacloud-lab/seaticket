@@ -1,13 +1,13 @@
 import React, { useCallback, useMemo } from 'react';
+import { CenteredLoading } from '@/components';
+import { gettext } from '@/constants';
 import { knowledgeBaseAPI } from '@/project/api';
+import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS } from '@/project/main-panel/knowledge-base/constants';
+import { generatorKnowledgeContextMenuOptions } from '@/project/main-panel/knowledge-base/utils';
 import SeaMetadata, { VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
-import { useTags } from '../../hooks';
-import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS } from '@/project/main-panel/knowledge-base/constants';
-import { gettext } from '@/constants';
-import { CenteredLoading } from '@/components';
-import { generatorKnowledgeContextMenuOptions } from '@/project/main-panel/knowledge-base/utils';
 import { convertRowToNameValue } from '@/sea-metadata/utils/row';
+import { useTags } from '../../hooks';
 
 const TagKnowledge = ({ tagID, projectUuid, permission }) => {
   const { isLoading: isTagsLoading, tagsData, createTag } = useTags();

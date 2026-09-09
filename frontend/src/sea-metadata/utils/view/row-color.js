@@ -1,6 +1,6 @@
+import { ROW_COLOR_TYPE } from '../../constants';
 import { filterRow, deleteInvalidFilter, getFormattedFilters, getValidFilters } from '../filter';
 import { ValidateFilter } from '../validate';
-import { ROW_COLOR_TYPE } from '../../constants';
 
 const getValidRowColorRules = (colorbys, columns, tagsData) => {
   const colorRules = colorbys?.color_by_rules;

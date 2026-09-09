@@ -1,5 +1,5 @@
-import dayjs from '@/sea-metadata/utils/dayjs';
 import { gettext } from '@/constants';
+import dayjs from '@/sea-metadata/utils/dayjs';
 import { DATE_FORMAT } from './constants';
 
 export const getDurationLabel = (startDate, endDate) => {

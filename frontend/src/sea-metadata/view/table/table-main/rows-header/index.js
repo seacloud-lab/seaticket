@@ -1,15 +1,15 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
-import Cell from './cell';
-import ActionsCell from './actions-cell';
-import InsertColumn from './insert-column';
-import { isMobile } from '@/utils/utils';
-import { checkIsColumnFrozen, recalculateColumnMetricsByResizeColumn, getFrozenColumns } from '../../../../utils/column';
-import { isEmptyObject } from '../../../../utils/common';
-import { EVENT_BUS_TYPE, GRID_HEADER_DEFAULT_HEIGHT, GRID_HEADER_DOUBLE_HEIGHT, HEADER_HEIGHT_TYPE, SEQUENCE_COLUMN_WIDTH,
-} from '../../../../constants';
 import { Z_INDEX } from '@/constants/zIndexes';
 import context from '@/sea-metadata/context';
+import { isMobile } from '@/utils/utils';
+import { EVENT_BUS_TYPE, GRID_HEADER_DEFAULT_HEIGHT, GRID_HEADER_DOUBLE_HEIGHT, HEADER_HEIGHT_TYPE, SEQUENCE_COLUMN_WIDTH,
+} from '../../../../constants';
+import { checkIsColumnFrozen, recalculateColumnMetricsByResizeColumn, getFrozenColumns } from '../../../../utils/column';
+import { isEmptyObject } from '../../../../utils/common';
+import ActionsCell from './actions-cell';
+import Cell from './cell';
+import InsertColumn from './insert-column';
 
 const RowsHeader = ({
   isGroupView,

@@ -2,11 +2,11 @@ import React, { useCallback, useState, useRef, useEffect } from 'react';
 import classnames from 'classnames';
 import { CenteredLoading, IconTooltip, ResizeBar, toaster } from '@/components';
 import { gettext } from '@/constants';
-import { RefreshBtn } from '@/project/components';
 import { agentAPI } from '@/project/api';
-import { Utils } from '@/utils/utils';
-import { isFunction } from '@/utils/type-detection';
+import { RefreshBtn } from '@/project/components';
 import ContextMenu from '@/sea-metadata/components/context-menu';
+import { isFunction } from '@/utils/type-detection';
+import { Utils } from '@/utils/utils';
 import { getRunLogStatusByRuns } from '../../utils';
 import RunLog from './run-log';
 

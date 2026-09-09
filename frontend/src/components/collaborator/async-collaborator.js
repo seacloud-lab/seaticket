@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import Collaborator from './collaborator';
 import { mediaUrl as appMediaUrl } from '@/constants';
 import { isValidEmail } from '@/utils/validate';
+import Collaborator from './collaborator';
 
 const getDefaultAvatarUrl = (mediaUrl) => {
   const normalizedMediaUrl = (mediaUrl || appMediaUrl || '').replace(/\/$/, '');

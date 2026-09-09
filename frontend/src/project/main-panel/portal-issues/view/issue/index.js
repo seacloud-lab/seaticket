@@ -1,40 +1,40 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from 'reactstrap';
+import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
 import classnames from 'classnames';
 import deepCopy from 'deep-copy';
-import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
-import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { CenteredLoading, toaster, EmptyTip, IconButton } from '@/components';
-import {
-  PORTAL_ISSUE_STATE_CONFIG, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME, PORTAL_ISSUE_TABLE_NAME, PORTAL_ISSUE_CHILDREN_PAGE_SLUG_ID,
-} from '../../constants';
-import { generatorIssuesContextMenuOptions } from '../../utils';
-import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import {
   gettext, name, username, avatarURL, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE, mediaUrl,
   PERMISSION_TYPES,
 } from '@/constants';
-import { Utils } from '@/utils/utils';
+import { portalAPI } from '@/portal/api';
+import { useData, useTags } from '@/project/hooks';
+import { useAIChatTools } from '@/project/main-panel/ask/hooks';
+import CreateTicketDialog from '@/project/main-panel/connections/components/create-ticket-dialog';
+import TagsSettings from '@/project/main-panel/tags/tags-settings';
+import { Comment, KeyboardShortcuts, UploadFilesButton } from '@/project/main-panel/tickets/components';
 import {
   TypeSettings, PrioritySettings,
   StateSettings, SubStateSettings, LinkSettings,
 } from '@/project/main-panel/tickets/components/ticket-settings';
-import { Comment, KeyboardShortcuts, UploadFilesButton } from '@/project/main-panel/tickets/components';
-import StatusToggleButton from '@/project/main-panel/tickets/view/ticket/status-toggle-btn';
-import { portalAPI } from '@/portal/api';
-import { Issus as IssusModel } from '../../models';
-import { convertRowToKeyValue, getRowById } from '@/sea-metadata/utils/row';
-import { useData, useTags } from '@/project/hooks';
-import { usePortalIssuesMetadata } from '../../hooks';
-import TagsSettings from '@/project/main-panel/tags/tags-settings';
-import Header from '@/project/main-panel/tickets/view/ticket/header';
-import { isFunction, isObject } from '@/utils/type-detection';
 import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
-import CreateTicketDialog from '@/project/main-panel/connections/components/create-ticket-dialog';
 import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
+import Header from '@/project/main-panel/tickets/view/ticket/header';
+import StatusToggleButton from '@/project/main-panel/tickets/view/ticket/status-toggle-btn';
 import { getColumnByName } from '@/sea-metadata/utils/column';
+import { convertRowToKeyValue, getRowById } from '@/sea-metadata/utils/row';
+import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { hasOwnProperty } from '@/utils/object-utils';
 import { canCheckSeafileEditorBrowser } from '@/utils/seafile-editor-browser';
+import { isFunction, isObject } from '@/utils/type-detection';
+import { Utils } from '@/utils/utils';
+import {
+  PORTAL_ISSUE_STATE_CONFIG, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME, PORTAL_ISSUE_TABLE_NAME, PORTAL_ISSUE_CHILDREN_PAGE_SLUG_ID,
+} from '../../constants';
+import { usePortalIssuesMetadata } from '../../hooks';
+import { Issus as IssusModel } from '../../models';
+import { generatorIssuesContextMenuOptions } from '../../utils';
 
 import '@/project/main-panel/tickets/view/ticket/index.css';
 

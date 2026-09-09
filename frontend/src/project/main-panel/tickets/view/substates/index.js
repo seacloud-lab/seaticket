@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
+import OptionDialog from '@/project/components/option-dialog';
+import { EVENT_BUS_TYPE } from '@/project/constants/event-bus-type';
 import SeaMetadata, { CellType, VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
-import eventBus from '@/utils/event-bus';
-import { EVENT_BUS_TYPE } from '@/project/constants/event-bus-type';
-import OptionDialog from '@/project/components/option-dialog';
 import { getRowById } from '@/sea-metadata/utils/row';
+import eventBus from '@/utils/event-bus';
 import { TICKET_TYPE } from '../../constants';
 
 const initColumns = [

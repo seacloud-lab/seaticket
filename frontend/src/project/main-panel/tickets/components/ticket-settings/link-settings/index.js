@@ -1,13 +1,13 @@
 import React, { useMemo, useState, useCallback } from 'react';
 import classnames from 'classnames';
-import { gettext } from '@/constants';
 import { CustomizeLabel, IconTooltip } from '@/components';
-import { useConnections } from '@/project/main-panel/connections/hooks';
+import { gettext } from '@/constants';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
-import { TICKET_TYPE } from '@/project/main-panel/tickets/constants';
-import { PORTAL_ISSUE_TYPE } from '@/project/main-panel/portal-issues/constants';
-import { isNumber } from '@/utils/type-detection';
+import { useConnections } from '@/project/main-panel/connections/hooks';
 import { getConnectionIcon } from '@/project/main-panel/connections/utils';
+import { PORTAL_ISSUE_TYPE } from '@/project/main-panel/portal-issues/constants';
+import { TICKET_TYPE } from '@/project/main-panel/tickets/constants';
+import { isNumber } from '@/utils/type-detection';
 
 import './index.css';
 

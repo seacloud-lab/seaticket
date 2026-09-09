@@ -1,8 +1,8 @@
 import React from 'react';
 import classnames from 'classnames';
 import { EmptyTip } from '@/components';
-import { Comment } from '@/project/main-panel/tickets/components';
 import { mediaUrl } from '@/constants';
+import { Comment } from '@/project/main-panel/tickets/components';
 import dayjs from '@/utils/dayjs';
 
 const GitHubIssuesDetails = ({ details, className, isSmallScreen }) => {

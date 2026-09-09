@@ -1,10 +1,10 @@
 import { gettext } from '@/constants';
 import ObjectUtils from '@/utils/object-utils';
-import { OPERATION_TYPE } from './operations';
-import { getColumnByKey, getServerOptions } from '../utils/column';
+import { Utils } from '@/utils/utils';
 import { CellType } from '../constants';
 import context from '../context';
-import { Utils } from '@/utils/utils';
+import { getColumnByKey, getServerOptions } from '../utils/column';
+import { OPERATION_TYPE } from './operations';
 
 const MAX_LOAD_ROWS = 100;
 

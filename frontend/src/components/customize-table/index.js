@@ -1,8 +1,8 @@
 import React, { useMemo, useRef, useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import Header from './header';
+import PropTypes from 'prop-types';
 import Body from './body';
+import Header from './header';
 
 import './index.css';
 

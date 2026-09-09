@@ -1,15 +1,15 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
 import classnames from 'classnames';
 import { CenteredLoading, IconButton } from '@/components';
-import Sessions from '@/project/main-panel/ask/sessions';
-import Chat from '@/project/main-panel/ask/chat';
-import { AskPageProvider, SessionsProvider, DocumentsProvider, useAskPage, useSessions } from '@/project/main-panel/ask/hooks';
 import { gettext } from '@/constants';
+import { chatAPI } from '@/portal/api/chat-api';
+import { buildPortalPath, getPortalPathSegments } from '@/portal/path-utils';
+import Chat from '@/project/main-panel/ask/chat';
 import { ASK_PAGE_SLUG_ID } from '@/project/main-panel/ask/constants';
 import Documents from '@/project/main-panel/ask/documents';
-import { chatAPI } from '@/portal/api/chat-api';
+import { AskPageProvider, SessionsProvider, DocumentsProvider, useAskPage, useSessions } from '@/project/main-panel/ask/hooks';
+import Sessions from '@/project/main-panel/ask/sessions';
 import { isMobile } from '@/utils/utils';
-import { buildPortalPath, getPortalPathSegments } from '@/portal/path-utils';
 
 import '@/project/main-panel/ask/index.css';
 

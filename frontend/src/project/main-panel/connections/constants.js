@@ -1,6 +1,6 @@
 import { gettext } from '@/constants';
-import CellType from '@/sea-metadata/constants/column/type';
 import { DATE_FORMAT_MAP } from '@/sea-metadata/constants/column';
+import CellType from '@/sea-metadata/constants/column/type';
 import { TICKET_TABLE_NAME } from '../tickets/constants';
 
 export const EMAIL_SERVER_PROVIDER = {

@@ -1,6 +1,5 @@
 import { gettext } from '@/constants';
 import CellType from '@/sea-metadata/constants/column/type';
-
 import {
   TICKET_STATE,
   TICKET_STATE_OPTIONS,

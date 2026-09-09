@@ -1,9 +1,9 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, ModalFooter, Form, FormGroup, Label, Alert } from 'reactstrap';
-import { gettext } from '../../constants';
-import UserSelect from '../../components/user-select';
+import PropTypes from 'prop-types';
 import ModalHeader from '../../components/modal-header';
+import UserSelect from '../../components/user-select';
+import { gettext } from '../../constants';
 
 const propTypes = {
   createGroup: PropTypes.func.isRequired,

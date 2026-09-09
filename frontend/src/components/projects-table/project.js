@@ -1,17 +1,17 @@
 import React, { cloneElement, isValidElement, useCallback, useEffect, useMemo, useState } from 'react';
 import { Dropdown } from 'reactstrap';
-import dayjs from 'dayjs';
-import classnames from 'classnames';
 import { Link } from '@gatsbyjs/reach-router';
-import { formatWithTimezone } from '@/sea-metadata/utils/column';
+import classnames from 'classnames';
+import dayjs from 'dayjs';
 import { gettext, siteRoot } from '@/constants';
-import ModalPortal from '../modal-portal';
-import { CommonOperationConfirmationDialog, RestoreProjectDialog } from '../dialog';
-import ProjectIcon from '../project-icon';
-import CustomizeDropdownMoreToggle from '../customize-dropdown-more-toggle';
-import CustomizeDropdownMenu from '../customize-dropdown-menu';
-import CustomizeDropdownItem from '../customize-dropdown-item';
+import { formatWithTimezone } from '@/sea-metadata/utils/column';
 import { Utils } from '@/utils/utils';
+import CustomizeDropdownItem from '../customize-dropdown-item';
+import CustomizeDropdownMenu from '../customize-dropdown-menu';
+import CustomizeDropdownMoreToggle from '../customize-dropdown-more-toggle';
+import { CommonOperationConfirmationDialog, RestoreProjectDialog } from '../dialog';
+import ModalPortal from '../modal-portal';
+import ProjectIcon from '../project-icon';
 
 const Project = ({
   type = 'org',

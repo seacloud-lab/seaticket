@@ -1,12 +1,12 @@
 import React from 'react';
 import classnames from 'classnames';
 import { AsyncCollaborator, CustomizeMarkdownViewer, IconButton } from '@/components';
-import { useTags } from '@/project/hooks';
-import { useCollaborators } from '@/sea-metadata';
 import { mediaUrl } from '@/constants';
+import { useTags } from '@/project/hooks';
 import DateFormatter from '@/project/main-panel/connections/components/cell-formatter/date-formatter';
-import { getRowsByIds } from '@/sea-metadata/utils/row';
+import { useCollaborators } from '@/sea-metadata';
 import Tag from '@/sea-metadata/components/tag';
+import { getRowsByIds } from '@/sea-metadata/utils/row';
 
 import './index.css';
 

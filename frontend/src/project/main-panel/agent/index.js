@@ -1,10 +1,10 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import TopBar from '../top-bar';
-import { useAgentRunLogs } from './hooks/useAgentRunLogs';
-import { gettext, mediaUrl } from '@/constants';
-import RunLogs from './components/run-logs';
 import { EmptyTip, CenteredLoading } from '@/components';
+import { gettext, mediaUrl } from '@/constants';
+import TopBar from '../top-bar';
 import RunLogDetails from './components/run-log-details';
+import RunLogs from './components/run-logs';
+import { useAgentRunLogs } from './hooks/useAgentRunLogs';
 
 import './index.css';
 

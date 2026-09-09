@@ -1,8 +1,8 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { Button, Label, Input } from 'reactstrap';
 import { SketchPicker } from 'react-color';
-import { gettext } from '@/constants';
+import { Button, Label, Input } from 'reactstrap';
 import { IconButton, toaster, UploadFile, CustomizeSelect, Radio } from '@/components';
+import { gettext } from '@/constants';
 import { portalAPI } from '@/portal/api';
 import { Utils } from '@/utils/utils';
 

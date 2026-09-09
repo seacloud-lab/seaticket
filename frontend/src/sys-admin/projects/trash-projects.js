@@ -1,9 +1,9 @@
 import React, { Component, Fragment } from 'react';
 import { ProjectsTable } from '@/components';
-import sysAdminAPI from '@/sys-admin/api';
 import { gettext, trashCleanExpireDays } from '@/constants';
-import ProjectNav from './project-nav';
+import sysAdminAPI from '@/sys-admin/api';
 import { TopBar, Main } from '../main-panel';
+import ProjectNav from './project-nav';
 
 class TrashProjects extends Component {
 

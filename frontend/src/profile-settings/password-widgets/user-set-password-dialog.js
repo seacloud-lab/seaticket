@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Button, Form, Alert, FormGroup, Label } from 'reactstrap';
-import profileSettingsAPI from '../api';
+import PropTypes from 'prop-types';
+import { ModalHeader, toaster, PasswordInput } from '@/components';
 import { gettext } from '@/constants';
 import { Utils } from '@/utils/utils';
 import { isValidPassword } from '@/utils/validate';
-import { ModalHeader, toaster, PasswordInput } from '@/components';
+import profileSettingsAPI from '../api';
 
 const propTypes = {
   toggle: PropTypes.func,

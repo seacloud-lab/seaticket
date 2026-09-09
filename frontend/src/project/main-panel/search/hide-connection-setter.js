@@ -1,9 +1,9 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import HideConnectionPopover from './hidden-connection-popover';
-import { gettext } from '../../../constants';
+import PropTypes from 'prop-types';
 import Icon from '../../../components/icon';
+import { gettext } from '../../../constants';
+import HideConnectionPopover from './hidden-connection-popover';
 
 const HideConnectionSetter = ({ onConnectionIDsChange, connections }) => {
   const target = 'hide-connection-popover';

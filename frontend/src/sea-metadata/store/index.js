@@ -1,17 +1,17 @@
 import deepCopy from 'deep-copy';
-import { getRowById, getRowsByIds } from '../utils/row';
+import { getType, isFunction } from '@/utils/type-detection';
+import { EVENT_BUS_TYPE, PER_LOAD_NUMBER } from '../constants';
+import context from '../context';
+import { Metadata, Row } from '../models';
 import { getColumnByKey, normalizeColumns } from '../utils/column';
+import { getRowById, getRowsByIds } from '../utils/row';
+import DataProcessor from './data-processor';
+import LocalOperator from './local-operator';
 import {
   Operation, LOCAL_APPLY_OPERATION_TYPE, NEED_APPLY_AFTER_SERVER_OPERATION, OPERATION_TYPE,
   UNDO_OPERATION_TYPE, RE_SEARCH_ROWS_OPERATION, NEED_LOADING_OPERATION,
 } from './operations';
-import { EVENT_BUS_TYPE, PER_LOAD_NUMBER } from '../constants';
-import DataProcessor from './data-processor';
 import ServerOperator from './server-operator';
-import LocalOperator from './local-operator';
-import { Metadata, Row } from '../models';
-import context from '../context';
-import { getType, isFunction } from '@/utils/type-detection';
 
 class Store {
 

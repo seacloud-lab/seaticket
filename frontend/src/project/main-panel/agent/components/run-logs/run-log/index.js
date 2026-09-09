@@ -3,9 +3,9 @@ import classnames from 'classnames';
 import { IconButton } from '@/components';
 import { gettext } from '@/constants';
 import DateFormatter from '@/project/main-panel/connections/components/cell-formatter/date-formatter';
-import ResourceTitle from '../../resource-title';
 import { FROM_NOW } from '@/sea-metadata/constants';
 import { getAgentResource } from '../../../utils';
+import ResourceTitle from '../../resource-title';
 
 import './index.css';
 

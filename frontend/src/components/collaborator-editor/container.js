@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import OptionsEditorContainer from '../options-editor/static-options-editor/container';
 import Collaborator from '../collaborator/collaborator';
+import OptionsEditorContainer from '../options-editor/static-options-editor/container';
 import RemoveButton from '../remove-btn';
 
 const Container = ({

@@ -1,8 +1,8 @@
 import React, { useRef } from 'react';
-import PropTypes from 'prop-types';
-import classnames from 'classnames';
-import { Link } from '@gatsbyjs/reach-router';
 import { useDrag, useDrop } from 'react-dnd';
+import { Link } from '@gatsbyjs/reach-router';
+import classnames from 'classnames';
+import PropTypes from 'prop-types';
 import { Icon, IconButton } from '../../components';
 
 const siteRoot = window.app.config.siteRoot;

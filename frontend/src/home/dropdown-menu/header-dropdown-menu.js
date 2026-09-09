@@ -1,8 +1,8 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Dropdown, DropdownToggle } from 'reactstrap';
-import { canAddProject, disableAddingPersonalProjects } from '../../constants';
+import PropTypes from 'prop-types';
 import { Icon, CustomizeDropdownMenu, CustomizeDropdownItem } from '../../components';
+import { canAddProject, disableAddingPersonalProjects } from '../../constants';
 
 import './header-dropdown-menu.css';
 

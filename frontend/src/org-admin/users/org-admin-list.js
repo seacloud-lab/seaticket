@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { FixedWidthTable, CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
 import User from './user';
-import { FixedWidthTable, CenteredLoading } from '@/components';
 
 import './org-admin-list.css';
 

@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button } from 'reactstrap';
-import TopBar from '../top-bar';
 import { CenteredLoading, Icon, toaster } from '@/components';
 import { gettext } from '@/constants';
-import { Utils } from '@/utils/utils';
 import { skillsAPI } from '@/project/api';
+import { Utils } from '@/utils/utils';
+import TopBar from '../top-bar';
 import { SKILL_DETAIL_MODE, SKILLS_PAGE_TYPE } from './constants';
-import SkillsList from './view/skills-list';
 import SkillDetailDialog from './view/skill-detail-dialog';
+import SkillsList from './view/skills-list';
 
 import './index.css';
 

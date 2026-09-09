@@ -1,9 +1,9 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { portalAPI } from '../api';
-import { hasOwnProperty } from '@/utils/object-utils';
-import { Utils } from '@/utils/utils';
 import { toaster } from '@/components';
 import { gettext } from '@/constants';
+import { hasOwnProperty } from '@/utils/object-utils';
+import { Utils } from '@/utils/utils';
+import { portalAPI } from '../api';
 
 const PortalSettingsContext = React.createContext(null);
 

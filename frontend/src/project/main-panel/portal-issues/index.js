@@ -1,16 +1,16 @@
 import React, { useMemo } from 'react';
-import { PortalIssuesPageProvider, usePortalIssuesPage } from './hooks';
-import Types from './view/types';
-import Substates from './view/substates';
-import AllIssues from './view/all-issues';
-import TrashIssues from './view/trash-issues';
-import Issue from './view/issue';
-import ChatAnalysis from './view/chat-analysis';
-import { PORTAL_ISSUE_PAGE_SLUG_ID } from './constants';
-import TopBar from './components/portal-issues-top-bar';
-import { ticketsAPI } from '../../api';
-import LongTextEditorUtilities from '@/utils/long-text';
 import { server } from '@/constants';
+import LongTextEditorUtilities from '@/utils/long-text';
+import { ticketsAPI } from '../../api';
+import TopBar from './components/portal-issues-top-bar';
+import { PORTAL_ISSUE_PAGE_SLUG_ID } from './constants';
+import { PortalIssuesPageProvider, usePortalIssuesPage } from './hooks';
+import AllIssues from './view/all-issues';
+import ChatAnalysis from './view/chat-analysis';
+import Issue from './view/issue';
+import Substates from './view/substates';
+import TrashIssues from './view/trash-issues';
+import Types from './view/types';
 
 const {
   projectUuid, projectName, workspaceID, permission, isProjectAdmin

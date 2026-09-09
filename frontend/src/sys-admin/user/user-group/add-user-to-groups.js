@@ -1,10 +1,10 @@
 import React from 'react';
 import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
 import { toaster, ModalHeader } from '@/components';
-import { gettext } from '@/constants';
-import { Utils } from '@/utils/utils';
 import GroupSelect from '@/components/group-select';
+import { gettext } from '@/constants';
 import sysAdminAPI from '@/sys-admin/api';
+import { Utils } from '@/utils/utils';
 
 class AddUserToGroupsOperation extends React.Component {
 

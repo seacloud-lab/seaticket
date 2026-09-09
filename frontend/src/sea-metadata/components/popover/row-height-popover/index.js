@@ -1,8 +1,8 @@
 import React, { useCallback } from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import CustomizePopover from '@/components/customize-popover';
+import PropTypes from 'prop-types';
 import { Icon } from '@/components';
+import CustomizePopover from '@/components/customize-popover';
 import { gettext } from '@/constants';
 import { ROW_HEIGHTS } from '../../../constants/grid-body';
 

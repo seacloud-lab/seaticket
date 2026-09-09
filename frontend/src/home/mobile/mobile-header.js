@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { MobileCommonHeader } from '../../components';
+import { gettext } from '../../constants';
 import ProjectMenuToolbar from './toolbar/project-menu-toolbar';
 // import SearchProject from '../search/search-project';
-import { gettext } from '../../constants';
-import { MobileCommonHeader } from '../../components';
 
 const MOBILE_HEADER_TITLE = {
   projects: 'Projects',
@@ -37,7 +37,7 @@ export default class MobileHeader extends Component {
     );
   };
 
-  render(){
+  render() {
     const { selectedTab } = this.props;
     if (selectedTab === 'projects') {
       return this.renderHeader();

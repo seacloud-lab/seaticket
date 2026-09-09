@@ -1,7 +1,7 @@
 /* tslint:disable:jsx-no-multiline-js */
+import * as React from 'react';
 import classnames from 'classnames';
 import * as PropTypes from 'prop-types';
-import * as React from 'react';
 import TouchFeedback from 'rmc-feedback';
 import { getComponentLocale } from '../getLocale';
 import CustomInput from './custom-input';
@@ -84,6 +84,7 @@ class InputItem extends React.Component {
       // some input type do not support selection, see https://html.spec.whatwg.org/multipage/input.html#do-not-apply
       prePos = el.selectionEnd || 0;
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.warn('Get selection error:', error);
     }
 
@@ -140,6 +141,7 @@ class InputItem extends React.Component {
             }
             el.selectionStart = el.selectionEnd = pos;
           } catch (error) {
+            // eslint-disable-next-line no-console
             console.warn('Set selection error:', error);
           }
           break;

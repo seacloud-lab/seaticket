@@ -1,5 +1,5 @@
-import { BAR_TYPE } from '@/project/constants';
 import React, { useContext, useState, useCallback } from 'react';
+import { BAR_TYPE } from '@/project/constants';
 import { ASK_PAGE_SLUG_ID } from '../constants';
 import { AttachmentObject } from '../models';
 

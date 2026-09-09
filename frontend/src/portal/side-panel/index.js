@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Button } from 'reactstrap';
 import classnames from 'classnames';
-import { gettext } from '@/constants';
 import { CustomizeTabs, IconButton } from '@/components';
-import { PORTAL_PAGE, TICKETS_TAB, getPrimaryTabs } from '../constants';
 import Account from '@/components/account';
 import ExternalUserAccount from '@/components/account/external-user-account';
-import { usePortalSettings } from '../hooks';
+import { gettext } from '@/constants';
 import { isMobile } from '@/utils/utils';
+import { PORTAL_PAGE, TICKETS_TAB, getPrimaryTabs } from '../constants';
+import { usePortalSettings } from '../hooks';
 import { getPortalLoginPath } from '../path-utils';
 import LanguageSelector from './language-selector';
 

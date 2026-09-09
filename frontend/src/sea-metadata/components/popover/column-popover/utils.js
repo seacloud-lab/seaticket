@@ -1,9 +1,9 @@
 import { gettext } from '@/constants';
-import { isRegExpression } from '../../../utils/common';
-import { getColumnByKey, getColumnByName } from '../../../utils/column';
 import { CellType } from '../../../constants';
-import { COMMON_FORM_COLUMN_TYPE, TEXT_FORM_COLUMN, NUMBER_FORM_COLUMN } from './constants';
 import context from '../../../context';
+import { getColumnByKey, getColumnByName } from '../../../utils/column';
+import { isRegExpression } from '../../../utils/common';
+import { COMMON_FORM_COLUMN_TYPE, TEXT_FORM_COLUMN, NUMBER_FORM_COLUMN } from './constants';
 
 const _validateColumnName = ({ columnName, oldColumn, metadata }) => {
   if (!columnName) return { type: COMMON_FORM_COLUMN_TYPE.COLUMN_NAME, tips: gettext('This is required') };

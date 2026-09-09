@@ -1,15 +1,15 @@
 import React, { useEffect, useCallback, useState, Fragment } from 'react';
 import { Modal, ModalBody } from 'reactstrap';
-import dayjs from 'dayjs';
 import { getPreviewContent } from '@seafile/seafile-editor';
-import { gettext, mediaUrl } from '@/constants';
+import dayjs from 'dayjs';
 import { ModalHeader, CenteredError, CenteredLoading, EmptyTip } from '@/components';
+import { gettext, mediaUrl } from '@/constants';
+import { ticketsAPI } from '@/project/api';
+import { ResourceDetailsDialog } from '@/project/components';
 import { CONNECTION_TYPES } from '@/project/main-panel/connections/constants';
 import { getResourceIconURL } from '@/project/utils';
-import { ticketsAPI } from '@/project/api';
-import { Utils } from '@/utils/utils';
 import { formatWithTimezone } from '@/sea-metadata/utils/column';
-import { ResourceDetailsDialog } from '@/project/components';
+import { Utils } from '@/utils/utils';
 
 import './index.css';
 
@@ -28,6 +28,7 @@ const RelatedIssuesDialog = ({ projectUuid, ticketId, workspaceID, projectName, 
       const { previewText } = result;
       return previewText;
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error rendering content preview:', error);
       return content || '';
     }

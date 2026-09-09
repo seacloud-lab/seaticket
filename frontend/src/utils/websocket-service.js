@@ -1,5 +1,5 @@
-import { server } from './../constants';
 import projectAPI from '@/project/api/project-api';
+import { server } from './../constants';
 
 const getNotificationServerUrl = () => {
   return `${server.replace(/^http/, 'ws')}/notification/`;
@@ -25,6 +25,7 @@ class WebSocketClient {
     return projectAPI.getNotificationToken(projectUuid).then(res => {
       const token = res?.data?.token || '';
       if (!token) {
+        // eslint-disable-next-line no-console
         console.warn(`Empty notification token for project ${projectUuid}`);
         return null;
       }
@@ -36,6 +37,7 @@ class WebSocketClient {
         },
       };
     }).catch(error => {
+      // eslint-disable-next-line no-console
       console.error('Failed to get websocket notification token: ', error);
       return null;
     });
@@ -94,6 +96,7 @@ class WebSocketClient {
       }
       this.reconnectAttempts = 0;
       resubscribeActiveProjects().catch((error) => {
+        // eslint-disable-next-line no-console
         console.error('Failed to subscribe websocket', error);
       });
     };
@@ -108,6 +111,7 @@ class WebSocketClient {
       try {
         parsedData = JSON.parse(event.data);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('Failed to parse websocket message', error, event.data);
         return;
       }
@@ -116,12 +120,14 @@ class WebSocketClient {
         try {
           callback(parsedData);
         } catch (error) {
+          // eslint-disable-next-line no-console
           console.error('Failed to handle websocket message', error);
         }
       });
     };
 
     socket.onerror = (error) => {
+      // eslint-disable-next-line no-console
       console.error('WebSocket error', error);
     };
 

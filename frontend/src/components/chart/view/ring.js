@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import * as d3 from 'd3';
-import { resolveSideOverlap } from '../utils';
 import { STYLE_COLORS, DEFAULT_LABEL_FONT_SIZE, DEFAULT_LABEL_COLOR } from '../constants';
+import { resolveSideOverlap } from '../utils';
 import useChartDraw from './use-chart-redraw';
 
 import './index.css';

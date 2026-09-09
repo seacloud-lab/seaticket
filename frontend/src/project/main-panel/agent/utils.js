@@ -1,7 +1,7 @@
 import { gettext } from '@/constants';
-import { ACTION_TYPE, RUN_EVENT, RUN_STATUS, SUGGESTIONS_STATUS } from './constants';
-import { CONNECTION_TYPES } from '../connections/constants';
 import { getResourceIconURL, getResourceTypeName } from '@/project/utils';
+import { CONNECTION_TYPES } from '../connections/constants';
+import { ACTION_TYPE, RUN_EVENT, RUN_STATUS, SUGGESTIONS_STATUS } from './constants';
 
 export const getTriggerInfoFromRun = (run) => {
   const eventType = run?.event?.type;

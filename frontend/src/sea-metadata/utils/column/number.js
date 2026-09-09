@@ -1,7 +1,7 @@
-import { getColumnType } from './core';
 import { CellType, NUMERIC_COLUMNS_TYPES, DEFAULT_NUMBER_FORMAT, DISPLAY_INTERNAL_ERRORS } from '../../constants';
 import { NPminus, NPdivide } from '../helper/number-precision';
 import { round } from '../number';
+import { getColumnType } from './core';
 
 const SIZES = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB'];
 

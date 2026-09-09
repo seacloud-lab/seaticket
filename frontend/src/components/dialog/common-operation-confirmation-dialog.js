@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Button } from 'reactstrap';
+import PropTypes from 'prop-types';
+import { isEnter } from '@/utils/hotkey';
 import { gettext } from '../../constants/config';
 import CustomModalHeader from '../modal-header';
-import { isEnter } from '@/utils/hotkey';
 
 const propTypes = {
   title: PropTypes.string.isRequired,

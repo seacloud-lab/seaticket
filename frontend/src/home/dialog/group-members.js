@@ -1,11 +1,11 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Table } from 'reactstrap';
+import PropTypes from 'prop-types';
 import { IconButton, ActiveStatusEditor, toaster } from '@/components';
-import { Utils } from '@/utils/utils';
 import { gettext, username } from '@/constants/config';
-import homeAPI from '../api';
 import { getRoleOptions } from '@/utils/role-status-utils';
+import { Utils } from '@/utils/utils';
+import homeAPI from '../api';
 
 const propTypes = {
   groupMembers: PropTypes.array.isRequired,

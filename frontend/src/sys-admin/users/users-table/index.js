@@ -1,12 +1,12 @@
 import React, { forwardRef, useCallback, useEffect, useState, useImperativeHandle, useMemo } from 'react';
-import { gettext, mediaUrl, loginUrl, multiInstitution, isShowUint } from '@/constants';
-import { Utils } from '@/utils/utils';
 import {
   CenteredLoading, CenteredError,
   FixedWidthTable, EmptyTip, Paginator, toaster,
 } from '@/components';
-import User from './user';
+import { gettext, mediaUrl, loginUrl, multiInstitution, isShowUint } from '@/constants';
+import { Utils } from '@/utils/utils';
 import { useSelectedUsers } from '../selected-users';
+import User from './user';
 
 const UsersTable = forwardRef(({
   placeholder = gettext('No users'),

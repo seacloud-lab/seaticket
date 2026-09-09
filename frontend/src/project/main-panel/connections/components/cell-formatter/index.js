@@ -1,12 +1,12 @@
-import URLFormatter from './url-formatter';
-import LongTextFormatter from './long-text-formatter';
-import ConnectionNameFormatter from '../connection-name-formatter';
-import OpFormatter from './op-formatter';
-import TextFormatter from './text-formatter';
-import DateFormatter from './date-formatter';
-import SyncStatusFormatter from './sync-status-formatter';
-import SyncDateFormatter from './sync-date-formatter';
 import { CONNECTION_FIELD_TYPE } from '../../constants';
+import ConnectionNameFormatter from '../connection-name-formatter';
+import DateFormatter from './date-formatter';
+import LongTextFormatter from './long-text-formatter';
+import OpFormatter from './op-formatter';
+import SyncDateFormatter from './sync-date-formatter';
+import SyncStatusFormatter from './sync-status-formatter';
+import TextFormatter from './text-formatter';
+import URLFormatter from './url-formatter';
 
 const createFormatter = (column) => {
   const { type } = column;

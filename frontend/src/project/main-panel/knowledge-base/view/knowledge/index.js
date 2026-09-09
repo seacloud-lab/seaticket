@@ -1,14 +1,14 @@
 import React, { useCallback, useRef, useState, useEffect } from 'react';
 import { CenteredLoading, toaster } from '@/components';
-import { KB_TABLE_NAME, KNOWLEDGE_PAGE_SLUG_ID } from '../../constants';
-import { Utils } from '@/utils/utils';
 import { knowledgeBaseAPI } from '@/project/api';
-import { useKnowledgePage } from '../../hooks/knowledge-page';
 import { useData, useTags } from '@/project/hooks';
 import { convertRowToKeyValue } from '@/sea-metadata/utils/row';
-import Preview from './preview';
-import Edit from './edit';
 import { downloadFile } from '@/utils/download';
+import { Utils } from '@/utils/utils';
+import { KB_TABLE_NAME, KNOWLEDGE_PAGE_SLUG_ID } from '../../constants';
+import { useKnowledgePage } from '../../hooks/knowledge-page';
+import Edit from './edit';
+import Preview from './preview';
 
 const EditKnowledge = ({ editorAPI, knowledgeID, projectUuid }) => {
   const [isLoading, setLoading] = useState(true);

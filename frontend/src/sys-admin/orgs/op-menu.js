@@ -1,9 +1,9 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Dropdown } from 'reactstrap';
+import PropTypes from 'prop-types';
+import { CustomizeDropdownItem, CustomizeDropdownMenu, CustomizeDropdownMoreToggle } from '@/components';
 import { gettext } from '@/constants';
 import { Utils } from '@/utils/utils';
-import { CustomizeDropdownItem, CustomizeDropdownMenu, CustomizeDropdownMoreToggle } from '@/components';
 
 const propTypes = {
   onFreezedItem: PropTypes.func.isRequired,
@@ -68,7 +68,7 @@ class ExterLinkOpMenu extends React.Component {
       <Dropdown isOpen={this.state.isItemMenuShow} toggle={this.toggleOperationMenu}>
         <CustomizeDropdownMoreToggle isOpen={this.state.isItemMenuShow} />
         <CustomizeDropdownMenu className="mr-2">
-          {operations.map((item, index ) => {
+          {operations.map((item, index) => {
             return (
               <CustomizeDropdownItem key={index} data-op={item} onClick={this.onMenuItemClick}>
                 {this.translateOperations(item)}

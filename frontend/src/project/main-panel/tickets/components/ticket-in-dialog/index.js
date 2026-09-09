@@ -1,34 +1,34 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import classnames from 'classnames';
 import deepCopy from 'deep-copy';
-import { Ticket as TicketModel } from '../../models';
-import { Issus as IssueModel } from '@/project/main-panel/portal-issues/models';
-import { Utils } from '@/utils/utils';
 import { CenteredError, CenteredLoading, toaster } from '@/components';
 import { gettext, lang, PERMISSION_TYPES, name, username, avatarURL } from '@/constants';
-import { useData, useTags, useMetadata as useTicketMetadata, usePortalIssuesMetadata } from '@/project/hooks';
-import {
-  CollaboratorsSettings, TypeSettings, PrioritySettings,
-  StateSettings, SubStateSettings, DueDateSettings, LinkSettings
-} from '../ticket-settings';
-import Comment from '../comment';
-import TagsSettings from '@/project/main-panel/tags/tags-settings';
-import { ticketsAPI } from '@/project/api';
 import { portalAPI } from '@/portal/api';
-import context from '@/sea-metadata/context';
-import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
-import { getRowById, convertRowToKeyValue } from '@/sea-metadata/utils/row';
-import { TICKET_TYPE, PREDEFINED_TICKET_COLUMN_NAME, TICKET_TABLE_NAME } from '../../constants';
-import { PORTAL_ISSUE_TABLE_NAME, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME } from '@/project/main-panel/portal-issues/constants';
-import { useCollaborators } from '@/sea-metadata';
-import eventBus from '@/utils/event-bus';
+import { ticketsAPI } from '@/project/api';
 import { EVENT_BUS_TYPE as GLOBAL_EVENT_BUS_TYPE } from '@/project/constants';
+import { useData, useTags, useMetadata as useTicketMetadata, usePortalIssuesMetadata } from '@/project/hooks';
+import { PORTAL_ISSUE_TABLE_NAME, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME } from '@/project/main-panel/portal-issues/constants';
+import { Issus as IssueModel } from '@/project/main-panel/portal-issues/models';
+import TagsSettings from '@/project/main-panel/tags/tags-settings';
+import { useCollaborators } from '@/sea-metadata';
+import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
+import context from '@/sea-metadata/context';
+import { getRowById, convertRowToKeyValue } from '@/sea-metadata/utils/row';
+import { isSmallContainer } from '@/utils/dialog';
+import eventBus from '@/utils/event-bus';
+import { Utils } from '@/utils/utils';
+import { TICKET_TYPE, PREDEFINED_TICKET_COLUMN_NAME, TICKET_TABLE_NAME } from '../../constants';
+import { useCloseLinkedIssues } from '../../hooks';
+import { Ticket as TicketModel } from '../../models';
 import {
   convertSubstateToGitHubStateReason,
   generatorLinkedRecordsForClosedGitHubIssues,
 } from '../../utils';
-import { useCloseLinkedIssues } from '../../hooks';
-import { isSmallContainer } from '@/utils/dialog';
+import Comment from '../comment';
+import {
+  CollaboratorsSettings, TypeSettings, PrioritySettings,
+  StateSettings, SubStateSettings, DueDateSettings, LinkSettings
+} from '../ticket-settings';
 
 import './index.css';
 

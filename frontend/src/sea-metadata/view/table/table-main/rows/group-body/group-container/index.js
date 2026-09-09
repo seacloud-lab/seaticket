@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import joinClasses from 'classnames';
+import PropTypes from 'prop-types';
+import { Z_INDEX } from '@/constants/zIndexes';
+import { isMobile } from '@/utils/utils';
+import { GROUP_VIEW_OFFSET, SEQUENCE_COLUMN_WIDTH } from '../../../../../../constants';
+import { getFrozenColumns } from '../../../../../../utils/column';
 import GroupContainerLeft from './group-container-left';
 import GroupContainerRight from './group-container-right';
-import { isMobile } from '@/utils/utils';
-import { getFrozenColumns } from '../../../../../../utils/column';
-import { GROUP_VIEW_OFFSET, SEQUENCE_COLUMN_WIDTH } from '../../../../../../constants';
-import { Z_INDEX } from '@/constants/zIndexes';
 
 import './index.css';
 

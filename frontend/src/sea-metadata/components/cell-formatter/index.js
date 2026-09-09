@@ -1,7 +1,7 @@
 import React, { useMemo, isValidElement, cloneElement } from 'react';
 import PropTypes from 'prop-types';
-import Formatter from '../formatter';
 import { useCollaborators } from '../../hooks';
+import Formatter from '../formatter';
 
 const CellFormatter = ({ readonly, value, column, row, ...params }) => {
   const { collaborators, collaboratorsCache, updateCollaboratorsCache, queryUser } = useCollaborators();

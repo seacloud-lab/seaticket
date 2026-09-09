@@ -3,11 +3,11 @@ import classnames from 'classnames';
 import slugid from 'slugid';
 import { Icon, IconButton } from '@/components';
 import { DEFAULT_PROJECT_ICON, gettext, PROJECT_ICON_ALL_LIST } from '@/constants';
-import { isMobile } from '@/utils/utils';
 import { usePortalSettings } from '@/portal/hooks/settings';
-import PortalHomeEditPanel from './edit-panel';
+import { isMobile } from '@/utils/utils';
 import PortalCardEditPanel from './card-edit-panel';
 import PortalHomeChatInput from './chat-input';
+import PortalHomeEditPanel from './edit-panel';
 import { CARD_LAYOUT_OPTIONS, DEFAULT_NEW_CARD, getSafeCardLink, normalizeHomePageStyle } from './utils';
 
 import './index.css';

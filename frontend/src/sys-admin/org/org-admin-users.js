@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import OrgNav from './org-nav';
-import OrgTitle from './org-title';
-import { Main, TopBar } from '../main-panel';
 import { gettext } from '@/constants';
 import sysAdminAPI from '@/sys-admin/api';
-import UsersTable from '../users/users-table';
+import { Main, TopBar } from '../main-panel';
 import { SelectedUsersProvider } from '../users/selected-users';
+import UsersTable from '../users/users-table';
+import OrgNav from './org-nav';
+import OrgTitle from './org-title';
 
 const OrgUsers = ({ orgID, onCloseSidePanel }) => {
   const [orgName, setOrgName] = useState('');

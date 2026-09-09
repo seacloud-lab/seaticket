@@ -1,14 +1,14 @@
 import React, { Component, Fragment } from 'react';
-import PropTypes from 'prop-types';
 import { FormGroup, Label, Input, Button } from 'reactstrap';
+import PropTypes from 'prop-types';
 import { IconButton, toaster } from '@/components';
-import { Utils } from '@/utils/utils';
-import { loginUrl, gettext, isShowUint, twoFactorAuthEnabled } from '@/constants';
 import Loading from '@/components/loading';
+import { loginUrl, gettext, isShowUint, twoFactorAuthEnabled } from '@/constants';
 import SysAdminUpdateUserDialog from '@/sys-admin/dialog/update-user';
-import Nav from './user-nav';
+import { Utils } from '@/utils/utils';
 import sysAdminAPI from '../api';
 import { TopBar, Main } from '../main-panel';
+import Nav from './user-nav';
 import UserTitle from './user-title';
 
 const contentPropTypes = {

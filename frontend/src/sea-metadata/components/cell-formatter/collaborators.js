@@ -1,9 +1,9 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import AsyncCollaborator from './async-collaborator';
+import PropTypes from 'prop-types';
 import { Collaborator } from '@/components';
 import { hasOwnProperty } from '@/utils/object-utils';
+import AsyncCollaborator from './async-collaborator';
 
 const CollaboratorsFormatter = ({ value, className, children: emptyFormatter, column, ...params }) => {
   if (!Array.isArray(value) || value.length === 0) return emptyFormatter || null;

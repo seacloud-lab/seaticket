@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
-import { gettext, siteRoot, isOrgContext } from '../constants';
-import ModalPortal from '../components/modal-portal';
 import ConfirmDisconnectWechat from '../components/dialog/confirm-disconnect-wechat';
+import ModalPortal from '../components/modal-portal';
+import { gettext, siteRoot, isOrgContext } from '../constants';
 
 const {
   csrfToken,

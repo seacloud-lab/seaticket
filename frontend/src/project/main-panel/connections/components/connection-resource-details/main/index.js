@@ -1,14 +1,14 @@
 import React, { useEffect, useMemo, useCallback, useRef, useState } from 'react';
 import { EmptyTip, CustomizeMarkdownViewer, CenteredLoading, CenteredError, toaster } from '@/components';
 import { gettext, mediaUrl, PERMISSION_TYPES } from '@/constants';
-import { CONNECTION_TYPE } from '../../../constants';
-import CommonDetailItem from './common-detail-item';
-import EmailDetails from './email-details';
-import DiscourseDetails from './discourse-details';
-import GitHubIssuesDetails from './github-issues-details';
-import { initConnectionResourceDetails } from '../../../utils';
-import { Utils } from '@/utils/utils';
 import { connectionsAPI } from '@/project/api';
+import { Utils } from '@/utils/utils';
+import { CONNECTION_TYPE } from '../../../constants';
+import { initConnectionResourceDetails } from '../../../utils';
+import CommonDetailItem from './common-detail-item';
+import DiscourseDetails from './discourse-details';
+import EmailDetails from './email-details';
+import GitHubIssuesDetails from './github-issues-details';
 
 import './index.css';
 

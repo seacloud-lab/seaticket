@@ -1,15 +1,15 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { CellType } from '../../constants';
+import CollaboratorEditor from './collaborator-editor';
 import DateEditor from './date-editor';
-import TextEditor from './text-editor';
+import LongTextEditor from './long-text-editor';
+import MultipleSelectEditor from './multiple-select-editor';
 import NumberEditor from './number-editor';
 import SingleSelectEditor from './single-select-editor';
-import MultipleSelectEditor from './multiple-select-editor';
-import CollaboratorEditor from './collaborator-editor';
-import LongTextEditor from './long-text-editor';
 import TagsEditor from './tags-editor';
+import TextEditor from './text-editor';
 import TypeEditor from './type-editor';
-import { CellType } from '../../constants';
 
 // eslint-disable-next-line react/display-name
 const Editor = React.forwardRef((props, ref) => {

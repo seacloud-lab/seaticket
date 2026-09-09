@@ -1,9 +1,9 @@
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import classnames from 'classnames';
-import { gettext, SELECT_OPTION_COLORS } from '@/constants';
-import Tag from '@/sea-metadata/components/tag';
 import { CustomizePopover, CustomizeLabel, RemoveButton } from '@/components';
 import Container from '@/components/options-editor/static-options-editor/container';
+import { gettext, SELECT_OPTION_COLORS } from '@/constants';
+import Tag from '@/sea-metadata/components/tag';
 import { isCellValueChanged } from '@/sea-metadata/utils/cell';
 import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
 import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';

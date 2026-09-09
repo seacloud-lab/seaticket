@@ -1,8 +1,8 @@
-import LocalStorage from '@/utils/local-storage';
 import eventBus from '@/utils/event-bus';
-import Translate from './utils/translate';
-import { CellType } from './constants';
+import LocalStorage from '@/utils/local-storage';
 import { isFunction } from '@/utils/type-detection';
+import { CellType } from './constants';
+import Translate from './utils/translate';
 
 const SETTINGS = {
   stateColumnKey: 'state',

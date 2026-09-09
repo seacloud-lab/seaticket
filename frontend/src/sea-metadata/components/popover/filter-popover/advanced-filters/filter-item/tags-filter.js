@@ -1,14 +1,14 @@
 import React, { useMemo, useState, useRef, useCallback } from 'react';
+import SelectTrigger from '@/components/customize-select/select-trigger';
+import { gettext } from '@/constants';
+import Tag from '@/sea-metadata/components/tag';
+import { useTagsData } from '@/sea-metadata/hooks';
+import { isFilterTermArray } from '@/sea-metadata/utils/filter';
+import { getRowById } from '@/sea-metadata/utils/row';
 import {
   DELETED_OPTION_BACKGROUND_COLOR, DELETED_TAG_TIPS,
 } from '../../../../../constants';
-import { useTagsData } from '@/sea-metadata/hooks';
-import Tag from '@/sea-metadata/components/tag';
-import { getRowById } from '@/sea-metadata/utils/row';
 import { TagSelector } from '../../../../selectors';
-import { gettext } from '@/constants';
-import SelectTrigger from '@/components/customize-select/select-trigger';
-import { isFilterTermArray } from '@/sea-metadata/utils/filter';
 
 const TagsFilter = ({
   readOnly,

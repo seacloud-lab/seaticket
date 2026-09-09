@@ -1,15 +1,15 @@
 import React, { useCallback, useMemo } from 'react';
+import { toaster } from '@/components';
+import { gettext } from '@/constants';
 import { portalAPI } from '@/portal/api';
+import { useData } from '@/project/hooks';
 import { VIEW_TOOL } from '@/sea-metadata';
 import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
-import { gettext } from '@/constants';
-import { toaster } from '@/components';
 import context from '@/sea-metadata/context';
-import CleanPortalIssues from './clean-portal-issues';
 import Issues from '../../components/issues';
-import { useData } from '@/project/hooks';
 import { PORTAL_ISSUE_TABLE_NAME } from '../../constants';
 import { usePortalIssuesPage } from '../../hooks';
+import CleanPortalIssues from './clean-portal-issues';
 
 const viewTools = [VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS, VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS, VIEW_TOOL.GROUPBYS];
 

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { RESIZE_HANDLER_HEIGHT } from './constants';
 import { Z_INDEX } from '@/constants/zIndexes';
+import { RESIZE_HANDLER_HEIGHT } from './constants';
 
 import './index.css';
 
@@ -112,7 +112,6 @@ class ResizeBar extends Component {
   onChangeWidth = (evt) => {
     const { min, max } = this.props;
     const width = this.getWidthFromMouseEvent(evt);
-    console.log(width);
     if (width <= min || width >= max) {
       return;
     }

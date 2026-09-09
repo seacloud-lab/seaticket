@@ -1,5 +1,5 @@
-import classnames from 'classnames';
 import React from 'react';
+import classnames from 'classnames';
 
 const Main = ({ className, title, titleClassName, children }) => {
 

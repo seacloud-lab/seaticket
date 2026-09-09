@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react';
 import { gettext, PERMISSION_TYPES } from '@/constants';
-import SeaMetadata, { CellType, VIEW_TOOL, EVENT_BUS_TYPE } from '@/sea-metadata';
 import { chatAPI } from '@/portal/api/chat-api';
-import context from '@/sea-metadata/context';
-import { VIEW_TYPE, STATISTIC_TYPE } from '@/sea-metadata/constants';
-import SidePanelChat from '@/project/main-panel/ask/side-panel-chat';
 import { useData } from '@/project/hooks';
+import SidePanelChat from '@/project/main-panel/ask/side-panel-chat';
+import SeaMetadata, { CellType, VIEW_TOOL, EVENT_BUS_TYPE } from '@/sea-metadata';
+import { VIEW_TYPE, STATISTIC_TYPE } from '@/sea-metadata/constants';
+import context from '@/sea-metadata/context';
 import { Utils } from '@/utils/utils';
 import { PORTAL_CHAT_TABLE_NAME } from '../../constants';
 

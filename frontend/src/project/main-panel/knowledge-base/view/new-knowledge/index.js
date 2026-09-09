@@ -1,17 +1,17 @@
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
-import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS, getPreviewContent } from '@seafile/seafile-editor';
 import { Button, Input, Label } from 'reactstrap';
+import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS, getPreviewContent } from '@seafile/seafile-editor';
 import classnames from 'classnames';
-import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
-import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { toaster } from '@/components';
-import { KB_TABLE_NAME, KNOWLEDGE_PAGE_SLUG_ID } from '../../constants';
-import { Utils } from '@/utils/utils';
+import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
 import { knowledgeBaseAPI } from '@/project/api';
-import { useKnowledgePage } from '../../hooks/knowledge-page';
-import UploadFilesButton from '../../../tickets/components/upload-files-btn';
-import TagsSettings from '@/project/main-panel/tags/tags-settings';
 import { useData, useTags } from '@/project/hooks';
+import TagsSettings from '@/project/main-panel/tags/tags-settings';
+import { isLongTextValueExceedLimit } from '@/utils/long-text';
+import { Utils } from '@/utils/utils';
+import UploadFilesButton from '../../../tickets/components/upload-files-btn';
+import { KB_TABLE_NAME, KNOWLEDGE_PAGE_SLUG_ID } from '../../constants';
+import { useKnowledgePage } from '../../hooks/knowledge-page';
 
 import './index.css';
 

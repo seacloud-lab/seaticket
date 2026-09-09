@@ -1,9 +1,9 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import { checkIsColumnFrozen } from '../../../../../../utils/column';
-import { GROUP_HEADER_HEIGHT, SEQUENCE_COLUMN_WIDTH } from '../../../../../../constants';
+import PropTypes from 'prop-types';
 import { Z_INDEX } from '@/constants/zIndexes';
+import { GROUP_HEADER_HEIGHT, SEQUENCE_COLUMN_WIDTH } from '../../../../../../constants';
+import { checkIsColumnFrozen } from '../../../../../../utils/column';
 
 class GroupHeaderCell extends React.PureComponent {
 

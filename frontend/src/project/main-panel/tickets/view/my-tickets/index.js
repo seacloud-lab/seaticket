@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from 'react';
-import { ticketsAPI } from '../../../../api';
 import { VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
+import { ticketsAPI } from '../../../../api';
 import Tickets from '../../components/tickets';
 import { useTicketsPage } from '../../hooks';
 

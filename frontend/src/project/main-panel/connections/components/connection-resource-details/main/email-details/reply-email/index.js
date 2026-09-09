@@ -1,11 +1,11 @@
 import React, { useCallback, useRef, useState } from 'react';
-import SeaEmailEditor from '@seafile/sea-email-editor';
 import { Button } from 'reactstrap';
-import { gettext } from '@/constants';
-import ReplyTo from './reply-to';
+import SeaEmailEditor from '@seafile/sea-email-editor';
 import { Icon, IconTooltip, Loading, toaster } from '@/components';
+import { gettext } from '@/constants';
 import { areArraysEqual } from '@/utils/array-utils';
 import { isValidEmail } from '@/utils/validate';
+import ReplyTo from './reply-to';
 
 import './index.css';
 

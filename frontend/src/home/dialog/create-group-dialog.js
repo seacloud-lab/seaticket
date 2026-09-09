@@ -1,10 +1,10 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Input, Button, Label } from 'reactstrap';
+import PropTypes from 'prop-types';
 import { toaster, ModalHeader } from '@/components';
 import { gettext } from '@/constants';
-import homeAPI from '../api';
 import { Utils } from '@/utils/utils';
+import homeAPI from '../api';
 
 class CreateGroupDialog extends React.Component {
 

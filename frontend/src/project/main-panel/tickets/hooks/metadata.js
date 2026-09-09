@@ -1,11 +1,11 @@
 import React, { useContext, useEffect, useState, useCallback } from 'react';
 import deepCopy from 'deep-copy';
-import { Utils } from '@/utils/utils';
 import { toaster } from '@/components';
-import { ticketsAPI } from '../../../api';
-import { OptionsData, Option } from '../models';
-import { PREDEFINED_TICKET_SUBSTATE_OPTION } from '../constants';
 import { isFunction } from '@/utils/type-detection';
+import { Utils } from '@/utils/utils';
+import { ticketsAPI } from '../../../api';
+import { PREDEFINED_TICKET_SUBSTATE_OPTION } from '../constants';
+import { OptionsData, Option } from '../models';
 
 const MetadataContext = React.createContext(null);
 

@@ -1,12 +1,12 @@
 import React, { Fragment } from 'react';
-import PropTypes from 'prop-types';
 import { Dropdown } from 'reactstrap';
+import PropTypes from 'prop-types';
 import { ActiveStatusEditor, toaster, CommonOperationConfirmationDialog,
   CustomizeDropdownMoreToggle, CustomizeDropdownMenu, CustomizeDropdownItem
 } from '@/components';
 import { gettext, siteRoot, orgID, username } from '@/constants';
-import { Utils } from '@/utils/utils';
 import { getStatusOptions, translateStatus } from '@/utils/role-status-utils';
+import { Utils } from '@/utils/utils';
 import orgAdminAPI from '../api';
 
 class User extends React.Component {

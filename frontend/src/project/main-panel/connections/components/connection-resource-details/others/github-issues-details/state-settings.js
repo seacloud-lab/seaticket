@@ -1,11 +1,11 @@
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
-import classnames from 'classnames';
 import { Button, ButtonGroup, } from 'reactstrap';
-import { gettext } from '@/constants';
+import classnames from 'classnames';
 import { Option, OptionsEditor, CustomizeLabel, Icon } from '@/components';
+import { gettext } from '@/constants';
+import { getColumnOptions, getOption } from '@/sea-metadata/utils/column';
 import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { isEsc, isS, isShiftS } from '@/utils/hotkey';
-import { getColumnOptions, getOption } from '@/sea-metadata/utils/column';
 import { GITHUB_STATE_OPTION_NAME_MAP, GITHUB_STATE_REASON_NAME_MAP } from '../../../../constants';
 
 import '@/project/main-panel/tickets/components/ticket-settings/state-settings/index.css';

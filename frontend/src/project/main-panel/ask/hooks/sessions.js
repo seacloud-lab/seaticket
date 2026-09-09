@@ -1,12 +1,12 @@
 import React, { useContext, useEffect, useState, useCallback, useRef } from 'react';
-import { Utils } from '@/utils/utils';
 import { toaster } from '@/components';
 import { gettext } from '@/constants';
+import eventBus from '@/utils/event-bus';
+import { Utils } from '@/utils/utils';
+import { EVENT_BUS_TYPE } from '../../../constants';
+import { ASK_PAGE_SLUG_ID, CHAT_ATTACHMENT_TYPE, SESSION_TAB_TYPE } from '../constants';
 import { AttachmentObject, ChatSession } from '../models';
 import { useAskPage } from './page-type';
-import { ASK_PAGE_SLUG_ID, CHAT_ATTACHMENT_TYPE, SESSION_TAB_TYPE } from '../constants';
-import eventBus from '@/utils/event-bus';
-import { EVENT_BUS_TYPE } from '../../../constants';
 
 const SessionsContext = React.createContext(null);
 

@@ -1,9 +1,9 @@
 import React, { useCallback } from 'react';
-import TopBar from '../../top-bar';
-import { EVENT_BUS_TYPE } from '@/project/constants/event-bus-type';
-import { gettext, PERMISSION_TYPES } from '@/constants';
-import eventBus from '@/utils/event-bus';
 import { IconTextBtn } from '@/components';
+import { gettext, PERMISSION_TYPES } from '@/constants';
+import { EVENT_BUS_TYPE } from '@/project/constants/event-bus-type';
+import eventBus from '@/utils/event-bus';
+import TopBar from '../../top-bar';
 
 const TicketTopBar = ({ title, permission }) => {
 

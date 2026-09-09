@@ -1,6 +1,6 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Button, PopoverBody } from 'reactstrap';
+import PropTypes from 'prop-types';
 import CustomizePopover from '@/components/customize-popover';
 import { gettext } from '@/constants';
 import ProjectSettingContent from '../../components/project-setting-content';

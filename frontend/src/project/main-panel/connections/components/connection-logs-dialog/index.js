@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Modal, ModalBody } from 'reactstrap';
-import { gettext } from '@/constants';
 import { CenteredError, CenteredLoading, ModalHeader, EmptyTip } from '@/components';
-import { connectionsAPI } from '../../../../api';
+import { gettext } from '@/constants';
 import { Utils } from '@/utils/utils';
+import { connectionsAPI } from '../../../../api';
 
 import './index.css';
 

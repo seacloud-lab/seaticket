@@ -1,16 +1,16 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import classnames from 'classnames';
 import { Dropdown, DropdownToggle, Button } from 'reactstrap';
 import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
+import classnames from 'classnames';
 import { Icon, CustomizeMarkdownViewer, CommonOperationConfirmationDialog, toaster, CustomizeDropdownMenu, CustomizeDropdownItem, CenteredLoading } from '@/components';
 import { gettext, LONG_TEXT_EXCEED_LIMIT_MESSAGE, mediaUrl } from '@/constants';
 import { useCollaborators } from '@/sea-metadata';
 import { downloadFile } from '@/utils/download';
-import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { isModEnter } from '@/utils/hotkey';
+import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { canCheckSeafileEditorBrowser } from '@/utils/seafile-editor-browser';
-import UploadFilesButton from '../upload-files-btn';
 import { isObject } from '@/utils/type-detection';
+import UploadFilesButton from '../upload-files-btn';
 
 import './index.css';
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Input } from 'reactstrap';
-import { CONNECTION_FIELD_TYPE } from '../../constants';
 import { TextInput, PasswordInput, CustomizeSelect } from '@/components';
+import { CONNECTION_FIELD_TYPE } from '../../constants';
 
 const Editor = ({ api, column, row, readonly, canModifyPassword = true, onChange }) => {
   const { key, type, placeholder, default_value, options, can_edit_multiple_times = true, } = column;

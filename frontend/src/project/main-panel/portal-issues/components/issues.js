@@ -1,35 +1,35 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { ticketsAPI } from '../../../api';
+import { CenteredLoading } from '@/components';
+import toaster from '@/components/toaster';
+import { gettext } from '@/constants';
 import { portalAPI } from '@/portal/api';
+import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
+import { useData, useTags } from '@/project/hooks';
+import { useAIChatTools } from '@/project/main-panel/ask/hooks';
+import CreateTicketDialog from '@/project/main-panel/connections/components/create-ticket-dialog';
+import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
+import { normalizeContextMenuOptions } from '@/project/utils';
 import SeaMetadata from '@/sea-metadata';
-import { usePortalIssuesMetadata } from '../hooks';
+import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
+import context from '@/sea-metadata/context';
+import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
+import { getColumnByName } from '@/sea-metadata/utils/column';
+import { convertRowToNameValue, convertRowsToNameValue } from '@/sea-metadata/utils/row';
+import { isFunction, isObject } from '@/utils/type-detection';
+import { Utils } from '@/utils/utils';
+import { ticketsAPI } from '../../../api';
+import { TICKET_TABLE_NAME } from '../../tickets/constants';
 import {
   PORTAL_ISSUE_PAGE_SLUG_ID, PORTAL_ISSUE_PREDEFINED_COLUMN_CONFIG,
   PORTAL_ISSUE_NOT_DISPLAY_COLUMNS, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME,
   PORTAL_ISSUE_COLUMNS_ORDER_CONFIG, PORTAL_ISSUE_COLUMNS_WIDTH_CONFIG,
   PORTAL_ISSUE_TABLE_NAME, PORTAL_ISSUE_TYPE,
 } from '../constants';
-import { gettext } from '@/constants';
-import { CenteredLoading } from '@/components';
-import context from '@/sea-metadata/context';
-import toaster from '@/components/toaster';
+import { usePortalIssuesMetadata } from '../hooks';
 import {
   generatorIssuesRowsTools,
   cascadeUpdate, generatorIssuesContextMenuOptions,
 } from '../utils';
-import { convertRowToNameValue, convertRowsToNameValue } from '@/sea-metadata/utils/row';
-import { useAIChatTools } from '@/project/main-panel/ask/hooks';
-import CreateTicketDialog from '@/project/main-panel/connections/components/create-ticket-dialog';
-import { isFunction, isObject } from '@/utils/type-detection';
-import { useData, useTags } from '@/project/hooks';
-import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
-import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
-import { getColumnByName } from '@/sea-metadata/utils/column';
-import { TICKET_TABLE_NAME } from '../../tickets/constants';
-import { normalizeContextMenuOptions } from '@/project/utils';
-import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
-import { Utils } from '@/utils/utils';
-import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 
 const Issues = ({
   canCreateRelatedTickets = true, isBuiltInView = false, canOpenIssue = true, canChatWithAI = false, isShowViewInURL = true,

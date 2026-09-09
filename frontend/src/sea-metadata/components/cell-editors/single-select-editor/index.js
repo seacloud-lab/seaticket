@@ -1,11 +1,11 @@
 import React, { forwardRef, useMemo, useImperativeHandle, useCallback, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { getCellValueByColumn } from '../../../utils/cell';
-import { getColumnByKey, getColumnOptions, generateNewOption } from '../../../utils/column';
-import context from '@/sea-metadata/context';
 import Container from '@/components/options-editor/static-options-editor/container';
 import { gettext } from '@/constants';
 import { PREDEFINED_TICKET_COLUMN_NAME } from '@/project/main-panel/tickets/constants';
+import context from '@/sea-metadata/context';
+import { getCellValueByColumn } from '../../../utils/cell';
+import { getColumnByKey, getColumnOptions, generateNewOption } from '../../../utils/column';
 
 import './index.css';
 

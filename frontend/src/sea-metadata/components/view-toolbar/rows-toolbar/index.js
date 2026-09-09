@@ -4,8 +4,8 @@ import { Icon, IconButton, SubDropdown,
   CustomizeDropdownMoreToggle, CustomizeDropdownItem, CustomizeDropdownMenu
 } from '@/components';
 import { gettext } from '@/constants';
-import context from '../../../context';
 import { isFunction } from '@/utils/type-detection';
+import context from '../../../context';
 
 const RowsToolbar = ({ rows, columns, selectNone, deleteRow, deleteRows, modifyRows, createTools, updateLocalRow, deleteLocalRows }) => {
   const [isOpen, setIsOpen] = useState(false);

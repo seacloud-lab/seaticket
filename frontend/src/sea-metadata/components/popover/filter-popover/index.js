@@ -1,18 +1,18 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import isHotkey from 'is-hotkey';
-import deepcopy from 'deep-copy';
 import { FormGroup, Label, UncontrolledPopover } from 'reactstrap';
 import classnames from 'classnames';
+import deepcopy from 'deep-copy';
+import isHotkey from 'is-hotkey';
+import PropTypes from 'prop-types';
 import CustomizeAddTool from '@/components/customize-add-tool';
-import AdvancedFilters from './advanced-filters';
-import BasicFilters from './basic-filters';
 import { gettext } from '@/constants';
+import context from '@/sea-metadata/context';
+import { getEventClassName } from '@/utils/dom';
+import ObjectUtils from '@/utils/object-utils';
 import { EVENT_BUS_TYPE, FILTER_COLUMN_OPTIONS } from '../../../constants';
 import { getValidFilters, getFilterByColumn } from '../../../utils/filter';
-import { getEventClassName } from '@/utils/dom';
-import context from '@/sea-metadata/context';
-import ObjectUtils from '@/utils/object-utils';
+import AdvancedFilters from './advanced-filters';
+import BasicFilters from './basic-filters';
 
 import './index.css';
 

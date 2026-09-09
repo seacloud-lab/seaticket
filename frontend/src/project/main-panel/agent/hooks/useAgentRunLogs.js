@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { agentAPI } from '@/project/api';
 import { toaster } from '@/components';
+import { agentAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
 
 const { projectUuid } = window.app.pageOptions;
@@ -33,6 +33,7 @@ export const useAgentRunLogs = () => {
       pageRef.current = pageNum;
       setIsLoading(false);
     }).catch(err => {
+      // eslint-disable-next-line no-console
       console.error('Failed to load agent run logs:', err);
       const errorMessage = Utils.getErrorMsg(err);
       toaster.danger(errorMessage);

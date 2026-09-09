@@ -1,6 +1,6 @@
-import View from './view';
 import Column from './column';
 import Row from './row';
+import View from './view';
 
 class Metadata {
   constructor(object) {

@@ -1,9 +1,9 @@
 import React, { useCallback, useState } from 'react';
 import classnames from 'classnames';
-import { Icon, IconButton } from '../../../components';
-import { useConnections } from '@/project/main-panel/connections/hooks';
-import ConnectionNav from './connection-nav';
 import { NAVIGATION_BASE_PADDING, NAVIGATION_LEVEL_INDENT } from '@/constants';
+import { useConnections } from '@/project/main-panel/connections/hooks';
+import { Icon, IconButton } from '../../../components';
+import ConnectionNav from './connection-nav';
 
 import './index.css';
 

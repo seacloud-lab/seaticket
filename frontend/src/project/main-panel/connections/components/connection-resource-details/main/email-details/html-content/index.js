@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { parseAndCleanHTML } from '@seafile/sea-email-editor/dist/utils/dom';
-import { isValidEmail, isValidUrl } from '@/utils/validate';
-import { generatorConnectionAssetURLPrefix } from '@/project/main-panel/connections/utils';
-import { Utils } from '@/utils/utils';
 import { IconButton, IconTextBtn, toaster } from '@/components';
 import { gettext, server, siteRoot } from '@/constants';
-import { downloadFile } from '@/utils/download';
 import { connectionsAPI } from '@/project/api';
+import { generatorConnectionAssetURLPrefix } from '@/project/main-panel/connections/utils';
+import { downloadFile } from '@/utils/download';
 import { isString } from '@/utils/type-detection';
+import { Utils } from '@/utils/utils';
+import { isValidEmail, isValidUrl } from '@/utils/validate';
 
 import './index.css';
 

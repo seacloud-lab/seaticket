@@ -1,12 +1,12 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import classnames from 'classnames';
 import { Dropdown } from 'reactstrap';
+import classnames from 'classnames';
+import PropTypes from 'prop-types';
 import { CustomizeDropdownMoreToggle, ProjectIcon, toaster } from '@/components';
+import { DEFAULT_COLOR, DEFAULT_PROJECT_ICON } from '@/constants/project-icon';
 import { Utils } from '@/utils/utils';
 import { validateName } from '@/utils/validate';
 import ProjectSettingPopover from '../../popover/project-setting-popover';
-import { DEFAULT_COLOR, DEFAULT_PROJECT_ICON } from '@/constants/project-icon';
 import ProjectItemDropdownMenu from './project-item-dropdown-menu';
 
 const siteRoot = window.app.config.siteRoot;

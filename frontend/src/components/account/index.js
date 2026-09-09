@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import toaster from '../toaster';
-import { Utils } from '@/utils/utils';
-import { isEnter, isEsc } from '@/utils/hotkey';
-import { isWorkWeChat } from '@/utils/wechat-utils';
+import PropTypes from 'prop-types';
 import userAPI from '@/api/user-api';
 import { siteRoot, gettext, avatarURL, useExternalTeamAdmin } from '@/constants';
 import { aiCreditExceededAmount } from '@/constants/config';
+import { isEnter, isEsc } from '@/utils/hotkey';
+import { Utils } from '@/utils/utils';
+import { isWorkWeChat } from '@/utils/wechat-utils';
 import Icon from '../icon';
+import toaster from '../toaster';
 
 import './account.css';
 

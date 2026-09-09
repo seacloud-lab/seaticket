@@ -1,17 +1,17 @@
 import React, { createRef, useState, useCallback, useMemo, forwardRef, useImperativeHandle } from 'react';
-import PropTypes from 'prop-types';
 import { Dropdown, DropdownToggle } from 'reactstrap';
 import classnames from 'classnames';
+import PropTypes from 'prop-types';
 import { ModalPortal, Icon, CustomizeDropdownMenu, CustomizeDropdownItem, CustomizeDropdownItemText } from '@/components';
-import { RenamePopover } from '../../../../../../components/popover';
-import DropdownItem from './dropdown-item';
 import { gettext } from '@/constants';
-import { isMobile } from '@/utils/utils';
-import { checkIsPredefinedColumn, getDateDisplayString } from '../../../../../../utils/column';
-import { CellType, DEFAULT_DATE_FORMAT, EVENT_BUS_TYPE } from '../../../../../../constants';
 import context from '@/sea-metadata/context';
 import { useTypesData, useSubstatesData } from '@/sea-metadata/hooks';
 import { isFunction } from '@/utils/type-detection';
+import { isMobile } from '@/utils/utils';
+import { RenamePopover } from '../../../../../../components/popover';
+import { CellType, DEFAULT_DATE_FORMAT, EVENT_BUS_TYPE } from '../../../../../../constants';
+import { checkIsPredefinedColumn, getDateDisplayString } from '../../../../../../utils/column';
+import DropdownItem from './dropdown-item';
 
 const HeaderDropdownMenu = forwardRef(({
   column, view,

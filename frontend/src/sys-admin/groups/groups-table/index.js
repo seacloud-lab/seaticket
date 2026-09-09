@@ -1,7 +1,7 @@
 import React, { forwardRef, useCallback, useEffect, useState, useImperativeHandle } from 'react';
+import { Paginator, toaster, CenteredLoading, CenteredError, EmptyTip, FixedWidthTable } from '@/components';
 import { gettext, mediaUrl, loginUrl } from '@/constants';
 import { Utils } from '@/utils/utils';
-import { Paginator, toaster, CenteredLoading, CenteredError, EmptyTip, FixedWidthTable } from '@/components';
 import Group from './group';
 
 const GroupsTable = forwardRef(({

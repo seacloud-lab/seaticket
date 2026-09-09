@@ -1,13 +1,13 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import classnames from 'classnames';
-import { navigate } from '@gatsbyjs/reach-router';
 import { Button } from 'reactstrap';
+import { navigate } from '@gatsbyjs/reach-router';
+import classnames from 'classnames';
+import PropTypes from 'prop-types';
+import { AdminSearch, ProjectsTable } from '@/components';
 import { gettext, orgID } from '@/constants';
+import orgAdminAPI from '../api';
 import { TopBar, Main } from '../main-panel';
 import TrashProjects from './trash-projects';
-import { AdminSearch, ProjectsTable } from '@/components';
-import orgAdminAPI from '../api';
 
 const siteRoot = window.app.config.siteRoot;
 

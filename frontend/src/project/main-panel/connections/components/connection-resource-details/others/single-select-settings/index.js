@@ -1,10 +1,10 @@
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import classnames from 'classnames';
-import { gettext } from '@/constants';
 import { Option, OptionsEditor, CustomizeLabel } from '@/components';
+import { gettext } from '@/constants';
+import { getColumnOptions, getOption } from '@/sea-metadata/utils/column';
 import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { isEsc, isShiftT } from '@/utils/hotkey';
-import { getColumnOptions, getOption } from '@/sea-metadata/utils/column';
 
 import './index.css';
 

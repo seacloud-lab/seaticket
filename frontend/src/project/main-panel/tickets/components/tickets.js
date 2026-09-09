@@ -1,37 +1,37 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { ticketsAPI } from '../../../api';
+import { CenteredLoading } from '@/components';
+import toaster from '@/components/toaster';
+import { gettext } from '@/constants';
+import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
+import { EVENT_BUS_TYPE as GLOBAL_EVENT_BUS_TYPE } from '@/project/constants';
+import { useData, useTags } from '@/project/hooks';
+import { useAIChatTools } from '@/project/main-panel/ask/hooks';
+import { useConnections } from '@/project/main-panel/connections/hooks';
+import { getTableName } from '@/project/main-panel/connections/utils';
 import SeaMetadata from '@/sea-metadata';
-import { useCloseLinkedIssues, useMetadata } from '../hooks';
+import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
+import context from '@/sea-metadata/context';
+import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
+import { getColumnByName } from '@/sea-metadata/utils/column';
+import { convertRowToNameValue, convertRowsToNameValue, getRowById as getTableRowById } from '@/sea-metadata/utils/row';
+import eventBus from '@/utils/event-bus';
+import { isFunction } from '@/utils/type-detection';
+import { ticketsAPI } from '../../../api';
 import {
   TICKET_PAGE_SLUG_ID, TICKET_PREDEFINED_COLUMN_CONFIG,
   TICKET_NOT_DISPLAY_COLUMNS, PREDEFINED_TICKET_COLUMN_NAME,
   TICKET_COLUMNS_ORDER_CONFIG, TICKET_COLUMNS_WIDTH_CONFIG,
   TICKET_TABLE_NAME, TICKET_TYPE, AUTO_UPDATE_PARTICIPANTS_KEY,
 } from '../constants';
-import { EVENT_BUS_TYPE as GLOBAL_EVENT_BUS_TYPE } from '@/project/constants';
-import { gettext } from '@/constants';
-import { CenteredLoading } from '@/components';
-import context from '@/sea-metadata/context';
-import toaster from '@/components/toaster';
+import { useCloseLinkedIssues, useMetadata } from '../hooks';
 import {
   generatorTicketsRowsTools,
   cascadeUpdate, generatorTicketsContextMenuOptions,
   convertTicketToTask, convertTicketToKb,
 } from '../utils';
-import { convertRowToNameValue, convertRowsToNameValue, getRowById as getTableRowById } from '@/sea-metadata/utils/row';
-import { useAIChatTools } from '@/project/main-panel/ask/hooks';
-import RelatedIssuesDialog from './related-issues-dialog';
 import CreateKBRecordDialog from './create-kb-record-dialog';
 import CreateTaskDialog from './create-task-dialog';
-import { isFunction } from '@/utils/type-detection';
-import { useData, useTags } from '@/project/hooks';
-import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
-import { getColumnByName } from '@/sea-metadata/utils/column';
-import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
-import { useConnections } from '@/project/main-panel/connections/hooks';
-import { getTableName } from '@/project/main-panel/connections/utils';
-import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
-import eventBus from '@/utils/event-bus';
+import RelatedIssuesDialog from './related-issues-dialog';
 
 const Tickets = ({
   canFindRelatedIssues = true, isBuiltInView = false,
@@ -303,7 +303,7 @@ const Tickets = ({
     const linked_records = { [newValueKey]: task.title };
     insertRowByLink(connectionTableName, TICKET_TABLE_NAME, linked_records, currentTicket._id, update, () => {
       // update current details dialog
-      eventBus.dispatch(GLOBAL_EVENT_BUS_TYPE.MODIFY_LOCAL_RECORD_IN_DIALOG, { [linkedConnectionRecordsColumn.name]: newValue }, { [newValueKey]: { _pk: task._pk, title: task.title, connection_type: connection.type } } );
+      eventBus.dispatch(GLOBAL_EVENT_BUS_TYPE.MODIFY_LOCAL_RECORD_IN_DIALOG, { [linkedConnectionRecordsColumn.name]: newValue }, { [newValueKey]: { _pk: task._pk, title: task.title, connection_type: connection.type } });
 
       // update current view display
       const metadataEventBus = context.eventBus;

@@ -1,13 +1,13 @@
 import React, { forwardRef, useCallback, useEffect, useState, useImperativeHandle } from 'react';
 import classnames from 'classnames';
-import SearchInput from '../../../search-input';
-import { searchOptions } from '@/utils/search';
-import CustomizeAddTool from '../../../customize-add-tool';
 import { gettext, KeyCodes } from '@/constants';
+import { searchOptions } from '@/utils/search';
+import { isFunction, isNumber } from '@/utils/type-detection';
 import { Utils } from '@/utils/utils';
+import CustomizeAddTool from '../../../customize-add-tool';
+import SearchInput from '../../../search-input';
 import toaster from '../../../toaster';
 import Options from '../../options';
-import { isFunction, isNumber } from '@/utils/type-detection';
 
 import './index.css';
 

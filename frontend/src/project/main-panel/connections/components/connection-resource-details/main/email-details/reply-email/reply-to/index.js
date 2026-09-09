@@ -1,6 +1,6 @@
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useState } from 'react';
-import classnames from 'classnames';
 import { Input } from 'reactstrap';
+import classnames from 'classnames';
 import { ClickOutside, IconTooltip } from '@/components';
 import { gettext } from '@/constants';
 import { isString } from '@/utils/type-detection';

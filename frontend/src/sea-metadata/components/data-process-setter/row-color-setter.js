@@ -1,11 +1,11 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
+import PropTypes from 'prop-types';
 import IconBtn from '@/components/icon-button';
-import { RowColorPopover } from '../popover';
 import { gettext } from '@/constants';
-import { hasRowColor } from '../../utils/view';
 import { isEnter, isSpace } from '@/utils/hotkey';
+import { hasRowColor } from '../../utils/view';
+import { RowColorPopover } from '../popover';
 
 const RowColorSetter = ({ target = 'seaqa-row-color-popover', readOnly, columns, colorbys, collaborators, modifyRowColor, wrapperClass }) => {
   const [isShowSetter, setShowSetter] = useState(false);

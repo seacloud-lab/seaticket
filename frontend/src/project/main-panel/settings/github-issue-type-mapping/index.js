@@ -3,10 +3,10 @@ import classnames from 'classnames';
 import { CustomizeSelect, Icon, Option } from '@/components';
 import SecondaryBtn from '@/components/btn/secondary-btn';
 import toaster from '@/components/toaster';
-import { agentAPI } from '@/project/api';
 import { gettext } from '@/constants';
-import { getConnectionIcon } from '../../connections/utils';
+import { agentAPI } from '@/project/api';
 import { CONNECTION_TYPE } from '../../connections/constants';
+import { getConnectionIcon } from '../../connections/utils';
 import SettingsItem from '../settings-item';
 
 import './index.css';

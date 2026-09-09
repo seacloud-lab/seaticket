@@ -1,8 +1,8 @@
 import React, { Component, Fragment } from 'react';
 import { Input, InputGroup, Button, Row, Col, Label } from 'reactstrap';
 import PropTypes from 'prop-types';
-import { gettext } from '@/constants';
 import { ClickOutside, Icon } from '@/components';
+import { gettext } from '@/constants';
 
 const propTypes = {
   value: PropTypes.string,

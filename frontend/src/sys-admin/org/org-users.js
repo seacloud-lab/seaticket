@@ -1,15 +1,15 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from 'reactstrap';
 import { toaster } from '@/components';
-import SysAdminAddUserDialog from '@/sys-admin/dialog/sysadmin-add-user-dialog';
-import OrgNav from './org-nav';
-import OrgTitle from './org-title';
-import { Main, TopBar } from '../main-panel';
-import { Utils } from '@/utils/utils';
 import { gettext } from '@/constants';
 import sysAdminAPI from '@/sys-admin/api';
-import UsersTable from '../users/users-table';
+import SysAdminAddUserDialog from '@/sys-admin/dialog/sysadmin-add-user-dialog';
+import { Utils } from '@/utils/utils';
+import { Main, TopBar } from '../main-panel';
 import { SelectedUsersProvider } from '../users/selected-users';
+import UsersTable from '../users/users-table';
+import OrgNav from './org-nav';
+import OrgTitle from './org-title';
 
 const OrgUsers = ({ orgID, onCloseSidePanel }) => {
   const [searchValue, setSearchValue] = useState('');

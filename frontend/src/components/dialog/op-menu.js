@@ -1,10 +1,10 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Dropdown } from 'reactstrap';
+import PropTypes from 'prop-types';
 import { Utils } from '../../utils/utils';
-import CustomizeDropdownMoreToggle from '../customize-dropdown-more-toggle';
-import CustomizeDropdownMenu from '../customize-dropdown-menu';
 import CustomizeDropdownItem from '../customize-dropdown-item';
+import CustomizeDropdownMenu from '../customize-dropdown-menu';
+import CustomizeDropdownMoreToggle from '../customize-dropdown-more-toggle';
 
 const propTypes = {
   onFreezedItem: PropTypes.func.isRequired,
@@ -51,7 +51,7 @@ class OpMenu extends React.Component {
       <Dropdown isOpen={this.state.isItemMenuShow} toggle={this.toggleOperationMenu}>
         <CustomizeDropdownMoreToggle isOpen={this.state.isItemMenuShow} className="w-5 h-5 sf-dropdown-toggle" />
         <CustomizeDropdownMenu className="my-1 mr-2">
-          {operations.map((item, index ) => {
+          {operations.map((item, index) => {
             return (<CustomizeDropdownItem key={index} data-op={item} onClick={this.onMenuItemClick}>{translateOperations(item)}</CustomizeDropdownItem>);
           })}
         </CustomizeDropdownMenu>

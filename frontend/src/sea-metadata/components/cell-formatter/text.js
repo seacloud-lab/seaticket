@@ -1,6 +1,6 @@
 import React, { useMemo, useCallback, useRef, useState } from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
+import PropTypes from 'prop-types';
 import { getType } from '@/utils/type-detection';
 import ModalPortal from '../../../components/modal-portal';
 import LongTextPreview from '../cell-formatter/long-text/long-text-preview';
@@ -61,7 +61,7 @@ const TextFormatter = ({ value, className, column, onClick, children: emptyForma
 
   return (
     <div
-      className={classnames('sea-metadata-ui cell-formatter-container text-formatter', className, { 'hover-decoration': column?.click } )}
+      className={classnames('sea-metadata-ui cell-formatter-container text-formatter', className, { 'hover-decoration': column?.click })}
       title={is_hover_show_content ? '' : validValue}
       onClick={column?.click && onClick ? onClick : () => {}}
       onMouseEnter={is_hover_show_content ? onMouseEnter : () => {}}

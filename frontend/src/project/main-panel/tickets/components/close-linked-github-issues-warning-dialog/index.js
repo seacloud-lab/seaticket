@@ -1,9 +1,9 @@
 import React, { useCallback, useState } from 'react';
 import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
-import { gettext } from '@/constants';
 import { CenteredLoading, IconTooltip, toaster, ModalHeader } from '@/components';
-import { getConnectionIcon } from '@/project/main-panel/connections/utils';
+import { gettext } from '@/constants';
 import { CONNECTION_TYPE } from '@/project/main-panel/connections/constants';
+import { getConnectionIcon } from '@/project/main-panel/connections/utils';
 import { Utils } from '@/utils/utils';
 
 import './index.css';

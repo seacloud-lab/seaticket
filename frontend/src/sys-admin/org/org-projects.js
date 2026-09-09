@@ -1,11 +1,11 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { gettext } from '@/constants';
 import { ProjectsTable } from '@/components';
+import { gettext } from '@/constants';
+import sysAdminAPI from '@/sys-admin/api';
+import { Main, TopBar } from '../main-panel';
 import OrgNav from './org-nav';
 import OrgTitle from './org-title';
-import { Main, TopBar } from '../main-panel';
-import sysAdminAPI from '@/sys-admin/api';
 
 class OrgProjects extends Component {
 

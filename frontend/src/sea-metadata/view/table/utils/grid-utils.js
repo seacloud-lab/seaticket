@@ -1,15 +1,15 @@
-import dayjs from 'dayjs';
 import { getPreviewContent } from '@seafile/seafile-editor';
-import { getCellValueByColumn, isCellValueChanged, isValidCellValue } from '../../../utils/cell';
-import { getColumnByIndex, getColumnOriginName } from '../../../utils/column';
+import dayjs from 'dayjs';
+import { getType } from '@/utils/type-detection';
 import { CellType, NOT_SUPPORT_DRAG_COPY_COLUMN_TYPES, TRANSFER_TYPES,
   REG_NUMBER_DIGIT, REG_STRING_NUMBER_PARTS, RATE_MAX_NUMBER, PASTE_SOURCE,
 } from '../../../constants';
-import { getGroupRowByIndex } from './group-metrics';
-import { convertCellValue } from '../../../utils/convert-utils';
 import context from '../../../context';
+import { getCellValueByColumn, isCellValueChanged, isValidCellValue } from '../../../utils/cell';
+import { getColumnByIndex, getColumnOriginName } from '../../../utils/column';
+import { convertCellValue } from '../../../utils/convert-utils';
 import { getRowIdFromRow } from '../../../utils/row';
-import { getType } from '@/utils/type-detection';
+import { getGroupRowByIndex } from './group-metrics';
 
 const NORMAL_RULE = ({ value }) => {
   return value;

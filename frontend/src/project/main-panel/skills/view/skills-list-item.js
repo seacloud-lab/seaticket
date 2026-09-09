@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import classnames from 'classnames';
 import { Dropdown } from 'reactstrap';
-import { gettext } from '@/constants';
+import classnames from 'classnames';
 import {
   CommonOperationConfirmationDialog,
   CustomizeDropdownItem,
@@ -10,6 +9,7 @@ import {
   Switch,
   toaster,
 } from '@/components';
+import { gettext } from '@/constants';
 import { skillsAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
 

@@ -1,12 +1,12 @@
 import { mediaUrl, siteRoot, gettext } from '@/constants';
-import { KNOWLEDGE_BASE_TYPE } from './main-panel/knowledge-base/constants';
-import { generatorKnowledgeBaseURL } from './main-panel/knowledge-base/utils';
-import { TICKET_TYPE } from './main-panel/tickets/constants';
-import { PORTAL_ISSUE_TYPE } from './main-panel/portal-issues/constants';
 import { CONNECTION_TYPES } from './main-panel/connections/constants';
 import { getConnectionIcon, getOriginalPageUrl } from './main-panel/connections/utils';
-import { generatorTicketURL } from './main-panel/tickets/utils';
+import { KNOWLEDGE_BASE_TYPE } from './main-panel/knowledge-base/constants';
+import { generatorKnowledgeBaseURL } from './main-panel/knowledge-base/utils';
+import { PORTAL_ISSUE_TYPE } from './main-panel/portal-issues/constants';
 import { generatorIssueURL } from './main-panel/portal-issues/utils';
+import { TICKET_TYPE } from './main-panel/tickets/constants';
+import { generatorTicketURL } from './main-panel/tickets/utils';
 
 
 export const getResourceIconURL = (type) => {

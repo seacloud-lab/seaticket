@@ -1,9 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { gettext } from '@/constants';
-import User from './user';
 import { FixedWidthTable, Paginator } from '@/components';
 import CenteredLoading from '@/components/centered-loading';
+import { gettext } from '@/constants';
+import User from './user';
 
 class Users extends React.Component {
 

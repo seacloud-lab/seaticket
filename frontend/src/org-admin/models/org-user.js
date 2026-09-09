@@ -1,5 +1,5 @@
-import { Utils } from '@/utils/utils';
 import dayjs from '@/utils/dayjs';
+import { Utils } from '@/utils/utils';
 
 class OrgUserInfo {
   constructor(object) {

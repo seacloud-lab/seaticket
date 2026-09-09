@@ -1,12 +1,12 @@
 import React, { useCallback, useState } from 'react';
-import classnames from 'classnames';
 import { gettext } from '@constants';
+import { Utils } from '@utils/utils';
+import classnames from 'classnames';
 import { EmptyTip, IconButton, toaster } from '@/components';
+import { connectionsAPI } from '@/project/api';
+import { CONNECTION_TYPE } from '@/project/main-panel/connections/constants';
 import CommonDetailItem from '../common-detail-item';
 import ReplyDiscourse from './reply-discourse';
-import { connectionsAPI } from '@/project/api';
-import { Utils } from '@utils/utils';
-import { CONNECTION_TYPE } from '@/project/main-panel/connections/constants';
 
 import './index.css';
 

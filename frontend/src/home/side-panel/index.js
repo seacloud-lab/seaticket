@@ -1,17 +1,17 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import isHotkey from 'is-hotkey';
-import { Link } from '@gatsbyjs/reach-router';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { mediaUrl, logoPath, logoWidth, logoHeight, siteTitle, siteRoot, gettext } from '@/constants';
-import { Utils } from '@/utils/utils';
-import GroupItem from './group-item';
-import { Icon, IconButton } from '@/components';
+import { Link } from '@gatsbyjs/reach-router';
 import classNames from 'classnames';
+import isHotkey from 'is-hotkey';
+import PropTypes from 'prop-types';
+import { Icon, IconButton } from '@/components';
 import ResizeBar from '@/components/resize-bar';
+import { mediaUrl, logoPath, logoWidth, logoHeight, siteTitle, siteRoot, gettext } from '@/constants';
 import eventBus from '@/utils/event-bus';
+import { Utils } from '@/utils/utils';
 import AllInboxNav from './components/all-inbox-nav';
+import GroupItem from './group-item';
 
 import './side-panel.css';
 

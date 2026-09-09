@@ -1,15 +1,15 @@
-import { isTableRows, getRowIdFromRow, getRowsByIds } from '../utils/row';
-import { getColumnByKey, getColumnOriginName, getOption, checkIsPredefinedOption, getColumnOptionIdsByNames,
-  getColumnOptionNamesByIds } from '../utils/column';
-import { isValidCellValue, getCellValueByColumn, getCellValueDisplayString } from '../utils/cell';
-import { getFilteredRows } from '../utils/filter';
-import { getGroupRows } from '../utils/group';
-import { sortTableRows } from '../utils/sort';
-import { isFilterView, isGroupView, isSortView, getRowColors } from '../utils/view';
-import { getSearchRule } from '../utils/search';
-import { COLUMN_DATA_OPERATION_TYPE, OPERATION_TYPE } from './operations';
 import { CellType, SUPPORT_SEARCH_COLUMNS } from '../constants';
 import context from '../context';
+import { isValidCellValue, getCellValueByColumn, getCellValueDisplayString } from '../utils/cell';
+import { getColumnByKey, getColumnOriginName, getOption, checkIsPredefinedOption, getColumnOptionIdsByNames,
+  getColumnOptionNamesByIds } from '../utils/column';
+import { getFilteredRows } from '../utils/filter';
+import { getGroupRows } from '../utils/group';
+import { isTableRows, getRowIdFromRow, getRowsByIds } from '../utils/row';
+import { getSearchRule } from '../utils/search';
+import { sortTableRows } from '../utils/sort';
+import { isFilterView, isGroupView, isSortView, getRowColors } from '../utils/view';
+import { COLUMN_DATA_OPERATION_TYPE, OPERATION_TYPE } from './operations';
 
 // const DEFAULT_COMPUTER_PROPERTIES_CONTROLLER = {
 //   isUpdateSummaries: true,

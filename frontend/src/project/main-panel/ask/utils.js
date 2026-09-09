@@ -1,5 +1,5 @@
-import { ChatMessage } from './models';
 import { CHAT_MESSAGE_TYPE } from './constants';
+import { ChatMessage } from './models';
 
 export const initMessages = (messages) => {
   return Array.isArray(messages) ? messages.map(item => {
@@ -28,6 +28,7 @@ export const initMessages = (messages) => {
         thought_process: item.thought_process
       };
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.error(e);
       msgContent = { ai_reply: item.content, sources: [] };
     }

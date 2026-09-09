@@ -1,12 +1,12 @@
 import React, { useMemo, useCallback, useState, useRef } from 'react';
-import SeaMetadata from '@/sea-metadata';
-import context from '@/sea-metadata/context';
 import { gettext } from '@/constants';
 import { portalAPI } from '@/portal/api';
 import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KB_TABLE_NAME, KNOWLEDGE_BASE_TYPE, KNOWLEDGE_PREDEFINED_COLUMN_NAME } from '@/portal/main-panel/knowledge-base/constants';
-import { useData, useTags } from '@/project/hooks';
 import { usePortalKnowledgePage } from '@/portal/main-panel/knowledge-base/hooks/knowledge-page';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
+import { useData, useTags } from '@/project/hooks';
+import SeaMetadata from '@/sea-metadata';
+import context from '@/sea-metadata/context';
 
 const PortalAllKnowledge = ({ projectUuid }) => {
   const { togglePageSlugId } = usePortalKnowledgePage();

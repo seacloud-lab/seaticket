@@ -1,20 +1,27 @@
 import React, { isValidElement, cloneElement } from 'react';
-import PropTypes from 'prop-types';
 import deepCopy from 'deep-copy';
+import PropTypes from 'prop-types';
 import toaster from '@/components/toaster';
-import EditorPortal from '../../editors/editor-portal';
-import EditorContainer from '../../editors/editor-container';
-import DragHandler from '../drag-handler';
-import DragMask from '../drag-mask';
-import SelectionRangeMask from '../selection-range-mask';
-import SelectionMask from '../selection-mask';
 import { gettext, KeyCodes } from '@/constants';
-import { isFunction } from '@/utils/type-detection';
+import context from '@/sea-metadata/context';
+import { getEventClassName } from '@/utils/dom';
+import eventBus from '@/utils/event-bus';
+import { isSpace } from '@/utils/hotkey';
+import { isCtrlKeyHeldDown, isKeyPrintable } from '@/utils/keyboard-utils';
 import { isEmptyObject } from '@/utils/object-utils';
+import { isFunction } from '@/utils/type-detection';
 import {
   GRID_HEADER_DOUBLE_HEIGHT, GRID_HEADER_DEFAULT_HEIGHT, HEADER_HEIGHT_TYPE, PASTE_SOURCE, EDITOR_TYPE,
   TRANSFER_TYPES, GROUP_ROW_TYPE, EVENT_BUS_TYPE, NOT_SUPPORT_OPEN_EDITOR_COLUMN_TYPES,
 } from '../../../../constants';
+import { getCellValueByColumn, isValidCellValue, getFormatRowData } from '../../../../utils/cell';
+import { checkIsColumnSupportPreview, getColumnIndexByKey } from '../../../../utils/column';
+import getEventTransfer from '../../../../utils/get-event-transfer';
+import setEventTransfer from '../../../../utils/set-event-transfer';
+import EditorContainer from '../../editors/editor-container';
+import EditorPortal from '../../editors/editor-portal';
+import { getGroupRowByIndex } from '../../utils/group-metrics';
+import RowMetrics from '../../utils/row-metrics';
 import {
   getNewSelectedRange, getSelectedDimensions, selectedRangeIsSingleCell,
   getSelectedRangeDimensions, getSelectedRow, getSelectedColumn,
@@ -22,17 +29,10 @@ import {
   checkIsSelectedCellEditable, checkIsSelectedCellsEditable,
   getColumnsFromSelectedRange,
 } from '../../utils/selected-cell-utils';
-import RowMetrics from '../../utils/row-metrics';
-import setEventTransfer from '../../../../utils/set-event-transfer';
-import getEventTransfer from '../../../../utils/get-event-transfer';
-import { getGroupRowByIndex } from '../../utils/group-metrics';
-import { isSpace } from '@/utils/hotkey';
-import eventBus from '@/utils/event-bus';
-import { isCtrlKeyHeldDown, isKeyPrintable } from '@/utils/keyboard-utils';
-import { checkIsColumnSupportPreview, getColumnIndexByKey } from '../../../../utils/column';
-import { getCellValueByColumn, isValidCellValue, getFormatRowData } from '../../../../utils/cell';
-import { getEventClassName } from '@/utils/dom';
-import context from '@/sea-metadata/context';
+import DragHandler from '../drag-handler';
+import DragMask from '../drag-mask';
+import SelectionMask from '../selection-mask';
+import SelectionRangeMask from '../selection-range-mask';
 
 import './index.css';
 

@@ -1,6 +1,6 @@
 import React from 'react';
-import IconButton from '../icon-button';
 import { gettext } from '@/constants';
+import IconButton from '../icon-button';
 
 import './index.css';
 

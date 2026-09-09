@@ -1,11 +1,11 @@
 import { useCallback, useState, useRef } from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import { useTagsData } from '@/sea-metadata/hooks';
+import PropTypes from 'prop-types';
+import SelectTrigger from '@/components/customize-select/select-trigger';
 import { gettext } from '@/constants';
+import { useTagsData } from '@/sea-metadata/hooks';
 import { getRowById } from '@/sea-metadata/utils/row';
 import { TagSelector } from '../../../selectors';
-import SelectTrigger from '@/components/customize-select/select-trigger';
 
 import '../../../cell-editors/tags-editor/index.css';
 

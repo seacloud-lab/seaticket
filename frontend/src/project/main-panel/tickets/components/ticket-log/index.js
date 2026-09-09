@@ -1,19 +1,19 @@
 import React, { useCallback } from 'react';
 import classnames from 'classnames';
-import dayjs from '@/utils/dayjs';
 import { Icon, IconButton, Option, AsyncCollaborator } from '@/components';
 import { gettext } from '@/constants';
-import { useCollaborators } from '@/sea-metadata';
-import { DELETED_OPTION_BACKGROUND_COLOR, PRIORITY_MAP, DELETED_OPTION } from '@/sea-metadata/constants';
 import { useMetadata, useTags } from '@/project/hooks';
-import ModifyLog from './modify-log';
-import AddLog from './add-log';
-import RemoveLog from './remove-log';
-import Tag from '@/sea-metadata/components/tag';
-import { TICKET_PREDEFINED_COLUMN_CONFIG, PREDEFINED_TICKET_COLUMN_NAME } from '../../constants';
-import { getRowById } from '@/sea-metadata/utils/row';
 import { CONNECTION_TYPE } from '@/project/main-panel/connections/constants';
+import { useCollaborators } from '@/sea-metadata';
+import Tag from '@/sea-metadata/components/tag';
+import { DELETED_OPTION_BACKGROUND_COLOR, PRIORITY_MAP, DELETED_OPTION } from '@/sea-metadata/constants';
+import { getRowById } from '@/sea-metadata/utils/row';
+import dayjs from '@/utils/dayjs';
+import { TICKET_PREDEFINED_COLUMN_CONFIG, PREDEFINED_TICKET_COLUMN_NAME } from '../../constants';
+import AddLog from './add-log';
 import LinkedRecord from './linked-record';
+import ModifyLog from './modify-log';
+import RemoveLog from './remove-log';
 
 import './index.css';
 

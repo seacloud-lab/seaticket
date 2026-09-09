@@ -1,11 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import CellFormatter from '../../../../../../components/cell-formatter';
+import { useMetadata } from '@/sea-metadata/hooks';
 import CheckboxEditor from '../../../../../../components/cell-editors/checkbox-editor';
 import PriorityEditor from '../../../../../../components/cell-editors/priority-editor';
-import { canEditCell } from '../../../../../../utils/cell';
+import CellFormatter from '../../../../../../components/cell-formatter';
 import { CellType } from '../../../../../../constants';
-import { useMetadata } from '@/sea-metadata/hooks';
+import { canEditCell } from '../../../../../../utils/cell';
 
 const Formatter = ({ isCellSelected, column, value, onChange, row, ...params }) => {
   const { metadata } = useMetadata();

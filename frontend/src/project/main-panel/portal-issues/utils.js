@@ -1,14 +1,14 @@
 import copy from 'copy-to-clipboard';
-import { gettext, siteRoot } from '@/constants';
-import { PRIORITIES } from '@/sea-metadata/constants';
-import { BAR_TYPE } from '@/project/constants';
 import { toaster } from '@/components';
-import { getColumnByName, getColumnOptions } from '@/sea-metadata/utils/column';
+import { gettext, siteRoot } from '@/constants';
+import { BAR_TYPE } from '@/project/constants';
+import { normalizeContextMenuOptions, normalizeRowsMoreTools } from '@/project/utils';
+import { PRIORITIES } from '@/sea-metadata/constants';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
+import { getColumnByName, getColumnOptions } from '@/sea-metadata/utils/column';
+import { cascadeUpdate } from '../tickets/utils';
 import { PREDEFINED_PORTAL_ISSUE_COLUMN_NAME } from './constants';
 import { IssueForAI } from './models';
-import { cascadeUpdate } from '../tickets/utils';
-import { normalizeContextMenuOptions, normalizeRowsMoreTools } from '@/project/utils';
 
 export const generatorIssueURL = ({ issue, workspaceID, projectName }) => {
   const { origin } = location;

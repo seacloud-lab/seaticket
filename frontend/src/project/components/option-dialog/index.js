@@ -3,9 +3,9 @@ import { Modal, ModalBody, ModalFooter, Button, FormGroup, Label, Input, Alert }
 import classnames from 'classnames';
 import { ColorSelectorPopover, CustomizeSelect, IconButton, ModalHeader, Option } from '@/components';
 import { gettext, SELECT_OPTION_COLORS } from '@/constants';
-import { validateName } from '@/utils/validate';
 import { isHexColor, isDarkColor } from '@/utils/color-utils';
 import ObjectUtils from '@/utils/object-utils';
+import { validateName } from '@/utils/validate';
 
 import './index.css';
 

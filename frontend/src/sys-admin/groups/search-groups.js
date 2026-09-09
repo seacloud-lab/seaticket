@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { navigate } from '@gatsbyjs/reach-router';
 import { Button, Col, Form, FormGroup, Label } from 'reactstrap';
-import { TopBar, Main } from '../main-panel';
-import { gettext } from '@/constants';
+import { navigate } from '@gatsbyjs/reach-router';
 import { SearchInput } from '@/components';
+import { gettext } from '@/constants';
 import sysAdminAPI from '@/sys-admin/api';
 import { isEnter } from '@/utils/hotkey';
+import { TopBar, Main } from '../main-panel';
 import GroupsTable from './groups-table';
 
 const SearchGroups = ({ onCloseSidePanel }) => {

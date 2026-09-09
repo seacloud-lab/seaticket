@@ -1,11 +1,11 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import PropTypes from 'prop-types';
 import { Dropdown } from 'reactstrap';
-import { FilterSetter, GroupbySetter, SortSetter, HideColumnSetter, RowColorSetter, RowHeightSetter, ManageSetter } from '../../data-process-setter';
-import Searcher from '../../searcher';
-import { VIEW_TOOL, VIEW_TOOLS } from '../../../constants';
+import PropTypes from 'prop-types';
 import { CustomizeDropdownMenu, CustomizeDropdownMoreToggle } from '@/components';
 import { gettext } from '@/constants';
+import { VIEW_TOOL, VIEW_TOOLS } from '../../../constants';
+import { FilterSetter, GroupbySetter, SortSetter, HideColumnSetter, RowColorSetter, RowHeightSetter, ManageSetter } from '../../data-process-setter';
+import Searcher from '../../searcher';
 
 const TableViewToolbar = ({
   tools = VIEW_TOOLS,

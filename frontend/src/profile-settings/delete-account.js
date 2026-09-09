@@ -1,7 +1,7 @@
 import React from 'react';
-import { gettext, siteRoot } from '../constants';
-import ModalPortal from '../components/modal-portal';
 import ConfirmDeleteAccount from '../components/dialog/confirm-delete-account';
+import ModalPortal from '../components/modal-portal';
+import { gettext, siteRoot } from '../constants';
 
 const {
   csrfToken

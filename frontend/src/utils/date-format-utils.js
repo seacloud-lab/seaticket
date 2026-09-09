@@ -1,5 +1,5 @@
-const zhCN = require('@seafile/seafile-calendar/lib/locale/zh_CN');
 const enUS = require('@seafile/seafile-calendar/lib/locale/en_US');
+const zhCN = require('@seafile/seafile-calendar/lib/locale/zh_CN');
 
 function translateCalendar() {
   const locale = window.app.config ? window.app.config.lang : 'en';

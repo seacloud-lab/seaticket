@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
-import { gettext } from '@/constants';
 import { IconButton } from '@/components';
+import { gettext } from '@/constants';
 import { CONNECTION_SUB_TYPE_MAP } from '../../constants';
 import { getConnectionIcon } from '../../utils';
 

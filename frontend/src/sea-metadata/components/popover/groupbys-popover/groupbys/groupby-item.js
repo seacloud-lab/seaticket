@@ -1,13 +1,13 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import PropTypes from 'prop-types';
-import classnames from 'classnames';
 import { useDrag, useDrop } from 'react-dnd';
+import classnames from 'classnames';
+import PropTypes from 'prop-types';
 import { CustomizeSelect, Icon } from '@/components';
 import { gettext } from '@/constants';
-import { getColumnByKey } from '../../../../utils/column';
-import { SORT_TYPE, SORT_COLUMN_OPTIONS } from '../../../../constants';
-import { getGroupbyGranularityByColumn, isShowGroupCountType, getSelectedCountType, getDefaultCountType } from '../../../../utils/group';
 import { ColumnSelector, SortSelector } from '@/sea-metadata/components/selectors';
+import { SORT_TYPE, SORT_COLUMN_OPTIONS } from '../../../../constants';
+import { getColumnByKey } from '../../../../utils/column';
+import { getGroupbyGranularityByColumn, isShowGroupCountType, getSelectedCountType, getDefaultCountType } from '../../../../utils/group';
 
 /*
   groupby: {

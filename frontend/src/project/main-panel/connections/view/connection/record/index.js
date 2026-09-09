@@ -1,34 +1,34 @@
 import React, { useEffect, useCallback, useMemo, useRef, useState } from 'react';
-import classnames from 'classnames';
 import { Dropdown } from 'reactstrap';
-import { useConnectionsPage, useConnections } from '../../../hooks';
+import classnames from 'classnames';
 import { CenteredLoading, IconButton, CustomizeDropdownMoreToggle, CustomizeDropdownMenu, CustomizeDropdownItem, toaster, Option } from '@/components';
+import { gettext, PERMISSION_TYPES } from '@/constants';
+import User from '@/models/user';
+import { connectionsAPI } from '@/project/api';
+import { EVENT_BUS_TYPE } from '@/project/constants';
+import { useData, useMetadata, useTags } from '@/project/hooks';
+import { useAIChatTools } from '@/project/main-panel/ask/hooks';
+import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
+import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
+import { getResourceOriginalURL } from '@/project/utils';
+import { CellType, context as seaMetadataContext, EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata';
+import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
+import { getColumnByName, getColumnOptions, getOption } from '@/sea-metadata/utils/column';
+import { convertRowToKeyValue } from '@/sea-metadata/utils/row';
+import eventBus from '@/utils/event-bus';
+import { Utils } from '@/utils/utils';
+import ConnectionResourceDetails, { ConnectionResourceOtherDetails } from '../../../components/connection-resource-details';
+import CreateTicketDialog from '../../../components/create-ticket-dialog';
+import RelatedIssuesDialog from '../../../components/related-issues-dialog';
+import { CONNECTION_PREDEFINED_COLUMN_NAME, CONNECTION_TYPE } from '../../../constants';
+import { useConnectionsPage, useConnections } from '../../../hooks';
 import {
   getTableName, generateAIOptions, generateFindRelatedIssuesOption,
   generateCreateRelatedTicketOption, generateLinkAnExistingTicketOption,
   generateOpenOriginalPageOption, generateCopyOriginalLinkOption,
   generateMarkAsOutdatedOptions, formatColumns,
 } from '../../../utils';
-import { useData, useMetadata, useTags } from '@/project/hooks';
-import ConnectionResourceDetails, { ConnectionResourceOtherDetails } from '../../../components/connection-resource-details';
-import { getResourceOriginalURL } from '@/project/utils';
-import { gettext, PERMISSION_TYPES } from '@/constants';
-import { useAIChatTools } from '@/project/main-panel/ask/hooks';
-import { EVENT_BUS_TYPE } from '@/project/constants';
-import RelatedIssuesDialog from '../../../components/related-issues-dialog';
-import CreateTicketDialog from '../../../components/create-ticket-dialog';
-import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
-import { CONNECTION_PREDEFINED_COLUMN_NAME, CONNECTION_TYPE } from '../../../constants';
-import { connectionsAPI } from '@/project/api';
-import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
-import { Utils } from '@/utils/utils';
 import Rename from './rename';
-import { CellType, context as seaMetadataContext, EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata';
-import { convertRowToKeyValue } from '@/sea-metadata/utils/row';
-import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
-import { getColumnByName, getColumnOptions, getOption } from '@/sea-metadata/utils/column';
-import User from '@/models/user';
-import eventBus from '@/utils/event-bus';
 
 import './index.css';
 

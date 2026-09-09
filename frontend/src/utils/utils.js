@@ -1,7 +1,7 @@
 import React from 'react';
+import PermissionDeniedTip from '../components/permission-denied-tip';
 import toaster from '../components/toaster';
 import { gettext, mediaUrl, siteRoot, FILEEXT_ICON_MAP } from '../constants';
-import PermissionDeniedTip from '../components/permission-denied-tip';
 import { canUseDOM } from './dom';
 import { bytesToSize } from './storage';
 

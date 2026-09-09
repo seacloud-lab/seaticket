@@ -1,12 +1,12 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import Cell from './cell';
-import ActionsCell from './actions-cell';
-import { getFrozenColumns } from '../../../../../utils/column';
-import { ROW_HEIGHT_CLASS_MAP } from '../../../../../constants';
+import PropTypes from 'prop-types';
 import { Z_INDEX } from '@/constants/zIndexes';
 import { isFunction } from '@/utils/type-detection';
+import { ROW_HEIGHT_CLASS_MAP } from '../../../../../constants';
+import { getFrozenColumns } from '../../../../../utils/column';
+import ActionsCell from './actions-cell';
+import Cell from './cell';
 
 import './index.css';
 

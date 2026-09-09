@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { getColumnType } from './core';
 import { DATE_COLUMN_OPTIONS, DEFAULT_DATE_FORMAT, DEFAULT_TIMEZONE_FORMAT, FROM_NOW } from '../../constants';
+import { getColumnType } from './core';
 
 dayjs.extend(relativeTime);
 

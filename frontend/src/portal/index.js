@@ -1,23 +1,23 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { createRoot } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
-import i18n from '../_i18n/i18n-seafile-editor';
-import LeftBar from './left-bar';
-import SidePanel from './side-panel';
-import MainPanel from './main-panel';
-import { CenteredLoading } from '../components';
-import { PORTAL_PAGE } from './constants';
-import { DataProvider } from '@/project/hooks';
-import { portalAPI } from './api';
+import { createRoot } from 'react-dom/client';
 import { gettext, name, username, avatarURL, mediaUrl } from '@/constants';
 import User from '@/models/user';
+import { DataProvider } from '@/project/hooks';
+import i18n from '../_i18n/i18n-seafile-editor';
+import { CenteredLoading } from '../components';
+import { portalAPI } from './api';
+import { PORTAL_PAGE } from './constants';
 import { PortalSettingsProvider } from './hooks';
+import LeftBar from './left-bar';
+import MainPanel from './main-panel';
 import {
   buildPortalPath,
   getPortalAnonymousValidatePath,
   getPortalLoginPath,
   getPortalPathSegments,
 } from './path-utils';
+import SidePanel from './side-panel';
 
 import './index.css';
 
@@ -88,7 +88,7 @@ const Portal = () => {
           });
         });
       };
-      if (!isExternalUser){
+      if (!isExternalUser) {
         APIRef.current.listUserInfo = (userIdList) => {
           return new Promise((resolve, reject) => {
             resolve({

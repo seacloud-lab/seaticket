@@ -1,8 +1,8 @@
 import React, { Fragment } from 'react';
-import PropTypes from 'prop-types';
 import { Modal, ModalBody } from 'reactstrap';
-import { gettext } from '@/constants';
+import PropTypes from 'prop-types';
 import { ModalHeader } from '@/components';
+import { gettext } from '@/constants';
 
 import './index.css';
 

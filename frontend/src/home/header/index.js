@@ -1,13 +1,13 @@
 import React from 'react';
 import classnames from 'classnames';
-import { siteRoot, mediaUrl, logoPath, logoWidth, logoHeight, siteTitle } from '../../constants';
-import { isMac } from '../../utils/utils';
-import { isEnter, isModF } from '../../utils/hotkey';
+import { IconButton } from '../../components';
 import Account from '../../components/account';
+import { siteRoot, mediaUrl, logoPath, logoWidth, logoHeight, siteTitle } from '../../constants';
+import { Z_INDEX } from '../../constants/zIndexes';
+import { isEnter, isModF } from '../../utils/hotkey';
+import { isMac } from '../../utils/utils';
 import ProjectSearcher from '../search/project-searcher';
 import { QUERY_TYPE } from '../search/project-searcher/constant';
-import { IconButton } from '../../components';
-import { Z_INDEX } from '../../constants/zIndexes';
 
 import './header-search.css';
 

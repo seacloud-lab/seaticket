@@ -1,6 +1,11 @@
 import { forwardRef, useEffect, useState, useImperativeHandle, useRef } from 'react';
 import classnames from 'classnames';
-import View from './view';
+import { CenteredLoading } from '@/components';
+import { lang, mediaUrl, server, username, PERMISSION_TYPES } from '@/constants';
+import { getValidGroupbys } from '@/sea-metadata/utils/group';
+import { getRowsByIds } from '@/sea-metadata/utils/row/core';
+import ViewToolBar from './components/view-toolbar';
+import context from './context';
 import {
   MetadataProvider,
   ViewsDataProvider, useViewsData,
@@ -9,12 +14,7 @@ import {
   SubstatesDataProvider,
   SelectedRowsProvider,
 } from './hooks';
-import ViewToolBar from './components/view-toolbar';
-import context from './context';
-import { CenteredLoading } from '@/components';
-import { getRowsByIds } from '@/sea-metadata/utils/row/core';
-import { getValidGroupbys } from '@/sea-metadata/utils/group';
-import { lang, mediaUrl, server, username, PERMISSION_TYPES } from '@/constants';
+import View from './view';
 
 const Main = forwardRef(({
   className,

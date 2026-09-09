@@ -2,8 +2,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Button } from 'reactstrap';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
-import PromptDialog from './prompt-dialog';
 import SettingsItem from '../settings-item';
+import PromptDialog from './prompt-dialog';
 
 import './index.css';
 

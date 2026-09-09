@@ -1,10 +1,10 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import classnames from 'classnames';
-import LinkItem from './link-item';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { useConnections } from '@/project/main-panel/connections/hooks';
-import { TICKET_TABLE_NAME, TICKET_TYPE } from '@/project/main-panel/tickets/constants';
 import { PORTAL_ISSUE_TYPE } from '@/project/main-panel/portal-issues/constants';
+import { TICKET_TABLE_NAME, TICKET_TYPE } from '@/project/main-panel/tickets/constants';
+import LinkItem from './link-item';
 
 import './index.css';
 

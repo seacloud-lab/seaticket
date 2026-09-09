@@ -1,10 +1,10 @@
 import React, { useCallback, useMemo } from 'react';
-import { gettext, mediaUrl } from '@/constants';
 import {
   CenteredError,
   CenteredLoading, EmptyTip, FixedWidthTable,
   Paginator
 } from '@/components';
+import { gettext, mediaUrl } from '@/constants';
 import StatisticItem from './statistic-item';
 
 

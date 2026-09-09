@@ -1,12 +1,12 @@
 import React, { Component, Fragment } from 'react';
-import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
+import PropTypes from 'prop-types';
 import { toaster, Loading, CommonOperationConfirmationDialog } from '@/components';
-import profileSettingsAPI from '../api';
-import { loginUrl, gettext, mediaUrl } from '@/constants';
-import { Utils } from '@/utils/utils';
 import OpMenu from '@/components/dialog/op-menu';
+import { loginUrl, gettext, mediaUrl } from '@/constants';
 import { formatWithTimezone } from '@/sea-metadata/utils/column';
+import { Utils } from '@/utils/utils';
+import profileSettingsAPI from '../api';
 
 const itemPropTypes = {
   item: PropTypes.object.isRequired,

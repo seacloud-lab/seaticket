@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { gettext } from '@/constants';
 import { CommonOperationConfirmationDialog } from '@/components';
-import eventBus from '@/utils/event-bus';
+import { gettext } from '@/constants';
 import { EVENT_BUS_TYPE } from '@/project/constants';
+import eventBus from '@/utils/event-bus';
 
 const CleanPortalIssues = ({ cleanPortalIssues }) => {
   const [isShowConfirm, setIsShowConfirm] = useState(false);

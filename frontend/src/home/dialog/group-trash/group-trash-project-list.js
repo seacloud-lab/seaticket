@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import GroupTrashProjects from './group-trash-projects';
 import { Loading } from '../../../components';
+import GroupTrashProjects from './group-trash-projects';
 
 function GroupTrashProjectList(props) {
   const { groupID, isLoading, trashList, restoreProject } = props;

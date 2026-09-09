@@ -1,24 +1,24 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { HorizontalScrollbar } from '../../../../components/scrollbar';
 import EmptyTip from '@/components/empty-tip';
-import { isMobile } from '@/utils/utils';
-import { isFunction } from '@/utils/type-detection';
-import { isShiftKeyDown } from '@/utils/keyboard-utils';
+import { gettext, mediaUrl } from '@/constants';
+import context from '@/sea-metadata/context';
 import { addClassName, removeClassName, getEventClassName } from '@/utils/dom';
+import { isShiftKeyDown } from '@/utils/keyboard-utils';
+import { isFunction } from '@/utils/type-detection';
+import { isMobile } from '@/utils/utils';
+import ContextMenu from '../../../../components/context-menu';
+import { HorizontalScrollbar } from '../../../../components/scrollbar';
+import { SEQUENCE_COLUMN_WIDTH, CANVAS_RIGHT_INTERVAL, GROUP_ROW_TYPE, EVENT_BUS_TYPE } from '../../../../constants';
+import { isWindowsBrowser, isWebkitBrowser } from '../../../../utils';
+import { recalculate } from '../../../../utils/column';
 import { getColOverScanEndIdx, getColOverScanStartIdx } from '../../utils/grid';
+import RowMetrics from '../../utils/row-metrics';
 import { getVisibleBoundaries } from '../../utils/viewport';
+import RowsFooter from '../rows-footer';
+import RowsHeader from '../rows-header';
 import Body from './body';
 import GroupBody from './group-body';
-import RowsHeader from '../rows-header';
-import RowsFooter from '../rows-footer';
-import ContextMenu from '../../../../components/context-menu';
-import { recalculate } from '../../../../utils/column';
-import RowMetrics from '../../utils/row-metrics';
-import { isWindowsBrowser, isWebkitBrowser } from '../../../../utils';
-import { SEQUENCE_COLUMN_WIDTH, CANVAS_RIGHT_INTERVAL, GROUP_ROW_TYPE, EVENT_BUS_TYPE } from '../../../../constants';
-import context from '@/sea-metadata/context';
-import { gettext, mediaUrl } from '@/constants';
 
 class Rows extends Component {
 

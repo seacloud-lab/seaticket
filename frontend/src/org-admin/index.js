@@ -1,26 +1,26 @@
 // Import React!
 import React from 'react';
-import { createRoot } from 'react-dom/client';
-import { globalHistory, LocationProvider, Router } from '@gatsbyjs/reach-router';
 import MediaQuery from 'react-responsive';
 import { Modal } from 'reactstrap';
+import { globalHistory, LocationProvider, Router } from '@gatsbyjs/reach-router';
 import dayjs from 'dayjs';
+import { createRoot } from 'react-dom/client';
 import { siteRoot, lang, enableMultiSAML, canUseSAML } from '@/constants';
-import SidePanel from './side-panel';
+import { BAR_CONFIG, BAR_TYPE, BARS } from './constants';
+import GroupInfo from './group-info';
+import GroupMembers from './group-members';
+import GroupProjects from './group-projects';
+import Groups from './groups';
 import Info from './info';
-import Settings from './settings';
 import Projects from './projects';
 import SearchProjects from './projects/search-projects';
+import OrgSAMLConfig from './saml';
+import Settings from './settings';
+import SidePanel from './side-panel';
+import StatisticsAI from './statistics';
+import UserProfile from './user-profile';
 import Users from './users';
 import SearchUsers from './users/search-users';
-import UserProfile from './user-profile';
-import Groups from './groups';
-import GroupInfo from './group-info';
-import GroupProjects from './group-projects';
-import GroupMembers from './group-members';
-import OrgSAMLConfig from './saml';
-import StatisticsAI from './statistics';
-import { BAR_CONFIG, BAR_TYPE, BARS } from './constants';
 
 import '@/css/layout.css';
 import '@/css/toolbar.css';

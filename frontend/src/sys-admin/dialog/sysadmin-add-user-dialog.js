@@ -1,12 +1,12 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Alert, Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input } from 'reactstrap';
+import PropTypes from 'prop-types';
+import Icon from '../../components/icon';
+import ModalHeader from '../../components/modal-header';
+import PasswordInput from '../../components/password-input';
 import PermissionSelect from '../../components/permission-select';
 import { gettext } from '../../constants';
 import { Utils } from '../../utils/utils';
-import ModalHeader from '../../components/modal-header';
-import Icon from '../../components/icon';
-import PasswordInput from '../../components/password-input';
 
 const propTypes = {
   dialogTitle: PropTypes.string,

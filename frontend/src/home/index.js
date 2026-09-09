@@ -1,17 +1,17 @@
 import React, { Fragment } from 'react';
-import { globalHistory, LocationProvider, navigate } from '@gatsbyjs/reach-router';
-import { createRoot } from 'react-dom/client';
 import MediaQuery from 'react-responsive';
 import { Modal } from 'reactstrap';
+import { globalHistory, LocationProvider, navigate } from '@gatsbyjs/reach-router';
+import { createRoot } from 'react-dom/client';
 import { toaster } from '@/components';
-import { siteRoot } from '../constants';
-import Header from './header';
-import SidePanel from './side-panel';
-import { Utils } from '../utils/utils';
-import MainPanel from './main-panel';
 import { NotificationProvider } from '@/components/common/notification/hooks/notification';
+import { siteRoot } from '../constants';
+import { Utils } from '../utils/utils';
 import homeAPI from './api.js';
+import Header from './header';
+import MainPanel from './main-panel';
 import Workspace from './models/workspace.js';
+import SidePanel from './side-panel';
 
 import '../css/layout.css';
 import '../css/side-panel.css';

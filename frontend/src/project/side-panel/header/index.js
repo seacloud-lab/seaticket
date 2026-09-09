@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import { DEFAULT_PROJECT_ICON, PROJECT_ICON_COLORS, siteRoot } from '../../../constants';
 import Icon from '../../../components/icon';
+import { DEFAULT_PROJECT_ICON, PROJECT_ICON_COLORS, siteRoot } from '../../../constants';
 
 import './index.css';
 

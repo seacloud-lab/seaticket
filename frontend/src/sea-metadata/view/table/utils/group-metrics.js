@@ -1,5 +1,5 @@
-import { getColumnByKey } from '../../../utils/column';
 import { GROUP_HEADER_HEIGHT, GROUP_ROW_TYPE, GROUP_VIEW_OFFSET, INSERT_ROW_HEIGHT } from '../../../constants';
+import { getColumnByKey } from '../../../utils/column';
 
 export const createGroupMetrics = (groups, groupbys, pathFoldedGroupMap, columns, rowHeight, includeInsertRow) => {
   let groupbyColumnsMap = {};

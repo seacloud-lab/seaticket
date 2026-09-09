@@ -1,13 +1,13 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import classnames from 'classnames';
 import { Router } from '@gatsbyjs/reach-router';
-import { TabBar } from '../../../components';
-import { AllWorkspaces, WorkspaceInMainPanel } from '../pc-main-panel';
-import { gettext, siteRoot } from '../../../constants';
-import MobileMine from '../../mobile/mobile-mine';
-import MobileHeader from '../../mobile/mobile-header';
+import classnames from 'classnames';
+import PropTypes from 'prop-types';
 import { Icon } from '@/components';
+import { TabBar } from '../../../components';
+import { gettext, siteRoot } from '../../../constants';
+import MobileHeader from '../../mobile/mobile-header';
+import MobileMine from '../../mobile/mobile-mine';
+import { AllWorkspaces, WorkspaceInMainPanel } from '../pc-main-panel';
 
 import './index.css';
 

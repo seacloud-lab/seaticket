@@ -1,10 +1,10 @@
 /* tslint:disable:jsx-no-multiline-js */
-import classnames from 'classnames';
 import * as React from 'react';
+import { getDataAttr } from '@utils/dom';
+import classnames from 'classnames';
 import { createRoot } from 'react-dom/client';
 import Dialog from 'rmc-dialog';
 import TouchFeedback from 'rmc-feedback';
-import { getDataAttr } from '@utils/dom';
 import Badge from '../badge';
 
 import './index.css';

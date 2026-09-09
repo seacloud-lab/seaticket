@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
+import PropTypes from 'prop-types';
+import ClearIconButton from '@/components/clear-icon-button';
 import { isFunction } from '@/utils/type-detection';
 import IconButton from '../../icon-button';
-import ClearIconButton from '@/components/clear-icon-button';
 
 import './index.css';
 

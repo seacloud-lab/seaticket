@@ -1,7 +1,7 @@
 import React from 'react';
 import classnames from 'classnames';
-import Icon from '../../icon';
 import Loading from '@/components/loading';
+import Icon from '../../icon';
 
 import './index.css';
 

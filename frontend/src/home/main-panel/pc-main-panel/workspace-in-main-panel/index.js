@@ -2,8 +2,8 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Loading } from '@/components';
 import { isOrgContext, orgName } from '@/constants';
-import Workspace from '../../../workspace';
 import { Utils } from '@/utils/utils';
+import Workspace from '../../../workspace';
 
 class WorkspaceInMainPanel extends React.Component {
 

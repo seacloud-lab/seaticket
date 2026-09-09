@@ -1,15 +1,15 @@
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import axios from 'axios';
-import { agentAPI, ticketsAPI } from '@/project/api';
 import { CenteredLoading, IconTooltip, toaster, EmptyTip } from '@/components';
 import { gettext, mediaUrl } from '@/constants';
+import { agentAPI, ticketsAPI } from '@/project/api';
+import { useCloseLinkedIssues } from '@/project/main-panel/tickets/hooks';
+import { Utils } from '@/utils/utils';
+import { getAgentResource, getRunLogStatusByRuns } from '../../utils';
+import AgentType2GithubTypeMappingDialog from '../agent-type-to-github-type-mapping-dialog';
+import ResourceTitle from '../resource-title';
 import RunDetail from './run-details';
 import SuggestionDetailPanel from './suggestion-detail-panel';
-import AgentType2GithubTypeMappingDialog from '../agent-type-to-github-type-mapping-dialog';
-import { useCloseLinkedIssues } from '@/project/main-panel/tickets/hooks';
-import ResourceTitle from '../resource-title';
-import { getAgentResource, getRunLogStatusByRuns } from '../../utils';
-import { Utils } from '@/utils/utils';
 
 import './index.css';
 
@@ -199,6 +199,7 @@ const RunLogDetails = ({
       : agentAPI.updateAgentAction(projectUuid, runId, actionId, { suggestion_content: suggestionContent }).then((res) => {
         updateRunAction(runId, actionId, { suggestion_content: res.data.suggestion_content });
       }).catch((err) => {
+        // eslint-disable-next-line no-console
         console.error('Failed to update action content:', err);
         toaster.danger(gettext('Failed to update content'));
         throw err;
@@ -280,6 +281,7 @@ const RunLogDetails = ({
         callback && callback(true);
       }
     }).catch((err) => {
+      // eslint-disable-next-line no-console
       console.error('Failed to save mapping and confirm action:', err);
       toaster.danger(gettext('Failed to confirm action'));
       callback && callback(true);

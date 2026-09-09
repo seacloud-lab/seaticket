@@ -1,10 +1,10 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { enableUserSetContactEmail, gettext } from '@/constants';
 import { ModalPortal, toaster } from '@/components';
 import SetContactEmailDialog from '@/components/dialog/set-contact-email-dialog';
-import profileSettingsAPI from './api';
+import { enableUserSetContactEmail, gettext } from '@/constants';
 import { Utils } from '@/utils/utils';
+import profileSettingsAPI from './api';
 
 let propTypes = {
   contactEmail: PropTypes.string.isRequired

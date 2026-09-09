@@ -1,10 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { toaster, List } from '@/components';
 import userAPI from '@/api/user-api';
+import { toaster, List } from '@/components';
+import { siteRoot, gettext, avatarURL, useExternalTeamAdmin } from '@/constants';
 import { Utils } from '@/utils/utils';
 import { isWorkWeChat } from '@/utils/wechat-utils';
-import { siteRoot, gettext, avatarURL, useExternalTeamAdmin } from '@/constants';
 
 import './index.css';
 

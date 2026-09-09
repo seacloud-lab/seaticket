@@ -1,15 +1,15 @@
 import React, { forwardRef, useMemo, useImperativeHandle, useCallback, useRef, useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import context from '@/sea-metadata/context';
+import PropTypes from 'prop-types';
+import { RemoveButton } from '@/components';
 import Container from '@/components/options-editor/static-options-editor/container';
 import { gettext } from '@/constants';
-import { SELECT_OPTION_COLORS } from '../../../constants';
-import { useTagsData } from '../../../hooks';
+import Tag from '@/sea-metadata/components/tag';
+import context from '@/sea-metadata/context';
 import { isCellValueChanged } from '@/sea-metadata/utils/cell';
 import { getRowById } from '@/sea-metadata/utils/row';
-import Tag from '@/sea-metadata/components/tag';
-import { RemoveButton } from '@/components';
+import { SELECT_OPTION_COLORS } from '../../../constants';
+import { useTagsData } from '../../../hooks';
 
 import './index.css';
 

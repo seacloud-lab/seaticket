@@ -1,6 +1,6 @@
 import React, { useMemo, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
+import PropTypes from 'prop-types';
 import DateAndTimePicker from '@/project/main-panel/search/date-and-time-picker';
 
 const DATE_INPUT_WIDTH = 120;

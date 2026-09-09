@@ -1,10 +1,10 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, ModalFooter, Label } from 'reactstrap';
-import { gettext } from '@/constants/config';
-import homeAPI from '../api';
-import { Utils } from '@/utils/utils';
+import PropTypes from 'prop-types';
 import { ModalHeader, toaster } from '@/components';
+import { gettext } from '@/constants/config';
+import { Utils } from '@/utils/utils';
+import homeAPI from '../api';
 
 const propTypes = {
   groupID: PropTypes.number.isRequired,

@@ -1,11 +1,11 @@
 import React, { useMemo, useCallback } from 'react';
+import { toaster } from '@/components';
+import { gettext } from '@/constants';
 import { knowledgeBaseAPI } from '@/project/api';
+import { useData, useTags } from '@/project/hooks';
 import SeaMetadata, { VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
-import { gettext } from '@/constants';
-import { toaster } from '@/components';
 import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KB_TABLE_NAME } from '../../constants';
-import { useData, useTags } from '@/project/hooks';
 
 const TrashKnowledge = ({ projectUuid, permission }) => {
   const { modifyView, getMetadata, restoreRows } = useData();

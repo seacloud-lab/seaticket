@@ -1,15 +1,15 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import classnames from 'classnames';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import { RUN_STATUS, RUN_EVENT_NAME, SUGGESTIONS_STATUS } from '../../../constants';
+import classnames from 'classnames';
+import { IconTooltip, SecondaryBtn } from '@/components';
 import { gettext } from '@/constants';
+import DateFormatter from '@/project/main-panel/connections/components/cell-formatter/date-formatter';
+import { FROM_NOW } from '@/sea-metadata/constants';
+import { RUN_STATUS, RUN_EVENT_NAME, SUGGESTIONS_STATUS } from '../../../constants';
+import { getAgentResource, getDisplayActions, getTriggerInfoFromRun } from '../../../utils';
 import Action from './action';
 import RunStatisticsDialog from './run-statistics-dialog';
 import ThoughtProcessDialog from './thought-process-dialog';
-import { IconTooltip, SecondaryBtn } from '@/components';
-import DateFormatter from '@/project/main-panel/connections/components/cell-formatter/date-formatter';
-import { FROM_NOW } from '@/sea-metadata/constants';
-import { getAgentResource, getDisplayActions, getTriggerInfoFromRun } from '../../../utils';
 
 import './index.css';
 

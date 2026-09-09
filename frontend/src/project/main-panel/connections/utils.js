@@ -1,5 +1,12 @@
 import copy from 'copy-to-clipboard';
+import { isNumber } from 'lodash';
+import { toaster } from '@/components';
 import { mediaUrl, server, gettext } from '@/constants';
+import { CellType } from '@/sea-metadata/constants';
+import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
+import { getColumnByName, getColumnOptions, getOption } from '@/sea-metadata/utils/column';
+import { getRowById } from '@/sea-metadata/utils/row';
+import { isObject, isString } from '@/utils/type-detection';
 import {
   CONNECTION_PAGE_SLUG_ID, CONNECTION_TYPE, CONNECTION_TYPES, CONNECTION_SYNC_COMPLETED_STATUS,
   CONNECTION_PREDEFINED_COLUMN_NAME, SUPPORT_AI_CONNECTION_TYPES, SUPPORT_MARK_OUTDATED_CONNECTION_TYPES,
@@ -9,13 +16,6 @@ import {
   GITHUB_STATE_OPTION_NAME_MAP,
   CONNECTION_FIELD_TYPE, EMAIL_SERVER_PROVIDER, EMAIL_ACCOUNT_TYPE, MICROSOFT_OAUTH_URL_PREFIX,
 } from './constants';
-import { getColumnByName, getColumnOptions, getOption } from '@/sea-metadata/utils/column';
-import { getRowById } from '@/sea-metadata/utils/row';
-import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
-import { isObject, isString } from '@/utils/type-detection';
-import { toaster } from '@/components';
-import { CellType } from '@/sea-metadata/constants';
-import { isNumber } from 'lodash';
 
 export const shouldDisplayEmailField = (field, provider, showAdvancedOptions, accountType = EMAIL_ACCOUNT_TYPE.PERSONAL) => {
   if (field.providers && !field.providers.includes(provider)) return false;

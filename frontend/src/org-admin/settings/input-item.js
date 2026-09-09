@@ -1,9 +1,9 @@
 import React, { Component, Fragment } from 'react';
-import PropTypes from 'prop-types';
 import { Input, InputGroup } from 'reactstrap';
-import { gettext } from '@/constants';
-import AdminSettingsTemplate from '@/components/settings/admin-settings-template';
+import PropTypes from 'prop-types';
 import { Icon } from '@/components';
+import AdminSettingsTemplate from '@/components/settings/admin-settings-template';
+import { gettext } from '@/constants';
 import OpBtn from './op-btn';
 
 const propTypes = {

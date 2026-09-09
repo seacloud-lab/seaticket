@@ -1,10 +1,10 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Button } from 'reactstrap';
-import { gettext } from '@/constants';
-import orgAdminAPI from '../api';
-import { Utils } from '@/utils/utils';
+import PropTypes from 'prop-types';
 import { ModalHeader } from '@/components';
+import { gettext } from '@/constants';
+import { Utils } from '@/utils/utils';
+import orgAdminAPI from '../api';
 
 const propTypes = {
   orgID: PropTypes.string.isRequired,

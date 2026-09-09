@@ -1,13 +1,13 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import dayjs from '@/sea-metadata/utils/dayjs';
-import { EmbeddingViewMosaic, defaultCategoryColors } from 'embedding-atlas/react';
 import { Coordinator, wasmConnector, Selection } from '@uwdata/mosaic-core';
 import * as SQL from '@uwdata/mosaic-sql';
-import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
-import Legend from '../legend';
+import { EmbeddingViewMosaic, defaultCategoryColors } from 'embedding-atlas/react';
 import { CenteredError, CenteredLoading, EmptyTip } from '@/components';
 import { gettext, mediaUrl } from '@/constants';
+import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
+import dayjs from '@/sea-metadata/utils/dayjs';
 import { TABLE_SCHEMA, COLOR_BY_FIELDS } from '../../constants';
+import Legend from '../legend';
 
 import './index.css';
 
@@ -346,6 +346,7 @@ const EmbeddingView = ({
         setIsProcessingData(false);
       } catch (dbError) {
         setErrorMessage(gettext('Error loading data to DuckDB'));
+        // eslint-disable-next-line no-console
         console.error('Error loading data to DuckDB:', dbError);
         setIsProcessingData(false);
       }

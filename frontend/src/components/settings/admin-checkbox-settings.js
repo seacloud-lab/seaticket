@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
-import PropTypes from 'prop-types';
 import { Input } from 'reactstrap';
+import PropTypes from 'prop-types';
 import AdminSettingsTemplate from './admin-settings-template';
 
 const AdminCheckboxSettings = ({ keyText, value: oldValue, helpTip, onChange }) => {

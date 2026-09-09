@@ -2,16 +2,16 @@ import React, { useCallback, useRef, useState, useEffect, useMemo } from 'react'
 import classnames from 'classnames';
 import { CenteredLoading, Icon, toaster, SecondaryBtn } from '@/components';
 import { gettext, username } from '@/constants';
-import { ChatMessage, ChatSession } from '../models';
-import { ASK_PAGE_SLUG_ID, CHAT_MESSAGE_TYPE } from '../constants';
-import ChatInput from '../chat-input';
-import ChatHistory from '../chat-history';
-import { Thinking } from '../components';
-import { Utils } from '@/utils/utils';
-import { useAskPage, useSessions, useDocuments } from '../hooks';
-import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '@/project/constants';
+import eventBus from '@/utils/event-bus';
+import { Utils } from '@/utils/utils';
 import ChatHeader from '../chat-header';
+import ChatHistory from '../chat-history';
+import ChatInput from '../chat-input';
+import { Thinking } from '../components';
+import { ASK_PAGE_SLUG_ID, CHAT_MESSAGE_TYPE } from '../constants';
+import { useAskPage, useSessions, useDocuments } from '../hooks';
+import { ChatMessage, ChatSession } from '../models';
 import { initMessages } from '../utils';
 
 import './index.css';
@@ -420,6 +420,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
                 messages.push(data);
                 _onMessage(data, { done });
               } catch (e) {
+                // eslint-disable-next-line no-console
                 console.warn('Failed to parse JSON from EventStream:', dataStr, e);
                 const data = { raw: dataStr };
                 messages.push(data);
@@ -444,6 +445,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
 
       const _createEventStreamReader = (readableStream) => {
         if (!readableStream || !readableStream.getReader) {
+          // eslint-disable-next-line no-console
           console.error('Invalid readable stream');
           return null;
         }

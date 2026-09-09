@@ -1,14 +1,14 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { I18nextProvider } from 'react-i18next';
 import { LongTextEditorDialog, getPreviewContent } from '@seafile/seafile-editor';
-import toaster from '@/components/toaster';
-import { getValidLongTextValue, isLongTextValueExceedLimit } from '../../../utils/column';
-import { LONG_TEXT_EXCEED_LIMIT_MESSAGE, LONG_TEXT_EXCEED_LIMIT_SUGGEST } from '../../../constants';
+import PropTypes from 'prop-types';
 import i18n from '@/_i18n/i18n-seafile-editor';
+import toaster from '@/components/toaster';
 import context from '@/sea-metadata/context';
-import LongTextEditorUtilities from '@/utils/long-text';
 import { downloadFile } from '@/utils/download';
+import LongTextEditorUtilities from '@/utils/long-text';
+import { LONG_TEXT_EXCEED_LIMIT_MESSAGE, LONG_TEXT_EXCEED_LIMIT_SUGGEST } from '../../../constants';
+import { getValidLongTextValue, isLongTextValueExceedLimit } from '../../../utils/column';
 
 const { projectUuid } = window.app.pageOptions;
 

@@ -1,19 +1,19 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input } from 'reactstrap';
 import { getPreviewContent } from '@seafile/seafile-editor';
-import { ticketsAPI } from '@/project/api';
-import { gettext } from '@/constants';
 import { toaster, ModalHeader, CenteredLoading, CenteredError } from '@/components';
+import { gettext } from '@/constants';
+import { ticketsAPI } from '@/project/api';
+import { useTags } from '@/project/hooks';
+import TagsSettings from '@/project/main-panel/tags/tags-settings';
+import { TICKET_STATE, TICKET_STATE_OPTIONS } from '@/project/main-panel/tickets/constants';
+import { useCollaborators } from '@/sea-metadata';
+import { getRowById } from '@/sea-metadata/utils/row';
+import { Utils } from '@/utils/utils';
 import {
   CollaboratorsSettings, TypeSettings, PrioritySettings,
   StateSettings, SubStateSettings, DueDateSettings,
 } from '../../../tickets/components/ticket-settings';
-import { getRowById } from '@/sea-metadata/utils/row';
-import { TICKET_STATE, TICKET_STATE_OPTIONS } from '@/project/main-panel/tickets/constants';
-import { useTags } from '@/project/hooks';
-import { Utils } from '@/utils/utils';
-import TagsSettings from '@/project/main-panel/tags/tags-settings';
-import { useCollaborators } from '@/sea-metadata';
 
 import './index.css';
 

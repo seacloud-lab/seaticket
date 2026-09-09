@@ -1,12 +1,12 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { Modal, ModalBody } from 'reactstrap';
-import CustomModalHeader from '../../components/modal-header';
-import { IconTooltip, toaster } from '../../components';
 import { gettext } from '@/constants';
 import { Utils } from '@/utils/utils';
+import { IconTooltip, toaster } from '../../components';
+import CustomModalHeader from '../../components/modal-header';
+import { portalAPI } from '../api';
 import Settings from '../main-panel/settings';
 import UserManagement from '../main-panel/user-management';
-import { portalAPI } from '../api';
 import { getPortalPublicUrl } from '../path-utils';
 
 import './index.css';

@@ -1,10 +1,10 @@
 import React, { forwardRef, useMemo, useImperativeHandle, useCallback, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { getColumnOptions, generateNewOption, getOption } from '../../../utils/column';
-import context from '@/sea-metadata/context';
+import { RemoveButton, Option } from '@/components';
 import Container from '@/components/options-editor/static-options-editor/container';
 import { gettext } from '@/constants';
-import { RemoveButton, Option } from '@/components';
+import context from '@/sea-metadata/context';
+import { getColumnOptions, generateNewOption, getOption } from '../../../utils/column';
 
 import '../single-select-editor/index.css';
 

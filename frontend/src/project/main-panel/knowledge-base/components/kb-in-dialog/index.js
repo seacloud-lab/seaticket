@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { CenteredLoading, CenteredError } from '@/components';
 import { knowledgeBaseAPI } from '@/project/api';
-import { Utils } from '@/utils/utils';
 import { downloadFile } from '@/utils/download';
+import { Utils } from '@/utils/utils';
 import Preview from '../../view/knowledge/preview';
 
 import './index.css';

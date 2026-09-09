@@ -1,9 +1,9 @@
 import React, { forwardRef, useImperativeHandle, useCallback, useRef, useEffect, useMemo } from 'react';
-import PropTypes from 'prop-types';
 import { gettext } from '@constants';
+import PropTypes from 'prop-types';
 import Container from '@/components/collaborator-editor/container';
-import { useCollaborators } from '../../../hooks';
 import { hasOwnProperty } from '@/utils/object-utils';
+import { useCollaborators } from '../../../hooks';
 
 import './index.css';
 

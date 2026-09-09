@@ -2,13 +2,13 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { FormGroup, Label, Input } from 'reactstrap';
 import { gettext } from '@/constants';
 import { useMetadata, useTags } from '@/project/hooks';
-import { useCollaborators } from '@/sea-metadata';
+import TagsSettings from '@/project/main-panel/tags/tags-settings';
 import {
   CollaboratorsSettings, TypeSettings, PrioritySettings,
   StateSettings, SubStateSettings, DueDateSettings,
 } from '@/project/main-panel/tickets/components/ticket-settings';
-import TagsSettings from '@/project/main-panel/tags/tags-settings';
 import { TICKET, PREDEFINED_TICKET_COLUMN_NAME } from '@/project/main-panel/tickets/constants';
+import { useCollaborators } from '@/sea-metadata';
 
 import './index.css';
 

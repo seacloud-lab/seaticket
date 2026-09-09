@@ -1,11 +1,11 @@
 import React, { forwardRef, useImperativeHandle, useState, useCallback, useRef, useEffect } from 'react';
 import { FormGroup, FormFeedback, Label, Dropdown, DropdownToggle } from 'reactstrap';
-import Icon from '@/components/icon';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
+import PropTypes from 'prop-types';
+import Icon from '@/components/icon';
+import ModalPortal from '@/components/modal-portal';
 import { gettext } from '@/constants';
 import CustomDropdownMenu from './dropdown-menu';
-import ModalPortal from '@/components/modal-portal';
 
 const ColumnType = forwardRef(({ column, onChange }, ref) => {
   const [error, setError] = useState('');

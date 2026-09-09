@@ -1,7 +1,7 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Link } from '@gatsbyjs/reach-router';
 import classnames from 'classnames';
+import PropTypes from 'prop-types';
 import { SearchInput } from '@/components';
 import { siteRoot, gettext } from '@/constants';
 

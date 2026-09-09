@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
-import { COLUMNS_ICON_CONFIG } from '@/sea-metadata/constants';
 import { CustomizeSelect, IconButton } from '@/components';
 import { gettext } from '@/constants';
+import { COLUMNS_ICON_CONFIG } from '@/sea-metadata/constants';
 import context from '@/sea-metadata/context';
 
 import './index.css';

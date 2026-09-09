@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import classnames from 'classnames';
-import { gettext } from '@/constants';
 import { EmptyTip, IconButton } from '@/components';
+import { gettext } from '@/constants';
 import { getInfoByEmailFrom } from '../../../../utils';
 import Item from './item';
 

@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import { getOption } from '@/sea-metadata/utils/column';
+import PropTypes from 'prop-types';
 import { Option } from '@/components';
+import { getOption } from '@/sea-metadata/utils/column';
 
 import './index.css';
 

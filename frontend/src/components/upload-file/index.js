@@ -1,7 +1,7 @@
 import React, { useCallback, useRef, useImperativeHandle, forwardRef } from 'react';
 import PropTypes from 'prop-types';
-import toaster from '../toaster';
 import { gettext } from '../../constants';
+import toaster from '../toaster';
 
 const UploadFile = forwardRef(({ fileType, onUpload }, ref) => {
   const inputRef = useRef(null);

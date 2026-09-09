@@ -3,7 +3,6 @@ import { Dropdown } from 'reactstrap';
 import classnames from 'classnames';
 import copy from 'copy-to-clipboard';
 import JSZip from 'jszip';
-import { useDocuments } from '../hooks';
 import {
   IconButton, CustomizeDropdownMoreToggle, CustomizeDropdownMenu,
   CustomizeDropdownItem, CustomizeDropdownItemText,
@@ -13,6 +12,7 @@ import {
 import { gettext } from '@/constants';
 import { downloadBlobByA, downloadContentByA } from '@/utils/download';
 import { Selector } from '../components';
+import { useDocuments } from '../hooks';
 
 import './index.css';
 

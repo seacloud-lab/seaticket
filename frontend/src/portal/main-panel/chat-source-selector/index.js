@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import PropTypes from 'prop-types';
-import classNames from 'classnames';
 import { Popover, PopoverBody } from 'reactstrap';
-import SearchInput from '@/components/search-input';
+import classNames from 'classnames';
+import PropTypes from 'prop-types';
 import { Icon, Switch } from '@/components';
+import SearchInput from '@/components/search-input';
 import { gettext } from '@/constants';
 import { DOCUMENT_CONNECTION_TYPE_MAP, ISSUE_CONNECTION_TYPE_MAP, TASK_CONNECTION_TYPE_MAP } from '@/project/main-panel/connections/constants';
 

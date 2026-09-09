@@ -1,17 +1,17 @@
 import React, { Component, Fragment } from 'react';
-import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
+import PropTypes from 'prop-types';
+import { CustomizeTabs, toaster } from '@/components';
+import CapsuleTabs from '@/components/capsule-tabs/capsule-tabs';
+import { TokenCreditUsedDetailDialog } from '@/components/dialog';
 import { gettext } from '@/constants';
 import { Utils } from '@/utils/utils';
-import { CustomizeTabs, toaster } from '@/components';
-import sysAdminAPI from '../api';
-import { TopBar } from '../main-panel';
-import StatisticNav from './statistic-nav';
-import CapsuleTabs from '@/components/capsule-tabs/capsule-tabs';
 import DateAndTimePicker from '../../project/main-panel/search/date-and-time-picker';
 import MonthPicker from '../../project/main-panel/search/month-picker';
-import { TokenCreditUsedDetailDialog } from '@/components/dialog';
+import sysAdminAPI from '../api';
+import { TopBar } from '../main-panel';
 import StatisticList from './statistic-list';
+import StatisticNav from './statistic-nav';
 
 import '@/css/statistics.css';
 

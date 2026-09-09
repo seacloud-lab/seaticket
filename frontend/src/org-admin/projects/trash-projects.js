@@ -1,9 +1,9 @@
 import React, { useCallback, useRef } from 'react';
 import { toaster, ProjectsTable } from '@/components';
+import CommonOperationConfirmationDialog from '@/components/dialog/common-operation-confirmation-dialog';
 import { orgID, gettext, trashCleanExpireDays } from '@/constants';
 import { Utils } from '@/utils/utils';
 import orgAdminAPI from '../api';
-import CommonOperationConfirmationDialog from '@/components/dialog/common-operation-confirmation-dialog';
 
 const TrashProjects = ({ isShowTrashEmptyConfirmDialog, onTrashEmptyConfirmDialogToggle }) => {
   const ref = useRef(null);

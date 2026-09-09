@@ -1,10 +1,10 @@
 import React, { useRef, useCallback, useEffect, useState, useMemo } from 'react';
 import { Button } from 'reactstrap';
-import { gettext } from '@/constants';
 import { IconButton, ResizeBar } from '@/components';
-import Detail from './detail';
-import { getSuggestionTitle } from '../../../utils';
+import { gettext } from '@/constants';
 import { isFunction } from '@/utils/type-detection';
+import { getSuggestionTitle } from '../../../utils';
+import Detail from './detail';
 
 import './index.css';
 

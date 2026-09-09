@@ -1,15 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import classnames from 'classnames';
-import dayjs from '@/utils/dayjs';
-import { gettext, mediaUrl, PERMISSION_TYPES } from '@/constants';
 import { CustomizeMarkdownViewer, IconTextBtn, IconTooltip, toaster } from '@/components';
-import DateFormatter from '../../../cell-formatter/date-formatter';
+import { gettext, mediaUrl, PERMISSION_TYPES } from '@/constants';
+import { connectionsAPI } from '@/project/api';
+import dayjs from '@/utils/dayjs';
+import { isString } from '@/utils/type-detection';
+import { Utils } from '@/utils/utils';
 import { generatorConnectionAssetURLPrefix, getInfoByEmailFrom } from '../../../../utils';
+import DateFormatter from '../../../cell-formatter/date-formatter';
 import HTMLContentWrapper from './html-content';
 import ReplyEmail from './reply-email';
-import { connectionsAPI } from '@/project/api';
-import { Utils } from '@/utils/utils';
-import { isString } from '@/utils/type-detection';
 
 import './index.css';
 

@@ -1,9 +1,9 @@
 import React from 'react';
-import classnames from 'classnames';
 import { Dropdown, DropdownToggle } from 'reactstrap';
+import classnames from 'classnames';
 import { hasOwnProperty } from '@/utils/object-utils';
-import CustomizeDropdownMenu from '../customize-dropdown-menu';
 import CustomizeDropdownItem from '../customize-dropdown-item';
+import CustomizeDropdownMenu from '../customize-dropdown-menu';
 
 import './index.css';
 

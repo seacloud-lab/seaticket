@@ -1,7 +1,7 @@
 import React, { useCallback, useRef, useState } from 'react';
 import classnames from 'classnames';
-import { CellType, COLUMNS_ICON_CONFIG } from '@/sea-metadata/constants';
 import { IconButton } from '@/components';
+import { CellType, COLUMNS_ICON_CONFIG } from '@/sea-metadata/constants';
 // import ResizeColumn from '@/sea-metadata/view/table/table-main/rows-header/cell/resize-column';
 
 import './index.css';

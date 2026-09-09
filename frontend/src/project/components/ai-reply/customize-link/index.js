@@ -1,8 +1,8 @@
 import React, { useCallback, useMemo } from 'react';
 import classnames from 'classnames';
 import { IconButton } from '@/components';
-import SimpleLongTextFormatter from '../../../main-panel/connections/components/cell-formatter/long-text-formatter';
 import { gettext } from '@/constants';
+import SimpleLongTextFormatter from '../../../main-panel/connections/components/cell-formatter/long-text-formatter';
 
 import './index.css';
 

@@ -1,13 +1,13 @@
 import React, { useMemo } from 'react';
-import { ticketsAPI } from '../../../../api';
+import { CenteredLoading } from '@/components';
+import { gettext } from '@/constants';
 import { VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
-import { useTicketsPage, useMetadata } from '../../hooks';
-import { TICKET_CHILDREN_PAGE_SLUG_ID } from '../../constants';
-import { gettext } from '@/constants';
-import { CenteredLoading } from '@/components';
 import { getRowById } from '@/sea-metadata/utils/row';
+import { ticketsAPI } from '../../../../api';
 import Tickets from '../../components/tickets';
+import { TICKET_CHILDREN_PAGE_SLUG_ID } from '../../constants';
+import { useTicketsPage, useMetadata } from '../../hooks';
 
 const SubstateTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) => {
 

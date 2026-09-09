@@ -1,12 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Loading from '@/components/loading';
-import RowMetrics from '../../utils/row-metrics';
 import { gettext } from '@/constants';
-import { SEQUENCE_COLUMN_WIDTH, CANVAS_RIGHT_INTERVAL } from '../../../../constants';
-import { addClassName, removeClassName } from '@/utils/dom';
-import { getRowsFromSelectedRange } from '../../utils/selected-cell-utils';
 import { Z_INDEX } from '@/constants/zIndexes';
+import { addClassName, removeClassName } from '@/utils/dom';
+import { SEQUENCE_COLUMN_WIDTH, CANVAS_RIGHT_INTERVAL } from '../../../../constants';
+import RowMetrics from '../../utils/row-metrics';
+import { getRowsFromSelectedRange } from '../../utils/selected-cell-utils';
 
 import './index.css';
 

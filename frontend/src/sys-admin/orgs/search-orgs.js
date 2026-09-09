@@ -1,12 +1,12 @@
 import React, { Component, Fragment } from 'react';
-import PropTypes from 'prop-types';
 import { Form, FormGroup, Input, Label, Col } from 'reactstrap';
+import PropTypes from 'prop-types';
 import { toaster } from '@/components';
-import { Utils } from '@/utils/utils';
 import { loginUrl, gettext } from '@/constants';
+import sysAdminAPI from '@/sys-admin/api';
+import { Utils } from '@/utils/utils';
 import { TopBar, Main } from '../main-panel';
 import Content from './orgs-content';
-import sysAdminAPI from '@/sys-admin/api';
 
 const searchOrgsPropTypes = {
   onCloseSidePanel: PropTypes.func,

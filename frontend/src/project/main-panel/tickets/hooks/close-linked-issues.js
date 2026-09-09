@@ -1,11 +1,11 @@
 import React, { useContext, useState, useCallback, useRef } from 'react';
+import { useData } from '@/project/hooks';
+import { CONNECTION_PREDEFINED_COLUMN_NAME } from '@/project/main-panel/connections/constants';
+import { useConnections } from '@/project/main-panel/connections/hooks';
+import eventBus from '@/utils/event-bus';
 import { isFunction } from '@/utils/type-detection';
 import { EVENT_BUS_TYPE } from '../../../constants';
-import eventBus from '@/utils/event-bus';
 import CloseLinkedGitHubIssuesWarningDialog from '../components/close-linked-github-issues-warning-dialog';
-import { useConnections } from '@/project/main-panel/connections/hooks';
-import { CONNECTION_PREDEFINED_COLUMN_NAME } from '@/project/main-panel/connections/constants';
-import { useData } from '@/project/hooks';
 
 const CloseLinkedIssuesContext = React.createContext(null);
 

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { IconButton, Icon } from '@/components';
 import { aiCreditExceededAmount } from '@/constants/config';
 import { gettext } from '../../../../constants';
-import { IconButton, Icon } from '@/components';
 
 import './org-ai-limit-prompt.css';
 

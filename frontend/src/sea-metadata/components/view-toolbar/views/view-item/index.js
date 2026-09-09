@@ -2,8 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import classnames from 'classnames';
 import { Icon, CommonOperationConfirmationDialog, ClickOutside, ModalPortal } from '@/components';
 import { gettext } from '@/constants';
-import { isFunction } from '@/utils/type-detection';
 import context from '@/sea-metadata/context';
+import { isFunction } from '@/utils/type-detection';
 
 import './index.css';
 

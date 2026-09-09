@@ -1,15 +1,15 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { toaster, Loading, IconButton } from '@/components';
+import { loginUrl, gettext } from '@/constants';
+import sysAdminAPI from '@/sys-admin/api';
+import SysAdminSetOrgMaxUserNumberDialog from '@/sys-admin/dialog/sysadmin-set-org-max-user-number-dialog';
+import SysAdminSetOrgNameDialog from '@/sys-admin/dialog/sysadmin-set-org-name-dialog';
 import { Utils } from '@/utils/utils';
 import { validateName } from '@/utils/validate';
-import { loginUrl, gettext } from '@/constants';
-import SysAdminSetOrgNameDialog from '@/sys-admin/dialog/sysadmin-set-org-name-dialog';
-import SysAdminSetOrgMaxUserNumberDialog from '@/sys-admin/dialog/sysadmin-set-org-max-user-number-dialog';
+import { Main, TopBar } from '../main-panel';
 import OrgNav from './org-nav';
 import OrgTitle from './org-title';
-import { Main, TopBar } from '../main-panel';
-import sysAdminAPI from '@/sys-admin/api';
 
 const contentPropTypes = {
   orgID: PropTypes.string.isRequired,

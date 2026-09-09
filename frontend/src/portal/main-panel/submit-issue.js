@@ -1,15 +1,15 @@
 import React, { useCallback, useState, useEffect, useMemo, useRef } from 'react';
 import { Button, Input, Label } from 'reactstrap';
-import classnames from 'classnames';
 import { LongTextInlineEditor } from '@seafile/seafile-editor';
-import { gettext, lang, server, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
-import { isLongTextValueExceedLimit, default as LongTextEditorUtilities } from '@/utils/long-text';
-import { canCheckSeafileEditorBrowser } from '@/utils/seafile-editor-browser';
+import classnames from 'classnames';
 import { CenteredLoading, toaster, Option, OptionsEditor } from '@/components';
-import { portalAPI } from '../api';
-import { PORTAL_PAGE } from '../constants';
+import { gettext, lang, server, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
 import { useData, usePortalIssuesMetadata } from '@/project/hooks';
 import { PORTAL_ISSUE_TABLE_NAME } from '@/project/main-panel/portal-issues/constants';
+import { isLongTextValueExceedLimit, default as LongTextEditorUtilities } from '@/utils/long-text';
+import { canCheckSeafileEditorBrowser } from '@/utils/seafile-editor-browser';
+import { portalAPI } from '../api';
+import { PORTAL_PAGE } from '../constants';
 
 import './submit-issue.css';
 

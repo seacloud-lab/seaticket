@@ -1,15 +1,15 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import PropTypes from 'prop-types';
 import { UncontrolledPopover } from 'reactstrap';
 import isHotkey from 'is-hotkey';
+import PropTypes from 'prop-types';
 import CustomizeAddTool from '@/components/customize-add-tool';
-import Groupbys from './groupbys';
 import { gettext } from '@/constants';
-import { generateDefaultGroupby, getGroupbyColumns } from '../../../utils/group';
-import { getEventClassName } from '@/utils/dom';
-import { EVENT_BUS_TYPE, MAX_GROUP_LEVEL } from '../../../constants';
 import context from '@/sea-metadata/context';
+import { getEventClassName } from '@/utils/dom';
 import ObjectUtils from '@/utils/object-utils';
+import { EVENT_BUS_TYPE, MAX_GROUP_LEVEL } from '../../../constants';
+import { generateDefaultGroupby, getGroupbyColumns } from '../../../utils/group';
+import Groupbys from './groupbys';
 
 import './index.css';
 

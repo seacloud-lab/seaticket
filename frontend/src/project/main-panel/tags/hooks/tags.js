@@ -1,10 +1,10 @@
 import React, { useContext, useEffect, useState, useCallback, useRef } from 'react';
 import deepCopy from 'deep-copy';
-import { Utils } from '@/utils/utils';
 import { toaster } from '@/components';
-import { TagsData, Tag } from '../models';
 import projectAPI from '@/project/api/project-api';
 import { shouldReload } from '@/project/utils';
+import { Utils } from '@/utils/utils';
+import { TagsData, Tag } from '../models';
 
 const TagsContext = React.createContext(null);
 

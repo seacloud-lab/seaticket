@@ -22,7 +22,7 @@ const CustomizeTabs = ({
       {tabs.map(tab => {
         return (
           <div
-            className={classnames('seaqa-customize-tab', { 'active': tab.value === value } )}
+            className={classnames('seaqa-customize-tab', { 'active': tab.value === value })}
             key={tab.value}
             onClick={(event) => handleChange(event, tab.value)}
           >

@@ -1,6 +1,6 @@
 import React from 'react';
-import { gettext, mediaUrl } from '@/constants';
 import { EmptyTip } from '@/components';
+import { gettext, mediaUrl } from '@/constants';
 import SkillsListItem from './skills-list-item';
 
 import './skills-list.css';

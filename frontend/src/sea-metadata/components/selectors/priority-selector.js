@@ -1,9 +1,9 @@
 import React, { useState, useRef, useCallback } from 'react';
 import classnames from 'classnames';
 import { PriorityEditor } from '@/components';
-import { PRIORITIES } from '@/sea-metadata/constants';
-import PriorityFormatter from '@/sea-metadata/components/cell-formatter/priority';
 import SelectTrigger from '@/components/customize-select/select-trigger';
+import PriorityFormatter from '@/sea-metadata/components/cell-formatter/priority';
+import { PRIORITIES } from '@/sea-metadata/constants';
 
 const PrioritySelector = ({
   readOnly,

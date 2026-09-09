@@ -1,12 +1,12 @@
 import React, { useContext, useEffect, useState, useCallback, useRef } from 'react';
+import { buildPortalPath, getPortalPathSegments } from '@/portal/path-utils';
+import { BAR_TYPE, EVENT_BUS_TYPE } from '@/project/constants';
+import { EVENT_BUS_TYPE as SEAMETADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import context from '@/sea-metadata/context';
 import eventBus from '@/utils/event-bus';
 import { isNumber } from '@/utils/type-detection';
 import { Utils } from '@/utils/utils';
-import { EVENT_BUS_TYPE as SEAMETADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
-import { BAR_TYPE, EVENT_BUS_TYPE } from '@/project/constants';
 import { KNOWLEDGE_PAGE_SLUG_ID } from '../constants';
-import { buildPortalPath, getPortalPathSegments } from '@/portal/path-utils';
 
 const PortalKnowledgePageContext = React.createContext(null);
 

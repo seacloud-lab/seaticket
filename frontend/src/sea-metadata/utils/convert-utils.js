@@ -1,13 +1,13 @@
+import { CellType, DEFAULT_DATE_FORMAT } from '../constants';
+import context from '../context';
+import { COLUMN_DATA_OPERATION_TYPE } from '../store/operations';
 import {
   getDateDisplayString, getNumberDisplayString, formatStringToNumber, getOptionDisplayName, getCollaboratorsName, getFloatNumber, getColumnOptionNamesByIds,
   getOption, checkIsPredefinedOption, getColumnOptionNameById,
   getTagsDisplayString, getColumnOptions, generatorCellOption, generatorCellOptions, isLongTextValueExceedLimit, getValidLongTextValue
 } from './column';
-import { isNumber } from './number';
 import { formatTextToDate } from './date';
-import { CellType, DEFAULT_DATE_FORMAT } from '../constants';
-import { COLUMN_DATA_OPERATION_TYPE } from '../store/operations';
-import context from '../context';
+import { isNumber } from './number';
 
 const SUPPORT_PASTE_FROM_COLUMN = {
   [CellType.MULTIPLE_SELECT]: [CellType.MULTIPLE_SELECT, CellType.TEXT, CellType.SINGLE_SELECT],
