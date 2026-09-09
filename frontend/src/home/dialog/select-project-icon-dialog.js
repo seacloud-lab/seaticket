@@ -49,7 +49,7 @@ class SelectProjectIconDialog extends React.Component {
             onClick={onBack}
             onKeyDown={this.onBackKeyDown}
           />
-          <span>{gettext('Select Icon')}</span>
+          <span>{gettext('Select icon')}</span>
         </ModalHeader>
         <ModalBody>
           <SelectProjectIconContent
