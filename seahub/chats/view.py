@@ -505,14 +505,6 @@ class ChatView(APIView):
             error_msg = 'AI credit not enough.'
             return api_error(status.HTTP_402_PAYMENT_REQUIRED, error_msg)
 
-        project_prompt = ''
-        if project.settings:
-            try:
-                project_settings = json.loads(project.settings)
-                project_prompt = project_settings.get('prompt', '')
-            except json.JSONDecodeError:
-                pass
-
         raw_attachments = request.data.get('attachments', [])
         temp_image_paths, page_content_attachments, other_attachments = split_attachments(project_uuid, raw_attachments)
         # Extra contents
@@ -590,6 +582,20 @@ class ChatView(APIView):
         if page_content_attachments:
             attachments = attachments + build_page_content_attachments(page_content_attachments)
 
+        # Read project-level custom prompt from settings
+        project_prompt = ''
+        disabled_builtin_skills = []
+        if project.settings:
+            try:
+                project_settings = json.loads(project.settings)
+                project_prompt = project_settings.get('prompt', '')
+                skills_settings = project_settings.get('skills') or {}
+                disabled_builtin_skills = skills_settings.get('disabled_builtins') or []
+                if not isinstance(disabled_builtin_skills, list):
+                    disabled_builtin_skills = []
+            except json.JSONDecodeError:
+                pass
+
         try:
             ai_images_payload = build_ai_images_payload(project_uuid, permanent_image_paths)
         except ImageProcessingError as e:
@@ -647,6 +653,7 @@ class ChatView(APIView):
             'llm_model': request.data.get('model'),
             'stream': stream,
             'project_prompt': project_prompt,
+            'disabled_builtin_skills': disabled_builtin_skills,
             'username': username # used for kb generator
         }
 

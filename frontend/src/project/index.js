@@ -30,7 +30,7 @@ const Project = () => {
     const { origin, search } = location;
     let url = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${bar}/`;
     const validChildren = children.filter(i => i);
-    if ((bar === BAR_TYPE.TICKET || bar === BAR_TYPE.CONNECTION || bar === BAR_TYPE.CHAT || bar === BAR_TYPE.KNOWLEDGE || bar === BAR_TYPE.PORTAL_ISSUES) && validChildren.length > 0) {
+    if ((bar === BAR_TYPE.TICKET || bar === BAR_TYPE.CONNECTION || bar === BAR_TYPE.CHAT || bar === BAR_TYPE.KNOWLEDGE || bar === BAR_TYPE.PORTAL_ISSUES || bar === BAR_TYPE.SKILLS) && validChildren.length > 0) {
       url = url + validChildren.join('/') + '/';
     }
     if ((bar === BAR_TYPE.TICKET

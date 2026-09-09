@@ -1,0 +1,10 @@
+.create-skill-btn {
+  height: 26px;
+  padding: 0px 8px;
+  font-weight: 400;
+}
+
+.create-skill-btn svg {
+  width: 14px;
+  height: 14px;
+}

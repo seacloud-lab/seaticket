@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import { CenteredLoading, IconButton } from '@/components';
 import TopBar from '../top-bar';
 import Sessions from './sessions';
@@ -8,7 +8,7 @@ import { PERMISSION_TYPES, gettext, siteRoot } from '@/constants';
 import { ASK_PAGE_SLUG_ID } from './constants';
 import { useConnections } from '../connections/hooks';
 import Documents from './documents';
-import { chatAPI } from '@/project/api';
+import { chatAPI, skillsAPI } from '@/project/api';
 import { BAR_TYPE } from '../../constants';
 
 import './index.css';
@@ -20,8 +20,19 @@ const {
 const Main = ({ title, settings }) => {
   const { isLoading: isAskPageLoading, pageSlugId, togglePageSlugId } = useAskPage();
   const { isLoading: isSessionsLoading, isShowSessions, toggleIsShowSessions, closeShowSessions } = useSessions();
+  const [skillCommands, setSkillCommands] = useState([]);
 
   const isLoading = isAskPageLoading || isSessionsLoading;
+
+  useEffect(() => {
+    skillsAPI.listSkillCommands(projectUuid).then((res) => {
+      const commands = Array.isArray(res?.data?.commands) ? res.data.commands : [];
+      setSkillCommands(commands.filter(name => typeof name === 'string' && name));
+    }).catch(() => {
+      // Do not block chat if skills endpoint fails.
+      setSkillCommands([]);
+    });
+  }, []);
 
   return (
     <>
@@ -59,6 +70,7 @@ const Main = ({ title, settings }) => {
                 projectUuid={projectUuid}
                 projectName={projectName}
                 settings={settings}
+                skillCommands={skillCommands}
                 api={chatAPI}
               />
               <Documents />

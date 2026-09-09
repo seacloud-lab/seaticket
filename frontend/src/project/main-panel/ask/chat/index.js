@@ -16,7 +16,7 @@ import { initMessages } from '../utils';
 
 import './index.css';
 
-const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allowedAttachmentSources, canSelectModel, enableSkills = true, api, renderOperation, customHeaderTitle }) => {
+const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allowedAttachmentSources, canSelectModel, enableSkills = true, skillCommands = [], api, renderOperation, customHeaderTitle }) => {
   const [isReply, setReply] = useState(false);
   const [loading, setLoading] = useState(true);
   const [chatHistories, setChatHistories] = useState([]);
@@ -579,6 +579,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
             allowedAttachmentSources={allowedAttachmentSources}
             canSelectModel={canSelectModel}
             enableSkills={enableSkills}
+            skillCommands={skillCommands}
             sendMessage={sendMessage}
             clearContext={clearContext}
             resetClearContext={resetClearContext}
