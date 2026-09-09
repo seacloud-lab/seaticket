@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useCallback, useRef, useState } from 'react';
-import classnames from 'classnames';
 import { EmptyTip, CustomizeMarkdownViewer, CenteredLoading, CenteredError, toaster } from '@/components';
 import { gettext, mediaUrl, PERMISSION_TYPES } from '@/constants';
 import { CONNECTION_TYPE } from '../../../constants';
@@ -13,36 +12,10 @@ import { connectionsAPI } from '@/project/api';
 
 import './index.css';
 
-const FocusedRecordList = ({ details, type, className, focus }) => {
-  const focusRef = useRef(null);
-
-  useEffect(() => {
-    if (!focus || !focusRef.current) return;
-    focusRef.current.scrollIntoView({ block: 'center' });
-  }, [focus]);
-
-  return (
-    <div className={className}>
-      {details.map((detail, index) => {
-        const isFocused = Boolean(
-          (focus?.first && index === 0) ||
-          (focus?.messageId && detail.message_id && String(detail.message_id) === String(focus.messageId))
-        );
-        return (
-          <div
-            key={detail.message_id ?? detail._pk ?? index}
-            ref={isFocused ? focusRef : undefined}
-            className={classnames({ 'seaqa-connection-detail-focused': isFocused })}
-          >
-            <CommonDetailItem detail={detail} type={type} />
-          </div>
-        );
-      })}
-    </div>
-  );
-};
-
-const ConnectionResourceDetails = ({ resource, projectUuid, permission, connection, isSmallScreen, updateResource, onThreadUnreadChange, setIsContentEmpty }) => {
+const ConnectionResourceDetails = ({
+  resource, projectUuid, permission, connection, isSmallScreen, highlight,
+  updateResource, onThreadUnreadChange, setIsContentEmpty,
+}) => {
   const [status, setStatus] = useState('loading'); // loading / error / loaded
   const [errorMessage, setErrorMessage] = useState('');
   const [details, setDetails] = useState(null);
@@ -162,7 +135,7 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
     const { connection_id, _id } = resource;
     connectionsAPI.getConnectionRecord(projectUuid, connection_id, _id).then((res) => {
       const { record, columns, linked_ticket_title, related_users } = res.data;
-      const initialDetails = initConnectionResourceDetails(type, record);
+      const initialDetails = initConnectionResourceDetails(type, record, highlight);
       // Resolve Jira account IDs → display names in details
       if (type === CONNECTION_TYPE.JIRA_ISSUE && Array.isArray(related_users) && related_users.length > 0) {
         const jiraUserMap = {};
@@ -207,7 +180,7 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
       setErrorMessage(errMessage);
       setStatus('error');
     });
-  }, [projectUuid, resource, type, updateResource, permission, getAutoReadEmailState]);
+  }, [projectUuid, resource, type, updateResource, permission, highlight, getAutoReadEmailState]);
 
   useEffect(() => {
     if (status !== 'loaded') return;
@@ -230,21 +203,19 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
   if (type === CONNECTION_TYPE.EMAIL) {
     if (mergedDetails.length === 0) {
       return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No content')} />);
-    } else {
-      return (
-        <EmailDetails
-          className={`seaqa-connection-resource-details seaqa-connection-${type}-resource-details pt-4 pb-4`}
-          details={mergedDetails}
-          projectUuid={projectUuid}
-          connection_id={resource.connection_id}
-          recordId={resource._id}
-          permission={permission}
-          handleReplyEmailSuccess={handleReplyEmailSuccess}
-          onUnreadChange={handleEmailUnreadChange}
-          focus={resource.focus}
-        />
-      );
     }
+    return (
+      <EmailDetails
+        className={`seaqa-connection-resource-details seaqa-connection-${type}-resource-details pt-4 pb-4`}
+        details={mergedDetails}
+        projectUuid={projectUuid}
+        connection_id={resource.connection_id}
+        recordId={resource._id}
+        permission={permission}
+        handleReplyEmailSuccess={handleReplyEmailSuccess}
+        onUnreadChange={handleEmailUnreadChange}
+      />
+    );
   }
 
   if (type === CONNECTION_TYPE.GITHUB_ISSUE || type === CONNECTION_TYPE.LINEAR) {
@@ -253,7 +224,6 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
         className={`seaqa-connection-resource-details seaqa-connection-${type}-resource-details pt-4 pb-4`}
         details={details}
         isSmallScreen={isSmallScreen}
-        focus={resource.focus}
       />
     );
   }
@@ -263,42 +233,35 @@ const ConnectionResourceDetails = ({ resource, projectUuid, permission, connecti
     const mergedDiscourseDetails = [...discourseDetails, ...localDiscourseDetails];
     if (mergedDiscourseDetails.length === 0) {
       return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No content')} />);
-    } else {
-      return (
-        <DiscourseDetails
-          className={`seaqa-connection-resource-details seaqa-connection-${type}-resource-details pt-4 pb-4`}
-          details={mergedDiscourseDetails}
-          projectUuid={projectUuid}
-          connection_id={resource.connection_id}
-          recordId={resource._id}
-          permission={permission}
-          handleReplyDiscourseSuccess={handleReplyDiscourseSuccess}
-          focus={resource.focus}
-        />
-      );
     }
+    return (
+      <DiscourseDetails
+        className={`seaqa-connection-resource-details seaqa-connection-${type}-resource-details pt-4 pb-4`}
+        details={mergedDiscourseDetails}
+        projectUuid={projectUuid}
+        connection_id={resource.connection_id}
+        recordId={resource._id}
+        permission={permission}
+        handleReplyDiscourseSuccess={handleReplyDiscourseSuccess}
+      />
+    );
   }
 
   if (Array.isArray(details)) {
     if (details.length === 0) {
       return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No content')} />);
-    } else {
-      return (
-        <FocusedRecordList
-          className={`seaqa-connection-resource-details seaqa-connection-${type}-resource-details`}
-          details={details}
-          type={type}
-          focus={resource.focus}
-        />
-      );
     }
+    return (
+      <div className={`seaqa-connection-resource-details seaqa-connection-${type}-resource-details`}>
+        {details.map((detail, index) => (<CommonDetailItem detail={detail} type={type} key={index} />))}
+      </div>
+    );
   }
 
   if (details) {
     return (<CustomizeMarkdownViewer className={`seaqa-connection-${type}-resource-details`} value={details} showTOC={false} />);
-  } else {
-    return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No content')} />);
   }
+  return (<EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No content')} />);
 };
 
 export default ConnectionResourceDetails;

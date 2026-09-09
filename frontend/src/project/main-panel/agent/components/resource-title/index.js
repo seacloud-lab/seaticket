@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, isValidElement, cloneElement } from 'react';
 import classnames from 'classnames';
 import { connectionsAPI } from '@/project/api';
 import context from '@/sea-metadata/context';
@@ -28,7 +28,7 @@ import './index.css';
 
 const { projectUuid } = window.app.pageOptions;
 
-const ResourceTitle = ({ displayDetails = true, resource, className, renderTrigger }) => {
+const ResourceTitle = ({ displayDetails = true, resource, className, trigger, children }) => {
   const [isShowDetails, setIsShowDetails] = useState(false);
   const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
   const [isTicketDialogOpen, setTicketDialogOpen] = useState(false);
@@ -194,15 +194,19 @@ const ResourceTitle = ({ displayDetails = true, resource, className, renderTrigg
   }, [modifyRowLink]);
 
   const hasDetails = resource?.type === TICKET_TYPE || (resource?.connection_id && resource?._id);
-  const canOpen = hasDetails && displayDetails;
+  const onClick = hasDetails && displayDetails ? openDetails : () => {};
 
   return (
     <>
-      {renderTrigger ? renderTrigger({ openDetails, canOpen }) : (
+      {children && isValidElement(children) ? (
+        <>
+          {cloneElement(children, { resource: resource, onClick: onClick })}
+        </>
+      ) : (
         <div
-          className={classnames(className, { 'seaqa-agent-resource-title': canOpen })}
+          className={classnames(className, { 'seaqa-agent-resource-title': displayDetails && hasDetails })}
           title={resource?.title}
-          onClick={canOpen ? openDetails : () => {}}
+          onClick={onClick}
         >
           {resource?.title}
         </div>
@@ -211,6 +215,7 @@ const ResourceTitle = ({ displayDetails = true, resource, className, renderTrigg
         <ResourceDetailsDialog
           projectUuid={projectUuid}
           resource={resource}
+          highlight={trigger}
           createMoreOptions={createMoreOptions}
           onToggle={closeDetails}
         />

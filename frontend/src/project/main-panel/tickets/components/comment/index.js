@@ -38,6 +38,7 @@ const Comment = ({
   const canCheckEditorBrowser = canCheckSeafileEditorBrowser();
 
   const commentRef = useRef(null);
+  const commentContainerRef = useRef(null);
   const commentEditorRef = useRef(null);
   const isChangeRef = useRef(false);
 
@@ -164,6 +165,13 @@ const Comment = ({
   }, [onSubmitComment]);
 
   useEffect(() => {
+    if (!comment.highlight) return;
+    if (!commentContainerRef.current) return;
+    commentContainerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     // Edit comment
     if (isEditComment) {
       if (isShowEditor) {
@@ -189,7 +197,10 @@ const Comment = ({
       <>
         <div className={classnames('seaqa-project-ticket-comment editing', className, { 's': isSmallScreen })} ref={commentRef}>
           {!isSmallScreen && renderAvatar()}
-          <div className="seaqa-project-ticket-comment-container">
+          <div
+            className={classnames('seaqa-project-ticket-comment-container', { 'seaqa-connection-resource-highlight': comment.highlight })}
+            ref={commentContainerRef}
+          >
             <div className="seaqa-project-ticket-comment-op">
               <div className="seaqa-project-ticket-comment-op-log">
                 {renderOperationLog()}
@@ -274,7 +285,10 @@ const Comment = ({
   return (
     <div className={classnames('seaqa-project-ticket-comment', className, { 's': isSmallScreen })} ref={commentRef}>
       {!isSmallScreen && renderAvatar()}
-      <div className="seaqa-project-ticket-comment-container">
+      <div
+        className={classnames('seaqa-project-ticket-comment-container', { 'seaqa-connection-resource-highlight': comment.highlight })}
+        ref={commentContainerRef}
+      >
         <div className="seaqa-project-ticket-comment-op">
           <div className="seaqa-project-ticket-comment-op-log">
             {children && children[0] ? (

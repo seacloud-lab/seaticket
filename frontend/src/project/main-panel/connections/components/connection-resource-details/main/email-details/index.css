@@ -111,17 +111,11 @@
   padding-right: 0;
   margin-bottom: 16px;
   box-shadow: 0 3px 8px rgba(16, 19, 24, .1);
+  scroll-margin-top: 16px;
 }
 
 .seaqa-connection-email-record-details.expanded:last-child {
   margin-bottom: 0;
-}
-
-.seaqa-connection-email-record-details.focused,
-.seaqa-connection-email-record-details.expanded.focused {
-  border: 1px solid #FF8000;
-  border-radius: 8px;
-  box-shadow: 0 6px 14px 0 rgba(255, 128, 0, 0.10);
 }
 
 .seaqa-connection-email-record-details.expanded .email-header {

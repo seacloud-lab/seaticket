@@ -27,7 +27,7 @@ const parseResult = (result) => {
   }
 };
 
-const ActionItem = React.memo(({ action, resource, eventType, ...props }) => {
+const ActionItem = React.memo(({ action, resource, trigger, eventType, ...props }) => {
   const [isThoughtExpanded, setIsThoughtExpanded] = useState(false);
 
   const { type, status, result, references, children } = action;
@@ -101,14 +101,9 @@ const ActionItem = React.memo(({ action, resource, eventType, ...props }) => {
             <div className="seaqa-agent-action-label">{gettext('Event')}</div>
             {eventSummary && <CustomizeMarkdownViewer value={eventSummary} showTOC={false} />}
             {resource && (
-              <ResourceTitle
-                resource={resource}
-                renderTrigger={({ openDetails, canOpen }) => canOpen && (
-                  <div className="seaqa-agent-action-buttons d-flex align-items-center mt-2">
-                    <SecondaryBtn isSmall={true} text={viewSourceText} onClick={openDetails} />
-                  </div>
-                )}
-              />
+              <ResourceTitle resource={resource} trigger={trigger}>
+                <SecondaryBtn isSmall={true} className="mt-2" text={viewSourceText} />
+              </ResourceTitle>
             )}
           </div>
         );
@@ -190,7 +185,7 @@ const ActionItem = React.memo(({ action, resource, eventType, ...props }) => {
         return (<div className="seaqa-agent-action-container">{result}</div>);
       }
     }
-  }, [isThoughtExpanded, result, references, type, props, children, toggleThoughtExpand, resource, viewSourceText]);
+  }, [isThoughtExpanded, result, references, type, props, children, toggleThoughtExpand, resource, viewSourceText, trigger]);
 
   return (
     <div

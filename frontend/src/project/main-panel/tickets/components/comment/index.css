@@ -37,10 +37,11 @@
 
 .seaqa-project-ticket-comment .seaqa-project-ticket-comment-container {
   border: 1px solid #ddd;
-  border-radius: 6px;
+  border-radius: 8px;
   height: fit-content;
   flex: 1;
   overflow: hidden;
+  scroll-margin-top: 16px;
 }
 
 .seaqa-project-ticket-comment .seaqa-project-ticket-comment-op {

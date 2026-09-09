@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import classnames from 'classnames';
 import { gettext } from '@constants';
 import { EmptyTip, IconButton, toaster } from '@/components';
@@ -6,6 +6,7 @@ import CommonDetailItem from '../common-detail-item';
 import ReplyDiscourse from './reply-discourse';
 import { connectionsAPI } from '@/project/api';
 import { Utils } from '@utils/utils';
+import { CONNECTION_TYPE } from '@/project/main-panel/connections/constants';
 
 import './index.css';
 
@@ -16,17 +17,9 @@ const DiscourseDetails = ({
   connection_id,
   recordId,
   permission,
-  handleReplyDiscourseSuccess,
-  focus,
+  handleReplyDiscourseSuccess
 }) => {
   const [isShowReply, setIsShowReply] = useState(false);
-  const focusRef = useRef(null);
-
-  useEffect(() => {
-    if (!focus?.postNumber && !focus?.first) return;
-    if (!focusRef.current) return;
-    focusRef.current.scrollIntoView({ block: 'center' });
-  }, [focus?.postNumber, focus?.first]);
 
   const onSubmit = useCallback(({ content }, callback) => {
     const payload = {
@@ -55,26 +48,13 @@ const DiscourseDetails = ({
         <EmptyTip />
       ) : (
         <>
-          {details.map((detail, index) => {
-            const isFocused = Boolean(
-              (focus?.first && index === 0) ||
-              (focus?.postNumber && detail.post_number != null && String(detail.post_number) === String(focus.postNumber))
-            );
-            return (
-              <div
-                key={detail.post_number ?? detail._pk ?? `discourse-${index}`}
-                id={detail.post_number != null ? `post-${detail.post_number}` : undefined}
-                ref={isFocused ? focusRef : undefined}
-                className={classnames({ 'seaqa-connection-detail-focused': isFocused })}
-              >
-                <CommonDetailItem
-                  type="discourse_forum"
-                  detail={detail}
-                />
-              </div>
-            );
-          })}
-
+          {details.map((detail, index) => (
+            <CommonDetailItem
+              key={detail._pk ?? `discourse-${index}`} // Avoid raw index if possible
+              type={CONNECTION_TYPE.DISCOURSE_FORUM}
+              detail={detail}
+            />
+          ))}
           {permission && (
             isShowReply ? (
               <ReplyDiscourse

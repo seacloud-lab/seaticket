@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
 import { EmptyTip, IconButton } from '@/components';
@@ -7,24 +7,9 @@ import Item from './item';
 
 import './index.css';
 
-const EmailDetails = ({ details, className, focus, ...props }) => {
-  const lastIndex = details.length - 1;
-  const targetIndex = useMemo(() => {
-    if (focus?.first) return details.length > 0 ? 0 : -1;
-    if (!focus?.messageId) return -1;
-    return details.findIndex(item => item?.message_id && String(item.message_id) === String(focus.messageId));
-  }, [details, focus]);
-  const hasFocus = targetIndex >= 0;
-  const expandIndex = hasFocus ? targetIndex : lastIndex;
-
-  const [isShowAll, setIsShowAll] = useState(details.length <= 5 || (hasFocus && targetIndex !== lastIndex));
+const EmailDetails = ({ details, className, ...props }) => {
+  const [isShowAll, setIsShowAll] = useState(details.length <= 5 || Boolean(details.find(item => item.highlight)));
   const [isLastExpand, setIsLastExpanded] = useState(false);
-  const focusRef = useRef(null);
-
-  useEffect(() => {
-    if (!hasFocus || !focusRef.current) return;
-    focusRef.current.scrollIntoView({ block: 'center' });
-  }, [hasFocus]);
 
   const isUnread = useMemo(() => {
     if (details.length <= 1) return false;
@@ -40,6 +25,8 @@ const EmailDetails = ({ details, className, focus, ...props }) => {
   }
 
   const { email } = getInfoByEmailFrom(details[0]?.email_from);
+
+  const highlightDetail = details.find(item => item.highlight);
 
   return (
     <div className={classnames('seaqa-connection-email-record', className, { 'last-record-expand': isLastExpand })}>
@@ -66,16 +53,13 @@ const EmailDetails = ({ details, className, focus, ...props }) => {
         </div>
       )}
       {details.map((detail, index) => {
-        if (!isShowAll && index < lastIndex) return null;
-        const isFocused = index === targetIndex;
+        if (!isShowAll && index < (details.length - 1)) return null;
         return (
           <Item
             key={detail._pk}
-            isLast={index === lastIndex}
+            isLast={index === (details.length - 1)}
             detail={detail}
-            isExpand={index === expandIndex}
-            isFocused={isFocused}
-            containerRef={isFocused ? focusRef : undefined}
+            isExpand={highlightDetail ? detail.highlight : index === details.length - 1}
             setIsLastExpanded={setIsLastExpanded}
             { ...props }
           />

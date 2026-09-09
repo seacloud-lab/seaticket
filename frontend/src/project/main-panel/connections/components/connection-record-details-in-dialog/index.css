@@ -24,6 +24,10 @@
   padding: 0 !important;
 }
 
+.seaqa-connection-record-details-in-dialog .seaqa-connection-email-resource-details {
+  margin-bottom: 32px;
+}
+
 .seaqa-connection-record-details-in-dialog .seaqa-connection-seafile-resource-details .article,
 .seaqa-connection-record-details-in-dialog .seaqa-connection-general_task-resource-details .article,
 .seaqa-connection-record-details-in-dialog .seaqa-connection-site-resource-details .article,

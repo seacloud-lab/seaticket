@@ -12,9 +12,10 @@ import {
 import { getColumnByName, getColumnOptions, getOption } from '@/sea-metadata/utils/column';
 import { getRowById } from '@/sea-metadata/utils/row';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
-import { isString } from '@/utils/type-detection';
+import { isObject, isString } from '@/utils/type-detection';
 import { toaster } from '@/components';
 import { CellType } from '@/sea-metadata/constants';
+import { isNumber } from 'lodash';
 
 export const shouldDisplayEmailField = (field, provider, showAdvancedOptions) => {
   if (field.providers && !field.providers.includes(provider)) return false;
@@ -224,8 +225,25 @@ export const isConnectionRecordsView = (page) => {
   return page !== CONNECTION_PAGE_SLUG_ID.ALL && page !== CONNECTION_PAGE_SLUG_ID.NEW;
 };
 
+const addHighlightForResourceDetails = (details = [], valueKey, highlight = null) => {
+  if (!highlight || !isObject(highlight)) return details;
+  if (!Array.isArray(details) || details.length === 0) return details;
+  const { key, value } = highlight;
+  if (key === 'index' && isNumber(value) && details[value]) {
+    const newDetails = details.slice(0);
+    newDetails[value].highlight = true;
+    return newDetails;
+  }
+  if (key === 'value') {
+    return details.map(detail => detail[valueKey] === value ? ({ ...detail, highlight: true }) : detail);
+  }
+  return details;
+
+
+};
+
 // Format data according to different connection types,site and seafile only have one detail content
-export const initConnectionResourceDetails = (type, record) => {
+export const initConnectionResourceDetails = (type, record, highlight) => {
   const { content } = record;
   if (type === CONNECTION_TYPE.SITE) return content;
   if (type === CONNECTION_TYPE.SEAFILE) return content;
@@ -240,7 +258,8 @@ export const initConnectionResourceDetails = (type, record) => {
       content: content || '',
     };
     const initComments = Array.isArray(comments) ? comments : [];
-    return [mainPost, ...initComments];
+    const details = [mainPost, ...initComments];
+    return addHighlightForResourceDetails(details, 'comment_id', highlight);
   }
   if (type === CONNECTION_TYPE.LINEAR) {
     const { author, created_time, comments } = record;
@@ -250,19 +269,23 @@ export const initConnectionResourceDetails = (type, record) => {
       content: content || '',
     };
     const initComments = Array.isArray(comments) ? comments : [];
-    return [mainPost, ...initComments];
+    const details = [mainPost, ...initComments];
+    return addHighlightForResourceDetails(details, '', highlight);
   }
   if (type === CONNECTION_TYPE.DISCOURSE_FORUM) {
     const { replies } = record;
-    return Array.isArray(replies) ? replies : [];
+    const details = Array.isArray(replies) ? replies : [];
+    return addHighlightForResourceDetails(details, 'post_number', highlight);
   }
   if (type === CONNECTION_TYPE.EMAIL) {
     const { emails } = record;
-    return Array.isArray(emails) ? emails : [];
+    const details = Array.isArray(emails) ? emails : [];
+    return addHighlightForResourceDetails(details, 'message_id', highlight);
   }
   if (type === CONNECTION_TYPE.DISCORD) {
     const { replies } = record;
-    return Array.isArray(replies) ? replies : [];
+    const details = Array.isArray(replies) ? replies : [];
+    return addHighlightForResourceDetails(details, '', highlight);
   }
   if (type === CONNECTION_TYPE.JIRA_ISSUE) {
     const { author, created_time, comments } = record;
@@ -278,7 +301,8 @@ export const initConnectionResourceDetails = (type, record) => {
       modified_time: detail.created_time || detail.modified_time,
       body: detail.content || '',
     })) : [];
-    return [mainPost, ...initComments];
+    const details = [mainPost, ...initComments];
+    return addHighlightForResourceDetails(details, '', highlight);
   }
 
 };

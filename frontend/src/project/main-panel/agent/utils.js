@@ -3,24 +3,29 @@ import { ACTION_TYPE, RUN_EVENT, RUN_STATUS, SUGGESTIONS_STATUS } from './consta
 import { CONNECTION_TYPES } from '../connections/constants';
 import { getResourceIconURL, getResourceTypeName } from '@/project/utils';
 
-export const getEventFocus = (run) => {
+export const getTriggerInfoFromRun = (run) => {
   const eventType = run?.event?.type;
   const newValue = run?.event?.new_value;
   switch (eventType) {
     case RUN_EVENT.EMAIL_THREAD_ADDED:
     case RUN_EVENT.GITHUB_ISSUE_ADDED:
     case RUN_EVENT.DISCOURSE_TOPIC_ADDED:
-    case RUN_EVENT.DISCORD_THREAD_ADDED:
-      return { first: true };
+    case RUN_EVENT.DISCORD_THREAD_ADDED: {
+      return { key: 'index', value: 0 };
+    }
     case RUN_EVENT.EMAIL_MESSAGE_ADDED:
-    case RUN_EVENT.DISCORD_THREAD_MESSAGE_ADDED:
-      return newValue?.message_id ? { messageId: newValue.message_id } : null;
-    case RUN_EVENT.GITHUB_ISSUE_COMMENT_ADDED:
-      return newValue?.comment_id ? { commentId: newValue.comment_id } : null;
-    case RUN_EVENT.DISCOURSE_TOPIC_COMMENT_ADDED:
-      return newValue?.post_number ? { postNumber: newValue.post_number } : null;
-    default:
+    case RUN_EVENT.DISCORD_THREAD_MESSAGE_ADDED: {
+      return { key: 'value', value: newValue?.message_id };
+    }
+    case RUN_EVENT.GITHUB_ISSUE_COMMENT_ADDED: {
+      return { key: 'value', value: newValue?.comment_id };
+    }
+    case RUN_EVENT.DISCOURSE_TOPIC_COMMENT_ADDED: {
+      return { key: 'value', value: newValue?.post_number };
+    }
+    default: {
       return null;
+    }
   }
 };
 

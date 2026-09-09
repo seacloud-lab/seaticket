@@ -14,7 +14,7 @@ import { isString } from '@/utils/type-detection';
 import './index.css';
 
 const Item = ({
-  isLast, isExpand, isFocused, containerRef,
+  isLast, isExpand,
   detail, projectUuid, connection_id, setIsLastExpanded, recordId, permission,
   handleReplyEmailSuccess, onUnreadChange
 }) => {
@@ -24,6 +24,7 @@ const Item = ({
 
   const ref = useRef(null);
   const replySendTo = useRef('');
+  const expandedRef = useRef(null);
 
   const content = useMemo(() => detail.content || '', [detail.content]);
   const HTMLContent = useMemo(() => detail.html_content || '', [detail.html_content]);
@@ -224,10 +225,18 @@ const Item = ({
     replySendTo.current = '';
   }, [isShowReply]);
 
+  useEffect(() => {
+    if (!expandedRef.current) return;
+    expandedRef.current.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
+  }, []);
+
   if (!isExpanded || isShowReply) {
     return (
       <>
-        <div ref={containerRef} className={classnames('seaqa-connection-email-record-details collapsed', { focused: isFocused })} onClick={openExpanded}>
+        <div
+          className={classnames('seaqa-connection-email-record-details collapsed', { 'seaqa-connection-resource-highlight': detail.highlight })}
+          onClick={openExpanded}
+        >
           <div className="email-avatar">
             <img alt='' src={`${mediaUrl}avatars/default.png`}/>
           </div>
@@ -254,7 +263,10 @@ const Item = ({
   }
 
   return (
-    <div ref={containerRef} className={classnames('seaqa-connection-email-record-details expanded', { focused: isFocused })}>
+    <div
+      className={classnames('seaqa-connection-email-record-details expanded', { 'seaqa-connection-resource-highlight': detail.highlight })}
+      ref={expandedRef}
+    >
       <div className="email-header" onClick={() => setIsExpanded(false)}>
         <div className="email-avatar">
           <img alt='' src={`${mediaUrl}avatars/default.png`}/>
