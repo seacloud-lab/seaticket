@@ -285,7 +285,7 @@ export const initConnectionResourceDetails = (type, record, highlight) => {
   if (type === CONNECTION_TYPE.DISCORD) {
     const { replies } = record;
     const details = Array.isArray(replies) ? replies : [];
-    return addHighlightForResourceDetails(details, '', highlight);
+    return addHighlightForResourceDetails(details, 'message_id', highlight);
   }
   if (type === CONNECTION_TYPE.JIRA_ISSUE) {
     const { author, created_time, comments } = record;
