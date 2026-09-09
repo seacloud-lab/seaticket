@@ -6,6 +6,7 @@ import context from '@/sea-metadata/context';
 import { VIEW_TYPE, STATISTIC_TYPE } from '@/sea-metadata/constants';
 import SidePanelChat from '@/project/main-panel/ask/side-panel-chat';
 import { useData } from '@/project/hooks';
+import { Utils } from '@/utils/utils';
 import { PORTAL_CHAT_TABLE_NAME } from '../../constants';
 
 const viewTools = [
@@ -22,12 +23,7 @@ const settings = {
   canManageView: false,
 };
 
-const formatTokenCount = (count) => Number(count) || 0;
-
-const formatCreditCount = (count) => {
-  const value = Number(count) || 0;
-  return value.toFixed(8).replace(/\.?(0+)$/, '');
-};
+const formatTokenCount = (count) => Utils.formatSize({ bytes: count, precision: 0 }).replace('B', '');
 
 const formatComparison = (changePercent) => {
   if (changePercent === null || changePercent === undefined || Number.isNaN(Number(changePercent))) {
@@ -160,7 +156,7 @@ const ChatAnalysis = ({
                 name: gettext('Credit used'),
                 column_key: 'credit_used',
                 summary_type: 'count',
-                value: formatCreditCount(current.credit_used),
+                value: current.credit_used ? current.credit_used.toFixed(0) : current.credit_used ?? 0,
                 comparison: { ...formatComparison(changePercent.credit_used), label: comparisonLabel },
                 type: STATISTIC_TYPE.CARD,
               },
