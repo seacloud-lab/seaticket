@@ -278,6 +278,9 @@ class ProjectConnectionsView(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'OAuth authorization does not match connection configuration.')
             if not email_oauth_data.get('access_token') or not email_oauth_data.get('refresh_token'):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Email OAuth authorization is required.')
+            authorized_config['sync_years'] = config.get(
+                'sync_years', authorized_config.get('sync_years', 5)
+            )
             config = authorized_config
 
         if connection_type == ConnectionType.CONFLUENCE.value:

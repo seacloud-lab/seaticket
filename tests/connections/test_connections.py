@@ -346,7 +346,11 @@ class TestProjectConnectionsView:
             data={
                 'name': 'mail-conn',
                 'type': 'email',
-                'config': json.dumps({'server_provider': 'Microsoft', 'account_type': 'personal'}),
+                'config': json.dumps({
+                    'server_provider': 'Microsoft',
+                    'account_type': 'personal',
+                    'sync_years': 2,
+                }),
                 'oauth_state': state,
             },
         )
@@ -358,7 +362,11 @@ class TestProjectConnectionsView:
                     'project_uuid': real_project.uuid,
                     'status': 'authorized',
                     'name': 'mail-conn',
-                    'config': {'server_provider': 'Microsoft', 'account_type': 'personal'},
+                    'config': {
+                        'server_provider': 'Microsoft',
+                        'account_type': 'personal',
+                        'sync_years': 5,
+                    },
                     'access_token': 'access-token',
                     'refresh_token': 'refresh-token',
                     'expires_at': 123456,
@@ -368,11 +376,12 @@ class TestProjectConnectionsView:
 
         record = Mock(id=11)
         record.to_dict.return_value = {'id': 11, 'name': 'mail-conn', 'type': 'email'}
-        with patch('seahub.project.connections.create_connection', return_value=(record, None)), \
+        with patch('seahub.project.connections.create_connection', return_value=(record, None)) as create_connection_mock, \
                 patch('seahub.project.connections.ProjectConnectionOauth.objects.upsert_connection_token') as upsert_connection_token_mock:
             resp = ProjectConnectionsView.as_view()(request, project_uuid=real_project.uuid)
 
         assert resp.status_code == 201
+        assert create_connection_mock.call_args.args[4]['sync_years'] == 2
         upsert_connection_token_mock.assert_called_once_with(
             real_project.uuid, 11, 'access-token', 123456, 'refresh-token'
         )
