@@ -1,4 +1,5 @@
 import React from 'react';
+import classnames from 'classnames';
 
 import './index.css';
 
@@ -14,11 +15,13 @@ const Card = ({ statistic }) => {
         {statistic.value}
       </div>
       {comparison && (
-        <div className="sea-metadata-statistic-comparison text-truncate" title={`${comparison.value} ${comparison.label}`}>
-          <span className={`sea-metadata-statistic-comparison-value ${comparison.status || ''}`}>
+        <div className="sea-metadata-statistic-comparison text-truncate font-size-14 font-weight-400" title={`${comparison.value} ${comparison.label}`}>
+          <span className={classnames('sea-metadata-statistic-comparison-value', comparison.status)}>
             {comparison.value}
           </span>
-          <span className="sea-metadata-statistic-comparison-label">{comparison.label}</span>
+          <span className="sea-metadata-statistic-comparison-label font-size-14 font-weight-400">
+            {comparison.label}
+          </span>
         </div>
       )}
     </div>
