@@ -250,8 +250,7 @@ def email_oauth_callback(request):
 
     config = oauth_data.get('config') or {}
     oauth_config = oauth_data.get('oauth_config') or {}
-    name = oauth_data.get('name')
-    if not all([config, oauth_config, name, oauth_data.get('oauth_state')]):
+    if not all([oauth_config, oauth_data.get('oauth_state')]):
         error_msg = 'Invalid request, please try again later'
         EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
         return render(request, 'error.html', {'error_msg': _(error_msg)})
@@ -308,10 +307,7 @@ def email_oauth_callback(request):
     oauth_data['error_msg'] = ''
     EmailOAuthUtils.set_oauth_session(request, request_state, oauth_data)
 
-    return render(request, 'authorization_success.html', {
-        'name': name,
-        'nickname': email2nickname(username),
-    })
+    return render(request, 'authorization_success.html')
 
 @login_required
 def linear_oauth(request):
