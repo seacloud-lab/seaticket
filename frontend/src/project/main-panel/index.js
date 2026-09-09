@@ -10,14 +10,14 @@ import Connections from './connections';
 import { useConnections } from './connections/hooks';
 import Inbox from './inbox';
 import KnowledgeBase from './knowledge-base';
+import PortalIssues from './portal-issues';
 import Search from './search';
-import Tickets from './tickets';
-import TopBar from './top-bar';
 import Settings from './settings';
 import Skills from './skills';
-import Tags from './tags';
 import SupportPortal from './support-portal';
-import PortalIssues from './portal-issues';
+import Tags from './tags';
+import Tickets from './tickets';
+import TopBar from './top-bar';
 
 import './index.css';
 

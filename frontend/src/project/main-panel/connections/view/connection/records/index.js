@@ -9,16 +9,22 @@ import { useData, useTags, useMetadata } from '@/project/hooks';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
 import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
+import { normalizeContextMenuOptions } from '@/project/utils';
 import SeaMetadata from '@/sea-metadata';
+import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import context from '@/sea-metadata/context';
+import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { getColumnByName } from '@/sea-metadata/utils/column';
+import { convertRowToNameValue, convertRowsToNameValue, convertRowToKeyValue } from '@/sea-metadata/utils/row';
+import eventBus from '@/utils/event-bus';
+import { Utils } from '@/utils/utils';
 import CreateTicketDialog from '../../../components/create-ticket-dialog';
 import RelatedIssuesDialog from '../../../components/related-issues-dialog';
-import { useConnectionsPage, useConnections } from '../../../hooks';
 import {
   CONNECTION_TYPE, CONNECTION_PREDEFINED_COLUMN_NAME, SUPPORT_MODIFY_CONNECTION_RECORDS_TYPES,
   CONNECTION_COLUMNS_WIDTH_CONFIG, CONNECTION_COLUMNS_ORDER_CONFIG,
 } from '../../../constants';
+import { useConnectionsPage, useConnections } from '../../../hooks';
 import {
   getTableName, generatorRowClassName, cascadeUpdate,
   generateAIOptions, generateMarkAsOutdatedOptions, generateFindRelatedIssuesOption,
@@ -26,12 +32,6 @@ import {
   generateOpenOriginalPageOption, generateCopyOriginalLinkOption,
   formatColumns,
 } from '../../../utils';
-import { convertRowToNameValue, convertRowsToNameValue, convertRowToKeyValue } from '@/sea-metadata/utils/row';
-import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
-import { Utils } from '@/utils/utils';
-import { normalizeContextMenuOptions } from '@/project/utils';
-import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
-import eventBus from '@/utils/event-bus';
 
 import './index.css';
 

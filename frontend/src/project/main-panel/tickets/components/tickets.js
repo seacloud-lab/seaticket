@@ -2,22 +2,20 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { CenteredLoading } from '@/components';
 import toaster from '@/components/toaster';
 import { gettext } from '@/constants';
-import CreateKBRecordDialog from './create-kb-record-dialog';
-import CreateTaskDialog from './create-task-dialog';
-import { isFunction } from '@/utils/type-detection';
-import { useData, useTags } from '@/project/hooks';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { EVENT_BUS_TYPE as GLOBAL_EVENT_BUS_TYPE } from '@/project/constants';
+import { useData, useTags } from '@/project/hooks';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
-import { getColumnByName } from '@/sea-metadata/utils/column';
 import { useConnections } from '@/project/main-panel/connections/hooks';
 import { getTableName } from '@/project/main-panel/connections/utils';
 import SeaMetadata from '@/sea-metadata';
 import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import context from '@/sea-metadata/context';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
+import { getColumnByName } from '@/sea-metadata/utils/column';
 import { convertRowToNameValue, convertRowsToNameValue, getRowById as getTableRowById } from '@/sea-metadata/utils/row';
 import eventBus from '@/utils/event-bus';
+import { isFunction } from '@/utils/type-detection';
 import { ticketsAPI } from '../../../api';
 import {
   TICKET_PAGE_SLUG_ID, TICKET_PREDEFINED_COLUMN_CONFIG,
@@ -31,6 +29,8 @@ import {
   cascadeUpdate, generatorTicketsContextMenuOptions,
   convertTicketToTask, convertTicketToKb,
 } from '../utils';
+import CreateKBRecordDialog from './create-kb-record-dialog';
+import CreateTaskDialog from './create-task-dialog';
 import RelatedIssuesDialog from './related-issues-dialog';
 
 const Tickets = ({

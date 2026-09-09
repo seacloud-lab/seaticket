@@ -420,6 +420,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
                 messages.push(data);
                 _onMessage(data, { done });
               } catch (e) {
+                // eslint-disable-next-line no-console
                 console.warn('Failed to parse JSON from EventStream:', dataStr, e);
                 const data = { raw: dataStr };
                 messages.push(data);
@@ -444,6 +445,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
 
       const _createEventStreamReader = (readableStream) => {
         if (!readableStream || !readableStream.getReader) {
+          // eslint-disable-next-line no-console
           console.error('Invalid readable stream');
           return null;
         }

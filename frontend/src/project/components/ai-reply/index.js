@@ -10,32 +10,24 @@ import CreateTicketDialog from '@/project/main-panel/connections/components/crea
 import RelatedIssuesDialog from '@/project/main-panel/connections/components/related-issues-dialog';
 import { CONNECTION_PREDEFINED_COLUMN_NAME } from '@/project/main-panel/connections/constants';
 import { useConnections } from '@/project/main-panel/connections/hooks';
-import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
-import context from '@/sea-metadata/context';
-
-// components
-import { Utils } from '@/utils/utils';
-import CustomizeDefinition from './customize-definition';
-import CustomizeLink from './customize-link';
-import CustomizeLinkReference from './customize-link-reference';
-
-// hooks
-
-// utils
-import { formatSources, transformMDFileToLink, transformKBToLink, transformTicketToLink, transformReferencesToMarkdown, transformContentForCopy, } from './utils';
 import {
   generateAIOptions, generateCreateRelatedTicketOption, generateFindRelatedIssuesOption,
   generateLinkAnExistingTicketOption, generateOpenOriginalPageOption,
   generateCopyOriginalLinkOption, generateMarkAsOutdatedOptions, getTableName,
 } from '@/project/main-panel/connections/utils';
-import { normalizeContextMenuOptions } from '@/project/utils';
-import { getColumnByName } from '@/sea-metadata/utils/column';
-import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
-import { hasOwnProperty } from '@/utils/object-utils';
-
-// constants
-import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
+import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
 import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
+import { normalizeContextMenuOptions } from '@/project/utils';
+import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
+import context from '@/sea-metadata/context';
+import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
+import { getColumnByName } from '@/sea-metadata/utils/column';
+import { hasOwnProperty } from '@/utils/object-utils';
+import { Utils } from '@/utils/utils';
+import CustomizeDefinition from './customize-definition';
+import CustomizeLink from './customize-link';
+import CustomizeLinkReference from './customize-link-reference';
+import { formatSources, transformMDFileToLink, transformKBToLink, transformTicketToLink, transformReferencesToMarkdown, transformContentForCopy, } from './utils';
 
 import './index.css';
 

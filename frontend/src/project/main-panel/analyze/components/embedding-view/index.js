@@ -346,6 +346,7 @@ const EmbeddingView = ({
         setIsProcessingData(false);
       } catch (dbError) {
         setErrorMessage(gettext('Error loading data to DuckDB'));
+        // eslint-disable-next-line no-console
         console.error('Error loading data to DuckDB:', dbError);
         setIsProcessingData(false);
       }

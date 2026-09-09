@@ -18,8 +18,8 @@ import SocialLogin from './social-login';
 import TwoFactorAuthentication from './two-factor-auth';
 import UserAvatarForm from './user-avatar-form';
 import UserBasicInfoForm from './user-basic-info-form';
-import WebdavPassword from './webdav-password';
 import UserConvertToTeam from './user-convert-to-team';
+import WebdavPassword from './webdav-password';
 
 import '@/css/toolbar.css';
 import './profile-settings.css';

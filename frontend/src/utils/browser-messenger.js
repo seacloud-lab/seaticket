@@ -62,6 +62,7 @@ class BrowserMessenger {
     try {
       this.channel.postMessage(message);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Send error: ', error);
     }
 
@@ -208,6 +209,7 @@ class BrowserMessenger {
             data: null
           });
         } catch (error) {
+          // eslint-disable-next-line no-console
           console.error('Heartbeat ack error: ', error);
         }
       }
@@ -233,6 +235,7 @@ class BrowserMessenger {
       try {
         callback(data, event);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('Error: ', error);
       }
     }
@@ -245,6 +248,7 @@ class BrowserMessenger {
           try {
             callback(data, event);
           } catch (error) {
+            // eslint-disable-next-line no-console
             console.error('Error: ', error);
           }
         }
@@ -253,6 +257,7 @@ class BrowserMessenger {
   }
 
   _handleError(event) {
+    // eslint-disable-next-line no-console
     console.error('Error: ', event);
   }
 
@@ -308,6 +313,7 @@ class BrowserMessenger {
       });
     } catch (error) {
       if (!this._closed) {
+        // eslint-disable-next-line no-console
         console.error('Heartbeat error: ', error);
       }
     }

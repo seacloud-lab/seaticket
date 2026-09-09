@@ -65,6 +65,7 @@ const Analyze = ({ title }) => {
       };
       localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.error('Failed to save settings to localStorage:', e);
     }
   }, [colorBy, displayMode, filters]);

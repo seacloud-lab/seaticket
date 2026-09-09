@@ -28,6 +28,7 @@ export const initMessages = (messages) => {
         thought_process: item.thought_process
       };
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.error(e);
       msgContent = { ai_reply: item.content, sources: [] };
     }

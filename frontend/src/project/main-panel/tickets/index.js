@@ -8,11 +8,11 @@ import { TICKET_CHILDREN_PAGE_SLUG_ID, TICKET_PAGE_SLUG_ID } from './constants';
 import { TicketsPageProvider, useMetadata, useTicketsPage } from './hooks';
 import AllTickets from './view/all-tickets';
 import MyTickets from './view/my-tickets';
-import TrashTickets from './view/trash-tickets';
 import NewTicket from './view/new-ticket';
 import SubstateTickets from './view/substate-tickets';
 import Substates from './view/substates';
 import Ticket from './view/ticket';
+import TrashTickets from './view/trash-tickets';
 import TypeTickets from './view/type-tickets';
 import Types from './view/types';
 

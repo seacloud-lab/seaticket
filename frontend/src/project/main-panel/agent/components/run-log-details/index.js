@@ -199,6 +199,7 @@ const RunLogDetails = ({
       : agentAPI.updateAgentAction(projectUuid, runId, actionId, { suggestion_content: suggestionContent }).then((res) => {
         updateRunAction(runId, actionId, { suggestion_content: res.data.suggestion_content });
       }).catch((err) => {
+        // eslint-disable-next-line no-console
         console.error('Failed to update action content:', err);
         toaster.danger(gettext('Failed to update content'));
         throw err;
@@ -280,6 +281,7 @@ const RunLogDetails = ({
         callback && callback(true);
       }
     }).catch((err) => {
+      // eslint-disable-next-line no-console
       console.error('Failed to save mapping and confirm action:', err);
       toaster.danger(gettext('Failed to confirm action'));
       callback && callback(true);

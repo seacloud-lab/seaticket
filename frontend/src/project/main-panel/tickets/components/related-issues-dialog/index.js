@@ -28,6 +28,7 @@ const RelatedIssuesDialog = ({ projectUuid, ticketId, workspaceID, projectName, 
       const { previewText } = result;
       return previewText;
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error rendering content preview:', error);
       return content || '';
     }

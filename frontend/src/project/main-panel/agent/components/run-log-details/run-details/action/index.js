@@ -72,6 +72,7 @@ const ActionItem = React.memo(({ action, resource, trigger, eventType, ...props 
         );
       }
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.warn('Failed to parse error JSON:', e);
     }
     return <div>{errorContent}</div>;

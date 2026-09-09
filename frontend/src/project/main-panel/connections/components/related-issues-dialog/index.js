@@ -29,6 +29,7 @@ const RelatedIssuesDialog = ({ projectUuid, connectionId, row, onClose }) => {
       const { previewText } = result;
       return previewText;
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error rendering content preview:', error);
       return content || '';
     }

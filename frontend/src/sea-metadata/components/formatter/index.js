@@ -8,18 +8,18 @@ import CTimeFormatter from '../cell-formatter/ctime';
 import DateFormatter from '../cell-formatter/date';
 import LinkFormat from '../cell-formatter/link';
 import LongTextFormatter from '../cell-formatter/long-text';
-import NumberFormatter from '../cell-formatter/number';
-import SingleSelectFormatter from '../cell-formatter/single-select';
-import TextFormatter from '../cell-formatter/text';
 import MultipleSelectFormatter from '../cell-formatter/multiple-select';
+import NumberFormatter from '../cell-formatter/number';
+import PriorityFormatter from '../cell-formatter/priority';
 import RateFormatter from '../cell-formatter/rate';
+import ReplyStatusFormatter from '../cell-formatter/reply-status';
+import SingleSelectFormatter from '../cell-formatter/single-select';
+import TagFormatter from '../cell-formatter/tag';
 import TagsFormatter from '../cell-formatter/tags';
+import TextFormatter from '../cell-formatter/text';
 import TypeFormatter from '../cell-formatter/type';
 import UnreadStatusFormatter from '../cell-formatter/unread-status';
 import URLFormatter from '../cell-formatter/URL';
-import TagFormatter from '../cell-formatter/tag';
-import PriorityFormatter from '../cell-formatter/priority';
-import ReplyStatusFormatter from '../cell-formatter/reply-status';
 
 import './index.css';
 

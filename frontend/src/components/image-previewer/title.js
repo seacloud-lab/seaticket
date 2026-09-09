@@ -5,6 +5,7 @@ const Title = ({ mainSrc, imageIndex, images }) => {
     try {
       return mainSrc ? decodeURI(mainSrc.slice(mainSrc.lastIndexOf('/') + 1)) : '';
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.log('error', error);
       return '';
     }

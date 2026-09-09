@@ -14,9 +14,17 @@ import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import { useConnections } from '@/project/main-panel/connections/hooks';
 import { getTableName } from '@/project/main-panel/connections/utils';
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
+import { useCollaborators } from '@/sea-metadata';
+import { getColumnByName } from '@/sea-metadata/utils/column';
 import { convertRowToKeyValue, getRowById } from '@/sea-metadata/utils/row';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
+import { hasOwnProperty } from '@/utils/object-utils';
 import { Utils } from '@/utils/utils';
+import { ticketsAPI } from '../../../../api';
+import { Comment, TicketLog, KeyboardShortcuts, UploadFilesButton } from '../../components';
+import CreateKBRecordDialog from '../../components/create-kb-record-dialog';
+import CreateTaskDialog from '../../components/create-task-dialog';
+import RelatedIssuesDialog from '../../components/related-issues-dialog';
 import {
   CollaboratorsSettings, TypeSettings, PrioritySettings,
   StateSettings, SubStateSettings, DueDateSettings, LinkSettings,
@@ -25,22 +33,14 @@ import {
   TICKET_STATE_CONFIG, PREDEFINED_TICKET_COLUMN_NAME, TICKET_TABLE_NAME, TICKET_CHILDREN_PAGE_SLUG_ID,
   AUTO_UPDATE_PARTICIPANTS_KEY,
 } from '../../constants';
+import { useCloseLinkedIssues } from '../../hooks';
+import { Ticket as TicketModel } from '../../models';
 import {
   convertTicketToKb, generatorTicketsContextMenuOptions,
   convertSubstateToGitHubStateReason, generatorLinkedRecordsForClosedGitHubIssues,
 } from '../../utils';
-import { Comment, TicketLog, KeyboardShortcuts, UploadFilesButton } from '../../components';
 import Header from './header';
 import StatusToggleButton from './status-toggle-btn';
-import RelatedIssuesDialog from '../../components/related-issues-dialog';
-import CreateKBRecordDialog from '../../components/create-kb-record-dialog';
-import CreateTaskDialog from '../../components/create-task-dialog';
-import { ticketsAPI } from '../../../../api';
-import { Ticket as TicketModel } from '../../models';
-import { hasOwnProperty } from '@/utils/object-utils';
-import { useCollaborators } from '@/sea-metadata';
-import { getColumnByName } from '@/sea-metadata/utils/column';
-import { useCloseLinkedIssues } from '../../hooks';
 
 import './index.css';
 
@@ -511,6 +511,7 @@ const Ticket = ({
       setActivities(res.data.activities || []);
     }).catch(error => {
       // Activities loading failure is not critical
+      // eslint-disable-next-line no-console
       console.error('Failed to load activities:', error);
     });
   }, [projectUuid, ticketID, handleUpdateRowsCacheData, markProjectNoticeAsReadByTicket]);

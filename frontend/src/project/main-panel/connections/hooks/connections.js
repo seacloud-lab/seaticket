@@ -9,13 +9,13 @@ import eventBus from '@/utils/event-bus';
 import ObjectUtils from '@/utils/object-utils';
 import { isFunction } from '@/utils/type-detection';
 import { Utils } from '@/utils/utils';
+import sharedWsClient from '@/utils/websocket-service';
 import { connectionsAPI } from '../../../api';
 import ModifyConnectionDialog from '../components/modify-connection-dialog';
 import NewConnectionDialog from '../components/new-connection-dialog';
 import { CONNECTION_SYNC_STATUS } from '../constants';
 import { Connection } from '../models';
 import { getTableName, initConnectionStatus } from '../utils';
-import sharedWsClient from '@/utils/websocket-service';
 
 const ConnectionsContext = React.createContext(null);
 

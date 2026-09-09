@@ -4,25 +4,17 @@ import { toaster } from '@/components';
 import { PERMISSION_TYPES } from '@/constants';
 import User from '@/models/user';
 import { connectionsAPI } from '@/project/api';
-
-// hooks
 import { useData, useMetadata, useTags } from '@/project/hooks';
-
-// components
 import CreateTicketDialog from '@/project/main-panel/connections/components/create-ticket-dialog';
 import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
-
-// utils
 import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
 import { CellType, EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
+import context from '@/sea-metadata/context';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { getColumnByName, getColumnOptions, getOption } from '@/sea-metadata/utils/column';
 import { isSmallContainer } from '@/utils/dialog';
-
-// constants
-import { SUPPORT_ROW_DETAILS_SETTINGS_CONNECTION_TYPES, CONNECTION_PREDEFINED_COLUMN_NAME, CONNECTION_TYPE, } from '../../constants';
-import context from '@/sea-metadata/context';
 import { Utils } from '@/utils/utils';
+import { SUPPORT_ROW_DETAILS_SETTINGS_CONNECTION_TYPES, CONNECTION_PREDEFINED_COLUMN_NAME, CONNECTION_TYPE, } from '../../constants';
 import { useConnections } from '../../hooks';
 import { formatColumns, generateCreateRelatedTicketOption, generateLinkAnExistingTicketOption, getTableName, } from '../../utils';
 import ConnectionResourceDetails, { ConnectionResourceOtherDetails } from '../connection-resource-details';
@@ -208,6 +200,7 @@ const ConnectionRecordDetailsInDialog = ({ projectUuid, resource, columns, permi
     try {
       // Check if ResizeObserver is supported
       if (typeof ResizeObserver === 'undefined') {
+        // eslint-disable-next-line no-console
         console.warn('ResizeObserver is not supported in this browser');
         // Fallback: set initial width
         setContainerWidth(dom.offsetWidth);
@@ -219,6 +212,7 @@ const ConnectionRecordDetailsInDialog = ({ projectUuid, resource, columns, permi
         try {
           setContainerWidth(dom.offsetWidth);
         } catch (error) {
+          // eslint-disable-next-line no-console
           console.error('Error updating container width:', error);
         }
       };
@@ -236,6 +230,7 @@ const ConnectionRecordDetailsInDialog = ({ projectUuid, resource, columns, permi
         }
       };
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error setting up ResizeObserver:', error);
       // Fallback: set width directly
       setContainerWidth(dom.offsetWidth);
