@@ -1,21 +1,21 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { createRoot } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
 import _ from 'lodash';
+import { createRoot } from 'react-dom/client';
+import { siteRoot } from '@/constants';
+import { Utils } from '@/utils/utils';
 import i18n from '../_i18n/i18n-seafile-editor';
-import SidePanel from './side-panel';
-import MainPanel from './main-panel';
-import { BAR_TYPE, EVENT_BUS_TYPE, PROJECT_DEFAULT_SETTINGS } from './constants';
-import { TICKET_PAGE_SLUG_ID } from './main-panel/tickets/constants';
-import { PORTAL_ISSUE_PAGE_SLUG_ID } from './main-panel/portal-issues/constants';
-import { KNOWLEDGE_PAGE_SLUG_ID } from './main-panel/knowledge-base/constants';
-import { CONNECTION_PAGE_SLUG_ID } from './main-panel/connections/constants';
 import { CenteredLoading, toaster } from '../components';
 import eventBus from '../utils/event-bus';
 import projectAPI from './api/project-api';
-import { Utils } from '@/utils/utils';
+import { BAR_TYPE, EVENT_BUS_TYPE, PROJECT_DEFAULT_SETTINGS } from './constants';
 import { DataProvider } from './hooks';
-import { siteRoot } from '@/constants';
+import MainPanel from './main-panel';
+import { CONNECTION_PAGE_SLUG_ID } from './main-panel/connections/constants';
+import { KNOWLEDGE_PAGE_SLUG_ID } from './main-panel/knowledge-base/constants';
+import { PORTAL_ISSUE_PAGE_SLUG_ID } from './main-panel/portal-issues/constants';
+import { TICKET_PAGE_SLUG_ID } from './main-panel/tickets/constants';
+import SidePanel from './side-panel';
 
 import './index.css';
 

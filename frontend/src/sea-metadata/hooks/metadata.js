@@ -1,15 +1,15 @@
 /* eslint-disable react/prop-types */
 import React, { useContext, useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle } from 'react';
-import { useCollaborators } from './collaborators';
+import toaster from '@/components/toaster';
+import { isModF } from '@/utils/hotkey';
+import { isFunction } from '@/utils/type-detection';
+import { Utils } from '@/utils/utils';
+import { EVENT_BUS_TYPE, PER_LOAD_NUMBER } from '../constants';
 import context from '../context';
 import Store from '../store';
-import { EVENT_BUS_TYPE, PER_LOAD_NUMBER } from '../constants';
-import toaster from '@/components/toaster';
-import { Utils } from '@/utils/utils';
 import { getRowById, getRowsByIds } from '../utils/row';
-import { isModF } from '@/utils/hotkey';
+import { useCollaborators } from './collaborators';
 import { useSelectedRows } from './selected-rows';
-import { isFunction } from '@/utils/type-detection';
 
 const MetadataContext = React.createContext(null);
 

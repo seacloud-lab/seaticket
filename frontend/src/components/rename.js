@@ -1,8 +1,8 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import toaster from './toaster';
+import PropTypes from 'prop-types';
 import { validateName } from '@/utils/validate';
+import toaster from './toaster';
 
 const propTypes = {
   className: PropTypes.string,

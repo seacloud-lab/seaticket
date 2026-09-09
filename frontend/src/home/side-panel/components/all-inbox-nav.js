@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect } from 'react';
 import classNames from 'classnames';
 import { Icon } from '@/components';
-import { useNotification } from '@/components/common/notification/hooks/notification';
 import InboxCount from '@/components/common/notification/components/inbox-count';
+import { useNotification } from '@/components/common/notification/hooks/notification';
 import { gettext } from '@/constants';
 
 import './all-inbox-nav.css';

@@ -1,12 +1,12 @@
 import React, { useCallback } from 'react';
-import TopBar from '../../top-bar';
-import { usePortalIssuesPage } from '../hooks';
-import { PORTAL_ISSUE_PAGE_SLUG_ID } from '../constants';
-import { EVENT_BUS_TYPE } from '@/project/constants/event-bus-type';
 import { IconButton, IconTextBtn } from '@/components';
 import { gettext, PERMISSION_TYPES } from '@/constants';
-import eventBus from '@/utils/event-bus';
 import { RefreshBtn } from '@/project/components';
+import { EVENT_BUS_TYPE } from '@/project/constants/event-bus-type';
+import eventBus from '@/utils/event-bus';
+import TopBar from '../../top-bar';
+import { PORTAL_ISSUE_PAGE_SLUG_ID } from '../constants';
+import { usePortalIssuesPage } from '../hooks';
 
 const PortalIssuesTopBar = ({ title, permission, type }) => {
   const { pageSlugId, togglePageSlugId, onRefresh } = usePortalIssuesPage();

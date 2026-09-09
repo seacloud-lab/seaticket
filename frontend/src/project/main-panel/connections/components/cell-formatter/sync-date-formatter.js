@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import DateFormatter from './date-formatter';
 import { isConnectionSyncCompleted } from '../../utils';
+import DateFormatter from './date-formatter';
 
 const SyncDateFormatter = ({ value, column, row, className }) => {
   const validValue = useMemo(() => {

@@ -1,7 +1,7 @@
-import { isDateColumn } from '../column';
 import {
   CellType, DISPLAY_GROUP_DATE_GRANULARITY, GROUP_DATE_GRANULARITY, SORT_TYPE, SUPPORT_GROUP_COLUMN_TYPES, GROUPBY_DATE_GRANULARITY_LIST,
 } from '../../constants';
+import { isDateColumn } from '../column';
 
 export const getDefaultCountType = (column) => {
   if (isDateColumn(column)) {

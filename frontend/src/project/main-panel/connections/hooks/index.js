@@ -1,5 +1,5 @@
-import { ConnectionsPageProvider, useConnectionsPage } from './connections-page';
 import { ConnectionsProvider, useConnections } from './connections';
+import { ConnectionsPageProvider, useConnectionsPage } from './connections-page';
 
 export {
   ConnectionsPageProvider, useConnectionsPage,

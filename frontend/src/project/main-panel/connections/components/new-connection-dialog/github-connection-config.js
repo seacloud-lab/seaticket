@@ -1,8 +1,8 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Button, FormGroup, Input, Label } from 'reactstrap';
-import { gettext } from '@/constants';
+import PropTypes from 'prop-types';
 import { Loading } from '@/components';
+import { gettext } from '@/constants';
 
 const GithubConfig = ({
   isLoadingRepositories,

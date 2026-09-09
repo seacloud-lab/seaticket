@@ -1,6 +1,6 @@
 import React from 'react';
-import View from './view';
 import TopBar from '../top-bar';
+import View from './view';
 
 const SupportPortal = ({ title }) => {
   return (

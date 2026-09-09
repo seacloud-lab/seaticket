@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import { navigate } from '@gatsbyjs/reach-router';
+import PropTypes from 'prop-types';
 import { AdminSearch, ProjectsTable } from '@/components';
-import sysAdminAPI from '@/sys-admin/api';
 import { gettext, siteRoot } from '@/constants';
-import ProjectNav from './project-nav';
+import sysAdminAPI from '@/sys-admin/api';
 import { TopBar, Main } from '../main-panel';
+import ProjectNav from './project-nav';
 
 class AllProjects extends Component {
 

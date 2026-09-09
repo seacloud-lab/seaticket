@@ -1,17 +1,17 @@
 import React, { useMemo, useCallback, useRef, useState } from 'react';
 import { gettext } from '@/constants';
+import { knowledgeBaseAPI } from '@/project/api';
+import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
+import { useData, useTags } from '@/project/hooks';
 import SeaMetadata from '@/sea-metadata';
 import context from '@/sea-metadata/context';
-import { useKnowledgePage } from '../../hooks/knowledge-page';
-import { knowledgeBaseAPI } from '@/project/api';
+import { convertRowToNameValue } from '@/sea-metadata/utils/row';
 import {
   KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KB_TABLE_NAME,
   KNOWLEDGE_PREDEFINED_COLUMN_NAME, KNOWLEDGE_BASE_TYPE,
 } from '../../constants';
+import { useKnowledgePage } from '../../hooks/knowledge-page';
 import { generatorKnowledgeContextMenuOptions } from '../../utils';
-import { convertRowToNameValue } from '@/sea-metadata/utils/row';
-import { useData, useTags } from '@/project/hooks';
-import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 
 const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
   const { togglePageSlugId } = useKnowledgePage();

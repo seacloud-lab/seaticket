@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button, ButtonGroup, } from 'reactstrap';
-import { TICKET_STATE } from '../../../constants';
 import { Icon, OptionsEditor } from '@/components';
 import { gettext } from '@/constants';
+import { TICKET_STATE } from '../../../constants';
 
 import './index.css';
 

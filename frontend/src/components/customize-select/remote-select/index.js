@@ -1,14 +1,14 @@
 import React, { useCallback, useEffect, useRef, useState, Fragment } from 'react';
+import { Button } from 'reactstrap';
 import axios from 'axios';
 import classnames from 'classnames';
-import { Button } from 'reactstrap';
-import Icon from '../../icon';
-import { Utils } from '@/utils/utils';
 import { gettext } from '@/constants';
-import SelectTrigger from '../select-trigger';
+import { getEventClassName } from '@/utils/dom';
+import { Utils } from '@/utils/utils';
+import Icon from '../../icon';
 import ModalPortal from '../../modal-portal';
 import Options from '../options';
-import { getEventClassName } from '@/utils/dom';
+import SelectTrigger from '../select-trigger';
 
 import './index.css';
 

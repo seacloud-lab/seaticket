@@ -1,12 +1,12 @@
 import React, { forwardRef, useCallback, useEffect, useState, useImperativeHandle, useRef } from 'react';
 import axios from 'axios';
 import classnames from 'classnames';
-import SearchInput from '../../search-input';
 import { KeyCodes } from '@/constants';
+import { getSearchValueLength } from '@/utils/search';
 import { Utils } from '@/utils/utils';
+import SearchInput from '../../search-input';
 import toaster from '../../toaster';
 import Options from '../options';
-import { getSearchValueLength } from '@/utils/search';
 
 import '../static-options-editor/container/index.css';
 

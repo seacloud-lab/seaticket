@@ -1,22 +1,22 @@
 import React, { useEffect, useCallback, useState, useRef } from 'react';
 import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
 import axios from 'axios';
-import { gettext, KeyCodes, mediaUrl } from '@/constants';
 import { ModalHeader, CenteredLoading, EmptyTip, SearchInput, toaster } from '@/components';
-import { Utils } from '@/utils/utils';
+import { gettext, KeyCodes, mediaUrl } from '@/constants';
 import { searchAPI } from '@/project/api';
+import { useMetadata, useTags } from '@/project/hooks';
+import { TagsDataProvider, TypesDataProvider, SubstatesDataProvider, SelectedRowsProvider, useSelectedRows } from '@/sea-metadata/hooks';
+import { Metadata } from '@/sea-metadata/models';
+import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
+import { getColumnByName, normalizeColumns } from '@/sea-metadata/utils/column';
+import { getRowById } from '@/sea-metadata/utils/row';
+import Card from '@/sea-metadata/view/card';
+import { Utils } from '@/utils/utils';
 import {
   PREDEFINED_TICKET_COLUMN_NAME,
   TICKET_COLUMNS_ORDER_CONFIG, TICKET_COLUMNS_WIDTH_CONFIG,
   TICKET_NOT_DISPLAY_COLUMNS, TICKET_PREDEFINED_COLUMN_CONFIG,
 } from '../../constants';
-import { useMetadata, useTags } from '@/project/hooks';
-import Card from '@/sea-metadata/view/card';
-import { getColumnByName, normalizeColumns } from '@/sea-metadata/utils/column';
-import { Metadata } from '@/sea-metadata/models';
-import { TagsDataProvider, TypesDataProvider, SubstatesDataProvider, SelectedRowsProvider, useSelectedRows } from '@/sea-metadata/hooks';
-import { getRowById } from '@/sea-metadata/utils/row';
-import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 
 import './index.css';
 

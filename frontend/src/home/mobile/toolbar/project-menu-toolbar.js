@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import CreateGroupDialog from '../../dialog/create-group-dialog';
 import { IconButton } from '../../../components';
+import CreateGroupDialog from '../../dialog/create-group-dialog';
 
 const propTypes = {
   onShowSidePanel: PropTypes.func.isRequired,

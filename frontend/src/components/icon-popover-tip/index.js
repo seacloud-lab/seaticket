@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import classnames from 'classnames';
-import IconButton from '../icon-button';
 import CustomizePopover from '../customize-popover';
+import IconButton from '../icon-button';
 
 import './index.css';
 

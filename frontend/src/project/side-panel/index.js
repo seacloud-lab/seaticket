@@ -1,15 +1,15 @@
 import React, { useCallback, useEffect, useRef } from 'react';
+import { gettext } from '@/constants';
 import ResizeBar from '../../components/resize-bar';
-import Header from './header';
 import { BAR_TYPE, BAR_TYPE_CONFIG } from '../constants';
+import Header from './header';
 import Nav from './nav';
 import ConnectionsNav from './nav/connections-nav';
-import TicketsMoreNav from './nav/tickets-more-nav';
-import KnowledgeMoreNav from './nav/knowledge-more-nav';
-import PortalIssuesMoreNav from './nav/portal-issues-more-nav';
 import DefaultMoreNav from './nav/default-more-nav';
 import InboxNav from './nav/inbox-nav';
-import { gettext } from '@/constants';
+import KnowledgeMoreNav from './nav/knowledge-more-nav';
+import PortalIssuesMoreNav from './nav/portal-issues-more-nav';
+import TicketsMoreNav from './nav/tickets-more-nav';
 
 import './index.css';
 

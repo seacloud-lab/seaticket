@@ -1,6 +1,6 @@
 import React from 'react';
-import copy from 'copy-to-clipboard';
 import { Input, InputGroup, Button } from 'reactstrap';
+import copy from 'copy-to-clipboard';
 import IconButton from './icon-button/index';
 import toaster from './toaster';
 

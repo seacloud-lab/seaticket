@@ -1,8 +1,8 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import orgAdminAPI from '../api';
-import { gettext, loginUrl } from '@/constants';
 import { CenteredError, CenteredLoading } from '@/components';
+import { gettext, loginUrl } from '@/constants';
+import orgAdminAPI from '../api';
 import GroupNav from '../group-nav';
 import { TopBar, Main } from '../main-panel';
 import Member from './member';

@@ -1,21 +1,21 @@
 import React, { useContext, useEffect, useState, useCallback, useRef } from 'react';
 import dayjs from 'dayjs';
-import { Utils } from '@/utils/utils';
-import { gettext } from '@/constants';
 import { CommonOperationConfirmationDialog, toaster } from '@/components';
-import { Connection } from '../models';
-import eventBus from '@/utils/event-bus';
+import { MSG_TYPE_WS_PROJECT, MSG_TYPE_WS_USER_LOGOUT_NOTIFICATION } from '@/components/common/notification/constants';
+import { gettext } from '@/constants';
 import { EVENT_BUS_TYPE } from '@/project/constants';
-import NewConnectionDialog from '../components/new-connection-dialog';
-import ModifyConnectionDialog from '../components/modify-connection-dialog';
-import { connectionsAPI } from '../../../api';
 import { useData } from '@/project/hooks';
-import { getTableName, initConnectionStatus } from '../utils';
-import { CONNECTION_SYNC_STATUS } from '../constants';
+import eventBus from '@/utils/event-bus';
 import ObjectUtils from '@/utils/object-utils';
 import { isFunction } from '@/utils/type-detection';
+import { Utils } from '@/utils/utils';
+import { connectionsAPI } from '../../../api';
+import ModifyConnectionDialog from '../components/modify-connection-dialog';
+import NewConnectionDialog from '../components/new-connection-dialog';
+import { CONNECTION_SYNC_STATUS } from '../constants';
+import { Connection } from '../models';
+import { getTableName, initConnectionStatus } from '../utils';
 import sharedWsClient from '@/utils/websocket-service';
-import { MSG_TYPE_WS_PROJECT, MSG_TYPE_WS_USER_LOGOUT_NOTIFICATION } from '@/components/common/notification/constants';
 
 const ConnectionsContext = React.createContext(null);
 

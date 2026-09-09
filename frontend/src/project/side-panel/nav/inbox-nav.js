@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
-import { Icon } from '../../../components';
-import { useNotification } from '@/components/common/notification/hooks/notification';
 import InboxCount from '@/components/common/notification/components/inbox-count';
+import { useNotification } from '@/components/common/notification/hooks/notification';
 import { NAVIGATION_BASE_PADDING, NAVIGATION_LEVEL_INDENT } from '@/constants';
+import { Icon } from '../../../components';
 
 import './inbox-nav.css';
 

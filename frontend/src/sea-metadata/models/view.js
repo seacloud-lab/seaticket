@@ -1,5 +1,5 @@
-import { getColumnByKey } from '../utils/column';
 import { VIEW_TYPE_DEFAULT_SORTS, VIEW_DEFAULT_SETTINGS, VIEW_TYPE, ROW_HEIGHT_TYPE } from '../constants';
+import { getColumnByKey } from '../utils/column';
 
 class View {
 

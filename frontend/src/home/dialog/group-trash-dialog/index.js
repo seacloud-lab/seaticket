@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import { Modal, ModalBody } from 'reactstrap';
+import PropTypes from 'prop-types';
 import { toaster, ModalHeader } from '@/components';
-import GroupTrashProjectList from '../group-trash/group-trash-project-list';
-import GroupTrashView from '../../mobile/group-trash-view';
 import { gettext } from '@/constants/config';
-import homeAPI from '../../api';
 import { Utils } from '@/utils/utils';
+import homeAPI from '../../api';
+import GroupTrashView from '../../mobile/group-trash-view';
+import GroupTrashProjectList from '../group-trash/group-trash-project-list';
 
 import './index.css';
 

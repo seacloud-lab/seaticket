@@ -1,25 +1,25 @@
 import React, { useCallback, useContext, useState } from 'react';
 import deepcopy from 'deep-copy';
 import _ from 'lodash';
-import { CollaboratorsProvider } from '@/sea-metadata';
-import { EMPTY_TABLE } from '../constants';
-import { shouldReload } from '../utils';
-import { PREDEFINED_TICKET_COLUMN_NAME, TICKET_TABLE_NAME } from '../main-panel/tickets/constants';
-import { ConnectionsProvider } from '../main-panel/connections/hooks';
-import { AIChatToolsProvider } from '../main-panel/ask/hooks';
-import { AnalyzeTaskProvider } from '../main-panel/analyze/hooks/analyze-task';
-import { MetadataProvider, CloseLinkedIssuesProvider } from '../main-panel/tickets/hooks';
-import { PortalIssuesMetadataProvider } from '../main-panel/portal-issues/hooks';
-import ObjectUtils, { hasOwnProperty } from '@/utils/object-utils';
 import { NotificationProvider } from '@/components/common/notification/hooks/notification';
 import projectAPI from '../api/project-api';
 import userAPI from '@/api/user-api';
+import { CollaboratorsProvider } from '@/sea-metadata';
 import { TagsProvider } from '../main-panel/tags/hooks/tags';
-import { KB_TABLE_NAME } from '../main-panel/knowledge-base/constants';
 import { isFunction } from '@/utils/type-detection';
 import { convertRowToKeyValue } from '@/sea-metadata/utils/row';
+import ObjectUtils, { hasOwnProperty } from '@/utils/object-utils';
+import { EMPTY_TABLE } from '../constants';
+import { AnalyzeTaskProvider } from '../main-panel/analyze/hooks/analyze-task';
+import { AIChatToolsProvider } from '../main-panel/ask/hooks';
 import { CONNECTION_PREDEFINED_COLUMN_NAME } from '../main-panel/connections/constants';
+import { ConnectionsProvider } from '../main-panel/connections/hooks';
 import { getTableName } from '../main-panel/connections/utils';
+import { KB_TABLE_NAME } from '../main-panel/knowledge-base/constants';
+import { PortalIssuesMetadataProvider } from '../main-panel/portal-issues/hooks';
+import { PREDEFINED_TICKET_COLUMN_NAME, TICKET_TABLE_NAME } from '../main-panel/tickets/constants';
+import { MetadataProvider, CloseLinkedIssuesProvider } from '../main-panel/tickets/hooks';
+import { shouldReload } from '../utils';
 
 const DataContext = React.createContext(null);
 

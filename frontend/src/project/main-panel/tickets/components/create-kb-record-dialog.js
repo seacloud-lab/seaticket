@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input } from 'reactstrap';
-import { gettext } from '@/constants';
 import { toaster, ModalHeader, CenteredLoading, CenteredError } from '@/components';
+import { gettext } from '@/constants';
 import { ticketsAPI, knowledgeBaseAPI } from '@/project/api';
-import { Utils } from '@/utils/utils';
 import { useData } from '@/project/hooks';
 import { KB_TABLE_NAME } from '@/project/main-panel/knowledge-base/constants';
+import { Utils } from '@/utils/utils';
 
 const CreateKBRecordDialog = ({ projectUuid, ticket, onClose }) => {
   const [isLoading, setLoading] = useState(true);

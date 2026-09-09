@@ -1,10 +1,10 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import classnames from 'classnames';
 import { OptionsEditor, RemoveButton, Option } from '@/components';
+import SelectTrigger from '@/components/customize-select/select-trigger';
 import { gettext } from '@/constants';
 import { useTypesData } from '@/sea-metadata/hooks';
 import { getTypesOptions } from '@/sea-metadata/utils/column';
-import SelectTrigger from '@/components/customize-select/select-trigger';
 
 const TypeFilter = ({ readOnly = true, value = [], onChange: onChangeAPI }) => {
   const [isShowEditor, setIsShowEditor] = useState(false);

@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { IconButton, CustomizeNameDialog } from '@/components';
 import classNames from 'classnames';
-import { useViewsData } from '@/sea-metadata/hooks';
+import { IconButton, CustomizeNameDialog } from '@/components';
 import { gettext } from '@/constants';
-import ViewItem from './view-item';
-import AllViews from './all-views';
 import context from '@/sea-metadata/context';
+import { useViewsData } from '@/sea-metadata/hooks';
 import { isFunction } from '@/utils/type-detection';
+import AllViews from './all-views';
+import ViewItem from './view-item';
 
 import './index.css';
 import './view-buttons.css';

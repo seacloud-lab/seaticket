@@ -1,15 +1,15 @@
 import React, { Component, Fragment } from 'react';
-import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
+import PropTypes from 'prop-types';
 import { ActiveStatusEditor, toaster, EmptyTip, Loading, CommonOperationConfirmationDialog, IconButton } from '@/components';
-import { Utils } from '@/utils/utils';
 import { loginUrl, gettext, mediaUrl } from '@/constants';
-import SysAdminGroupAddMemberDialog from '@/sys-admin/dialog/sysadmin-group-add-member-dialog';
-import GroupNav from './group-nav';
-import UserLink from '../user-link';
-import { getRoleOptions } from '@/utils/role-status-utils';
 import sysAdminAPI from '@/sys-admin/api';
+import SysAdminGroupAddMemberDialog from '@/sys-admin/dialog/sysadmin-group-add-member-dialog';
+import { getRoleOptions } from '@/utils/role-status-utils';
+import { Utils } from '@/utils/utils';
 import { TopBar, Main } from '../main-panel';
+import UserLink from '../user-link';
+import GroupNav from './group-nav';
 import GroupTitle from './group-title';
 
 const contentPropTypes = {

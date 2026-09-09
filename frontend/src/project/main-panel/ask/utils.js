@@ -1,5 +1,5 @@
-import { ChatMessage } from './models';
 import { CHAT_MESSAGE_TYPE } from './constants';
+import { ChatMessage } from './models';
 
 export const initMessages = (messages) => {
   return Array.isArray(messages) ? messages.map(item => {

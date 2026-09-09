@@ -1,12 +1,12 @@
 import React, { useMemo, useCallback } from 'react';
 import classnames from 'classnames';
 import { OptionsEditor, RemoveButton } from '@/components';
-import { useTagsData } from '@/sea-metadata/hooks';
-import { getTagsOptions } from '@/sea-metadata/utils/column';
-import Tag from '@/sea-metadata/components/tag';
-import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
 import { gettext } from '@/constants';
+import Tag from '@/sea-metadata/components/tag';
+import { useTagsData } from '@/sea-metadata/hooks';
 import { isCellValueChanged } from '@/sea-metadata/utils/cell';
+import { getTagsOptions } from '@/sea-metadata/utils/column';
+import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
 
 const TagSelector = ({
   isMultiple = true,

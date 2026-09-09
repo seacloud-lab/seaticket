@@ -1,10 +1,10 @@
+import ObjectUtils from '@/utils/object-utils';
 import { CellType } from '../../constants';
-import { getTableById, getTableColumnByKey, getTableColumnByName } from '../table';
 import {
   getOptionNameById, getColumnOptionNamesByIds, getOption,
   getColumnOptionIdsByNames, getColumnOptions
 } from '../column';
-import ObjectUtils from '@/utils/object-utils';
+import { getTableById, getTableColumnByKey, getTableColumnByName } from '../table';
 
 /**
  * Check is table rows
@@ -67,7 +67,7 @@ const convertRowToNameValue = (rowUpdate, { data, typesData, tagsData }) => {
     if (!column) return;
     const { name, type } = column;
     let cellValue = rowUpdate[key];
-    if (type === CellType.SINGLE_SELECT ) {
+    if (type === CellType.SINGLE_SELECT) {
       if (cellValue) {
         cellValue = getOptionNameById(column, cellValue);
       }
@@ -114,7 +114,7 @@ const convertRowToKeyValue = (rowUpdate, { data, typesData, tagsData }) => {
     if (!column) return;
     const { key, type } = column;
     let cellValue = rowUpdate[name];
-    if (type === CellType.SINGLE_SELECT ) {
+    if (type === CellType.SINGLE_SELECT) {
       if (cellValue) {
         const options = getColumnOptions(column);
         let option = getOption(options, cellValue);

@@ -1,27 +1,27 @@
 import React, { useState, useCallback, useRef, isValidElement, cloneElement } from 'react';
 import classnames from 'classnames';
-import { connectionsAPI } from '@/project/api';
-import context from '@/sea-metadata/context';
 import { toaster } from '@/components';
+import { connectionsAPI } from '@/project/api';
 import { ResourceDetailsDialog } from '@/project/components';
-import RelatedIssuesDialog from '@/project/main-panel/connections/components/related-issues-dialog';
-import CreateTicketDialog from '@/project/main-panel/connections/components/create-ticket-dialog';
-import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
-import { useConnections } from '@/project/main-panel/connections/hooks';
-import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import { useData, useMetadata } from '@/project/hooks';
-import { normalizeContextMenuOptions } from '@/project/utils';
+import { useAIChatTools } from '@/project/main-panel/ask/hooks';
+import CreateTicketDialog from '@/project/main-panel/connections/components/create-ticket-dialog';
+import RelatedIssuesDialog from '@/project/main-panel/connections/components/related-issues-dialog';
+import { CONNECTION_PREDEFINED_COLUMN_NAME } from '@/project/main-panel/connections/constants';
+import { useConnections } from '@/project/main-panel/connections/hooks';
 import {
   generateAIOptions, generateCreateRelatedTicketOption, generateFindRelatedIssuesOption,
   generateLinkAnExistingTicketOption, generateOpenOriginalPageOption,
   generateCopyOriginalLinkOption, generateMarkAsOutdatedOptions, getTableName,
 } from '@/project/main-panel/connections/utils';
-import { getColumnByName } from '@/sea-metadata/utils/column';
-import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
-import { Utils } from '@/utils/utils';
-import { CONNECTION_PREDEFINED_COLUMN_NAME } from '@/project/main-panel/connections/constants';
+import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
 import { TICKET_TYPE, TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
+import { normalizeContextMenuOptions } from '@/project/utils';
 import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
+import context from '@/sea-metadata/context';
+import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
+import { getColumnByName } from '@/sea-metadata/utils/column';
+import { Utils } from '@/utils/utils';
 
 import './index.css';
 

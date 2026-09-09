@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { gettext, trashCleanExpireDays, mediaUrl } from '../../../constants/config';
 import { EmptyTip } from '../../../components';
+import { gettext, trashCleanExpireDays, mediaUrl } from '../../../constants/config';
 import GroupTrashProjectsItem from './group-trash-projects-item';
 
 const propTypes = {

@@ -1,6 +1,6 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
+import PropTypes from 'prop-types';
 import { ModalHeader } from '../../../components';
 import { gettext } from '../../../constants/config';
 import ListAndAddGroupMembers from '../list-and-add-group-members';

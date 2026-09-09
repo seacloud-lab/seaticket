@@ -1,9 +1,9 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { Button, Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap';
-import homeAPI from '../../../api';
-import { Utils } from '@/utils/utils';
 import { ProjectsTable, CommonOperationConfirmationDialog, toaster } from '@/components';
 import { gettext, trashCleanExpireDays } from '@/constants';
+import { Utils } from '@/utils/utils';
+import homeAPI from '../../../api';
 
 import './index.css';
 

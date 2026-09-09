@@ -1,7 +1,7 @@
 import { forwardRef, useCallback, useRef } from 'react';
 import classnames from 'classnames';
-import { gettext } from '@/constants';
 import { Icon } from '@/components';
+import { gettext } from '@/constants';
 
 import './index.css';
 

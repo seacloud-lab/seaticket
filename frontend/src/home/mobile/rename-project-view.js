@@ -1,9 +1,9 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
+import PropTypes from 'prop-types';
+import { validateName } from '@/utils/validate';
 import { toaster, List, InputItem, MobileCommonHeader, Icon } from '../../components';
 import { gettext, DEFAULT_PROJECT_ICON, PROJECT_ICON_LIST, PROJECT_ICON_COLORS } from '../../constants';
-import { validateName } from '@/utils/validate';
 
 import './rename-project-view.css';
 

@@ -1,16 +1,16 @@
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import classnames from 'classnames';
-import PriorityFormatter from '@/sea-metadata/components/cell-formatter/priority';
-import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
-import { getColumnByName, getOption } from '@/sea-metadata/utils/column';
-import { gettext } from '@/constants';
 import { Icon, Loading, Option } from '@/components';
-import { useTypesData } from '@/sea-metadata/hooks';
-import { getRowById } from '@/sea-metadata/utils/row';
+import { gettext } from '@/constants';
 import {
   PORTAL_ISSUE_STATE_CONFIG,
   PREDEFINED_PORTAL_ISSUE_COLUMN_NAME,
 } from '@/project/main-panel/portal-issues/constants';
+import PriorityFormatter from '@/sea-metadata/components/cell-formatter/priority';
+import { useTypesData } from '@/sea-metadata/hooks';
+import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
+import { getColumnByName, getOption } from '@/sea-metadata/utils/column';
+import { getRowById } from '@/sea-metadata/utils/row';
 
 const LOAD_MORE_THRESHOLD = 80;
 

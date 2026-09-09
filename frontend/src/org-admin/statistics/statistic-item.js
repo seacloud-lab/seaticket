@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Dropdown } from 'reactstrap';
 import { Link } from '@gatsbyjs/reach-router';
-import { gettext, siteRoot } from '@/constants';
 import {
   CustomizeDropdownMoreToggle, CustomizeDropdownMenu, CustomizeDropdownItem,
 } from '@/components';
+import { gettext, siteRoot } from '@/constants';
 
 const StatisticItem = ({ item, groupBy, hasFreezed, updateFreezed, onOpenAIStaticsDetailDialog }) => {
   const [highlight, setHighlight] = useState(false);

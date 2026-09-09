@@ -1,12 +1,12 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import homeAPI from '../../api';
-import { gettext } from '@/constants';
-import SearchResultItem from './search-result-item';
-import { Utils } from '@/utils/utils';
-import getWorkspaceName from '../utils/get-workspace-name';
-import { getSearchValueLength } from '@/utils/search';
 import { IconButton } from '@/components';
+import { gettext } from '@/constants';
+import { getSearchValueLength } from '@/utils/search';
+import { Utils } from '@/utils/utils';
+import homeAPI from '../../api';
+import getWorkspaceName from '../utils/get-workspace-name';
+import SearchResultItem from './search-result-item';
 
 const propTypes = {
   isPublic: PropTypes.bool,
@@ -84,7 +84,7 @@ class SearchProject extends Component {
     const maxShowIndex = Math.floor(parseInt(this.searchContainer.current.style.maxHeight) / 56);
     if (this.state.highLightIndex < this.state.resultItems.length - 1) {
       this.setState({ highLightIndex: this.state.highLightIndex + 1 }, () => {
-        if (this.state.highLightIndex >= maxShowIndex ) {
+        if (this.state.highLightIndex >= maxShowIndex) {
           this.ulRef.scrollTop += 56;
         }
       });

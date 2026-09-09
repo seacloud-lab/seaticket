@@ -1,13 +1,13 @@
 import React, { useMemo, useState, useRef, useCallback } from 'react';
 import classnames from 'classnames';
+import { OptionsEditor, RemoveButton, Option } from '@/components';
+import SelectTrigger from '@/components/customize-select/select-trigger';
+import { gettext } from '@/constants';
+import { getOption } from '@/sea-metadata/utils/column';
+import { isFilterTermArray } from '@/sea-metadata/utils/filter';
 import {
   DELETED_OPTION_BACKGROUND_COLOR, DELETED_OPTION_TIPS,
 } from '../../constants';
-import { OptionsEditor, RemoveButton, Option } from '@/components';
-import { getOption } from '@/sea-metadata/utils/column';
-import { gettext } from '@/constants';
-import SelectTrigger from '@/components/customize-select/select-trigger';
-import { isFilterTermArray } from '@/sea-metadata/utils/filter';
 
 const OptionSelector = ({
   readOnly,

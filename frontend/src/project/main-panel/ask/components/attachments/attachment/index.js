@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { IconTooltip, Icon, CenteredLoading, IconButton } from '@/components';
 import classnames from 'classnames';
+import { IconTooltip, Icon, CenteredLoading, IconButton } from '@/components';
 import { gettext } from '@/constants';
 import { CHAT_ATTACHMENT_TYPE } from '../../../constants';
 

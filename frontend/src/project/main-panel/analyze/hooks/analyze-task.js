@@ -1,7 +1,7 @@
 import React, { useContext, useState, useCallback, useRef, useEffect } from 'react';
+import { gettext } from '@/constants';
 import { connectionsAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
-import { gettext } from '@/constants';
 
 const AnalyzeTaskContext = React.createContext(null);
 

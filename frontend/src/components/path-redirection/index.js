@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import classnames from 'classnames';
-import IconButton from '../icon-button';
 import { isFunction } from '@/utils/type-detection';
+import IconButton from '../icon-button';
 
 import './index.css';
 

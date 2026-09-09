@@ -59,7 +59,7 @@ class KnowledgeBaseAPI {
     }
   }
 
-  getKnowledgeBases(projectUuid, { view_id = 'open', start = 0, limit = 100, } = {}){
+  getKnowledgeBases(projectUuid, { view_id = 'open', start = 0, limit = 100, } = {}) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/knowledge-bases/';
     let params = {
       view_id,

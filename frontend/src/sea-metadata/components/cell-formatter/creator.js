@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
+import PropTypes from 'prop-types';
 import Collaborator from '@/components/collaborator/collaborator';
 import { mediaUrl as appMediaUrl } from '@/constants';
 import { isValidEmail } from '@/utils/validate';

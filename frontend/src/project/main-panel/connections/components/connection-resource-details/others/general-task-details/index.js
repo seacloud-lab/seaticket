@@ -1,12 +1,12 @@
 import React, { useCallback, useMemo } from 'react';
 import { gettext } from '@/constants';
-import { getColumnByName } from '@/sea-metadata/utils/column';
-import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { CONNECTION_PREDEFINED_COLUMN_NAME } from '@/project/main-panel/connections/constants';
-import LinkedTicket from '../linked-ticket';
 import {
   CollaboratorsSettings, DueDateSettings,
 } from '@/project/main-panel/tickets/components/ticket-settings';
+import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
+import { getColumnByName } from '@/sea-metadata/utils/column';
+import LinkedTicket from '../linked-ticket';
 import SingleSelectSettings from '../single-select-settings';
 import TextSettings from '../text-settings';
 

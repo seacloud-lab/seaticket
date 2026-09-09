@@ -1,8 +1,8 @@
 import React from 'react';
 import { DropdownToggle } from 'reactstrap';
 import classnames from 'classnames';
-import Icon from '../icon';
 import { gettext } from '../../constants';
+import Icon from '../icon';
 
 const CustomizeDropdownMoreToggle = ({ isOpen, title, className, ...props }) => {
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import classnames from 'classnames';
-import { PRIORITY_MAP } from '@/sea-metadata/constants';
 import { Icon } from '@/components';
+import { PRIORITY_MAP } from '@/sea-metadata/constants';
 
 import './index.css';
 

@@ -1,8 +1,8 @@
 import React, { useCallback, useMemo } from 'react';
 import classnames from 'classnames';
-import { formatWithTimezone } from '@/sea-metadata/utils/column';
 import dayjs from 'dayjs';
 import { gettext } from '@/constants';
+import { formatWithTimezone } from '@/sea-metadata/utils/column';
 import { removeTextMark } from '@/utils/remove-text-mark';
 
 import './index.css';

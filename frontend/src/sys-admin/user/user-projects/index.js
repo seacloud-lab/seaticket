@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { TopBar, Main } from '@/sys-admin/main-panel';
-import sysAdminAPI from '@/sys-admin/api';
 import { CenteredLoading, CenteredError, ProjectsTable } from '@/components';
-import { Utils } from '@/utils/utils';
 import { gettext } from '@/constants';
+import sysAdminAPI from '@/sys-admin/api';
+import { TopBar, Main } from '@/sys-admin/main-panel';
+import { Utils } from '@/utils/utils';
 import Nav from '../user-nav';
 import UserTitle from '../user-title';
 

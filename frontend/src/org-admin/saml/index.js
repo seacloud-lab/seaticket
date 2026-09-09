@@ -1,15 +1,15 @@
 import React, { Fragment, Component } from 'react';
-import PropTypes from 'prop-types';
 import { Row, Col, Label, Button, Input, InputGroup } from 'reactstrap';
 import copy from 'copy-to-clipboard';
+import PropTypes from 'prop-types';
 import { toaster } from '@/components';
-import { Main, TopBar } from '../main-panel';
 import CenteredLoading from '@/components/centered-loading';
 import { gettext, orgID, serviceURL } from '@/constants';
 import { Utils } from '@/utils/utils';
-import Section from './section';
-import InputItem from './input-item';
 import orgAdminAPI from '../api';
+import { Main, TopBar } from '../main-panel';
+import InputItem from './input-item';
+import Section from './section';
 
 class SAMLConfig extends Component {
 

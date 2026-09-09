@@ -1,8 +1,8 @@
 import React from 'react';
 import { toaster, ModalPortal, IconButton } from '@/components';
 import { gettext } from '@/constants';
-import profileSettingsAPI from './api';
 import { Utils } from '@/utils/utils';
+import profileSettingsAPI from './api';
 import UpdateWebdavPassword from './update-webdav-password';
 
 const { webdavPasswd } = window.app.pageOptions;

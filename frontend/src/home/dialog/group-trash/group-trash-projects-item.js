@@ -1,11 +1,11 @@
 import React, { Fragment } from 'react';
-import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
+import PropTypes from 'prop-types';
 import { toaster, ModalPortal, ProjectIcon, RestoreProjectDialog } from '@/components';
-import { Utils } from '@/utils/utils';
 import { gettext } from '@/constants/config';
-import homeAPI from '../../api';
 import { formatWithTimezone } from '@/sea-metadata/utils/column';
+import { Utils } from '@/utils/utils';
+import homeAPI from '../../api';
 
 const propTypes = {
   item: PropTypes.object.isRequired,

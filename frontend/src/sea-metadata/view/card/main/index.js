@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import Header from './header';
-import Row from './row';
 import { KeyCodes } from '@/constants';
 import { useSelectedRows } from '@/sea-metadata/hooks';
+import Header from './header';
+import Row from './row';
 
 import './index.css';
 

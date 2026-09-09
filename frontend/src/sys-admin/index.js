@@ -1,44 +1,35 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
-import { globalHistory, LocationProvider, Router } from '@gatsbyjs/reach-router';
 import MediaQuery from 'react-responsive';
 import { Modal } from 'reactstrap';
+import { globalHistory, LocationProvider, Router } from '@gatsbyjs/reach-router';
 import dayjs from 'dayjs';
+import { createRoot } from 'react-dom/client';
 import { siteRoot, lang } from '@/constants';
+import { BARS } from './constants';
+import GroupMembers from './group/group-members';
+import GroupProjects from './group/group-projects';
+import Groups from './groups/groups';
+import SearchGroups from './groups/search-groups';
+import Info from './info';
+import OrgGroups from './org/org-groups';
+import OrgInfo from './org/org-info';
+import Orgs from './orgs';
+import AllProjects from './projects/all-projects';
 import SidePanel from './side-panel';
 
-import Info from './info';
 import Statistics from './statistics';
-
-import AllProjects from './projects/all-projects';
 import TrashProjects from './projects/trash-projects';
 import SearchProjects from './projects/search-projects';
-
-import Users from './users/users';
 import AdminUsers from './users/admin-users';
+import Users from './users/users';
 import SearchUsers from './users/search-users';
-
 import User from './user/user-info';
 import UserGroups from './user/user-group';
 import UserProjects from './user/user-projects';
-
-import Groups from './groups/groups';
-import SearchGroups from './groups/search-groups';
-
-import GroupProjects from './group/group-projects';
-import GroupMembers from './group/group-members';
-
-import Orgs from './orgs';
-import OrgInfo from './org/org-info';
 import OrgUsers from './org/org-users';
-import OrgGroups from './org/org-groups';
 import OrgProjects from './org/org-projects';
 import SearchOrgs from './orgs/search-orgs';
-
-
 import OrgAdminUsers from './org/org-admin-users';
-
-import { BARS } from './constants';
 
 import '@/css/layout.css';
 import '@/css/toolbar.css';

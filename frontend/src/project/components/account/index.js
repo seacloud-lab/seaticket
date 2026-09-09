@@ -1,8 +1,8 @@
 import React, { useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
 import ClickOutside from '@/components/click-outside';
-import { isEsc } from '@/utils/hotkey';
 import { siteRoot, mediaUrl, isOrgStaff, useExternalTeamAdmin, gettext } from '@/constants';
+import { isEsc } from '@/utils/hotkey';
 
 import './index.css';
 

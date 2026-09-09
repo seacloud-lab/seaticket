@@ -1,9 +1,9 @@
 import React, { useState, useCallback } from 'react';
 import classnames from 'classnames';
-import { gettext } from '@/constants';
-import { ACTION_STATUS, ACTION_TYPE, ACTION_ICON_MAPPER, RUN_EVENT_VIEW_SOURCE_TEXT, DEFAULT_VIEW_SOURCE_TEXT } from '../../../../constants';
 import { IconButton, CustomizeMarkdownViewer, SecondaryBtn } from '@/components';
+import { gettext } from '@/constants';
 import AIReply from '@/project/components/ai-reply';
+import { ACTION_STATUS, ACTION_TYPE, ACTION_ICON_MAPPER, RUN_EVENT_VIEW_SOURCE_TEXT, DEFAULT_VIEW_SOURCE_TEXT } from '../../../../constants';
 import ResourceTitle from '../../../resource-title';
 import SuggestionAction from './suggestion-action';
 

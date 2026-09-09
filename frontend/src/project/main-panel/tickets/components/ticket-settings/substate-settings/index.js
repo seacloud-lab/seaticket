@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import classnames from 'classnames';
-import { gettext } from '@/constants';
 import { Option, OptionsEditor, CustomizeLabel } from '@/components';
+import { gettext } from '@/constants';
 import { getRowById } from '@/sea-metadata/utils/row';
 import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { isEsc, isShiftS } from '@/utils/hotkey';

@@ -1,16 +1,16 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import CustomizePopover from '@/components/customize-popover';
+import PropTypes from 'prop-types';
 import { ColorSelectorPopover, IconButton } from '@/components';
 import CustomizeAddTool from '@/components/customize-add-tool';
+import CustomizePopover from '@/components/customize-popover';
 import { gettext, SELECT_OPTION_COLORS } from '@/constants';
-import context from '@/sea-metadata/context';
 import { CellType } from '@/sea-metadata/constants';
-import { getFilterByColumn } from '../../../utils/filter';
-import { getDefaultRowColorRule } from '../../../utils/view';
+import context from '@/sea-metadata/context';
 import { FILTER_COLUMN_OPTIONS, ROW_COLOR_TYPE } from '../../../constants';
+import { getFilterByColumn } from '../../../utils/filter';
 import { ValidateFilter } from '../../../utils/validate/filter';
+import { getDefaultRowColorRule } from '../../../utils/view';
 import AdvancedFilters from '../filter-popover/advanced-filters';
 
 import './index.css';

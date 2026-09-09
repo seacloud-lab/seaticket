@@ -1,9 +1,9 @@
 import React from 'react';
-import { usePortalIssuesMetadata } from '../../hooks';
-import TypesComponent from '@/project/main-panel/tickets/view/types';
 import { gettext } from '@/constants';
+import TypesComponent from '@/project/main-panel/tickets/view/types';
 import { CellType } from '@/sea-metadata';
 import { PORTAL_ISSUE_TYPE } from '../../constants';
+import { usePortalIssuesMetadata } from '../../hooks';
 
 const initColumns = [
   {

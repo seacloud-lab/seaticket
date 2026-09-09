@@ -1,19 +1,19 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import classnames from 'classnames';
-import { navigate } from '@gatsbyjs/reach-router';
 import { Button } from 'reactstrap';
+import { navigate } from '@gatsbyjs/reach-router';
+import classnames from 'classnames';
+import PropTypes from 'prop-types';
 import { toaster, ModalPortal, AdminSearch } from '@/components';
-import Users from './users';
-import OrgAdminList from './org-admin-list';
-import { TopBar, Main } from '../main-panel';
 import { gettext, orgID, siteRoot } from '@/constants';
 import { Utils } from '@/utils/utils';
 import orgAdminAPI from '../api';
+import { TopBar, Main } from '../main-panel';
 import OrgUserInfo from '../models/org-user';
 import AddAdminDialog from './add-admin-dialog';
 import AddUserDialog from './add-user-dialog';
 import InviteUserDialog from './invite-user-dialog';
+import OrgAdminList from './org-admin-list';
+import Users from './users';
 
 class OrgUsers extends Component {
 

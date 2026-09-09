@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { gettext } from '@/constants';
 import { SecondaryBtn } from '@/components';
+import { gettext } from '@/constants';
 import { CONNECTION_TYPE } from '../../constants';
 import { getConnectionIcon } from '../../utils';
 

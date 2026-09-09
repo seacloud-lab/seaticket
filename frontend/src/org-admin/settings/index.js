@@ -1,15 +1,15 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
+import PropTypes from 'prop-types';
 import { toaster, CenteredLoading, SectionSettings } from '@/components';
 import ConfirmDeleteOrg from '@/components/dialog/confirm-delete-org';
 import AdminCheckboxSettings from '@/components/settings/admin-checkbox-settings';
-import orgAdminAPI from '../api';
-import { Utils } from '@/utils/utils';
 import { orgID, gettext, displayTwoFactorAuth, siteRoot, orgEnableAdminDeleteOrg } from '@/constants';
+import { Utils } from '@/utils/utils';
+import { validateName } from '@/utils/validate';
+import orgAdminAPI from '../api';
 import { TopBar, Main } from '../main-panel';
 import InputItem from './input-item';
-import { validateName } from '@/utils/validate';
 
 const propTypes = {
   onCloseSidePanel: PropTypes.func

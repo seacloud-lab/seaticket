@@ -1,14 +1,14 @@
-var unified = require('unified');
-var markdown = require('remark-parse');
-var slug = require('remark-slug');
-var breaks = require('remark-breaks');
-var remark2rehype = require('remark-rehype');
-var format = require('rehype-format');
-var raw = require('rehype-raw');
-var xtend = require('xtend');
-var toHTML = require('hast-util-to-html');
 var sanitize = require('hast-util-sanitize');
 var gh = require('hast-util-sanitize/lib/github');
+var toHTML = require('hast-util-to-html');
+var format = require('rehype-format');
+var raw = require('rehype-raw');
+var breaks = require('remark-breaks');
+var markdown = require('remark-parse');
+var remark2rehype = require('remark-rehype');
+var slug = require('remark-slug');
+var unified = require('unified');
+var xtend = require('xtend');
 var deepmerge = require('deepmerge').default;
 
 function stringify(config) {

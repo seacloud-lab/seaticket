@@ -1,11 +1,11 @@
 import React, { useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { CHAT_MESSAGE_TYPE } from '../../constants';
-import ThoughtProcess from '../thought-process';
-import { Attachments } from '../../components';
 import AIReply from '@/project/components/ai-reply';
-import MessageOperations from '../message-operations';
+import { Attachments } from '../../components';
+import { CHAT_MESSAGE_TYPE } from '../../constants';
 import { useDocuments } from '../../hooks';
+import MessageOperations from '../message-operations';
+import ThoughtProcess from '../thought-process';
 
 import './index.css';
 

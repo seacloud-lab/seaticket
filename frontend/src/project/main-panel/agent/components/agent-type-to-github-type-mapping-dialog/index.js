@@ -2,8 +2,8 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
 import { ModalHeader, CustomizeSelect, Option, Icon, CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
-import { getConnectionIcon } from '../../../connections/utils';
 import { CONNECTION_TYPE } from '../../../connections/constants';
+import { getConnectionIcon } from '../../../connections/utils';
 
 import './index.css';
 

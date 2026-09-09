@@ -1,16 +1,16 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import classnames from 'classnames';
 import { Popover } from 'reactstrap';
-import { gettext } from '@/constants';
-import UserItem from '../user-item';
+import classnames from 'classnames';
+import PropTypes from 'prop-types';
 import userAPI from '@/api/user-api';
-import toaster from '../toaster';
-import ClickOutside from '../click-outside';
-import SearchInput from '../search-input';
+import { gettext } from '@/constants';
 import { Utils } from '@/utils/utils';
-import IconButton from '../icon-button';
 import CenteredLoading from '../centered-loading';
+import ClickOutside from '../click-outside';
+import IconButton from '../icon-button';
+import SearchInput from '../search-input';
+import toaster from '../toaster';
+import UserItem from '../user-item';
 
 const propTypes = {
   placeholder: PropTypes.string.isRequired,

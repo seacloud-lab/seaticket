@@ -1,7 +1,7 @@
-import Metadata from './metadata';
 import Column from './column';
-import View from './view';
+import Metadata from './metadata';
 import Row from './row';
+import View from './view';
 
 export {
   Metadata, Column, View, Row,

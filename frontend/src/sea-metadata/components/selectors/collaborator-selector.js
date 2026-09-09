@@ -1,9 +1,9 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
+import PropTypes from 'prop-types';
 import { CollaboratorEditor, Collaborator } from '@/components';
-import { gettext } from '@/constants';
 import SelectTrigger from '@/components/customize-select/select-trigger';
+import { gettext } from '@/constants';
 import { isFilterTermArray } from '@/sea-metadata/utils/filter';
 
 const COLLABORATOR_SELECTOR_TEXT_MAP = {

@@ -1,16 +1,16 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { Modal, ModalBody, ModalFooter, Button } from 'reactstrap';
-import { knowledgeBaseAPI } from '@/project/api';
-import { Utils } from '@/utils/utils';
-import { getFileExtension } from '@/utils/download';
 import { ModalHeader, Icon, toaster, CenteredLoading, Loading } from '@/components';
 import { gettext } from '@/constants';
 import { siteRoot } from '@/constants/config';
+import { knowledgeBaseAPI } from '@/project/api';
 import { BAR_TYPE } from '@/project/constants';
 import { useData } from '@/project/hooks';
 import { KB_TABLE_NAME } from '@/project/main-panel/knowledge-base/constants';
 import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import context from '@/sea-metadata/context';
+import { getFileExtension } from '@/utils/download';
+import { Utils } from '@/utils/utils';
 
 import './index.css';
 

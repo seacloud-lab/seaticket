@@ -1,9 +1,9 @@
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import classnames from 'classnames';
-import { gettext } from '@/constants';
 import { Option, OptionsEditor, CustomizeLabel } from '@/components';
-import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
+import { gettext } from '@/constants';
 import { getColumnOptions, getOption } from '@/sea-metadata/utils/column';
+import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { isEsc, isT } from '@/utils/hotkey';
 
 import '@/project/main-panel/tickets/components/ticket-settings/type-settings/index.css';

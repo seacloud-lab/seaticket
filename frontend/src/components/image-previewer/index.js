@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import Lightbox from '@seafile/react-image-lightbox';
-import Title from './title';
 import { gettext } from '@/constants';
+import Title from './title';
 
 import '@seafile/react-image-lightbox/style.css';
 

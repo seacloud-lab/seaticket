@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useRef, useMemo } from 'react';
-import { gettext } from '@/constants';
 import { Icon, IconTooltip, OptionsEditor } from '@/components';
-import { getConnectionIcon } from '@/project/main-panel/connections/utils';
+import { gettext } from '@/constants';
 import { useConnections } from '@/project/main-panel/connections/hooks';
+import { getConnectionIcon } from '@/project/main-panel/connections/utils';
 
 import './index.css';
 

@@ -1,8 +1,8 @@
-import classnames from 'classnames';
 import Icon from '@components/icon';
-import { getConnectionIcon } from '../../utils';
-import { CONNECTION_TYPES } from '../../constants';
+import classnames from 'classnames';
 import { isFunction } from '@/utils/type-detection';
+import { CONNECTION_TYPES } from '../../constants';
+import { getConnectionIcon } from '../../utils';
 
 import './index.css';
 

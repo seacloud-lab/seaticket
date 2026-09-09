@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Utils } from '@/utils/utils';
 import { IconButton, Account } from '@/components';
+import { Utils } from '@/utils/utils';
 
 class TopBar extends Component {
 

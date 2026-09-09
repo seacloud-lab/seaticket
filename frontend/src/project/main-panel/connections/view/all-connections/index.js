@@ -1,20 +1,20 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from 'reactstrap';
-import dayjs from '@/utils/dayjs';
-import { connectionsAPI } from '../../../../api';
-import { gettext } from '@/constants';
-import { Utils } from '@/utils/utils';
 import { Icon, toaster, CenteredLoading, EmptyTip, CustomizeTable } from '@/components';
-import ConnectionStatusDialog from '../../components/connection-status-dialog';
-import ConnectionLogsDialog from '../../components/connection-logs-dialog';
-import ConfigureWebhookDialog from '../../components/configure-webhook-dialog';
+import { gettext } from '@/constants';
+import { BAR_TYPE } from '@/project/constants';
+import { areArraysEqual } from '@/utils/array-utils';
+import dayjs from '@/utils/dayjs';
+import SelfQuery from '@/utils/self-query';
+import { Utils } from '@/utils/utils';
+import { connectionsAPI } from '../../../../api';
 import createFormatter from '../../components/cell-formatter';
+import ConfigureWebhookDialog from '../../components/configure-webhook-dialog';
+import ConnectionLogsDialog from '../../components/connection-logs-dialog';
+import ConnectionStatusDialog from '../../components/connection-status-dialog';
 import { CONNECTION_FIELD_TYPE, CONNECTION_SYNC_STATUS } from '../../constants';
 import { useConnections, useConnectionsPage } from '../../hooks';
-import SelfQuery from '@/utils/self-query';
-import { BAR_TYPE } from '@/project/constants';
 import { isConnectionSyncCompleted, isConnectionFirstSync } from '../../utils';
-import { areArraysEqual } from '@/utils/array-utils';
 
 import './index.css';
 

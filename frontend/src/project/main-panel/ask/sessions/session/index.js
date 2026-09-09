@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
-import classnames from 'classnames';
 import { Dropdown } from 'reactstrap';
+import classnames from 'classnames';
 import {
   CustomizeDropdownMoreToggle, CustomizeNameDialog, CommonOperationConfirmationDialog,
   CustomizeDropdownMenu, CustomizeDropdownItem,

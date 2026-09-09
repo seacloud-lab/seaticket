@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
+import PropTypes from 'prop-types';
 import IconBtn from '@/components/icon-button';
-import GroupTitle from './group-title';
 import { gettext } from '@/constants';
-import { GROUP_HEADER_HEIGHT } from '../../../../../../constants';
 import { Z_INDEX } from '@/constants/zIndexes';
+import { GROUP_HEADER_HEIGHT } from '../../../../../../constants';
+import GroupTitle from './group-title';
 
 class GroupHeaderLeft extends Component {
 

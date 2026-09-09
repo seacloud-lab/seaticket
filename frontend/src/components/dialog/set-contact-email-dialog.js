@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Button, Input } from 'reactstrap';
+import PropTypes from 'prop-types';
 import { gettext } from '../../constants';
 import ModalHeader from '../modal-header';
 import toaster from '../toaster';
@@ -25,7 +25,7 @@ class SetContactEmailDialog extends Component {
   action = () => {
     let { newContactEmail } = this.state;
     newContactEmail = newContactEmail.trim();
-    if (!newContactEmail.length){
+    if (!newContactEmail.length) {
       toaster.danger(gettext('Email address invalid!'));
       return;
     }

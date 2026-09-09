@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Dropdown, DropdownToggle } from 'reactstrap';
 import PropTypes from 'prop-types';
-import ColumnPopover from '../../../../../components/popover/column-popover';
 import Icon from '@/components/icon';
 import { getEventClassName } from '@/utils/dom';
+import ColumnPopover from '../../../../../components/popover/column-popover';
 import CustomDropdownMenu from '../../../../../components/popover/column-popover/dropdown-menu';
 
 import './index.css';

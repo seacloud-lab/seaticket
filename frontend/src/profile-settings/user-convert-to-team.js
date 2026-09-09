@@ -1,6 +1,6 @@
 import React from 'react';
-import { gettext } from '../constants';
 import ModalPortal from '../components/modal-portal';
+import { gettext } from '../constants';
 import ConfirmUserConvertToTeam from './dialog/confirm-user-convert-to-team';
 
 class UserConvertToTeam extends React.Component {

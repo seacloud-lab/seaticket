@@ -2,10 +2,10 @@ import React, { useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { gettext } from '@/constants';
 import CellFormatter from '@/sea-metadata/components/cell-formatter';
-import { getOption, getColumnOptions, getTypesOptions, getOptionDisplayNameByOption, getTagsOptions } from '@/sea-metadata/utils/column';
+import Tag from '@/sea-metadata/components/tag';
 import { CellType, DELETED_OPTION_BACKGROUND_COLOR, PRIORITY_MAP } from '@/sea-metadata/constants';
 import { useTagsData, useTypesData } from '@/sea-metadata/hooks';
-import Tag from '@/sea-metadata/components/tag';
+import { getOption, getColumnOptions, getTypesOptions, getOptionDisplayNameByOption, getTagsOptions } from '@/sea-metadata/utils/column';
 
 const GroupTitle = ({ column, cellValue, originalCellValue }) => {
   const emptyTip = useMemo(() => `(${gettext('Empty')})`, []);

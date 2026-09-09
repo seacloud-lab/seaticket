@@ -1,16 +1,16 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Nav, NavItem, NavLink, TabContent, TabPane, Button } from 'reactstrap';
-import copy from 'copy-to-clipboard';
 import classnames from 'classnames';
+import copy from 'copy-to-clipboard';
 import { CommonOperationConfirmationDialog, Icon, toaster, Switch, PasswordInput } from '@/components';
 import { gettext } from '@/constants';
-import { portalAPI } from '../../api';
 import { connectionsAPI } from '@/project/api/connections-api';
 import { Utils } from '@/utils/utils';
+import { portalAPI } from '../../api';
 import PortalChatSourceSelector from '../chat-source-selector';
 import { SETTING_TAB, SETTING_TABS, EMPTY_CHAT_ALLOWED_SOURCES } from './constants';
-import { normalizeChatAllowedSources, isConnectionActive } from './utils';
 import CustomizationSettings from './customization-settings';
+import { normalizeChatAllowedSources, isConnectionActive } from './utils';
 
 import './index.css';
 

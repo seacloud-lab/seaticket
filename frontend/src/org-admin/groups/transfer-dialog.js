@@ -1,9 +1,9 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
-import { Utils } from '@/utils/utils';
-import { gettext } from '@/constants';
+import PropTypes from 'prop-types';
 import { ModalHeader, UserSelect } from '@/components';
+import { gettext } from '@/constants';
+import { Utils } from '@/utils/utils';
 
 class TransferDialog extends React.Component {
 

@@ -1,13 +1,13 @@
 import React, { useMemo, useCallback, useState } from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
+import PropTypes from 'prop-types';
 import IconBtn from '@/components/icon-button';
-import { GroupbysPopover } from '../popover';
 import { gettext } from '@/constants';
-import { SUPPORT_GROUP_COLUMN_TYPES } from '../../constants';
-import { isEnter, isSpace } from '@/utils/hotkey';
-import { getValidGroupbys } from '../../utils/group';
 import context from '@/sea-metadata/context';
+import { isEnter, isSpace } from '@/utils/hotkey';
+import { SUPPORT_GROUP_COLUMN_TYPES } from '../../constants';
+import { getValidGroupbys } from '../../utils/group';
+import { GroupbysPopover } from '../popover';
 
 const GroupbySetter = ({
   target = 'sea-metadata-groupby-popover',

@@ -2,8 +2,8 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Loading } from '@/components';
 import { gettext } from '@/constants';
-import { TopBar, Main } from '../main-panel';
 import sysAdminAPI from '@/sys-admin/api';
+import { TopBar, Main } from '../main-panel';
 
 import './index.css';
 

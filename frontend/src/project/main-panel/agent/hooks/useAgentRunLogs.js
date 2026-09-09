@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { agentAPI } from '@/project/api';
 import { toaster } from '@/components';
+import { agentAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
 
 const { projectUuid } = window.app.pageOptions;

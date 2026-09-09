@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react';
-import PropTypes from 'prop-types';
-import classnames from 'classnames';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import GroupbyItem from './groupby-item';
+import classnames from 'classnames';
+import PropTypes from 'prop-types';
 import { gettext } from '@/constants';
+import GroupbyItem from './groupby-item';
 
 const Groupbys = ({ readOnly, groupbys, columns, onDelete, onUpdate, onMove }) => {
 

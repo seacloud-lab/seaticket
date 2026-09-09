@@ -1,7 +1,7 @@
 import React, { useCallback, useRef, useState, useEffect } from 'react';
 import classnames from 'classnames';
-import { gettext } from '@/constants';
 import { Collaborator, AsyncCollaborator, CollaboratorEditor, CustomizeLabel, RemoveButton } from '@/components';
+import { gettext } from '@/constants';
 import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { isEsc, isA } from '@/utils/hotkey';
 

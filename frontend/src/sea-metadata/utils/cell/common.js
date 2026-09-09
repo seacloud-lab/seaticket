@@ -1,12 +1,12 @@
+import context from '@/sea-metadata/context';
 import { CellType, DEFAULT_DATE_FORMAT } from '../../constants';
-import DateUtils from '../date';
-import { getCellValueByColumn } from './core';
 import {
   getDateDisplayString, getNumberDisplayString, getLongtextDisplayString, getOptionDisplayName, getCollaboratorsName, getColumnOptionNamesByIds,
   getColumnOptionIdsByNames, getTagsDisplayString, getColumnOptions,
   getTypeDisplayString,
 } from '../column';
-import context from '@/sea-metadata/context';
+import DateUtils from '../date';
+import { getCellValueByColumn } from './core';
 
 export const getCellValueDisplayString = (row, column, { collaborators = [], tagsData, typesData } = {}) => {
   if (!row) return '';

@@ -1,5 +1,5 @@
-import { OPERATION_TYPE } from './operations';
 import context from '../context';
+import { OPERATION_TYPE } from './operations';
 
 class LocalOperator {
 

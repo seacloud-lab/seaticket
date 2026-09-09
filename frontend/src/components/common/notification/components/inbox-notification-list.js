@@ -1,6 +1,6 @@
 import React from 'react';
-import InboxNotificationItem from '@/components/common/notification/components/inbox-notification-item';
 import { CenteredLoading, EmptyTip } from '@/components';
+import InboxNotificationItem from '@/components/common/notification/components/inbox-notification-item';
 import { gettext, mediaUrl } from '@/constants';
 import { Utils } from '@/utils/utils';
 

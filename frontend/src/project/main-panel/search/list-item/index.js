@@ -1,9 +1,9 @@
 import React, { useCallback, useRef } from 'react';
-import dayjs from 'dayjs';
 import { getPreviewContent } from '@seafile/seafile-editor';
-import { CONNECTION_TYPES, CONNECTION_TYPE } from '../../connections/constants';
-import { formatWithTimezone } from '@/sea-metadata/utils/column';
+import dayjs from 'dayjs';
 import { getResourceIconURL } from '@/project/utils';
+import { formatWithTimezone } from '@/sea-metadata/utils/column';
+import { CONNECTION_TYPES, CONNECTION_TYPE } from '../../connections/constants';
 
 import './index.css';
 

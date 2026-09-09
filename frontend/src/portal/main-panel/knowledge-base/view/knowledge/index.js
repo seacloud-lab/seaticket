@@ -1,12 +1,12 @@
 import React, { useCallback, useRef, useState, useEffect } from 'react';
 import { CenteredLoading, toaster } from '@/components';
-import { KB_TABLE_NAME, KNOWLEDGE_PAGE_SLUG_ID } from '../../constants';
-import { Utils } from '@/utils/utils';
 import { portalAPI } from '@/portal/api';
-import { usePortalKnowledgePage } from '../../hooks/knowledge-page';
 import { useData, useTags } from '@/project/hooks';
-import { convertRowToKeyValue } from '@/sea-metadata/utils/row';
 import Preview from '@/project/main-panel/knowledge-base/view/knowledge/preview';
+import { convertRowToKeyValue } from '@/sea-metadata/utils/row';
+import { Utils } from '@/utils/utils';
+import { KB_TABLE_NAME, KNOWLEDGE_PAGE_SLUG_ID } from '../../constants';
+import { usePortalKnowledgePage } from '../../hooks/knowledge-page';
 
 const Knowledge = ({ editorAPI, projectUuid }) => {
   const { modifyLocalRow, getTableByName } = useData();

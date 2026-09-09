@@ -1,8 +1,8 @@
 import React, { useCallback, useMemo } from 'react';
 import classnames from 'classnames';
+import { NAVIGATION_BASE_PADDING, NAVIGATION_LEVEL_INDENT } from '@/constants';
 import { CONNECTION_TYPES } from '../../main-panel/connections/constants';
 import { getConnectionIcon } from '../../main-panel/connections/utils';
-import { NAVIGATION_BASE_PADDING, NAVIGATION_LEVEL_INDENT } from '@/constants';
 
 const ConnectionNav = ({ nav, level, activeBar, onClick }) => {
   const { id, type, name } = nav;

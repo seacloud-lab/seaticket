@@ -1,10 +1,10 @@
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import classnames from 'classnames';
-import { gettext } from '@/constants';
 import { Option, OptionsEditor, CustomizeLabel } from '@/components';
-import { TICKET_STATE_OPTIONS } from '../../../constants';
+import { gettext } from '@/constants';
 import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { isEsc, isS } from '@/utils/hotkey';
+import { TICKET_STATE_OPTIONS } from '../../../constants';
 
 import './index.css';
 

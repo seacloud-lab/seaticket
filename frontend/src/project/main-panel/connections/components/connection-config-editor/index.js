@@ -1,8 +1,8 @@
 import React from 'react';
 import { FormGroup, Label } from 'reactstrap';
 import classnames from 'classnames';
-import { gettext } from '@/constants';
 import { IconTooltip } from '@/components';
+import { gettext } from '@/constants';
 import Editor from './editor';
 
 import './index.css';

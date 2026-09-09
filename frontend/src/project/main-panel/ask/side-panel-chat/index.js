@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import classnames from 'classnames';
-import { DocumentsProvider } from '../hooks';
 import { IconButton, CenteredLoading, ResizeBar } from '@/components';
 import ChatHistory from '../chat-history';
+import { DocumentsProvider } from '../hooks';
 import { initMessages } from '../utils';
 
 import './index.css';

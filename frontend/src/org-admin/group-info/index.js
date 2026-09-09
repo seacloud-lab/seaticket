@@ -1,8 +1,8 @@
 import React, { Component, Fragment } from 'react';
-import PropTypes from 'prop-types';
 import { Link } from '@gatsbyjs/reach-router';
-import { gettext, loginUrl, siteRoot } from '@/constants';
+import PropTypes from 'prop-types';
 import { CenteredError, CenteredLoading } from '@/components';
+import { gettext, loginUrl, siteRoot } from '@/constants';
 import orgAdminAPI from '../api';
 import GroupNav from '../group-nav';
 import { Main, TopBar } from '../main-panel';

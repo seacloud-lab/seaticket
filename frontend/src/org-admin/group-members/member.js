@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import { Link } from '@gatsbyjs/reach-router';
+import PropTypes from 'prop-types';
 import { gettext, siteRoot } from '@/constants';
 
 class Member extends Component {

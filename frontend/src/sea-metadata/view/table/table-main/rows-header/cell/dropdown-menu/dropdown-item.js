@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
+import PropTypes from 'prop-types';
 import { Tooltip, CustomizeDropdownItem, CustomizeDropdownItemIcon, CustomizeDropdownItemText } from '@/components';
 
 const ColumnDropdownItem = ({

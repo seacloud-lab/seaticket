@@ -1,10 +1,10 @@
 import React, { useCallback, useState } from 'react';
-import { TopBar, Main } from '../main-panel';
-import GroupTitle from './group-title';
-import GroupNav from './group-nav';
 import { ProjectsTable } from '@/components';
-import sysAdminAPI from '../api';
 import { gettext } from '@/constants';
+import sysAdminAPI from '../api';
+import { TopBar, Main } from '../main-panel';
+import GroupNav from './group-nav';
+import GroupTitle from './group-title';
 
 const GroupProjects = ({ onCloseSidePanel, groupID }) => {
   const [groupName, setGroupName] = useState('');

@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Button } from 'reactstrap';
-import { gettext } from '../constants';
+import PropTypes from 'prop-types';
 import ModalHeader from '../components/modal-header';
 import PasswordInput from '../components/password-input';
+import { gettext } from '../constants';
 
 const propTypes = {
   password: PropTypes.string.isRequired,

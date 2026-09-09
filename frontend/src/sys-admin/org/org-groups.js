@@ -1,10 +1,10 @@
 import React, { Component, Fragment } from 'react';
 import { gettext } from '@/constants';
-import OrgNav from './org-nav';
-import OrgTitle from './org-title';
-import { Main, TopBar } from '../main-panel';
 import sysAdminAPI from '@/sys-admin/api';
 import GroupsTable from '../groups/groups-table';
+import { Main, TopBar } from '../main-panel';
+import OrgNav from './org-nav';
+import OrgTitle from './org-title';
 
 class OrgGroups extends Component {
 

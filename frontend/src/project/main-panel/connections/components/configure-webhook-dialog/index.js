@@ -1,10 +1,10 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import PropTypes from 'prop-types';
-import copy from 'copy-to-clipboard';
 import { Button, Modal, ModalBody, ModalFooter, FormGroup, Label, Input, InputGroup } from 'reactstrap';
+import copy from 'copy-to-clipboard';
+import PropTypes from 'prop-types';
+import { ModalHeader, TextInput, IconButton, toaster } from '@/components';
 import { gettext } from '@/constants';
 import { CONNECTION_TYPE } from '../../constants';
-import { ModalHeader, TextInput, IconButton, toaster } from '@/components';
 
 import '../new-connection-dialog/index.css';
 

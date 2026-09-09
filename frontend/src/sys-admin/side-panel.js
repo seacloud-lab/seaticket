@@ -1,9 +1,9 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Link } from '@gatsbyjs/reach-router';
 import classnames from 'classnames';
-import { gettext } from '@/constants';
+import PropTypes from 'prop-types';
 import { Icon, Logo } from '@/components';
+import { gettext } from '@/constants';
 import { BARS } from './constants';
 
 const propTypes = {

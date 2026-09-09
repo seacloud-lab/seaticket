@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { navigate } from '@gatsbyjs/reach-router';
 import { Button, Col, Form, FormGroup } from 'reactstrap';
-import { TopBar, Main } from '../main-panel';
-import { orgID, gettext } from '@/constants';
+import { navigate } from '@gatsbyjs/reach-router';
 import { ProjectsTable, SearchInput } from '@/components';
-import orgAdminAPI from '../api';
+import { orgID, gettext } from '@/constants';
 import { isEnter } from '@/utils/hotkey';
+import orgAdminAPI from '../api';
+import { TopBar, Main } from '../main-panel';
 
 const SearchProjects = ({ onCloseSidePanel }) => {
   const [isLoading, setIsLoading] = useState(true);

@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import PropTypes from 'prop-types';
 import { FormGroup, Label } from 'reactstrap';
 import classnames from 'classnames';
+import PropTypes from 'prop-types';
 import { CustomizePopover, CustomizeSelect, Icon, IconButton } from '@/components';
 import { gettext } from '@/constants';
 import { RATE_MAX_NUMBER, RATE_COLORS, RATE_TYPES, DEFAULT_RATE_DATA } from '../../../../../constants';

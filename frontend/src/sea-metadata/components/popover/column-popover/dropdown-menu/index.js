@@ -3,8 +3,8 @@ import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Input } from 'rea
 import PropTypes from 'prop-types';
 import Icon from '@/components/icon';
 import { gettext } from '@/constants';
-import { CellType, COLUMNS_ICON_CONFIG, DEFAULT_DATE_FORMAT, DEFAULT_RATE_DATA } from '../../../../constants';
 import context from '@/sea-metadata/context';
+import { CellType, COLUMNS_ICON_CONFIG, DEFAULT_DATE_FORMAT, DEFAULT_RATE_DATA } from '../../../../constants';
 
 import './index.css';
 

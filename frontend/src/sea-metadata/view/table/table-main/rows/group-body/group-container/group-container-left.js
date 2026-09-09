@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import GroupHeaderLeft from './group-header-left';
 import { Z_INDEX } from '@/constants/zIndexes';
+import GroupHeaderLeft from './group-header-left';
 
 class GroupContainerLeft extends Component {
 

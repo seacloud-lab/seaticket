@@ -1,13 +1,13 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
+import PropTypes from 'prop-types';
 import ClickOutside from '@/components/click-outside';
-import Editor from './editor';
-import { isFunction } from '@/utils/type-detection';
 import { Z_INDEX } from '@/constants/zIndexes';
 import eventBus from '@/utils/event-bus';
-import { getCellValueByColumn, isCellValueChanged, isValidCellValue } from '../../../../utils/cell';
+import { isFunction } from '@/utils/type-detection';
 import { EVENT_BUS_TYPE } from '../../../../constants/event-bus-type';
+import { getCellValueByColumn, isCellValueChanged, isValidCellValue } from '../../../../utils/cell';
+import Editor from './editor';
 
 class PopupEditorContainer extends React.Component {
 

@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import classnames from 'classnames';
-import { Icon } from '../../../components';
 import { NAVIGATION_BASE_PADDING, NAVIGATION_LEVEL_INDENT } from '@/constants';
+import { Icon } from '../../../components';
 
 import './index.css';
 

@@ -2,8 +2,8 @@
 import React, { useCallback } from 'react';
 import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
 import copy from 'copy-to-clipboard';
-import ModalHeader from '../../modal-header';
 import { gettext } from '@/constants';
+import ModalHeader from '../../modal-header';
 
 import './index.css';
 

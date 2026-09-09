@@ -1,11 +1,11 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Router } from '@gatsbyjs/reach-router';
-import AllWorkspaces from './all-workspaces';
-import WorkspaceInMainPanel from './workspace-in-main-panel';
-import MyProjectsTrash from './my-projects-trash';
+import PropTypes from 'prop-types';
 import eventBus from '@/utils/event-bus';
 import AllInbox from './all-inbox';
+import AllWorkspaces from './all-workspaces';
+import MyProjectsTrash from './my-projects-trash';
+import WorkspaceInMainPanel from './workspace-in-main-panel';
 
 const siteRoot = window.app.config.siteRoot;
 const gettext = window.gettext;

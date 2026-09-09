@@ -1,6 +1,6 @@
 /* tslint:disable:jsx-no-multiline-js */
-import classnames from 'classnames';
 import * as React from 'react';
+import classnames from 'classnames';
 import TouchFeedback from 'rmc-feedback';
 
 export class Brief extends React.Component {

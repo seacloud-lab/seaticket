@@ -1,9 +1,9 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Button } from 'reactstrap';
+import PropTypes from 'prop-types';
+import ModalHeader from '../../components/modal-header';
 import UserSelect from '../../components/user-select';
 import { gettext } from '../../constants';
-import ModalHeader from '../../components/modal-header';
 
 const propTypes = {
   toggle: PropTypes.func.isRequired,

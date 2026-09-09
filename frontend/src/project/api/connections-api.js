@@ -1,8 +1,8 @@
 import axios from 'axios';
 import FormData from 'form-data';
 import Cookies from 'js-cookie';
-import { siteRoot } from '../../constants';
 import { hasOwnProperty } from '@/utils/object-utils';
+import { siteRoot } from '../../constants';
 
 class ConnectionsAPI {
 
@@ -152,7 +152,7 @@ class ConnectionsAPI {
     return this.req.post(url);
   }
 
-  getConnectionDetails(projectUuid, connectionID, { view_id = 'open', start = 0, limit = 100, } = {}){
+  getConnectionDetails(projectUuid, connectionID, { view_id = 'open', start = 0, limit = 100, } = {}) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/details/';
     let params = {
       view_id,

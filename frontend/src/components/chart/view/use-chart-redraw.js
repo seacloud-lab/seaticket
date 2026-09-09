@@ -1,5 +1,4 @@
 import { useLayoutEffect, useRef } from 'react';
-
 import { initChart, destroyChart } from '../utils';
 
 const useChartDraw = ({ target, data, chartId, options, draw }) => {

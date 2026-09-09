@@ -1,6 +1,6 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Button, Modal, ModalBody, ModalFooter, Label } from 'reactstrap';
+import PropTypes from 'prop-types';
 import { ModalHeader, toaster, CustomizeSelect } from '@/components';
 import { Utils } from '@/utils/utils';
 import homeAPI from '../api';

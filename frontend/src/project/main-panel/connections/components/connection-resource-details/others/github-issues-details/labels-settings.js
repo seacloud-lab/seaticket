@@ -1,13 +1,13 @@
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import classnames from 'classnames';
-import { gettext } from '@/constants';
 import { Option, CustomizePopover, CustomizeLabel, RemoveButton } from '@/components';
 import Container from '@/components/options-editor/static-options-editor/container';
+import { gettext } from '@/constants';
+import { isCellValueChanged } from '@/sea-metadata/utils/cell';
+import { getColumnOptions, getOption } from '@/sea-metadata/utils/column';
+import { isDarkColor } from '@/utils/color-utils';
 import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { isEsc, isL } from '@/utils/hotkey';
-import { getColumnOptions, getOption } from '@/sea-metadata/utils/column';
-import { isCellValueChanged } from '@/sea-metadata/utils/cell';
-import { isDarkColor } from '@/utils/color-utils';
 
 import '@/project/main-panel/tickets/components/ticket-settings/type-settings/index.css';
 

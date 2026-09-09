@@ -1,15 +1,15 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import classnames from 'classnames';
 import copy from 'copy-to-clipboard';
-import { gettext } from '@/constants';
-import { ACTION_STATUS, SUGGESTION_TOOL_NAME_MAP } from '../../../../../constants';
 import { Icon, IconTooltip, IconPopoverTip, IconButton, SecondaryBtn, toaster } from '@/components';
-import SuggestionPreview from './suggestion-preview';
-import { parseSuggestionActionResult, getAgentResource, getSuggestionTitle } from '../../../../../utils';
-import RunLogTitle from '../../../../resource-title';
+import { gettext } from '@/constants';
+import { useMetadata } from '@/project/hooks';
 import { TICKET_STATE_CONFIG, TICKET_STATE, TICKET } from '@/project/main-panel/tickets/constants';
 import { getRowById } from '@/sea-metadata/utils/row';
-import { useMetadata } from '@/project/hooks';
+import { ACTION_STATUS, SUGGESTION_TOOL_NAME_MAP } from '../../../../../constants';
+import { parseSuggestionActionResult, getAgentResource, getSuggestionTitle } from '../../../../../utils';
+import RunLogTitle from '../../../../resource-title';
+import SuggestionPreview from './suggestion-preview';
 
 import './index.css';
 

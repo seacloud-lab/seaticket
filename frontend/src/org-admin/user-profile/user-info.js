@@ -1,10 +1,10 @@
 import React, { Component, Fragment } from 'react';
-import PropTypes from 'prop-types';
 import { Button, FormGroup, Input, Label } from 'reactstrap';
+import PropTypes from 'prop-types';
 import { IconButton, CenteredLoading, CenteredError } from '@/components';
 import { enableUserSetContactEmail, gettext } from '@/constants';
-import SetUserName from './set-user-name';
 import SetUserContactEmail from './set-user-contact-email';
+import SetUserName from './set-user-name';
 
 const { orgID, twoFactorAuthEnabled } = window.org.pageOptions;
 

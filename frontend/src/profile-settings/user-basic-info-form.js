@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { toaster } from '@/components';
-import { gettext } from '../constants';
 import { validateName } from '@/utils/validate';
+import { gettext } from '../constants';
 
 const propTypes = {
   userInfo: PropTypes.object,

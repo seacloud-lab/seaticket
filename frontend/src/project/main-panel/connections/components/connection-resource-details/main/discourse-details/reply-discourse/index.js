@@ -1,11 +1,11 @@
 import React, { useCallback, useMemo, useState, useRef } from 'react';
 import { Button } from 'reactstrap';
 import { gettext } from '@constants';
-import { Loading, toaster, } from '@/components';
-import LongTextEditorUtilities, { isLongTextValueExceedLimit } from '@/utils/long-text';
-import { ticketsAPI } from '@/project/api/tickets-api';
-import { server, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE, mediaUrl } from '@/constants';
 import { LongTextInlineEditor } from '@seafile/seafile-editor';
+import { Loading, toaster, } from '@/components';
+import { server, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE, mediaUrl } from '@/constants';
+import { ticketsAPI } from '@/project/api/tickets-api';
+import LongTextEditorUtilities, { isLongTextValueExceedLimit } from '@/utils/long-text';
 
 import './index.css';
 

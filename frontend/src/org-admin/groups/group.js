@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
-import PropTypes from 'prop-types';
 import { Dropdown } from 'reactstrap';
+import PropTypes from 'prop-types';
 import { CustomizeDropdownMoreToggle, CustomizeDropdownMenu, CustomizeDropdownItem, CommonOperationConfirmationDialog } from '@/components';
 import { siteRoot, gettext } from '@/constants';
 import TransferDialog from './transfer-dialog';

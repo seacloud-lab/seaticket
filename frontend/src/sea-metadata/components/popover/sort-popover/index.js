@@ -1,20 +1,20 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import isHotkey from 'is-hotkey';
 import { UncontrolledPopover } from 'reactstrap';
 import classnames from 'classnames';
+import isHotkey from 'is-hotkey';
+import PropTypes from 'prop-types';
 import CustomizeAddTool from '@/components/customize-add-tool';
 import Icon from '@/components/icon';
 import { gettext } from '@/constants';
-import { getColumnByKey } from '../../../utils/column';
+import context from '@/sea-metadata/context';
 import { getEventClassName } from '@/utils/dom';
+import ObjectUtils from '@/utils/object-utils';
 import {
   EVENT_BUS_TYPE, VIEW_SORT_COLUMN_RULES, VIEW_FIRST_SORT_COLUMN_RULES, VIEW_TYPE,
 } from '../../../constants';
-import { execSortsOperation, getDisplaySorts, isSortsEmpty, SORT_OPERATION } from './utils';
-import context from '@/sea-metadata/context';
-import ObjectUtils from '@/utils/object-utils';
+import { getColumnByKey } from '../../../utils/column';
 import { ColumnSelector, SortSelector } from '../../selectors';
+import { execSortsOperation, getDisplaySorts, isSortsEmpty, SORT_OPERATION } from './utils';
 
 import './index.css';
 

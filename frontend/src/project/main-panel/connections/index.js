@@ -1,9 +1,9 @@
 import React from 'react';
+import TopBar from './components/top-bar';
+import { CONNECTION_PAGE_SLUG_ID } from './constants';
 import { ConnectionsPageProvider, useConnectionsPage } from './hooks';
 import AllConnections from './view/all-connections';
 import Connection from './view/connection';
-import { CONNECTION_PAGE_SLUG_ID } from './constants';
-import TopBar from './components/top-bar';
 
 const {
   projectUuid, projectName, workspaceID, permission

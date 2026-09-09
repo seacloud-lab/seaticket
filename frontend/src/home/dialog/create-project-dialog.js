@@ -1,15 +1,15 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
+import PropTypes from 'prop-types';
+import userAPI from '@/api/user-api';
 import { ModalHeader, toaster } from '@/components';
-import homeAPI from '../api';
-import Project from '../models/project';
+import { DEFAULT_COLOR, DEFAULT_PROJECT_ICON } from '@/constants/project-icon';
 import { Utils } from '@/utils/utils';
 import { validateName } from '@/utils/validate';
+import homeAPI from '../api';
 import ProjectSettingContent from '../components/project-setting-content';
+import Project from '../models/project';
 import SelectProjectIconDialog from './select-project-icon-dialog';
-import { DEFAULT_COLOR, DEFAULT_PROJECT_ICON } from '@/constants/project-icon';
-import userAPI from '@/api/user-api';
 
 import './create-project-dialog.css';
 

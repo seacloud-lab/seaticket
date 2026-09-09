@@ -1,7 +1,7 @@
 import React, { useCallback, useRef } from 'react';
 import classnames from 'classnames';
-import CustomizePopover from '../customize-popover';
 import { areArraysEqual } from '../../utils/array-utils';
+import CustomizePopover from '../customize-popover';
 import Container from './container';
 
 const CollaboratorEditor = ({

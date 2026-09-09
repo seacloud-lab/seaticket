@@ -1,9 +1,9 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Alert, Modal, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input } from 'reactstrap';
-import { gettext } from '../../constants';
+import PropTypes from 'prop-types';
 import { validateName } from '@/utils/validate';
 import ModalHeader from '../../components/modal-header';
+import { gettext } from '../../constants';
 
 const propTypes = {
   toggleDialog: PropTypes.func.isRequired,

@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { DropdownItem } from 'reactstrap';
 import PropTypes from 'prop-types';
-import { getTarget } from '@/utils/dom';
-import context from '@/sea-metadata/context';
 import { SubDropdown, ModalPortal } from '@/components';
+import context from '@/sea-metadata/context';
+import { getTarget } from '@/utils/dom';
 import { isFunction } from '@/utils/type-detection';
 
 const ContextMenu = ({

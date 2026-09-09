@@ -2,8 +2,8 @@ import React from 'react';
 import classnames from 'classnames';
 import { toaster, IconButton } from '@/components';
 import { gettext } from '@/constants';
-import profileSettingsAPI from './api';
 import { Utils } from '@/utils/utils';
+import profileSettingsAPI from './api';
 
 const { avatarURL, csrfToken } = window.app.pageOptions;
 

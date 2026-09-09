@@ -1,3 +1,6 @@
+import { CellType, DATE_COLUMN_OPTIONS, NUMBER_SORTER_COLUMN_TYPES } from '../../constants';
+import { getCellValueByColumn } from '../cell';
+import { getCollaboratorsNames } from '../column';
 import { deleteInvalidSort } from './core';
 import {
   sortDate,
@@ -8,9 +11,6 @@ import {
   sortCheckbox,
   sortMultipleSelect,
 } from './sort-column';
-import { CellType, DATE_COLUMN_OPTIONS, NUMBER_SORTER_COLUMN_TYPES } from '../../constants';
-import { getCellValueByColumn } from '../cell';
-import { getCollaboratorsNames } from '../column';
 
 /**
  * Sort rows with multiple sorts

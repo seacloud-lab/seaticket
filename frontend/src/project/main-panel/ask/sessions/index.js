@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo } from 'react';
-import { gettext, mediaUrl } from '@/constants';
-import { useSessions, useDocuments } from '../hooks';
-import { SESSION_TAB_TYPE } from '../constants';
 import { EmptyTip, IconButton, CustomizeTabs, CenteredLoading } from '@/components';
+import { gettext, mediaUrl } from '@/constants';
+import { SESSION_TAB_TYPE } from '../constants';
+import { useSessions, useDocuments } from '../hooks';
 import Session from './session';
 
 import './index.css';

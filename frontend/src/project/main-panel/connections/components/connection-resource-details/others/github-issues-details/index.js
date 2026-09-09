@@ -1,12 +1,12 @@
 import React from 'react';
-import TypeSettings from './type-settings';
-import LabelsSettings from './labels-settings';
-import StateSettings from './state-settings';
-import StateReasonSettings from './state-reason-settings';
-import { getColumnByName } from '@/sea-metadata/utils/column';
 import { CONNECTION_PREDEFINED_COLUMN_NAME } from '@/project/main-panel/connections/constants';
-import LinkedTicket from '../linked-ticket';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
+import { getColumnByName } from '@/sea-metadata/utils/column';
+import LinkedTicket from '../linked-ticket';
+import LabelsSettings from './labels-settings';
+import StateReasonSettings from './state-reason-settings';
+import StateSettings from './state-settings';
+import TypeSettings from './type-settings';
 
 const GitHubIssuesDetails = ({
   record,

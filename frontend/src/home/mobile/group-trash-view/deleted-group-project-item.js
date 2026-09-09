@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import dayjs from 'dayjs';
+import PropTypes from 'prop-types';
 import { toaster, ProjectIcon } from '@/components';
-import homeAPI from '../../api';
 import { gettext } from '@/constants';
-import { Utils } from '@/utils/utils';
 import { formatWithTimezone } from '@/sea-metadata/utils/column';
+import { Utils } from '@/utils/utils';
+import homeAPI from '../../api';
 
 function DeletedGroupProjectItem(props) {
 

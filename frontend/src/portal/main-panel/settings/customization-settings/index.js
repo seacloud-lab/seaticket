@@ -1,9 +1,9 @@
 import React, { useState, useCallback, useMemo, useRef } from 'react';
 import { TabPane, Button, FormGroup, Label, Input } from 'reactstrap';
-import { gettext, mediaUrl } from '@/constants';
-import { SETTING_TAB } from '../constants';
 import { CustomizePopover, IconTooltip, Loading, toaster, UploadFile } from '@/components';
+import { gettext, mediaUrl } from '@/constants';
 import { usePortalSettings } from '@/portal/hooks';
+import { SETTING_TAB } from '../constants';
 
 import './index.css';
 

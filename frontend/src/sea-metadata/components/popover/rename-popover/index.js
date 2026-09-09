@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import PropTypes from 'prop-types';
 import { Input, PopoverBody } from 'reactstrap';
+import PropTypes from 'prop-types';
 import CustomizePopover from '@/components/customize-popover';
 import toaster from '@/components/toaster';
 import { gettext, KeyCodes } from '@/constants';
 import { useMetadata } from '../../../hooks';
-import { ValidateColumnFormColumns } from '../column-popover/utils';
 import { COMMON_FORM_COLUMN_TYPE } from '../column-popover/constants';
+import { ValidateColumnFormColumns } from '../column-popover/utils';
 
 import './index.css';
 

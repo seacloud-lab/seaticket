@@ -1,5 +1,5 @@
-import CellType from '@/sea-metadata/constants/column/type';
 import { gettext } from '@/constants';
+import CellType from '@/sea-metadata/constants/column/type';
 
 export const TAGS_PREDEFINED_COLUMN_NAME = {
   PK: '_pk',

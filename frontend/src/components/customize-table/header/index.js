@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import PropTypes from 'prop-types';
 import { Button, Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
+import PropTypes from 'prop-types';
 
 import './index.css';
 

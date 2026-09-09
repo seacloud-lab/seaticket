@@ -1,12 +1,12 @@
 import React, { Fragment } from 'react';
-import PropTypes from 'prop-types';
 import { Button, Label } from 'reactstrap';
 import classnames from 'classnames';
+import PropTypes from 'prop-types';
 import { SearchInput, toaster, CenteredLoading } from '@/components';
-import { Utils } from '@/utils/utils';
-import { gettext, isOrgContext } from '@/constants/config';
-import homeAPI from '../api';
 import UserSelect from '@/components/user-select';
+import { gettext, isOrgContext } from '@/constants/config';
+import { Utils } from '@/utils/utils';
+import homeAPI from '../api';
 import GroupMembers from './group-members';
 
 

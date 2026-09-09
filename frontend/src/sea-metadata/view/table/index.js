@@ -1,14 +1,14 @@
 import React, { cloneElement, isValidElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toKeyCode } from 'is-hotkey';
 import toaster from '@/components/toaster';
-import TableMain from './table-main';
-import { Utils } from '@/utils/utils';
-import { isFunction } from '@/utils/type-detection';
 import { isModZ, isModShiftZ } from '@/utils/hotkey';
-import { getValidGroupbys } from '../../utils/group';
+import { isFunction } from '@/utils/type-detection';
+import { Utils } from '@/utils/utils';
 import { EVENT_BUS_TYPE, PER_LOAD_NUMBER } from '../../constants';
 import context from '../../context';
 import { useMetadata, useCollaborators, useTagsData, useSelectedRows } from '../../hooks';
+import { getValidGroupbys } from '../../utils/group';
+import TableMain from './table-main';
 
 import './index.css';
 

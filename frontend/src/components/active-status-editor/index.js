@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import { Dropdown, DropdownToggle } from 'reactstrap';
-import CustomDropdownMenu from '../customize-dropdown-menu';
-import CustomizeDropdownItem from '../customize-dropdown-item';
 import classnames from 'classnames';
+import PropTypes from 'prop-types';
+import CustomizeDropdownItem from '../customize-dropdown-item';
+import CustomDropdownMenu from '../customize-dropdown-menu';
 import Icon from '../icon';
 import IconButton from '../icon-button';
 import './index.css';

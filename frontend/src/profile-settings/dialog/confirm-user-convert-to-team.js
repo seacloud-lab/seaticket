@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import { Modal, ModalBody, ModalFooter, Button } from 'reactstrap';
+import PropTypes from 'prop-types';
 import { toaster, ModalHeader } from '@/components';
 import { gettext, siteRoot } from '@/constants';
-import profileSettingsAPI from '../api';
 import { Utils } from '@/utils/utils';
+import profileSettingsAPI from '../api';
 
 const propTypes = {
   toggle: PropTypes.func.isRequired

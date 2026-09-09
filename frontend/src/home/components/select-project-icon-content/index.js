@@ -1,6 +1,6 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
+import PropTypes from 'prop-types';
 import { SearchInput } from '@/components';
 import { DEFAULT_PROJECT_ICON, PROJECT_ICON_CATEGORIES, PROJECT_ICON_COLORS, gettext } from '@/constants';
 import { parseColorToRGB } from '@/utils/color-utils';

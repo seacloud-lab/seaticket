@@ -1,12 +1,12 @@
 import React from 'react';
+import { CenteredLoading, CustomizeTabs } from '@/components';
+import { useMetadata, useTags } from '@/project/hooks';
 import { PORTAL_PAGE, TICKETS_TAB, TICKET_SECONDARY_TABS } from '../constants';
-import SubmitIssue from './submit-issue';
-import MyIssues from './my-issues';
+import PortalChat from './chat';
 import PortalHome from './home';
 import PortalKnowledgeBase from './knowledge-base/index';
-import { useMetadata, useTags } from '@/project/hooks';
-import { CenteredLoading, CustomizeTabs } from '@/components';
-import PortalChat from './chat';
+import MyIssues from './my-issues';
+import SubmitIssue from './submit-issue';
 
 const MainPanel = ({ activePage, onPageChange, onHomeChatSend, isAnonymous, ...props }) => {
 

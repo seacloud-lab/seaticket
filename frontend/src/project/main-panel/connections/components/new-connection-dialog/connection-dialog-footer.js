@@ -1,6 +1,6 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Button, ModalFooter } from 'reactstrap';
+import PropTypes from 'prop-types';
 import { gettext } from '@/constants';
 
 const ConnectionDialogFooter = ({ stepIndex, isSubmitDisabled, onToggle, setStepIndex, onSubmit }) => {

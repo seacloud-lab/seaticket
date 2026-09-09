@@ -1,9 +1,9 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import HideColumn from './hide-column';
+import PropTypes from 'prop-types';
 import Tip from '@/components/options-editor/tip';
 import { gettext, mediaUrl } from '@/constants';
+import HideColumn from './hide-column';
 
 const HiddenColumns = ({ readOnly, searchValue, columns, hiddenColumns, onChange, canReorder, modifyColumnOrder }) => {
   const [draggingColumnKey, setDraggingCellKey] = useState(null);

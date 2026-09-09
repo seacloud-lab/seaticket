@@ -1,8 +1,8 @@
 import React from 'react';
 import { Popover } from 'reactstrap';
 import PropTypes from 'prop-types';
-import { Utils } from '@/utils/utils';
 import { getEventClassName } from '@/utils/dom';
+import { Utils } from '@/utils/utils';
 import { generatorModifiers } from './utils';
 
 class CustomizePopover extends React.Component {

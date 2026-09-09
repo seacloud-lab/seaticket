@@ -1,8 +1,8 @@
 import React from 'react';
 import { toaster, Radio } from '@/components';
 import { gettext } from '@/constants';
-import profileSettingsAPI from './api';
 import { Utils } from '@/utils/utils';
+import profileSettingsAPI from './api';
 
 const {
   initialProjectUpdatesEmailInterval, initialCollaborateEmailInterval,

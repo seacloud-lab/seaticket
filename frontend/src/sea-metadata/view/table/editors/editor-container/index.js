@@ -1,10 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { EDITOR_TYPE, CellType } from '../../../../constants';
+import { checkIsColumnSupportPreview, checkIsPopupColumnEditor } from '../../../../utils/column';
 import NormalEditorContainer from './normal-editor-container';
 import PopupEditorContainer from './popup-editor-container';
 import PreviewEditorContainer from './preview-editor-container';
-import { checkIsColumnSupportPreview, checkIsPopupColumnEditor } from '../../../../utils/column';
-import { EDITOR_TYPE, CellType } from '../../../../constants';
 
 const POPUP_EDITOR_COLUMN_TYPES = [
   CellType.DATE,

@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { gettext, mediaUrl } from '@/constants';
 import { IconButton, CenteredLoading, CenteredError, EmptyTip } from '@/components';
-import TopBar from '../top-bar';
-import SettingsPanel from './components/settings-panel';
-import EmbeddingView from './components/embedding-view';
+import { gettext, mediaUrl } from '@/constants';
 import FilterPanel from '../analyze/components/filter-panel';
-import { useAnalyzeTask } from './hooks/analyze-task';
 import { useConnections } from '../connections/hooks';
+import TopBar from '../top-bar';
+import EmbeddingView from './components/embedding-view';
+import SettingsPanel from './components/settings-panel';
+import { useAnalyzeTask } from './hooks/analyze-task';
 
 import './index.css';
 
@@ -28,7 +28,7 @@ const Analyze = ({ title }) => {
   // settings
   const [isSettingsOpen, setIsSettingsOpen] = useState(true);
   const [selectedConnections, setSelectedConnections] = useState([]);
-  const [colorBy, setColorBy] = useState( '--');
+  const [colorBy, setColorBy] = useState('--');
   const [displayMode, setDisplayMode] = useState('points');
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);

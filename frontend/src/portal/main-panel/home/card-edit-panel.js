@@ -1,8 +1,8 @@
 import React, { useRef, useState } from 'react';
 import { Button, Label, Input } from 'reactstrap';
 import classnames from 'classnames';
-import { DEFAULT_PROJECT_ICON, gettext, PROJECT_ICON_ALL_LIST, PROJECT_ICON_COLORS } from '@/constants';
 import { CustomizePopover, IconButton } from '@/components';
+import { DEFAULT_PROJECT_ICON, gettext, PROJECT_ICON_ALL_LIST, PROJECT_ICON_COLORS } from '@/constants';
 
 import './card-edit-panel.css';
 

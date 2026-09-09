@@ -1,20 +1,20 @@
 import React, { useMemo } from 'react';
+import { server } from '@/constants';
+import { BAR_TYPE } from '@/project/constants';
+import LongTextEditorUtilities from '@/utils/long-text';
+import { ticketsAPI } from '../../api';
+import TicketTopBar from './components/ticket-top-bar';
+import { TICKET_CHILDREN_PAGE_SLUG_ID, TICKET_PAGE_SLUG_ID } from './constants';
 import { TicketsPageProvider, useMetadata, useTicketsPage } from './hooks';
-import Types from './view/types';
-import TypeTickets from './view/type-tickets';
-import Substates from './view/substates';
-import SubstateTickets from './view/substate-tickets';
 import AllTickets from './view/all-tickets';
 import MyTickets from './view/my-tickets';
 import TrashTickets from './view/trash-tickets';
 import NewTicket from './view/new-ticket';
+import SubstateTickets from './view/substate-tickets';
+import Substates from './view/substates';
 import Ticket from './view/ticket';
-import { TICKET_CHILDREN_PAGE_SLUG_ID, TICKET_PAGE_SLUG_ID } from './constants';
-import TicketTopBar from './components/ticket-top-bar';
-import { ticketsAPI } from '../../api';
-import LongTextEditorUtilities from '@/utils/long-text';
-import { server } from '@/constants';
-import { BAR_TYPE } from '@/project/constants';
+import TypeTickets from './view/type-tickets';
+import Types from './view/types';
 
 import './index.css';
 

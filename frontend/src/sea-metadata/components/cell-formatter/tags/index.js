@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import { getRowById } from '../../../utils/row';
+import PropTypes from 'prop-types';
 import { useTagsData } from '../../../hooks';
+import { getRowById } from '../../../utils/row';
 import Tag from '../../tag';
 
 import './index.css';

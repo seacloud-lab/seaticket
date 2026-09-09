@@ -1,10 +1,10 @@
 import React, { useMemo, useEffect, useState, useRef } from 'react';
 import classnames from 'classnames';
-import { getRowById } from '@/sea-metadata/utils/row';
-import { useMetadata } from '@/project/hooks';
-import PriorityFormatter from '@/sea-metadata/components/cell-formatter/priority';
 import { Option, Icon } from '@/components';
+import { useMetadata } from '@/project/hooks';
 import { TICKET_STATE_CONFIG, TICKET_STATE, TICKET } from '@/project/main-panel/tickets/constants';
+import PriorityFormatter from '@/sea-metadata/components/cell-formatter/priority';
+import { getRowById } from '@/sea-metadata/utils/row';
 
 import './index.css';
 

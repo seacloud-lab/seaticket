@@ -2,9 +2,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Modal, ModalBody } from 'reactstrap';
 import { CenteredLoading, CustomizeMarkdownViewer, ModalHeader } from '@/components';
 import { gettext } from '@/constants';
+import { agentAPI } from '@/project/api';
 import AIReply from '@/project/components/ai-reply';
 import ProcessDetails from '@/project/components/thought-process/process-details';
-import { agentAPI } from '@/project/api';
 import {
   formatDetailsJSONValue,
   shouldHighlightDetailsAsJSON,

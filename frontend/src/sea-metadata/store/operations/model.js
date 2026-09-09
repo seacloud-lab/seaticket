@@ -1,7 +1,7 @@
 import deepCopy from 'deep-copy';
 import slugid from 'slugid';
-import { OPERATION_ATTRIBUTES } from './constants';
 import apply from './apply';
+import { OPERATION_ATTRIBUTES } from './constants';
 import invert from './invert';
 import restore from './restore';
 

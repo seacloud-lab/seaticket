@@ -1,8 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import { Modal, ModalBody, ModalFooter } from 'reactstrap';
 import { ModalHeader } from '@/components';
-import { gettext } from '@/constants';
 import toaster from '@/components/toaster';
+import { gettext } from '@/constants';
 
 import './index.css';
 

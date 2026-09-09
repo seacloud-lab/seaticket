@@ -1,7 +1,7 @@
 import { gettext } from '@/constants';
-import { getResourceIconURL, getInternalNetworkAddress } from '@/project/utils';
 import { generatorKnowledgeBaseURL } from '@/project/main-panel/knowledge-base/utils';
 import { generatorTicketURL } from '@/project/main-panel/tickets/utils';
+import { getResourceIconURL, getInternalNetworkAddress } from '@/project/utils';
 
 export const formatSources = (sources, { workspaceID, projectName }) => {
   if (!Array.isArray(sources) || sources.length === 0) return [];

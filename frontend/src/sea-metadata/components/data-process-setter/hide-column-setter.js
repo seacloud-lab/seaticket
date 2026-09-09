@@ -1,11 +1,11 @@
 import React, { useMemo, useState, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
+import PropTypes from 'prop-types';
 import IconBtn from '@/components/icon-button';
-import { HideColumnPopover } from '../popover';
+import context from '@/sea-metadata/context';
 import { isEnter, isSpace } from '@/utils/hotkey';
 import { TABLE_NOT_DISPLAY_COLUMN_KEYS } from '../../constants';
-import context from '@/sea-metadata/context';
+import { HideColumnPopover } from '../popover';
 
 const HideColumnSetter = ({ readOnly, columns, wrapperClass, target, hiddenColumns, modifyHiddenColumns, modifyColumnOrder }) => {
   const [isShowSetter, setShowSetter] = useState(false);

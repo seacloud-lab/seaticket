@@ -1,11 +1,11 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Alert, Row } from 'reactstrap';
+import PropTypes from 'prop-types';
+import { ModalHeader } from '@/components';
 import { gettext } from '@/constants';
 import { validateName } from '@/utils/validate';
 import { CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, EMAIL_SERVER_PROVIDER } from '../../constants';
 import { getVisibleEmailFields, getEmailProvider, sanitizeEmailConfigByProvider, isOAuthEmailProvider } from '../../utils';
-import { ModalHeader } from '@/components';
 import ConnectionConfigEditor from '../connection-config-editor';
 
 import '../new-connection-dialog/index.css';

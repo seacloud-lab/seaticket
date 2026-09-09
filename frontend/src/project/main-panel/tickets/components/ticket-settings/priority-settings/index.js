@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import classnames from 'classnames';
-import { gettext } from '@/constants';
 import { Icon, PriorityEditor, CustomizeLabel } from '@/components';
-import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
+import { gettext } from '@/constants';
 import { PRIORITIES } from '@/sea-metadata/constants';
+import { isInputOrEditorActive, isActiveOtherPopover } from '@/utils/dom';
 import { isEsc, isEnter, isP, isUpArrow, isDownArrow } from '@/utils/hotkey';
 
 import './index.css';

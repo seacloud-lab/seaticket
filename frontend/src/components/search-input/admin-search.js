@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
-import SearchInput from '../search-input';
 import { isEnter } from '@/utils/hotkey';
+import SearchInput from '../search-input';
 
 import './admin-search.css';
 

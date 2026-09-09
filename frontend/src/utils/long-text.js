@@ -1,6 +1,6 @@
+import toaster from '@/components/toaster';
 import { LONG_TEXT_LENGTH_LIMIT } from '../constants';
 import { Utils } from './utils';
-import toaster from '@/components/toaster';
 
 
 export const isLongTextValueExceedLimit = (value) => {

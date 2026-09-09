@@ -1,8 +1,8 @@
 import React, { useCallback, useRef, useState } from 'react';
+import { Input } from 'reactstrap';
 import classnames from 'classnames';
 import { CustomizeLabel } from '@/components';
 import { isEnter } from '@/utils/hotkey';
-import { Input } from 'reactstrap';
 
 const TextSettings = ({
   isReadonly,

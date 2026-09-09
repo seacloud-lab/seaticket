@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState, useCallback } from 'react';
-import { EVENT_BUS_TYPE } from '../../../constants';
-import { ASK_PAGE_SLUG_ID } from '../constants';
 import eventBus from '@/utils/event-bus';
 import { isFunction } from '@/utils/type-detection';
+import { EVENT_BUS_TYPE } from '../../../constants';
+import { ASK_PAGE_SLUG_ID } from '../constants';
 
 const AskPageContext = React.createContext(null);
 

@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import PropTypes from 'prop-types';
-import SearchedList from './searched-list';
-import { CustomizeTabs, Loading, SearchInput } from '@/components';
-import homeAPI from '../../api';
-import { getSearchValueLength } from '@/utils/search';
 import { gettext } from '@constants';
+import PropTypes from 'prop-types';
+import { CustomizeTabs, Loading, SearchInput } from '@/components';
+import { getSearchValueLength } from '@/utils/search';
+import homeAPI from '../../api';
 import { QUERY_TYPE, SEARCHED_STORE_KEY } from './constant';
+import SearchedList from './searched-list';
 import { getNormalizeSearchedList, loadRecentUsed, storeSearchedItem } from './utils';
 
 const MIN_HEIGHT = 200;

@@ -1,14 +1,14 @@
 import React, { useRef, useCallback, useMemo } from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
+import PropTypes from 'prop-types';
 import { Tooltip, Icon } from '@/components';
-import ResizeColumn from './resize-column';
-import HeaderDropdownMenu from './dropdown-menu';
-import { CellType, COLUMNS_ICON_CONFIG, COLUMNS_ICON_NAME, EVENT_BUS_TYPE } from '../../../../../constants';
-import { checkIsNameColumn, checkIsPriorityColumn } from '@/sea-metadata/utils/column';
 import context from '@/sea-metadata/context';
 import { useTypesData, useSubstatesData } from '@/sea-metadata/hooks';
+import { checkIsNameColumn, checkIsPriorityColumn } from '@/sea-metadata/utils/column';
 import { isFunction } from '@/utils/type-detection';
+import { CellType, COLUMNS_ICON_CONFIG, COLUMNS_ICON_NAME, EVENT_BUS_TYPE } from '../../../../../constants';
+import HeaderDropdownMenu from './dropdown-menu';
+import ResizeColumn from './resize-column';
 
 import './index.css';
 

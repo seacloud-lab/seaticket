@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
-import { Utils } from '@/utils/utils';
-import { isEnter, isEsc } from '@/utils/hotkey';
 import { gettext, avatarURL } from '@/constants';
 import { getPortalLogoutPath } from '@/portal/path-utils';
-import IconBtn from '../icon-button';
+import { isEnter, isEsc } from '@/utils/hotkey';
+import { Utils } from '@/utils/utils';
 import Icon from '../icon';
+import IconBtn from '../icon-button';
 
 import './account.css';
 

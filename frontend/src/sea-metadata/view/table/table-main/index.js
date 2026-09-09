@@ -1,9 +1,9 @@
 import React, { useCallback, useMemo } from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import Rows from './rows';
-import GridUtils from '../utils/grid-utils';
+import PropTypes from 'prop-types';
 import { GROUP_VIEW_OFFSET } from '../../../constants';
+import GridUtils from '../utils/grid-utils';
+import Rows from './rows';
 
 import './index.css';
 

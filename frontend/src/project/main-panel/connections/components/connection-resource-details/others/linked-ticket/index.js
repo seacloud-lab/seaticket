@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import classnames from 'classnames';
 import { Dropdown, DropdownToggle } from 'reactstrap';
+import classnames from 'classnames';
 import { CustomizeLabel, CustomizeDropdownMenu, CustomizeDropdownItem } from '@/components';
 import { gettext } from '@/constants';
 import { ResourceDetailsDialog } from '@/project/components';

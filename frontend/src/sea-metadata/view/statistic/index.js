@@ -1,10 +1,10 @@
 import React from 'react';
 import { EmptyTip } from '@/components';
 import { gettext, mediaUrl } from '@/constants';
+import { STATISTIC_TYPE } from '@/sea-metadata/constants';
 import { useMetadata } from '@/sea-metadata/hooks';
 import Card from './card';
 import Line from './line';
-import { STATISTIC_TYPE } from '@/sea-metadata/constants';
 
 import './index.css';
 

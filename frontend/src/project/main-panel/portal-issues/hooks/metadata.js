@@ -1,10 +1,10 @@
 import React, { useContext, useEffect, useState, useCallback } from 'react';
 import deepCopy from 'deep-copy';
-import { Utils } from '@/utils/utils';
 import { toaster } from '@/components';
-import { OptionsData, Option } from '../models';
-import { PREDEFINED_PORTAL_ISSUE_SUBSTATE_OPTION } from '../constants';
 import { portalAPI } from '@/portal/api';
+import { Utils } from '@/utils/utils';
+import { PREDEFINED_PORTAL_ISSUE_SUBSTATE_OPTION } from '../constants';
+import { OptionsData, Option } from '../models';
 
 const PortalIssuesMetadataContext = React.createContext(null);
 

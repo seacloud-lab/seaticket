@@ -1,13 +1,13 @@
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
-import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS, getPreviewContent } from '@seafile/seafile-editor';
 import { Button, Input, Label } from 'reactstrap';
+import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS, getPreviewContent } from '@seafile/seafile-editor';
 import classnames from 'classnames';
-import { gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
-import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { toaster } from '@/components';
-import UploadFilesButton from '../../../../tickets/components/upload-files-btn';
-import TagsSettings from '@/project/main-panel/tags/tags-settings';
+import { gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE } from '@/constants';
 import { useTags } from '@/project/hooks';
+import TagsSettings from '@/project/main-panel/tags/tags-settings';
+import { isLongTextValueExceedLimit } from '@/utils/long-text';
+import UploadFilesButton from '../../../../tickets/components/upload-files-btn';
 
 import './index.css';
 

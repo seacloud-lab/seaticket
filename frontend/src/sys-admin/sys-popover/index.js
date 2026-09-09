@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import { Button } from 'reactstrap';
+import PropTypes from 'prop-types';
 import CustomizePopover from '@/components/customize-popover';
 import { gettext } from '@/constants';
 import SysFiltersItem from './filter-widgets/filters-item';

@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react';
 import { Modal, ModalBody } from 'reactstrap';
 import { ModalHeader } from '@/components';
 import { gettext } from '@/constants';
-import ProcessDetails from '@/project/components/thought-process/process-details';
-import { isObject } from '@/utils/type-detection';
-import { formatWithTimezone, getDateDisplayString } from '@/sea-metadata/utils/column';
-import { Attachments } from '../../../components';
 import AIReply from '@/project/components/ai-reply';
-import { CHAT_MESSAGE_TYPE, THOUGHT_PROCESS_TYPE } from '../../../constants';
+import ProcessDetails from '@/project/components/thought-process/process-details';
+import { formatWithTimezone, getDateDisplayString } from '@/sea-metadata/utils/column';
 import { hasOwnProperty } from '@/utils/object-utils';
+import { isObject } from '@/utils/type-detection';
+import { Attachments } from '../../../components';
+import { CHAT_MESSAGE_TYPE, THOUGHT_PROCESS_TYPE } from '../../../constants';
 
 import './index.css';
 
@@ -65,7 +65,7 @@ const generatorUserMessage = (name, messageInfo = {}, props, { flattenLeafChildr
       messageNode, {
         name: gettext('Attachments'),
         value: !Array.isArray(attachments) || attachments.length === 0 ? null : attachments,
-        formatter: () => ( <Attachments attachments={attachments} className="mb-0 justify-content-start" projectUuid={props.projectUuid} />),
+        formatter: () => (<Attachments attachments={attachments} className="mb-0 justify-content-start" projectUuid={props.projectUuid} />),
       },
     ],
   };
@@ -329,7 +329,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
             };
           }
           let stepChildren = [];
-          if (action.tool_calls.length > 1){
+          if (action.tool_calls.length > 1) {
             stepChildren.push({
               name: gettext('Substep'),
               children: action.tool_calls.map((too_call, toolIndex) => {
@@ -363,7 +363,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
     // final answer
     const final_answer = propsValue?.final_answer;
     const finalAnswerRetryChildren = getCompletionRetryChildren(final_answer?.retry);
-    if (final_answer && (final_answer.result || finalAnswerRetryChildren.length > 0)){
+    if (final_answer && (final_answer.result || finalAnswerRetryChildren.length > 0)) {
       let result = final_answer.result;
       if (result && isObject(result)) {
         result = JSON.stringify(result);

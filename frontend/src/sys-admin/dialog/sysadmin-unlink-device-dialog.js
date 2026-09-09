@@ -1,8 +1,8 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
-import { gettext } from '../../constants';
+import PropTypes from 'prop-types';
 import ModalHeader from '../../components/modal-header';
+import { gettext } from '../../constants';
 
 const propTypes = {
   unlinkDevice: PropTypes.func.isRequired,

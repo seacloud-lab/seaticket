@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react';
-import PropTypes from 'prop-types';
-import classNames from 'classnames';
 import { Progress } from 'reactstrap';
+import classNames from 'classnames';
+import PropTypes from 'prop-types';
 import { gettext } from '@/constants';
-import { evaluatePasswordStrength } from '@/utils/validate';
 import { isMobile } from '@/utils/utils';
+import { evaluatePasswordStrength } from '@/utils/validate';
 
 import './index.css';
 

@@ -1,9 +1,9 @@
 import React, { useRef, useState } from 'react';
 import * as d3 from 'd3';
-import { drawYaxis, addClipPath, checkTickOverlap } from '../utils';
-import { STYLE_COLORS, CHART_THEME_COLOR } from '../constants';
-import ChartTooltip from '../chart-tooltip';
 import { gettext } from '@/constants';
+import ChartTooltip from '../chart-tooltip';
+import { STYLE_COLORS, CHART_THEME_COLOR } from '../constants';
+import { drawYaxis, addClipPath, checkTickOverlap } from '../utils';
 import useChartDraw from './use-chart-redraw';
 
 import './index.css';

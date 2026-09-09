@@ -1,14 +1,14 @@
 import React, { useMemo } from 'react';
-import { ticketsAPI } from '../../../../api';
+import { CenteredLoading } from '@/components';
+import { gettext } from '@/constants';
+import { useTags } from '@/project/hooks';
 import { VIEW_TOOL } from '@/sea-metadata';
 import context from '@/sea-metadata/context';
-import { useTicketsPage } from '../../../tickets/hooks';
-import { TICKET_CHILDREN_PAGE_SLUG_ID } from '../../../tickets/constants';
-import { gettext } from '@/constants';
-import { CenteredLoading } from '@/components';
 import { getRowById } from '@/sea-metadata/utils/row';
+import { ticketsAPI } from '../../../../api';
 import Tickets from '../../../tickets/components/tickets';
-import { useTags } from '@/project/hooks';
+import { TICKET_CHILDREN_PAGE_SLUG_ID } from '../../../tickets/constants';
+import { useTicketsPage } from '../../../tickets/hooks';
 
 const TagTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) => {
 

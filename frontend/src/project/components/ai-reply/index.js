@@ -1,23 +1,25 @@
 import React, { useCallback, useState, useImperativeHandle, forwardRef, useMemo, useRef } from 'react';
+import { ELementTypes } from '@seafile/seafile-editor';
 import classnames from 'classnames';
+import { CustomizeMarkdownViewer as CustomizeMarkdownViewerComponent, LinkVerifiedDialog, toaster } from '@/components';
 import { connectionsAPI } from '@/project/api';
+import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
+import { useData, useMetadata } from '@/project/hooks';
+import { useAIChatTools } from '@/project/main-panel/ask/hooks';
+import CreateTicketDialog from '@/project/main-panel/connections/components/create-ticket-dialog';
+import RelatedIssuesDialog from '@/project/main-panel/connections/components/related-issues-dialog';
+import { CONNECTION_PREDEFINED_COLUMN_NAME } from '@/project/main-panel/connections/constants';
+import { useConnections } from '@/project/main-panel/connections/hooks';
+import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
 import context from '@/sea-metadata/context';
 
 // components
-import { ELementTypes } from '@seafile/seafile-editor';
-import { CustomizeMarkdownViewer as CustomizeMarkdownViewerComponent, LinkVerifiedDialog, toaster } from '@/components';
+import { Utils } from '@/utils/utils';
 import CustomizeDefinition from './customize-definition';
-import CustomizeLinkReference from './customize-link-reference';
 import CustomizeLink from './customize-link';
-import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
-import RelatedIssuesDialog from '@/project/main-panel/connections/components/related-issues-dialog';
-import CreateTicketDialog from '@/project/main-panel/connections/components/create-ticket-dialog';
-import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
+import CustomizeLinkReference from './customize-link-reference';
 
 // hooks
-import { useConnections } from '@/project/main-panel/connections/hooks';
-import { useAIChatTools } from '@/project/main-panel/ask/hooks';
-import { useData, useMetadata } from '@/project/hooks';
 
 // utils
 import { formatSources, transformMDFileToLink, transformKBToLink, transformTicketToLink, transformReferencesToMarkdown, transformContentForCopy, } from './utils';
@@ -27,13 +29,11 @@ import {
   generateCopyOriginalLinkOption, generateMarkAsOutdatedOptions, getTableName,
 } from '@/project/main-panel/connections/utils';
 import { normalizeContextMenuOptions } from '@/project/utils';
-import { Utils } from '@/utils/utils';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { hasOwnProperty } from '@/utils/object-utils';
 
 // constants
-import { CONNECTION_PREDEFINED_COLUMN_NAME } from '@/project/main-panel/connections/constants';
 import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
 

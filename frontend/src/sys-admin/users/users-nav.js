@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import classnames from 'classnames';
 import { Link } from '@gatsbyjs/reach-router';
+import classnames from 'classnames';
 import { siteRoot, gettext, isDefaultAdmin } from '@/constants';
 
 const UsersNav = ({ currentItem }) => {

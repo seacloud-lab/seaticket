@@ -1,9 +1,9 @@
 import React, { useRef, useState } from 'react';
 import * as d3 from 'd3';
-import { drawYaxis, getMinDistanceItem, clearOldVerticalAnnotation, addVerticalAnnotation, checkTickOverlap } from '../utils';
-import { CHART_THEME_COLOR, CHART_STYLE_COLORS } from '../constants';
-import ChartTooltip from '../chart-tooltip';
 import { gettext } from '@/constants';
+import ChartTooltip from '../chart-tooltip';
+import { CHART_THEME_COLOR, CHART_STYLE_COLORS } from '../constants';
+import { drawYaxis, getMinDistanceItem, clearOldVerticalAnnotation, addVerticalAnnotation, checkTickOverlap } from '../utils';
 import useChartDraw from './use-chart-redraw';
 
 import './index.css';

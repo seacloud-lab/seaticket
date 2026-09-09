@@ -1,12 +1,12 @@
 import React, { useContext, useEffect, useState, useCallback, useRef } from 'react';
+import { siteRoot } from '@/constants';
+import { EVENT_BUS_TYPE as SEAMETADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
+import context from '@/sea-metadata/context';
+import eventBus from '@/utils/event-bus';
 import { isNumber } from '@/utils/type-detection';
+import { Utils } from '@/utils/utils';
 import { BAR_TYPE, EVENT_BUS_TYPE } from '../../../constants';
 import { KNOWLEDGE_PAGE_SLUG_ID, KNOWLEDGE_CHILDREN_PAGE_SLUG_ID } from '../constants';
-import { Utils } from '@/utils/utils';
-import context from '@/sea-metadata/context';
-import { EVENT_BUS_TYPE as SEAMETADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
-import eventBus from '@/utils/event-bus';
-import { siteRoot } from '@/constants';
 
 const KnowledgePageContext = React.createContext(null);
 

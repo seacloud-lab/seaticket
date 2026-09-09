@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 import classnames from 'classnames';
 import IconButton from '@/components/icon-button';
-import OptionLabel from '../../../option';
 import { isString } from '@/utils/type-detection';
+import OptionLabel from '../../../option';
 
 import './index.css';
 

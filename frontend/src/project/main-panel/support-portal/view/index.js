@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import classnames from 'classnames';
 import { Button } from 'reactstrap';
-import { gettext, mediaUrl, server, siteRoot } from '@/constants';
+import classnames from 'classnames';
 import { toaster, Icon } from '@/components';
+import { gettext, mediaUrl, server, siteRoot } from '@/constants';
 import { portalAPI } from '@/portal/api';
 import { Utils } from '@/utils/utils';
 

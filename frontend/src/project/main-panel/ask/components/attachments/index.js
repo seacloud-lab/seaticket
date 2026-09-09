@@ -1,11 +1,11 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import classnames from 'classnames';
-import Attachment from './attachment';
+import { ImagePreviewer } from '@/components';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { hasOwnProperty } from '@/utils/object-utils';
 import { CHAT_ATTACHMENT_TYPE } from '../../constants';
-import { ImagePreviewer } from '@/components';
 import { AttachmentObject } from '../../models';
+import Attachment from './attachment';
 
 import './index.css';
 

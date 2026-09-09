@@ -1,14 +1,14 @@
 import React, { createContext, useContext, useState, useCallback, useRef, useEffect, useMemo } from 'react';
-import { notificationAPI } from '@/project/api';
 import { toaster } from '@/components';
+import { siteRoot, username } from '@/constants';
+import { notificationAPI } from '@/project/api';
+import BrowserMessenger from '@/utils/browser-messenger';
 import { Utils } from '@/utils/utils';
+import sharedWsClient from '@/utils/websocket-service';
 import {
   NOTIFICATION_TYPE, TICKET_MSG_TYPES, MSG_TYPE_PROJECTS, MSG_TYPE_WS_USER_NOTIFICATION,
   MSG_TYPE_WS_USER_LOGOUT_NOTIFICATION,
 } from '../constants';
-import { siteRoot, username } from '@/constants';
-import sharedWsClient from '@/utils/websocket-service';
-import BrowserMessenger from '@/utils/browser-messenger';
 
 const NotificationContext = createContext();
 

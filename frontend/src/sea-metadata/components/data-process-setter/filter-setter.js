@@ -1,16 +1,16 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import deepCopy from 'deep-copy';
+import PropTypes from 'prop-types';
 import IconBtn from '@/components/icon-button';
-import { FilterPopover } from '../popover';
-import { getValidFilters } from '../../utils/filter';
 import { gettext } from '@/constants';
-import { isEnter, isSpace } from '@/utils/hotkey';
-import { VIEW_TYPE } from '../../constants';
-import { getType } from '@/utils/type-detection';
-import { useTypesData } from '@/sea-metadata/hooks';
 import { useTags } from '@/project/hooks';
+import { useTypesData } from '@/sea-metadata/hooks';
+import { isEnter, isSpace } from '@/utils/hotkey';
+import { getType } from '@/utils/type-detection';
+import { VIEW_TYPE } from '../../constants';
+import { getValidFilters } from '../../utils/filter';
+import { FilterPopover } from '../popover';
 
 const FilterSetter = ({
   readOnly,

@@ -1,28 +1,28 @@
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
-import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
 import { Button, Input, Label, Dropdown } from 'reactstrap';
+import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
 import classnames from 'classnames';
 import {
   toaster,
   CustomizeDropdownMoreToggle, CustomizeDropdownMenu, CustomizeDropdownItem
 } from '@/components';
 import { name, avatarURL, username, gettext, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE, siteRoot } from '@/constants';
+import { BAR_TYPE } from '@/project/constants';
+import { useData, useTags } from '@/project/hooks';
+import TagsSettings from '@/project/main-panel/tags/tags-settings';
+import { useCollaborators } from '@/sea-metadata';
+import { getRowById } from '@/sea-metadata/utils/row';
 import { isLongTextValueExceedLimit } from '@/utils/long-text';
-import { PREDEFINED_TICKET_COLUMN_NAME, TICKET_PAGE_SLUG_ID, TICKET_TABLE_NAME, TICKET_STATE_OPTIONS } from '../../constants';
+import { Utils } from '../../../../../utils/utils';
+import { ticketsAPI } from '../../../../api';
 import {
   CollaboratorsSettings, TypeSettings, PrioritySettings,
   StateSettings, SubStateSettings, DueDateSettings,
 } from '../../components/ticket-settings';
 import KeyboardShortcuts from '../../components/tickets-keyboard-shortcuts-dialog';
-import { Utils } from '../../../../../utils/utils';
-import { ticketsAPI } from '../../../../api';
-import { useTicketsPage, useMetadata } from '../../hooks';
 import UploadFilesButton from '../../components/upload-files-btn';
-import { getRowById } from '@/sea-metadata/utils/row';
-import { useData, useTags } from '@/project/hooks';
-import TagsSettings from '@/project/main-panel/tags/tags-settings';
-import { useCollaborators } from '@/sea-metadata';
-import { BAR_TYPE } from '@/project/constants';
+import { PREDEFINED_TICKET_COLUMN_NAME, TICKET_PAGE_SLUG_ID, TICKET_TABLE_NAME, TICKET_STATE_OPTIONS } from '../../constants';
+import { useTicketsPage, useMetadata } from '../../hooks';
 
 import './index.css';
 

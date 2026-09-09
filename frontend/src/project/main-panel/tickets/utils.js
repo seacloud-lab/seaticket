@@ -1,15 +1,15 @@
-import { username, gettext, siteRoot } from '@/constants';
-import { PRIORITIES } from '@/sea-metadata/constants';
-import { BAR_TYPE } from '@/project/constants';
 import copy from 'copy-to-clipboard';
 import { toaster } from '@/components';
+import { username, gettext, siteRoot } from '@/constants';
+import { BAR_TYPE } from '@/project/constants';
+import { PRIORITIES } from '@/sea-metadata/constants';
+import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { getColumnByName, getColumnOptions, getOption } from '@/sea-metadata/utils/column';
 import { getRowById } from '@/sea-metadata/utils/row';
-import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
-import { PREDEFINED_TICKET_COLUMN_NAME, AUTO_UPDATE_PARTICIPANTS_KEY } from './constants';
-import { TicketForAI } from './models';
 import { isObject } from '@/utils/type-detection';
 import { CONNECTION_TYPE } from '../connections/constants';
+import { PREDEFINED_TICKET_COLUMN_NAME, AUTO_UPDATE_PARTICIPANTS_KEY } from './constants';
+import { TicketForAI } from './models';
 
 export const generatorTicketURL = ({ ticket, workspaceID, projectName }) => {
   const { origin } = location;

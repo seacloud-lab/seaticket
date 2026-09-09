@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from 'reactstrap';
-import { Icon } from '@/components';
 import classnames from 'classnames';
+import { Icon } from '@/components';
 
 import './add-button.css';
 

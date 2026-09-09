@@ -1,10 +1,26 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from 'reactstrap';
+import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
 import classnames from 'classnames';
 import deepCopy from 'deep-copy';
-import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
-import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { CenteredLoading, toaster, EmptyTip } from '@/components';
+import { useNotification } from '@/components/common/notification/hooks/notification';
+import {
+  gettext, name, username, avatarURL, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE, mediaUrl,
+  PERMISSION_TYPES
+} from '@/constants';
+import { useData, useTags, useMetadata } from '@/project/hooks';
+import { useAIChatTools } from '@/project/main-panel/ask/hooks';
+import { useConnections } from '@/project/main-panel/connections/hooks';
+import { getTableName } from '@/project/main-panel/connections/utils';
+import TagsSettings from '@/project/main-panel/tags/tags-settings';
+import { convertRowToKeyValue, getRowById } from '@/sea-metadata/utils/row';
+import { isLongTextValueExceedLimit } from '@/utils/long-text';
+import { Utils } from '@/utils/utils';
+import {
+  CollaboratorsSettings, TypeSettings, PrioritySettings,
+  StateSettings, SubStateSettings, DueDateSettings, LinkSettings,
+} from '../../components/ticket-settings';
 import {
   TICKET_STATE_CONFIG, PREDEFINED_TICKET_COLUMN_NAME, TICKET_TABLE_NAME, TICKET_CHILDREN_PAGE_SLUG_ID,
   AUTO_UPDATE_PARTICIPANTS_KEY,
@@ -13,33 +29,17 @@ import {
   convertTicketToKb, generatorTicketsContextMenuOptions,
   convertSubstateToGitHubStateReason, generatorLinkedRecordsForClosedGitHubIssues,
 } from '../../utils';
-import { useAIChatTools } from '@/project/main-panel/ask/hooks';
-import {
-  gettext, name, username, avatarURL, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE, mediaUrl,
-  PERMISSION_TYPES
-} from '@/constants';
-import { Utils } from '@/utils/utils';
-import {
-  CollaboratorsSettings, TypeSettings, PrioritySettings,
-  StateSettings, SubStateSettings, DueDateSettings, LinkSettings,
-} from '../../components/ticket-settings';
 import { Comment, TicketLog, KeyboardShortcuts, UploadFilesButton } from '../../components';
+import Header from './header';
 import StatusToggleButton from './status-toggle-btn';
 import RelatedIssuesDialog from '../../components/related-issues-dialog';
 import CreateKBRecordDialog from '../../components/create-kb-record-dialog';
 import CreateTaskDialog from '../../components/create-task-dialog';
 import { ticketsAPI } from '../../../../api';
 import { Ticket as TicketModel } from '../../models';
-import { convertRowToKeyValue, getRowById } from '@/sea-metadata/utils/row';
-import Header from './header';
-import { useData, useTags, useMetadata } from '@/project/hooks';
-import { useConnections } from '@/project/main-panel/connections/hooks';
-import TagsSettings from '@/project/main-panel/tags/tags-settings';
-import { useNotification } from '@/components/common/notification/hooks/notification';
 import { hasOwnProperty } from '@/utils/object-utils';
 import { useCollaborators } from '@/sea-metadata';
 import { getColumnByName } from '@/sea-metadata/utils/column';
-import { getTableName } from '@/project/main-panel/connections/utils';
 import { useCloseLinkedIssues } from '../../hooks';
 
 import './index.css';

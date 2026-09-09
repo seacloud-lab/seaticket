@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
-import MessageBox from './message-box';
-import CommonMessage from './common-message';
 import { CHAT_MESSAGE_TYPE } from '../constants';
+import CommonMessage from './common-message';
+import MessageBox from './message-box';
 
 import './index.css';
 

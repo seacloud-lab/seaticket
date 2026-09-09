@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import PropTypes from 'prop-types';
 import { Dropdown, DropdownToggle } from 'reactstrap';
-import dayjs from 'dayjs';
 import classNames from 'classnames';
+import dayjs from 'dayjs';
+import PropTypes from 'prop-types';
 import { CustomizeDropdownItem, CustomizeDropdownMenu, Icon, ModalPortal, CustomizeDropdownItemIcon, CustomizeDropdownItemText } from '@/components';
-import DateAndTimePicker from './date-and-time-picker';
-import { gettext } from '../../../constants';
 import { Utils } from '@/utils/utils';
+import { gettext } from '../../../constants';
 import { SEARCH_FILTERS_KEY, SEARCH_FILTER_BY_DATE_OPTION_KEY, SEARCH_FILTER_BY_DATE_TYPE_KEY } from './constants';
+import DateAndTimePicker from './date-and-time-picker';
 
 const DATE_INPUT_WIDTH = 118;
 

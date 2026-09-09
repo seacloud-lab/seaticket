@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { Input, Button } from 'reactstrap';
+import { Loading } from '@/components';
 import { gettext } from '@/constants';
 import { isEnter, isEsc } from '@/utils/hotkey';
-import { Loading } from '@/components';
 
 import './index.css';
 

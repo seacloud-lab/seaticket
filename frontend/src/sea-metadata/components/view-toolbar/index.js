@@ -1,11 +1,11 @@
 import React, { useCallback } from 'react';
-import { EVENT_BUS_TYPE, VIEW_TYPE, VIEW_TOOLS, VIEW_TOOL } from '../../constants';
-import TableViewToolbar from './table-view-toolbar';
-import { useCollaborators, useMetadata, useSelectedRows } from '../../hooks';
-import context from '../../context';
-import Views from './views';
-import RowsToolbar from './rows-toolbar';
 import { getRowsByIds } from '@/sea-metadata/utils/row';
+import { EVENT_BUS_TYPE, VIEW_TYPE, VIEW_TOOLS, VIEW_TOOL } from '../../constants';
+import context from '../../context';
+import { useCollaborators, useMetadata, useSelectedRows } from '../../hooks';
+import RowsToolbar from './rows-toolbar';
+import TableViewToolbar from './table-view-toolbar';
+import Views from './views';
 
 import './index.css';
 

@@ -1,10 +1,10 @@
 import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { ProjectsTable } from '@/components';
-import orgAdminAPI from '../api';
 import { gettext } from '@/constants';
-import { Main, TopBar } from '../main-panel';
+import orgAdminAPI from '../api';
 import GroupNav from '../group-nav';
+import { Main, TopBar } from '../main-panel';
 
 const { orgID } = window.org.pageOptions;
 

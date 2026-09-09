@@ -1,18 +1,18 @@
 import React, { cloneElement, isValidElement, useCallback, useEffect, useMemo, useState } from 'react';
 import { Dropdown } from 'reactstrap';
-import dayjs from 'dayjs';
-import classnames from 'classnames';
 import { Link } from '@gatsbyjs/reach-router';
-import { gettext, siteRoot, username } from '@/constants';
-import { useSelectedUsers } from '../selected-users';
+import classnames from 'classnames';
+import dayjs from 'dayjs';
 import {
   CustomizeDropdownMoreToggle, CustomizeDropdownMenu, CustomizeDropdownItem,
   CommonOperationConfirmationDialog, ModalPortal,
   PermissionSelect, ActiveStatusEditor,
   toaster,
 } from '@/components';
+import { gettext, siteRoot, username } from '@/constants';
 import { getRoleOptions, getStatusOptions, translateStatus } from '@/utils/role-status-utils';
 import UserLink from '../../user-link';
+import { useSelectedUsers } from '../selected-users';
 
 const { availableRoles, availableAdminRoles, institutions } = window.sysadmin.pageOptions;
 

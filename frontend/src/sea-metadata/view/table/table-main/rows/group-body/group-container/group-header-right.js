@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import GroupHeaderCell from './group-header-cell';
-import { checkIsColumnFrozen } from '../../../../../../utils/column';
 import { GROUP_HEADER_HEIGHT } from '../../../../../../constants';
+import { checkIsColumnFrozen } from '../../../../../../utils/column';
+import GroupHeaderCell from './group-header-cell';
 
 class GroupHeaderRight extends Component {
 

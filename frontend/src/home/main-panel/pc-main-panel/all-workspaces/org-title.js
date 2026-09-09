@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { gettext, canAddGroup, orgName } from '../../../../constants';
 import { IconTextBtn } from '@/components';
+import { gettext, canAddGroup, orgName } from '../../../../constants';
 
 import './org-title.css';
 

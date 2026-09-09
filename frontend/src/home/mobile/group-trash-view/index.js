@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { gettext, trashCleanExpireDays, mediaUrl } from '../../../constants';
 import { EmptyTip, Icon, Loading, MobileCommonHeader } from '../../../components';
+import { gettext, trashCleanExpireDays, mediaUrl } from '../../../constants';
 import DeletedGroupProjectItem from './deleted-group-project-item';
 
 import './index.css';

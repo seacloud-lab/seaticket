@@ -1,7 +1,7 @@
 import React from 'react';
-import Records from './records';
-import Record from './record';
 import { useConnectionsPage } from '../../hooks';
+import Record from './record';
+import Records from './records';
 
 const Connection = (props) => {
   const { isLoading, childrenPageSlugId } = useConnectionsPage();

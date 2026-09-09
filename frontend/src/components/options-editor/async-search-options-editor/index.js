@@ -1,8 +1,8 @@
 import React, { useCallback, useRef } from 'react';
 import classnames from 'classnames';
+import { areArraysEqual } from '@/utils/array-utils';
 import CustomizePopover from '../../customize-popover';
 import Container from './container';
-import { areArraysEqual } from '@/utils/array-utils';
 
 const AsyncSearchOptionsEditor = ({
   target,

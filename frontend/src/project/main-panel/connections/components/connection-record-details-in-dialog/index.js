@@ -1,31 +1,31 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import classnames from 'classnames';
-import { connectionsAPI } from '@/project/api';
-import context from '@/sea-metadata/context';
+import { toaster } from '@/components';
+import { PERMISSION_TYPES } from '@/constants';
 import User from '@/models/user';
+import { connectionsAPI } from '@/project/api';
 
 // hooks
-import { useConnections } from '../../hooks';
 import { useData, useMetadata, useTags } from '@/project/hooks';
 
 // components
-import { toaster } from '@/components';
-import ConnectionResourceDetails, { ConnectionResourceOtherDetails } from '../connection-resource-details';
 import CreateTicketDialog from '@/project/main-panel/connections/components/create-ticket-dialog';
 import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
 
 // utils
-import { Utils } from '@/utils/utils';
-import { formatColumns, generateCreateRelatedTicketOption, generateLinkAnExistingTicketOption, getTableName, } from '../../utils';
+import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
+import { CellType, EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { getColumnByName, getColumnOptions, getOption } from '@/sea-metadata/utils/column';
 import { isSmallContainer } from '@/utils/dialog';
 
 // constants
-import { PERMISSION_TYPES } from '@/constants';
-import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
 import { SUPPORT_ROW_DETAILS_SETTINGS_CONNECTION_TYPES, CONNECTION_PREDEFINED_COLUMN_NAME, CONNECTION_TYPE, } from '../../constants';
-import { CellType, EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
+import context from '@/sea-metadata/context';
+import { Utils } from '@/utils/utils';
+import { useConnections } from '../../hooks';
+import { formatColumns, generateCreateRelatedTicketOption, generateLinkAnExistingTicketOption, getTableName, } from '../../utils';
+import ConnectionResourceDetails, { ConnectionResourceOtherDetails } from '../connection-resource-details';
 
 import './index.css';
 

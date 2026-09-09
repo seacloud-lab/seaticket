@@ -1,11 +1,11 @@
 import React, { useCallback, useState } from 'react';
-import classnames from 'classnames';
 import { Dropdown, DropdownToggle } from 'reactstrap';
-import { Icon } from '../../../components';
-import { BAR_TYPE_CONFIG, BAR_TYPE } from '../../constants';
+import classnames from 'classnames';
 import { NAVIGATION_BASE_PADDING } from '@/constants';
-import { CustomizeDropdownMenu, CustomizeDropdownItem, CustomizeDropdownItemIcon, CustomizeDropdownItemText } from '../../../components/';
 import ImportDialog from '@/project/components/import-dialog';
+import { Icon } from '../../../components';
+import { CustomizeDropdownMenu, CustomizeDropdownItem, CustomizeDropdownItemIcon, CustomizeDropdownItemText } from '../../../components/';
+import { BAR_TYPE_CONFIG, BAR_TYPE } from '../../constants';
 
 const KnowledgeMoreNav = ({ activeBar, onClick }) => {
   const [isShowChildren, setIsShowChildren] = useState(false);

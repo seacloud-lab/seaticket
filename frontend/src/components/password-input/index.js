@@ -1,11 +1,11 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import { InputGroup, Input } from 'reactstrap';
 import classnames from 'classnames';
-import StrengthChecker from './strength-checker';
-import IconButton from '../icon-button';
-import { Utils } from '@/utils/utils';
+import PropTypes from 'prop-types';
 import { isFunction } from '@/utils/type-detection';
+import { Utils } from '@/utils/utils';
+import IconButton from '../icon-button';
+import StrengthChecker from './strength-checker';
 
 import './index.css';
 

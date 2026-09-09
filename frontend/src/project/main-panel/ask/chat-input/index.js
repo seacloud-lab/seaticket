@@ -1,20 +1,20 @@
 import React, { useCallback, useRef, useState, useEffect, useMemo, useImperativeHandle, forwardRef } from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
+import PropTypes from 'prop-types';
 import slugid from 'slugid';
 import { IconButton, ClickOutside, OptionsEditor, Tooltip, UploadFile, toaster } from '@/components';
 import { gettext } from '@/constants';
-import * as CommonlyUsedHotkey from '@/utils/hotkey';
-import { Utils } from '@/utils/utils';
-import { getType } from '@/utils/type-detection';
-import InputUtils from '@/utils/input-utils';
-import { CHAT_ATTACHMENT_TYPE, CHAT_ATTACHMENT_SOURCE, CHAT_IMAGE_ATTACHMENT_MAX_COUNT, CHAT_MESSAGE_TYPE, DEFAULT_ALLOWED_ATTACHMENT_SOURCES } from '../constants';
-import AttachmentsSelector from './attachments-selector';
-import AttachmentsFormatter from './attachments';
-import { useAIChatTools } from '../hooks';
-import AIModelSelector from './ai-model-selector';
 import { chatAPI as defaultChatAPI } from '@/project/api';
+import * as CommonlyUsedHotkey from '@/utils/hotkey';
+import InputUtils from '@/utils/input-utils';
+import { getType } from '@/utils/type-detection';
+import { Utils } from '@/utils/utils';
+import { CHAT_ATTACHMENT_TYPE, CHAT_ATTACHMENT_SOURCE, CHAT_IMAGE_ATTACHMENT_MAX_COUNT, CHAT_MESSAGE_TYPE, DEFAULT_ALLOWED_ATTACHMENT_SOURCES } from '../constants';
+import { useAIChatTools } from '../hooks';
 import { AttachmentObject } from '../models';
+import AIModelSelector from './ai-model-selector';
+import AttachmentsFormatter from './attachments';
+import AttachmentsSelector from './attachments-selector';
 
 import './index.css';
 

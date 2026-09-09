@@ -1,14 +1,19 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
+import PropTypes from 'prop-types';
 import {
   Tooltip,
   CustomizeSelect,
   SearchInput,
   IconButton,
 } from '@/components';
-import FilterCalendar from '../filter-calendar';
+import SelectTrigger from '@/components/customize-select/select-trigger';
 import { gettext } from '@/constants';
+import { ColumnSelector, OptionSelector, CollaboratorSelector, PrioritySelector } from '@/sea-metadata/components/selectors';
+import {
+  CellType, FILTER_PREDICATE_TYPE, FILTER_TERM_MODIFIER_TYPE, FILTER_ERR_MSG,
+  filterTermModifierIsWithin, FILTER_CONJUNCTION_TYPES,
+} from '../../../../../constants';
 import {
   isCheckboxColumn, isDateColumn, getColumnOptions as getSelectColumnOptions,
   getTypesOptions, getColumnByKey,
@@ -16,15 +21,10 @@ import {
 import {
   getFilterByColumn, getColumnOptions, getUpdatedFilterByPredicate,
 } from '../../../../../utils/filter';
-import {
-  CellType, FILTER_PREDICATE_TYPE, FILTER_TERM_MODIFIER_TYPE, FILTER_ERR_MSG,
-  filterTermModifierIsWithin, FILTER_CONJUNCTION_TYPES,
-} from '../../../../../constants';
+import UnreadStatusFormatter from '../../../../cell-formatter/unread-status';
+import FilterCalendar from '../filter-calendar';
 import FilterItemUtils from '../filter-item-utils';
 import TagsFilter from './tags-filter';
-import { ColumnSelector, OptionSelector, CollaboratorSelector, PrioritySelector } from '@/sea-metadata/components/selectors';
-import SelectTrigger from '@/components/customize-select/select-trigger';
-import UnreadStatusFormatter from '../../../../cell-formatter/unread-status';
 
 import './index.css';
 

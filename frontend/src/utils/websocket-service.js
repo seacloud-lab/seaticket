@@ -1,5 +1,5 @@
-import { server } from './../constants';
 import projectAPI from '@/project/api/project-api';
+import { server } from './../constants';
 
 const getNotificationServerUrl = () => {
   return `${server.replace(/^http/, 'ws')}/notification/`;

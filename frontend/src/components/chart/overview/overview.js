@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import dayjs from '@/utils/dayjs';
-import orgAdminAPI from '@/org-admin/api';
 import classnames from 'classnames';
-import { gettext, orgID } from '@/constants';
-import { Utils } from '@/utils/utils';
 import { CenteredLoading, EmptyTip, Icon, toaster } from '@/components';
-import Ring from '../view/ring';
+import { gettext, orgID } from '@/constants';
+import orgAdminAPI from '@/org-admin/api';
+import dayjs from '@/utils/dayjs';
+import { Utils } from '@/utils/utils';
 import Bar from '../view/bar';
 import Line from '../view/line';
+import Ring from '../view/ring';
 
 import './index.css';
 

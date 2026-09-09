@@ -1,13 +1,13 @@
 import React, { forwardRef, useCallback, useEffect, useState, useImperativeHandle } from 'react';
 import { gettext, mediaUrl, loginUrl } from '@/constants';
-import CenteredLoading from '../centered-loading';
-import CenteredError from '../centered-error';
-import toaster from '../toaster';
 import { Utils } from '@/utils/utils';
-import Paginator from '../paginator';
-import Project from './project';
+import CenteredError from '../centered-error';
+import CenteredLoading from '../centered-loading';
 import EmptyTip from '../empty-tip';
 import FixedWidthTable from '../fixed-width-table';
+import Paginator from '../paginator';
+import toaster from '../toaster';
+import Project from './project';
 
 const ProjectsTable = forwardRef(({
   columns,

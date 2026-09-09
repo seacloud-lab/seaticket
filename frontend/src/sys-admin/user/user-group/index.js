@@ -1,14 +1,14 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from 'reactstrap';
 import { CenteredLoading, CenteredError } from '@/components';
-import { Utils } from '@/utils/utils';
 import { gettext } from '@/constants';
-import Nav from '../user-nav';
-import AddUserToGroupsOperation from './add-user-to-groups';
 import sysAdminAPI from '@/sys-admin/api';
-import { TopBar, Main } from '../../main-panel';
-import UserTitle from '../user-title';
 import GroupsTable from '@/sys-admin/groups/groups-table';
+import { Utils } from '@/utils/utils';
+import { TopBar, Main } from '../../main-panel';
+import Nav from '../user-nav';
+import UserTitle from '../user-title';
+import AddUserToGroupsOperation from './add-user-to-groups';
 
 const UserGroups = ({ email, onCloseSidePanel }) => {
   const [user, setUser] = useState({});

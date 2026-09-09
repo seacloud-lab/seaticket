@@ -1,15 +1,15 @@
 import React, { Component } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
-import Option from './option';
-import SearchInput from '../../search-input';
-import { KeyCodes } from '@/constants/keyCodes';
-import { gettext } from '@/constants';
-import { getTarget } from '@/utils/dom';
-import ClickOutside from '../../click-outside';
 import EmptyTip from '@/components/empty-tip';
-import { isNumber, isString } from '@/utils/type-detection';
+import { gettext } from '@/constants';
+import { KeyCodes } from '@/constants/keyCodes';
+import { getTarget } from '@/utils/dom';
 import { searchOptions } from '@/utils/search';
+import { isNumber, isString } from '@/utils/type-detection';
+import ClickOutside from '../../click-outside';
+import SearchInput from '../../search-input';
+import Option from './option';
 import { getMenuPlacement } from './placement';
 
 import './index.css';

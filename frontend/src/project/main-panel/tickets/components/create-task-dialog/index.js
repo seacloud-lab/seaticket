@@ -1,23 +1,23 @@
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { Modal, ModalBody, ModalFooter, Button, FormGroup, Label, Input } from 'reactstrap';
-import axios from 'axios';
 import { getPreviewContent } from '@seafile/seafile-editor';
-import { gettext } from '@/constants';
+import axios from 'axios';
 import { toaster, ModalHeader, CenteredLoading, CustomizeSelect, CustomizeLabel } from '@/components';
-import { connectionsAPI } from '@/project/api';
-import { useConnections } from '@/project/main-panel/connections/hooks';
-import { CONNECTION_TYPE, CONNECTION_PREDEFINED_COLUMN_NAME } from '@/project/main-panel/connections/constants';
-import { formatColumns } from '@/project/main-panel/connections/utils';
-import { generatorTicketURL } from '../../utils';
-import { Utils } from '@/utils/utils';
+import { gettext } from '@/constants';
 import User from '@/models/user';
+import { connectionsAPI } from '@/project/api';
+import SingleSelectSettings from '@/project/main-panel/connections/components/connection-resource-details/others/single-select-settings';
+import TextSettings from '@/project/main-panel/connections/components/connection-resource-details/others/text-settings';
+import { CONNECTION_TYPE, CONNECTION_PREDEFINED_COLUMN_NAME } from '@/project/main-panel/connections/constants';
+import { useConnections } from '@/project/main-panel/connections/hooks';
+import { formatColumns } from '@/project/main-panel/connections/utils';
+import { getColumnByName, getColumnOptionNameById, getColumnOptions } from '@/sea-metadata/utils/column';
+import { isNumber } from '@/utils/type-detection';
+import { Utils } from '@/utils/utils';
+import { generatorTicketURL } from '../../utils';
 import {
   CollaboratorsSettings, DueDateSettings,
 } from '../ticket-settings';
-import SingleSelectSettings from '@/project/main-panel/connections/components/connection-resource-details/others/single-select-settings';
-import TextSettings from '@/project/main-panel/connections/components/connection-resource-details/others/text-settings';
-import { getColumnByName, getColumnOptionNameById, getColumnOptions } from '@/sea-metadata/utils/column';
-import { isNumber } from '@/utils/type-detection';
 
 import './index.css';
 

@@ -1,18 +1,18 @@
 import React, { useCallback, useMemo, useState, useEffect, useRef } from 'react';
-import PropTypes from 'prop-types';
 import { Button, Modal, Input, ModalBody, FormGroup, Label, Row } from 'reactstrap';
-import { gettext } from '@/constants';
-import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, STEP, STEPS, EMAIL_SERVER_PROVIDER, getAvailableConnectionTypes } from '../../constants';
-import { getVisibleEmailFields, getEmailProvider, isOAuthEmailProvider, hasValidMicrosoftOAuthUrls, sanitizeEmailConfigByProvider } from '../../utils';
+import PropTypes from 'prop-types';
 import { ModalHeader, Loading, toaster, Icon } from '@/components';
-import ConnectionConfigEditor from '../connection-config-editor';
-import ConnectionDialogFooter from './connection-dialog-footer';
-import { ConfluenceConfig, DiscordConfig, GithubConfig, JiraConfig, LinearConfig } from './connection-config';
-import ConnectionTypeSections from './connection-type-sections';
-import SelectedConnectionHeader from './selected-connection-header';
+import { gettext } from '@/constants';
 import { connectionsAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
+import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, STEP, STEPS, EMAIL_SERVER_PROVIDER, getAvailableConnectionTypes } from '../../constants';
 import { useConnections } from '../../hooks/connections';
+import { getVisibleEmailFields, getEmailProvider, isOAuthEmailProvider, hasValidMicrosoftOAuthUrls, sanitizeEmailConfigByProvider } from '../../utils';
+import ConnectionConfigEditor from '../connection-config-editor';
+import { ConfluenceConfig, DiscordConfig, GithubConfig, JiraConfig, LinearConfig } from './connection-config';
+import ConnectionDialogFooter from './connection-dialog-footer';
+import ConnectionTypeSections from './connection-type-sections';
+import SelectedConnectionHeader from './selected-connection-header';
 
 import './index.css';
 

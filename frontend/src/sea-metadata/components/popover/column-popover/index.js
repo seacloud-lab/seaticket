@@ -1,16 +1,16 @@
 import React, { useCallback, useMemo, useRef } from 'react';
-import PropTypes from 'prop-types';
 import { Button, Popover } from 'reactstrap';
 import classnames from 'classnames';
+import PropTypes from 'prop-types';
 import { gettext } from '@/constants';
-import { useMetadata } from '../../../hooks';
-import { CellType, DEFAULT_DATE_FORMAT } from '../../../constants';
 import ObjectUtils from '@/utils/object-utils';
-import { ValidateColumnFormColumns } from './utils';
-import { COMMON_FORM_COLUMN_TYPE } from './constants';
-import ColumnType from './column-type';
+import { CellType, DEFAULT_DATE_FORMAT } from '../../../constants';
+import { useMetadata } from '../../../hooks';
 import ColumnName from './column-name';
+import ColumnType from './column-type';
+import { COMMON_FORM_COLUMN_TYPE } from './constants';
 import Data from './data';
+import { ValidateColumnFormColumns } from './utils';
 
 import './index.css';
 

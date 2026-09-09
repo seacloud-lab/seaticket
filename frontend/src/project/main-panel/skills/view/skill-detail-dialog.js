@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button, Input, Label, Modal, ModalBody, ModalFooter } from 'reactstrap';
 import classnames from 'classnames';
-import { gettext } from '@/constants';
 import { CenteredLoading, IconButton, ModalHeader, Tooltip, toaster } from '@/components';
 import Switch from '@/components/switch';
-import { Utils } from '@/utils/utils';
+import { gettext } from '@/constants';
 import { skillsAPI } from '@/project/api';
+import { Utils } from '@/utils/utils';
 import { SKILL_DETAIL_MODE, SKILLS_PAGE_TYPE } from '../constants';
 import {
   SKILL_DESCRIPTION_MAX_LENGTH,

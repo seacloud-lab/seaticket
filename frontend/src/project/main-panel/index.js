@@ -1,23 +1,23 @@
 import React from 'react';
+import { CenteredLoading } from '@/components';
+import { useNotification } from '@/components/common/notification/hooks/notification';
 import { BAR_TYPE, BAR_TYPE_CONFIG } from '../constants';
+import { useTags, useMetadata } from '../hooks';
+import Agent from './agent';
+import Analyze from './analyze';
+import Ask from './ask';
+import Connections from './connections';
+import { useConnections } from './connections/hooks';
+import Inbox from './inbox';
+import KnowledgeBase from './knowledge-base';
 import Search from './search';
 import Tickets from './tickets';
-import Connections from './connections';
 import TopBar from './top-bar';
-import Ask from './ask';
-import Agent from './agent';
 import Settings from './settings';
 import Skills from './skills';
-import KnowledgeBase from './knowledge-base';
-import Analyze from './analyze';
 import Tags from './tags';
-import Inbox from './inbox';
 import SupportPortal from './support-portal';
 import PortalIssues from './portal-issues';
-import { useNotification } from '@/components/common/notification/hooks/notification';
-import { useTags, useMetadata } from '../hooks';
-import { useConnections } from './connections/hooks';
-import { CenteredLoading } from '@/components';
 
 import './index.css';
 

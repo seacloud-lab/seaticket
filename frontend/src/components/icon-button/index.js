@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import Icon from '../icon';
+import PropTypes from 'prop-types';
 import { isNumber, isObject } from '@/utils/type-detection';
+import Icon from '../icon';
 
 const IconButton = React.forwardRef(({
   children,

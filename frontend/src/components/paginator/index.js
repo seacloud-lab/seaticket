@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import classnames from 'classnames';
 import { Dropdown, DropdownToggle } from 'reactstrap';
-import CustomDropdownMenu from '../customize-dropdown-menu';
-import CustomizeDropdownItem from '../customize-dropdown-item';
 import { navigate } from '@gatsbyjs/reach-router';
+import classnames from 'classnames';
+import PropTypes from 'prop-types';
 import { gettext } from '../../constants';
+import CustomizeDropdownItem from '../customize-dropdown-item';
+import CustomDropdownMenu from '../customize-dropdown-menu';
 import Icon from '../icon';
 import IconBtn from '../icon-button';
 

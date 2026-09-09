@@ -1,8 +1,8 @@
 import React, { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import SearchedProject from './searched-project';
 import { Utils } from '@/utils/utils';
 import { QUERY_TYPE } from './constant';
+import SearchedProject from './searched-project';
 
 const siteRoot = window.app.config.siteRoot;
 

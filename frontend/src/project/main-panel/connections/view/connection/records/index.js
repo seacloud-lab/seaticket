@@ -1,19 +1,24 @@
 import React, { useMemo, useCallback, useState, useRef, useEffect } from 'react';
-import SeaMetadata from '@/sea-metadata';
-import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
+import { toaster } from '@/components';
+import { gettext } from '@/constants';
+import User from '@/models/user';
 import { connectionsAPI } from '@/project/api';
+import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
+import { EVENT_BUS_TYPE } from '@/project/constants';
+import { useData, useTags, useMetadata } from '@/project/hooks';
+import { useAIChatTools } from '@/project/main-panel/ask/hooks';
+import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
+import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
+import SeaMetadata from '@/sea-metadata';
+import context from '@/sea-metadata/context';
+import { getColumnByName } from '@/sea-metadata/utils/column';
 import CreateTicketDialog from '../../../components/create-ticket-dialog';
 import RelatedIssuesDialog from '../../../components/related-issues-dialog';
 import { useConnectionsPage, useConnections } from '../../../hooks';
-import { gettext } from '@/constants';
-import { EVENT_BUS_TYPE } from '@/project/constants';
-import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import {
   CONNECTION_TYPE, CONNECTION_PREDEFINED_COLUMN_NAME, SUPPORT_MODIFY_CONNECTION_RECORDS_TYPES,
   CONNECTION_COLUMNS_WIDTH_CONFIG, CONNECTION_COLUMNS_ORDER_CONFIG,
 } from '../../../constants';
-import { toaster } from '@/components';
-import context from '@/sea-metadata/context';
 import {
   getTableName, generatorRowClassName, cascadeUpdate,
   generateAIOptions, generateMarkAsOutdatedOptions, generateFindRelatedIssuesOption,
@@ -21,16 +26,11 @@ import {
   generateOpenOriginalPageOption, generateCopyOriginalLinkOption,
   formatColumns,
 } from '../../../utils';
-import { getColumnByName } from '@/sea-metadata/utils/column';
 import { convertRowToNameValue, convertRowsToNameValue, convertRowToKeyValue } from '@/sea-metadata/utils/row';
-import { useData, useTags, useMetadata } from '@/project/hooks';
-import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
 import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import { Utils } from '@/utils/utils';
-import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
 import { normalizeContextMenuOptions } from '@/project/utils';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
-import User from '@/models/user';
 import eventBus from '@/utils/event-bus';
 
 import './index.css';

@@ -1,15 +1,15 @@
 import React, { useEffect, useCallback, useState } from 'react';
 import { CenteredLoading, IconButton } from '@/components';
-import TopBar from '../top-bar';
-import Sessions from './sessions';
-import Chat from './chat';
-import { AskPageProvider, SessionsProvider, DocumentsProvider, useAskPage, useSessions } from './hooks';
 import { PERMISSION_TYPES, gettext, siteRoot } from '@/constants';
-import { ASK_PAGE_SLUG_ID } from './constants';
-import { useConnections } from '../connections/hooks';
-import Documents from './documents';
 import { chatAPI, skillsAPI } from '@/project/api';
 import { BAR_TYPE } from '../../constants';
+import { useConnections } from '../connections/hooks';
+import TopBar from '../top-bar';
+import Chat from './chat';
+import { ASK_PAGE_SLUG_ID } from './constants';
+import Documents from './documents';
+import { AskPageProvider, SessionsProvider, DocumentsProvider, useAskPage, useSessions } from './hooks';
+import Sessions from './sessions';
 
 import './index.css';
 

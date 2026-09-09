@@ -1,8 +1,8 @@
 import React, { Fragment, useCallback, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
+import { getEventClassName } from '@/utils/dom';
 import ModalPortal from '../../modal-portal';
 import Options from '../options';
-import { getEventClassName } from '@/utils/dom';
 import SelectTrigger from '../select-trigger';
 
 const StaticSelect = ({

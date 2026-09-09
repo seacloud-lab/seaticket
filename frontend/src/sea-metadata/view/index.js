@@ -1,12 +1,12 @@
 import React, { useCallback, useRef, useState } from 'react';
 import CenteredLoading from '@/components/centered-loading';
 import toaster from '@/components/toaster';
-import Table from './table';
+import { Utils } from '@/utils/utils';
+import { PER_LOAD_NUMBER, VIEW_TYPE } from '../constants';
+import { useMetadata } from '../hooks';
 import Card from './card';
 import Statistic from './statistic';
-import { useMetadata } from '../hooks';
-import { PER_LOAD_NUMBER, VIEW_TYPE } from '../constants';
-import { Utils } from '@/utils/utils';
+import Table from './table';
 
 const View = ({ CustomView, onCustomViewRowClick, ...props }) => {
   const [isLoadingMore, setIsLoadingMore] = useState(false);

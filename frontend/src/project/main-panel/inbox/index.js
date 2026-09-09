@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef } from 'react';
-import InboxNotificationList from '@/components/common/notification/components/inbox-notification-list';
 import { Icon } from '@/components';
+import InboxNotificationList from '@/components/common/notification/components/inbox-notification-list';
 import { useNotification } from '@/components/common/notification/hooks/notification';
 import { Z_INDEX, gettext } from '@/constants';
 import { BAR_TYPE, BAR_TYPE_CONFIG } from '@/project/constants';
