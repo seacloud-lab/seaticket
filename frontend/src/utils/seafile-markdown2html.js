@@ -1,3 +1,4 @@
+var deepmerge = require('deepmerge').default;
 var sanitize = require('hast-util-sanitize');
 var gh = require('hast-util-sanitize/lib/github');
 var toHTML = require('hast-util-to-html');
@@ -9,7 +10,6 @@ var remark2rehype = require('remark-rehype');
 var slug = require('remark-slug');
 var unified = require('unified');
 var xtend = require('xtend');
-var deepmerge = require('deepmerge').default;
 
 function stringify(config) {
   var settings = xtend(config, this.data('settings'));
