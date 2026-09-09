@@ -41,7 +41,7 @@ const SUPPORT_COPY_RECORD_LINK_TYPES = [
 ];
 
 const ResourceDetailsDialog = ({
-  projectUuid, resource, columns = initColumns, isShowIcon,
+  projectUuid, resource, columns = initColumns, isShowIcon, highlight,
   switchResource, onToggle,
   createMoreOptions,
   getTicket,
@@ -137,6 +137,7 @@ const ResourceDetailsDialog = ({
     columns,
     projectUuid,
     permission,
+    highlight,
   };
 
   return (
@@ -218,13 +219,7 @@ const ResourceDetailsDialog = ({
       </ModalHeader>
       <ModalBody>
         {SUPPORT_ROW_DETAILS_CONNECTION_TYPES.includes(type) && (
-          <ConnectionRecordDetailsInDialog
-            projectUuid={projectUuid}
-            resource={resource}
-            columns={columns}
-            permission={permission}
-            onUpdateResourceDetails={updateResourceDetails}
-          />
+          <ConnectionRecordDetailsInDialog { ...props } resource={resource} onUpdateResourceDetails={updateResourceDetails} />
         )}
         {type === KNOWLEDGE_BASE_TYPE && (
           <KBInDialog knowledgeID={resource._id} updateKB={(kb) => setResourceDetails(kb)} getKB={getKB} { ...props } />

@@ -27,6 +27,7 @@ const GitHubIssuesDetails = ({ details, className, isSmallScreen }) => {
           created_time: detail.created_time ? dayjs(detail.created_time).fromNow() : '',
           content: detail.content,
           comment_id: detail.comment_id,
+          highlight: detail.highlight,
         };
 
         return (

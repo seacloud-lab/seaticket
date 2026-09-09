@@ -4,6 +4,12 @@
   padding: 0 16px;
 }
 
+.seaqa-connection-resource-highlight {
+  border: 1px solid var(--bs-sf-orange-light) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 6px 14px 0 rgba(255, 128, 0, 0.10) !important;
+}
+
 .seaqa-connection-github-comment-editor {
   margin: 16px 0 24px;
 }

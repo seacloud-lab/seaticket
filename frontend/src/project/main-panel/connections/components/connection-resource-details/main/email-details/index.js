@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
 import { EmptyTip, IconButton } from '@/components';
@@ -8,7 +8,7 @@ import Item from './item';
 import './index.css';
 
 const EmailDetails = ({ details, className, ...props }) => {
-  const [isShowAll, setIsShowAll] = useState(details.length <= 5);
+  const [isShowAll, setIsShowAll] = useState(details.length <= 5 || Boolean(details.find(item => item.highlight)));
   const [isLastExpand, setIsLastExpanded] = useState(false);
 
   const isUnread = useMemo(() => {
@@ -25,6 +25,8 @@ const EmailDetails = ({ details, className, ...props }) => {
   }
 
   const { email } = getInfoByEmailFrom(details[0]?.email_from);
+
+  const highlightDetail = details.find(item => item.highlight);
 
   return (
     <div className={classnames('seaqa-connection-email-record', className, { 'last-record-expand': isLastExpand })}>
@@ -57,7 +59,7 @@ const EmailDetails = ({ details, className, ...props }) => {
             key={detail._pk}
             isLast={index === (details.length - 1)}
             detail={detail}
-            isExpand={index === details.length - 1}
+            isExpand={highlightDetail ? detail.highlight : index === details.length - 1}
             setIsLastExpanded={setIsLastExpanded}
             { ...props }
           />

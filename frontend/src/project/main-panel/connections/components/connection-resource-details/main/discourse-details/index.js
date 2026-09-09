@@ -6,6 +6,7 @@ import CommonDetailItem from '../common-detail-item';
 import ReplyDiscourse from './reply-discourse';
 import { connectionsAPI } from '@/project/api';
 import { Utils } from '@utils/utils';
+import { CONNECTION_TYPE } from '@/project/main-panel/connections/constants';
 
 import './index.css';
 
@@ -50,11 +51,10 @@ const DiscourseDetails = ({
           {details.map((detail, index) => (
             <CommonDetailItem
               key={detail._pk ?? `discourse-${index}`} // Avoid raw index if possible
-              type="discourse_forum"
+              type={CONNECTION_TYPE.DISCOURSE_FORUM}
               detail={detail}
             />
           ))}
-
           {permission && (
             isShowReply ? (
               <ReplyDiscourse

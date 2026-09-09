@@ -29,7 +29,7 @@ import { CellType, EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-m
 
 import './index.css';
 
-const ConnectionRecordDetailsInDialog = ({ projectUuid, resource, columns, permission, onUpdateResourceDetails }) => {
+const ConnectionRecordDetailsInDialog = ({ projectUuid, resource, columns, permission, highlight, onUpdateResourceDetails }) => {
   const [connectionDetails, setConnectionDetails] = useState(null);
   const [isTicketDialogOpen, setTicketDialogOpen] = useState(false);
   const [isShowTicketsDialog, setIsShowTicketsDialog] = useState(false);
@@ -253,6 +253,7 @@ const ConnectionRecordDetailsInDialog = ({ projectUuid, resource, columns, permi
             columns={columns}
             projectUuid={projectUuid}
             permission={permission}
+            highlight={highlight}
             isSmallScreen={isSmallSize}
             updateResource={updateResourceDetails}
             onThreadUnreadChange={handleThreadUnreadChange}

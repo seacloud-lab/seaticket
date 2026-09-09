@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, isValidElement, cloneElement } from 'react';
 import classnames from 'classnames';
 import { connectionsAPI } from '@/project/api';
 import context from '@/sea-metadata/context';
@@ -27,7 +27,7 @@ import './index.css';
 
 const { projectUuid } = window.app.pageOptions;
 
-const ResourceTitle = ({ displayDetails = true, resource, className }) => {
+const ResourceTitle = ({ displayDetails = true, resource, className, trigger, children }) => {
   const [isShowDetails, setIsShowDetails] = useState(false);
   const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
   const [isTicketDialogOpen, setTicketDialogOpen] = useState(false);
@@ -187,21 +187,29 @@ const ResourceTitle = ({ displayDetails = true, resource, className }) => {
     });
   }, [modifyRowLink]);
 
-  const hasDetails = resource.type === TICKET_TYPE || (resource.connection_id && resource._id);
+  const hasDetails = resource?.type === TICKET_TYPE || (resource?.connection_id && resource?._id);
+  const onClick = hasDetails && displayDetails ? openDetails : () => {};
 
   return (
     <>
-      <div
-        className={classnames(className, { 'seaqa-agent-resource-title': displayDetails && hasDetails })}
-        title={resource?.title}
-        onClick={hasDetails && displayDetails ? openDetails : () => {}}
-      >
-        {resource?.title}
-      </div>
+      {children && isValidElement(children) ? (
+        <>
+          {cloneElement(children, { resource: resource, onClick: onClick })}
+        </>
+      ) : (
+        <div
+          className={classnames(className, { 'seaqa-agent-resource-title': displayDetails && hasDetails })}
+          title={resource?.title}
+          onClick={onClick}
+        >
+          {resource?.title}
+        </div>
+      )}
       {isShowDetails && (
         <ResourceDetailsDialog
           projectUuid={projectUuid}
           resource={resource}
+          highlight={trigger}
           createMoreOptions={createMoreOptions}
           onToggle={closeDetails}
         />

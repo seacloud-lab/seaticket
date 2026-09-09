@@ -1,9 +1,10 @@
 import React, { useState, useCallback } from 'react';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
-import { ACTION_STATUS, ACTION_TYPE, ACTION_ICON_MAPPER } from '../../../../constants';
-import { IconButton, CustomizeMarkdownViewer } from '@/components';
+import { ACTION_STATUS, ACTION_TYPE, ACTION_ICON_MAPPER, RUN_EVENT_VIEW_SOURCE_TEXT, DEFAULT_VIEW_SOURCE_TEXT } from '../../../../constants';
+import { IconButton, CustomizeMarkdownViewer, SecondaryBtn } from '@/components';
 import AIReply from '@/project/components/ai-reply';
+import ResourceTitle from '../../../resource-title';
 import SuggestionAction from './suggestion-action';
 
 import './index.css';
@@ -26,10 +27,11 @@ const parseResult = (result) => {
   }
 };
 
-const ActionItem = React.memo(({ action, ...props }) => {
+const ActionItem = React.memo(({ action, resource, trigger, eventType, ...props }) => {
   const [isThoughtExpanded, setIsThoughtExpanded] = useState(false);
 
   const { type, status, result, references, children } = action;
+  const viewSourceText = RUN_EVENT_VIEW_SOURCE_TEXT[eventType] || DEFAULT_VIEW_SOURCE_TEXT;
 
   const toggleThoughtExpand = useCallback((e) => {
     e.stopPropagation();
@@ -98,6 +100,11 @@ const ActionItem = React.memo(({ action, ...props }) => {
           <div className="seaqa-agent-action-container seaqa-agent-event-action-container">
             <div className="seaqa-agent-action-label">{gettext('Event')}</div>
             {eventSummary && <CustomizeMarkdownViewer value={eventSummary} showTOC={false} />}
+            {resource && (
+              <ResourceTitle resource={resource} trigger={trigger}>
+                <SecondaryBtn isSmall={true} className="mt-2" text={viewSourceText} />
+              </ResourceTitle>
+            )}
           </div>
         );
       }
@@ -178,7 +185,7 @@ const ActionItem = React.memo(({ action, ...props }) => {
         return (<div className="seaqa-agent-action-container">{result}</div>);
       }
     }
-  }, [isThoughtExpanded, result, references, type, props, children, toggleThoughtExpand]);
+  }, [isThoughtExpanded, result, references, type, props, children, toggleThoughtExpand, resource, viewSourceText, trigger]);
 
   return (
     <div

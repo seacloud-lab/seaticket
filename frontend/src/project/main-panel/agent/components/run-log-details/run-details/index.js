@@ -9,7 +9,7 @@ import ThoughtProcessDialog from './thought-process-dialog';
 import { IconTooltip, SecondaryBtn } from '@/components';
 import DateFormatter from '@/project/main-panel/connections/components/cell-formatter/date-formatter';
 import { FROM_NOW } from '@/sea-metadata/constants';
-import { getDisplayActions } from '../../../utils';
+import { getAgentResource, getDisplayActions, getTriggerInfoFromRun } from '../../../utils';
 
 import './index.css';
 
@@ -81,6 +81,9 @@ const RunDetail = ({
     };
     return null;
   }, [run]);
+
+  const resource = useMemo(() => getAgentResource(run), [run]);
+  const trigger = useMemo(() => getTriggerInfoFromRun(run), [run]);
 
   const toggleExpanded = useCallback((event) => {
     event.stopPropagation();
@@ -167,6 +170,9 @@ const RunDetail = ({
                     key={action.id || actionIndex}
                     action={action}
                     runId={id}
+                    resource={resource}
+                    trigger={trigger}
+                    eventType={event?.type}
                     onConfirm={onConfirmAction}
                     onCancel={onCancelAction}
                     onViewContent={onViewContent}

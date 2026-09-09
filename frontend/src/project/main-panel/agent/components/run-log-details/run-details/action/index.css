@@ -32,7 +32,14 @@
   color: var(--bs-body-tertiary-color);
 }
 
-.seaqa-agent-action-container.seaqa-agent-event-action-container .sf-slate-viewer-scroll-container .article {
+.seaqa-agent-action-container.seaqa-agent-event-action-container .longtext-preview-container,
+.seaqa-agent-action-container.seaqa-agent-event-action-container .longtext-preview-container .sf-slate-viewer-container {
+  height: auto;
+}
+
+.seaqa-agent-action-container.seaqa-agent-event-action-container .sf-slate-viewer-article-container .article {
+  height: auto;
+  min-height: auto;
   max-width: 100%;
 }
 
