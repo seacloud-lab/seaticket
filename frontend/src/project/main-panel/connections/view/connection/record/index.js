@@ -13,9 +13,8 @@ import { useData, useMetadata, useTags } from '@/project/hooks';
 import ConnectionResourceDetails, { ConnectionResourceOtherDetails } from '../../../components/connection-resource-details';
 import { getResourceOriginalURL } from '@/project/utils';
 import { gettext, PERMISSION_TYPES } from '@/constants';
-import { AttachmentObject } from '@/project/main-panel/ask/models';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
-import { BAR_TYPE, EVENT_BUS_TYPE } from '@/project/constants';
+import { EVENT_BUS_TYPE } from '@/project/constants';
 import RelatedIssuesDialog from '../../../components/related-issues-dialog';
 import CreateTicketDialog from '../../../components/create-ticket-dialog';
 import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
@@ -44,11 +43,11 @@ const initColumns = [
   { key: CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED, name: CONNECTION_PREDEFINED_COLUMN_NAME.OUTDATED },
 ];
 
-const Record = ({ projectUuid, permission, toggleBar }) => {
+const Record = ({ projectUuid, permission }) => {
   const { isLoading: isConnectionsPageLoading, pageSlugId, childrenPageSlugId, toggleChildrenPageSlugId } = useConnectionsPage();
   const { getRow, modifyRow, modifyRowLink, modifyLocalRow, insertRowByLink, deleteRows } = useData();
   const { connections } = useConnections();
-  const { updateAttachments } = useAIChatTools();
+  const { handleResolveAttachmentsByAI } = useAIChatTools();
   const { tagsData } = useTags();
 
   const [containerWidth, setContainerWidth] = useState(0);
@@ -105,12 +104,7 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
     const row = { ...record, _id: childrenPageSlugId + '', _pk: childrenPageSlugId };
     const isRw = permission === PERMISSION_TYPES.READ_WRITE;
     let _tools = [
-      generateAIOptions({ rows: [row], columns, connection }, (attachments) => {
-        if (!Array.isArray(attachments) || attachments.length === 0) return;
-        const newAttachments = attachments.map(attachment => new AttachmentObject(attachment));
-        updateAttachments(newAttachments);
-        toggleBar([BAR_TYPE.CHAT]);
-      }),
+      generateAIOptions({ rows: [row], columns, connection }, handleResolveAttachmentsByAI),
       isRw && generateFindRelatedIssuesOption({ row, connection }, () => setIsShowRelatedIssuesDialog(true)),
       ...linkedTicketTools,
       { key: 'divider' },
@@ -164,7 +158,7 @@ const Record = ({ projectUuid, permission, toggleBar }) => {
     return _tools;
   }, [
     projectUuid, record, connection, permission, cacheRecord, columns, childrenPageSlugId, linkedTicketTools,
-    updateAttachments, toggleBar, deleteEmailRecord, modifyRow,
+    handleResolveAttachmentsByAI, deleteEmailRecord, modifyRow,
   ]);
 
   const title = useMemo(() => {

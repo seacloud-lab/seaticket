@@ -2,7 +2,6 @@ import React, { useCallback, useState, useImperativeHandle, forwardRef, useMemo,
 import classnames from 'classnames';
 import { connectionsAPI } from '@/project/api';
 import context from '@/sea-metadata/context';
-import { AttachmentObject } from '@/project/main-panel/ask/models';
 
 // components
 import { ELementTypes } from '@seafile/seafile-editor';
@@ -62,7 +61,7 @@ const AIReply = forwardRef(({
   const actionContextRef = useRef(null);
 
   const { connections } = useConnections();
-  const { updateAttachments } = useAIChatTools();
+  const { handleResolveAttachmentsByAI } = useAIChatTools();
   const { modifyRow, modifyRowLink, insertRowByLink } = useData();
 
   const { aiReply, aiReplyForCopy, sources, mdFiles } = useMemo(() => {
@@ -127,12 +126,6 @@ const AIReply = forwardRef(({
     setIsShowTicketsDialog(true);
   }, []);
 
-  const handleResolveIssueByAI = useCallback((attachments = []) => {
-    if (!Array.isArray(attachments) || attachments.length === 0) return;
-    const newAttachments = attachments.map(attachment => new AttachmentObject(attachment));
-    updateAttachments(newAttachments);
-  }, [updateAttachments]);
-
   const modifyRowsByDetailsMenu = useCallback((rowIds, idRowUpdates) => {
     const actionContext = actionContextRef.current;
     if (!actionContext?.connection || !actionContext?.columns || !Array.isArray(rowIds) || rowIds.length === 0) return Promise.resolve();
@@ -167,7 +160,7 @@ const AIReply = forwardRef(({
     if (!connection) return [];
 
     const options = [
-      generateAIOptions({ rows: [row], columns, connection }, handleResolveIssueByAI),
+      generateAIOptions({ rows: [row], columns, connection }, handleResolveAttachmentsByAI),
       generateFindRelatedIssuesOption({ row, connection }, (targetRow) => openRelatedIssuesDialog(targetRow, details, updateResourceDetails, columns, connection)),
       generateCreateRelatedTicketOption({ row, columns, connection }, (targetRow) => openCreateTicketDialog(targetRow, details, updateResourceDetails, columns, connection)),
       generateLinkAnExistingTicketOption({ row, columns, connection }, (targetRow) => openTicketsDialog(targetRow, details, updateResourceDetails, columns, connection)),
@@ -186,7 +179,7 @@ const AIReply = forwardRef(({
     }
 
     return normalizeContextMenuOptions(options);
-  }, [connections, handleResolveIssueByAI, openRelatedIssuesDialog, openCreateTicketDialog, openTicketsDialog, modifyRowsByDetailsMenu]);
+  }, [connections, handleResolveAttachmentsByAI, openRelatedIssuesDialog, openCreateTicketDialog, openTicketsDialog, modifyRowsByDetailsMenu]);
 
   const createTicketCallback = useCallback((ticket) => {
     const actionContext = actionContextRef.current;

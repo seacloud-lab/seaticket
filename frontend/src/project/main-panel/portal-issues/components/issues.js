@@ -9,7 +9,6 @@ import {
   PORTAL_ISSUE_COLUMNS_ORDER_CONFIG, PORTAL_ISSUE_COLUMNS_WIDTH_CONFIG,
   PORTAL_ISSUE_TABLE_NAME, PORTAL_ISSUE_TYPE,
 } from '../constants';
-import { BAR_TYPE } from '@/project/constants';
 import { gettext } from '@/constants';
 import { CenteredLoading } from '@/components';
 import context from '@/sea-metadata/context';
@@ -35,7 +34,6 @@ import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 const Issues = ({
   canCreateRelatedTickets = true, isBuiltInView = false, canOpenIssue = true, canChatWithAI = false, isShowViewInURL = true,
   projectUuid, workspaceID, projectName, permission,
-  toggleBar = () => {},
   api,
   localStorageNamePrefix: customizeLocalStorageNamePrefix,
   createContextMenuOptions: customizeCreateContextMenuOptions,
@@ -48,7 +46,7 @@ const Issues = ({
   onCustomViewRowClick,
   ...props
 }) => {
-  const { updateAttachments } = useAIChatTools();
+  const { handleResolveAttachmentsByAI } = useAIChatTools();
   const {
     typesData, createType,
     substatesData, createSubstate,
@@ -191,11 +189,6 @@ const Issues = ({
     };
   }, []);
 
-  const chatIssuesByAI = useCallback((issues) => {
-    updateAttachments(issues);
-    toggleBar([BAR_TYPE.CHAT]);
-  }, [toggleBar, updateAttachments]);
-
   const createTicket = useCallback((issue) => {
     if (!issue) return;
     setCurrentIssue(issue);
@@ -245,7 +238,7 @@ const Issues = ({
       params.linkAnExistingTicket = handleLinkAnExistingTicket;
     }
     if (canChatWithAI) {
-      params.chatIssuesByAI = chatIssuesByAI;
+      params.chatIssuesByAI = handleResolveAttachmentsByAI;
     }
     if (isFunction(customizeCreateRowsTools)) {
       return customizeCreateRowsTools(params);
@@ -253,7 +246,7 @@ const Issues = ({
     return generatorIssuesRowsTools(params);
   }, [
     workspaceID, projectName, canCreateRelatedTickets, canChatWithAI,
-    chatIssuesByAI, createTicket, customizeCreateRowsTools, togglePageSlugId,
+    handleResolveAttachmentsByAI, createTicket, customizeCreateRowsTools, togglePageSlugId,
     handleLinkAnExistingTicket,
   ]);
 
@@ -264,7 +257,7 @@ const Issues = ({
       params.linkAnExistingTicket = handleLinkAnExistingTicket;
     }
     if (canChatWithAI) {
-      params.chatIssuesByAI = chatIssuesByAI;
+      params.chatIssuesByAI = handleResolveAttachmentsByAI;
     }
 
     if (isFunction(customizeCreateContextMenuOptions)) {
@@ -273,7 +266,7 @@ const Issues = ({
     return generatorIssuesContextMenuOptions(params);
   }, [
     projectName, workspaceID, canCreateRelatedTickets, canChatWithAI,
-    chatIssuesByAI, createTicket, customizeCreateContextMenuOptions, togglePageSlugId,
+    handleResolveAttachmentsByAI, createTicket, customizeCreateContextMenuOptions, togglePageSlugId,
     handleLinkAnExistingTicket,
   ]);
 
@@ -292,7 +285,7 @@ const Issues = ({
       },
       rowGetterByIndex: () => row,
       context,
-      chatIssuesByAI: canChatWithAI ? chatIssuesByAI : undefined,
+      chatIssuesByAI: canChatWithAI ? handleResolveAttachmentsByAI : undefined,
       togglePageSlugId,
       workspaceID,
       projectName,
@@ -305,7 +298,7 @@ const Issues = ({
     return normalizeContextMenuOptions(options);
   }, [
     workspaceID, projectName, canOpenIssue, canCreateRelatedTickets, canChatWithAI,
-    chatIssuesByAI, createTicket, togglePageSlugId, metadataAPI, handleLinkAnExistingTicket
+    handleResolveAttachmentsByAI, createTicket, togglePageSlugId, metadataAPI, handleLinkAnExistingTicket
   ]);
 
   const handleSwitchIssue = useCallback((step) => {

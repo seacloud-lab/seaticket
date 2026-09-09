@@ -9,7 +9,6 @@ import {
   TICKET_STATE_CONFIG, PREDEFINED_TICKET_COLUMN_NAME, TICKET_TABLE_NAME, TICKET_CHILDREN_PAGE_SLUG_ID,
   AUTO_UPDATE_PARTICIPANTS_KEY,
 } from '../../constants';
-import { BAR_TYPE } from '@/project/constants';
 import {
   convertTicketToKb, generatorTicketsContextMenuOptions,
   convertSubstateToGitHubStateReason, generatorLinkedRecordsForClosedGitHubIssues,
@@ -47,7 +46,7 @@ import './index.css';
 
 const Ticket = ({
   editorAPI, projectUuid, ticketID, permission, isAdmin, projectName, workspaceID,
-  toggleBar, togglePageSlugId
+  togglePageSlugId
 }) => {
   const [isLoading, setLoading] = useState(true);
   const [comment, setComment] = useState('');
@@ -67,7 +66,7 @@ const Ticket = ({
   const { connections } = useConnections();
   const { modifyLocalRow, getTableByName, deleteRow, insertRowByLink } = useData();
   const { tagsData, createTag } = useTags();
-  const { updateAttachments } = useAIChatTools();
+  const { handleResolveAttachmentsByAI } = useAIChatTools();
   const { loading: isLoadingNotifications, markProjectNoticeAsReadByTicket } = useNotification();
   const { openCloseLinkedGitHubIssuesWarningDialog } = useCloseLinkedIssues();
 
@@ -202,11 +201,6 @@ const Ticket = ({
     });
   }, [projectUuid, ticket, handleUpdateParticipants]);
 
-  const chatTicketsByAI = useCallback((tickets) => {
-    updateAttachments(tickets);
-    toggleBar([BAR_TYPE.CHAT]);
-  }, [toggleBar, updateAttachments]);
-
   const findRelatedIssues = useCallback(() => {
     setIsShowRelatedIssuesDialog(true);
   }, []);
@@ -272,7 +266,7 @@ const Ticket = ({
           });
       },
       rowGetterByIndex: () => row,
-      chatTicketsByAI,
+      chatTicketsByAI: handleResolveAttachmentsByAI,
       togglePageSlugId: () => {},
       workspaceID,
       projectName,
@@ -292,7 +286,7 @@ const Ticket = ({
     return options;
   }, [
     ticket, projectUuid, workspaceID, projectName, connections,
-    getTableByName, deleteRow, chatTicketsByAI, findRelatedIssues, createKnowledgeBaseRecord, createTask,
+    getTableByName, deleteRow, handleResolveAttachmentsByAI, findRelatedIssues, createKnowledgeBaseRecord, createTask,
     togglePageSlugId,
   ]);
 

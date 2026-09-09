@@ -27,10 +27,10 @@ export const DataProvider = ({
   projectUuid,
   projectName,
   workspaceID,
-  activeBar,
   api,
   enablePortal,
   isSubscribeConnectionsSyncStatus = true,
+  toggleBar,
   children
 }) => {
   const [data, setData] = useState({ version: 0 });
@@ -727,8 +727,8 @@ export const DataProvider = ({
       modifyTablesRows,
       modifyLocalGitHubIssuesClosed,
     }}>
-      <AIChatToolsProvider>
-        <NotificationProvider projectUuid={projectUuid} activeBar={activeBar}>
+      <AIChatToolsProvider toggleBar={toggleBar}>
+        <NotificationProvider projectUuid={projectUuid}>
           <CollaboratorsProvider listUserInfo={listUserInfo} getCollaborators={getCollaborators}>
             <TagsProvider projectUuid={projectUuid} api={api}>
               <MetadataProvider projectUuid={projectUuid} api={api}>
