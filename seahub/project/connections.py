@@ -296,6 +296,10 @@ class ProjectConnectionsView(APIView):
             if not ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.JIRA_ISSUE.value):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Jira OAuth authorization is required.')
 
+        if connection_type == ConnectionType.NOTION.value:
+            if not ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.NOTION.value):
+                return api_error(status.HTTP_400_BAD_REQUEST, 'Notion OAuth authorization is required.')
+
         record, error_response = create_connection(project, request.user.username, connection_type, name, config)
         if error_response:
             return error_response
@@ -1094,6 +1098,34 @@ class ProjectJiraOauthStatusView(APIView):
 
         connected = ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.JIRA_ISSUE.value) is not None
         return Response({'connected': connected})
+
+
+class ProjectNotionOauthStatusView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def get(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_admin_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        connected = ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.NOTION.value) is not None
+        workspace_info = request.session.get('notion_oauth_workspace', {})
+        return Response({
+            'connected': connected,
+            'workspace_id': workspace_info.get('workspace_id', ''),
+            'workspace_name': workspace_info.get('workspace_name', ''),
+            'workspace_icon': workspace_info.get('workspace_icon', ''),
+        })
 
 
 class ProjectConnectionRecordView(APIView):

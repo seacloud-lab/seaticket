@@ -222,7 +222,8 @@ CONNECTION_FIELDS = {
         ConnectionField('api_token', False, False).to_dict(),
     ],
     ConnectionType.NOTION.value: [
-        ConnectionField('integration_secret', True, False).to_dict(),
+        ConnectionField('workspace_id', False, False).to_dict(),
+        ConnectionField('workspace_name', False, False).to_dict(),
     ],
     ConnectionType.LINEAR.value: [
         ConnectionField('team_id', True, False).to_dict(),

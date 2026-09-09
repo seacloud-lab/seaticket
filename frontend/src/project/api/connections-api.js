@@ -132,6 +132,11 @@ class ConnectionsAPI {
     return this.req.get(url);
   }
 
+  getNotionOauthStatus(projectUuid) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/notion-oauth/';
+    return this.req.get(url);
+  }
+
   listJiraSites(projectUuid, signal) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/jira/sites/';
     return this.req.get(url, { signal });

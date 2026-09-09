@@ -9,7 +9,7 @@ import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_
 import { useConnections } from '../../hooks/connections';
 import { getVisibleEmailFields, getEmailProvider, isOAuthEmailProvider, hasValidMicrosoftOAuthUrls, sanitizeEmailConfigByProvider } from '../../utils';
 import ConnectionConfigEditor from '../connection-config-editor';
-import { ConfluenceConfig, DiscordConfig, GithubConfig, JiraConfig, LinearConfig } from './connection-config';
+import { ConfluenceConfig, DiscordConfig, GithubConfig, JiraConfig, LinearConfig, NotionConfig } from './connection-config';
 import ConnectionDialogFooter from './connection-dialog-footer';
 import ConnectionTypeSections from './connection-type-sections';
 import SelectedConnectionHeader from './selected-connection-header';
@@ -79,6 +79,12 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const [jiraProjectsVersion, setJiraProjectsVersion] = useState(0);
   const [isCheckingJiraOauth, setCheckingJiraOauth] = useState(false);
   const [jiraOauthError, setJiraOauthError] = useState('');
+  const [isWaitingNotionOAuth, setWaitingNotionOAuth] = useState(false);
+  const [isNotionOauthConnected, setNotionOauthConnected] = useState(false);
+  const [isCheckingNotionOauth, setCheckingNotionOauth] = useState(false);
+  const [notionOauthError, setNotionOauthError] = useState('');
+  const notionOauthIntervalRef = useRef(null);
+  const notionOauthWindowRef = useRef(null);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -121,6 +127,11 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const isConfluence = useMemo(() => type === CONNECTION_TYPE.CONFLUENCE, [type]);
   const isDiscord = useMemo(() => type === CONNECTION_TYPE.DISCORD, [type]);
   const isJira = useMemo(() => type === CONNECTION_TYPE.JIRA_ISSUE, [type]);
+  const isNotion = useMemo(() => type === CONNECTION_TYPE.NOTION, [type]);
+
+  const isMicrosoftEmailProvider = useMemo(() => {
+    return isEmail && getEmailProvider(config) === EMAIL_SERVER_PROVIDER.MICROSOFT;
+  }, [isEmail, config]);
 
   const isOAuthEmail = useMemo(() => {
     return isEmail && isOAuthEmailProvider(getEmailProvider(config));
@@ -145,6 +156,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     if (isDiscord && !config.guild_id) return false;
     if (isJira && !isJiraOauthConnected) return false;
     if (isOAuthEmail && !emailOAuthState) return false;
+    if (isNotion && !isNotionOauthConnected) return false;
     return customColumns.length > 0 ? customColumns.every(c => {
       if (c.type === CONNECTION_FIELD_TYPE.GROUP) {
         return c.children.every(child => {
@@ -156,7 +168,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       return true;
     }) : true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [name, config, customColumns, isLinear, isLinearOauthConnected, isConfluence, isConfluenceOauthConnected, isDiscord, isOAuthEmail, emailOAuthState, isJira, isJiraOauthConnected]);
+  }, [name, config, customColumns, isLinear, isLinearOauthConnected, isConfluence, isConfluenceOauthConnected, isDiscord, isOAuthEmail, emailOAuthState, isJira, isJiraOauthConnected, isNotion, isNotionOauthConnected]);
 
   useEffect(() => {
     const handleDiscordOAuthMessage = (event) => {
@@ -192,18 +204,29 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     }
   }, []);
 
+  const stopNotionOAuthPolling = useCallback(() => {
+    if (notionOauthIntervalRef.current) {
+      window.clearInterval(notionOauthIntervalRef.current);
+      notionOauthIntervalRef.current = null;
+    }
+  }, []);
+
   useEffect(() => {
     return () => {
       stopEmailOAuthPolling();
       stopConfluenceOAuthPolling();
+      stopNotionOAuthPolling();
       if (emailOauthWindowRef.current && !emailOauthWindowRef.current.closed) {
         emailOauthWindowRef.current.close();
       }
       if (confluenceOauthWindowRef.current && !confluenceOauthWindowRef.current.closed) {
         confluenceOauthWindowRef.current.close();
       }
+      if (notionOauthWindowRef.current && !notionOauthWindowRef.current.closed) {
+        notionOauthWindowRef.current.close();
+      }
     };
-  }, [stopEmailOAuthPolling, stopConfluenceOAuthPolling]);
+  }, [stopEmailOAuthPolling, stopConfluenceOAuthPolling, stopNotionOAuthPolling]);
 
   const onNameChange = useCallback((event) => {
     const newValue = event.target.value;
@@ -602,6 +625,52 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     }, 2000);
   }, []);
 
+  const fetchNotionOauthStatus = useCallback(() => {
+    setCheckingNotionOauth(true);
+    return connectionsAPI.getNotionOauthStatus(projectUuid).then(res => {
+      setNotionOauthConnected(Boolean(res?.data?.connected));
+      setNotionOauthError('');
+    }).catch(() => {
+      setNotionOauthConnected(false);
+      setNotionOauthError(gettext('Failed to check Notion authorization status.'));
+    }).finally(() => {
+      setCheckingNotionOauth(false);
+    });
+  }, []);
+
+  const handleConnectNotion = useCallback(() => {
+    const next = window.location.href;
+    const oauthUrl = `${server}/notion/oauth/?project_uuid=${projectUuid}&next=${encodeURIComponent(next)}`;
+    notionOauthWindowRef.current = window.open(oauthUrl, 'notion-oauth', 'width=800,height=700');
+    setWaitingNotionOAuth(true);
+    stopNotionOAuthPolling();
+    notionOauthIntervalRef.current = window.setInterval(() => {
+      connectionsAPI.getNotionOauthStatus(projectUuid).then(res => {
+        if (!res?.data?.connected) return;
+        stopNotionOAuthPolling();
+        setWaitingNotionOAuth(false);
+        setNotionOauthConnected(true);
+        setNotionOauthError('');
+        setConfig(prevConfig => ({
+          ...prevConfig,
+          workspace_id: res.data.workspace_id || '',
+          workspace_name: res.data.workspace_name || '',
+          workspace_icon: res.data.workspace_icon || '',
+        }));
+        if (notionOauthWindowRef.current && !notionOauthWindowRef.current.closed) {
+          notionOauthWindowRef.current.close();
+        }
+      }).catch(() => {
+        // Silently retry on next interval
+      });
+    }, 2000);
+  }, [stopNotionOAuthPolling]);
+
+  useEffect(() => {
+    if (!isNotion) return;
+    fetchNotionOauthStatus();
+  }, [isNotion, fetchNotionOauthStatus]);
+
   const listJiraSites = useCallback((signal) => {
     if (!isJiraOauthConnected) {
       return Promise.resolve({ data: { options: [] } });
@@ -873,7 +942,22 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
             handleConnectDiscord={handleConnectDiscord}
           />
         )}
-        {step.key === STEP.CONFIG && !isGithub && !isJira && !isConfluence && !isLinear && !isDiscord && (
+        {step.key === STEP.CONFIG && isNotion && (
+          <NotionConfig
+            isNotionOauthConnected={isNotionOauthConnected}
+            isWaitingNotionOAuth={isWaitingNotionOAuth}
+            setWaitingNotionOAuth={setWaitingNotionOAuth}
+            isSubmitting={isSubmitting}
+            isCheckingNotionOauth={isCheckingNotionOauth}
+            handleConnectNotion={handleConnectNotion}
+            notionOauthError={notionOauthError}
+            name={name}
+            onNameChange={onNameChange}
+            basicCustomColumns={basicCustomColumns}
+            renderConnectionField={renderConnectionField}
+          />
+        )}
+        {step.key === STEP.CONFIG && !isGithub && !isJira && !isConfluence && !isLinear && !isDiscord && !isNotion && (
           <div className="seaqa-project-new-connection-config">
             <FormGroup>
               <Label>
@@ -962,7 +1046,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       </ModalBody>
       <ConnectionDialogFooter
         stepIndex={stepIndex}
-        isSubmitDisabled={isSubmitting || isWaitingEmailOAuth || isWaitingConfluenceOAuth || isWaitingJiraOAuth || isWaitingLinearOAuth || !isValid || !name}
+        isSubmitDisabled={isSubmitting || isWaitingEmailOAuth || isWaitingConfluenceOAuth || isWaitingJiraOAuth || isWaitingLinearOAuth || isWaitingNotionOAuth || !isValid || !name}
         onToggle={onToggle}
         setStepIndex={setStepIndex}
         onSubmit={handleSubmit}
