@@ -33,10 +33,6 @@
   justify-content: flex-end;
 }
 
-.seaqa-ai-ask-chats-body::-webkit-scrollbar {
-  display: none;
-}
-
 .seaqa-ai-ask-chats {
   display: flex;
   flex-direction: column;

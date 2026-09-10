@@ -4,6 +4,7 @@ import { Z_INDEX } from '@/constants/zIndexes';
 
 const propTypes = {
   getScrollHeight: PropTypes.func.isRequired,
+  getTableMainContainerRect: PropTypes.func,
   onScrollbarScroll: PropTypes.func.isRequired,
   onScrollbarMouseUp: PropTypes.func.isRequired,
 };
@@ -50,11 +51,17 @@ class RightScrollbar extends React.Component {
       style.zIndex = Z_INDEX.SCROLL_BAR;
     }
 
+    if (this.props.getTableMainContainerRect) {
+      const { width: tableWidth } = this.props.getTableMainContainerRect();
+      const { width } = this.rightScrollContainer?.getBoundingClientRect() || { width: 20 };
+      style.left = tableWidth - width;
+    } else {
+      /* sea-metadata-table-wrapper have 0px margin */
+      style.right = 0;
+    }
+
     /* sea-metadata-table-header have 33px height */
     style.top = 33;
-
-    /* sea-metadata-table-wrapper have 0px margin */
-    style.right = 0;
     return style;
   };
 
