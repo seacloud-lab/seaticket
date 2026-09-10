@@ -215,6 +215,7 @@ const Portal = () => {
             workspaceID={workspaceID}
             enablePortal={true}
             isSubscribeConnectionsSyncStatus={false}
+            useNotification={false}
           >
             {isEditMode && <LeftBar />}
             <div className="seaqa-portal-body">
