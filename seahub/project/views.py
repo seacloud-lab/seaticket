@@ -776,12 +776,6 @@ def jira_oauth_callback(request):
 NOTION_VERSION = "2026-03-11"
 
 
-def _calc_notion_expires_at(expires_in, has_refresh_token):
-    if has_refresh_token:
-        return _calc_confluence_expires_at(expires_in)
-    return datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=36500)
-
-
 @login_required
 def notion_oauth(request):
     return_to = request.GET.get('next') or '/'
@@ -874,12 +868,12 @@ def notion_oauth_callback(request):
 
     token_json = resp.json()
     access_token = token_json.get('access_token')
-    refresh_token = token_json.get('refresh_token') or ''
+    refresh_token = token_json.get('refresh_token')
     if not access_token:
         logger.error('Notion OAuth token missing access_token: %s', token_json)
         return render_error(request, _('Failed to authorize Notion.'))
 
-    expires_at = _calc_notion_expires_at(token_json.get('expires_in'), bool(refresh_token))
+    expires_at = _calc_confluence_expires_at(token_json.get('expires_in'))
     ProjectConnectionOauth.objects.upsert_token(
         project_uuid,
         ConnectionType.NOTION.value,
@@ -909,7 +903,7 @@ def notion_oauth_callback(request):
         (function() {{
         var message = {message};
         if (window.opener && !window.opener.closed) {{
-            window.opener.postMessage(message, window.location.origin);
+            window.opener.postMessage(message, '*');
             window.close();
         }} else {{
             window.location.replace({fallback_url});

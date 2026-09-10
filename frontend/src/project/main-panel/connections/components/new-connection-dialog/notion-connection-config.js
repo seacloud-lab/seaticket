@@ -1,9 +1,9 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import classnames from 'classnames';
 import { Button, FormGroup, Input, Label, Modal, ModalBody } from 'reactstrap';
-import { gettext } from '@/constants';
+import classnames from 'classnames';
+import PropTypes from 'prop-types';
 import { Icon, Loading, ModalHeader } from '@/components';
+import { gettext } from '@/constants';
 
 const NotionConfig = ({
   isNotionOauthConnected,
