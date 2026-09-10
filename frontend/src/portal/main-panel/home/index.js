@@ -3,16 +3,16 @@ import classnames from 'classnames';
 import slugid from 'slugid';
 import { CenteredLoading, Icon, IconButton } from '@/components';
 import { DEFAULT_PROJECT_ICON, gettext, PROJECT_ICON_ALL_LIST } from '@/constants';
+import { portalAPI } from '@/portal/api';
 import { usePortalSettings } from '@/portal/hooks/settings';
+import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
+import { KNOWLEDGE_BASE_TYPE } from '@/project/main-panel/knowledge-base/constants';
+import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { isMobile } from '@/utils/utils';
 import PortalCardEditPanel from './card-edit-panel';
 import PortalHomeChatInput from './chat-input';
 import PortalHomeEditPanel from './edit-panel';
 import { CARD_LAYOUT_OPTIONS, DEFAULT_NEW_CARD, getSafeCardLink, normalizeHomePageStyle } from './utils';
-import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
-import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
-import { portalAPI } from '@/portal/api';
-import { KNOWLEDGE_BASE_TYPE } from '@/project/main-panel/knowledge-base/constants';
 
 import './index.css';
 
