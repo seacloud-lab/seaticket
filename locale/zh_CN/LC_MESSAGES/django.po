@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: seaqa-web\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-08-26 09:43+0800\n"
-"PO-Revision-Date: 2026-08-26 01:55\n"
+"PO-Revision-Date: 2026-09-10 09:58\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Language: zh\n"
@@ -65,7 +65,7 @@ msgstr "未找到群组。"
 #: seahub/api2/endpoints/org_admin/groups.py:722
 #: seahub/project/connections.py:392
 msgid "Project not found."
-msgstr "未找到项目"
+msgstr "未找到项目。"
 
 #: seahub/api2/endpoints/admin/groups.py:117
 #: seahub/api2/endpoints/groups.py:112 seahub/api2/endpoints/groups.py:226
@@ -122,7 +122,7 @@ msgstr "用户数量超过限制。"
 
 #: seahub/api2/endpoints/admin/users.py:503
 msgid "Edit succeeded"
-msgstr "修改成功。"
+msgstr "修改成功"
 
 #: seahub/api2/endpoints/admin/users.py:510
 #: seahub/api2/endpoints/org_admin/users.py:405
@@ -160,7 +160,7 @@ msgstr "已成功将密码重置为 %(passwd)s，但未能向 %(user)s 发送电
 #: seahub/api2/endpoints/admin/users.py:710
 #, python-format
 msgid "Successfully reset password to %(passwd)s for user %(user)s"
-msgstr "成功将用户 %(user)s 的密码重置为 %(passwd)s。"
+msgstr "成功将用户 %(user)s 的密码重置为 %(passwd)s"
 
 #: seahub/api2/endpoints/admin/users.py:714
 #, python-format
@@ -179,7 +179,7 @@ msgstr "用户 %s 已经是群组成员。"
 #: seahub/api2/endpoints/org_admin/users.py:257
 #, python-format
 msgid "User %s not found in organization."
-msgstr "机构内无用户 %s"
+msgstr "机构内无用户 %s。"
 
 #: seahub/api2/endpoints/groups.py:126 seahub/api2/endpoints/groups.py:128
 #: seahub/api2/endpoints/groups.py:130 seahub/api2/endpoints/groups.py:141
@@ -210,7 +210,7 @@ msgstr "%(ext)s 是一个无效文件扩展名，允许的文件扩展名为：%
 #: seahub/portal/apis.py:197 seahub/utils/error_msg.py:13
 #, python-format
 msgid "Your file is too big (%(size)s), the maximum allowed size is %(max_valid_size)s"
-msgstr "文件过大 (%(size)s)，最大允许文件大小为 %(max_valid_size)s。"
+msgstr "文件过大 (%(size)s)，最大允许文件大小为 %(max_valid_size)s"
 
 #: seahub/api2/endpoints/org_admin/users.py:192
 #: seahub/api2/endpoints/org_admin/users.py:198
@@ -351,7 +351,7 @@ msgstr "新密码确认"
 #: seahub/auth/forms.py:210 seahub/auth/forms.py:256
 #: seahub/organizations/forms.py:61
 msgid "The two password fields didn't match."
-msgstr "两次输入的密码不一致"
+msgstr "两次输入的密码不一致。"
 
 #: seahub/auth/forms.py:224
 msgid "Old password"
@@ -449,7 +449,7 @@ msgstr "两次填写的密码不一致。"
 
 #: seahub/group/error_msg.py:8
 msgid "The group has already created"
-msgstr "名称重复，请重新输入。"
+msgstr "名称重复，请重新输入"
 
 #: seahub/group/error_msg.py:9
 msgid "Failed to create group"
@@ -698,7 +698,7 @@ msgstr "账号创建成功，请等待管理员激活你的账号。"
 
 #: seahub/organizations/forms.py:39
 msgid "Email address is not valid"
-msgstr "邮箱地址 %s 无效。"
+msgstr "邮箱地址无效"
 
 #: seahub/organizations/views.py:273
 msgid "Failed to send email"
@@ -748,7 +748,7 @@ msgstr "密码无效"
 #: seahub/project/views.py:397 seahub/project/views.py:458
 #: seahub/project/views.py:537 seahub/project/views.py:581
 msgid "Permission denied."
-msgstr "没有权限"
+msgstr "没有权限。"
 
 #: seahub/profile/templates/profile/set_profile_react.html:5
 #: seahub/templates/base.html:61
@@ -1177,7 +1177,7 @@ msgstr "请在 %(expiration_days)s 天内，点击以下链接激活你的账号
 #: seahub/templates/registration/logged_out.html:8
 #: seahub/templates/registration/logout.html:8
 msgid "Thanks for your participation! "
-msgstr "感谢你的参与！"
+msgstr "感谢你的参与！ "
 
 #: seahub/templates/registration/logged_out.html:8
 #: seahub/templates/registration/logout.html:8
@@ -1197,7 +1197,7 @@ msgstr "你输入的账号或密码不正确"
 #: seahub/templates/registration/multi_saml_sso.html:38
 #, python-format
 msgid "Remember me for %(remember_days)s days "
-msgstr "%(remember_days)s天内保持登录"
+msgstr "%(remember_days)s天内保持登录 "
 
 #: seahub/templates/registration/login.html:101
 msgid "Forgot password?"
@@ -1290,7 +1290,7 @@ msgstr "我们已经给你发了一封密码重置邮件，请查收。"
 #: seahub/templates/registration/password_reset_email.html:12
 #, python-format
 msgid "To reset the password of your account %(account)s on %(site_name)s, please click the following link: "
-msgstr "要重置你在 %(site_name)s 上的账号 %(account)s 的密码， 请点击下面的链接："
+msgstr "要重置你在 %(site_name)s 上的账号 %(account)s 的密码， 请点击下面的链接： "
 
 #: seahub/templates/registration/password_reset_email.html:20
 msgid "If you did not request it, just skip it."
@@ -1425,7 +1425,7 @@ msgstr "账号 %(user)s 由于过多失败登录而冻结。 请检查："
 #: seahub/templates/sysadmin/user_reset_email.html:12
 #, python-format
 msgid "Your password on %(site_name)s has been reset. Now it is %(password)s. Please change it as soon as possible. "
-msgstr "你在 %(site_name)s 的密码已被重置, 现在是 %(password)s, 请尽快修改。"
+msgstr "你在 %(site_name)s 的密码已被重置, 现在是 %(password)s, 请尽快修改。 "
 
 #: seahub/two_factor/forms.py:39 seahub/two_factor/forms.py:63
 #: seahub/two_factor/forms.py:167 seahub/two_factor/forms.py:173
