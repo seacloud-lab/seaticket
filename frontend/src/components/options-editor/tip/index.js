@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import classnames from 'classnames';
 import EmptyTip from '@/components/empty-tip';
 import { mediaUrl, gettext } from '@/constants';
 
@@ -15,7 +16,7 @@ const Tip = ({ isAsyncSearch = false, searchValue, tip, src }) => {
     setTipImgSrc(width > 300 ? `${mediaUrl}img/no-items-tip.png` : '');
   }, [src]);
 
-  const className = 'options-editor-empty-tip';
+  const className = classnames('options-editor-empty-tip', { 'options-editor-empty-img-tip': tipImgSrc });
   if (!isAsyncSearch) {
     return (<EmptyTip innerRef={tipRef} src={tipImgSrc} text={tip} className={className} />);
   }
