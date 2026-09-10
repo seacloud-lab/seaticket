@@ -54,7 +54,7 @@ const MyProjectsTrash = () => {
         <div className="cur-view-container d-flex flex-1 flex-column">
           <div className={`${isDesktop ? '' : 'p-0'} cur-view-content my-projects-trash`}>
             <div className="my-projects-trash-title">
-              <span className="my-projects-trash-title-text">{gettext('Trash')}</span>
+              <span>{gettext('Trash')}</span>
               {activeTab === 'personal' && (
                 <Button onClick={openCleanConfirm}>
                   {gettext('Clean')}

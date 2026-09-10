@@ -1,4 +1,4 @@
-.seaqa-group-member-content .member-count {
+.seaqa-workspace-member-dialog .member-count {
   height: 40px;
   line-height: 24px;
   text-align: center;
@@ -6,18 +6,18 @@
   font-weight: 400;
 }
 
-.seaqa-group-member-content .group-members {
+.seaqa-workspace-member-dialog .group-members {
   min-height: 200px;
   max-height: 500px;
   overflow-y: auto;
   padding: 0;
 }
 
-.seaqa-group-member-content .group-members-not-overflow::-webkit-scrollbar {
+.seaqa-workspace-member-dialog .group-members-not-overflow::-webkit-scrollbar {
   width: 0;
 }
 
-.seaqa-group-member-content .group-members .member-details {
+.seaqa-workspace-member-dialog .group-members .member-details {
   height: 48px;
   display: flex;
   align-items: center;
@@ -27,26 +27,26 @@
   border-radius: 4px;
 }
 
-.seaqa-group-member-content .group-members .member-details:hover {
+.seaqa-workspace-member-dialog .group-members .member-details:hover {
   background-color: rgba(0, 0, 0, 0.04);
 }
 
-.seaqa-group-member-content .group-members .member-details:first-child {
+.seaqa-workspace-member-dialog .group-members .member-details:first-child {
   margin-top: 2px;
 }
 
-.seaqa-group-member-content .group-members .member-details:last-child {
+.seaqa-workspace-member-dialog .group-members .member-details:last-child {
   margin-bottom: 2px;
 }
 
-.seaqa-group-member-content .member-details .member-avatar {
+.seaqa-workspace-member-dialog .member-details .member-avatar {
   height: 32px;
   width: 32px;
   border-radius: 50%;
   overflow: hidden;
 }
 
-.seaqa-group-member-content .member-details .member-name {
+.seaqa-workspace-member-dialog .member-details .member-name {
   flex: 1;
   max-width: fit-content;
   padding-left: 8px;
@@ -56,7 +56,7 @@
   color: var(--bs-body-color);
 }
 
-.seaqa-group-member-content .member-details .member-role {
+.seaqa-workspace-member-dialog .member-details .member-role {
   display: inline-flex;
   align-items: center;
   justify-content: center;

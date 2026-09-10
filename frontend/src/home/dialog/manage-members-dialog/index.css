@@ -1,78 +1,7 @@
-.manage-members {
-  min-height: 200px;
-  max-height: 300px;
-  overflow: auto;
-}
-
-.manage-members-table th,
-.manage-members-table td {
-  vertical-align: middle;
-  text-align: left;
-}
-
-.manage-members thead tr th {
-  height: 36px;
-  padding: 0.3rem;
-}
-
-.manage-members .manage-members-table .avatar {
-  width: 24px;
-  height: 24px;
-}
-
-.manage-members tbody tr th {
-  padding-right: 4px;
-  text-align: right;
-}
-
-.manage-members .group-member-name {
-  padding-left: 4px;
-}
-
-.delete-group-member-icon {
-  opacity: 0;
-  cursor: pointer;
-  color: #888;
-  margin-left: 5px;
-}
-
-.manage-members-table tr:hover .delete-group-member-icon {
-  opacity: 1;
-}
-
-.manage-members-table .editing {
-  background-color: rgba(0, 0, 0, 0.04);
-}
-
-.delete-group-member-icon:hover {
-  color: var(--bs-body-color);
-}
-
-.add-members-select .true__indicator-separator {
-  display: none;
-}
-
-.add-members {
+.group-manage-members-dialog .add-members {
   display: flex;
   justify-content: space-between;
   position: relative;
-}
-
-.add-members .add-members-select {
-  width: 385px;
-  max-width: calc(100% - 70px);
-}
-
-.add-members .btn {
-  width: 75px;
-}
-
-.group-error {
-  margin-top: 10px;
-}
-
-.add-members .true__indicator {
-  display: none;
 }
 
 .group-manage-members-dialog .add-members .toggle-detail-btn {
@@ -94,8 +23,25 @@
   width: 18px;
 }
 
-.add-members .toggle-detail-btn:hover {
+.group-manage-members-dialog .add-members .add-members-select {
+  width: 385px;
+  max-width: calc(100% - 70px);
+}
+
+.group-manage-members-dialog .add-members .btn {
+  width: 75px;
+}
+
+.group-manage-members-dialog .add-members .true__indicator {
+  display: none;
+}
+
+.group-manage-members-dialog .add-members .toggle-detail-btn:hover {
   color: var(--bs-sf-grey-text);
+}
+
+.group-manage-members-dialog .add-members-select .true__indicator-separator {
+  display: none;
 }
 
 .group-manage-members-dialog .seaqa-icon-svg-return {
@@ -122,4 +68,58 @@
   border: 1px solid hsl(0, 0%, 80%);
   color: #495057;
   box-shadow: none;
+}
+
+.group-manage-members-dialog .manage-members {
+  min-height: 200px;
+  max-height: 300px;
+  overflow: auto;
+}
+
+.group-manage-members-dialog .manage-members-table th,
+.group-manage-members-dialog .manage-members-table td {
+  vertical-align: middle;
+  text-align: left;
+}
+
+.group-manage-members-dialog .manage-members thead tr th {
+  height: 36px;
+  padding: 0.3rem;
+}
+
+.group-manage-members-dialog .manage-members .manage-members-table .avatar {
+  width: 24px;
+  height: 24px;
+}
+
+.group-manage-members-dialog .manage-members tbody tr th {
+  padding-right: 4px;
+  text-align: right;
+}
+
+.group-manage-members-dialog .manage-members .group-member-name {
+  padding-left: 4px;
+}
+
+.group-manage-members-dialog .manage-members-table tr:hover .delete-group-member-icon {
+  opacity: 1;
+}
+
+.group-manage-members-dialog .manage-members-table .editing {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.group-manage-members-dialog .group-error {
+  margin-top: 10px;
+}
+
+.group-manage-members-dialog .delete-group-member-icon {
+  opacity: 0;
+  cursor: pointer;
+  color: #888;
+  margin-left: 5px;
+}
+
+.group-manage-members-dialog .delete-group-member-icon:hover {
+  color: var(--bs-body-color);
 }

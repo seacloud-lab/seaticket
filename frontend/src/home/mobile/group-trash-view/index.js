@@ -4,7 +4,7 @@ import { EmptyTip, Icon, Loading, MobileCommonHeader } from '../../../components
 import { gettext, trashCleanExpireDays, mediaUrl } from '../../../constants';
 import DeletedGroupProjectItem from './deleted-group-project-item';
 
-import './index.css';
+import './group-trash-view.css';
 
 function GroupTrashView(props) {
   const { trashList, toggle, groupID, restoreProject, isLoading } = props;

@@ -13,7 +13,7 @@ import { Utils } from '@/utils/utils';
 import AllInboxNav from './components/all-inbox-nav';
 import GroupItem from './group-item';
 
-import './side-panel.css';
+import './index.css';
 
 const propTypes = {
   isUpdateSidePanelGroups: PropTypes.bool,

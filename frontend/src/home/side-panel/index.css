@@ -1,0 +1,36 @@
+.side-panel .project-side-nav {
+  padding: 0px 8px;
+  flex: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  background-color: var(--bs-body-third-bg);
+}
+
+.side-panel .project-side-nav .seaqa-nav-title {
+  color: var(--bs-sf-grey-text);
+  padding: 0 8px;
+  line-height: 28px;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.side-panel .project-side-nav .seaqa-nav-list {
+  flex-wrap: inherit;
+  height: auto;
+  border-bottom: none;
+  padding-top: 12px;
+}
+
+.side-panel .project-side-nav .help-resources-nav-list {
+  padding-top: 4px;
+}
+
+.side-panel .project-side-nav .help-resources-nav-list .projects-nav .nav-link {
+  width: 100% !important;
+}
+
+.side-panel .home-page-resize-bar,
+.side-panel .home-page-resize-bar .resize-bar-content {
+  background-color: var(--bs-body-third-bg);
+}
