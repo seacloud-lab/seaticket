@@ -189,7 +189,7 @@
     opacity: 0.5;
   }
   to {
-    right: 0px;
+    right: 0;
     opacity: 1;
   }
 }

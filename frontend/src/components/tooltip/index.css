@@ -1,8 +1,7 @@
 .seaqa-tooltip .tooltip.show {
   opacity: 1;
-  padding: 0px;
+  padding: 0;
 }
-
 
 .seaqa-tooltip .tooltip-inner {
   max-width: 242px;

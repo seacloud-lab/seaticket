@@ -37,7 +37,7 @@
 
 .seaqa-chart-d3-tooltip-container .seaqa-chart-d3-tooltip-list .seaqa-chart-d3-tooltip-list-item {
   list-style-type: none;
-  padding: 0px;
+  padding: 0;
   margin: 8px 0px;
   display: flex;
   align-items: center;

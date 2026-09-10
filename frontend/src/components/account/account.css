@@ -45,7 +45,7 @@
 }
 
 #account .account-popup {
-  right: 0px;
+  right: 0;
   top: 36px;
   font-size: 13px;
   padding: 1rem 1rem 0.75rem 1rem;
@@ -107,7 +107,7 @@
 }
 
 #account .account-info-card p {
-  margin-bottom: 0px;
+  margin-bottom: 0;
   font-size: 12px;
 }
 

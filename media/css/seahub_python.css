@@ -594,7 +594,7 @@ input.short-input {
 }
 
 .login-panel-wrapper .login-form-wrapper .position-relative .form-item-input {
-  margin-bottom: 0px;
+  margin-bottom: 0;
   padding-right: 32px;
 }
 
@@ -678,7 +678,7 @@ input.short-input {
   line-height: 40px;
   padding: 0px 16px;
   border-radius: 4px;
-  margin-bottom: 0px;
+  margin-bottom: 0;
   width: 100%;
   border: 1px solid rgba(0, 40, 100, 0.12);
 }
@@ -754,7 +754,7 @@ input.short-input {
   padding: 0px 16px;
   border-radius: 4px;
   width: 100%;
-  margin-bottom: 0px;
+  margin-bottom: 0;
   border: 1px solid rgba(0, 40, 100, 0.12);
 }
 

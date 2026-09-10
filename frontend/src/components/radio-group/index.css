@@ -44,7 +44,7 @@
 }
 
 .radio-group-wrapper .radio-group-options .radio-group-button.active {
-  color:#fff;
+  color: var(--bs-body-color);
 }
 
 .radio-group-wrapper .radio-group-options .radio-group-slider {
@@ -56,17 +56,17 @@
 }
 
 .radio-group-wrapper .radio-group-options .radio-group-button:nth-of-type(1).active ~ .radio-group-slider {
-  transform:translateX(0%);
+  transform: translateX(0%);
 }
 
 .radio-group-wrapper .radio-group-options .radio-group-button:nth-of-type(2).active ~ .radio-group-slider {
-  transform:translateX(100%);
+  transform: translateX(100%);
 }
 
 .radio-group-wrapper .radio-group-options .radio-group-button:nth-of-type(3).active ~ .radio-group-slider {
-  transform:translateX(200%);
+  transform: translateX(200%);
 }
 
 .radio-group-wrapper .radio-group-options .radio-group-button:nth-of-type(4).active ~ .radio-group-slider {
-  transform:translateX(300%);
+  transform: translateX(300%);
 }
