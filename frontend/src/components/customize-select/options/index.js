@@ -257,7 +257,7 @@ class Options extends Component {
     this.filterOptions = searchOptions(options, searchVal);
     if (this.filterOptions.length === 0) {
       return (
-        <Tip tip={searchVal ? gettext('No results') : noOptionsPlaceholder} />
+        <Tip tip={searchVal ? gettext('No results') : noOptionsPlaceholder} isShowSrc={true} />
       );
     }
     return this.filterOptions.map((opt, i) => {
