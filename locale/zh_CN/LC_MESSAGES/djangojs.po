@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: seaqa-web\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-08-26 09:43+0800\n"
-"PO-Revision-Date: 2026-08-26 01:55\n"
+"PO-Revision-Date: 2026-09-10 09:58\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Language: zh\n"
@@ -381,7 +381,7 @@ msgstr "提交"
 #: frontend/src/components/customize-select-sync/index.js:69
 #: frontend/src/project/main-panel/settings/github-issue-type-mapping/index.js:26
 msgid "Loading..."
-msgstr "加载中..."
+msgstr "加载中……"
 
 #: frontend/src/components/customize-select-sync/index.js:101
 #: frontend/src/components/customize-select-sync/index.js:102
@@ -565,7 +565,7 @@ msgstr "权限"
 
 #: frontend/src/components/dialog/project-api-token-dialog.js:306
 msgid "Creating..."
-msgstr "正在创建..."
+msgstr "正在创建……"
 
 #: frontend/src/components/dialog/project-api-token-dialog.js:323
 #: frontend/src/project/main-panel/connections/constants.js:430
@@ -610,7 +610,7 @@ msgstr "已选择"
 
 #: frontend/src/components/dialog/token-credit-used-detail-dialog/index.js:300
 msgid "Date range: "
-msgstr "日期范围："
+msgstr "日期范围： "
 
 #: frontend/src/components/dialog/token-credit-used-detail-dialog/index.js:331
 #: frontend/src/project/components/thought-process/process-details/index.js:103
@@ -1426,7 +1426,7 @@ msgstr "更改群组"
 
 #: frontend/src/home/workspace/index.js:252
 msgid "Internal Server Error."
-msgstr "服务器内部错误"
+msgstr "服务器内部错误。"
 
 #: frontend/src/home/workspace/index.js:352
 msgid "Cannot delete group with projects"
@@ -2108,7 +2108,7 @@ msgstr "密码无效"
 
 #: frontend/src/portal/index.js:196
 msgid "Validating..."
-msgstr "验证中..."
+msgstr "验证中……"
 
 #: frontend/src/portal/left-bar/index.js:32
 msgid "Portal preview URL is unavailable."
@@ -2329,7 +2329,7 @@ msgstr "背景图片预览"
 #: frontend/src/portal/main-panel/home/edit-panel.js:213
 #: frontend/src/project/main-panel/ask/chat-input/index.js:600
 msgid "Uploading..."
-msgstr "正在上传..."
+msgstr "正在上传……"
 
 #: frontend/src/portal/main-panel/home/edit-panel.js:214
 msgid "Change image"
@@ -2506,7 +2506,7 @@ msgstr "文件无效！"
 #: frontend/src/portal/main-panel/settings/customization-settings/index.js:13
 #: frontend/src/profile-settings/user-avatar-form.js:51
 msgid "The file is too large. Allowed maximum size is 1MB."
-msgstr " 文件太大。不得超过 1MB。"
+msgstr "文件太大。不得超过 1MB。"
 
 #: frontend/src/portal/main-panel/settings/customization-settings/index.js:15
 msgid "The file type must be PNG or JPG."
@@ -2557,7 +2557,7 @@ msgstr "保存"
 
 #: frontend/src/portal/main-panel/settings/index.js:71
 msgid "Custom domain allows you to serve your portal from a domain other than {domain}."
-msgstr "自定义域名允许你从其他域名提供门户。"
+msgstr "自定义域名允许你从其他域名提供门户 {domain}。"
 
 #: frontend/src/portal/main-panel/settings/index.js:72
 msgid "Custom domain allows you to serve your portal from a domain other than your current portal domain."
@@ -2649,7 +2649,7 @@ msgstr "我的品牌"
 #: frontend/src/portal/main-panel/settings/index.js:581
 #: frontend/src/project/main-panel/agent/components/run-log-details/suggestion-detail-panel/index.js:104
 msgid "Saving..."
-msgstr "正在保存..."
+msgstr "正在保存……"
 
 #: frontend/src/portal/main-panel/settings/index.js:576
 msgid "support.example.com"
@@ -2673,7 +2673,7 @@ msgstr "TXT 记录值"
 
 #: frontend/src/portal/main-panel/settings/index.js:655
 msgid "Verifying..."
-msgstr "正在验证..."
+msgstr "正在验证……"
 
 #: frontend/src/portal/main-panel/settings/index.js:668
 msgid "Save the custom domain before verification."
@@ -2798,7 +2798,7 @@ msgstr "内容"
 
 #: frontend/src/portal/main-panel/submit-issue.js:218
 msgid "Submitting..."
-msgstr "提交中..."
+msgstr "提交中……"
 
 #: frontend/src/portal/main-panel/user-management.js:41
 msgid "Link generated"
@@ -3017,7 +3017,7 @@ msgstr "已删除 1 项。"
 
 #: frontend/src/profile-settings/session-logs/index.js:166
 msgid "Are you sure to log out {user}?"
-msgstr "确定要退出 {user} 吗"
+msgstr "确定要退出 {user} 吗？"
 
 #: frontend/src/profile-settings/social-login.js:52
 msgid "SSO"
@@ -3057,11 +3057,11 @@ msgstr "开启两步验证"
 
 #: frontend/src/profile-settings/user-avatar-form.js:34
 msgid "Please choose an image file."
-msgstr "两步验证"
+msgstr "请选择一个图片文件。"
 
 #: frontend/src/profile-settings/user-avatar-form.js:43
 msgid "File extensions can only be {placeholder}."
-msgstr " 文件扩展名只能是 {placeholder}。"
+msgstr "文件扩展名只能是 {placeholder}。"
 
 #: frontend/src/profile-settings/user-avatar-form.js:61
 msgid "Avatar updated"
@@ -3367,7 +3367,7 @@ msgstr "丢弃"
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/run-details/action/suggestion-action/index.js:258
 msgid "Executing..."
-msgstr "正在执行..."
+msgstr "正在执行……"
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/run-details/index.js:55
 msgid "No action needed"
@@ -3470,7 +3470,7 @@ msgstr "无思考过程详情"
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/suggestion-detail-panel/normal-detail/index.js:24
 msgid "Edit content..."
-msgstr "编辑内容..."
+msgstr "编辑内容……"
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/suggestion-detail-panel/ticket-detail/index.js:62
 msgid "Draft"
@@ -3843,7 +3843,7 @@ msgstr "拖拽至此处"
 
 #: frontend/src/project/main-panel/ask/chat/index.js:580
 msgid "You can say \"Help solve the following issue: <issue description>\" to let AI solve the issue by searching knowledge bases."
-msgstr "你可以说“请帮助解决以下问题：<问题描述>”，让 AI 通过搜索知识库来解决问题。"
+msgstr "你可以说“请帮助解决以下问题：<issue description>”，让 AI 通过搜索知识库来解决问题。"
 
 #: frontend/src/project/main-panel/ask/chat/index.js:605
 msgid "Start a new chat from this conversation"
@@ -3856,7 +3856,7 @@ msgstr "图片"
 
 #: frontend/src/project/main-panel/ask/components/thinking/index.js:12
 msgid "Thinking..."
-msgstr "思考中..."
+msgstr "思考中……"
 
 #: frontend/src/project/main-panel/ask/constants.js:31
 msgid "Task step"
@@ -4033,7 +4033,7 @@ msgstr "在 {date_year} {day} {time}，{email_from} 写道："
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/main/email-details/item.js:270
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/main/email-details/reply-email/index.js:74
 msgid "To"
-msgstr "到"
+msgstr "收件人"
 
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/main/email-details/item.js:277
 msgid "Mark Read"
@@ -4049,11 +4049,11 @@ msgstr "发送前请填写收件人地址"
 
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/main/email-details/reply-email/index.js:40
 msgid "This email address is invalid: "
-msgstr "此邮箱地址无效："
+msgstr "此邮箱地址无效： "
 
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/main/email-details/reply-email/index.js:44
 msgid "These email addresses are invalid: "
-msgstr "以下邮箱地址无效："
+msgstr "以下邮箱地址无效： "
 
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/main/email-details/reply-email/index.js:48
 msgid "Please enter the email content before sending"
@@ -4237,7 +4237,7 @@ msgstr "折叠区域"
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/github-connection-config.js:21
 msgid "Checking GitHub App installation status..."
-msgstr "正在检查 GitHub App 安装状态..."
+msgstr "正在检查 GitHub App 安装状态……"
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/github-connection-config.js:22
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/github-connection-config.js:31
@@ -4353,7 +4353,7 @@ msgstr "连接 Confluence"
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:863
 msgid "Waiting for OAuth authorization to complete..."
-msgstr "正在等待 OAuth 授权完成..."
+msgstr "正在等待 OAuth 授权完成……"
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:881
 msgid "Reconnect Linear"
@@ -4365,7 +4365,7 @@ msgstr "连接 Linear"
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:890
 msgid "Waiting for Confluence authorization to complete..."
-msgstr "正在等待 Confluence 授权完成..."
+msgstr "正在等待 Confluence 授权完成……"
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:895
 msgid "Spaces (optional)"
@@ -4377,7 +4377,7 @@ msgstr "选择要同步的特定空间。留空则同步工作区中的所有空
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:901
 msgid "Loading spaces..."
-msgstr "正在加载空间..."
+msgstr "正在加载空间……"
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:904
 msgid "No spaces found in this workspace."
@@ -4393,7 +4393,7 @@ msgstr "连接 Jira"
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:954
 msgid "Waiting for Jira authorization to complete..."
-msgstr "等待 Jira 授权完成..."
+msgstr "等待 Jira 授权完成……"
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/selected-connection-header.js:16
 msgid "Help Docs"
@@ -4557,7 +4557,7 @@ msgstr "该 URL 是网站的地址。例如：'https://www.example.com'"
 
 #: frontend/src/project/main-panel/connections/constants.js:391
 msgid "Sitemap URL"
-msgstr "网站地图 URL "
+msgstr "网站地图 URL"
 
 #: frontend/src/project/main-panel/connections/constants.js:394
 msgid "The sitemap URL is the URL of the sitemap. Example: 'https://www.example.com/sitemap.xml'"
@@ -4627,7 +4627,7 @@ msgstr "网站"
 
 #: frontend/src/project/main-panel/connections/constants.js:557
 msgid "Make sure to prepare the full publicly accessible website URL and its sitemap URL, which lists all site pages. If any problem occurs, check the"
-msgstr "请确保准备好完整的公开访问网站 URL 及其站点地图 (sitemap) URL（其中列出了所有页面）。如果遇到任何问题，请检查"
+msgstr "请确保准备好完整的公开访问网站 URL 及其站点地图 sitemap URL，其中列出了所有页面。如果遇到任何问题，请检查"
 
 #: frontend/src/project/main-panel/connections/constants.js:563
 msgid "Seafile libraries"
@@ -4667,7 +4667,7 @@ msgstr "Discord"
 
 #: frontend/src/project/main-panel/connections/constants.js:599
 msgid "Connect your Discord server by authorizing the SeaTicket bot. The bot will sync messages from the selected channel. If any problem occurs, check the"
-msgstr "通过 SeaTicket bot 授权连接你的 Discord 服务器。机器人将同步选定频道的消息。如果出现任何问题，请检查此处。"
+msgstr "通过 SeaTicket bot 授权连接你的 Discord 服务器。机器人将同步选定频道的消息。如果出现任何问题，请检查此处"
 
 #: frontend/src/project/main-panel/connections/constants.js:621
 msgid "Reopen"
@@ -5215,7 +5215,7 @@ msgstr "同步 GitHub issue 类型"
 
 #: frontend/src/project/main-panel/settings/github-issue-type-mapping/index.js:28
 msgid "Syncing..."
-msgstr "正在同步..."
+msgstr "正在同步……"
 
 #: frontend/src/project/main-panel/settings/github-issue-type-mapping/index.js:29
 msgid "Sync completed"
@@ -5303,7 +5303,7 @@ msgstr "为此项目设置 AI 系统提示词。此提示词将应用于该项�
 #: frontend/src/project/main-panel/settings/prompt-settings/index.js:17
 #: frontend/src/project/main-panel/settings/prompt-settings/prompt-dialog/index.js:16
 msgid "Provide the project background information for the AI to understand the project accurately. Enter your custom project prompt here..."
-msgstr "提供项目背景信息，以便 AI 准确理解项目。在此输入你的自定义项目提示词..."
+msgstr "提供项目背景信息，以便 AI 准确理解项目。在此输入你的自定义项目提示词……"
 
 #: frontend/src/project/main-panel/settings/prompt-settings/index.js:19
 #: frontend/src/project/main-panel/settings/prompt-settings/prompt-dialog/index.js:18
@@ -5417,7 +5417,7 @@ msgstr "删除评论"
 
 #: frontend/src/project/main-panel/tickets/components/comment/index.js:264
 msgid "Are you sure you want to delete the comment ?"
-msgstr "确定要删除评论吗?"
+msgstr "确定要删除评论吗？"
 
 #: frontend/src/project/main-panel/tickets/components/create-kb-record-dialog.js:61
 msgid "Record created"
@@ -6440,7 +6440,7 @@ msgstr "不是"
 
 #: frontend/src/sea-metadata/constants/filter/filter-predicate.js:41
 msgid "is empty"
-msgstr "是空"
+msgstr "是空的"
 
 #: frontend/src/sea-metadata/constants/filter/filter-predicate.js:42
 msgid "is not empty"
@@ -6448,39 +6448,39 @@ msgstr "不是空"
 
 #: frontend/src/sea-metadata/constants/filter/filter-predicate.js:43
 msgid "is within..."
-msgstr "在某段时间内"
+msgstr "在某段时间内……"
 
 #: frontend/src/sea-metadata/constants/filter/filter-predicate.js:44
 msgid "is before..."
-msgstr "在某天之前"
+msgstr "在某天之前……"
 
 #: frontend/src/sea-metadata/constants/filter/filter-predicate.js:45
 msgid "is after..."
-msgstr "在某天之后"
+msgstr "在某天之后……"
 
 #: frontend/src/sea-metadata/constants/filter/filter-predicate.js:46
 msgid "is on or before..."
-msgstr "在某天或之前"
+msgstr "在某天或之前……"
 
 #: frontend/src/sea-metadata/constants/filter/filter-predicate.js:47
 msgid "is on or after..."
-msgstr "在某天或之后"
+msgstr "在某天或之后……"
 
 #: frontend/src/sea-metadata/constants/filter/filter-predicate.js:48
 msgid "has any of..."
-msgstr "包含其中一个"
+msgstr "包含其中一个……"
 
 #: frontend/src/sea-metadata/constants/filter/filter-predicate.js:49
 msgid "has all of..."
-msgstr "包含所有"
+msgstr "包含所有……"
 
 #: frontend/src/sea-metadata/constants/filter/filter-predicate.js:50
 msgid "has none of..."
-msgstr "不包含"
+msgstr "不包含……"
 
 #: frontend/src/sea-metadata/constants/filter/filter-predicate.js:51
 msgid "is exactly..."
-msgstr "精确筛选"
+msgstr "精确筛选……"
 
 #: frontend/src/sea-metadata/constants/filter/filter-predicate.js:52
 msgid "include the current user"
@@ -6488,11 +6488,11 @@ msgstr "包含当前用户"
 
 #: frontend/src/sea-metadata/constants/filter/filter-predicate.js:53
 msgid "is any of..."
-msgstr "是任意一个..."
+msgstr "是任意一个……"
 
 #: frontend/src/sea-metadata/constants/filter/filter-predicate.js:54
 msgid "is none of..."
-msgstr "不是任意一个..."
+msgstr "不是任意一个……"
 
 #: frontend/src/sea-metadata/constants/grid-body.js:27
 msgid "Default"
@@ -6594,7 +6594,7 @@ msgstr "1 个隐藏{column}"
 
 #: frontend/src/sea-metadata/utils/translate.js:21
 msgid "{count} hidden {columns}"
-msgstr "{count} 个隐藏{column}"
+msgstr "{count} 个隐藏 {columns}"
 
 #: frontend/src/sea-metadata/utils/translate.js:22
 msgid "No {columns} available to be hidden"
@@ -6682,7 +6682,7 @@ msgstr "还有另一个具有此名称的{column}"
 
 #: frontend/src/sea-metadata/utils/translate.js:43
 msgid "Another {column} has this {column} type"
-msgstr "另一个属性具有此属性类型"
+msgstr "另一个属性{column}具有{column}属性类型"
 
 #: frontend/src/sea-metadata/view/table/masks/interaction-masks/index.js:648
 #, javascript-format
@@ -6764,7 +6764,7 @@ msgstr "选择"
 #: frontend/src/sys-admin/dialog/sysadmin-add-org-dialog.js:90
 #: frontend/src/sys-admin/dialog/sysadmin-add-user-dialog.js:104
 msgid "Passwords do not match."
-msgstr "两次输入的密码不一致"
+msgstr "两次输入的密码不一致。"
 
 #: frontend/src/sys-admin/dialog/sysadmin-add-org-dialog.js:107
 #: frontend/src/sys-admin/orgs/index.js:369
@@ -6884,7 +6884,7 @@ msgstr "无法添加 {email_placeholder}：{error_msg_placeholder}"
 #: frontend/src/sys-admin/group/group-members.js:277
 #, javascript-format
 msgid "%s removed"
-msgstr "已移除 %s "
+msgstr "已移除 %s"
 
 #: frontend/src/sys-admin/group/group-nav.js:47
 #: frontend/src/sys-admin/org/org-nav.js:51
@@ -6912,7 +6912,7 @@ msgstr "没有群组"
 
 #: frontend/src/sys-admin/groups/groups-table/index.js:90
 msgid "1 user has been removed from the {groupName}"
-msgstr "一个用户已从 {groupName} 中移除"
+msgstr "1 个用户已从 {groupName} 中移除"
 
 #: frontend/src/sys-admin/groups/groups.js:47
 msgid "Search groups by name"
