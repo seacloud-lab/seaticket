@@ -937,6 +937,7 @@ class GroupBody extends Component {
           ref={this.setRightScrollbar}
           getClientHeight={this.getCanvasClientHeight}
           getScrollHeight={this.getRecordsWrapperScrollHeight}
+          getTableMainContainerRect={this.props.getTableMainContainerRect}
           onScrollbarScroll={this.onScrollbarScroll}
           onScrollbarMouseUp={this.onScrollbarMouseUp}
         />
@@ -973,6 +974,7 @@ GroupBody.propTypes = {
   cacheScrollTop: PropTypes.func,
   loadMore: PropTypes.func,
   getTableContentRect: PropTypes.func,
+  getTableMainContainerRect: PropTypes.func,
   getMobileFloatIconStyle: PropTypes.func,
   onToggleMobileMoreOperations: PropTypes.func,
   onToggleInsertRowDialog: PropTypes.func,

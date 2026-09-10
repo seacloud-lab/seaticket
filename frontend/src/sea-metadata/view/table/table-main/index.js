@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useRef } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { GROUP_VIEW_OFFSET } from '../../../constants';
@@ -14,6 +14,7 @@ const TableMain = ({
   modifyColumnData,
   ...props
 }) => {
+  const ref = useRef(null);
 
   const gridUtils = useMemo(() => {
     return new GridUtils(metadata, {
@@ -57,8 +58,15 @@ const TableMain = ({
     gridUtils.paste({ type, copied, multiplePaste, pasteRange, isGroupView, columns, pasteSource, cutPosition, viewId, tagsData, collaborators });
   }, [gridUtils, columns, collaborators, tagsData]);
 
+  const getTableMainContainerRect = useCallback(() => {
+    return ref?.current?.getBoundingClientRect() || { x: 0, right: window.innerWidth, width: 0 };
+  }, []);
+
   return (
-    <div className={classnames('sea-metadata-table-main-container container-fluid p-0', { [`group-level-${groupbysCount + 1}`]: groupbysCount > 0 })}>
+    <div
+      ref={ref}
+      className={classnames('sea-metadata-table-main-container container-fluid p-0', { [`group-level-${groupbysCount + 1}`]: groupbysCount > 0 })}
+    >
       <Rows
         isGroupView={isGroupView}
         columns={columns}
@@ -83,6 +91,7 @@ const TableMain = ({
         modifyColumnData={modifyColumnData}
         insertColumn={handleInsertColumn}
         modifyRows={modifyRows}
+        getTableMainContainerRect={getTableMainContainerRect}
         {...props}
       />
     </div>
