@@ -9,38 +9,6 @@
   min-height: 0;
 }
 
-.project-side-nav {
-  padding: 0px 8px;
-  flex: auto;
-  display: flex;
-  flex-direction: column;
-  overflow: auto;
-  background-color: var(--bs-body-third-bg);
-}
-
-.project-side-nav .seaqa-nav-title {
-  color: var(--bs-sf-grey-text);
-  padding: 0 8px;
-  line-height: 28px;
-  font-size: 14px;
-  margin-top: 4px;
-}
-
-.project-side-nav .seaqa-nav-list {
-  flex-wrap: inherit;
-  height: auto;
-  border-bottom: none;
-  padding-top: 12px;
-}
-
-.project-side-nav .help-resources-nav-list {
-  padding-top: 4px;
-}
-
-.project-side-nav .help-resources-nav-list .projects-nav .nav-link {
-  width: 100% !important;
-}
-
 .seaqa-nav-list .seaqa-nav-item {
   line-height: 38px;
   border-radius: 4px;
@@ -153,72 +121,12 @@
   margin-top: -1px;
 }
 
-.workspace .workspace-name-container .dropdown-toggle:after {
-  color: var(--bs-icon-secondary-color);
-}
-
-.workspace .workspace-name-container:hover .workspace-name {
-  border-bottom: 2px solid var(--bs-body-color);
-}
-
-.workspace .workspace-name-container:hover .dropdown-toggle:after {
-  color: var(--bs-body-color);
-}
-
-.workspace .add-table-btn {
-  width: 42px;
-  height: 42px;
-  background-color: var(--bs-bg-secondary-color);
-  border-radius: 5px;
-  display: flex;
-}
-
-.workspace .add-table-btn:hover {
-  background-color: #e3e3e3;
-}
-
-.workspace .add-table-btn i {
-  margin: auto;
-  font-size: 18px;
-  color: var(--bs-icon-secondary-color);
-}
-
-.workspace .add-table-btn:hover i {
-  color: var(--bs-body-color);
-}
-
-.add-table-btn-container {
-  align-items: center;
-  margin: 1rem 0 0.75rem;
-}
-
-.add-table-btn-container span {
-  margin-left: 1rem;
-}
-
 .add-workspace {
   color: var(--bs-icon-secondary-color);
 }
 
 .add-workspace:hover {
   color: var(--bs-body-color);
-}
-
-.workspace .workspace-header-border {
-  border-bottom: 1px solid #e6e6e6;
-}
-
-.workspace .add-project-range .project-item-wrapper {
-  width: 100%;
-  padding-right: 12px;
-}
-
-.workspace .add-project-range .project-name {
-  flex: 1;
-}
-
-.workspace .add-project-range:hover {
-  background-color: var(--bs-body-secondary-bg);
 }
 
 .add-project-dropdown-menu {
@@ -231,15 +139,6 @@
   justify-content: center;
   font-style: normal;
   cursor: pointer;
-}
-
-.workspace .project-item-container .table-personal-tip {
-  flex: 1;
-  padding: 0.5rem;
-  text-align: center;
-  border-bottom: 1px solid #e6e6e6;
-  color: #ccc;
-  font-size: 14px;
 }
 
 .search .project-item,
@@ -350,55 +249,6 @@
 
 .project-item-more-operation a:hover {
   text-decoration: none;
-}
-
-/* activities */
-.activities-title {
-  margin: 20px 0 14px;
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.activities-view-title {
-  margin: 16px 0 12px;
-  font-size: 18px;
-}
-
-.main-panel-invitation-link {
-  padding: 1rem 3rem;
-}
-
-.main-panel-invitation-link > .invitation-link-title {
-  margin: 4rem auto 0;
-  font-size: 1rem;
-}
-
-.main-panel-invitation-link .invitation-link-content {
-  background-color: #f9f9f9;
-  border: 1px solid #e6e6e6;
-  border-radius: 3px;
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  margin: 2rem;
-  padding: 30px;
-}
-
-.main-panel-invitation-link > .buttons {
-  display: flex;
-  justify-content: center;
-  position: relative;
-}
-
-.main-panel-invitation-link > .buttons .btn {
-  width: 110px;
-}
-
-@media screen and (max-width: 766.8px) {
-  .main-panel-invitation-link > .invitation-link-title {
-    margin: 1rem;
-    text-align: center;
-  }
 }
 
 .project-name .share-tip,

@@ -1,34 +1,3 @@
-.main-panel-project-header {
-  margin: 20px 0;
-  justify-content: space-between;
-}
-
-.main-panel-project-header .main-panel-project-title {
-  font-size: 18px;
-  color: #000;
-  font-weight: 700;
-}
-
-.main-panel-project-header .main-panel-project-help {
-  cursor: pointer;
-}
-
-.main-panel-project-header .main-panel-project-help .seaqa-icon-svg-question-circle-filled {
-  height: 20px;
-  width: 20px;
-  line-height: 1;
-  color: #bdbdbd;
-}
-
-.main-panel-project-header .main-panel-project-help:hover .seaqa-icon-svg-question-circle-filled {
-  color: var(--bs-sf-grey-text);
-}
-
-.main-panel-project-todo {
-  margin-bottom: 40px;
-}
-
-.main-panel-project-todo .project-todo-title,
 .project-group-container .project-group-name {
   font-size: 16px;
   margin-bottom: 12px;
@@ -65,41 +34,6 @@
 
 .project-group-container .projects-dropdown .create-project-folder-item:hover .item-icon {
   color: #fff;
-}
-
-.main-panel-project-todo .project-todo-content {
-  width: 300px;
-  height: 120px;
-  background-color: #fff5eb;
-  border-radius: 6px;
-}
-
-.main-panel-project-todo .project-todo-content:hover {
-  cursor: pointer;
-}
-
-.main-panel-project-todo .project-todo-image-container {
-  margin-right: 54px;
-}
-
-.main-panel-project-todo .project-todo-image-container .project-todo-image {
-  width: 64px;
-  height: 64px;
-}
-
-.main-panel-project-todo .project-todo-count-container {
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 17px 0;
-}
-
-.main-panel-project-todo .project-todo-count-container .project-todo-count-title {
-  font-size: 18px;
-  margin-bottom: 5px;
-}
-
-.main-panel-project-todo .project-todo-count-container .project-todo-count {
-  font-size: 36px;
 }
 
 .main-panel-my-projects-title {
@@ -193,22 +127,6 @@
 @media (max-width: 767px) {
   .main-panel-project .cur-view-content {
     padding: 0 16px;
-  }
-
-  .main-panel-project-header {
-    margin: 10px 0 14px;
-  }
-
-  .main-panel-project-header .main-panel-project-help:hover .seaqa-icon-svg-use-help {
-    color: #aaa;
-  }
-
-  .main-panel-project-todo {
-    margin-bottom: 30px;
-  }
-
-  .main-panel-project-todo .project-todo-content {
-    width: 100%;
   }
 
   .project-group-container .project-group-content {

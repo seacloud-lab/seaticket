@@ -19,9 +19,8 @@ import WorkspaceMemberDialog from '../dialog/workspace-member-dialog';
 import RenameProjectView from '../mobile/rename-project-view';
 import { compareTwoString } from '../utils/compare-two-string';
 import WorkspaceContainer from './body/workspace-container';
+import EmptyProjectCard from './empty-project-card';
 import WorkspaceHeader from './workspace-header';
-
-import './workspace-add.css';
 
 const gettext = window.gettext;
 const username = window.app.pageOptions.username;
@@ -441,10 +440,10 @@ class Workspace extends React.Component {
       } else if (page === 'all-workspaces') {
         if (isOwnerOrAdmin) {
           return (
-            <div className="empty-project-card" onClick={this.showCreateProjectDialog} style={{ width: projectItemWidth }}>
-              <div className="empty-project-card-icon">+</div>
-              <p className="empty-project-card-text">{gettext('Add a project to track issues')}</p>
-            </div>
+            <EmptyProjectCard
+              onClick={this.showCreateProjectDialog}
+              width={projectItemWidth}
+            />
           );
         }
       }

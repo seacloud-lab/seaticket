@@ -7,6 +7,8 @@ import { formatWithTimezone } from '@/sea-metadata/utils/column';
 import { Utils } from '@/utils/utils';
 import homeAPI from '../../api';
 
+import './deleted-group-project-item.css';
+
 function DeletedGroupProjectItem(props) {
 
   const [loading, setLoading] = useState(false);

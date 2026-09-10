@@ -1,0 +1,90 @@
+
+.project-searcher {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
+  min-height: 200px;
+  padding-top: 1rem;
+  border-radius: 3px;
+  box-shadow: 0 3px 8px 0 rgba(116, 129, 141, 0.1);
+  background-color: #fff;
+  cursor: default;
+  overflow: hidden;
+}
+
+.project-searcher .project-searcher-input {
+  padding: 0 1rem;
+}
+
+.project-searcher .input-icon,
+.project-searcher .input-icon .search-input {
+  width: 100%;
+}
+
+.project-searcher .input-icon .search-input {
+  height: 38px;
+  padding: 0 30px 0 38px;
+  cursor: auto;
+}
+
+.project-searcher .input-icon .btn-clear-searcher {
+  position: absolute;
+  display: inline-block;
+  height: 20px;
+  width: 20px;
+  line-height: 20px;
+  top: 9px;
+  right: 10px;
+  text-align: center;
+  color: #ccc;
+  cursor: pointer;
+}
+
+.project-searcher .input-icon .btn-clear-searcher:hover {
+  background-color: #EFEFEF;
+  border-radius: 3px;
+}
+
+.project-searcher .input-icon .seaqa-icon-svg-close {
+  color: var(--bs-sf-grey-text);
+}
+
+.project-searcher .search-type-wrapper {
+  height: 40px;
+  padding: 0 1rem;
+  margin-top: 4px;
+  user-select: none;
+}
+
+.project-searcher .search-type-content {
+  height: 100%;
+  border-bottom: 1px solid #ddd;
+}
+
+.project-searcher .seaqa-search-results {
+  flex: 1;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.project-searcher .recent-used-title {
+  margin-top: 10px;
+  padding: 0 calc(1rem + 12px);
+  color: var(--bs-sf-grey-text);
+}
+
+.project-searcher .search-result-list {
+  max-height: inherit;
+  margin: 0;
+  padding: 10px 1rem;
+}
+
+.project-searcher .search-result-none {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60px;
+}

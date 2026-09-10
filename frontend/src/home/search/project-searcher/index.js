@@ -8,6 +8,8 @@ import { QUERY_TYPE, SEARCHED_STORE_KEY } from './constant';
 import SearchedList from './searched-list';
 import { getNormalizeSearchedList, loadRecentUsed, storeSearchedItem } from './utils';
 
+import './index.css';
+
 const MIN_HEIGHT = 200;
 const MAX_HEIGHT = 800;
 const DISTANCE_BOTTOM = 100;
