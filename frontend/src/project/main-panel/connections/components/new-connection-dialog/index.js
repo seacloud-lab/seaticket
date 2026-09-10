@@ -671,6 +671,31 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     fetchNotionOauthStatus();
   }, [isNotion, fetchNotionOauthStatus]);
 
+  useEffect(() => {
+    const handleNotionOAuthMessage = (event) => {
+      if (event.origin !== window.location.origin) return;
+      const data = event.data || {};
+      if (data.type !== 'notion-oauth-success') return;
+
+      stopNotionOAuthPolling();
+      setWaitingNotionOAuth(false);
+      setNotionOauthConnected(true);
+      setNotionOauthError('');
+      setConfig(prevConfig => ({
+        ...prevConfig,
+        workspace_id: data.workspace_id || '',
+        workspace_name: data.workspace_name || '',
+        workspace_icon: data.workspace_icon || '',
+      }));
+      if (notionOauthWindowRef.current && !notionOauthWindowRef.current.closed) {
+        notionOauthWindowRef.current.close();
+      }
+    };
+
+    window.addEventListener('message', handleNotionOAuthMessage);
+    return () => window.removeEventListener('message', handleNotionOAuthMessage);
+  }, [stopNotionOAuthPolling]);
+
   const listJiraSites = useCallback((signal) => {
     if (!isJiraOauthConnected) {
       return Promise.resolve({ data: { options: [] } });
