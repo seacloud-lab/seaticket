@@ -22,7 +22,7 @@
 }
 
 .seaqa-resource-detail-item .seaqa-resource-detail-item-content :last-child {
-  margin-bottom: 0px;
+  margin-bottom: 0;
 }
 
 .seaqa-resource-detail-item .author-info-wrapper .author-info-left {

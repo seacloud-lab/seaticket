@@ -201,7 +201,7 @@ body {
 }
 
 .seaqa-portal-content .ask-main-container {
-  padding-right: 0px;
+  padding-right: 0;
 }
 
 .seaqa-portal-content .seaqa-ai-ask-wrapper {
@@ -224,7 +224,7 @@ body {
 
 .seaqa-portal-content .seaqa-ai-ask-sessions-wrapper .seaqa-ai-ask-sessions-header {
   width: calc(100% - 32px);
-  margin-left: 0px;
+  margin-left: 0;
 }
 
 .seaqa-portal-content .seaqa-ai-ask-sessions-wrapper .seaqa-ai-ask-sessions-body {

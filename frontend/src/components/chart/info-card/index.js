@@ -8,9 +8,9 @@ const InfoCard = ({
   description,
 }) => {
   return (
-    <div className="info-card h-100 d-inline-flex">
+    <div className="chart-info-card h-100 d-inline-flex">
       {url && (<img alt='' src={url} />)}
-      <div className="info-card-name text-truncate">
+      <div className="chart-info-card-name text-truncate">
         <p className="mb-1">{name}</p>
         <span>{description}</span>
       </div>

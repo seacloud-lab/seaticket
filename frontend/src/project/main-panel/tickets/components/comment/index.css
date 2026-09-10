@@ -74,7 +74,7 @@
 }
 
 .seaqa-project-ticket-comment .seaqa-project-ticket-comment-content:not(.editing) .article p:last-child {
-  margin-bottom: 0px;
+  margin-bottom: 0;
 }
 
 .seaqa-project-ticket-comment .seaqa-project-ticket-comment-content.editing {

@@ -2,13 +2,13 @@
   gap: 16px;
 }
 
-.overview-chart-header {
+.overview-chart-wrapper .overview-chart-header {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
-.overview-chart-header .credit-header-item {
+.overview-chart-wrapper .overview-chart-header .credit-header-item {
   display: flex;
   flex-direction: column;
   padding: 24px;
@@ -18,120 +18,120 @@
   width: calc((100% - 32px) / 3);
 }
 
-.overview-chart-header .credit-header-item .title {
+.overview-chart-wrapper .overview-chart-header .credit-header-item .title {
   font-size: 16px;
 }
 
-.overview-chart-header .credit-header-item .icon {
+.overview-chart-wrapper .overview-chart-header .credit-header-item .icon {
   border-radius: 8px;
   width: 36px;
   height: 36px;
 }
 
-.overview-chart-header .credit-header-item .icon .seaqa-icon-svg {
+.overview-chart-wrapper .overview-chart-header .credit-header-item .icon .seaqa-icon-svg {
   width: 20px;
   height: 20px;
 }
 
-.overview-chart-header .credit-header-item .tip {
+.overview-chart-wrapper .overview-chart-header .credit-header-item .tip {
   height: 20px;
   margin-bottom: 8px;
   color: rgba(33, 37, 41, 0.6);
 }
 
-.overview-chart-header .credit-header-item .value {
+.overview-chart-wrapper .overview-chart-header .credit-header-item .value {
   font-size: 32px;
 }
 
-.overview-chart-header .credit-header-item.current {
+.overview-chart-wrapper .overview-chart-header .credit-header-item.current {
   background-image: linear-gradient(to bottom right, rgba(255, 128, 0, 0.1), rgba(255, 128, 0, 0.08), rgba(255, 255, 255, 0.05));
   box-shadow: inset 0 0 0 1.5px rgba(255, 128, 0, 0.3);
 }
 
-.overview-chart-header .credit-header-item.current .icon {
+.overview-chart-wrapper .overview-chart-header .credit-header-item.current .icon {
   background-color: rgba(255, 128, 0, 0.1);
 }
 
-.overview-chart-header .credit-header-item.current .icon .seaqa-icon-svg {
+.overview-chart-wrapper .overview-chart-header .credit-header-item.current .icon .seaqa-icon-svg {
   fill: var(--bs-sf-orange-light);
 }
 
-.overview-chart-header .credit-header-item.current .value {
+.overview-chart-wrapper .overview-chart-header .credit-header-item.current .value {
   color: var(--bs-sf-orange-light);
 }
 
-.overview-chart-header .credit-header-item.last {
+.overview-chart-wrapper .overview-chart-header .credit-header-item.last {
   background-image: linear-gradient(to bottom right, rgba(184, 48, 215, 0.05), rgba(184, 48, 215, 0.04), rgba(255, 255, 255, 0.03));
   box-shadow: inset 0 0 0 1.5px rgba(184, 48, 215, 0.2);
 }
 
-.overview-chart-header .credit-header-item.last .icon {
+.overview-chart-wrapper .overview-chart-header .credit-header-item.last .icon {
   background-color: rgba(184, 48, 215, 0.1);
 }
 
-.overview-chart-header .credit-header-item.last .icon .seaqa-icon-svg {
+.overview-chart-wrapper .overview-chart-header .credit-header-item.last .icon .seaqa-icon-svg {
   fill: #b830d7;
 }
 
-.overview-chart-header .credit-header-item.last .value {
+.overview-chart-wrapper .overview-chart-header .credit-header-item.last .value {
   color: #b830d7;
 }
 
-.overview-chart-header .credit-header-item.month-on-month {
+.overview-chart-wrapper .overview-chart-header .credit-header-item.month-on-month {
   background-image: linear-gradient(to bottom right, rgba(21, 136, 252, 0.05), rgba(21, 136, 252, 0.04), rgba(255, 255, 255, 0.03));
   box-shadow: inset 0 0 0 1.5px rgba(21, 136, 252, 0.2);
 }
 
-.overview-chart-header .credit-header-item.month-on-month .icon {
+.overview-chart-wrapper .overview-chart-header .credit-header-item.month-on-month .icon {
   background-color: rgba(21, 136, 252, 0.1);
 }
 
-.overview-chart-header .credit-header-item.month-on-month .icon .seaqa-icon-svg {
+.overview-chart-wrapper .overview-chart-header .credit-header-item.month-on-month .icon .seaqa-icon-svg {
   color: #1588fc;
 }
 
-.overview-chart-header .credit-header-item.month-on-month .value {
+.overview-chart-wrapper .overview-chart-header .credit-header-item.month-on-month .value {
   color: #1588fc;
   display: flex;
   align-items: center;
 }
 
-.overview-chart-header .credit-header-item.month-on-month .value .seaqa-icon-svg {
+.overview-chart-wrapper .overview-chart-header .credit-header-item.month-on-month .value .seaqa-icon-svg {
   width: 24px;
   height: 24px;
   margin-right: 4px;
 }
 
-.overview-chart-center {
+.overview-chart-wrapper .overview-chart-center {
   gap: 16px;
 }
 
-.overview-chart-center .chart-wrapper {
+.overview-chart-wrapper .overview-chart-center .chart-wrapper {
   width: calc((100% - 16px) / 2);
 }
 
-.chart-wrapper {
+.overview-chart-wrapper .chart-wrapper {
   flex: 1;
   padding: 24px;
   box-shadow: inset 0 0 0 1.5px var(--bs-border-secondary-color);
   border-radius: 8px;
 }
 
-.chart-wrapper .chart-name {
+.overview-chart-wrapper .chart-wrapper .chart-name {
   font-size: 20px;
 }
 
-.overview-chart-state {
+.overview-chart-wrapper .overview-chart-state {
   min-height: 220px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.overview-chart-state img {
+.overview-chart-wrapper .overview-chart-state img {
   display: none;
 }
 
-.overview-chart-state .empty-tip {
+.overview-chart-wrapper .overview-chart-state .empty-tip {
   margin-bottom: 0px !important;
 }

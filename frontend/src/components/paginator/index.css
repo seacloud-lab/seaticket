@@ -34,11 +34,11 @@
   outline: 0;
 }
 
-.paginator-dropdown .dropdown-menu {
+.paginator .paginator-dropdown .dropdown-menu {
   min-width: 4rem;
 }
 
-.paginator-dropdown>.btn .seaqa-icon-svg {
+.paginator .paginator-dropdown>.btn .seaqa-icon-svg {
   color: var(--bs-icon-secondary-color);
   font-weight: 400;
 }

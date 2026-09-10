@@ -3,13 +3,13 @@
   position: relative;
 }
 
-#my-info {
+#account #my-info {
   display: inline-block;
   color: #d6d6d6;
   cursor: pointer;
 }
 
-#account .avatar {
+#account #my-info .avatar {
   vertical-align: middle;
 }
 
@@ -24,7 +24,7 @@
 }
 
 @media (max-width:767px) {
-  .account-toggle {
+  #account .account-toggle {
     font-size: 19px;
     line-height: 1;
     color: var(--bs-icon-secondary-color);
@@ -32,11 +32,11 @@
 }
 
 /* account-popup */
-.account-popup .avatar {
+#account .account-popup .avatar {
   float: left;
 }
 
-.account-popup .txt {
+#account .account-popup .txt {
   margin-left: 45px;
   margin-bottom: 15px;
   line-height: 32px;
@@ -44,37 +44,37 @@
   font-size: 16px;
 }
 
-.account-popup {
-  right: 0px;
+#account .account-popup {
+  right: 0;
   top: 36px;
   font-size: 13px;
   padding: 1rem 1rem 0.75rem 1rem;
 }
 
-.account-popup .outer-caret {
+#account .account-popup .outer-caret {
   top: -10px;
   right: 12px;
 }
 
-.account-popup .sf-popover-con {
+#account .account-popup .sf-popover-con {
   padding: 0;
 }
 
-.account-popup .item {
+#account .account-popup .item {
   font-size: 14px;
   display: block;
   cursor: default;
 }
 
-.account-popup .item:first-child {
+#account .account-popup .item:first-child {
   border-bottom: 1px solid var(--bs-border-secondary-color);
 }
 
-.account-popup .item:last-child {
+#account .account-popup .item:last-child {
   border-bottom: none;
 }
 
-.account-popup a.item {
+#account .account-popup a.item {
   min-height: 40px;
   line-height: 40px;
   color: var(--bs-body-color);
@@ -85,20 +85,20 @@
   padding-left: 12px;
 }
 
-.account-popup a.item:hover {
+#account .account-popup a.item:hover {
   background: rgba(0, 0, 0, 0.04);
   text-decoration: none;
   border-radius: 8px;
 }
 
-.account-popup .item .seaqa-icon-svg {
+#account .account-popup .item .seaqa-icon-svg {
   color: var(--bs-icon-color);
   font-size: 14px;
   margin-right: 12px;
 }
 
 /* account-info-card */
-.account-info-card {
+#account .account-info-card {
   padding: 7px 16px;
   background-color: var(--bs-body-third-bg);
   border-radius: 8px;
@@ -106,27 +106,27 @@
   border: 1px solid var(--bs-border-tertiary-color);
 }
 
-.account-info-card p {
-  margin-bottom: 0px;
+#account .account-info-card p {
+  margin-bottom: 0;
   font-size: 12px;
 }
 
-.account-info-card .account-info-card-title {
+#account .account-info-card .account-info-card-title {
   color: var(--bs-body-color);
   line-height: 20px;
 }
 
-.account-info-card .account-info-card-used {
+#account .account-info-card .account-info-card-used {
   color: var(--bs-body-color);
   font-size: 18px;
   line-height: 28px;
 }
 
-.account-info-card .account-info-card-used.exceed {
+#account .account-info-card .account-info-card-used.exceed {
   color: #FC6440;
 }
 
-.account-info-card .account-info-card-total {
+#account .account-info-card .account-info-card-total {
   color: var(--bs-sf-grey-text);
   font-size: 12px;
   line-height: 28px;

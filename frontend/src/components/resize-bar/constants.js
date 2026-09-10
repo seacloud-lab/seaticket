@@ -1,1 +1,0 @@
-export const RESIZE_HANDLER_HEIGHT = 26;
