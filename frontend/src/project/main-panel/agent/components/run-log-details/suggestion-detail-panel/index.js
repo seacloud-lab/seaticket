@@ -8,9 +8,8 @@ import Detail from './detail';
 
 import './index.css';
 
-const MIN_WIDTH = 320;
+const MIN_WIDTH = 400;
 const MAX_WIDTH = 480;
-const DEFAULT_WIDTH = 400;
 
 const SuggestionDetailPanel = ({
   suggestionDetail,
@@ -71,8 +70,8 @@ const SuggestionDetailPanel = ({
   }, []);
 
   useEffect(() => {
-    const width = parseFloat(localStorage.getItem('project_agent_action_suggestion_panel_width') || DEFAULT_WIDTH);
-    ref.current.style.width = `${width}px`;
+    const width = parseFloat(localStorage.getItem('project_agent_action_suggestion_panel_width') || MIN_WIDTH);
+    ref.current.style.width = `${width < MIN_WIDTH ? MIN_WIDTH : width}px`;
   }, []);
 
   useEffect(() => {
