@@ -903,7 +903,7 @@ def notion_oauth_callback(request):
         (function() {{
         var message = {message};
         if (window.opener && !window.opener.closed) {{
-            window.opener.postMessage(message, '*');
+            window.opener.postMessage(message, window.location.origin);
             window.close();
         }} else {{
             window.location.replace({fallback_url});
