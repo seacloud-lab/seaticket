@@ -12,7 +12,7 @@ import { Connection } from '../../models';
 
 import './index.css';
 
-const allStatus = ['sync', 'index', 'ai-status', 'vector-index'];
+const allStatus = ['sync', 'index', 'vector-index', 'ai-status'];
 
 const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle, onManualSync, record }) => {
   const [totalRecords, setTotalRecords] = useState('');
@@ -44,7 +44,7 @@ const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle, onManualS
         } else if (status === 'ai-status') {
           const { last_ai_processing_status, last_ai_processing_count } = record.ai_status;
           return {
-            title: gettext('AI processing'),
+            title: gettext('AI summary'),
             time: record.last_ai_processing_time,
             status: last_ai_processing_status,
             label: gettext('Processed: ') + last_ai_processing_count + ' ' + (last_ai_processing_count < 2 ? gettext('record') : gettext('records')),
@@ -52,7 +52,7 @@ const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle, onManualS
         } else if (status === 'vector-index' && (record.type === CONNECTION_TYPE.SITE || record.type === CONNECTION_TYPE.SEAFILE)) {
           const { last_content_vector_index_status, last_content_vector_indexed_count } = record.content_vector_status;
           return {
-            title: gettext('Vector index'),
+            title: gettext('Content vector index'),
             time: record.content_vector_indexed_at,
             status: last_content_vector_index_status,
             label: gettext('Indexed: ') + last_content_vector_indexed_count + ' ' + (last_content_vector_indexed_count < 2 ? gettext('record') : gettext('records')),
