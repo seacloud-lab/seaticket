@@ -44,7 +44,7 @@
 }
 
 .radio-group-wrapper .radio-group-options .radio-group-button.active {
-  color: var(--bs-body-color);
+  color: #fff;
 }
 
 .radio-group-wrapper .radio-group-options .radio-group-slider {
