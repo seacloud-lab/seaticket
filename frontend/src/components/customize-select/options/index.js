@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
-import EmptyTip from '@/components/empty-tip';
+import Tip from '@/components/options-editor/tip';
+// import EmptyTip from '@/components/empty-tip';
 import { gettext } from '@/constants';
 import { KeyCodes } from '@/constants/keyCodes';
 import { getTarget } from '@/utils/dom';
@@ -256,7 +257,7 @@ class Options extends Component {
     this.filterOptions = searchOptions(options, searchVal);
     if (this.filterOptions.length === 0) {
       return (
-        <EmptyTip text={searchVal ? gettext('No results') : noOptionsPlaceholder} className="seaqa-customize-select-empty-tip" />
+        <Tip tip={searchVal ? gettext('No results') : noOptionsPlaceholder} isShowSrc={true} />
       );
     }
     return this.filterOptions.map((opt, i) => {

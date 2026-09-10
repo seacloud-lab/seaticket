@@ -62,6 +62,9 @@
   border-radius: 4px;
 }
 
-.seaqa-select-options-container .seaqa-customize-select-empty-tip {
+.seaqa-select-options-container .options-editor-empty-tip:not(.options-editor-empty-img-tip) {
   height: 32px;
+  min-height: 32px;
+  padding-top: 0;
+  padding-bottom: 0;
 }
