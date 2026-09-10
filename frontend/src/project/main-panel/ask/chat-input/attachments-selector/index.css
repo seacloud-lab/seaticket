@@ -1,11 +1,33 @@
-.seaqa-ask-chat-attachments-selector {
+.attachments-selector-dropdown .dropdown-toggle-button .dropdown-icon-container {
+  display: flex;
+  align-items: center;
+  flex: 1 0 auto;
+  width: 20px;
+  height: 20px;
+}
+
+.attachments-selector-dropdown .dropdown-toggle-button .seaqa-role-status-down-icon {
+  color: #b5b5b5;
+  cursor: pointer;
+}
+
+.attachments-selector-dropdown .dropdown-toggle-button .seaqa-role-status-down-icon:hover {
+  color: #555;
+}
+
+.attachments-selector-dropdown .dropdown-menu .label-container span {
+  word-wrap: normal;
+  white-space: pre-wrap;
+}
+
+.attachments-selector-dropdown .attachments-selector-dropdown-toggle {
   width: 36px !important;
   height: 36px !important;
   padding: 0 10px !important;
   border-radius: 8px;
 }
 
-.seaqa-ask-chat-attachments-selector .seaqa-icon-svg-plus {
+.attachments-selector-dropdown .attachments-selector-dropdown-toggle .seaqa-icon-svg-plus {
   height: 14px !important;
   width: 14px !important;
 }

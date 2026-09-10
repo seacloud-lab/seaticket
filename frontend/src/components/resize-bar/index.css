@@ -8,7 +8,7 @@
   cursor: col-resize;
 }
 
-.resize-bar-content {
+.resize-bar .resize-bar-content {
   position: relative;
   margin-left: 5px;
   width: 1px;
@@ -22,7 +22,7 @@
   width: 2px;
 }
 
-.resize-bar-handler {
+.resize-bar .resize-bar-content .resize-bar-handler {
   content: '';
   width: 6px;
   position: absolute;

@@ -8,7 +8,7 @@ const InboxCount = ({ unseen }) => {
   return (
     <>
       {displayCount !== 0 && (
-        <div className="inbox-count">
+        <div className="seaqa-inbox-count">
           {displayCount}
         </div>
       )}

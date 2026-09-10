@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Z_INDEX } from '@/constants/zIndexes';
-import { RESIZE_HANDLER_HEIGHT } from './constants';
 
 import './index.css';
+
+const RESIZE_HANDLER_HEIGHT = 26;
 
 class ResizeBar extends Component {
 

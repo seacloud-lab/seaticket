@@ -6,9 +6,19 @@
   flex: 1;
 }
 
-.seaqa-customize-table-wrapper-divider {
+.seaqa-customize-table-wrapper .seaqa-customize-table-wrapper-divider {
   background-color: var(--bs-border-tertiary-color);
   height: 1px;
   width: 100%;
 }
 
+.seaqa-customize-table-wrapper .empty-tip {
+  flex: 1;
+  overflow: hidden;
+}
+
+/* cell formatter */
+.seaqa-customize-table-wrapper .seaqa-customize-table-long_text-cell {
+  display: flex;
+  align-items: center;
+}

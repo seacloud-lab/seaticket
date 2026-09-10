@@ -1,34 +1,34 @@
-.info-card {
+.chart-info-card {
   width: calc(50% - 5px);
   background-color: #fff;
   border-radius: 5px;
   border: 1px solid var(--bs-border-secondary-color);
 }
 
-.info-card img {
+.chart-info-card img {
   width: 46px;
   height: 46px;
   margin: 30px 0 0 30px;
 }
 
-.info-card .info-card-name {
+.chart-info-card .chart-info-card-name {
   width: 70%;
   height: 50%;
   margin: 28px 0 0 15px;
 }
 
-.info-card .info-card-name p {
+.chart-info-card .chart-info-card-name p {
   font-size: 16px;
   font-weight: 500;
 }
 
-.info-card .info-card-name span {
+.chart-info-card .chart-info-card-name span {
   font-size: 14px;
 }
 
 /* mobile */
 @media (max-width: 767px) {
-  .info-card {
+  .chart-info-card {
     width: 100%;
     height: auto;
     display: flex;
@@ -36,7 +36,7 @@
     justify-content: space-between;
   }
 
-  .info-card .info-card-name {
+  .chart-info-card .chart-info-card-name {
     width: 100%;
     height: 100%;
     display: inline-flex;
@@ -45,7 +45,7 @@
     margin-top: 10px;
   }
 
-  .info-card img {
+  .chart-info-card img {
     margin: 30px 0 30px 30px;
   }
 }
