@@ -57,11 +57,11 @@ const TicketDetail = ({ isEdit, isSaving, value, onChange }) => {
   const { title, content, assignees, participants, state, substate, type, tags, priority, due_date } = ticket;
 
   return (
-    <div className="seaqa-ticket-draft-detail">
-      <div className="seaqa-ticket-draft-title">
+    <div className="seaqa-suggestion-detail-draft">
+      <div className="seaqa-suggestion-detail-draft-title">
         {gettext('Draft')}
       </div>
-      <div className="seaqa-ticket-draft-body">
+      <div className="seaqa-suggestion-detail-draft-body">
         <FormGroup className="mb-4">
           <Label for="ticketTitle">
             {gettext('Title')}

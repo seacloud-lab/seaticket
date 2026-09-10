@@ -1,33 +1,15 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import classnames from 'classnames';
 import { gettext } from '@/constants';
-import { parseEmailReplySuggestion, sanitizeEmailHtml } from '../../../../../../../utils';
+import ReplyTo from '@/project/main-panel/connections/components/connection-resource-details/main/email-details/reply-email/reply-to';
+import { parseEmailReplySuggestion } from '../../../../../../../utils';
 
 import './index.css';
-
-const RecipientRow = ({ title, emails }) => {
-  return (
-    <div className="suggestion-email-preview-row">
-      <div className="suggestion-email-preview-label">{title}</div>
-      <div className="suggestion-email-preview-tags">
-        {emails.map(email => (
-          <div className="suggestion-email-preview-tag text-truncate" title={email} key={email}>
-            {email}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
 
 const EmailPreview = ({ value, defaultReplyTo }) => {
   const [displayMask, setDisplayMask] = useState(false);
   const previewRef = useRef(null);
-  const { to, cc, content, is_html } = useMemo(
-    () => parseEmailReplySuggestion(value, defaultReplyTo),
-    [value, defaultReplyTo]
-  );
-  const safeContent = useMemo(() => (is_html ? sanitizeEmailHtml(content) : content), [content, is_html]);
+  const { to, cc, content } = useMemo(() => parseEmailReplySuggestion(value, defaultReplyTo), [value, defaultReplyTo]);
 
   useEffect(() => {
     const dom = previewRef.current;
@@ -36,23 +18,13 @@ const EmailPreview = ({ value, defaultReplyTo }) => {
   }, [content]);
 
   return (
-    <div className="suggestion-email-preview-wrapper">
-      <div className="suggestion-email-preview-recipients">
-        <RecipientRow title={gettext('To')} emails={to} />
-        <RecipientRow title={gettext('Cc')} emails={cc} />
-      </div>
-      <div
-        ref={previewRef}
-        className={classnames('suggestion-email-preview-content', {
-          'is-html': is_html,
-          'display-mask': displayMask,
-        })}
-      >
-        {is_html ? (
-          <div dangerouslySetInnerHTML={{ __html: safeContent }} />
-        ) : (
-          safeContent
-        )}
+    <div className="suggestion-content-preview-wrapper email">
+      <div className={classnames('suggestion-content-preview', { 'display-mask': displayMask })} ref={previewRef}>
+        <ReplyTo title={gettext('To')} size="s" value={to} readonly={true} className="py-1 border-0" />
+        <ReplyTo title={gettext('Cc')} size="s" value={cc} readonly={true} className="pt-1 pb-2"/>
+        <div className="suggestion-email-preview-content pt-3">
+          {content}
+        </div>
       </div>
     </div>
   );

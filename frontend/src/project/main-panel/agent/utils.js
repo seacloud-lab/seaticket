@@ -1,5 +1,6 @@
 import { gettext } from '@/constants';
 import { getResourceIconURL, getResourceTypeName } from '@/project/utils';
+import { isObject, isString } from '@/utils/type-detection';
 import { CONNECTION_TYPES } from '../connections/constants';
 import { ACTION_TYPE, RUN_EVENT, RUN_STATUS, SUGGESTIONS_STATUS } from './constants';
 
@@ -131,19 +132,17 @@ export const extractEmailAddresses = (addressText) => {
 
 export const parseEmailReplySuggestion = (suggestionContent, defaultReplyTo = []) => {
   const fallbackTo = normalizeEmailAddressList(defaultReplyTo);
-  if (typeof suggestionContent === 'string') {
+  if (isString(suggestionContent)) {
     const trimmed = suggestionContent.trim();
     if (trimmed.startsWith('{')) {
       try {
         const parsed = JSON.parse(trimmed);
-        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)
-          && ('to' in parsed || 'cc' in parsed || 'is_html' in parsed)) {
+        if (parsed && isObject(parsed) && ('to' in parsed || 'cc' in parsed)) {
           const to = normalizeEmailAddressList(parsed.to);
           return {
             to: to.length > 0 ? to : fallbackTo,
             cc: normalizeEmailAddressList(parsed.cc),
-            content: typeof parsed.content === 'string' ? parsed.content : '',
-            is_html: Boolean(parsed.is_html),
+            content: String(parsed.content) || '',
           };
         }
       } catch {
@@ -154,65 +153,8 @@ export const parseEmailReplySuggestion = (suggestionContent, defaultReplyTo = []
   return {
     to: fallbackTo,
     cc: [],
-    content: typeof suggestionContent === 'string' ? suggestionContent : '',
-    is_html: false,
+    content: String(suggestionContent) || '',
   };
-};
-
-const EMAIL_SANITIZE_ALLOWED_TAGS = new Set([
-  'a', 'b', 'blockquote', 'br', 'div', 'em', 'h1', 'h2', 'h3', 'h4', 'hr', 'i', 'img',
-  'li', 'ol', 'p', 's', 'span', 'strong', 'table', 'tbody', 'td', 'th', 'thead', 'tr', 'u', 'ul',
-]);
-const EMAIL_SANITIZE_ALLOWED_ATTRS = new Set(['alt', 'href', 'src', 'style', 'title']);
-const EMAIL_SANITIZE_SAFE_URL = /^(?:https?:|mailto:|data:image\/)/i;
-
-// Sanitize by parsing then rebuilding the DOM with only whitelisted tags/attrs,
-// so any unlisted vector (on* handlers, javascript: URLs, iframes, ...) is dropped.
-export const sanitizeEmailHtml = (html) => {
-  if (!html || typeof html !== 'string') return '';
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  const sanitizeNode = (node) => {
-    if (node.nodeType === Node.TEXT_NODE) {
-      return document.createTextNode(node.textContent || '');
-    }
-    if (node.nodeType !== Node.ELEMENT_NODE) return null;
-    const tag = node.tagName.toLowerCase();
-    if (!EMAIL_SANITIZE_ALLOWED_TAGS.has(tag)) {
-      const fragment = document.createDocumentFragment();
-      Array.from(node.childNodes).forEach(child => {
-        const clean = sanitizeNode(child);
-        if (clean) fragment.appendChild(clean);
-      });
-      return fragment;
-    }
-    const el = document.createElement(tag);
-    Array.from(node.attributes).forEach(attr => {
-      const name = attr.name.toLowerCase();
-      if (!EMAIL_SANITIZE_ALLOWED_ATTRS.has(name)) return;
-      const value = attr.value || '';
-      if (['href', 'src'].includes(name)) {
-        if (!EMAIL_SANITIZE_SAFE_URL.test(value.trim())) return;
-        el.setAttribute(name, value);
-        if (tag === 'a') {
-          el.setAttribute('rel', 'noopener noreferrer');
-          el.setAttribute('target', '_blank');
-        }
-        return;
-      }
-      el.setAttribute(name, value);
-    });
-    Array.from(node.childNodes).forEach(child => {
-      const clean = sanitizeNode(child);
-      if (clean) el.appendChild(clean);
-    });
-    return el;
-  };
-  const container = document.createElement('div');
-  Array.from(doc.body.childNodes).forEach(child => {
-    const clean = sanitizeNode(child);
-    if (clean) container.appendChild(clean);
-  });
-  return container.innerHTML;
 };
 
 const normalizeSuggestionLabels = (labels) => {

@@ -6,7 +6,7 @@
   padding: 8px 0;
 }
 
-.seaqa-email-reply-to.focus {
+.seaqa-email-reply-to.focus:not(.readonly) {
   border-color: var(--bs-input-focus-border-color);
 }
 
@@ -31,8 +31,9 @@
   overflow: hidden;
   display: inline-flex;
   align-items: center;
-  padding: 0 8px 0 12px;
+  padding: 0 12px;
   border-radius: 4px;
+  color: var(--bs-body-color);
   background-color: var(--bs-body-third-bg);
   flex-shrink: 0;
   cursor: pointer;
@@ -47,11 +48,34 @@
   background-color: var(--option-bg-color);
 }
 
-.seaqa-email-reply-to-users .seaqa-email-to-user-input {
+.seaqa-email-reply-to .seaqa-email-reply-to-users .seaqa-email-to-user-input {
   padding: 0;
   height: 32px;
   border: none;
   border-radius: 0;
   flex: 1;
   min-width: 300px;
+}
+
+.seaqa-email-reply-to .seaqa-email-reply-to-expand-btn-container {
+  height: 32px;
+}
+
+/* small */
+.seaqa-email-reply-to.s .seaqa-email-reply-to-title {
+  height: 24px;
+  line-height: 24px;
+}
+
+.seaqa-email-reply-to.s .seaqa-email-reply-to-users {
+  min-height: 24px;
+}
+
+.seaqa-email-reply-to.s .seaqa-email-reply-to-users .seaqa-email-to-user,
+.seaqa-email-reply-to.s .seaqa-email-reply-to-expand-btn-container {
+  height: 24px;
+}
+
+.seaqa-email-reply-to.s .seaqa-email-reply-to-users .seaqa-email-to-user {
+  padding: 0 8px;
 }

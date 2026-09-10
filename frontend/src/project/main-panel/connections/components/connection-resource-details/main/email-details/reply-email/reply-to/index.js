@@ -1,7 +1,7 @@
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useState } from 'react';
 import { Input } from 'reactstrap';
 import classnames from 'classnames';
-import { ClickOutside, IconTooltip } from '@/components';
+import { ClickOutside, IconButton, IconTooltip } from '@/components';
 import { gettext } from '@/constants';
 import { isString } from '@/utils/type-detection';
 import { isValidEmail } from '@/utils/validate';
@@ -9,8 +9,10 @@ import { isValidEmail } from '@/utils/validate';
 import './index.css';
 
 const ReplyTo = ({
+  isExpand = true,
   title,
   value,
+  size = 'l',
   readonly = false,
   className,
   onChange,
@@ -66,13 +68,15 @@ const ReplyTo = ({
     getValue: formatToEmail,
   }), [formatToEmail]);
 
+  const isShowExpandBtn = !isExpand && !focus && emails.length > 1;
+
   return (
     <ClickOutside onClickOutside={() => setFocus(false)}>
-      <div className={classnames('seaqa-email-reply-to', className, { 'focus': focus })}>
+      <div className={classnames('seaqa-email-reply-to', className, size, { 'focus': focus, 'readonly': readonly })}>
         <div className="seaqa-email-reply-to-title text-truncate" title={title}>
           {title}
         </div>
-        <div className="seaqa-email-reply-to-users">
+        <div className={classnames('seaqa-email-reply-to-users', { 'flex-nowrap o-hidden': isShowExpandBtn })}>
           {emails.length > 0 && emails.map(email => {
             return (
               <div className={classnames('seaqa-email-to-user', { 'invalid': !isValidEmail(email) })} key={email}>
@@ -100,6 +104,11 @@ const ReplyTo = ({
             />
           )}
         </div>
+        {isShowExpandBtn && (
+          <div className="seaqa-email-reply-to-expand-btn-container d-flex align-items-center justify-content-center">
+            <IconButton icon="arrow-down-b" onClick={() => setFocus(true)} size={{ icon: 14 }} />
+          </div>
+        )}
       </div>
     </ClickOutside>
   );
