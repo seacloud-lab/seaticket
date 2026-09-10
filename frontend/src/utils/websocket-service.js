@@ -17,7 +17,6 @@ class WebSocketClient {
     this.listeners = new Set();
     this.subscriptions = new Map();
 
-    this.connect();
   }
 
   _formatSubscriptionMsg(projectUuid) {
@@ -145,6 +144,9 @@ class WebSocketClient {
 
   async subscribe(projectUuid) {
     if (!projectUuid) return;
+
+    this.shouldReconnect = true;
+    this.connect();
 
     const count = this.subscriptions.get(projectUuid) || 0;
     this.subscriptions.set(projectUuid, count + 1);

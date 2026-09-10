@@ -31,6 +31,7 @@ export const DataProvider = ({
   enablePortal,
   isSubscribeConnectionsSyncStatus = true,
   toggleBar,
+  useNotification,
   children
 }) => {
   const [data, setData] = useState({ version: 0 });
@@ -695,6 +696,8 @@ export const DataProvider = ({
     return projectAPI.listProjectRelatedUsers(projectUuid);
   }, [projectUuid, api]);
 
+  const NotificationWrapper = useNotification ? NotificationProvider : React.Fragment;
+
   return (
     <DataContext.Provider value={{
       data,
@@ -728,7 +731,7 @@ export const DataProvider = ({
       modifyLocalGitHubIssuesClosed,
     }}>
       <AIChatToolsProvider toggleBar={toggleBar}>
-        <NotificationProvider projectUuid={projectUuid}>
+        <NotificationWrapper {...(useNotification ? { projectUuid } : {})}>
           <CollaboratorsProvider listUserInfo={listUserInfo} getCollaborators={getCollaborators}>
             <TagsProvider projectUuid={projectUuid} api={api}>
               <MetadataProvider projectUuid={projectUuid} api={api}>
@@ -744,7 +747,7 @@ export const DataProvider = ({
               </MetadataProvider>
             </TagsProvider>
           </CollaboratorsProvider>
-        </NotificationProvider>
+        </NotificationWrapper>
       </AIChatToolsProvider>
     </DataContext.Provider>
   );

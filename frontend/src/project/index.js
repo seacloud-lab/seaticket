@@ -198,6 +198,7 @@ const Project = () => {
       enablePortal={settings?.portal?.enable_portal}
       isSubscribeConnectionsSyncStatus={true}
       toggleBar={toggleBar}
+      useNotification={true}
     >
       <I18nextProvider i18n={i18n}>
         <div className="seaqa-project">

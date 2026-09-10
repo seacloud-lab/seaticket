@@ -300,6 +300,9 @@ export const NotificationProvider = ({ children, projectUuid }) => {
   useEffect(() => {
     if (projectUuid) return;
 
+    sharedWsClient.shouldReconnect = true;
+    sharedWsClient.connect();
+
     const handleNotice = (notice) => {
       if (!notice) return;
       const noticeType = notice.type;
