@@ -304,6 +304,12 @@ class ProjectConnectionsView(APIView):
         if error_response:
             return error_response
 
+        if connection_type == ConnectionType.NOTION.value:
+            notion_oauth = ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.NOTION.value, 0)
+            if notion_oauth:
+                notion_oauth.connection_id = record.id
+                notion_oauth.save(update_fields=['connection_id'])
+
         if email_oauth_data: # for OAuth Email connection
             ProjectConnectionOauth.objects.upsert_connection_token(
                 project.uuid,

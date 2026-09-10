@@ -874,7 +874,7 @@ def notion_oauth_callback(request):
 
     token_json = resp.json()
     access_token = token_json.get('access_token')
-    refresh_token = token_json.get('refresh_token')
+    refresh_token = token_json.get('refresh_token') or ''
     if not access_token:
         logger.error('Notion OAuth token missing access_token: %s', token_json)
         return render_error(request, _('Failed to authorize Notion.'))
@@ -887,7 +887,6 @@ def notion_oauth_callback(request):
         expires_at,
         refresh_token,
     )
-
     request.session['notion_oauth_workspace'] = {
         'workspace_id': token_json.get('workspace_id', ''),
         'workspace_name': token_json.get('workspace_name', ''),
@@ -898,4 +897,23 @@ def notion_oauth_callback(request):
     request.session.pop('notion_oauth_project_uuid', None)
     request.session.pop('notion_oauth_return_to', None)
 
-    return redirect(return_to)
+    message = json.dumps({
+        'type': 'notion-oauth-success',
+        'workspace_id': token_json.get('workspace_id', ''),
+        'workspace_name': token_json.get('workspace_name', ''),
+        'workspace_icon': token_json.get('workspace_icon', ''),
+    }).replace('<', '\\u003c')
+    fallback_url = json.dumps(return_to).replace('<', '\\u003c')
+    response_html = f'''<!doctype html>
+        <html><body><script>
+        (function() {{
+        var message = {message};
+        if (window.opener && !window.opener.closed) {{
+            window.opener.postMessage(message, window.location.origin);
+            window.close();
+        }} else {{
+            window.location.replace({fallback_url});
+        }}
+        }})();
+        </script></body></html>'''
+    return HttpResponse(response_html)
