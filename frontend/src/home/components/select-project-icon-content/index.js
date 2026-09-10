@@ -2,7 +2,8 @@ import React from 'react';
 import { Button } from 'reactstrap';
 import PropTypes from 'prop-types';
 import { SearchInput } from '@/components';
-import { DEFAULT_PROJECT_ICON, PROJECT_ICON_CATEGORIES, PROJECT_ICON_COLORS, gettext } from '@/constants';
+import EmptyTip from '@/components/empty-tip';
+import { DEFAULT_PROJECT_ICON, PROJECT_ICON_CATEGORIES, PROJECT_ICON_COLORS, gettext, mediaUrl } from '@/constants';
 import { parseColorToRGB } from '@/utils/color-utils';
 
 import './index.css';
@@ -68,6 +69,7 @@ class SelectProjectIconContent extends React.Component {
 
   render() {
     const { bgColor, onPrevious } = this.props;
+    const currentIcon = this.props.currentIcon || DEFAULT_PROJECT_ICON;
     const selectedColor = bgColor || PROJECT_ICON_COLORS[0];
     const [red, green, blue] = parseColorToRGB(selectedColor);
     const selectedBackgroundColor = [red, green, blue].every((value) => value !== undefined)
@@ -81,7 +83,7 @@ class SelectProjectIconContent extends React.Component {
           value={this.state.searchValue}
           onChange={this.onSearch}
           onClear={this.onClearSearch}
-          isShowClearIcon={true}
+          isShowClearIcon={this.state.searchValue ? true : false}
           autoFocus={true}
           wait={0}
           placeholder={gettext('Search icons')}
@@ -122,11 +124,13 @@ class SelectProjectIconContent extends React.Component {
             ))}
           </div>
         ) : (
-          <div className="select-project-icon-content-empty text-secondary text-center">{gettext('No icons')}</div>
+          <div className="select-project-icon-content-empty text-secondary text-center">
+            <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No results matching')} />
+          </div>
         )}
         <div className="select-project-icon-content-footer">
-          <Button color="secondary" onClick={onPrevious}>{gettext('Previous')}</Button>
-          <Button color="primary" onClick={this.onSubmit}>{gettext('Submit')}</Button>
+          <Button color="secondary" onClick={onPrevious}>{this.props.previousButtonText || gettext('Previous')}</Button>
+          <Button color="primary" disabled={selectedIcon === currentIcon} onClick={this.onSubmit}>{gettext('Submit')}</Button>
         </div>
       </div>
     );

@@ -102,7 +102,6 @@ const PortalHomeEditPanel = ({ homePageStyle = {}, setHomePageStyle, updateHomeS
   return (
     <aside className="portal-home-edit-panel">
       <div className="portal-home-edit-panel-header">
-        <div className="portal-home-edit-panel-header-left" />
         <div className="portal-home-edit-panel-title">{gettext('Page settings')}</div>
         <IconButton
           icon="close"
