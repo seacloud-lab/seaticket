@@ -621,6 +621,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
 
   useEffect(() => {
     const handleNotionOAuthMessage = (event) => {
+      if (event.origin !== window.location.origin) return;
       const data = event.data || {};
       if (data.type !== 'notion-oauth-success') return;
 
