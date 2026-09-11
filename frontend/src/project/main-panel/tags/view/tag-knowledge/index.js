@@ -77,7 +77,7 @@ const TagKnowledge = ({ tagID, projectUuid, permission }) => {
     deleteRow: (recordId) => knowledgeBaseAPI.deleteRecord(projectUuid, recordId),
     deleteRows: (recordIds) => knowledgeBaseAPI.deleteRecords(projectUuid, recordIds),
     uploadFile: (file) => knowledgeBaseAPI.uploadFile(projectUuid, file),
-
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [projectUuid, viewsData]);
 
   const createContextMenuOptions = useCallback((props) => {

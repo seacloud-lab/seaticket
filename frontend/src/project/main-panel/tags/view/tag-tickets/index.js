@@ -54,6 +54,7 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) => {
         resolve({ data: { success: true } });
       });
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [projectUuid, childrenPageSlugId, viewsData, togglePageSlugId]);
 
   const localStorageNamePrefix = useMemo(() => `seaqa-${projectUuid}-tag-tickets`, [projectUuid]);
