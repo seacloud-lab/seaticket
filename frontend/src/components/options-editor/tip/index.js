@@ -13,7 +13,7 @@ const Tip = ({ isAsyncSearch = false, searchValue, tip, src, isShowSrc = false }
   useEffect(() => {
     if (!tipRef.current || src) return;
     const { width } = tipRef.current.getBoundingClientRect() || { width: 200 };
-    setTipImgSrc(width > 300 ? `${mediaUrl}img/no-items-tip.png` : '');
+    setTipImgSrc(width > 300 ? `${mediaUrl}img/no-results.png` : '');
   }, [src]);
 
   const className = classnames('options-editor-empty-tip', { 'options-editor-empty-img-tip': isShowSrc && tipImgSrc });
