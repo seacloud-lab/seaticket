@@ -11,6 +11,8 @@ import { usePortalSettings } from '../hooks';
 import { getPortalLoginPath } from '../path-utils';
 import LanguageSelector from './language-selector';
 
+import './index.css';
+
 const { isExternalUser, isPortalDomain } = window.app.pageOptions;
 
 const SidePanel = ({ isEditMode, activePage, onPageChange, enableKB, isAnonymous }) => {

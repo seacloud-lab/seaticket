@@ -4,7 +4,7 @@
   margin-right: 8px;
 }
 
-.seaqa-portal-language-btn {
+.seaqa-portal-language-selector .seaqa-portal-language-btn {
   flex-shrink: 0;
   border: 1px solid rgba(0, 40, 100, 0.12);
 }
@@ -17,11 +17,11 @@
   padding: 0;
 }
 
-.seaqa-portal-language-list {
+.seaqa-portal-language-popover .seaqa-portal-language-list {
   padding: 8px;
 }
 
-.seaqa-portal-language-item {
+.seaqa-portal-language-popover .seaqa-portal-language-list .seaqa-portal-language-item {
   width: 100%;
   height: 32px;
   line-height: 32px;
@@ -39,13 +39,13 @@
   gap: 12px;
 }
 
-.seaqa-portal-language-item:hover,
-.seaqa-portal-language-item:focus {
+.seaqa-portal-language-popover .seaqa-portal-language-list .seaqa-portal-language-item:hover,
+.seaqa-portal-language-popover .seaqa-portal-language-list .seaqa-portal-language-item:focus {
   background-color: var(--option-bg-color);
   outline: none;
 }
 
-.seaqa-portal-language-item .seaqa-icon-svg {
+.seaqa-portal-language-popover .seaqa-portal-language-list .seaqa-portal-language-item .seaqa-icon-svg {
   width: 14px;
   height: 14px;
   flex-shrink: 0;

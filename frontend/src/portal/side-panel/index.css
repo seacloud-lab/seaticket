@@ -1,0 +1,60 @@
+.seaqa-portal-side-panel {
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  background-color: #fff;
+  border-bottom: 1px solid var(--bs-border-secondary-color);
+  display: flex;
+  flex-direction: column;
+}
+
+.seaqa-portal-side-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0px 16px;
+  height: 56px;
+  overflow: visible;
+}
+
+.seaqa-portal-side-panel-logo {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  width: 200px;
+}
+
+.seaqa-portal-side-panel-logo img {
+  width: 24px;
+  height: 24px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border-radius: 4px;
+   margin-right: 8px;
+}
+
+.seaqa-portal-side-panel-account {
+  width: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.seaqa-portal-side-panel-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  flex: 1;
+}
+
+.seaqa-portal-side-panel-tabs .seaqa-customize-tabs {
+  gap: 32px;
+}
+
+.seaqa-portal-side-panel-tabs .seaqa-customize-tabs .seaqa-customize-tab {
+  font-size: 16px;
+}
+
+.seaqa-portal-side-panel-tabs .seaqa-customize-tabs .seaqa-customize-tab.active::before {
+  bottom: -13px;
+}

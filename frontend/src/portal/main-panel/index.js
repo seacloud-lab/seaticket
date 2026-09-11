@@ -8,6 +8,8 @@ import PortalKnowledgeBase from './knowledge-base/index';
 import MyIssues from './my-issues';
 import SubmitIssue from './submit-issue';
 
+import './index.css';
+
 const MainPanel = ({ activePage, onPageChange, onHomeChatSend, isAnonymous, ...props }) => {
 
   const { isLoading: isMetadataLoading } = useMetadata();
