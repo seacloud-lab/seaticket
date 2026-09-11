@@ -6,8 +6,9 @@ import { gettext } from '@/constants';
 import { useMetadata } from '@/project/hooks';
 import { TICKET_STATE_CONFIG, TICKET_STATE, TICKET } from '@/project/main-panel/tickets/constants';
 import { getRowById } from '@/sea-metadata/utils/row';
+import { removeTextHTMLMark } from '@/utils/remove-text-mark';
 import { ACTION_STATUS, SUGGESTION_TOOL_NAME_MAP } from '../../../../../constants';
-import { parseSuggestionActionResult, getAgentResource, getSuggestionTitle } from '../../../../../utils';
+import { parseSuggestionActionResult, getAgentResource, getSuggestionTitle, parseEmailReplySuggestion, getEmailReplyDefaultTo } from '../../../../../utils';
 import RunLogTitle from '../../../../resource-title';
 import SuggestionPreview from './suggestion-preview';
 
@@ -17,6 +18,7 @@ const SuggestionAction = ({
   runId,
   action,
   isShowTitle,
+  event,
   onConfirm,
   onCancel,
   onViewContent,
@@ -29,10 +31,12 @@ const SuggestionAction = ({
     tool_name,
     suggestion_content,
     suggestion_reason,
+    target_item_type,
   } = action;
 
   const suggestionTitle = useMemo(() => getSuggestionTitle(action), [action]);
   const resource = useMemo(() => getAgentResource(action), [action]);
+  const defaultReplyTo = useMemo(() => getEmailReplyDefaultTo(event), [event]);
   const { typesData } = useMetadata();
 
   const handleConfirm = useCallback((e) => {
@@ -74,10 +78,13 @@ const SuggestionAction = ({
       copiedContent += `# ${gettext('State')}\n${stateInfo?.statusName}\n`;
       copiedContent += `# ${gettext('Type')}\n${typeOption?.display_name || typeOption?.name || ''}\n`;
       copiedContent += `# ${gettext('Priority')}\n${priority || 0}`;
+    } else if (tool_name === 'suggest_reply' && target_item_type === 'email') {
+      const draft = parseEmailReplySuggestion(suggestion_content, defaultReplyTo);
+      copiedContent = draft.is_html ? removeTextHTMLMark(draft.content) : draft.content;
     }
     copy(copiedContent);
     toaster.success(gettext('The content has been copied'));
-  }, [tool_name, suggestion_content, typesData]);
+  }, [tool_name, suggestion_content, typesData, target_item_type, defaultReplyTo]);
 
   const handleViewDetails = useCallback((e) => {
     e.stopPropagation();
@@ -248,7 +255,12 @@ const SuggestionAction = ({
           )}
         </div>
         {hasContent && !isCancelled && (
-          <SuggestionPreview type={tool_name} value={suggestion_content} />
+          <SuggestionPreview
+            type={tool_name}
+            sourceType={target_item_type}
+            value={suggestion_content}
+            defaultReplyTo={defaultReplyTo}
+          />
         )}
         {status === ACTION_STATUS.PENDING && (
           <div className="seaqa-agent-action-buttons d-flex align-items-center mt-2">
