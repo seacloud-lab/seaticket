@@ -778,8 +778,7 @@ NOTION_VERSION = "2026-03-11"
 
 @login_required
 def notion_oauth(request):
-    return_to = request.GET.get('next') or '/'
-    project_uuid = request.GET.get('project_uuid', '')
+    project_uuid = request.POST.get('project_uuid', '')
 
     if not project_uuid:
         return render_error(request, _('Please install through the address provided by sea-ticket.'))
@@ -800,9 +799,11 @@ def notion_oauth(request):
         return render_error(request, _('Notion OAuth settings are invalid.'))
 
     state = secrets.token_urlsafe(24)
-    request.session['notion_oauth_state'] = state
-    request.session['notion_oauth_project_uuid'] = project_uuid
-    request.session['notion_oauth_return_to'] = return_to
+    request.session['notion_oauth_data'] = {
+        'status': 'in-progress',
+        'state': state,
+        'project_uuid': project_uuid,
+    }
 
     params = {
         'client_id': client_id,
@@ -811,7 +812,8 @@ def notion_oauth(request):
         'owner': 'user',
         'state': state,
     }
-    return redirect('https://api.notion.com/v1/oauth/authorize?' + urlencode(params))
+    authorize_url = 'https://api.notion.com/v1/oauth/authorize?' + urlencode(params)
+    return JsonResponse({'auth_url': authorize_url, 'state': state})
 
 
 @login_required
@@ -819,12 +821,10 @@ def notion_oauth_callback(request):
     code = request.GET.get('code')
     state = request.GET.get('state')
 
-    session_state = request.session.get('notion_oauth_state')
-    project_uuid = request.session.get('notion_oauth_project_uuid')
-    return_to = request.session.get('notion_oauth_return_to', '/')
-
-    if not code or not state or state != session_state:
+    notion_data = request.session.get('notion_oauth_data')
+    if not code or not state or not notion_data or notion_data.get('state') != state:
         return render_error(request, _('Invalid Notion OAuth state.'))
+    project_uuid = notion_data.get('project_uuid')
 
     if not project_uuid:
         return render_error(request, _('Please install through the address provided by sea-ticket.'))
@@ -874,40 +874,13 @@ def notion_oauth_callback(request):
         return render_error(request, _('Failed to authorize Notion.'))
 
     expires_at = _calc_confluence_expires_at(token_json.get('expires_in'))
-    ProjectConnectionOauth.objects.upsert_token(
-        project_uuid,
-        ConnectionType.NOTION.value,
-        access_token,
-        expires_at,
-        refresh_token,
-    )
-    request.session['notion_oauth_workspace'] = {
-        'workspace_id': token_json.get('workspace_id', ''),
-        'workspace_name': token_json.get('workspace_name', ''),
-        'workspace_icon': token_json.get('workspace_icon', ''),
-    }
+    notion_data['status'] = 'authorized'
+    notion_data['access_token'] = access_token
+    notion_data['refresh_token'] = refresh_token
+    notion_data['expires_at'] = expires_at.timestamp()
+    notion_data['workspace_id'] = token_json.get('workspace_id', '')
+    notion_data['workspace_name'] = token_json.get('workspace_name', '')
+    notion_data['workspace_icon'] = token_json.get('workspace_icon', '')
+    request.session['notion_oauth_data'] = notion_data
 
-    request.session.pop('notion_oauth_state', None)
-    request.session.pop('notion_oauth_project_uuid', None)
-    request.session.pop('notion_oauth_return_to', None)
-
-    message = json.dumps({
-        'type': 'notion-oauth-success',
-        'workspace_id': token_json.get('workspace_id', ''),
-        'workspace_name': token_json.get('workspace_name', ''),
-        'workspace_icon': token_json.get('workspace_icon', ''),
-    }).replace('<', '\\u003c')
-    fallback_url = json.dumps(return_to).replace('<', '\\u003c')
-    response_html = f'''<!doctype html>
-        <html><body><script>
-        (function() {{
-        var message = {message};
-        if (window.opener && !window.opener.closed) {{
-            window.opener.postMessage(message, window.location.origin);
-            window.close();
-        }} else {{
-            window.location.replace({fallback_url});
-        }}
-        }})();
-        </script></body></html>'''
-    return HttpResponse(response_html)
+    return render(request, 'authorization_success.html')
