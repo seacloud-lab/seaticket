@@ -18,6 +18,7 @@
   color: var(--bs-body-color);
 }
 
+.portal-chat-source-selector .portal-chat-source-toggle:hover,
 .portal-chat-source-selector .portal-chat-source-toggle.active:hover,
 .portal-chat-source-selector .portal-chat-source-toggle.highlighted:hover {
   background-color: #efefef;
@@ -88,7 +89,7 @@
   min-height: 80px;
 }
 
-.portal-chat-source-popover.portal-chat-source-empty {
+.portal-chat-source-popover .portal-chat-source-empty {
   padding: 0.25rem 20px;
   font-size: 14px;
   color: var(--bs-sf-grey-text);
