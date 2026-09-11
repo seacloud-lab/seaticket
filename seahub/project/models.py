@@ -483,6 +483,12 @@ class ProjectConnectionsManager(models.Manager):
             return self.get(id=connection_id, deleted=False)
         except ProjectConnections.DoesNotExist:
             return None
+    
+    def get_connection_in_project_by_id(self, project_uuid, connection_id):
+        try:
+            return self.get(project_uuid=project_uuid, id=connection_id, deleted=False)
+        except ProjectConnections.DoesNotExist:
+            return None
 
     def create(self, username, project_uuid, connection_type, name, config):
         """ create record

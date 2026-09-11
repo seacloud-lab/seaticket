@@ -424,7 +424,7 @@ class TestWebpageRelatedInformationView:
         with patch('seahub.api2.endpoints.project.is_current_server', return_value=True), \
                 patch('seahub.api2.endpoints.project.Workspaces.objects.get_workspace_by_id', return_value=workspace), \
                 patch('seahub.api2.endpoints.project.Projects.objects.get_project', return_value=project) as get_project, \
-                patch('seahub.api2.endpoints.project.ProjectConnections.objects.get_connection_by_id', return_value=SimpleNamespace(project_uuid=project.uuid)) as get_connection:
+                patch('seahub.api2.endpoints.project.ProjectConnections.objects.get_connection_in_project_by_id', return_value=SimpleNamespace(project_uuid=project.uuid)) as get_connection:
             resp = WebpageRelatedInformationView.as_view()(request)
 
         assert resp.status_code == 403
@@ -445,7 +445,7 @@ class TestWebpageRelatedInformationView:
         with patch('seahub.api2.endpoints.project.is_current_server', return_value=True), \
                 patch('seahub.api2.endpoints.project.Workspaces.objects.get_workspace_by_id', return_value=workspace), \
                 patch('seahub.api2.endpoints.project.Projects.objects.get_project', return_value=project), \
-                patch('seahub.api2.endpoints.project.ProjectConnections.objects.get_connection_by_id', return_value=connection), \
+                patch('seahub.api2.endpoints.project.ProjectConnections.objects.get_connection_in_project_by_id', return_value=connection), \
                 patch('seahub.api2.endpoints.project.SeaDBAPI'), \
                 patch('seahub.api2.endpoints.project.get_connection_record_by_pk', return_value=({'_pk': 2}, [], 'linked title')):
             resp = WebpageRelatedInformationView.as_view()(request)

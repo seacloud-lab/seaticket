@@ -103,7 +103,7 @@ def update_github_issue_record(
     state_reason=None,
     seadb_api=None,
 ):
-    project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+    project_connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
     if not project_connection:
         raise GitHubIssueUpdateError(
             f'project_connection {connection_id} not found.',
@@ -353,7 +353,7 @@ class ProjectEmailOAuthQueryView(APIView):
             response_data['sender_email'] = oauth_data.get('sender_email', '')
         elif status_value == 'success':
             connection_id = oauth_data.get('connection_id')
-            record = ProjectConnections.objects.get_connection_by_id(connection_id) if connection_id else None
+            record = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id) if connection_id else None
             if not record:
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Connection information not found.')
             response_data['record'] = record.to_dict()
@@ -470,7 +470,7 @@ class ProjectConnectionView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
         if not project_connection:
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -503,7 +503,7 @@ class ProjectConnectionView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
         if not project_connection:
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -588,7 +588,7 @@ class ProjectConnectionSyncView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
         if not project_connection:
             error_msg = f'Connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -658,7 +658,7 @@ class ProjectConnectionDetailsView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
         if not project_connection:
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -738,7 +738,7 @@ class ProjectConnectionMetaView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
         if not project_connection:
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -972,7 +972,7 @@ class ProjectConnectionLogView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
         if not project_connection:
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -1109,7 +1109,7 @@ class ProjectConnectionRecordView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
         if not project_connection:
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -1180,7 +1180,7 @@ class ProjectConnectionRecordView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
         if not project_connection:
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -1376,7 +1376,7 @@ class ProjectConnectionUnreadEmailView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
         if not project_connection:
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -1452,7 +1452,7 @@ class ProjectConnectionRecordsView(APIView):
         if not check_project_permission(username, workspace.owner):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
         if not project_connection:
             return api_error(status.HTTP_404_NOT_FOUND, f'project_connection {connection_id} not found.')
         if project_connection.type != ConnectionType.GENERAL_TASK.value:
@@ -1578,7 +1578,7 @@ class ProjectConnectionRecordsView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
         if not project_connection:
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -1827,7 +1827,7 @@ class ProjectConnectionReplyEmailView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
         if not project_connection:
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -1981,7 +1981,7 @@ class ProjectConnectionDeleteEmailView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
         if not project_connection:
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -2090,7 +2090,7 @@ class ProjectConnectionReplyDiscourseView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
         if not project_connection:
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
