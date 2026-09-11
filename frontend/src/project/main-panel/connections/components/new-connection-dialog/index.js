@@ -84,6 +84,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const [isCheckingNotionOauth] = useState(false);
   const [notionOauthError, setNotionOauthError] = useState('');
   const notionOauthWindowRef = useRef(null);
+  const notionOauthIntervalRef = useRef(null);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -199,10 +200,18 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     }
   }, []);
 
+  const stopNotionOAuthPolling = useCallback(() => {
+    if (notionOauthIntervalRef.current) {
+      window.clearInterval(notionOauthIntervalRef.current);
+      notionOauthIntervalRef.current = null;
+    }
+  }, []);
+
   useEffect(() => {
     return () => {
       stopEmailOAuthPolling();
       stopConfluenceOAuthPolling();
+      stopNotionOAuthPolling();
       if (emailOauthWindowRef.current && !emailOauthWindowRef.current.closed) {
         emailOauthWindowRef.current.close();
       }
@@ -213,7 +222,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
         notionOauthWindowRef.current.close();
       }
     };
-  }, [stopEmailOAuthPolling, stopConfluenceOAuthPolling]);
+  }, [stopEmailOAuthPolling, stopConfluenceOAuthPolling, stopNotionOAuthPolling]);
 
   const onNameChange = useCallback((event) => {
     const newValue = event.target.value;
@@ -613,35 +622,39 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   }, []);
 
   const handleConnectNotion = useCallback(() => {
-    const next = window.location.href;
-    const oauthUrl = `${server}/notion/oauth/?project_uuid=${projectUuid}&next=${encodeURIComponent(next)}`;
-    notionOauthWindowRef.current = window.open(oauthUrl, 'notion-oauth', 'width=800,height=700');
-    setWaitingNotionOAuth(true);
-  }, []);
-
-  useEffect(() => {
-    const handleNotionOAuthMessage = (event) => {
-      if (event.origin !== window.location.origin) return;
-      const data = event.data || {};
-      if (data.type !== 'notion-oauth-success') return;
-
-      setWaitingNotionOAuth(false);
-      setNotionOauthConnected(true);
-      setNotionOauthError('');
-      setConfig(prevConfig => ({
-        ...prevConfig,
-        workspace_id: data.workspace_id || '',
-        workspace_name: data.workspace_name || '',
-        workspace_icon: data.workspace_icon || '',
-      }));
-      if (notionOauthWindowRef.current && !notionOauthWindowRef.current.closed) {
-        notionOauthWindowRef.current.close();
+    connectionsAPI.startNotionOAuth(projectUuid).then(res => {
+      const authorizationUrl = res.data?.auth_url;
+      if (!authorizationUrl) {
+        toaster.danger(gettext('Failed to fetch authorization url'));
+        return;
       }
-    };
-
-    window.addEventListener('message', handleNotionOAuthMessage);
-    return () => window.removeEventListener('message', handleNotionOAuthMessage);
-  }, []);
+      notionOauthWindowRef.current = window.open(authorizationUrl, 'notion-oauth', 'width=800,height=700');
+      setWaitingNotionOAuth(true);
+      stopNotionOAuthPolling();
+      notionOauthIntervalRef.current = window.setInterval(() => {
+        connectionsAPI.getNotionOauthStatus(projectUuid).then(statusRes => {
+          if (statusRes?.data?.status !== 'authorized') return;
+          stopNotionOAuthPolling();
+          setWaitingNotionOAuth(false);
+          setNotionOauthConnected(true);
+          setNotionOauthError('');
+          setConfig(prevConfig => ({
+            ...prevConfig,
+            workspace_id: statusRes.data.workspace_id || '',
+            workspace_name: statusRes.data.workspace_name || '',
+            workspace_icon: statusRes.data.workspace_icon || '',
+          }));
+          if (notionOauthWindowRef.current && !notionOauthWindowRef.current.closed) {
+            notionOauthWindowRef.current.close();
+          }
+        }).catch(() => {
+          // Silently retry on next interval
+        });
+      }, 2000);
+    }).catch(() => {
+      toaster.danger(gettext('Failed to fetch authorization url'));
+    });
+  }, [stopNotionOAuthPolling]);
 
   const listJiraSites = useCallback((signal) => {
     if (!isJiraOauthConnected) {

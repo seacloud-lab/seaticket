@@ -296,19 +296,26 @@ class ProjectConnectionsView(APIView):
             if not ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.JIRA_ISSUE.value):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Jira OAuth authorization is required.')
 
+        notion_data = None
         if connection_type == ConnectionType.NOTION.value:
-            if not ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.NOTION.value):
+            notion_data = request.session.get('notion_oauth_data')
+            if not notion_data or notion_data.get('status') != 'authorized':
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Notion OAuth authorization is required.')
 
         record, error_response = create_connection(project, request.user.username, connection_type, name, config)
         if error_response:
             return error_response
 
-        if connection_type == ConnectionType.NOTION.value:
-            notion_oauth = ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.NOTION.value, 0)
-            if notion_oauth:
-                notion_oauth.connection_id = record.id
-                notion_oauth.save(update_fields=['connection_id'])
+        if connection_type == ConnectionType.NOTION.value and notion_data:
+            ProjectConnectionOauth.objects.upsert_connection_token(
+                project_uuid,
+                record.id,
+                notion_data['access_token'],
+                notion_data['expires_at'],
+                notion_data['refresh_token'],
+                type=ConnectionType.NOTION.value,
+            )
+            request.session.pop('notion_oauth_data', None)
 
         if email_oauth_data: # for OAuth Email connection
             ProjectConnectionOauth.objects.upsert_connection_token(
@@ -1124,13 +1131,12 @@ class ProjectNotionOauthStatusView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        connected = ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.NOTION.value) is not None
-        workspace_info = request.session.get('notion_oauth_workspace', {})
+        notion_data = request.session.get('notion_oauth_data') or {}
         return Response({
-            'connected': connected,
-            'workspace_id': workspace_info.get('workspace_id', ''),
-            'workspace_name': workspace_info.get('workspace_name', ''),
-            'workspace_icon': workspace_info.get('workspace_icon', ''),
+            'status': notion_data.get('status'),
+            'workspace_id': notion_data.get('workspace_id', ''),
+            'workspace_name': notion_data.get('workspace_name', ''),
+            'workspace_icon': notion_data.get('workspace_icon', ''),
         })
 
 
