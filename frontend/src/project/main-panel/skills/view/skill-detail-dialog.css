@@ -30,7 +30,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--bs-body-color);;
+  color: var(--bs-body-color);
   font-size: 22px;
   font-weight: 500;
   line-height: 32px;
@@ -100,7 +100,7 @@
 
 .skill-detail-dialog .skill-detail-dialog-content .seaqa-switch .custom-switch-description {
   margin-left: 12px;
-  color: var(--bs-body-color);;
+  color: var(--bs-body-color);
   font-size: 14px;
   font-weight: 500;
   line-height: 24px;

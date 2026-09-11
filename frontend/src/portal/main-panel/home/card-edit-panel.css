@@ -3,7 +3,7 @@
   width: 340px;
   min-width: 340px;
   background: var(--bs-body-bg);
-  border-left: 1px solid #EEEEEE;
+  border-left: 1px solid var(--bs-border-secondary-color);
   height: 100%;
   padding: 8px 16px;
   overflow-y: auto;
@@ -20,7 +20,7 @@
   align-items: center;
   padding: 0px 16px 8px 16px;
   margin: 0 -16px 12px -16px;
-  border-bottom: 1px solid #EEEEEE;
+  border-bottom: 1px solid var(--bs-border-secondary-color);
 }
 
 .portal-home-edit-panel-card .portal-home-edit-panel-title {
@@ -35,7 +35,7 @@
   width: 100%;
   height: 40px;
   border: 1px solid var(--bs-border-color);
-  background: #ffffff;
+  background: var(--bs-body-bg);
   color: var(--bs-body-color);
   padding: 0 12px;
   outline: none;
@@ -46,22 +46,12 @@
 }
 
 .portal-home-edit-panel-card .portal-home-edit-panel-input:focus {
-  background-color: #fff;
+  background-color: var(--bs-body-bg);
   border-color: #3e84f7;
   outline: 0;
 }
 
-.portal-home-card-icon-content {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 11px;
-  padding: 8px;
-  max-width: 307px;
-  max-height: 320px;
-  overflow-y: auto;
-}
-
-.portal-home-card-icon-selector {
+.portal-home-edit-panel-card .portal-home-card-icon-selector {
   width: 32px;
   height: 32px;
   border-radius: 4px;
@@ -72,42 +62,9 @@
   cursor: pointer;
 }
 
-.portal-home-card-icon-selector .project-icon-style {
+.portal-home-edit-panel-card .portal-home-card-icon-selector .project-icon-style {
   width: 24px;
   height: 24px;
-  color: #ff7d00;
+  color: var(--bs-sf-orange-light);
   font-size: 24px;
-}
-
-.portal-home-card-icon-popover .popover {
-  max-width: 320px;
-}
-
-.portal-home-card-icon-item {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  overflow: hidden;
-  cursor: pointer;
-}
-
-.portal-home-card-icon-item:hover {
-  background-color: var(--bs-body-secondary-bg);
-}
-
-.portal-home-card-icon-input {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.portal-home-card-icon-item .project-icon-style {
-  color: var(--bs-icon-secondary-color);
-  font-size: 20px;
-}
-
-.portal-home-card-icon-item .icon-color-white {
-  color: #ffffff;
 }
