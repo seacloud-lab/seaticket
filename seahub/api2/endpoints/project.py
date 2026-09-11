@@ -190,8 +190,8 @@ class WebpageRelatedInformationView(APIView):
 
             project_uuid = project.uuid
             project_name = project.name
-            project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
-            if not project_connection or str(project_connection.project_uuid) != str(project_uuid):
+            project_connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
+            if not project_connection:
                 error_msg = f'project_connection {connection_id} not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 

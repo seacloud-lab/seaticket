@@ -130,7 +130,7 @@ def build_linked_record_titles_map_for_keys(seadb_api, project_uuid, lcr_keys):
 
 
     for connection_id, record_ids_set in conn_id_to_record_ids.items():
-        connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
         if not connection:
             continue
         records = get_connection_records_by_pks(
@@ -174,7 +174,7 @@ def build_linked_records_info_for_keys(seadb_api, project_uuid, lcr_keys):
             logger.error(f'Error querying portal issue titles: {e}')
 
     for connection_id, record_ids_set in conn_id_to_record_ids.items():
-        connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
         if not connection:
             continue
         records = get_connection_records_by_pks(
@@ -298,7 +298,7 @@ def collect_open_linked_github_issues(seadb_api, project_uuid, ticket_id, linked
     open_issues = []
     conn_id_to_record_ids = _parse_linked_connection_record_keys(linked_connection_records)
     for connection_id, record_ids in conn_id_to_record_ids.items():
-        connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
         if not connection or connection.type != ConnectionType.GITHUB_ISSUE.value:
             continue
         records = get_connection_records_by_pks(

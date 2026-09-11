@@ -575,7 +575,7 @@ class AgentActionExecutor:
             logger.error(f'Cannot parse github_issue source_id {source_id!r}: {e}')
             return None
 
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
         if not project_connection:
             logger.error(f'GitHub connection {connection_id} not found.')
             return None
@@ -1254,7 +1254,7 @@ class AgentActionExecutor:
         return connection_id, record_id
 
     def _get_email_thread_context(self, seadb_api, project_uuid, connection_id, thread_id):
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
         if not project_connection or project_connection.type != ConnectionType.EMAIL.value:
             return None, None, None, f'Email connection {connection_id} not found.'
 
@@ -1270,7 +1270,7 @@ class AgentActionExecutor:
         return project_connection, thread, emails, None
 
     def _get_discourse_topic_context(self, seadb_api, project_uuid, connection_id, topic_pk):
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
         if not project_connection or project_connection.type != ConnectionType.DISCOURSE_FORUM.value:
             return None, None, None, f'Discourse connection {connection_id} not found.'
 
@@ -1285,7 +1285,7 @@ class AgentActionExecutor:
         return project_connection, topic, replies, None
 
     def _get_discord_thread_context(self, seadb_api, project_uuid, connection_id, thread_pk):
-        project_connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        project_connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
         if not project_connection or project_connection.type != ConnectionType.DISCORD.value:
             return None, None, f'Discord connection {connection_id} not found.'
 

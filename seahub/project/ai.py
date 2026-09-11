@@ -76,7 +76,7 @@ class ConvertRecordToTicket(APIView):
             error_msg = 'AI credit not enough.'
             return api_error(status.HTTP_402_PAYMENT_REQUIRED, error_msg)
 
-        connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+        connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
         if not connection:
             error_msg = f'Connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -549,7 +549,7 @@ class RelatedRecordsView(APIView):
         source_record_id = int(ticket_id) if ticket_provided else None
 
         if connection_provided:
-            connection = ProjectConnections.objects.get_connection_by_id(connection_id)
+            connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
             if not connection:
                 error_msg = f'Connection {connection_id} not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
