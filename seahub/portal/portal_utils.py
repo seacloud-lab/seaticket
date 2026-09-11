@@ -5,12 +5,15 @@ from datetime import datetime
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 
-from seahub.project.constants import PORTAL_ISSUE_DISPLAY_ALL_COLUMNS
+from seahub.project.constants import ExtraSourceType, PORTAL_ISSUE_DISPLAY_ALL_COLUMNS
 from seahub.utils import mq, uuid_str_to_32_chars, time_str_to_utc_time
 
 from seahub.seadb_models.models import SchemaTables
 
-PORTAL_ISSUE_COMMENT_COLUMNS = ['_pk', 'issue_id', 'content', 'creator', 'created_time', 'modified_time', 'deleted']
+PORTAL_ISSUE_COMMENT_COLUMNS = [
+    '_pk', 'issue_id', 'content', 'creator', 'created_time', 'modified_time',
+    'deleted', 'via_agent',
+]
 logger = logging.getLogger(__name__)
 
 
@@ -113,3 +116,19 @@ def send_portal_issue_update_msg(project_uuid, added=0, deleted=0, updated=0):
             logger.info('No one subscribed to portal_issue_update channel, event (%s) has not been send', msg_content)
     except Exception as e:
         logger.error('send portal issue update msg failed, error: %s', e)
+
+
+def send_portal_issue_data_update_msg(project_uuid, record_id, event=None):
+    try:
+        msg_content = json.dumps({
+            'event': event,
+            'project_uuid': uuid_str_to_32_chars(project_uuid),
+            'source_type': ExtraSourceType.PORTAL_ISSUE.value,
+            'record_id': int(record_id),
+        })
+        if mq.publish('data_events', msg_content) > 0:
+            logger.debug('Publish portal issue data event: %s', msg_content)
+        else:
+            logger.info('No one subscribed to data_events, event (%s) has not been sent', msg_content)
+    except Exception as e:
+        logger.error('send portal issue data event failed, error: %s', e)

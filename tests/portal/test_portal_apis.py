@@ -15,6 +15,7 @@ from seahub.portal.apis import (
     PortalSettingsView,
     PortalTagsView,
     PortalIssuesView,
+    PortalIssueCommentsView,
     PortalIssueView,
     PortalIssueMetadataView,
     PortalMyIssuesView,
@@ -156,7 +157,9 @@ class TestPortalIssuesView:
         with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
                 patch('seahub.portal.apis.check_ticket_creation_interval', return_value=True), \
                 patch('seahub.portal.apis.upload_portal_files_to_s3', return_value={'http://x/a.png': 's3://a'}), \
-                patch('seahub.portal.apis.replace_file_url_in_content', return_value='x'):
+                patch('seahub.portal.apis.replace_file_url_in_content', return_value='x'), \
+                patch('seahub.portal.apis.send_portal_issue_update_msg'), \
+                patch('seahub.portal.apis.send_portal_issue_data_update_msg') as send_data_event:
             resp = PortalIssuesView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 201
@@ -164,6 +167,68 @@ class TestPortalIssuesView:
         insert_row = seadb_api.insert_rows.call_args[0][2][0]
         assert 'assignees' not in insert_row
         assert 'due_date' not in insert_row
+        send_data_event.assert_called_once_with(
+            str(project.uuid),
+            1,
+            event={
+                'type': 'portal_issue_added',
+                'old_value': None,
+                'new_value': resp.data['portal_issue'],
+            },
+        )
+
+
+class TestPortalIssueCommentsView:
+
+    def test_post_success_sends_comment_event(self, factory, project_creator, real_project):
+        project = real_project
+        request = factory.post(
+            f"/api/v1/portal/{project.uuid}/issues/42/comments/",
+            data={'content': json.dumps({'text': 'More details'})},
+            format='multipart',
+        )
+        request.user = project_creator
+        seadb_api = Mock()
+        seadb_api.insert_rows.return_value = {'pks': [9]}
+        seadb_api.query_rows.return_value = {'results': [{'count': 1}]}
+
+        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
+                patch(
+                    'seahub.portal.apis.get_portal_issue',
+                    return_value=({'_pk': 42, 'title': 'Portal report'}, None),
+                ), \
+                patch(
+                    'seahub.portal.apis.check_portal_issue_comment_creation_interval',
+                    return_value=True,
+                ), \
+                patch(
+                    'seahub.portal.apis.send_portal_issue_data_update_msg'
+                ) as send_data_event:
+            resp = PortalIssueCommentsView.as_view()(
+                request,
+                project_uuid=str(project.uuid),
+                issue_id='42',
+            )
+
+        assert resp.status_code == 201
+        send_data_event.assert_called_once_with(
+            str(project.uuid),
+            42,
+            event={
+                'type': 'portal_issue_comment_added',
+                'old_value': None,
+                'new_value': {
+                    '_pk': 9,
+                    'issue_id': 42,
+                    'creator': project_creator.username,
+                    'content': 'More details',
+                    'created_time': resp.data['comment']['created_time'],
+                    'modified_time': resp.data['comment']['modified_time'],
+                    'deleted': False,
+                    'via_agent': False,
+                },
+            },
+        )
 
 
 class TestPortalMyIssuesView:

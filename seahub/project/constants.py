@@ -159,6 +159,8 @@ class DataEventType(Enum):
     TICKET_COMMENT_ADDED = 'ticket_comment_added'
     TICKET_COMMENT_UPDATED = 'ticket_comment_updated'
     TICKET_RESTORED = 'ticket_restored'
+    PORTAL_ISSUE_ADDED = 'portal_issue_added'
+    PORTAL_ISSUE_COMMENT_ADDED = 'portal_issue_comment_added'
 
     @classmethod
     def is_valid(cls, value):

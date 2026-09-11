@@ -60,6 +60,10 @@ const RUN_EVENT = {
   DISCOURSE_TOPIC_ADDED: 'discourse_topic_added',
   DISCOURSE_TOPIC_COMMENT_ADDED: 'discourse_topic_comment_added',
 
+  // portal issue
+  PORTAL_ISSUE_ADDED: 'portal_issue_added',
+  PORTAL_ISSUE_COMMENT_ADDED: 'portal_issue_comment_added',
+
   // email
   EMAIL_THREAD_ADDED: 'email_thread_added',
   EMAIL_MESSAGE_ADDED: 'email_message_added',
@@ -79,6 +83,8 @@ const RUN_EVENT_NAME = {
   [RUN_EVENT.GITHUB_ISSUE_COMMENT_ADDED]: gettext('New issue comment'),
   [RUN_EVENT.DISCOURSE_TOPIC_ADDED]: gettext('New forum topic'),
   [RUN_EVENT.DISCOURSE_TOPIC_COMMENT_ADDED]: gettext('New topic comment'),
+  [RUN_EVENT.PORTAL_ISSUE_ADDED]: gettext('New portal issue'),
+  [RUN_EVENT.PORTAL_ISSUE_COMMENT_ADDED]: gettext('New portal issue comment'),
   [RUN_EVENT.EMAIL_THREAD_ADDED]: gettext('New email thread'),
   [RUN_EVENT.EMAIL_MESSAGE_ADDED]: gettext('New email message'),
   [RUN_EVENT.DISCORD_THREAD_ADDED]: gettext('New Discord thread'),

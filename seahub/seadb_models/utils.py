@@ -480,7 +480,7 @@ def list_portal_issue_comments_records(seadb_api, project_uuid, _pk):
         issues_res = seadb_api.query_rows(project_uuid, issues_sql)
         issue = issues_res.get('results')[0]
         column_metadata = issues_res.get('metadata')
-        comments_sql = f"SELECT _pk, content, created_time, modified_time, creator FROM `{comments_table_name}` WHERE issue_id = {_pk} AND deleted = False ORDER BY _pk ASC"
+        comments_sql = f"SELECT _pk, content, created_time, modified_time, creator, via_agent FROM `{comments_table_name}` WHERE issue_id = {_pk} AND deleted = False ORDER BY _pk ASC"
         comments_res = seadb_api.query_rows(project_uuid, comments_sql)
         comments_records = comments_res.get('results', [])
         issue['comments'] = comments_records

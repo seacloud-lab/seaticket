@@ -29,6 +29,7 @@ from seahub.tickets.ticket_utils import (
     sync_links_in_connection,
     TicketLinkValidationError,
 )
+from seahub.portal.portal_utils import get_portal_issue
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
 from seahub.seadb_models.discord_seadb_api import DiscordSeaDBAPI
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
@@ -39,13 +40,14 @@ from seahub.project.utils import (
     collect_github_issue_label_options,
     build_ticket_related_url,
     build_connection_record_related_url,
+    build_portal_issue_related_url,
 )
 from seahub.notifications.signal_handler import (
     MSG_TYPE_AGENT_NOTIFY_ASSIGNEE
 )
 from seahub.tickets.signals import agent_notify_assignees
-from seahub.project.constants import AIScenario, ConnectionType, EMAIL_ACCOUNT_TYPE_PERSONAL, \
-    merge_project_settings_defaults
+from seahub.project.constants import ConnectionType, EMAIL_ACCOUNT_TYPE_PERSONAL, \
+    merge_project_settings_defaults, ExtraSourceType
 from seahub.project.oauth_utils import EmailOAuthUtils
 from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
 from seahub.seadb_models.models import SchemaTables
@@ -250,6 +252,47 @@ class AgentActionExecutor:
         logger.warning('Unknown discourse_topic tool_name: %r', tool_name)
         return self._failed_execution(f'Unknown tool_name: {tool_name}')
 
+    def _execute_portal_issue_action(
+        self,
+        seadb_api,
+        project,
+        project_uuid,
+        source_id,
+        tool_name,
+        suggestion_content,
+        suggestion_payload,
+        operator,
+        request=None,
+        auto_executed=False,
+    ):
+        if tool_name == 'suggest_reply':
+            return self._execute_portal_issue_suggest_reply(
+                seadb_api, project_uuid, source_id, suggestion_content, operator
+            )
+        if tool_name == 'suggest_create_ticket':
+            return self._execute_portal_issue_create_ticket(
+                seadb_api,
+                project,
+                project_uuid,
+                source_id,
+                suggestion_content,
+                operator,
+                request=request,
+                auto_executed=auto_executed,
+            )
+        if tool_name == 'suggest_link_existing_ticket':
+            return self._execute_link_existing_ticket(
+                seadb_api,
+                project,
+                project_uuid,
+                ExtraSourceType.PORTAL_ISSUE.value,
+                source_id,
+                suggestion_payload,
+                request=request,
+            )
+        logger.warning('Unknown portal_issue tool_name: %r', tool_name)
+        return self._failed_execution(f'Unknown tool_name: {tool_name}')
+
     def _execute_email_action(
         self,
         seadb_api,
@@ -363,6 +406,19 @@ class AgentActionExecutor:
                 request=request,
                 auto_executed=auto_executed,
             )
+        elif source_type == ExtraSourceType.PORTAL_ISSUE.value:
+            execution = self._execute_portal_issue_action(
+                seadb_api,
+                project,
+                project_uuid,
+                source_id,
+                tool_name,
+                suggestion_content,
+                suggestion_payload,
+                effective_operator,
+                request=request,
+                auto_executed=auto_executed,
+            )
         elif source_type == ConnectionType.EMAIL.value:
             execution = self._execute_email_action(
                 seadb_api,
@@ -394,6 +450,67 @@ class AgentActionExecutor:
             execution = self._failed_execution(f'Unsupported source_type: {source_type}')
 
         return self.normalize_execution_result(execution)
+
+    @staticmethod
+    def _parse_portal_issue_id(source_id):
+        try:
+            issue_id = int(source_id)
+        except (TypeError, ValueError):
+            return None
+        return issue_id if issue_id > 0 else None
+
+    def _execute_portal_issue_suggest_reply(
+        self, seadb_api, project_uuid, source_id, reply_content, username,
+    ):
+        reply_content = (reply_content or '').strip()
+        if not reply_content:
+            return self._failed_execution('Cannot create Portal issue reply: empty content.')
+
+        issue_id = self._parse_portal_issue_id(source_id)
+        if issue_id is None:
+            return self._failed_execution(f'Invalid Portal issue source_id: {source_id}')
+
+        issue, _ = get_portal_issue(seadb_api, project_uuid, issue_id)
+        if not issue:
+            return self._failed_execution(f'Portal issue #{issue_id} not found.')
+
+        now = timezone.now().isoformat()
+        comment_row = {
+            SchemaTables.PORTAL_ISSUE_COMMENTS.column.issue_id.name: issue_id,
+            SchemaTables.PORTAL_ISSUE_COMMENTS.column.creator.name: username,
+            SchemaTables.PORTAL_ISSUE_COMMENTS.column.content.name: reply_content,
+            SchemaTables.PORTAL_ISSUE_COMMENTS.column.created_time.name: now,
+            SchemaTables.PORTAL_ISSUE_COMMENTS.column.modified_time.name: now,
+            SchemaTables.PORTAL_ISSUE_COMMENTS.column.deleted.name: False,
+            SchemaTables.PORTAL_ISSUE_COMMENTS.column.via_agent.name: True,
+        }
+        comments_table = SchemaTables.PORTAL_ISSUE_COMMENTS.table_name()
+        try:
+            result = seadb_api.insert_rows(project_uuid, comments_table, [comment_row])
+            comment_pks = result.get('pks', [])
+            if len(comment_pks) != 1:
+                raise RuntimeError('insert_rows returned an unexpected number of comment PKs')
+            count_result = seadb_api.query_rows(
+                project_uuid,
+                f"SELECT COUNT(*) AS count FROM `{comments_table}` "
+                f"WHERE `issue_id` = {issue_id} AND `deleted` = False",
+            )
+            comment_count = (count_result.get('results') or [{}])[0].get('count', 0)
+            seadb_api.update_rows(
+                project_uuid,
+                SchemaTables.PORTAL_ISSUES.table_name(),
+                [{'pk': issue_id, 'row': {
+                    SchemaTables.PORTAL_ISSUES.column.comment_count.name: comment_count,
+                    SchemaTables.PORTAL_ISSUES.column.modified_time.name: now,
+                }}],
+            )
+        except Exception as e:
+            logger.error('Failed to create reply for Portal issue #%s: %s', issue_id, e)
+            return self._failed_execution(f'Failed to create reply for Portal issue #{issue_id}: {e}')
+
+        return self._successful_execution(
+            f'Reply #{comment_pks[0]} added to Portal issue #{issue_id}.'
+        )
 
     def _execute_discourse_suggest_reply(self, seadb_api, project, project_uuid, source_id, reply_content, username):
         reply_content = (reply_content or '').strip()
@@ -813,6 +930,7 @@ class AgentActionExecutor:
         suggestion_content,
         request=None,
         auto_executed=False,
+        related_url=None,
     ):
         draft = self._parse_ticket_suggestion_content(suggestion_content)
         if draft:
@@ -848,17 +966,18 @@ class AgentActionExecutor:
             ticket_priority = 0
         ticket_priority = max(0, ticket_priority)
 
-        connection_id, record_id = self._parse_connection_source_id(source_id, 'connection record')
-        if connection_id is not None and record_id is not None:
-            related_url = build_connection_record_related_url(
-                request, project, connection_id, record_id
-            )
-            if related_url and related_url not in ticket_content:
-                linked_record_suffix = f'{_('Linked record')}: {related_url}'
-                ticket_content = (
-                    f'{ticket_content}\n\n{linked_record_suffix}'
-                    if ticket_content else linked_record_suffix
+        if related_url is None:
+            connection_id, record_id = self._parse_connection_source_id(source_id, 'connection record')
+            if connection_id is not None and record_id is not None:
+                related_url = build_connection_record_related_url(
+                    request, project, connection_id, record_id
                 )
+        if related_url and related_url not in ticket_content:
+            linked_record_suffix = f'{_('Linked record')}: {related_url}'
+            ticket_content = (
+                f'{ticket_content}\n\n{linked_record_suffix}'
+                if ticket_content else linked_record_suffix
+            )
 
         try:
             ticket_columns = get_ticket_table_columns(seadb_api, project_uuid)
@@ -949,15 +1068,22 @@ class AgentActionExecutor:
         if not ticket:
             return self._failed_execution(f'Ticket #{related_ticket} not found.')
 
-        connection_id, record_id = self._parse_connection_source_id(source_id, source_type)
-        if connection_id is None or record_id is None:
-            return self._failed_execution(f'Invalid source_id format: {source_id}')
+        normalized_source_id = str(source_id)
+        if source_type == ExtraSourceType.PORTAL_ISSUE.value:
+            record_id = self._parse_portal_issue_id(source_id)
+            if record_id is None:
+                return self._failed_execution(f'Invalid Portal issue source_id: {source_id}')
+            normalized_source_id = f'portal_{record_id}'
+        else:
+            connection_id, record_id = self._parse_connection_source_id(source_id, source_type)
+            if connection_id is None or record_id is None:
+                return self._failed_execution(f'Invalid source_id format: {source_id}')
 
         try:
             sync_plan, connections = check_ticket_link_changes(
                 seadb_api,
                 project_uuid,
-                {related_ticket: ([source_id], [])},
+                {related_ticket: ([normalized_source_id], [])},
             )
         except TicketLinkValidationError as e:
             return self._failed_execution(str(e))
@@ -965,7 +1091,7 @@ class AgentActionExecutor:
         try:
             sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections)
         except Exception as e:
-            logger.error('Failed to link record %s to ticket #%s: %s', source_id, related_ticket, e)
+            logger.error('Failed to link record %s to ticket #%s: %s', normalized_source_id, related_ticket, e)
             return self._failed_execution(f'Failed to link this record to ticket #{related_ticket}: {e}')
 
         linked_source_ids = ticket.get(SchemaTables.TICKETS.column.linked_connection_records.name) or []
@@ -973,8 +1099,8 @@ class AgentActionExecutor:
             item for item in linked_source_ids
             if isinstance(item, str) and item.strip()
         ]
-        if source_id not in linked_source_ids:
-            linked_source_ids.append(source_id)
+        if normalized_source_id not in linked_source_ids:
+            linked_source_ids.append(normalized_source_id)
             try:
                 seadb_api.update_rows(
                     project_uuid,
@@ -989,9 +1115,9 @@ class AgentActionExecutor:
             except Exception as e:
                 logger.warning(
                     'Linked record %s to ticket #%s but failed to update linked_connection_records: %s',
-                    source_id, related_ticket, e
+                    normalized_source_id, related_ticket, e
                 )
-                return self._failed_execution(f'Linked record {source_id} to ticket #{related_ticket} but failed to update linked_connection_records: {e}')
+                return self._failed_execution(f'Linked record {normalized_source_id} to ticket #{related_ticket} but failed to update linked_connection_records: {e}')
 
         ticket_info = {
             'ticket_pk': related_ticket,
@@ -1002,6 +1128,66 @@ class AgentActionExecutor:
             'message': f'Record linked to ticket #{related_ticket}.',
             'ticket': ticket_info,
         }, ensure_ascii=False))
+
+    def _execute_portal_issue_create_ticket(
+        self,
+        seadb_api,
+        project,
+        project_uuid,
+        source_id,
+        suggestion_content,
+        username,
+        request=None,
+        auto_executed=False,
+    ):
+        issue_id = self._parse_portal_issue_id(source_id)
+        if issue_id is None:
+            return self._failed_execution(f'Invalid Portal issue source_id: {source_id}')
+
+        issue, _ = get_portal_issue(seadb_api, project_uuid, issue_id)
+        if not issue:
+            return self._failed_execution(f'Portal issue #{issue_id} not found.')
+        if issue.get('linked_ticket'):
+            return self._failed_execution(
+                f'Portal issue #{issue_id} is already linked to ticket #{issue["linked_ticket"]}.'
+            )
+
+        portal_link_key = f'portal_{issue_id}'
+        ticket, error = self._create_ticket(
+            seadb_api=seadb_api,
+            project=project,
+            project_uuid=project_uuid,
+            source_id=portal_link_key,
+            username=username,
+            backup_title=issue.get('title', ''),
+            suggestion_content=suggestion_content,
+            request=request,
+            auto_executed=auto_executed,
+            related_url=build_portal_issue_related_url(request, project, issue_id),
+        )
+        if error:
+            return self._failed_execution(error)
+        ticket_pk = ticket['ticket_pk']
+
+        try:
+            seadb_api.update_rows(
+                project_uuid,
+                SchemaTables.PORTAL_ISSUES.table_name(),
+                [{'pk': issue_id, 'row': {'linked_ticket': ticket_pk}}],
+            )
+        except Exception as e:
+            logger.warning(
+                'Ticket %s created but failed to update linked_ticket on Portal issue %s: %s',
+                ticket_pk,
+                issue_id,
+                e,
+            )
+
+        logger.info('Created ticket #%s from Portal issue #%s', ticket_pk, issue_id)
+        return self._ticket_created_execution(
+            f'Ticket #{ticket_pk} created from Portal issue #{issue_id}.',
+            ticket,
+        )
 
     def _execute_github_create_ticket(
         self, seadb_api, project, project_uuid, source_id, suggestion_content, username, request=None, auto_executed=False

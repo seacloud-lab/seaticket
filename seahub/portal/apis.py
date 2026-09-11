@@ -32,7 +32,7 @@ from seahub.utils.storage import FileNotFound, upload_portal_files_to_s3, delete
 from seahub.utils.hasher import AESPasswordHasher
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
-from seahub.project.constants import PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_TIMEOUT, PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_PREFIX
+from seahub.project.constants import DataEventType, PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_TIMEOUT, PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_PREFIX
 from seahub.seadb_models.utils import list_knowledge_base_records, list_my_portal_issues, list_portal_issues_view_records, list_trash_portal_issues, list_portal_issue_comments_records
 from seahub.tickets.ticket_utils import check_ticket_creation_interval, get_column_from_columns_by_name, \
     build_linked_ticket_titles_map, TABLE_TICKETS, get_tickets_by_ids, get_ticket, sync_links_in_connection,\
@@ -60,7 +60,7 @@ from seahub.knowledge_base.knowledge_base_utils import get_knowledge_base_record
 from seahub.avatar.settings import AVATAR_MAX_SIZE
 
 from seahub.portal.portal_utils import get_portal_issue, get_portal_issue_comments, get_portal_issue_comment_by_pk, get_portal_issues, \
-    send_portal_issue_update_msg, check_portal_issue_comment_creation_interval
+    send_portal_issue_update_msg, send_portal_issue_data_update_msg, check_portal_issue_comment_creation_interval
 
 from seahub.seadb_models.models import SchemaTables
 
@@ -426,6 +426,15 @@ class PortalIssuesView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         send_portal_issue_update_msg(project_uuid, added=1)
+        send_portal_issue_data_update_msg(
+            project_uuid,
+            portal_issue_pk,
+            event={
+                'type': DataEventType.PORTAL_ISSUE_ADDED.value,
+                'old_value': None,
+                'new_value': row,
+            },
+        )
         return Response({'portal_issue': row}, status=status.HTTP_201_CREATED)
 
     @require_org_context
@@ -1028,6 +1037,7 @@ class PortalIssueCommentsView(APIView):
                 SchemaTables.PORTAL_ISSUE_COMMENTS.column.created_time.name: now_datetime,
                 SchemaTables.PORTAL_ISSUE_COMMENTS.column.modified_time.name: now_datetime,
                 SchemaTables.PORTAL_ISSUE_COMMENTS.column.deleted.name: False,
+                SchemaTables.PORTAL_ISSUE_COMMENTS.column.via_agent.name: False,
             }
             portal_issue_comment_table_name = SchemaTables.PORTAL_ISSUE_COMMENTS.table_name()
             res = seadb_api.insert_rows(project_uuid, portal_issue_comment_table_name, [row])
@@ -1036,7 +1046,7 @@ class PortalIssueCommentsView(APIView):
                 error_msg = 'Internal Server Error'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
             pk = pks[0]
-            row.update({'_pk': pk, 'via_agent': False})
+            row.update({'_pk': pk})
             issue_comments_count = seadb_api.query_rows(project_uuid, f"SELECT COUNT(*) as count FROM `{portal_issue_comment_table_name}` WHERE `issue_id` = {issue.get('_pk')} AND `deleted` = False").get('results')[0].get('count')
             update_issue = {
                 'pk': issue.get('_pk'),
@@ -1051,6 +1061,15 @@ class PortalIssueCommentsView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+        send_portal_issue_data_update_msg(
+            project_uuid,
+            issue.get('_pk'),
+            event={
+                'type': DataEventType.PORTAL_ISSUE_COMMENT_ADDED.value,
+                'old_value': None,
+                'new_value': row,
+            },
+        )
         return Response({'comment': row}, status=status.HTTP_201_CREATED)
 
 

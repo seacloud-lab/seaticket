@@ -15,9 +15,11 @@ export const getResourceIconURL = (type) => {
     case 'unknown': {
       return `${root}img/unknown.png`;
     }
-    case TICKET_TYPE:
-    case PORTAL_ISSUE_TYPE: {
+    case TICKET_TYPE: {
       return `${root}img/ticket.png?t=20260104`;
+    }
+    case PORTAL_ISSUE_TYPE: {
+      return `${root}img/portal-logo.png?t=20260904`;
     }
     case KNOWLEDGE_BASE_TYPE: {
       return `${root}img/knowledge-base.png?t=20260104`;
