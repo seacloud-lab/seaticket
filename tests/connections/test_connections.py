@@ -1286,6 +1286,30 @@ class TestProjectConnectionMetaView:
         assert resp.data['related_users'][0]['email'] == 'dev@example.com'
         assert resp.data['columns'][0]['key'] == 'status'
 
+    def test_get_linear_metadata_lists_team_users(self, factory, project_creator, real_project, connection_factory):
+        connection = connection_factory(connection_type=ConnectionType.LINEAR.value, config={'team_id': 'team-1'})
+        request = factory.get(f"/api/v1/project/{real_project.uuid}/connections/{connection.id}/meta/")
+        request.user = project_creator
+        oauth = SimpleNamespace(access_token='access', refresh_token='refresh', expires_at=None)
+        linear_api = Mock(access_token='access', refresh_token='refresh')
+        linear_api.list_users.return_value = [{
+            'id': 'user-1', 'name': 'Linear User', 'email': 'linear@example.com', 'avatarUrl': 'avatar',
+        }]
+
+        with patch('seahub.project.connections.SeaDBAPI', return_value=Mock()), \
+                patch('seahub.project.connections.get_connection_columns', return_value=[{'key': 'state'}]), \
+                patch('seahub.project.connections.ProjectConnectionOauth.objects.get_by_project_uuid', return_value=oauth), \
+                patch('seahub.project.connections.LinearAPI', return_value=linear_api):
+            resp = ProjectConnectionMetaView.as_view()(
+                request, project_uuid=str(real_project.uuid), connection_id=str(connection.id)
+            )
+
+        assert resp.status_code == 200
+        assert resp.data['related_users'] == [{
+            'user_id': 'user-1', 'email': 'user-1', 'name': 'Linear User', 'avatar_url': 'avatar',
+        }]
+        linear_api.list_users.assert_called_once_with('team-1')
+
 
 class TestProjectConnectionLogView:
 
@@ -1429,6 +1453,105 @@ class TestProjectConnectionRecordView:
 
 
 class TestProjectConnectionRecordsView:
+
+    def test_post_create_jira_issue(self, factory, project_creator, real_project, connection_factory):
+        connection = connection_factory(
+            connection_type=ConnectionType.JIRA_ISSUE.value,
+            config={'site_id': 'site-1', 'project_key': 'SEA'},
+        )
+        request = factory.post(
+            f'/api/v1/project/{real_project.uuid}/connections/{connection.id}/records/',
+            data={'title': 'From ticket', 'description': 'Body', 'issue_type_id': '10001'},
+            format='json',
+        )
+        request.user = project_creator
+        oauth = SimpleNamespace(access_token='access', refresh_token='refresh', expires_at=None)
+        created_issue = {
+            'id': '101', 'key': 'SEA-1',
+            'fields': {
+                'summary': 'From ticket', 'description': {'content': [{'content': [{'text': 'Body'}]}]},
+                'status': {'name': 'To Do'}, 'priority': {'name': 'Medium'},
+                'issuetype': {'name': 'Task'}, 'created': '2026-01-01T00:00:00Z',
+                'updated': '2026-01-01T00:00:00Z',
+            },
+        }
+        jira_api = Mock(access_token='access', refresh_token='refresh', expires_at=None)
+        jira_api.create_issue.return_value = created_issue
+        seadb = Mock()
+        seadb.insert_rows.return_value = {'pks': [9]}
+
+        with patch('seahub.project.connections.ProjectConnectionOauth.objects.get_by_project_uuid', return_value=oauth), \
+                patch('seahub.project.connections.JiraAPI', return_value=jira_api), \
+                patch('seahub.project.connections.SeaDBAPI', return_value=seadb):
+            resp = ProjectConnectionRecordsView.as_view()(
+                request, project_uuid=real_project.uuid, connection_id=str(connection.id)
+            )
+
+        assert resp.status_code == 201
+        assert resp.data['row']['_pk'] == 9
+        assert resp.data['row']['issue_key'] == 'SEA-1'
+        assert seadb.insert_rows.call_args.args[1] == f'jira_issue_{connection.id}'
+        jira_api.create_issue.assert_called_once_with(
+            'site-1', 'SEA', 'From ticket', 'Body', '10001',
+            priority_id=None, assignee_id=None, due_date=None,
+        )
+
+    def test_post_create_linear_issue(self, factory, project_creator, real_project, connection_factory):
+        connection = connection_factory(
+            connection_type=ConnectionType.LINEAR.value,
+            config={'team_id': 'team-1'},
+        )
+        request = factory.post(
+            f'/api/v1/project/{real_project.uuid}/connections/{connection.id}/records/',
+            data={'title': 'From ticket', 'description': 'Body', 'priority': 2, 'label_ids': ['label-1']},
+            format='json',
+        )
+        request.user = project_creator
+        oauth = SimpleNamespace(access_token='access', refresh_token='refresh', expires_at=None)
+        created_issue = {
+            'id': 'issue-1', 'identifier': 'SEA-1', 'title': 'From ticket', 'description': 'Body',
+            'state': {'name': 'Todo'}, 'creator': {'name': 'User'}, 'labels': {'nodes': []},
+            'priority': 2, 'createdAt': '2026-01-01T00:00:00Z', 'updatedAt': '2026-01-01T00:00:00Z',
+        }
+        linear_api = Mock(access_token='access', refresh_token='refresh')
+        linear_api.create_issue.return_value = created_issue
+        seadb = Mock()
+        seadb.insert_rows.return_value = {'pks': [10]}
+
+        with patch('seahub.project.connections.ProjectConnectionOauth.objects.get_by_project_uuid', return_value=oauth), \
+                patch('seahub.project.connections.LinearAPI', return_value=linear_api), \
+                patch('seahub.project.connections.SeaDBAPI', return_value=seadb):
+            resp = ProjectConnectionRecordsView.as_view()(
+                request, project_uuid=real_project.uuid, connection_id=str(connection.id)
+            )
+
+        assert resp.status_code == 201
+        assert resp.data['row']['_pk'] == 10
+        assert resp.data['row']['identifier'] == 'SEA-1'
+        assert seadb.insert_rows.call_args.args[1] == f'linear_issue_{connection.id}'
+        linear_api.create_issue.assert_called_once_with(
+            'team-1', 'From ticket', 'Body', state_id=None, priority=2,
+            assignee_id=None, label_ids=['label-1'], due_date=None,
+        )
+
+    def test_post_external_task_requires_oauth(self, factory, project_creator, real_project, connection_factory):
+        connection = connection_factory(
+            connection_type=ConnectionType.JIRA_ISSUE.value,
+            config={'site_id': 'site-1', 'project_key': 'SEA'},
+        )
+        request = factory.post(
+            f'/api/v1/project/{real_project.uuid}/connections/{connection.id}/records/',
+            data={'title': 'From ticket', 'description': 'Body', 'issue_type_id': '10001'},
+            format='json',
+        )
+        request.user = project_creator
+
+        with patch('seahub.project.connections.ProjectConnectionOauth.objects.get_by_project_uuid', return_value=None):
+            resp = ProjectConnectionRecordsView.as_view()(
+                request, project_uuid=real_project.uuid, connection_id=str(connection.id)
+            )
+
+        assert resp.status_code == 400
 
     def test_put_records_data_invalid(self, factory, project_creator, real_project, site_connection):
         project = real_project

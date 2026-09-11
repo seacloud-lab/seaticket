@@ -28,6 +28,9 @@ DISCORD_THREAD_ACTIVITY_TYPES = {'discord_thread_added', 'discord_thread_updated
 EMAIL_ACTIVITY_TYPES = {'email_thread_added', 'email_message_added'}
 
 GENERAL_TASK_ACTIVITY_TYPES = {'general_task_added', 'general_task_updated'}
+JIRA_TASK_ACTIVITY_TYPES = {'jira_issue_added'}
+LINEAR_TASK_ACTIVITY_TYPES = {'linear_issue_added'}
+TASK_ACTIVITY_TYPES = GENERAL_TASK_ACTIVITY_TYPES | JIRA_TASK_ACTIVITY_TYPES | LINEAR_TASK_ACTIVITY_TYPES
 
 MANUAL_SYNC_INTERVAL = 1 * 60
 MANUAL_CRAWL_INTERVAL = 24 * 60 * 60

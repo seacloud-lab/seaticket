@@ -35,6 +35,8 @@ const LOG_TYPE = {
 
   GENERAL_TASK_ADDED: 'general_task_added',
   GENERAL_TASK_UPDATED: 'general_task_updated',
+  JIRA_ISSUE_ADDED: 'jira_issue_added',
+  LINEAR_ISSUE_ADDED: 'linear_issue_added',
 
   GITHUB_ISSUE_UPDATED: 'github_issue_updated',
   GITHUB_ISSUE_CLOSED: 'github_issue_closed',
@@ -71,6 +73,8 @@ const LOG_ICONS = {
 
   [LOG_TYPE.GENERAL_TASK_ADDED]: 'task-filled',
   [LOG_TYPE.GENERAL_TASK_UPDATED]: 'task-filled',
+  [LOG_TYPE.JIRA_ISSUE_ADDED]: 'task-filled',
+  [LOG_TYPE.LINEAR_ISSUE_ADDED]: 'task-filled',
 
   [LOG_TYPE.GITHUB_ISSUE_UPDATED]: 'github-filled',
   [LOG_TYPE.GITHUB_ISSUE_CLOSED]: 'github-filled',
@@ -176,17 +180,17 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
     return null;
   }, [projectUuid, permission]);
 
-  const renderGeneralTaskRef = useCallback(({ connection_id, record_id, title = '' } = {}) => {
+  const renderTaskRef = useCallback(({ connection_id, connection_type, record_id, title = '' } = {}) => {
     const taskId = record_id;
     if (!taskId) return title ? <span>{title}</span> : null;
     const label = title || `#${taskId}`;
     if (projectUuid && connection_id) {
       return (
         <LinkedRecord
-          record={{ type: CONNECTION_TYPE.GENERAL_TASK, title, _id: taskId, connection_id }}
+          record={{ type: connection_type || CONNECTION_TYPE.GENERAL_TASK, title, _id: taskId, connection_id }}
           projectUuid={projectUuid}
           permission={permission}
-          type={CONNECTION_TYPE.GENERAL_TASK}
+          type={connection_type || CONNECTION_TYPE.GENERAL_TASK}
         >
           {label}
         </LinkedRecord>
@@ -573,14 +577,16 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
       }
 
       // linked info
-      case LOG_TYPE.GENERAL_TASK_ADDED: {
-        const ref = renderGeneralTaskRef(activity);
+      case LOG_TYPE.GENERAL_TASK_ADDED:
+      case LOG_TYPE.JIRA_ISSUE_ADDED:
+      case LOG_TYPE.LINEAR_ISSUE_ADDED: {
+        const ref = renderTaskRef(activity);
         return (
           <span>{gettext('Task')}{ref ? <>{' '}{ref}</> : null}{' '}{gettext('added')}</span>
         );
       }
       case LOG_TYPE.GENERAL_TASK_UPDATED: {
-        const ref = renderGeneralTaskRef(activity);
+        const ref = renderTaskRef(activity);
         const taskUserMap = (activity.related_users || []).reduce((map, user) => {
           if (user?.email && user?.name) {
             map[user.email] = user.name;
@@ -708,7 +714,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
     }
   }, [
     activity, collaborators, collaboratorsCache, queryUser, statesData, tagsData, substatesData, typesData, updateCollaboratorsCache,
-    renderGeneralTaskRef, renderDiscordThreadRef, renderDiscourseTopicRef, renderEmailThreadRef, renderGithubIssueRef,
+    renderTaskRef, renderDiscordThreadRef, renderDiscourseTopicRef, renderEmailThreadRef, renderGithubIssueRef,
   ]);
 
   const iconSymbol = LOG_ICONS[activity.activity_type] || 'info';

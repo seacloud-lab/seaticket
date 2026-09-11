@@ -34,8 +34,9 @@ from seahub.utils.storage import if_none_match_hit, get_connection_file_head_fro
 from seahub.seadb_models.utils import init_seadb_tables_from_schema, list_discourse_forum_replies_records, \
     list_connection_view_records, list_github_issue_record_details, list_seafile_record_details, \
     list_site_record_details, list_email_record_details, get_issue_record_by_pk, list_notion_record_details, \
-    list_general_task_record_details, build_general_task_row_data, get_connection_columns, list_linear_issue_record_details, \
-   list_confluence_record_details, list_discord_thread_record_details, list_jira_issue_record_details
+    list_general_task_record_details, build_general_task_row_data, build_jira_issue_row_data, \
+    build_linear_issue_row_data, get_connection_columns, list_linear_issue_record_details, \
+    list_confluence_record_details, list_discord_thread_record_details, list_jira_issue_record_details
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.github_seadb_api import GitHubSeaDBAPI
 from seahub.seadb_models.discourse_seadb_api import DiscourseSeaDBAPI
@@ -56,6 +57,8 @@ from seahub.project.github_issues_api import GitHubAPI, GitHubAppNotInstalled
 from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
 from seahub.utils.mailbox_manager import move_emails_to_trash
 from seahub.project.discourse_api import DiscourseForumAPI, DiscourseForumAPIException
+from seahub.project.jira_api import JiraAPI
+from seahub.project.linear_api import LinearAPI
 from seahub.utils.io import zip_email_attachments, query_io_task_status
 from seahub.project.task_utils import create_general_task_via_adapter, update_general_task_via_adapter, \
     prepare_image_data_for_adapter, build_general_task_change_values
@@ -743,14 +746,36 @@ class ProjectConnectionMetaView(APIView):
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        if project_connection.type not in (ConnectionType.GENERAL_TASK.value, ConnectionType.CONFLUENCE.value, ConnectionType.JIRA_ISSUE.value):
-            error_msg = 'Only general task and confluence connections support related users.'
+        if project_connection.type not in (
+            ConnectionType.GENERAL_TASK.value, ConnectionType.CONFLUENCE.value,
+            ConnectionType.JIRA_ISSUE.value, ConnectionType.LINEAR.value,
+        ):
+            error_msg = 'Connection type does not support metadata.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         try:
             seadb_api = SeaDBAPI()
             columns = get_connection_columns(seadb_api, project_uuid, project_connection)
-            related_users = get_connection_related_users(project_uuid, connection_id, project_connection.type)
+            if project_connection.type == ConnectionType.LINEAR.value:
+                linear_oauth = ProjectConnectionOauth.objects.get_by_project_uuid(
+                    project_uuid, ConnectionType.LINEAR.value
+                )
+                if not linear_oauth:
+                    return api_error(status.HTTP_400_BAD_REQUEST, 'Linear OAuth authorization is required.')
+                connection_config = decrypt_config(json.loads(project_connection.config))
+                linear_api = LinearAPI(
+                    linear_oauth.access_token, linear_oauth.refresh_token,
+                    on_token_refreshed=linear_oauth.save_refreshed_token,
+                )
+                users = linear_api.list_users(connection_config.get('team_id'))
+                related_users = [{
+                    'user_id': user.get('id'),
+                    'email': user.get('id'),
+                    'name': user.get('name') or user.get('email'),
+                    'avatar_url': user.get('avatarUrl') or '',
+                } for user in users if user.get('id')]
+            else:
+                related_users = get_connection_related_users(project_uuid, connection_id, project_connection.type)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -1441,7 +1466,7 @@ class ProjectConnectionRecordsView(APIView):
     @require_org_context
     def post(self, request, project_uuid, connection_id):
         """
-        Create a new record for a general task connection.
+        Create a new General Task, Jira issue, or Linear issue record.
         """
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -1455,17 +1480,20 @@ class ProjectConnectionRecordsView(APIView):
         project_connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
         if not project_connection:
             return api_error(status.HTTP_404_NOT_FOUND, f'project_connection {connection_id} not found.')
-        if project_connection.type != ConnectionType.GENERAL_TASK.value:
-            return api_error(status.HTTP_400_BAD_REQUEST, 'Only general task connections support record creation.')
+        supported_types = {
+            ConnectionType.GENERAL_TASK.value,
+            ConnectionType.JIRA_ISSUE.value,
+            ConnectionType.LINEAR.value,
+        }
+        if project_connection.type not in supported_types:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Connection type does not support record creation.')
 
         task_payload = request.data.copy()
         task_title = task_payload.get('title')
-        if not task_title:
+        if not isinstance(task_title, str) or not task_title.strip():
             return api_error(status.HTTP_400_BAD_REQUEST, 'Task title is required.')
+        task_title = task_title.strip()
         task_payload['title'] = task_title
-        task_payload['status'] = task_payload.get('status') or 'new'
-        task_payload['priority'] = task_payload.get('priority') or 'medium'
-        task_payload['size'] = task_payload.get('size') or 'medium'
         due_date = task_payload.get('due_date')
         if due_date:
             try:
@@ -1484,42 +1512,97 @@ class ProjectConnectionRecordsView(APIView):
             except Exception:
                 return api_error(status.HTTP_400_BAD_REQUEST, 'linked_ticket invalid.')
 
-        description_dict = task_payload.get('description')
-        if not description_dict:
-            error_msg = 'description invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        if not isinstance(description_dict, dict):
-            error_msg = 'description invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        file_urls = description_dict.get('images')
-        if file_urls and not isinstance(file_urls, list):
-            error_msg = 'content invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-        link_urls = description_dict.get('links')
-        if link_urls and isinstance(link_urls, list):
-            file_urls = (file_urls or []) + link_urls
+        if project_connection.type != ConnectionType.GENERAL_TASK.value:
+            description = task_payload.get('description') or ''
+            if not isinstance(description, str):
+                return api_error(status.HTTP_400_BAD_REQUEST, 'description invalid.')
 
+        table_name = None
         try:
             connection_config = decrypt_config(json.loads(project_connection.config))
-            image_data_map = prepare_image_data_for_adapter(project_uuid, description_dict)
-            if image_data_map:
-                task_payload['image_data_map'] = image_data_map
-            created_task = create_general_task_via_adapter(connection_config, task_payload)
+            if project_connection.type == ConnectionType.GENERAL_TASK.value:
+                task_payload['status'] = task_payload.get('status') or 'new'
+                task_payload['priority'] = task_payload.get('priority') or 'medium'
+                task_payload['size'] = task_payload.get('size') or 'medium'
+                description_dict = task_payload.get('description')
+                if not isinstance(description_dict, dict) or not description_dict:
+                    return api_error(status.HTTP_400_BAD_REQUEST, 'description invalid.')
+                file_urls = description_dict.get('images')
+                if file_urls and not isinstance(file_urls, list):
+                    return api_error(status.HTTP_400_BAD_REQUEST, 'content invalid.')
+                image_data_map = prepare_image_data_for_adapter(project_uuid, description_dict)
+                if image_data_map:
+                    task_payload['image_data_map'] = image_data_map
+                created_task = create_general_task_via_adapter(connection_config, task_payload)
+                row_data = build_general_task_row_data(created_task)
+                table_name = SchemaTables.GENERAL_TASK.table_name(connection_id)
+            elif project_connection.type == ConnectionType.JIRA_ISSUE.value:
+                issue_type_id = task_payload.get('issue_type_id')
+                if isinstance(issue_type_id, bool) or not isinstance(issue_type_id, (str, int)) or not str(issue_type_id).strip():
+                    return api_error(status.HTTP_400_BAD_REQUEST, 'issue_type_id is required.')
+                for field_name in ('priority_id', 'assignee_id'):
+                    field_value = task_payload.get(field_name)
+                    if field_value and (isinstance(field_value, bool) or not isinstance(field_value, (str, int))):
+                        return api_error(status.HTTP_400_BAD_REQUEST, f'{field_name} invalid.')
+                jira_oauth = ProjectConnectionOauth.objects.get_by_project_uuid(
+                    project_uuid, ConnectionType.JIRA_ISSUE.value
+                )
+                if not jira_oauth:
+                    return api_error(status.HTTP_400_BAD_REQUEST, 'Jira OAuth authorization is required.')
+                jira_api = JiraAPI(
+                    jira_oauth.access_token, jira_oauth.refresh_token, jira_oauth.expires_at,
+                    on_token_refreshed=jira_oauth.save_refreshed_token,
+                )
+                created_task = jira_api.create_issue(
+                    connection_config.get('site_id'), connection_config.get('project_key'), task_title,
+                    task_payload.get('description') or '', issue_type_id,
+                    priority_id=task_payload.get('priority_id'),
+                    assignee_id=task_payload.get('assignee_id'), due_date=due_date,
+                )
+                row_data = build_jira_issue_row_data(created_task)
+                table_name = SchemaTables.JIRA_ISSUES.table_name(connection_id)
+            else:
+                priority = task_payload.get('priority')
+                if priority is not None and (isinstance(priority, bool) or not isinstance(priority, int) or priority not in range(5)):
+                    return api_error(status.HTTP_400_BAD_REQUEST, 'priority invalid.')
+                label_ids = task_payload.get('label_ids') or []
+                if not isinstance(label_ids, list) or any(not isinstance(item, str) or not item for item in label_ids):
+                    return api_error(status.HTTP_400_BAD_REQUEST, 'label_ids invalid.')
+                for field_name in ('state_id', 'assignee_id'):
+                    field_value = task_payload.get(field_name)
+                    if field_value and not isinstance(field_value, str):
+                        return api_error(status.HTTP_400_BAD_REQUEST, f'{field_name} invalid.')
+                linear_oauth = ProjectConnectionOauth.objects.get_by_project_uuid(
+                    project_uuid, ConnectionType.LINEAR.value
+                )
+                if not linear_oauth:
+                    return api_error(status.HTTP_400_BAD_REQUEST, 'Linear OAuth authorization is required.')
+                linear_api = LinearAPI(
+                    linear_oauth.access_token, linear_oauth.refresh_token,
+                    on_token_refreshed=linear_oauth.save_refreshed_token,
+                )
+                created_task = linear_api.create_issue(
+                    connection_config.get('team_id'), task_title, task_payload.get('description') or '',
+                    state_id=task_payload.get('state_id'), priority=priority,
+                    assignee_id=task_payload.get('assignee_id'), label_ids=label_ids,
+                    due_date=due_date,
+                )
+                row_data = build_linear_issue_row_data(created_task)
+                table_name = SchemaTables.LINEAR_ISSUES.table_name(connection_id)
         except Exception as e:
-            logger.error(f'create general task error: {e}')
+            logger.error('create %s task error: %s', project_connection.type, e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, str(e))
 
         seadb_api = SeaDBAPI()
-        row_data = build_general_task_row_data(created_task)
         activities = []
         try:
-            res = seadb_api.insert_rows(project_uuid, SchemaTables.GENERAL_TASK.table_name(connection_id), [row_data])
+            res = seadb_api.insert_rows(project_uuid, table_name, [row_data])
             pks = res.get('pks', [])
             if len(pks) != 1:
                 raise RuntimeError('insert_rows returned invalid pks')
             row_data['_pk'] = pks[0]
         except Exception as e:
-            logger.error(f'insert general task row error: {e}')
+            logger.error('insert %s task row error: %s', project_connection.type, e)
             try:
                 manual_sync_connection({'connection_id': connection_id, 'connection_type': project_connection.type})
             except Exception:
@@ -1546,7 +1629,10 @@ class ProjectConnectionRecordsView(APIView):
                 }])
                 sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections)
                 row_data['linked_ticket'] = linked_ticket
-                activities = record_create_task_activities(seadb_api, project_uuid, connection_id, row_data)
+                activities = record_create_task_activities(
+                    seadb_api, project_uuid, connection_id, row_data,
+                    connection_type=project_connection.type,
+                )
 
             except TicketLinkValidationError as e:
                 return api_error(status.HTTP_400_BAD_REQUEST, str(e))

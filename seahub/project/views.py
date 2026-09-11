@@ -338,6 +338,7 @@ def linear_oauth(request):
         'client_id': LINEAR_CLIENT_ID,
         'redirect_uri': LINEAR_REDIRECT_URL,
         'response_type': 'code',
+        'scope': 'read,write',
         'state': state,
     }
 
@@ -696,7 +697,7 @@ def jira_oauth(request):
     params = {
         'audience': 'api.atlassian.com',
         'client_id': JIRA_CLIENT_ID,
-        'scope': 'offline_access read:jira-work read:jira-user',
+        'scope': 'offline_access read:jira-work read:jira-user write:jira-work',
         'redirect_uri': JIRA_REDIRECT_URL,
         'state': state,
         'response_type': 'code',

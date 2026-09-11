@@ -28,7 +28,7 @@ from seahub.project.utils import check_project_permission, \
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.utils.storage import upload_files_to_s3, delete_record_attachments_from_s3
 from seahub.project.constants import GITHUB_ISSUE_ACTIVITY_TYPES, DISCOURSE_TOPIC_ACTIVITY_TYPES, EMAIL_ACTIVITY_TYPES, \
-    GENERAL_TASK_ACTIVITY_TYPES, DISCORD_THREAD_ACTIVITY_TYPES
+    DISCORD_THREAD_ACTIVITY_TYPES, TASK_ACTIVITY_TYPES
 from seahub.seadb_models.utils import list_tickets_view_records, list_tickets_by_search, \
     list_trash_tickets, list_my_tickets
 from seahub.project.seadb_api import SeaDBAPI
@@ -1825,14 +1825,16 @@ class TicketActivitiesAPIView(APIView):
                 field_key = activity_type
                 thread_id = detail.get('thread_id')
                 thread_title = detail.get('thread_title', '')
-            elif activity_type in GENERAL_TASK_ACTIVITY_TYPES:
+            elif activity_type in TASK_ACTIVITY_TYPES:
                 field_key = activity_type
                 task_record_id = detail.get('record_id')
                 task_title = detail.get('task_title', '')
                 connection_id = detail.get('connection_id')
-                if connection_id and connection_id not in general_task_related_users:
-                    general_task_related_users[connection_id] = get_connection_related_users(
-                        project_uuid, connection_id, ConnectionType.GENERAL_TASK.value
+                connection_type = detail.get('connection_type') or ConnectionType.GENERAL_TASK.value
+                related_users_key = f'{connection_type}_{connection_id}'
+                if connection_id and related_users_key not in general_task_related_users:
+                    general_task_related_users[related_users_key] = get_connection_related_users(
+                        project_uuid, connection_id, connection_type
                     )
             elif field_name == 'state_substate':
                 state_column = get_column_from_columns_by_name(metadata, SchemaTables.TICKETS.column.state.name)
@@ -1878,7 +1880,7 @@ class TicketActivitiesAPIView(APIView):
                     activity_type not in DISCOURSE_TOPIC_ACTIVITY_TYPES and \
                     activity_type not in DISCORD_THREAD_ACTIVITY_TYPES and \
                     activity_type not in EMAIL_ACTIVITY_TYPES and \
-                    activity_type not in GENERAL_TASK_ACTIVITY_TYPES:
+                    activity_type not in TASK_ACTIVITY_TYPES:
                 if field_name == 'state_substate':
                     state_column = get_column_from_columns_by_name(metadata, SchemaTables.TICKETS.column.state.name)
                     substate_column = get_column_from_columns_by_name(metadata, SchemaTables.TICKETS.column.substate.name)
@@ -1917,10 +1919,12 @@ class TicketActivitiesAPIView(APIView):
             elif activity_type in EMAIL_ACTIVITY_TYPES:
                 activity_item['thread_id'] = thread_id
                 activity_item['title'] = thread_title
-            elif activity_type in GENERAL_TASK_ACTIVITY_TYPES:
+            elif activity_type in TASK_ACTIVITY_TYPES:
                 activity_item['record_id'] = task_record_id
                 activity_item['title'] = task_title
-                activity_item['related_users'] = general_task_related_users.get(detail.get('connection_id')) or []
+                activity_item['connection_type'] = detail.get('connection_type') or ConnectionType.GENERAL_TASK.value
+                related_users_key = f'{activity_item["connection_type"]}_{detail.get("connection_id")}'
+                activity_item['related_users'] = general_task_related_users.get(related_users_key) or []
             activities_list.append(activity_item)
 
         return Response({

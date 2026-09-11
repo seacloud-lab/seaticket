@@ -11,6 +11,7 @@ import {
 } from '@/constants';
 import { useData, useTags, useMetadata } from '@/project/hooks';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
+import { CONNECTION_TYPE } from '@/project/main-panel/connections/constants';
 import { useConnections } from '@/project/main-panel/connections/hooks';
 import { getTableName } from '@/project/main-panel/connections/utils';
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
@@ -42,6 +43,7 @@ import {
 import Header from './header';
 import StatusToggleButton from './status-toggle-btn';
 
+
 import './index.css';
 
 const Ticket = ({
@@ -61,6 +63,7 @@ const Ticket = ({
   const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
   const [isShowCreateKBRecordDialog, setIsShowCreateKBRecordDialog] = useState(false);
   const [isShowCreateTaskDialog, setIsShowCreateTaskDialog] = useState(false);
+  const [createTaskConnectionType, setCreateTaskConnectionType] = useState(CONNECTION_TYPE.GENERAL_TASK);
 
   const { typesData, statesData, substatesData } = useMetadata();
   const { connections } = useConnections();
@@ -209,7 +212,8 @@ const Ticket = ({
     setIsShowCreateKBRecordDialog(true);
   }, []);
 
-  const createTask = useCallback(() => {
+  const createTask = useCallback((_, connectionType = CONNECTION_TYPE.GENERAL_TASK) => {
+    setCreateTaskConnectionType(connectionType);
     setIsShowCreateTaskDialog(true);
   }, []);
 
@@ -723,6 +727,7 @@ const Ticket = ({
           workspaceID={workspaceID}
           projectName={projectName}
           ticket={ticket}
+          connectionType={createTaskConnectionType}
           onClose={() => setIsShowCreateTaskDialog(false)}
           onSubmitCallback={handleTaskCreated}
         />
