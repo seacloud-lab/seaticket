@@ -33,6 +33,8 @@ def test_jira_stores_rotated_token_even_when_the_retried_request_fails():
     unauthorized.raise_for_status.side_effect = RuntimeError('401 Client Error')
     stored = []
     api = JiraAPI('access-old', 'refresh-old', None, on_token_refreshed=stored.append)
+    api.client_id = 'client-id'
+    api.client_secret = 'client-secret'
 
     with patch('seahub.project.jira_api.requests.request', return_value=unauthorized), \
             patch('seahub.project.jira_api.requests.post', return_value=_jira_token_response()):
@@ -52,6 +54,8 @@ def test_jira_request_survives_a_failing_token_store():
     success = Mock(status_code=200)
     success.raise_for_status.return_value = None
     api = JiraAPI('access-old', 'refresh-old', None, on_token_refreshed=Mock(side_effect=RuntimeError('db down')))
+    api.client_id = 'client-id'
+    api.client_secret = 'client-secret'
 
     with patch('seahub.project.jira_api.requests.request', side_effect=[unauthorized, success]), \
             patch('seahub.project.jira_api.requests.post', return_value=_jira_token_response()):

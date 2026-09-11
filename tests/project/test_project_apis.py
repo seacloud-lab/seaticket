@@ -156,10 +156,15 @@ class TestProjectConfluenceWorkspaces:
         new_expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)
 
         def mock_accessible_resources(self):
-            # Token refresh happens inside _request before the API call
+            # Simulate the API client's refresh path, including its persistence callback.
             if self.access_token == 'expired-token':
                 self.access_token = 'fresh-token'
                 self.expires_at = new_expires_at
+                self.on_token_refreshed({
+                    'access_token': self.access_token,
+                    'refresh_token': self.refresh_token,
+                    'expires_at': self.expires_at,
+                })
             return []
 
         with patch.object(ConfluenceAPI, 'list_accessible_resources', mock_accessible_resources):

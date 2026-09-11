@@ -1290,7 +1290,10 @@ class TestProjectConnectionMetaView:
         connection = connection_factory(connection_type=ConnectionType.LINEAR.value, config={'team_id': 'team-1'})
         request = factory.get(f"/api/v1/project/{real_project.uuid}/connections/{connection.id}/meta/")
         request.user = project_creator
-        oauth = SimpleNamespace(access_token='access', refresh_token='refresh', expires_at=None)
+        oauth = SimpleNamespace(
+            access_token='access', refresh_token='refresh', expires_at=None,
+            save_refreshed_token=Mock(),
+        )
         linear_api = Mock(access_token='access', refresh_token='refresh')
         linear_api.list_users.return_value = [{
             'id': 'user-1', 'name': 'Linear User', 'email': 'linear@example.com', 'avatarUrl': 'avatar',
@@ -1465,7 +1468,10 @@ class TestProjectConnectionRecordsView:
             format='json',
         )
         request.user = project_creator
-        oauth = SimpleNamespace(access_token='access', refresh_token='refresh', expires_at=None)
+        oauth = SimpleNamespace(
+            access_token='access', refresh_token='refresh', expires_at=None,
+            save_refreshed_token=Mock(),
+        )
         created_issue = {
             'id': '101', 'key': 'SEA-1',
             'fields': {
@@ -1507,7 +1513,10 @@ class TestProjectConnectionRecordsView:
             format='json',
         )
         request.user = project_creator
-        oauth = SimpleNamespace(access_token='access', refresh_token='refresh', expires_at=None)
+        oauth = SimpleNamespace(
+            access_token='access', refresh_token='refresh', expires_at=None,
+            save_refreshed_token=Mock(),
+        )
         created_issue = {
             'id': 'issue-1', 'identifier': 'SEA-1', 'title': 'From ticket', 'description': 'Body',
             'state': {'name': 'Todo'}, 'creator': {'name': 'User'}, 'labels': {'nodes': []},
