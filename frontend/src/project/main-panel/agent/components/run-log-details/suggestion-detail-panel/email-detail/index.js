@@ -22,11 +22,11 @@ const EmailDetail = ({ isEdit, isSaving, value, defaultReplyTo, onChange }) => {
   }, [value, defaultReplyTo]);
 
   return (
-    <div className="seaqa-suggestion-detail-draft">
+    <div className="seaqa-suggestion-detail-draft email h-100">
       <div className="seaqa-suggestion-detail-draft-title">
         {gettext('Draft')}
       </div>
-      <div className="seaqa-suggestion-detail-draft-body gap-2 pt-0">
+      <div className="seaqa-suggestion-detail-draft-body gap-2 pt-0 flex-1">
         <ReplyTo
           isExpand={false}
           title={gettext('To')}
@@ -42,7 +42,7 @@ const EmailDetail = ({ isEdit, isSaving, value, defaultReplyTo, onChange }) => {
           onChange={(emails) => handleChange({ cc: emails })}
         />
         <Input
-          className="seaqa-ticket-content mt-2"
+          className="seaqa-suggestion-email-content mt-2 flex-1"
           type="textarea"
           value={email.content}
           readOnly={isReadonly}

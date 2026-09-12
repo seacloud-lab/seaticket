@@ -1,3 +1,12 @@
 .suggestion-content-preview-wrapper.email .suggestion-email-preview-content {
   height: fit-content;
 }
+
+.suggestion-content-preview-wrapper.email .seaqa-email-reply-to {
+  border-color: var(--bs-border-secondary-color);
+}
+
+.suggestion-content-preview-wrapper.email .seaqa-email-reply-to .seaqa-email-reply-to-title,
+.suggestion-content-preview-wrapper.email .seaqa-email-reply-to .seaqa-email-to-user {
+  font-size: 13px;
+}
