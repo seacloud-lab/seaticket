@@ -44,7 +44,6 @@ const EmailDetail = ({ isEdit, isSaving, value, defaultReplyTo, onChange }) => {
         <Input
           className="seaqa-suggestion-email-content mt-2 flex-1"
           type="textarea"
-          resize={false}
           value={email.content}
           readOnly={isReadonly}
           onChange={(e) => handleChange({ content: e.target.value })}
