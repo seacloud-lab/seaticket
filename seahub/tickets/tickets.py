@@ -1788,7 +1788,7 @@ class TicketActivitiesAPIView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
         activities_list = []
-        general_task_related_users = {}
+        task_related_users = {}
         for a in activities:
             detail = json.loads(a.get('detail', '{}')) if a.get('detail') else {}
             field_name = detail.get('field_name', '')
@@ -1832,8 +1832,8 @@ class TicketActivitiesAPIView(APIView):
                 connection_id = detail.get('connection_id')
                 connection_type = detail.get('connection_type') or ConnectionType.GENERAL_TASK.value
                 related_users_key = f'{connection_type}_{connection_id}'
-                if connection_id and related_users_key not in general_task_related_users:
-                    general_task_related_users[related_users_key] = get_connection_related_users(
+                if connection_id and related_users_key not in task_related_users:
+                    task_related_users[related_users_key] = get_connection_related_users(
                         project_uuid, connection_id, connection_type
                     )
             elif field_name == 'state_substate':
@@ -1924,7 +1924,7 @@ class TicketActivitiesAPIView(APIView):
                 activity_item['title'] = task_title
                 activity_item['connection_type'] = detail.get('connection_type') or ConnectionType.GENERAL_TASK.value
                 related_users_key = f'{activity_item["connection_type"]}_{detail.get("connection_id")}'
-                activity_item['related_users'] = general_task_related_users.get(related_users_key) or []
+                activity_item['related_users'] = task_related_users.get(related_users_key) or []
             activities_list.append(activity_item)
 
         return Response({

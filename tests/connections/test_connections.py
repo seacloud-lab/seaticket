@@ -1286,32 +1286,28 @@ class TestProjectConnectionMetaView:
         assert resp.data['related_users'][0]['email'] == 'dev@example.com'
         assert resp.data['columns'][0]['key'] == 'status'
 
-    def test_get_linear_metadata_lists_team_users(self, factory, project_creator, real_project, connection_factory):
+    def test_get_linear_metadata_uses_related_users(self, factory, project_creator, real_project, connection_factory):
         connection = connection_factory(connection_type=ConnectionType.LINEAR.value, config={'team_id': 'team-1'})
         request = factory.get(f"/api/v1/project/{real_project.uuid}/connections/{connection.id}/meta/")
         request.user = project_creator
-        oauth = SimpleNamespace(
-            access_token='access', refresh_token='refresh', expires_at=None,
-            save_refreshed_token=Mock(),
-        )
-        linear_api = Mock(access_token='access', refresh_token='refresh')
-        linear_api.list_users.return_value = [{
-            'id': 'user-1', 'name': 'Linear User', 'email': 'linear@example.com', 'avatarUrl': 'avatar',
+        related_users = [{
+            'user_id': 'user-1', 'email': 'user-1', 'name': 'Linear User', 'avatar_url': '/avatar.png',
         }]
 
         with patch('seahub.project.connections.SeaDBAPI', return_value=Mock()), \
                 patch('seahub.project.connections.get_connection_columns', return_value=[{'key': 'state'}]), \
-                patch('seahub.project.connections.ProjectConnectionOauth.objects.get_by_project_uuid', return_value=oauth), \
-                patch('seahub.project.connections.LinearAPI', return_value=linear_api):
+                patch('seahub.project.connections.get_connection_related_users', return_value=related_users) as related_users_mock, \
+                patch('seahub.project.connections.LinearAPI') as linear_api_cls:
             resp = ProjectConnectionMetaView.as_view()(
                 request, project_uuid=str(real_project.uuid), connection_id=str(connection.id)
             )
 
         assert resp.status_code == 200
-        assert resp.data['related_users'] == [{
-            'user_id': 'user-1', 'email': 'user-1', 'name': 'Linear User', 'avatar_url': 'avatar',
-        }]
-        linear_api.list_users.assert_called_once_with('team-1')
+        assert resp.data['related_users'] == related_users
+        related_users_mock.assert_called_once_with(
+            str(real_project.uuid), str(connection.id), ConnectionType.LINEAR.value
+        )
+        linear_api_cls.assert_not_called()
 
 
 class TestProjectConnectionLogView:

@@ -756,26 +756,7 @@ class ProjectConnectionMetaView(APIView):
         try:
             seadb_api = SeaDBAPI()
             columns = get_connection_columns(seadb_api, project_uuid, project_connection)
-            if project_connection.type == ConnectionType.LINEAR.value:
-                linear_oauth = ProjectConnectionOauth.objects.get_by_project_uuid(
-                    project_uuid, ConnectionType.LINEAR.value
-                )
-                if not linear_oauth:
-                    return api_error(status.HTTP_400_BAD_REQUEST, 'Linear OAuth authorization is required.')
-                connection_config = decrypt_config(json.loads(project_connection.config))
-                linear_api = LinearAPI(
-                    linear_oauth.access_token, linear_oauth.refresh_token,
-                    on_token_refreshed=linear_oauth.save_refreshed_token,
-                )
-                users = linear_api.list_users(connection_config.get('team_id'))
-                related_users = [{
-                    'user_id': user.get('id'),
-                    'email': user.get('id'),
-                    'name': user.get('name') or user.get('email'),
-                    'avatar_url': user.get('avatarUrl') or '',
-                } for user in users if user.get('id')]
-            else:
-                related_users = get_connection_related_users(project_uuid, connection_id, project_connection.type)
+            related_users = get_connection_related_users(project_uuid, connection_id, project_connection.type)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -1630,7 +1611,7 @@ class ProjectConnectionRecordsView(APIView):
                 sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections)
                 row_data['linked_ticket'] = linked_ticket
                 activities = record_create_task_activities(
-                    seadb_api, project_uuid, connection_id, row_data,
+                    seadb_api, project_uuid, connection_id, row_data, creator=username,
                     connection_type=project_connection.type,
                 )
 
