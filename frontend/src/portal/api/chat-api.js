@@ -198,6 +198,17 @@ class ChatAPI {
     return this.req.get(url);
   }
 
+  getAdminChatUserUsage(projectUuid, { start = 0, limit = 1000, sorts } = {}) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/admin/chat/user-usage/';
+    let form = new FormData();
+    form.append('start', start);
+    form.append('limit', limit);
+    form.append('config', JSON.stringify({
+      sorts: sorts || []
+    }));
+    return this._sendPostRequest(url, form);
+  }
+
   getChatMessage(projectUuid, sessionId) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/chat/?session_uuid=' + sessionId;
     return this.req.get(url);

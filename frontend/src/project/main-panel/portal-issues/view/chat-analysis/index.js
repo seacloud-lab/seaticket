@@ -51,12 +51,16 @@ const ChatAnalysis = ({
   const viewsData = useMemo(() => ({
     navigation: [
       { _id: 'all_chat', type: 'view' },
+      { _id: 'user_usage', type: 'view' },
       { _id: 'statistics', type: 'view' },
     ],
     views: [
       {
         _id: 'all_chat',
         name: gettext('All chat'),
+      }, {
+        _id: 'user_usage',
+        name: gettext('User usage (this month)'),
       }, {
         _id: 'statistics',
         name: gettext('Statistics'),
@@ -101,6 +105,41 @@ const ChatAnalysis = ({
     ];
   }, []);
 
+  const userUsageColumns = useMemo(() => {
+    return [
+      {
+        name: gettext('User'),
+        key: 'username',
+        type: CellType.CREATOR,
+        editable: false,
+        is_name_column: true,
+        frozen: true,
+      }, {
+        name: gettext('Questions'),
+        key: 'questions',
+        type: CellType.NUMBER,
+      }, {
+        name: gettext('Sessions'),
+        key: 'sessions',
+        type: CellType.NUMBER,
+      }, {
+        name: gettext('Input tokens'),
+        key: 'input_tokens',
+        type: CellType.NUMBER,
+      }, {
+        name: gettext('Output tokens'),
+        key: 'output_tokens',
+        type: CellType.NUMBER,
+      }, {
+        name: gettext('Credit used'),
+        key: 'credit_used',
+        type: CellType.NUMBER,
+      },
+    ];
+  }, []);
+
+  const getSortsKey = (viewID) => (viewID === 'user_usage' ? 'user_usage_sorts' : 'sorts');
+
   const api = useMemo(() => ({
     getMetadata: (...params) => getMetadata(PORTAL_CHAT_TABLE_NAME, params[0], () => {
       const { view_id = 'open', start = 0, limit = 1000 } = params[0];
@@ -109,6 +148,16 @@ const ChatAnalysis = ({
         return chatAPI.listAdminChatSessions(projectUuid, { start, limit, sorts }).then(res => {
           const sessions = res?.data?.sessions || [];
           const records = sessions.map(session => ({ ...session, _pk: session.id }));
+          return {
+            data: { records }
+          };
+        });
+      }
+      if (view_id === 'user_usage') {
+        const sorts = context.localStorage.getItem('user_usage_sorts') || [];
+        return chatAPI.getAdminChatUserUsage(projectUuid, { start, limit, sorts }).then(res => {
+          const users = res?.data?.users || [];
+          const records = users.map(user => ({ ...user, _pk: user.username }));
           return {
             data: { records }
           };
@@ -174,10 +223,11 @@ const ChatAnalysis = ({
         };
       });
     }, true).then(res => {
+      const { view_id } = params[0];
       return {
         data: {
           rows: res?.data.records || [],
-          columns,
+          columns: view_id === 'user_usage' ? userUsageColumns : columns,
         }
       };
     }),
@@ -190,18 +240,19 @@ const ChatAnalysis = ({
         const view = viewsData.views.find(v => v._id === viewID);
         resolve({ data: { view: {
           ...view,
-          sorts: context.localStorage.getItem('sorts') || [],
+          sorts: context.localStorage.getItem(getSortsKey(viewID)) || [],
         } } });
       });
     },
 
     modifyView: (viewID, viewData) => new Promise((resolve, reject) => {
       Object.keys(viewData).forEach(key => {
-        context.localStorage.setItem(key, viewData[key]);
+        const storageKey = key === 'sorts' ? getSortsKey(viewID) : key;
+        context.localStorage.setItem(storageKey, viewData[key]);
       });
       resolve({ data: { success: true } });
     }),
-  }), [projectUuid, viewsData, columns, getMetadata]);
+  }), [projectUuid, viewsData, columns, userUsageColumns, getMetadata]);
 
   const t = useMemo(() => {
     return {
