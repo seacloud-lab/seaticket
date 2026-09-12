@@ -8,6 +8,7 @@ from seahub.project.constants import ConnectionType, ExtraSourceType, CONNECTION
     PORTAL_ISSUE_DISPLAY_ALL_COLUMNS
 from seahub.project.view_utils import view_data_2_sql, SQLGenerator, SQLGeneratorOptionInvalidError
 from seahub.seadb_models.models import SchemaTables
+from seahub.settings import TEMPLATE_BASE_NAME
 
 logger = logging.getLogger(__name__)
 
@@ -32,42 +33,8 @@ CONNECTION_TYPE_TO_SCHEMA_TABLE = {
 def init_seadb_tables_from_schema(schema_tables, seadb_api, project_uuid, connection_id=None):
     for schema_table in schema_tables:
         table_name = schema_table.table_name(connection_id)
-        res = seadb_api.create_table(project_uuid, table_name)
-        table_id = res['table_id']
-
-        # Build cascade mapping from column-level cascade_column declarations
-        cascade_map = {}  # target_column_name -> source_column_name
-        for column in schema_table.get_fields():
-            column_name = column.name
-            cascade_column_name = column.data.get('cascade_column')
-
-            if cascade_column_name:
-                cascade_map[column_name] = cascade_column_name
-        cascade_source_columns = set(cascade_map.values())
-        source_column_keys = {}  # source_column_name -> seadb_key
-
-        for column in schema_table.get_fields():
-            column_name = column.name
-            mapped_column = deepcopy(column.to_dict())
-
-            # If this column is a cascade target and we have the source's SeaDB key, inject it
-            if column_name in cascade_map:
-                source_col_name = cascade_map[column_name]
-                source_key = source_column_keys.get(source_col_name)
-                if source_key:
-                    mapped_column.setdefault('column_data', {})
-                    mapped_column['column_data']['cascade_column_key'] = source_key
-                # Remove the YAML-only hint from data sent to SeaDB
-                mapped_column.get('column_data', {}).pop('cascade_column', None)
-
-            added_column = seadb_api.add_column(project_uuid, table_id, mapped_column)
-
-            # Record the SeaDB key if this column acts as a cascade source
-            if column_name in cascade_source_columns:
-                source_column_keys[column_name] = added_column['column_key']
-
-        for index_item in schema_table.indexes:
-            seadb_api.create_column_index(project_uuid, table_id, index_item)
+        template_table_name = schema_table.table_name_schema.removesuffix('_{connection_id}')
+        seadb_api.create_table(project_uuid, table_name, template_table_name, TEMPLATE_BASE_NAME)
 
 
 def ensure_general_task_column_options(seadb_api, project_uuid, connection_id, tasks):

@@ -55,12 +55,16 @@ class SeaDBAPI:
         return parse_response(response)
 
     # table
-    def create_table(self, base_id, table_name):
+    def create_table(self, base_id, table_name, template_table_name, template_base_name):
         base_id = uuid_str_to_36_chars(base_id)
         url = f'{self.server_url}/api/v1/{base_id}/tables'
         params = {
             'table_name': str(table_name)
         }
+        if template_table_name:
+            params['template_table_name'] = template_table_name
+        if template_base_name:
+            params['template_base_name'] = template_base_name
         response = requests.post(url, headers=self.headers, json=params, timeout=self.timeout)
         return parse_response(response)
 
@@ -117,25 +121,6 @@ class SeaDBAPI:
         return normalize_query_date_fields(parse_response(response))
 
     # columns
-    def add_column(self, base_id, table_id, column):
-        base_id = uuid_str_to_36_chars(base_id)
-        url = f'{self.server_url}/api/v1/{base_id}/columns'
-        data = {
-            'table_id': table_id,
-            'column_name': column['column_name'],
-            'column_type': column['column_type'],
-        }
-        if column.get('column_data'):
-            data['column_data'] = column['column_data']
-        response = requests.post(url, json=data, headers=self.headers, timeout=self.timeout)
-        return parse_response(response)
-
-    def update_column(self, base_id, column_data):
-        base_id = uuid_str_to_36_chars(base_id)
-        url = f'{self.server_url}/api/v1/{base_id}/columns'
-        response = requests.put(url, json=column_data, headers=self.headers, timeout=self.timeout)
-        return parse_response(response)
-
     def delete_column(self, base_id, table_id, column_key):
         base_id = uuid_str_to_36_chars(base_id)
         url = f'{self.server_url}/api/v1/{base_id}/columns'
@@ -144,6 +129,12 @@ class SeaDBAPI:
             'column_key': column_key,
         }
         response = requests.delete(url, json=data, headers=self.headers, timeout=self.timeout)
+        return parse_response(response)
+    
+    def update_column(self, base_id, column_data):
+        base_id = uuid_str_to_36_chars(base_id)
+        url = f'{self.server_url}/api/v1/{base_id}/columns'
+        response = requests.put(url, json=column_data, headers=self.headers, timeout=self.timeout)
         return parse_response(response)
 
     def add_column_option(self, base_id, option_data):
@@ -170,14 +161,12 @@ class SeaDBAPI:
         url = f'{self.server_url}/api/v1/{base_id}/metadata'
         response = requests.get(url, headers=self.headers, timeout=self.timeout)
         return parse_response(response)
-
-    # Create column index
-    def create_column_index(self, base_id, table_id, columns):
-        base_id = uuid_str_to_36_chars(base_id)
-        url = f'{self.server_url}/api/v1/{base_id}/index'
-        data = {
-            'table_id': table_id,
-            'columns': columns,
+    
+    def update_base_id(self, base_id, new_base_id):
+        base_id = uuid_str_to_36_chars(base_id)        
+        post_data = {
+            "base_id": new_base_id
         }
-        response = requests.post(url, json=data, headers=self.headers, timeout=self.timeout)
+        url = f'{self.server_url}/api/v1/{base_id}/base/update-base-id'
+        response = requests.post(url, json=post_data, headers=self.headers, timeout=self.timeout)
         return parse_response(response)

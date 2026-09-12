@@ -355,7 +355,7 @@ class ProjectsView(APIView):
             init_seadb_tables_from_schema([SchemaTables.AGENT_RUNS, SchemaTables.AGENT_ACTIONS], seadb_api, project.uuid)
             init_seadb_tables_from_schema([SchemaTables.CONNECTION_USER], seadb_api, project.uuid)
         except Exception as e:
-            logger.error(e)
+            logger.exception(e)
             project.delete()
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)

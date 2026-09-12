@@ -37,41 +37,12 @@ class SeaDBAPI:
         response = requests.get(url, timeout=self.timeout)
         return parse_response(response)
 
-    def create_base(self, base_id):
-        base_id = uuid_str_to_36_chars(base_id)
-        url = f'{self.server_url}/api/v1/{base_id}/base'
-        response = requests.post(url, headers=self.headers, timeout=self.timeout)
-        return parse_response(response)
-
     def get_base_info(self, base_id):
         base_id = uuid_str_to_36_chars(base_id)
         url = f'{self.server_url}/api/v1/{base_id}/base-info'
         response = requests.get(url, headers=self.headers, timeout=self.timeout)
         return parse_response(response)
 
-    def delete_base(self, base_id):
-        base_id = uuid_str_to_36_chars(base_id)
-        url = f'{self.server_url}/api/v1/{base_id}/base'
-        response = requests.delete(url, headers=self.headers, timeout=self.timeout)
-        return parse_response(response)
-
-    def create_table(self, base_id, table_name):
-        base_id = uuid_str_to_36_chars(base_id)
-        url = f'{self.server_url}/api/v1/{base_id}/tables'
-        params = {
-            'table_name': str(table_name)
-        }
-        response = requests.post(url, headers=self.headers, json=params, timeout=self.timeout)
-        return parse_response(response)
-
-    def delete_table(self, base_id, table_id):
-        base_id = uuid_str_to_36_chars(base_id)
-        url = f'{self.server_url}/api/v1/{base_id}/tables/'
-        params = {
-            'table_id': table_id
-        }
-        response = requests.delete(url, headers=self.headers, json=params, timeout=self.timeout)
-        return parse_response(response)
 
     def insert_rows(self, base_id, table_name, rows):
         base_id = uuid_str_to_36_chars(base_id)
