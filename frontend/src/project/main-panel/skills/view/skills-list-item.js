@@ -20,6 +20,7 @@ const SkillsListItem = ({ skill, isActive, onSelectSkill, onEditSkill, onToggleS
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setDeleting] = useState(false);
   const isToggleDisabled = !isProjectAdmin || isToggling;
+  const canEdit = isProjectAdmin && skill.source !== 'builtin';
   const canDelete = isProjectAdmin && skill.source !== 'builtin' && !isDeleting;
 
   const executeDelete = () => {
@@ -76,7 +77,14 @@ const SkillsListItem = ({ skill, isActive, onSelectSkill, onEditSkill, onToggleS
         <Dropdown isOpen={isMoreMenuOpen} toggle={() => setIsMoreMenuOpen(!isMoreMenuOpen)}>
           <CustomizeDropdownMoreToggle isOpen={isMoreMenuOpen} title={gettext('More')} />
           <CustomizeDropdownMenu className="position-fixed">
-            <CustomizeDropdownItem onClick={() => { setIsMoreMenuOpen(false); onEditSkill(skill.name); }}>
+            <CustomizeDropdownItem
+              disabled={!canEdit}
+              onClick={() => {
+                if (!canEdit) return;
+                setIsMoreMenuOpen(false);
+                onEditSkill(skill.name);
+              }}
+            >
               {gettext('Edit')}
             </CustomizeDropdownItem>
             <CustomizeDropdownItem
