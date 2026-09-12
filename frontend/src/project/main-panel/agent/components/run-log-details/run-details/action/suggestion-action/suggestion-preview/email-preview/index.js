@@ -20,7 +20,7 @@ const EmailPreview = ({ value, defaultReplyTo }) => {
   return (
     <div className="suggestion-content-preview-wrapper email">
       <div className={classnames('suggestion-content-preview', { 'display-mask': displayMask })} ref={previewRef}>
-        <ReplyTo title={gettext('To')} size="s" value={to} readonly={true} className="py-1 border-0" />
+        <ReplyTo title={gettext('To')} size="s" value={to} readonly={true} className="pt-0 pb-1 border-0" />
         <ReplyTo title={gettext('Cc')} size="s" value={cc} readonly={true} className="pt-1 pb-2"/>
         <div className="suggestion-email-preview-content pt-3">
           {content}

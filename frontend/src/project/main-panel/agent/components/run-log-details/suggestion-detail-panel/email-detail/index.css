@@ -1,3 +1,11 @@
-.seaqa-suggestion-detail-draft .seaqa-email-reply-to .seaqa-email-reply-to-users .seaqa-email-to-user-input {
+.seaqa-suggestion-detail-draft.email .seaqa-suggestion-detail-draft-body {
+  overflow-y: auto;
+}
+
+.seaqa-suggestion-detail-draft.email .seaqa-email-reply-to .seaqa-email-reply-to-users .seaqa-email-to-user-input {
   min-width: 29px;
+}
+
+.seaqa-suggestion-detail-draft.email .seaqa-suggestion-email-content {
+  resize: none;
 }

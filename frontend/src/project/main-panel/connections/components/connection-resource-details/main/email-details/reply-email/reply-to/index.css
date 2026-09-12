@@ -36,7 +36,6 @@
   color: var(--bs-body-color);
   background-color: var(--bs-body-third-bg);
   flex-shrink: 0;
-  cursor: pointer;
   gap: 4px;
 }
 
