@@ -4,7 +4,8 @@ import { gettext } from '@/constants';
 import { portalAPI } from '@/portal/api';
 import { useData } from '@/project/hooks';
 import { VIEW_TOOL } from '@/sea-metadata';
-import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
+import { gettext } from '@/constants';
+import { toaster } from '@/components';
 import context from '@/sea-metadata/context';
 import Issues from '../../components/issues';
 import { PORTAL_ISSUE_TABLE_NAME } from '../../constants';
@@ -14,7 +15,7 @@ import CleanPortalIssues from './clean-portal-issues';
 const viewTools = [VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS, VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS, VIEW_TOOL.GROUPBYS];
 
 const TrashPortalIssues = ({ projectUuid, workspaceID, projectName, permission, toggleBar }) => {
-  const { clearViewRows, restoreRows } = useData();
+  const { restoreRows } = useData();
   const { isLoading, togglePageSlugId } = usePortalIssuesPage();
 
   const viewsData = useMemo(() => ({
@@ -149,15 +150,6 @@ const TrashPortalIssues = ({ projectUuid, workspaceID, projectName, permission, 
     return list;
   }, [handleRestorePortalIssues]);
 
-  const cleanPortalIssues = useCallback(() => {
-    clearViewRows(PORTAL_ISSUE_TABLE_NAME, 'trash', () => portalAPI.cleanPortalIssuesTrash(projectUuid), true).then(() => {
-      context.eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.CLEAR_DATA);
-      toaster.success(gettext('The portal issue trash cleaned'));
-    }).catch(() => {
-      toaster.danger(gettext('Failed to clean the portal issue trash'));
-    });
-  }, [projectUuid, clearViewRows]);
-
   return (
     <>
       <Issues
@@ -177,7 +169,6 @@ const TrashPortalIssues = ({ projectUuid, workspaceID, projectName, permission, 
         isLoading={isLoading}
         togglePageSlugId={togglePageSlugId}
       />
-      <CleanPortalIssues cleanPortalIssues={cleanPortalIssues} />
     </>
   );
 };

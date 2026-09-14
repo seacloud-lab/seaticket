@@ -24,6 +24,7 @@ import './index.css';
 const {
   projectUuid, isEditMode, showKBInPortal, needPassword, csrfToken, projectName,
   isAnonymous, workspaceID, isExternalUser, isPreviewUser, portalName, portalLogo,
+  canAccessIssues,
 } = window.app.pageOptions;
 
 const initSettings = {
@@ -44,13 +45,20 @@ const Portal = () => {
   const user = useMemo(() => new User({ avatar_url: avatarURL, name, email: username }), []);
 
   const onPageChange = useCallback((page) => {
-    if (isAnonymous && (page === PORTAL_PAGE.SUBMIT_ISSUE || page === PORTAL_PAGE.MY_ISSUES)) {
+    const targetPage = !isExternalUser && page === PORTAL_PAGE.TEAM_ISSUES ? PORTAL_PAGE.MY_ISSUES : page;
+    const isIssuesPage = [PORTAL_PAGE.SUBMIT_ISSUE, PORTAL_PAGE.MY_ISSUES, PORTAL_PAGE.TEAM_ISSUES].includes(targetPage);
+    if (isAnonymous && isIssuesPage) {
       location.href = getPortalLoginPath();
       return;
     }
+    if (!canAccessIssues && isIssuesPage) {
+      setActivePage(PORTAL_PAGE.HOME);
+      history.replaceState(null, null, buildPortalPath(PORTAL_PAGE.HOME));
+      return;
+    }
     if (!enableKB && page === PORTAL_PAGE.KNOWLEDGE_BASE) return;
-    setActivePage(page);
-    history.replaceState(null, null, buildPortalPath(page));
+    setActivePage(targetPage);
+    history.replaceState(null, null, buildPortalPath(targetPage));
   }, [enableKB]);
 
   const onHomeChatSend = useCallback((query) => {
@@ -65,9 +73,12 @@ const Portal = () => {
     if (pathSegments.length > 0) {
       const [pageKey] = pathSegments;
       if (Object.values(PORTAL_PAGE).includes(pageKey)) {
-        const isRestrictedPage = pageKey === PORTAL_PAGE.SUBMIT_ISSUE || pageKey === PORTAL_PAGE.MY_ISSUES;
-        if (isAnonymous && isRestrictedPage) {
+        const isRestrictedPage = [PORTAL_PAGE.SUBMIT_ISSUE, PORTAL_PAGE.MY_ISSUES, PORTAL_PAGE.TEAM_ISSUES].includes(pageKey);
+        if ((isAnonymous || !canAccessIssues) && isRestrictedPage) {
           setActivePage(PORTAL_PAGE.HOME);
+        } else if (!isExternalUser && pageKey === PORTAL_PAGE.TEAM_ISSUES) {
+          setActivePage(PORTAL_PAGE.MY_ISSUES);
+          history.replaceState(null, null, buildPortalPath(PORTAL_PAGE.MY_ISSUES));
         } else if (!enableKB && pageKey === PORTAL_PAGE.KNOWLEDGE_BASE) {
           setActivePage(PORTAL_PAGE.HOME);
         } else {
@@ -226,6 +237,7 @@ const Portal = () => {
                 enableKB={enableKB}
                 isAnonymous={isAnonymous}
                 isExternalUser={isExternalUser}
+                canAccessIssues={canAccessIssues}
               />
               <MainPanel
                 isEditMode={isEditMode}
@@ -236,6 +248,8 @@ const Portal = () => {
                 isAnonymous={isAnonymous}
                 onPageChange={onPageChange}
                 onHomeChatSend={onHomeChatSend}
+                canAccessIssues={canAccessIssues}
+                isExternalUser={isExternalUser}
               />
             </div>
           </DataProvider>

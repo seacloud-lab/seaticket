@@ -32,6 +32,7 @@ const Main = forwardRef(({
   expandRow,
   createRowsTools,
   CustomView,
+  viewTabs,
   onCustomViewRowClick,
   isMobileView = false,
   children,
@@ -69,6 +70,7 @@ const Main = forwardRef(({
                 <ViewToolBar
                   fixedColumnCount={fixedColumnCount}
                   tools={viewTools}
+                  viewTabs={viewTabs}
                   createRowsTools={createRowsTools}
                   toggleView={toggleView}
                   isMobileView={isMobileView}

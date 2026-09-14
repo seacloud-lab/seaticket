@@ -1,68 +1,244 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Nav, NavItem, NavLink, Button, Input, FormGroup } from 'reactstrap';
-import { EmptyTip, toaster, IconButton } from '@/components';
-import { gettext } from '@/constants';
+import {
+  CommonOperationConfirmationDialog, CustomizeTable, EmptyTip,
+  toaster, IconButton, UserSelect,
+} from '@/components';
 import dayjs from '@/utils/dayjs';
+import { gettext, mediaUrl } from '@/constants';
 import { portalAPI } from '../api';
+import InviteUsersPage from './user-management/invite-users-page';
+import OperationButton from './user-management/operation-button';
+import UsersPage from './user-management/users-page';
+
+import './user-management/index.css';
 
 const Tabs = {
+  CUSTOMERS: 'customers',
   USERS: 'users',
   INVITE_USERS: 'invite_users',
 };
 
+const TextCellFormatter = ({ value }) => (
+  <span className="text-truncate d-block" title={value}>{value}</span>
+);
+
+const mergeUsersByEmail = (...userGroups) => {
+  const usersByEmail = new Map();
+  userGroups.forEach(group => group.forEach(user => usersByEmail.set(user.email, user)));
+  return Array.from(usersByEmail.values());
+};
+
+const getMemberEmails = (...userGroups) => mergeUsersByEmail(...userGroups).map(user => user.email);
+
+const getSelectableUsers = (users, excludedUsers, searchValue) => {
+  const normalizedSearchValue = searchValue.trim().toLowerCase();
+  const excludedEmails = new Set(excludedUsers.map(user => user.email));
+  return users
+    .filter(user => !excludedEmails.has(user.email))
+    .filter(user => !normalizedSearchValue || user.email.toLowerCase().includes(normalizedSearchValue))
+    .map(user => ({ ...user, name: user.email, nickname: user.email }));
+};
+
+const CustomerStatusFormatter = ({ value }) => (
+  <span>{value === 'active' ? gettext('Active') : gettext('Disabled')}</span>
+);
+
+const CustomerUpdatedFormatter = ({ value }) => (
+  <span>{value ? dayjs(value).format('YYYY-MM-DD HH:mm') : '-'}</span>
+);
+
+const CustomerOperationsFormatter = ({ row, isRowActive, onModify, onDelete }) => {
+  if (!isRowActive) return null;
+  return (
+    <div className="portal-customer-operation-btns">
+      <OperationButton icon="rename" tip={gettext('Edit')} onClick={() => onModify(row)} />
+      <OperationButton icon="delete" tip={gettext('Delete')} onClick={() => onDelete(row)} />
+    </div>
+  );
+};
+
+const CustomerMemberStatusFormatter = ({ value }) => (
+  <span>{value ? gettext('Activated') : gettext('Inactive')}</span>
+);
+
+const CustomerMemberOperationsFormatter = ({ row, isRowActive, onDelete }) => {
+  if (!isRowActive) return null;
+  return (
+    <div className="portal-customer-operation-btns">
+      <OperationButton icon="delete" tip={gettext('Remove')} onClick={() => onDelete(row)} />
+    </div>
+  );
+};
+
 const UserManagement = ({ projectUuid }) => {
-  const [activeTab, setActiveTab] = useState(Tabs.USERS);
+  const [activeTab, setActiveTab] = useState(Tabs.CUSTOMERS);
   const [email, setEmail] = useState('');
   const [isSubmitting, setSubmitting] = useState(false);
-  const [list, setList] = useState([]);
+  const [invitations, setInvitations] = useState([]);
   const [users, setUsers] = useState([]);
   const [query, setQuery] = useState('');
+  const [customers, setCustomers] = useState([]);
+  const [isCreatingCustomer, setCreatingCustomer] = useState(false);
+  const [newCustomerName, setNewCustomerName] = useState('');
+  const [selectedCustomerUsers, setSelectedCustomerUsers] = useState([]);
+  const [newCustomerMembers, setNewCustomerMembers] = useState([]);
+  const [customerToDelete, setCustomerToDelete] = useState(null);
+  const [selectedInviteCustomerId, setSelectedInviteCustomerId] = useState('');
+  const [selectedCustomerId, setSelectedCustomerId] = useState(null);
+  const [customerDetail, setCustomerDetail] = useState(null);
+  const [selectedEditCustomerUsers, setSelectedEditCustomerUsers] = useState([]);
+  const [editCustomerMembers, setEditCustomerMembers] = useState([]);
 
   const loadInvites = useCallback(() => {
     portalAPI.listExternalInvitations(projectUuid).then(res => {
-      const items = (res.data && res.data.invite_list) || [];
-      setList(items);
+      setInvitations((res.data && res.data.invite_list) || []);
     });
   }, [projectUuid]);
 
   const loadUsers = useCallback(() => {
     portalAPI.listExternalUsers(projectUuid).then(res => {
-      const items = (res.data && res.data.users) || [];
-      setUsers(items);
+      setUsers((res.data && res.data.users) || []);
     });
   }, [projectUuid]);
 
-  useEffect(() => { loadUsers(); loadInvites(); }, [loadUsers, loadInvites]);
+  const loadCustomers = useCallback(() => {
+    portalAPI.listCustomers(projectUuid).then(res => {
+      setCustomers((res.data && res.data.customers) || []);
+    }).catch(() => toaster.danger(gettext('Failed to load customers')));
+  }, [projectUuid]);
 
-  const createLink = useCallback(() => {
-    if (!email) return;
+  const loadCustomerDetail = useCallback((customerId) => {
+    return portalAPI.getCustomer(projectUuid, customerId).then(res => {
+      setCustomerDetail(res.data);
+      setEditCustomerMembers(res.data?.members || []);
+    }).catch(() => toaster.danger(gettext('Failed to load customer details')));
+  }, [projectUuid]);
+
+  useEffect(() => { loadCustomers(); loadUsers(); loadInvites(); }, [loadCustomers, loadUsers, loadInvites]);
+
+  const activeCustomers = useMemo(() => customers.filter(customer => customer.status === 'active'), [customers]);
+  const unassignedUsers = useMemo(() => users.filter(user => !user.customer_id), [users]);
+
+  const inviteUser = useCallback(() => {
+    const inviteEmail = email.trim();
+    if (!inviteEmail) return;
     setSubmitting(true);
-    portalAPI.createExternalInvitation(projectUuid, email).then(() => {
+    portalAPI.createExternalInvitation(projectUuid, inviteEmail, selectedInviteCustomerId || null).then(() => {
       toaster.success(gettext('Link generated'));
-      setEmail('');
       loadInvites();
       loadUsers();
+      setEmail('');
     }).catch((error) => {
       const serverDetail = error.response?.data?.detail;
       const serverMsg = error.response?.data?.error_msg;
-      const errorMessage = serverDetail || serverMsg || gettext('Failed to generate invitation link');
-      toaster.danger(errorMessage);
+      toaster.danger(serverDetail || serverMsg || gettext('Failed to generate invitation link'));
     }).finally(() => setSubmitting(false));
-  }, [email, projectUuid, loadInvites, loadUsers]);
+  }, [email, selectedInviteCustomerId, projectUuid, loadInvites, loadUsers]);
 
-  const shorten = useCallback((text) => {
-    if (!text) return '';
-    const max = 28;
-    if (text.length <= max) return text;
-    return `${text.slice(0, 8)}...${text.slice(-14)}`;
+  const closeCreateCustomer = useCallback(() => {
+    setCreatingCustomer(false);
+    setNewCustomerName('');
+    setSelectedCustomerUsers([]);
+    setNewCustomerMembers([]);
   }, []);
 
-  const getInvitationLinkText = useCallback((link) => {
-    if (!link) return '';
-    const url = new URL(link, window.location.origin);
-    if (url.pathname.startsWith('/external/accept/')) return url.origin;
-    return shorten(link);
-  }, [shorten]);
+  const createCustomer = useCallback(() => {
+    const name = newCustomerName.trim();
+    if (!name || isSubmitting) return;
+    setSubmitting(true);
+    portalAPI.createCustomer(projectUuid, {
+      name,
+      member_emails: getMemberEmails(newCustomerMembers, selectedCustomerUsers),
+    }).then(() => {
+      toaster.success(gettext('Customer created'));
+      loadCustomers();
+      loadUsers();
+      closeCreateCustomer();
+    }).catch((error) => {
+      toaster.danger(error.response?.data?.error_msg || gettext('Failed to create customer'));
+    }).finally(() => setSubmitting(false));
+  }, [
+    newCustomerName, newCustomerMembers, selectedCustomerUsers, isSubmitting,
+    projectUuid, loadCustomers, loadUsers, closeCreateCustomer,
+  ]);
+
+  const searchUnassignedUsers = useCallback((searchValue) => {
+    return Promise.resolve({ data: { users: getSelectableUsers(unassignedUsers, newCustomerMembers, searchValue) } });
+  }, [unassignedUsers, newCustomerMembers]);
+
+  const handleCreateUserSelectToggle = useCallback((isOpen) => {
+    if (isOpen || selectedCustomerUsers.length === 0) return;
+    setNewCustomerMembers(members => mergeUsersByEmail(members, selectedCustomerUsers));
+    setSelectedCustomerUsers([]);
+  }, [selectedCustomerUsers]);
+
+  const removeNewCustomerMember = useCallback((member) => {
+    setNewCustomerMembers(members => members.filter(item => item.email !== member.email));
+  }, []);
+
+  const deleteCustomer = useCallback(() => {
+    if (!customerToDelete) return;
+    portalAPI.deleteCustomer(projectUuid, customerToDelete.id).then(() => {
+      toaster.success(gettext('Customer deleted'));
+      loadCustomers();
+      loadUsers();
+      loadInvites();
+    }).catch((error) => {
+      toaster.danger(error.response?.data?.error_msg || gettext('Failed to delete customer'));
+    });
+  }, [customerToDelete, projectUuid, loadCustomers, loadUsers, loadInvites]);
+
+  const openCustomer = useCallback((customerId) => {
+    setSelectedCustomerId(customerId);
+    setCustomerDetail(null);
+    setSelectedEditCustomerUsers([]);
+    setEditCustomerMembers([]);
+    loadCustomerDetail(customerId);
+  }, [loadCustomerDetail]);
+
+  const closeEditCustomer = useCallback(() => {
+    setSelectedCustomerId(null);
+    setCustomerDetail(null);
+    setSelectedEditCustomerUsers([]);
+    setEditCustomerMembers([]);
+  }, []);
+
+  const saveCustomer = useCallback(() => {
+    const customer = customerDetail?.customer;
+    if (!customer || !customer.name.trim() || isSubmitting) return;
+    setSubmitting(true);
+    portalAPI.updateCustomer(projectUuid, customer.id, {
+      name: customer.name.trim(),
+      status: customer.status,
+      member_emails: getMemberEmails(editCustomerMembers, selectedEditCustomerUsers),
+    }).then(() => {
+      toaster.success(gettext('Customer updated'));
+      loadCustomers();
+      loadUsers();
+      closeEditCustomer();
+    }).catch((error) => {
+      toaster.danger(error.response?.data?.error_msg || gettext('Failed to update customer'));
+    }).finally(() => setSubmitting(false));
+  }, [
+    customerDetail, editCustomerMembers, selectedEditCustomerUsers, isSubmitting,
+    projectUuid, loadCustomers, loadUsers, closeEditCustomer,
+  ]);
+
+  const searchEditCustomerUsers = useCallback((searchValue) => {
+    const assignableUsers = users.filter(user => !user.customer_id || user.customer_id === selectedCustomerId);
+    return Promise.resolve({ data: { users: getSelectableUsers(assignableUsers, editCustomerMembers, searchValue) } });
+  }, [users, selectedCustomerId, editCustomerMembers]);
+
+  const handleEditUserSelectToggle = useCallback((isOpen) => {
+    if (isOpen || selectedEditCustomerUsers.length === 0) return;
+    setEditCustomerMembers(members => mergeUsersByEmail(members, selectedEditCustomerUsers));
+    setSelectedEditCustomerUsers([]);
+  }, [selectedEditCustomerUsers]);
+
+  const removeEditCustomerMember = useCallback((member) => {
+    setEditCustomerMembers(members => members.filter(item => item.email !== member.email));
+  }, []);
 
   const onCopy = useCallback((text) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -70,10 +246,45 @@ const UserManagement = ({ projectUuid }) => {
     });
   }, []);
 
+  const deleteExternalUser = useCallback((userEmail) => {
+    portalAPI.deleteExternalUser(projectUuid, userEmail).then(loadUsers).catch(() => {
+      toaster.danger(gettext('Delete failed'));
+    });
+  }, [projectUuid, loadUsers]);
+
+  const revokeInvitation = useCallback((token) => {
+    portalAPI.revokeExternalInvitation(projectUuid, token).then(loadInvites).catch(() => {
+      toaster.danger(gettext('Delete failed'));
+    });
+  }, [projectUuid, loadInvites]);
+
+  const customerColumns = useMemo(() => [
+    { key: 'name', name: gettext('Name'), type: 'customer-name', width: 0.36, formatter: <TextCellFormatter /> },
+    { key: 'status', name: gettext('Status'), type: 'customer-status', width: 0.22, formatter: <CustomerStatusFormatter /> },
+    { key: 'updated_at', name: gettext('Updated'), type: 'customer-updated', width: 0.42, formatter: <CustomerUpdatedFormatter /> },
+    { key: 'op', name: '', type: 'customer-operation', width: 80, isFixed: true, formatter: <CustomerOperationsFormatter /> },
+  ], []);
+
+  const customerMemberColumns = useMemo(() => [
+    { key: 'email', name: gettext('Email'), type: 'customer-member-email', width: 0.52, formatter: <TextCellFormatter /> },
+    { key: 'activated', name: gettext('Status'), type: 'customer-member-status', width: 0.48, formatter: <CustomerMemberStatusFormatter /> },
+    { key: 'op', name: '', type: 'customer-operation', width: 80, isFixed: true, formatter: <CustomerMemberOperationsFormatter /> },
+  ], []);
+
+  const newCustomerMemberRows = useMemo(() => newCustomerMembers.map(user => ({ ...user, id: user.email })), [newCustomerMembers]);
+  const editCustomerMemberRows = useMemo(() => editCustomerMembers.map(user => ({ ...user, id: user.email })), [editCustomerMembers]);
+
+  const currentCustomer = customerDetail?.customer;
+
   return (
     <>
-      <div className="portal-settings-dialog-side p-4">
+      <div className="portal-settings-dialog-side portal-user-management-side p-4">
         <Nav pills vertical className="w-100">
+          <NavItem>
+            <NavLink className={activeTab === Tabs.CUSTOMERS ? 'active' : ''} onClick={() => { setActiveTab(Tabs.CUSTOMERS); closeCreateCustomer(); closeEditCustomer(); }}>
+              {gettext('Customers')}
+            </NavLink>
+          </NavItem>
           <NavItem>
             <NavLink className={activeTab === Tabs.USERS ? 'active' : ''} onClick={() => setActiveTab(Tabs.USERS)}>
               {gettext('Users')}
@@ -86,108 +297,184 @@ const UserManagement = ({ projectUuid }) => {
           </NavItem>
         </Nav>
       </div>
-      <div className="portal-settings-dialog-main">
-        {activeTab === Tabs.USERS && (
-          <div className="p-3 w-100">
-            <div className="mb-3">
-              <Input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={gettext('Search users')} />
+      <div className="portal-settings-dialog-main portal-user-management-main">
+        {activeTab === Tabs.CUSTOMERS && !selectedCustomerId && !isCreatingCustomer && (
+          <CustomizeTable
+            className="portal-customers-table"
+            columns={customerColumns}
+            rows={customers}
+            rowHeight={40}
+            onModify={(customer) => openCustomer(customer.id)}
+            onDelete={setCustomerToDelete}
+            emptyTip={(
+              <EmptyTip
+                className="portal-customers-empty-tip"
+                src={`${mediaUrl}img/no-items-tip.png`}
+                text={gettext('No customer')}
+              />
+            )}
+          >
+            <div className="portal-customers-header">
+              <span>{gettext('Customers')}</span>
+              <Button color="primary" outline onClick={() => setCreatingCustomer(true)}>
+                {gettext('Create customers')}
+              </Button>
             </div>
-            {users.length > 0 &&
-            <table className="table table-sm">
-              <thead>
-                <tr>
-                  <th style={{ width: 160 }}>{gettext('User')}</th>
-                  <th style={{ width: 320 }}>{gettext('Status')}</th>
-                  <th style={{ width: 80 }}>{/* More operations */}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users
-                  .filter(u => !query || (u.name || '').toLowerCase().includes(query.toLowerCase()) || (u.email || '').toLowerCase().includes(query.toLowerCase()))
-                  .map(u => (
-                    <tr key={u.username}>
-                      <td className="align-middle">
-                        <div className="d-flex align-items-center" style={{ gap: 8 }}>
-                          <span className="text-truncate" title={u.name || u.email}>{u.name || u.email}</span>
-                        </div>
-                      </td>
-                      <td className="align-middle">{u.activated ? gettext('Activated') : gettext('Inactive')}</td>
-                      <td className="text-right operation-btns align-middle">
-                        <IconButton icon="close" onClick={() => portalAPI.deleteExternalUser(projectUuid, u.email).then(() => loadUsers()).catch(() => toaster.danger(gettext('Delete failed')))} title={gettext('Delete')} />
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-            }
-            {users.length === 0 &&
-            <div className="h-100">
-              <EmptyTip text={gettext('No users')} />
+          </CustomizeTable>
+        )}
+        {activeTab === Tabs.CUSTOMERS && isCreatingCustomer && (
+          <div className="portal-customer-create-page">
+            <div className="portal-customer-create-header">
+              <button type="button" className="portal-customer-create-back" onClick={closeCreateCustomer}>
+                <IconButton icon="arrow-left" className="no-hover-bg" size={{ btn: 20, icon: 16 }} />
+                <span>{gettext('Create customer')}</span>
+              </button>
+              <Button
+                color="primary"
+                outline
+                disabled={isSubmitting || !newCustomerName.trim()}
+                onClick={createCustomer}
+              >
+                {gettext('Submit')}
+              </Button>
             </div>
-            }
+            <div className="portal-customer-create-form">
+              <FormGroup className="mb-4">
+                <label htmlFor="portal-customer-name">{gettext('Customer name')}</label>
+                <Input
+                  id="portal-customer-name"
+                  className="portal-user-management-input"
+                  value={newCustomerName}
+                  maxLength={255}
+                  onChange={(event) => setNewCustomerName(event.target.value)}
+                />
+              </FormGroup>
+              <div className="mb-4">
+                <label>{gettext('Add existing user')}</label>
+                <UserSelect
+                  className="portal-customer-user-select"
+                  popoverClassName="portal-customer-user-select-popover"
+                  placeholder={gettext('Select assigned users')}
+                  searchPlaceholder={gettext('Search users')}
+                  emptyMessage={gettext('No unassigned users')}
+                  selectedUsers={selectedCustomerUsers}
+                  onSelectChange={setSelectedCustomerUsers}
+                  onPopoverToggle={handleCreateUserSelectToggle}
+                  api={searchUnassignedUsers}
+                  allowEmptySearch={true}
+                  showDropdownIndicator={true}
+                  showSearchClearIcon={true}
+                  searchInputSize={32}
+                  popoverOffset={[0, 4]}
+                  hideSearchWhenEmpty={true}
+                  matchTargetWidth={true}
+                  isMulti={true}
+                />
+              </div>
+            </div>
+            {newCustomerMemberRows.length > 0 && (
+              <CustomizeTable
+                className="portal-customer-members-table"
+                columns={customerMemberColumns}
+                rows={newCustomerMemberRows}
+                rowHeight={40}
+                onDelete={removeNewCustomerMember}
+              />
+            )}
           </div>
+        )}
+        {activeTab === Tabs.CUSTOMERS && selectedCustomerId && (
+          <div className="portal-customer-create-page">
+            {!currentCustomer ? <EmptyTip text={gettext('Loading customer')} /> : (
+              <>
+                <div className="portal-customer-create-header">
+                  <button type="button" className="portal-customer-create-back" onClick={closeEditCustomer}>
+                    <IconButton icon="arrow-left" className="no-hover-bg" size={{ btn: 20, icon: 16 }} />
+                    <span>{gettext('Edit customer')}</span>
+                  </button>
+                  <Button
+                    color="primary"
+                    outline
+                    disabled={isSubmitting || !currentCustomer.name.trim()}
+                    onClick={saveCustomer}
+                  >
+                    {gettext('Submit')}
+                  </Button>
+                </div>
+                <div className="portal-customer-create-form">
+                  <div className="mb-4">
+                    <label htmlFor="portal-edit-customer-name">{gettext('Customer name')}</label>
+                    <Input
+                      id="portal-edit-customer-name"
+                      className="portal-user-management-input"
+                      value={currentCustomer.name}
+                      maxLength={255}
+                      onChange={(event) => setCustomerDetail({ ...customerDetail, customer: { ...currentCustomer, name: event.target.value } })}
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label>{gettext('Add existing user')}</label>
+                    <UserSelect
+                      className="portal-customer-user-select"
+                      popoverClassName="portal-customer-user-select-popover"
+                      placeholder={gettext('Select assigned users')}
+                      searchPlaceholder={gettext('Search users')}
+                      emptyMessage={gettext('No unassigned users')}
+                      selectedUsers={selectedEditCustomerUsers}
+                      onSelectChange={setSelectedEditCustomerUsers}
+                      onPopoverToggle={handleEditUserSelectToggle}
+                      api={searchEditCustomerUsers}
+                      allowEmptySearch={true}
+                      showDropdownIndicator={true}
+                      showSearchClearIcon={true}
+                      searchInputSize={32}
+                      popoverOffset={[0, 4]}
+                      hideSearchWhenEmpty={true}
+                      matchTargetWidth={true}
+                      isMulti={true}
+                    />
+                  </div>
+                </div>
+                {editCustomerMemberRows.length > 0 && (
+                  <CustomizeTable
+                    className="portal-customer-members-table"
+                    columns={customerMemberColumns}
+                    rows={editCustomerMemberRows}
+                    rowHeight={40}
+                    onDelete={removeEditCustomerMember}
+                  />
+                )}
+              </>
+            )}
+          </div>
+        )}
+        {activeTab === Tabs.USERS && (
+          <UsersPage users={users} query={query} onQueryChange={setQuery} onDelete={deleteExternalUser} />
         )}
         {activeTab === Tabs.INVITE_USERS && (
-          <div className="p-3 w-100">
-            <div className="mb-3">
-              <FormGroup className="d-flex">
-                <Input
-                  name="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={gettext('Enter email to invite an external user to your portal')}
-                  className="mr-2"
-                  style={{ maxWidth: 'calc(100% - 70px)' }}
-                />
-                <Button color="primary" disabled={isSubmitting || !email} onClick={createLink} className={isSubmitting ? 'btn-loading' : ''}>
-                  {gettext('Invite')}
-                </Button>
-              </FormGroup>
-            </div>
-            {list.length > 0 &&
-            <div className="mt-3">
-              <table className="table table-sm">
-                <thead>
-                  <tr>
-                    <th style={{ width: 160 }}>{gettext('Email')}</th>
-                    <th style={{ width: 180 }}>{gettext('Invitation link')}</th>
-                    <th style={{ width: 140 }}>{gettext('Expiration time')}</th>
-                    <th style={{ width: 80 }}>{/* More operations */}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {list.map(item => (
-                    <tr key={item.token}>
-                      <td className="align-middle">
-                        <span className="text-truncate d-inline-block" title={item.email} style={{ maxWidth: 200 }}>
-                          {item.email}
-                        </span>
-                      </td>
-                      <td className="text-truncate align-middle" title={item.link}>{getInvitationLinkText(item.link)}</td>
-                      <td className="align-middle" style={{ whiteSpace: 'nowrap' }}>
-                        {item.expire_time ? dayjs(item.expire_time).format('YYYY-MM-DD HH:mm') : '-'}
-                      </td>
-                      <td className="text-right operation-btns align-middle">
-                        <div className="d-inline-flex align-items-center" style={{ gap: 8 }}>
-                          <IconButton icon="copy" onClick={() => onCopy(item.link)} title={gettext('Copy')} />
-                          <IconButton icon="close" onClick={() => portalAPI.revokeExternalInvitation(projectUuid, item.token).then(() => loadInvites())} title={gettext('Delete')} />
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            }
-            {list.length === 0 &&
-            <div className="h-100">
-              <EmptyTip text={gettext('No pending invitations')} />
-            </div>
-            }
-          </div>
+          <InviteUsersPage
+            invitations={invitations}
+            email={email}
+            selectedCustomerId={selectedInviteCustomerId}
+            customers={activeCustomers}
+            isSubmitting={isSubmitting}
+            onEmailChange={setEmail}
+            onCustomerChange={setSelectedInviteCustomerId}
+            onInvite={inviteUser}
+            onCopy={onCopy}
+            onRevoke={revokeInvitation}
+          />
         )}
       </div>
+      {customerToDelete && (
+        <CommonOperationConfirmationDialog
+          title={gettext('Delete customer')}
+          message={gettext('Are you sure you want to delete this customer?')}
+          confirmBtnText={gettext('Delete')}
+          executeOperation={deleteCustomer}
+          toggleDialog={() => setCustomerToDelete(null)}
+        />
+      )}
     </>
   );
 };

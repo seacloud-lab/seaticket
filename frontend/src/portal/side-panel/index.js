@@ -15,13 +15,13 @@ import './index.css';
 
 const { isExternalUser, isPortalDomain } = window.app.pageOptions;
 
-const SidePanel = ({ isEditMode, activePage, onPageChange, enableKB, isAnonymous }) => {
+const SidePanel = ({ isEditMode, activePage, onPageChange, enableKB, isAnonymous, canAccessIssues }) => {
   const { logo, name } = usePortalSettings();
   const [isShowMobileMenu, setIsShowMobileMenu] = useState(false);
   const sideRef = useRef(null);
-  const primaryTabs = getPrimaryTabs({ isAnonymous, enableKB });
+  const primaryTabs = getPrimaryTabs({ isAnonymous, enableKB, canAccessIssues });
 
-  const isIssuesPage = activePage === PORTAL_PAGE.SUBMIT_ISSUE || activePage === PORTAL_PAGE.MY_ISSUES;
+  const isIssuesPage = [PORTAL_PAGE.SUBMIT_ISSUE, PORTAL_PAGE.MY_ISSUES, PORTAL_PAGE.TEAM_ISSUES].includes(activePage);
   const activePrimaryTab = isIssuesPage ? TICKETS_TAB : activePage;
 
   const onPrimaryTabChange = (value) => {

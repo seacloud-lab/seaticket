@@ -15,8 +15,10 @@ from seahub import settings
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
-from seahub.portal.permissions import PortalFilePermission, PortalUploadPermission
+from seahub.portal.permissions import PortalFilePermission, PortalUploadPermission, can_access_portal_issue
+from seahub.portal.portal_utils import get_portal_issue
 from seahub.portal.utils import portal_endpoint
+from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.storage import (
     FileNotFound,
     gen_tmp_upload_file_path,
@@ -104,6 +106,20 @@ class PortalFileView(APIView):
     def get(self, request, project_uuid, file_path):
         if not any(file_path.startswith(prefix) for prefix in PORTAL_VISIBLE_ATTACHMENT_PREFIXES):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        if file_path.startswith('portal/portal-issues/'):
+            path_parts = file_path.split('/', 3)
+            try:
+                issue_id = int(path_parts[2])
+            except (IndexError, TypeError, ValueError):
+                return api_error(status.HTTP_404_NOT_FOUND, 'File not exist')
+            try:
+                issue, _metadata = get_portal_issue(SeaDBAPI(), project_uuid, issue_id)
+            except Exception:
+                logger.exception('Failed to authorize portal issue attachment: project=%s issue=%s', project_uuid, issue_id)
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+            if not issue or not can_access_portal_issue(request, request.project, issue):
+                return api_error(status.HTTP_404_NOT_FOUND, 'File not exist')
 
         try:
             s3_meta = get_project_file_head_from_s3(project_uuid, file_path)

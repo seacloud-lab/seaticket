@@ -1,0 +1,182 @@
+.portal-customers-users-page {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.portal-customers-users-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 420px;
+  padding-top: 0;
+}
+
+.portal-customers-users-view-tabs {
+  flex: 0 0 auto;
+  overflow: visible;
+  padding-left: 0;
+  width: auto;
+}
+
+.portal-customers-users-view-tabs .sea-metadata-views-nav-container {
+  overflow: hidden;
+}
+
+.portal-customers-users-view-tabs .sea-metadata-view-container {
+  padding: 0 12px;
+}
+
+.portal-customers-users-view-tabs .sea-metadata-view-container:first-child {
+  padding-left: 0;
+}
+
+.portal-customers-users-view-tabs .sea-metadata-view-item {
+  background: transparent;
+  border: 0;
+  color: var(--bs-body-color);
+  font: inherit;
+  padding: 0;
+}
+
+.portal-customers-users-view-tabs .sea-metadata-view-item.active {
+  color: var(--bs-sf-orange);
+}
+
+.portal-customers-users-view-tabs .sea-metadata-view-item:focus-visible {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: 2px;
+}
+
+.portal-customers-sea-metadata {
+  align-self: flex-start;
+  flex: 1 1 auto;
+  min-height: 360px;
+  min-width: 0;
+  width: 100%;
+}
+
+.portal-customers-sea-metadata .sea-metadata-wrapper,
+.portal-customers-sea-metadata .sea-metadata-main {
+  min-height: 0;
+}
+
+.portal-customers-sea-metadata .sea-metadata-table-main-container {
+  min-height: 360px;
+}
+
+.portal-customers-sea-metadata .sea-metadata-table-main-container > .empty-tip .no-items-img-tip {
+  height: 72px;
+  width: 72px;
+}
+
+.portal-customers-sea-metadata .sea-metadata-table-main-container > .empty-tip .empty-tip-text {
+  color: var(--bs-secondary-color) !important;
+  margin-top: 16px;
+}
+
+.portal-invite-users-dialog {
+  margin: 8vh auto 0;
+  max-width: 640px;
+}
+
+.portal-invite-users-dialog .modal-body {
+  min-height: 360px;
+  padding: 24px;
+}
+
+.portal-invite-users-dialog .portal-user-management-table tbody tr .portal-customer-operation-btns {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease-in-out;
+}
+
+.portal-invite-users-dialog .portal-user-management-table tbody tr:hover .portal-customer-operation-btns,
+.portal-invite-users-dialog .portal-user-management-table tbody tr:focus-within .portal-customer-operation-btns {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.portal-customer-dialog .modal-body {
+  min-height: 112px;
+}
+
+.portal-customer-dialog {
+  margin: 8vh auto 0;
+  max-width: 560px;
+}
+
+.portal-customer-members-dialog {
+  margin: 8vh auto 0;
+  max-width: 640px;
+}
+
+.portal-customer-members-dialog .modal-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 390px;
+  overflow: hidden;
+  padding: 24px;
+}
+
+.portal-customer-members-form {
+  flex-shrink: 0;
+  margin-bottom: 16px;
+}
+
+.portal-customer-members-form label {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.portal-customer-member-select {
+  min-height: 38px;
+  max-width: 100%;
+}
+
+.portal-customer-members-table {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.portal-customer-members-table > .seaqa-customize-table {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.portal-customer-members-empty {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  min-height: 170px;
+}
+
+.portal-customer-members-operation {
+  align-items: center;
+  display: flex;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.portal-customer-members-operation .seaqa-icon-btn {
+  color: var(--bs-secondary-color);
+}
+
+.portal-customer-member-select .user-select-placeholder {
+  color: #868e96;
+}
+
+@media (max-width: 900px) {
+  .portal-customers-sea-metadata {
+    min-width: 0;
+    width: 100%;
+  }
+
+}

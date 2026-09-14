@@ -6,6 +6,7 @@ from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 
 from seahub.project.constants import ExtraSourceType, PORTAL_ISSUE_DISPLAY_ALL_COLUMNS
+from seahub.seadb_models.utils import PORTAL_ISSUE_INTERNAL_COLUMN_NAMES
 from seahub.utils import mq, uuid_str_to_32_chars, time_str_to_utc_time
 
 from seahub.seadb_models.models import SchemaTables
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_portal_issue(seadb_api, project_uuid, issue_id):
-    display_columns_join = ', '.join(PORTAL_ISSUE_DISPLAY_ALL_COLUMNS)
+    display_columns_join = ', '.join(PORTAL_ISSUE_DISPLAY_ALL_COLUMNS + list(PORTAL_ISSUE_INTERNAL_COLUMN_NAMES))
     sql = f"SELECT {display_columns_join} FROM `{SchemaTables.PORTAL_ISSUES.table_name()}` WHERE `_pk` = {issue_id}"
     res = seadb_api.query_rows(project_uuid, sql)
     rows = res.get('results')

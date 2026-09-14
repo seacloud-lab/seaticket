@@ -13,6 +13,7 @@ export const BAR_TYPE = {
   SKILLS: 'skills',
   SUPPORT_PORTAL: 'support-portal',
   PORTAL_ISSUES: 'portal-issues',
+  PORTAL_CUSTOMERS_AND_USERS: 'customers-and-users',
   PORTAL_ISSUES_TRASH: 'portal-issues/trash',
   PORTAL_ISSUE_TYPES: 'portal-issues/types',
   PORTAL_ISSUE_SUBSTATES: 'portal-issues/substates',
@@ -66,6 +67,11 @@ export const BAR_TYPE_CONFIG = {
     key: BAR_TYPE.PORTAL_ISSUES,
     name: gettext('Issues from portal'),
     icon: 'all-tickets'
+  },
+  [BAR_TYPE.PORTAL_CUSTOMERS_AND_USERS]: {
+    key: BAR_TYPE.PORTAL_CUSTOMERS_AND_USERS,
+    name: gettext('Customers and users'),
+    icon: 'customers-and-users'
   },
   [BAR_TYPE.PORTAL_ISSUES_TRASH]: {
     key: BAR_TYPE.PORTAL_ISSUES_TRASH,

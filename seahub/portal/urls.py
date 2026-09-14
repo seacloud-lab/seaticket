@@ -5,7 +5,8 @@ from seahub.project.views import project_view
 from .views import portal_edit_view
 from .apis import PortalTagsView, PortalKnowledgeBaseViewsView, PortalKnowledgeBaseRecordsView, PortalKnowledgeBaseRecordView, PortalIssueMetadataView, \
     PortalSettingsView, PortalExternalInvitationsView, PortalIssueViewsView, PortalIssueViewView, PortalExternalUsersView, PortalUserListView, \
-    PortalIssueViewsMoveView, PortalIssueViewsDuplicateView, PortalIssuesView, PortalMyIssuesView, PortalIssueView, PortalIssueCommentsView, \
+    PortalCustomersView, PortalCustomerView, PortalCustomerMembersView, PortalCustomerMemberView, PortalIssueViewsMoveView, PortalIssueViewsDuplicateView, \
+    PortalIssuesView, PortalMyIssuesView, PortalTeamIssuesView, PortalIssueView, PortalIssueCommentsView, \
     PortalIssueCommentView, PortalIssueTrashAPIView, PortalCustomDomainView, PortalCustomDomainVerificationView, PortalDomainAliasView, \
     PortalPreviewTokenView, PortalLogoView, PortalBackgroundImageView
 from .portal_issue_types import PortalIssueTypesAPIView, PortalIssueTypeAPIView
@@ -25,6 +26,8 @@ urlpatterns = [
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/submit-issue/$', portal_edit_view, name='portal_edit_view'),
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/my-issues/$', portal_edit_view, name='portal_edit_view'),
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/my-issues/(?P<children_id>\d+)/$', portal_edit_view, name='portal_edit_view'),
+    re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/team-issues/$', portal_edit_view, name='portal_edit_view'),
+    re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/team-issues/(?P<issue_id>\d+)/$', portal_edit_view, name='portal_edit_view'),
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/knowledge-base/(?P<children_id>\d+)/$', portal_edit_view, name='portal_edit_view'),
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/knowledge-base/$', portal_edit_view, name='portal_edit_view'),
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/chat/(?P<session_uuid>[-0-9a-f]{36})/$', portal_edit_view, name='portal_edit_view'),
@@ -41,6 +44,7 @@ urlpatterns = [
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/portal-issues/types/$', project_view, name='project_portal_issues_types_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/portal-issues/substates/$', project_view, name='project_portal_issues_substates_view'),
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/portal-issues/analysis/$', project_view, name='project_portal_issues_analysis_view'),
+    re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/customers-and-users/$', project_view, name='project_portal_customers_and_users_view'),
     
     # portal API
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/tags/$', PortalTagsView.as_view(), name='api-v1-portal-tags'),
@@ -52,6 +56,10 @@ urlpatterns = [
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/external-invitations/$', PortalExternalInvitationsView.as_view(), name='api-v1-portal-external-invitations'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/external-invitations/(?P<token>[a-f0-9]{32})/$', PortalExternalInvitationsView.as_view(), name='api-v1-portal-external-invitations-detail'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/external-users/$', PortalExternalUsersView.as_view(), name='api-v1-portal-external-users'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/customers/$', PortalCustomersView.as_view(), name='api-v1-portal-customers'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/customers/(?P<customer_id>\d+)/$', PortalCustomerView.as_view(), name='api-v1-portal-customer'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/customers/(?P<customer_id>\d+)/members/$', PortalCustomerMembersView.as_view(), name='api-v1-portal-customer-members'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/customers/(?P<customer_id>\d+)/members/(?P<member_id>\d+)/$', PortalCustomerMemberView.as_view(), name='api-v1-portal-customer-member'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/settings/$', PortalSettingsView.as_view(), name='api-v1-portal-settings'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/preview-token/$', PortalPreviewTokenView.as_view(), name='api-v1-portal-preview-token'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/domain-alias/$', PortalDomainAliasView.as_view(), name='api-v1-portal-domain-alias'),
@@ -69,6 +77,7 @@ urlpatterns = [
     # portal issues API
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/issues/$', PortalIssuesView.as_view(), name='api-v1-portal-issues'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/my-issues/$', PortalMyIssuesView.as_view(), name='api-v1-portal-my-issues'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/team-issues/$', PortalTeamIssuesView.as_view(), name='api-v1-portal-team-issues'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/issues/(?P<issue_id>\d+)/$', PortalIssueView.as_view(), name='api-v1-portal-issue'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/issues/(?P<issue_id>\d+)/comments/$', PortalIssueCommentsView.as_view(), name='api-v1-portal-issue-comments'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/issues/(?P<issue_id>\d+)/comments/(?P<comment_id>\d+)/$', PortalIssueCommentView.as_view(), name='api-v1-portal-issue-comment'),

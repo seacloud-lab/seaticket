@@ -2,15 +2,17 @@
 import json
 import logging
 
+from django.contrib.auth import logout
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
+from django.db import transaction
 from django.utils.translation import gettext as _
 from django.http import HttpResponseRedirect, Http404
 from django.utils import timezone
 
 from seahub.auth import REDIRECT_FIELD_NAME
 from seahub.auth import views as auth_views
-from seahub.portal.models import PortalExternalInvitation, ProjectExternalUser
+from seahub.portal.models import PortalCustomer, PortalExternalInvitation, ProjectExternalUser
 from seahub.portal.visitor_session import (
     ensure_visitor_cookie,
 )
@@ -86,7 +88,6 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
             same_org = False
 
     has_ticket_access = bool(preview_username) or ext_is_valid or same_org
-    is_logged_in = bool(preview_username) or is_authenticated_user or ext_is_valid
     # Treat invited users from other orgs as external portal users even when
     # they also have a normal site login in the current browser.
     is_external_user = bool(ext_is_valid and not same_org)
@@ -95,6 +96,14 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
         return render(request, 'portal_login.html', _get_portal_login_context(request, project, portal_settings))
 
     is_anonymous = allow_anonymous and (not has_ticket_access)
+    can_access_issues = not is_anonymous
+    if is_external_user:
+        external_user = ProjectExternalUser.objects.filter(project_uuid=project_uuid, username=ext_username, activated=True).first()
+        can_access_issues = bool(external_user and external_user.customer_id and PortalCustomer.objects.filter(
+            id=external_user.customer_id,
+            project_uuid=project_uuid,
+            status=PortalCustomer.STATUS_ACTIVE,
+        ).exists())
 
     if has_ticket_access:
         if preview_username:
@@ -118,6 +127,7 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
         'is_anonymous': is_anonymous,
         'is_external_user': is_external_user,
         'is_preview_user': bool(preview_username),
+        'can_access_issues': can_access_issues,
         'username': username,
         'portal': {
             'allow_anonymous': allow_anonymous,
@@ -178,16 +188,8 @@ def portal_preview_view(request, token):
 
 
 def portal_external_logout_view(request, project_uuid):
-    ext_username, ext_is_valid = _get_external_session_user(request, project_uuid)
-    if ext_username and ext_is_valid:
-        request.session.pop('portal_external_username', None)
-        request.session.pop('portal_external_project_uuid', None)
-
-    if request.session.get(PORTAL_PREVIEW_SESSION_PROJECT_KEY) == project_uuid:
-        request.session.pop(PORTAL_PREVIEW_SESSION_PROJECT_KEY, None)
-        request.session.pop(PORTAL_PREVIEW_SESSION_USERNAME_KEY, None)
-
-    return redirect(portal_path(request, project_uuid))
+    logout(request)
+    return redirect(portal_path(request, project_uuid, 'login'))
 
 def portal_anonymous_validate(request, project_uuid):
     project, portal_settings = get_request_project_and_portal_settings(request, project_uuid)
@@ -263,16 +265,35 @@ def portal_external_invitation_accept_view(request, token, project_uuid):
     if not portal_settings.get('enable_portal'):
         return render_error(request, _('Portal is not enabled'))
 
-    invitation.accepted_at = timezone.now()
-    invitation.save(update_fields=['accepted_at'])
-
     try:
-        ext_user = ProjectExternalUser.objects.filter(email=invitation.email, project_uuid=project_uuid).first()
-        if ext_user and not getattr(ext_user, 'activated', False):
-            ext_user.activated = True
-            ext_user.save(update_fields=['activated'])
+        with transaction.atomic():
+            customer = None
+            if invitation.customer_id:
+                customer = PortalCustomer.objects.filter(id=invitation.customer_id, project_uuid=project_uuid, status=PortalCustomer.STATUS_ACTIVE).first()
+                if not customer:
+                    return render_error(request, _('Invitation link is invalid or expired.'))
+
+            ext_user = ProjectExternalUser.objects.filter(email=invitation.email, project_uuid=project_uuid).first()
+            if not ext_user:
+                return render_error(request, _('Invitation link is invalid or expired.'))
+            if customer and ext_user.customer_id not in (None, customer.id):
+                return render_error(request, _('Invitation link is invalid or expired.'))
+
+            update_fields = []
+            if customer and not ext_user.customer_id:
+                ext_user.customer_id = customer.id
+                update_fields.append('customer_id')
+            if not ext_user.activated:
+                ext_user.activated = True
+                update_fields.append('activated')
+            if update_fields:
+                ext_user.save(update_fields=update_fields)
+
+            invitation.accepted_at = timezone.now()
+            invitation.save(update_fields=['accepted_at'])
     except Exception:
-        ext_user = None
+        logger.exception('Failed to accept portal invitation: project=%s', project_uuid)
+        return render_error(request, _('Invitation link is invalid or expired.'))
 
     if ext_user and getattr(ext_user, 'username', None):
         request.session['portal_external_username'] = ext_user.username
@@ -319,6 +340,7 @@ def portal_edit_view(request, project_uuid, page=None, children_id=None, session
         'workspace_id': project.workspace_id,
         'username': request.user.username,
         'is_external_user': False,
+        'can_access_issues': True,
         'portal': {
             'show_kb_in_portal': show_kb_in_portal,
             'streaming_response': streaming_response,

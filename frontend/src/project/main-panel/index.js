@@ -1,4 +1,22 @@
 import React from 'react';
+import { BAR_TYPE, BAR_TYPE_CONFIG } from '../constants';
+import Search from './search';
+import Tickets from './tickets';
+import Connections from './connections';
+import TopBar from './top-bar';
+import Ask from './ask';
+import Agent from './agent';
+import Settings from './settings';
+import KnowledgeBase from './knowledge-base';
+import Analyze from './analyze';
+import Tags from './tags';
+import Inbox from './inbox';
+import SupportPortal from './support-portal';
+import PortalIssues from './portal-issues';
+import PortalCustomersUsers from './portal-customers-users';
+import { useNotification } from '@/components/common/notification/hooks/notification';
+import { useTags, useMetadata } from '../hooks';
+import { useConnections } from './connections/hooks';
 import { CenteredLoading } from '@/components';
 import { useNotification } from '@/components/common/notification/hooks/notification';
 import { BAR_TYPE, BAR_TYPE_CONFIG } from '../constants';
@@ -83,6 +101,9 @@ const Container = ({ activeBar, settings, modifySettings, toggleBar, modifyLocal
     case BAR_TYPE.PORTAL_ISSUE_SUBSTATES:
     case BAR_TYPE.PORTAL_CHAT_ANALYSIS: {
       return (<PortalIssues key={barKey} title={title} toggleBar={toggleBar} type={barKey} />);
+    }
+    case BAR_TYPE.PORTAL_CUSTOMERS_AND_USERS: {
+      return (<PortalCustomersUsers title={title} />);
     }
     default:
       return (<Connections title={title} toggleBar={toggleBar} modifyLocalBar={modifyLocalBar} />);
