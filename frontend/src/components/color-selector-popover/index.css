@@ -16,4 +16,6 @@
 .seaqa-color-selector-popover .colorinput-color .seaqa-icon-svg,
 .seaqa-color-selector-popover .colorinput-color:hover .seaqa-icon-svg {
   color: inherit;
+  width: 14px;
+  height: 14px;
 }
