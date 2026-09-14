@@ -57,6 +57,7 @@
             isAnonymous: {% if is_anonymous %}true{% else %}false{% endif %},
             isExternalUser: {% if is_external_user %}true{% else %}false{% endif %},
             isPreviewUser: {% if is_preview_user %}true{% else %}false{% endif %},
+            canAccessIssues: {% if can_access_issues %}true{% else %}false{% endif %},
             i18nUrl: "{% url 'i18n' %}",
             langList: (function() {
                 var list = [];

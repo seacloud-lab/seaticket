@@ -14,8 +14,8 @@ PASS_THROUGH_PREFIXES = ('/accounts/', '/captcha/', '/custom-css/', '/i18n/', '/
 
 # Existing Portal APIs and file routes handled by normal URLConf.
 PORTAL_PASS_THROUGH_PREFIXES = ('/api/v1/portal/', '/file/portal/', '/file/portal-chat-image/', '/upload-file/portal/', '/portal/', '/portal-external/')
-PORTAL_ROOT_PAGES = ('submit-issue', 'my-issues', 'knowledge-base', 'chat', 'login', 'anonymous-validate', 'home')
-PORTAL_DETAIL_PAGES = ('my-issues', 'knowledge-base')
+PORTAL_ROOT_PAGES = ('submit-issue', 'my-issues', 'team-issues', 'knowledge-base', 'chat', 'login', 'anonymous-validate', 'home')
+PORTAL_DETAIL_PAGES = ('my-issues', 'team-issues', 'knowledge-base')
 
 
 def _get_project_uuid_from_origin_path(normalized_path):

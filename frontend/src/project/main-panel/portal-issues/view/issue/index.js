@@ -40,6 +40,7 @@ import '@/project/main-panel/tickets/view/ticket/index.css';
 
 const Issue = ({
   editorAPI, projectUuid, issueID, permission, isAdmin, projectName, workspaceID,
+  canEditAllIssues = permission === PERMISSION_TYPES.READ_WRITE,
   canChatWithAI = false,
   isMobile = false,
   togglePageSlugId = () => {},
@@ -72,6 +73,7 @@ const Issue = ({
       avatar_url: avatarURL
     };
   }, []);
+  const editable = Boolean(issue && (issue.creator === user.email || canEditAllIssues));
 
   const canCheckEditorBrowser = useMemo(() => canCheckSeafileEditorBrowser(), []);
 
@@ -165,7 +167,7 @@ const Issue = ({
       selectedPosition: { groupRowIndex: 0, rowIdx: 0 },
       table: { id_row_map: { [row.id]: row }, columns: allColumns.current },
       rowMetrics: { idSelectedRowMap: {} },
-      canDeleteRow: true,
+      canDeleteRow: editable,
       deleteRow: (_) => {
         deleteRow(PORTAL_ISSUE_TABLE_NAME, row.id, () => portalAPI.deletePortalIssue(projectUuid, row.id))
           .then(() => {
@@ -178,8 +180,8 @@ const Issue = ({
       },
       rowGetterByIndex: () => row,
       chatIssuesByAI: canChatWithAI ? handleResolveAttachmentsByAI : undefined,
-      createTicket: createTicket,
-      linkAnExistingTicket: handleLinkAnExistingTicket,
+      createTicket: editable ? createTicket : undefined,
+      linkAnExistingTicket: editable ? handleLinkAnExistingTicket : undefined,
       togglePageSlugId: () => {},
       workspaceID,
       projectName,
@@ -190,7 +192,11 @@ const Issue = ({
     } else {
       options = generatorIssuesContextMenuOptions(params);
     }
-    options = options.filter(item => (isObject(item) && item?.key !== 'open_issue') || !isObject(item));
+    options = options.filter(item => {
+      if (!isObject(item)) return true;
+      if (item.key === 'open_issue') return false;
+      return editable || !['create_ticket', 'link_an_existing_ticket', 'delete_row'].includes(item.key);
+    });
     if (options[options.length - 1] !== 'Divider') {
       options.push('Divider');
     }
@@ -204,7 +210,7 @@ const Issue = ({
     }
     return options;
   }, [
-    issue, deleteRow, canChatWithAI, handleResolveAttachmentsByAI, projectUuid, workspaceID, projectName,
+    issue, deleteRow, canChatWithAI, handleResolveAttachmentsByAI, projectUuid, workspaceID, projectName, editable,
     createTicket, handleLinkAnExistingTicket, customGeneratorIssuesContextMenuOptions, togglePageSlugId,
   ]);
 
@@ -430,9 +436,8 @@ const Issue = ({
     );
   }
 
-  const { id, state, title, creator, type, tags, priority, substate, linked_ticket } = issue;
+  const { id, state, title, type, tags, priority, substate, linked_ticket } = issue;
   const typeOption = getRowById(typesData, type);
-  const editable = creator === user.email || permission === PERMISSION_TYPES.READ_WRITE;
   const stateOption = PORTAL_ISSUE_STATE_CONFIG[state];
 
   // 904: comment min-width(596) + others min-width(260) + gap: 16 * 3
@@ -527,14 +532,16 @@ const Issue = ({
             {!isMobile && <UploadFilesButton className="mt-4" onChange={handleFiles} />}
             <div className="seaqa-project-ticket-submit-btns ml-2">
               {isMobile && <UploadFilesButton className="mobile mr-auto" isShowText={false} onChange={handleFiles} />}
-              <StatusToggleButton
-                state={state}
-                substate={substate}
-                comment={comment?.text}
-                disabled={isSubmitting}
-                useMetadataContext={usePortalIssuesMetadata}
-                onChange={toggleState}
-              />
+              {editable && (
+                <StatusToggleButton
+                  state={state}
+                  substate={substate}
+                  comment={comment?.text}
+                  disabled={isSubmitting}
+                  useMetadataContext={usePortalIssuesMetadata}
+                  onChange={toggleState}
+                />
+              )}
               <Button
                 className="seaqa-project-ticket-footer-confirm-btn"
                 disabled={!comment.text || isSubmitting}

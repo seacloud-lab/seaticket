@@ -11,6 +11,8 @@ from seahub.seadb_models.models import SchemaTables
 
 logger = logging.getLogger(__name__)
 
+PORTAL_ISSUE_INTERNAL_COLUMN_NAMES = {'customer_id'}
+
 
 CONNECTION_TYPE_TO_SCHEMA_TABLE = {
     ConnectionType.GITHUB_ISSUE.value: SchemaTables.GITHUB_ISSUES,
@@ -352,8 +354,9 @@ def list_my_portal_issues(seadb_api, project_uuid, username, issue_state, start,
     display_columns = []
     for column in columns:
         name = column['name']
-        if name in PORTAL_ISSUE_DISPLAY_ALL_COLUMNS:
+        if name in PORTAL_ISSUE_DISPLAY_ALL_COLUMNS + list(PORTAL_ISSUE_INTERNAL_COLUMN_NAMES):
             display_columns.append(column)
+    result_columns = [column for column in display_columns if column.get('name') not in PORTAL_ISSUE_INTERNAL_COLUMN_NAMES]
 
     view_copy = view_config.copy()
     sorts = view_copy.get('sorts', [])
@@ -371,7 +374,7 @@ def list_my_portal_issues(seadb_api, project_uuid, username, issue_state, start,
 
     view_copy['basic_filters'] = basic_filters
     try:
-        sql = view_data_2_sql('portal_issues', display_columns, view_copy, username, start, limit)
+        sql = view_data_2_sql('portal_issues', display_columns, view_copy, username, start, limit, result_columns)
     except SQLGeneratorOptionInvalidError as e:
         e.columns = display_columns
         raise
@@ -382,7 +385,8 @@ def list_my_portal_issues(seadb_api, project_uuid, username, issue_state, start,
     except Exception as e:
         logger.error(f'SeaDB query error for portal issues: {e}')
         records = []
-    return records, display_columns
+    return records, result_columns
+
 
 def list_portal_issues_view_records(seadb_api, project_uuid, view, username, start, limit):
     metadata = seadb_api.get_base_metadata(project_uuid)
@@ -397,10 +401,11 @@ def list_portal_issues_view_records(seadb_api, project_uuid, view, username, sta
     display_columns = []
     for column in columns:
         name = column['name']
-        if name in PORTAL_ISSUE_DISPLAY_ALL_COLUMNS:
+        if name in PORTAL_ISSUE_DISPLAY_ALL_COLUMNS + list(PORTAL_ISSUE_INTERNAL_COLUMN_NAMES):
             display_columns.append(column)
+    result_columns = [column for column in display_columns if column.get('name') not in PORTAL_ISSUE_INTERNAL_COLUMN_NAMES]
     try:
-        sql = view_data_2_sql('portal_issues', display_columns, view_copy, username, start, limit)
+        sql = view_data_2_sql('portal_issues', display_columns, view_copy, username, start, limit, result_columns)
     except SQLGeneratorOptionInvalidError as e:
         e.columns = display_columns
         raise
@@ -410,7 +415,7 @@ def list_portal_issues_view_records(seadb_api, project_uuid, view, username, sta
     except Exception as e:
         logger.error(f'SeaDB query error for portal issues: {e}')
         records = []
-    return records, display_columns
+    return records, result_columns
 
 def list_connection_view_records(seadb_api, project_uuid, connection, view, start, limit, username=''):
     connection_type = connection.type

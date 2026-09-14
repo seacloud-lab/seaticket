@@ -6,7 +6,6 @@ import { IconTooltip, toaster } from '../../components';
 import CustomModalHeader from '../../components/modal-header';
 import { portalAPI } from '../api';
 import Settings from '../main-panel/settings';
-import UserManagement from '../main-panel/user-management';
 import { getPortalPublicUrl } from '../path-utils';
 
 import './index.css';
@@ -14,7 +13,6 @@ import './portal-settings-dialog.css';
 
 const LeftBar = () => {
   const [isShowSettings, setIsShowSettings] = useState(false);
-  const [isShowInvite, setIsShowInvite] = useState(false);
   const [isOpeningPortal, setIsOpeningPortal] = useState(false);
 
   const onOpenPortal = useCallback(() => {
@@ -51,20 +49,12 @@ const LeftBar = () => {
         tip: gettext('Go to portal'),
         callback: onOpenPortal,
         disabled: isOpeningPortal,
-      }, {
-        icon: 'manage-members',
-        tip: gettext('User management'),
-        callback: () => setIsShowInvite(true),
       },
     ];
   }, [isOpeningPortal, onOpenPortal]);
 
   const closeSettings = useCallback(() => {
     setIsShowSettings(false);
-  }, []);
-
-  const closeInvite = useCallback(() => {
-    setIsShowInvite(false);
   }, []);
 
   return (
@@ -90,14 +80,6 @@ const LeftBar = () => {
           <CustomModalHeader toggle={closeSettings}>{gettext('Settings')}</CustomModalHeader>
           <ModalBody>
             <Settings />
-          </ModalBody>
-        </Modal>
-      )}
-      {isShowInvite && (
-        <Modal isOpen={true} toggle={closeInvite} className="portal-settings-dialog">
-          <CustomModalHeader toggle={closeInvite}>{gettext('External users management')}</CustomModalHeader>
-          <ModalBody>
-            <UserManagement projectUuid={window.app.pageOptions.projectUuid} />
           </ModalBody>
         </Modal>
       )}

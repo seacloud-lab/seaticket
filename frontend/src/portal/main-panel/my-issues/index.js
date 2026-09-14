@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { IconButton, CenteredLoading } from '@/components';
 import { server, gettext, PERMISSION_TYPES } from '@/constants';
 import Issues from '@/project/main-panel/portal-issues/components/issues';
+import { PORTAL_ISSUE_TABLE_NAME } from '@/project/main-panel/portal-issues/constants';
 import Issue from '@/project/main-panel/portal-issues/view/issue';
 import TopBar from '@/project/main-panel/top-bar';
 import { VIEW_TOOL } from '@/sea-metadata';
@@ -19,10 +20,11 @@ const viewTools = [
   VIEW_TOOL.SEARCH, VIEW_TOOL.FILTERS, VIEW_TOOL.SORTS, VIEW_TOOL.GROUPBYS, VIEW_TOOL.ROW_COLOR, VIEW_TOOL.ROW_HEIGHT, VIEW_TOOL.ORDER_HIDDEN,
 ];
 
-const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID }) => {
+const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID, isTeam = false }) => {
   const [expandIssueID, setExpandIssueId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const canEditAllIssues = !window.app.pageOptions.isExternalUser && !window.app.pageOptions.isPreviewUser;
 
   const listQueryStringRef = useRef('');
 
@@ -48,7 +50,15 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID }) => {
       const filters = context.localStorage.getItem('filters') || [];
       const filter_conjunction = context.localStorage.getItem('filter_conjunction') || 'And';
       const basic_filters = context.localStorage.getItem('basic_filters') || [];
-      return portalAPI.listMyIssues(projectUuid, { ...params[0], filters, filter_conjunction, basic_filters, sorts });
+      const listIssues = isTeam ? portalAPI.listTeamIssues.bind(portalAPI) : portalAPI.listMyIssues.bind(portalAPI);
+      const requestParams = {
+        ...params[0],
+        filters,
+        filter_conjunction,
+        basic_filters,
+        sorts,
+      };
+      return listIssues(projectUuid, requestParams);
     },
 
     getViews: () => new Promise((resolve, reject) => resolve({ data: myIssueViewsData })),
@@ -84,9 +94,9 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID }) => {
 
     // file
     uploadFile: (...params) => portalAPI.uploadFile(projectUuid, ...params),
-  }), [projectUuid, myIssueViewsData]);
+  }), [projectUuid, myIssueViewsData, isTeam]);
 
-  const localStorageNamePrefix = useMemo(() => `seaqa-${projectUuid}-my-issues`, [projectUuid]);
+  const localStorageNamePrefix = useMemo(() => `seaqa-${projectUuid}-${isTeam ? 'team-issues' : 'my-issues'}`, [projectUuid, isTeam]);
 
   const longTextAPI = useMemo(() => new LongTextEditorUtilities({ server, api: {
     uploadFile: (...params) => portalAPI.uploadFile(projectUuid, ...params)
@@ -104,18 +114,20 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID }) => {
   const openIssue = useCallback((issueID) => {
     const { search } = window.location;
     listQueryStringRef.current = new URLSearchParams(search).toString();
-    const url = buildPortalPath(PORTAL_PAGE.MY_ISSUES, issueID);
+    const page = isTeam ? PORTAL_PAGE.TEAM_ISSUES : PORTAL_PAGE.MY_ISSUES;
+    const url = buildPortalPath(page, issueID);
     history.replaceState(null, null, url);
     setExpandIssueId(issueID);
-  }, []);
+  }, [isTeam]);
 
   const closeIssue = useCallback(() => {
     const queryString = listQueryStringRef.current;
-    const url = buildPortalPath(PORTAL_PAGE.MY_ISSUES) + (queryString ? `?${queryString}` : '');
+    const page = isTeam ? PORTAL_PAGE.TEAM_ISSUES : PORTAL_PAGE.MY_ISSUES;
+    const url = buildPortalPath(page) + (queryString ? `?${queryString}` : '');
     history.replaceState(null, null, url);
     listQueryStringRef.current = '';
     setExpandIssueId(null);
-  }, []);
+  }, [isTeam]);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -148,7 +160,9 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID }) => {
                 className="rotate-icon-90 seaqa-portal-toggle-knowledge-btn"
                 onClick={closeIssue}
               />
-              <span className="text-truncate" title={gettext('My issues')}>{gettext('My issues')}</span>
+              <span className="text-truncate" title={isTeam ? gettext('Team issues') : gettext('My issues')}>
+                {isTeam ? gettext('Team issues') : gettext('My issues')}
+              </span>
             </>
           </TopBar>
         )}
@@ -158,6 +172,7 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID }) => {
           issueID={expandIssueID}
           permission={PERMISSION_TYPES.READ_WRITE}
           isAdmin={false}
+          canEditAllIssues={canEditAllIssues}
           projectName={projectName}
           workspaceID={workspaceID}
           togglePageSlugId={closeIssue}
@@ -176,6 +191,8 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID }) => {
       projectName={projectName}
       permission={PERMISSION_TYPES.READ_WRITE}
       api={api}
+      metadataCacheTableName={`${PORTAL_ISSUE_TABLE_NAME}-${isTeam ? 'team' : 'my'}`}
+      forceReload={true}
       localStorageNamePrefix={localStorageNamePrefix}
       settings={{ isFilterComputedOnServer: true, isSortComputedOnServer: true, canManageView: false }}
       dataDidMount={dataDidMount}

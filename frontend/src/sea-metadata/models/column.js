@@ -21,6 +21,7 @@ class Column {
     this.delete_able = object.delete_able || false;
     this.is_hover_show_content = object.is_hover_show_content || null;
     this.click = object.click || null;
+    this.formatter = object.formatter || null;
 
     this.sort_able = object.sort_able === false ? false : true;
     this.filter_able = object.filter_able === false ? false : true;

@@ -1,8 +1,9 @@
 from django.conf import settings
 from rest_framework.permissions import BasePermission
 
-from seahub.project.utils import check_same_org_permission, check_project_admin_permission
-from seahub.portal.models import ProjectExternalUser
+from seahub.constants import PERMISSION_READ_WRITE
+from seahub.project.utils import check_same_org_permission, check_project_admin_permission, check_project_permission
+from seahub.portal.models import ProjectExternalUser, PortalCustomer
 from seahub.portal.utils import get_portal_preview_username, get_request_project_and_portal_settings, get_request_session
 
 
@@ -14,19 +15,60 @@ def _get_project_and_settings(request, view):
     return get_request_project_and_portal_settings(request, project_uuid)
 
 
-def _is_external_member(request, project_uuid):
+def get_request_external_user(request, project_uuid):
+    cached_project_uuid = getattr(request, '_portal_external_user_project_uuid', None)
+    if cached_project_uuid == project_uuid:
+        return getattr(request, 'portal_external_user', None)
+
     session = get_request_session(request)
     if session is None:
-        return False
+        return None
 
     ext_username = session.get('portal_external_username')
     ext_project_uuid = session.get('portal_external_project_uuid')
-    if ext_username and ext_project_uuid and ext_project_uuid == project_uuid and \
-            ProjectExternalUser.objects.filter(project_uuid=project_uuid, username=ext_username, activated=True).exists():
-        if getattr(request, 'user', None):
-            request.user.username = ext_username
-        return True
-    return False
+    external_user = None
+    if ext_username and ext_project_uuid == project_uuid:
+        external_user = ProjectExternalUser.objects.filter(
+            project_uuid=project_uuid,
+            username=ext_username,
+            activated=True,
+        ).first()
+
+    request._portal_external_user_project_uuid = project_uuid
+    request.portal_external_user = external_user
+    return external_user
+
+
+def get_request_portal_customer(request, project_uuid):
+    cached_project_uuid = getattr(request, '_portal_customer_project_uuid', None)
+    if cached_project_uuid == project_uuid:
+        return getattr(request, 'portal_customer', None)
+
+    external_user = getattr(request, 'portal_external_user', None)
+    customer = None
+    if external_user and external_user.customer_id:
+        customer = PortalCustomer.objects.filter(
+            id=external_user.customer_id,
+            project_uuid=project_uuid,
+            status=PortalCustomer.STATUS_ACTIVE,
+        ).first()
+
+    request._portal_customer_project_uuid = project_uuid
+    request.portal_customer = customer
+    return customer
+
+
+def _is_external_member(request, project_uuid, require_customer=False):
+    external_user = get_request_external_user(request, project_uuid)
+    if not external_user:
+        return False
+
+    if require_customer and not get_request_portal_customer(request, project_uuid):
+        return False
+
+    if getattr(request, 'user', None):
+        request.user.username = external_user.username
+    return True
 
 
 def _is_portal_preview_user(request, project_uuid):
@@ -51,6 +93,36 @@ def _is_portal_password_verified(request, project_uuid, portal_settings):
 def _is_same_org_user(request, project):
     user = getattr(request, 'user', None)
     return bool(user and getattr(user, 'is_authenticated', False) and check_same_org_permission(user, project.workspace))
+
+
+def can_access_portal_issue(request, project, issue):
+    project_uuid = str(project.uuid)
+    if _is_same_org_user(request, project) or _is_portal_preview_user(request, project_uuid):
+        return True
+
+    external_user = get_request_external_user(request, project_uuid)
+    if not external_user:
+        return False
+
+    customer = get_request_portal_customer(request, project_uuid)
+    if not customer:
+        return False
+
+    try:
+        return int(issue.get('customer_id')) == customer.id
+    except (TypeError, ValueError):
+        return False
+
+
+def check_portal_issue_permission(username, workspace_owner, issue=None):
+    """Return edit permission for a portal issue."""
+    if not username or not workspace_owner or not issue:
+        return None
+
+    if issue.get('creator') == username:
+        return PERMISSION_READ_WRITE
+
+    return check_project_permission(username, workspace_owner)
 
 
 class PortalKnowledgeBasePermission(BasePermission):
@@ -139,7 +211,7 @@ class PortalIssuePermission(BasePermission):
         if _is_portal_preview_user(request, project_uuid):
             return True
 
-        if _is_external_member(request, project_uuid):
+        if _is_external_member(request, project_uuid, require_customer=True):
             return True
 
         return False

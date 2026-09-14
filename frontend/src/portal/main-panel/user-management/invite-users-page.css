@@ -1,0 +1,67 @@
+.portal-invite-users-form {
+  border-bottom: 1px solid var(--bs-border-color);
+  flex-shrink: 0;
+  padding-bottom: 8px;
+}
+
+.portal-invite-users-labels {
+  display: grid;
+  grid-template-columns: 50% 50%;
+}
+
+.portal-invite-users-controls {
+  display: grid;
+  grid-template-columns: 50% minmax(0, 1fr) auto;
+}
+
+.portal-invite-users-labels {
+  border-bottom: 1px solid var(--bs-border-color);
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+}
+
+.portal-invite-users-controls {
+  gap: 8px;
+}
+
+.portal-invite-users-field {
+  margin: 0;
+  min-width: 0;
+}
+
+.portal-invite-users-field > span {
+  display: block;
+  line-height: 32px;
+}
+
+.portal-invite-users-form .form-control,
+.portal-invite-users-controls > .btn {
+  height: 38px;
+}
+
+.portal-invite-users-form > .btn {
+  align-items: center;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.portal-invite-users-form .seaqa-customize-select .option-group .option-group-content {
+  padding: 0px;
+  margin-bottom: 0px;
+}
+
+.portal-invite-email-column {
+  width: 30%;
+}
+
+.portal-invite-link-column {
+  width: 24%;
+}
+
+.portal-invite-expiration-column {
+  width: 31%;
+}
+
+.portal-invite-expiration-cell {
+  white-space: nowrap;
+}

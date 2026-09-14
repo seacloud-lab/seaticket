@@ -9,7 +9,7 @@ from django.http import HttpResponse
 from django.test import RequestFactory, override_settings
 
 from seahub.portal.middleware import PortalDomainMiddleware
-from seahub.portal.models import PortalCustomDomain, PortalDomainAlias, ProjectExternalUser
+from seahub.portal.models import PortalCustomer, PortalCustomDomain, PortalDomainAlias, ProjectExternalUser
 from seahub.portal.permissions import PortalAnonymousAccessPermission
 from seahub.portal.utils import (
     PORTAL_DOMAIN_TYPE_CUSTOM,
@@ -107,30 +107,22 @@ def test_portal_view_treats_cross_org_authenticated_external_user_as_external(fa
 
 
 @pytest.mark.django_db
-def test_portal_external_logout_clears_external_session_for_authenticated_user(factory, real_project):
-    ext_username = 'virtual-ext-user'
-    ProjectExternalUser.objects.create(
-        email='external@example.com',
-        username=ext_username,
-        project_uuid=str(real_project.uuid),
-        activated=True,
-    )
-
-    request = factory.get(f'/portal-external/logout/{real_project.uuid}/')
-    request.user = SimpleNamespace(
-        username='other-org@example.com',
-        is_authenticated=True,
-        org=SimpleNamespace(org_id=999),
-    )
-    request.session['portal_external_username'] = ext_username
+def test_portal_external_logout_clears_session_and_redirects_to_login(real_project, project_creator):
+    request = build_session_request(f'/portal-external/logout/{real_project.uuid}/')
+    request.user = project_creator
+    request.session['portal_external_username'] = 'virtual-ext-user'
     request.session['portal_external_project_uuid'] = str(real_project.uuid)
+    request.session['portal_preview_project_uuid'] = str(real_project.uuid)
+    request.session['portal_preview_username'] = project_creator.username
 
     response = portal_external_logout_view(request, str(real_project.uuid))
 
     assert response.status_code == 302
-    assert response['Location'] == f'/portal/{real_project.uuid}/'
+    assert response['Location'] == f'/portal/{real_project.uuid}/login/'
     assert 'portal_external_username' not in request.session
     assert 'portal_external_project_uuid' not in request.session
+    assert 'portal_preview_project_uuid' not in request.session
+    assert 'portal_preview_username' not in request.session
 
 
 @pytest.mark.django_db
@@ -247,6 +239,65 @@ def test_portal_view_sets_portal_domain_context(factory, real_project):
     assert response.status_code == 200
     assert captured['template'] == 'portal_view_react.html'
     assert captured['context']['is_portal_domain'] is True
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    ('customer_status', 'expected_can_access_issues'),
+    [
+        (PortalCustomer.STATUS_ACTIVE, True),
+        (PortalCustomer.STATUS_DISABLED, False),
+        (None, False),
+    ],
+    ids=['active-customer', 'disabled-customer', 'no-customer'],
+)
+def test_portal_view_bootstraps_issue_access_for_external_user(
+    factory, real_project, customer_status, expected_can_access_issues
+):
+    project_uuid = str(real_project.uuid)
+    customer = None
+    if customer_status:
+        customer = PortalCustomer.objects.create(
+            project_uuid=project_uuid,
+            name='Acme',
+            status=customer_status,
+        )
+    external_user = ProjectExternalUser.objects.create(
+        email='external@example.com',
+        username='external-user',
+        project_uuid=project_uuid,
+        activated=True,
+        customer_id=customer.id if customer else None,
+    )
+    request = factory.get(f'/portal/{project_uuid}/team-issues/10/')
+    request.user = AnonymousUser()
+    request.session['portal_external_username'] = external_user.username
+    request.session['portal_external_project_uuid'] = project_uuid
+
+    captured = {}
+
+    def fake_render(_request, template, context):
+        captured['template'] = template
+        captured['context'] = context
+        return HttpResponse('ok')
+
+    import seahub.portal.views as portal_views
+
+    original_render = portal_views.render
+    portal_views.render = fake_render
+    try:
+        response = portal_view(
+            request,
+            project_uuid,
+            issue_id=10,
+        )
+    finally:
+        portal_views.render = original_render
+
+    assert response.status_code == 200
+    assert captured['template'] == 'portal_view_react.html'
+    assert captured['context']['is_external_user'] is True
+    assert captured['context']['can_access_issues'] is expected_can_access_issues
 
 
 @pytest.mark.django_db

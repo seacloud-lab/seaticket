@@ -17,7 +17,8 @@ from django.utils import timezone
 from django.core.cache import cache
 from django.core import signing
 from django.http import FileResponse
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
+from django.db.models import Count
 from django.template.defaultfilters import filesizeformat
 
 from seahub.api2.authentication import TokenAuthentication
@@ -25,23 +26,24 @@ from seahub.api2.throttling import UserRateThrottle, PortalTLSAskRateThrottle
 from seahub.api2.utils import api_error, get_user_common_info
 from seahub.project.models import Projects
 from seahub.project.utils import replace_file_url_in_content, get_current_table_metadata, check_project_admin_permission, \
-    check_project_permission, check_ticket_permission, check_comment_permission
-from seahub.utils.storage import FileNotFound, upload_portal_files_to_s3, delete_record_attachments_from_s3, delete_file_from_s3, \
+    check_project_permission, check_comment_permission
+from seahub.utils.storage import FileNotFound, upload_portal_files_to_s3, delete_file_from_s3, \
     PORTAL_BACKGROUND_IMAGE_FILE_PATH, PORTAL_LOGO_FILE_PATH, upload_portal_background_image_file_to_s3, \
     upload_portal_logo_file_to_s3, get_project_file_from_s3, get_project_file_head_from_s3
 from seahub.utils.hasher import AESPasswordHasher
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.project.constants import DataEventType, PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_TIMEOUT, PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_PREFIX
-from seahub.seadb_models.utils import list_knowledge_base_records, list_my_portal_issues, list_portal_issues_view_records, list_trash_portal_issues, list_portal_issue_comments_records
+from seahub.seadb_models.utils import list_knowledge_base_records, list_my_portal_issues, list_portal_issues_view_records, list_trash_portal_issues, list_portal_issue_comments_records, list_portal_issues_view_records
 from seahub.tickets.ticket_utils import check_ticket_creation_interval, get_column_from_columns_by_name, \
-    build_linked_ticket_titles_map, TABLE_TICKETS, get_tickets_by_ids, get_ticket, sync_links_in_connection,\
+    build_linked_ticket_titles_map, TABLE_TICKETS, get_ticket, sync_links_in_connection,\
     convert_select_field_names_to_option_ids, check_ticket_link_changes, TicketLinkValidationError
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.utils.decorators import require_org_context
 from seahub.utils.timeutils import datetime_to_isoformat_timestr
-from seahub.portal.permissions import PortalKnowledgeBasePermission, PortalIssuePermission, PortalAnonymousAccessPermission
-from seahub.portal.models import ProjectExternalUser, PortalCustomDomain, PortalDomainAlias, get_portal_tls_ask_cache_key,\
+from seahub.portal.permissions import PortalKnowledgeBasePermission, PortalIssuePermission, PortalAnonymousAccessPermission, \
+    can_access_portal_issue, check_portal_issue_permission, get_request_external_user, get_request_portal_customer
+from seahub.portal.models import PortalCustomer, ProjectExternalUser, PortalCustomDomain, PortalDomainAlias, get_portal_tls_ask_cache_key,\
     PORTAL_TLS_ASK_CACHE_TIMEOUT, get_preferred_portal_domain, get_service_portal_domain
 from seahub.portal.utils import PORTAL_EXTERNAL_LOGIN_CODE_TTL, PORTAL_EXTERNAL_LOGIN_SEND_COOLDOWN, PORTAL_EXTERNAL_LOGIN_VERIFY_FAIL_LIMIT, \
     PORTAL_EXTERNAL_LOGIN_VERIFY_LOCK_TTL, PORTAL_PREVIEW_TOKEN_SALT, clear_portal_external_login_code, clear_portal_external_login_state, \
@@ -346,6 +348,7 @@ class PortalIssuesView(APIView):
 
         username = request.user.username
         seadb_api = SeaDBAPI()
+        customer = get_request_portal_customer(request, project_uuid)
 
         if not check_ticket_creation_interval(seadb_api, project_uuid, username):
             error_msg = 'Cannot be created again within 30 seconds.'
@@ -386,6 +389,7 @@ class PortalIssuesView(APIView):
                 SchemaTables.PORTAL_ISSUES.column.priority.name: priority,
                 SchemaTables.PORTAL_ISSUES.column.tags.name: tag_ids,
                 SchemaTables.PORTAL_ISSUES.column.creator.name: username,
+                SchemaTables.PORTAL_ISSUES.column.customer_id.name: customer.id if customer else None,
                 SchemaTables.PORTAL_ISSUES.column.comment_count.name: 0,
                 SchemaTables.PORTAL_ISSUES.column.created_time.name: now_datetime,
                 SchemaTables.PORTAL_ISSUES.column.modified_time.name: now_datetime,
@@ -524,7 +528,7 @@ class PortalIssuesView(APIView):
                 updated_row[SchemaTables.PORTAL_ISSUES.column.type.name] = row_data.get('type') or None
 
             for key, value in row_data.items():
-                if key in ('substate', 'tags', 'type', '_pk', 'modified_time', 'content', 'state'):
+                if key in ('substate', 'tags', 'type', '_pk', 'modified_time', 'content', 'state', 'customer_id'):
                     continue
                 updated_row[key] = value
 
@@ -659,6 +663,7 @@ class PortalMyIssuesView(APIView):
 
         username = request.user.username
         seadb_api = SeaDBAPI()
+        customer = get_request_portal_customer(request, str(project_uuid))
 
         basic_filters = view_config.get('basic_filters', [])
         basic_filters.append({
@@ -666,6 +671,12 @@ class PortalMyIssuesView(APIView):
             'filter_predicate': 'is',
             'filter_term': username,
         })
+        if customer:
+            basic_filters.append({
+                'column_name': 'customer_id',
+                'filter_predicate': 'equal',
+                'filter_term': customer.id,
+            })
         view_config['basic_filters'] = basic_filters
 
         try:
@@ -689,6 +700,75 @@ class PortalMyIssuesView(APIView):
         })
 
 
+class PortalTeamIssuesView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (PortalIssuePermission,)
+    throttle_classes = (UserRateThrottle,)
+
+    def post(self, request, project_uuid):
+        view_id = request.POST.get('view_id', 'open')
+        start = request.POST.get('start', 0)
+        limit = request.POST.get('limit', 1000)
+        view_config = request.POST.get('config', '{}')
+
+        try:
+            start = int(start)
+            limit = int(limit)
+            view_config = json.loads(view_config)
+        except (TypeError, ValueError, json.JSONDecodeError):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'params invalid.')
+        if not isinstance(view_config, dict):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'config invalid.')
+        if start < 0 or limit < 0:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'pagination invalid.')
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
+
+        portal_issue_state = view_id if view_id in ('open', 'closed') else 'open'
+        external_user = get_request_external_user(request, project_uuid)
+        if not external_user:
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+        customer = get_request_portal_customer(request, project_uuid)
+        if not customer:
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+        basic_filters = view_config.get('basic_filters', [])
+        if not isinstance(basic_filters, list):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'config invalid.')
+        basic_filters.extend([
+            {
+                'column_name': 'customer_id',
+                'filter_predicate': 'equal',
+                'filter_term': customer.id,
+            },
+            {
+                'column_name': 'state',
+                'filter_predicate': 'is',
+                'filter_term': '0001' if portal_issue_state == 'open' else '0002',
+            },
+        ])
+        view_config['basic_filters'] = basic_filters
+        if not view_config.get('sorts'):
+            view_config['sorts'] = [{'column_name': 'created_time', 'sort_type': 'down'}]
+
+        try:
+            issues, columns = list_portal_issues_view_records(
+                SeaDBAPI(), project_uuid, view_config, request.user.username, start, limit
+            )
+        except SQLGeneratorOptionInvalidError as e:
+            logger.error(e)
+            return Response({
+                'records': [],
+                'columns': getattr(e, 'columns', []),
+                'error_msg': _('There are errors with the filters. Please correct them.'),
+            })
+        except Exception as e:
+            logger.error(e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+        return Response({'records': issues, 'columns': columns})
+
+
 class PortalIssueView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (PortalIssuePermission,)
@@ -702,6 +782,9 @@ class PortalIssueView(APIView):
 
         try:
             seadb_api = SeaDBAPI()
+            access_issue, _metadata = get_portal_issue(seadb_api, project_uuid, issue_id)
+            if not access_issue or not can_access_portal_issue(request, project, access_issue):
+                return api_error(status.HTTP_404_NOT_FOUND, 'Issue not found.')
             issue, columns, linked_ticket_title = list_portal_issue_comments_records(seadb_api, project_uuid, issue_id)
             if not issue:
                 error_msg = 'Issue not found.'
@@ -753,12 +836,12 @@ class PortalIssueView(APIView):
 
         seadb_api = SeaDBAPI()
         issue, metadata = get_portal_issue(seadb_api, project_uuid, issue_id)
-        if not issue:
+        if not issue or not can_access_portal_issue(request, project, issue):
             error_msg = 'Issue not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         # permission check
-        if not check_ticket_permission(username, workspace.owner, issue):
+        if not check_portal_issue_permission(username, workspace.owner, issue):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
         issue_state_name = request.data.get('state')
@@ -894,7 +977,6 @@ class PortalIssueView(APIView):
         send_portal_issue_update_msg(project_uuid, updated=1)
         return Response({'row': update_row})
 
-    @require_org_context
     def delete(self, request, project_uuid, issue_id):
         """
         Soft delete a portal issue.
@@ -906,21 +988,16 @@ class PortalIssueView(APIView):
         if not project:
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
 
-        # permission check
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+        if not check_project_permission(request.user.username, project.workspace.owner):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         try:
             seadb_api = SeaDBAPI()
             issue, metadata = get_portal_issue(seadb_api, project_uuid, issue_id)
-            if not issue:
+            if not issue or not can_access_portal_issue(request, project, issue):
                 error_msg = 'Issue not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
             update_row = {
                 'pk': issue.get('_pk'),
                 'row': {
@@ -940,7 +1017,7 @@ class PortalIssueView(APIView):
 
 class PortalIssueCommentsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (PortalAnonymousAccessPermission, )
+    permission_classes = (PortalIssuePermission, )
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request, project_uuid, issue_id):
@@ -962,7 +1039,7 @@ class PortalIssueCommentsView(APIView):
         try:
             seadb_api = SeaDBAPI()
             portal_issue, metadata = get_portal_issue(seadb_api, project_uuid, issue_id)
-            if not portal_issue:
+            if not portal_issue or not can_access_portal_issue(request, project, portal_issue):
                 error_msg = 'Issue not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
             comments = get_portal_issue_comments(seadb_api, project_uuid, issue_id, start, end)
@@ -1006,7 +1083,7 @@ class PortalIssueCommentsView(APIView):
         try:
             seadb_api = SeaDBAPI()
             issue, metadata = get_portal_issue(seadb_api, project_uuid, issue_id)
-            if not issue:
+            if not issue or not can_access_portal_issue(request, project, issue):
                 return api_error(status.HTTP_404_NOT_FOUND, 'Issue not found.')
         except Exception as e:
             logger.error(e)
@@ -1075,7 +1152,7 @@ class PortalIssueCommentsView(APIView):
 
 class PortalIssueCommentView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (PortalAnonymousAccessPermission,)
+    permission_classes = (PortalIssuePermission,)
     throttle_classes = (UserRateThrottle,)
 
     def put(self, request, project_uuid, issue_id, comment_id):
@@ -1115,7 +1192,7 @@ class PortalIssueCommentView(APIView):
         try:
             seadb_api = SeaDBAPI()
             issue, metadata = get_portal_issue(seadb_api, project_uuid, issue_id)
-            if not issue:
+            if not issue or not can_access_portal_issue(request, project, issue):
                 error_msg = 'Issue not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
@@ -1190,7 +1267,7 @@ class PortalIssueCommentView(APIView):
         try:
             seadb_api = SeaDBAPI()
             issue, metadata = get_portal_issue(seadb_api, project_uuid, issue_id)
-            if not issue:
+            if not issue or not can_access_portal_issue(request, project, issue):
                 error_msg = 'Issue not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
@@ -1908,6 +1985,282 @@ class PortalCustomDomainTLSAskView(APIView):
         return Response(status=status.HTTP_200_OK)
 
 
+class PortalCustomersView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def get(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
+        if not check_project_admin_permission(request.user.username, project.workspace.owner):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        customers = PortalCustomer.objects.filter(project_uuid=project_uuid).order_by('name', 'id')
+        return Response({
+            'customers': [
+                {
+                    'id': customer.id,
+                    'project_uuid': customer.project_uuid,
+                    'name': customer.name,
+                    'status': customer.status,
+                    'created_at': datetime_to_isoformat_timestr(customer.created_at),
+                    'updated_at': datetime_to_isoformat_timestr(customer.updated_at),
+                }
+                for customer in customers
+            ],
+        })
+
+    @require_org_context
+    def post(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
+        if not check_project_admin_permission(request.user.username, project.workspace.owner):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        name = request.data.get('name')
+        if not name or len(name) > 255:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'name invalid.')
+
+        try:
+            with transaction.atomic():
+                customer = PortalCustomer.objects.create(project_uuid=project_uuid, name=name)
+        except IntegrityError:
+            return api_error(status.HTTP_409_CONFLICT, 'Customer name already exists.')
+        except Exception:
+            logger.exception('Failed to create portal customer: project=%s', project_uuid)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+        return Response({'customer': {
+            'id': customer.id,
+            'project_uuid': customer.project_uuid,
+            'name': customer.name,
+            'status': customer.status,
+            'created_at': datetime_to_isoformat_timestr(customer.created_at),
+            'updated_at': datetime_to_isoformat_timestr(customer.updated_at),
+        }}, status=status.HTTP_201_CREATED)
+
+
+class PortalCustomerView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def put(self, request, project_uuid, customer_id):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
+        if not check_project_admin_permission(request.user.username, project.workspace.owner):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        customer = PortalCustomer.objects.filter(id=customer_id, project_uuid=project_uuid).first()
+        if not customer:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Customer not found.')
+
+        name = request.data.get('name', customer.name)
+        if not name or len(name) > 255:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'name invalid.')
+        customer_status = request.data.get('status', customer.status)
+        if customer_status not in (PortalCustomer.STATUS_ACTIVE, PortalCustomer.STATUS_DISABLED):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'status invalid.')
+
+        customer.name = name
+        customer.status = customer_status
+        try:
+            with transaction.atomic():
+                customer.save(update_fields=['name', 'status', 'updated_at'])
+        except IntegrityError:
+            return api_error(status.HTTP_409_CONFLICT, 'Customer name already exists.')
+        except Exception:
+            logger.exception('Failed to update portal customer: project=%s customer=%s', project_uuid, customer_id)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+        return Response({'customer': {
+            'id': customer.id,
+            'project_uuid': customer.project_uuid,
+            'name': customer.name,
+            'status': customer.status,
+            'created_at': datetime_to_isoformat_timestr(customer.created_at),
+            'updated_at': datetime_to_isoformat_timestr(customer.updated_at),
+        }})
+
+    @require_org_context
+    def delete(self, request, project_uuid, customer_id):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
+        if not check_project_admin_permission(request.user.username, project.workspace.owner):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        customer = PortalCustomer.objects.filter(id=customer_id, project_uuid=project_uuid).first()
+        if not customer:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Customer not found.')
+
+        deleted_issue_ids = []
+        try:
+            with transaction.atomic():
+                ProjectExternalUser.objects.filter(
+                    project_uuid=project_uuid,
+                    customer_id=customer.id,
+                ).update(customer_id=None)
+                PortalExternalInvitation.objects.filter(
+                    project_uuid=project_uuid,
+                    customer_id=customer.id,
+                ).update(customer_id=None)
+
+                seadb_api = SeaDBAPI()
+                portal_issues_table_name = SchemaTables.PORTAL_ISSUES.table_name()
+                sql = (
+                    f"UPDATE `{portal_issues_table_name}` SET `deleted`=true "
+                    f"WHERE `customer_id` = {int(customer.id)} "
+                    "AND (`deleted` = False OR `deleted` IS NULL)"
+                )
+                seadb_api.query_rows(project_uuid, sql).get('results', [])
+                customer.delete()
+        except Exception:
+            logger.exception('Failed to delete portal customer: project=%s customer=%s', project_uuid, customer_id)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        if deleted_issue_ids:
+            send_portal_issue_update_msg(project_uuid, deleted=len(deleted_issue_ids))
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class PortalCustomerMembersView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def get(self, request, project_uuid, customer_id):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
+        if not check_project_admin_permission(request.user.username, project.workspace.owner):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+        customer = PortalCustomer.objects.filter(id=customer_id, project_uuid=project_uuid).first()
+        if not customer:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Customer not found.')
+
+        members = ProjectExternalUser.objects.filter(
+            project_uuid=project_uuid, customer_id=customer.id,
+        ).order_by('email')
+        return Response({
+            'members': [
+                {
+                    'id': member.id,
+                    'email': member.email,
+                    'username': member.username,
+                    'activated': member.activated,
+                }
+                for member in members
+            ],
+        })
+
+    @require_org_context
+    def post(self, request, project_uuid, customer_id):
+        """Add one or more external users to a customer."""
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
+        if not check_project_admin_permission(request.user.username, project.workspace.owner):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+        customer = PortalCustomer.objects.filter(id=customer_id, project_uuid=project_uuid).first()
+        if not customer:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Customer not found.')
+        if customer.status != PortalCustomer.STATUS_ACTIVE:
+            return api_error(status.HTTP_409_CONFLICT, 'Customer is disabled.')
+
+        if 'emails' in request.data and 'email' in request.data:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'emails invalid.')
+        if 'emails' not in request.data:
+            email = normalize_external_login_email(request.data.get('email'))
+            if not is_valid_email(email):
+                return api_error(status.HTTP_400_BAD_REQUEST, 'email invalid.')
+            with transaction.atomic():
+                external_user = ProjectExternalUser.objects.select_for_update().filter(
+                    project_uuid=project_uuid, email=email,
+                ).first()
+                if not external_user:
+                    return api_error(status.HTTP_404_NOT_FOUND, 'External user not found.')
+                if external_user.customer_id and external_user.customer_id != customer.id:
+                    return api_error(status.HTTP_409_CONFLICT, 'External user already belongs to another customer.')
+                if not external_user.customer_id:
+                    external_user.customer_id = customer.id
+                    external_user.save(update_fields=['customer_id'])
+            return Response({'success': True})
+
+        emails = request.data.get('emails')
+        if not isinstance(emails, list) or not emails:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'emails invalid.')
+
+        result = {'failed': [], 'success': []}
+        normalized_emails = []
+        for email in emails:
+            if not isinstance(email, str):
+                result['failed'].append({'email': email, 'error_msg': 'email invalid.'})
+                continue
+            normalized_email = normalize_external_login_email(email)
+            if not is_valid_email(normalized_email):
+                result['failed'].append({'email': email, 'error_msg': 'email invalid.'})
+                continue
+            if normalized_email not in normalized_emails:
+                normalized_emails.append(normalized_email)
+
+        with transaction.atomic():
+            external_users = list(ProjectExternalUser.objects.select_for_update().filter(
+                project_uuid=project_uuid, email__in=normalized_emails,
+            ))
+            external_users_by_email = {user.email: user for user in external_users}
+            user_ids_to_assign = []
+            for email in normalized_emails:
+                external_user = external_users_by_email.get(email)
+                if not external_user:
+                    result['failed'].append({'email': email, 'error_msg': 'External user not found.'})
+                    continue
+                if external_user.customer_id and external_user.customer_id != customer.id:
+                    result['failed'].append({
+                        'email': email,
+                        'error_msg': 'External user already belongs to another customer.',
+                    })
+                    continue
+                result['success'].append({'email': email})
+                if not external_user.customer_id:
+                    user_ids_to_assign.append(external_user.id)
+
+            if user_ids_to_assign:
+                ProjectExternalUser.objects.filter(id__in=user_ids_to_assign).update(customer_id=customer.id)
+
+        return Response(result)
+
+
+class PortalCustomerMemberView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def delete(self, request, project_uuid, customer_id, member_id):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
+        if not check_project_admin_permission(request.user.username, project.workspace.owner):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+        customer = PortalCustomer.objects.filter(id=customer_id, project_uuid=project_uuid).first()
+        if not customer:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Customer not found.')
+
+        external_user = ProjectExternalUser.objects.filter(project_uuid=project_uuid, customer_id=customer.id, id=member_id).first()
+        if not external_user:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Customer member not found.')
+        external_user.customer_id = None
+        external_user.save(update_fields=['customer_id'])
+        return Response({'success': True})
+
+
 class PortalExternalInvitationsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated,)
@@ -1929,6 +2282,8 @@ class PortalExternalInvitationsView(APIView):
 
         try:
             invites = PortalExternalInvitation.objects.list_invites_by_project_uuid(project_uuid)
+            customer_ids = {iv.customer_id for iv in invites if iv.customer_id}
+            customer_names = dict(PortalCustomer.objects.filter(project_uuid=project_uuid, id__in=customer_ids).values_list('id', 'name'))
             data = []
             for iv in invites:
                 data.append({
@@ -1937,6 +2292,8 @@ class PortalExternalInvitationsView(APIView):
                     'expire_time': datetime_to_isoformat_timestr(iv.expire_time),
                     'email': iv.email,
                     'inviter': iv.inviter,
+                    'customer_id': iv.customer_id,
+                    'customer_name': customer_names.get(iv.customer_id, ''),
                     'accepted_at': iv.accepted_at,
                     'created_at': iv.created_at,
                 })
@@ -1948,7 +2305,7 @@ class PortalExternalInvitationsView(APIView):
 
     @require_org_context
     def post(self, request, project_uuid):
-        email = request.data.get('email')
+        email = normalize_external_login_email(request.data.get('email'))
         if not email:
             error_msg = 'Email not provided.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -1969,6 +2326,16 @@ class PortalExternalInvitationsView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
+        customer = None
+        customer_id = request.data.get('customer_id')
+        if customer_id:
+            customer = PortalCustomer.objects.filter(id=customer_id, project_uuid=project_uuid, status=PortalCustomer.STATUS_ACTIVE).first()
+            if not customer:
+                return api_error(status.HTTP_404_NOT_FOUND, 'Customer not found.')
+        external_user = ProjectExternalUser.objects.filter(email=email, project_uuid=project.uuid).first()
+        if external_user and external_user.customer_id is not None:
+            return api_error(status.HTTP_409_CONFLICT, 'External user already belongs to a customer.')
+
         if is_user_in_the_same_team(project, email):
             error_msg = _('The user is already a member of your team. Cannot invite the user to the portal.')
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -1977,12 +2344,26 @@ class PortalExternalInvitationsView(APIView):
             error_msg = _('Failed to send email, email service is not properly configured, please contact administrator.')
             return api_error(status.HTTP_503_SERVICE_UNAVAILABLE, error_msg)
 
+        created_external_user = False
         try:
-            invitation = PortalExternalInvitation.objects.add(inviter=username, email=email, project_uuid=str(project.uuid))
+            with transaction.atomic():
+                invitation = PortalExternalInvitation.objects.add(
+                    inviter=username,
+                    email=email,
+                    project_uuid=str(project.uuid),
+                    customer_id=customer.id if customer else None,
+                )
+                if not external_user:
+                    external_user = ProjectExternalUser.objects.create(
+                        email=email,
+                        username=gen_user_virtual_id(),
+                        project_uuid=str(project.uuid),
+                        activated=False,
+                    )
+                    created_external_user = True
         except Exception as e:
             logger.error(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
         context = {
             'token': invitation.token,
@@ -1995,6 +2376,11 @@ class PortalExternalInvitationsView(APIView):
                 invitation.delete()
             except Exception as e:
                 logger.error(e)
+            if created_external_user:
+                try:
+                    external_user.delete()
+                except Exception as e:
+                    logger.error(e)
             error_msg = 'portal public domain is not configured.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
@@ -2009,14 +2395,13 @@ class PortalExternalInvitationsView(APIView):
                 invitation.delete()
             except Exception as e:
                 logger.error(e)
+            if created_external_user:
+                try:
+                    external_user.delete()
+                except Exception as e:
+                    logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        try:
-            if not ProjectExternalUser.objects.filter(email=email, project_uuid=str(project.uuid)).exists():
-                ProjectExternalUser.objects.create(email=email, username=gen_user_virtual_id(), project_uuid=str(project.uuid), activated=False)
-        except Exception as e:
-            logger.error(e)
 
         return Response({'success': True})
 
@@ -2060,11 +2445,16 @@ class PortalExternalUsersView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
         try:
             items = ProjectExternalUser.objects.list_ext_users_by_project_uuid(project_uuid)
+            customer_ids = {item.customer_id for item in items if item.customer_id}
+            customer_names = dict(PortalCustomer.objects.filter(project_uuid=project_uuid, id__in=customer_ids).values_list('id', 'name'))
             users = []
             for it in items:
                 users.append({
+                    'username': it.username,
                     'email': it.email,
                     'activated': bool(getattr(it, 'activated', False)),
+                    'customer_id': it.customer_id,
+                    'customer_name': customer_names.get(it.customer_id, ''),
                 })
         except Exception as e:
             logger.error(e)
@@ -2088,6 +2478,7 @@ class PortalExternalUsersView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
+            PortalExternalInvitation.objects.filter(project_uuid=project_uuid, email=email, accepted_at__isnull=True).delete()
             ProjectExternalUser.objects.filter(project_uuid=project_uuid, email=email).delete()
         except Exception as e:
             logger.error(e)
@@ -2130,7 +2521,6 @@ class PortalExternalLoginSendCodeView(APIView):
             logger.info('Portal external login send-code skipped for non-invited email: project=%s email=%s',
                         project_uuid, email)
             return Response(response_data)
-
         if is_portal_external_login_locked(project_uuid, email):
             return Response(response_data)
 
@@ -2538,88 +2928,3 @@ class PortalIssueTrashAPIView(APIView):
             send_portal_issue_update_msg(project_uuid, updated=len(update_rows))
 
         return Response({'success': True})
-
-    @require_org_context
-    def delete(self, request, project_uuid):
-        # resource check
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            error_msg = 'Project not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-        workspace = project.workspace
-
-        # permission check
-        username = request.user.username
-        if not check_project_permission(username, workspace.owner):
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
-        try:
-            portal_issues_table_name = SchemaTables.PORTAL_ISSUES.table_name()
-            seadb_api = SeaDBAPI()
-            sql = f"SELECT _pk, `linked_ticket` FROM `{portal_issues_table_name}` WHERE `deleted` = True"
-            res = seadb_api.query_rows(project_uuid, sql)
-            deleted_issues = res.get('results', [])
-            need_delete_ids = [row.get('_pk') for row in deleted_issues]
-            if not need_delete_ids:
-                return Response({'success': True}, status=status.HTTP_200_OK)
-
-            for issue_id in need_delete_ids:
-                delete_record_attachments_from_s3(project_uuid, 'portal-issues', int(issue_id))
-            # Remove portal_{issue_id} from linked tickets' linked_connection_records
-            linked_ticket_ids = set()
-            issue_id_to_ticket_id = {}
-            for issue in deleted_issues:
-                linked_ticket = issue.get('linked_ticket')
-                if linked_ticket:
-                    ticket_id = int(linked_ticket)
-                    linked_ticket_ids.add(ticket_id)
-                    issue_id_to_ticket_id[int(issue.get('_pk'))] = ticket_id
-
-            if linked_ticket_ids:
-                tickets = get_tickets_by_ids(seadb_api, project_uuid, list(linked_ticket_ids))
-                ticket_rows = []
-                for ticket in tickets:
-                    ticket_rows.append({
-                        '_pk': ticket.get('_pk'),
-                        'linked_connection_records': ticket.get('linked_connection_records') or [],
-                    })
-
-                now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
-                ticket_update_rows = []
-                for ticket in ticket_rows:
-                    ticket_pk = int(ticket.get('_pk'))
-                    linked_records = ticket.get('linked_connection_records') or []
-                    if not isinstance(linked_records, list):
-                        linked_records = []
-
-                    # Find and remove portal_{issue_id} entries for issues being deleted
-                    portal_keys_to_remove = {f'portal_{issue_id}' for issue_id in need_delete_ids}
-                    new_linked_records = [r for r in linked_records if r not in portal_keys_to_remove]
-
-                    if len(new_linked_records) != len(linked_records):
-                        ticket_update_rows.append({
-                            'pk': ticket_pk,
-                            'row': {
-                                'linked_connection_records': new_linked_records,
-                                'modified_time': now_datetime,
-                            }
-                        })
-
-                if ticket_update_rows:
-                    seadb_api.update_rows(project_uuid, TABLE_TICKETS, ticket_update_rows)
-
-            # Delete portal issue comments
-            for issue_id in need_delete_ids:
-                comment_sql = f"DELETE FROM `{SchemaTables.PORTAL_ISSUE_COMMENTS.table_name()}` WHERE `issue_id` = {int(issue_id)}"
-                seadb_api.query_rows(project_uuid, comment_sql)
-
-            # Hard delete portal issues
-            seadb_api.delete_rows(project_uuid, portal_issues_table_name, need_delete_ids)
-        except Exception as e:
-            logger.error(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
-
-        send_portal_issue_update_msg(project_uuid, deleted=len(need_delete_ids))
-        return Response({'success': True}, status=status.HTTP_200_OK)

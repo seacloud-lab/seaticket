@@ -10,6 +10,7 @@ import Connections from './connections';
 import { useConnections } from './connections/hooks';
 import Inbox from './inbox';
 import KnowledgeBase from './knowledge-base';
+import PortalCustomersUsers from './portal-customers-users';
 import PortalIssues from './portal-issues';
 import Search from './search';
 import Settings from './settings';
@@ -83,6 +84,9 @@ const Container = ({ activeBar, settings, modifySettings, toggleBar, modifyLocal
     case BAR_TYPE.PORTAL_ISSUE_SUBSTATES:
     case BAR_TYPE.PORTAL_CHAT_ANALYSIS: {
       return (<PortalIssues key={barKey} title={title} toggleBar={toggleBar} type={barKey} />);
+    }
+    case BAR_TYPE.PORTAL_CUSTOMERS_AND_USERS: {
+      return (<PortalCustomersUsers title={title} />);
     }
     default:
       return (<Connections title={title} toggleBar={toggleBar} modifyLocalBar={modifyLocalBar} />);

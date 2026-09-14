@@ -4,6 +4,7 @@ export const PORTAL_PAGE = {
   HOME: 'home',
   SUBMIT_ISSUE: 'submit-issue',
   MY_ISSUES: 'my-issues',
+  TEAM_ISSUES: 'team-issues',
   KNOWLEDGE_BASE: 'knowledge-base',
   CHAT: 'chat',
 };
@@ -43,9 +44,10 @@ export const KNOWLEDGE_BASE_TAB = {
 export const TICKET_SECONDARY_TABS = [
   { value: PORTAL_PAGE.SUBMIT_ISSUE, label: gettext('Submit issue') },
   { value: PORTAL_PAGE.MY_ISSUES, label: gettext('My issues') },
+  { value: PORTAL_PAGE.TEAM_ISSUES, label: gettext('Team issues') },
 ];
 
-export const getPrimaryTabs = ({ isAnonymous, enableKB }) => {
-  const tabs = isAnonymous ? [HOME_TAB, CHAT_TAB] : [HOME_TAB, CHAT_TAB, ISSUES_TAB];
+export const getPrimaryTabs = ({ isAnonymous, enableKB, canAccessIssues = true }) => {
+  const tabs = isAnonymous || !canAccessIssues ? [HOME_TAB, CHAT_TAB] : [HOME_TAB, CHAT_TAB, ISSUES_TAB];
   return enableKB ? [...tabs, KNOWLEDGE_BASE_TAB] : tabs;
 };

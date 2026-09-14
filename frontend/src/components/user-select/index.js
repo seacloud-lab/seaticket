@@ -19,6 +19,17 @@ const propTypes = {
   className: PropTypes.string,
   excludeCurrentUser: PropTypes.bool,
   selectedUsers: PropTypes.array,
+  allowEmptySearch: PropTypes.bool,
+  emptyMessage: PropTypes.string,
+  onPopoverToggle: PropTypes.func,
+  popoverClassName: PropTypes.string,
+  searchPlaceholder: PropTypes.string,
+  showDropdownIndicator: PropTypes.bool,
+  showSearchClearIcon: PropTypes.bool,
+  searchInputSize: PropTypes.number,
+  popoverOffset: PropTypes.oneOfType([PropTypes.array, PropTypes.string, PropTypes.number]),
+  hideSearchWhenEmpty: PropTypes.bool,
+  matchTargetWidth: PropTypes.bool,
 };
 
 const { username } = window.app.pageOptions;
@@ -42,7 +53,7 @@ class UserSelect extends React.Component {
       searchValue: newSearchValue
     });
     const searchValue = newSearchValue.trim();
-    if (searchValue.length === 0) {
+    if (searchValue.length === 0 && !this.props.allowEmptySearch) {
       this.setState({
         searchedUsers: [],
         highlightIndex: -1,
@@ -88,14 +99,20 @@ class UserSelect extends React.Component {
     document.removeEventListener('keydown', this.onHotKey, true);
   }
 
+  closePopover = () => {
+    if (!this.state.isPopoverOpen) return;
+    this.setState({
+      isPopoverOpen: false,
+      searchedUsers: [],
+      searchValue: '',
+      highlightIndex: -1,
+    });
+    this.props.onPopoverToggle && this.props.onPopoverToggle(false);
+  };
+
   onClickOutside = (e) => {
-    if (e.target.id !== 'user-select' && this.state.isPopoverOpen) {
-      this.setState({
-        isPopoverOpen: false,
-        searchedUsers: [],
-        searchValue: '',
-        highlightIndex: -1,
-      });
+    if (this.state.isPopoverOpen && (!this.selectRef || !this.selectRef.contains(e.target))) {
+      this.closePopover();
     }
   };
 
@@ -168,7 +185,7 @@ class UserSelect extends React.Component {
   onEsc = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    this.setState({ isPopoverOpen: false });
+    this.closePopover();
   };
 
   onUserClick = (user) => {
@@ -205,6 +222,10 @@ class UserSelect extends React.Component {
     }
   };
 
+  onClearSearch = () => {
+    this.onValueChanged('');
+  };
+
   onDeleteSelectedCollaborator = (user) => {
     const { selectedUsers = [] } = this.props;
     const newSelectedCollaborator = selectedUsers.filter(item => item.email !== user.email);
@@ -212,19 +233,37 @@ class UserSelect extends React.Component {
   };
 
   onTogglePopover = () => {
-    this.setState({ isPopoverOpen: !this.state.isPopoverOpen });
-    if (!this.state.isPopoverOpen) {
-      this.onValueChanged(this.state.searchValue);
+    if (this.state.isPopoverOpen) {
+      this.closePopover();
+      return;
     }
+    this.setState({ isPopoverOpen: true });
+    this.props.onPopoverToggle && this.props.onPopoverToggle(true);
+    this.onValueChanged(this.state.searchValue);
   };
 
   render() {
-    const { searchValue, highlightIndex, searchedUsers, placeholder, isLoading } = this.state;
-    const { className = '', selectedUsers = [] } = this.props;
+    const { searchValue, highlightIndex, searchedUsers, isLoading } = this.state;
+    const {
+      className = '', emptyMessage, popoverClassName,
+      placeholder, searchPlaceholder, selectedUsers = [], showDropdownIndicator, showSearchClearIcon,
+      searchInputSize = 28, popoverOffset, hideSearchWhenEmpty, matchTargetWidth,
+    } = this.props;
+    const isEmptyWithoutSearch = !isLoading && !searchValue && searchedUsers.length === 0;
+    const shouldHideSearch = hideSearchWhenEmpty && isEmptyWithoutSearch;
+    const modifiers = matchTargetWidth ? [{
+      name: 'matchTargetWidth',
+      enabled: true,
+      phase: 'beforeWrite',
+      requires: ['computeStyles'],
+      fn: ({ state }) => {
+        state.styles.popper.width = `${state.rects.reference.width}px`;
+      },
+    }] : [];
     return (
       <ClickOutside onClickOutside={this.onClickOutside}>
         <>
-          <div className={classnames('selected-user-item-container form-control d-flex align-items-center', className, { 'focus': this.state.isPopoverOpen })} id="user-select" onClick={this.onTogglePopover}>
+          <div className={classnames('selected-user-item-container form-control d-flex align-items-center', className, { 'focus': this.state.isPopoverOpen })} id="user-select" onClick={this.onTogglePopover} ref={ref => this.selectRef = ref}>
             {selectedUsers.map((user, index) => {
               return (
                 <UserItem
@@ -240,6 +279,9 @@ class UserSelect extends React.Component {
                 {placeholder || gettext('Search users')}
               </div>
             )}
+            {showDropdownIndicator && (
+              <IconButton icon="arrow-down" className="user-select-dropdown-indicator ml-auto no-hover-bg" />
+            )}
           </div>
           <Popover
             placement="bottom-start"
@@ -247,20 +289,27 @@ class UserSelect extends React.Component {
             target={'user-select'}
             hideArrow={true}
             fade={false}
-            className="user-select-popover"
+            className={classnames('user-select-popover', popoverClassName)}
+            popperClassName={popoverClassName}
+            offset={popoverOffset}
+            modifiers={modifiers}
           >
             <div className="user-select-container" ref={ref => this.ref = ref} onMouseDown={e => e.stopPropagation()}>
-              <div className="user-search-container">
-                <SearchInput
-                  autoFocus={true}
-                  isShowSearchIcon={false}
-                  placeholder={placeholder || gettext('Search users')}
-                  value={searchValue}
-                  size={28}
-                  onChange={this.onValueChanged}
-                  onKeyDown={this.onKeyDown}
-                />
-              </div>
+              {!shouldHideSearch && (
+                <div className="user-search-container">
+                  <SearchInput
+                    autoFocus={true}
+                    isShowSearchIcon={false}
+                    placeholder={searchPlaceholder || placeholder || gettext('Search users')}
+                    value={searchValue}
+                    size={searchInputSize}
+                    onChange={this.onValueChanged}
+                    isShowClearIcon={showSearchClearIcon && Boolean(searchValue)}
+                    onClear={this.onClearSearch}
+                    onKeyDown={this.onKeyDown}
+                  />
+                </div>
+              )}
               <div className="user-list-container" ref={ref => this.container = ref}>
                 {isLoading && <CenteredLoading style={{ minHeight: '160px' }} />}
                 {!isLoading && searchedUsers.length > 0 && (
@@ -282,7 +331,7 @@ class UserSelect extends React.Component {
                 )}
                 {!isLoading && searchedUsers.length === 0 &&
                   <div className="no-user-search-result">
-                    {searchValue ? gettext('User not found') : gettext('Enter characters to start searching')}
+                    {searchValue ? gettext('User not found') : (emptyMessage || gettext('Enter characters to start searching'))}
                   </div>
                 }
               </div>

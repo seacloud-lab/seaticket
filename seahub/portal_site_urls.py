@@ -6,7 +6,8 @@ from seahub.portal.views import portal_anonymous_validate, portal_external_invit
     portal_accounts_login_view, portal_login_view, portal_preview_view, portal_view
 from seahub.portal.apis import PortalCustomDomainTLSAskView, PortalExternalLoginSendCodeView, PortalExternalLoginVerifyCodeView, \
     PortalIssueCommentView, PortalIssueCommentsView, PortalIssueMetadataView, PortalIssueView, PortalIssuesView, PortalKnowledgeBaseRecordView, \
-    PortalKnowledgeBaseRecordsView, PortalKnowledgeBaseViewsView, PortalLogoView, PortalBackgroundImageView, PortalMyIssuesView, PortalTagsView, PortalUserListView
+    PortalKnowledgeBaseRecordsView, PortalKnowledgeBaseViewsView, PortalLogoView, PortalBackgroundImageView, PortalMyIssuesView, PortalTagsView, PortalUserListView, \
+    PortalTeamIssuesView
 
 from seahub.portal.chat.apis import PortalChatMessagesView, PortalChatSessionTitleView, PortalChatSessionsView, PortalChatSessionView, \
     PortalChatView, PortalChatImageView
@@ -24,6 +25,8 @@ urlpatterns = [
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/submit-issue/$', portal_view, name='portal_view'),
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/my-issues/$', portal_view, name='portal_view'),
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/my-issues/(?P<issue_id>\d+)/$', portal_view, name='portal_view'),
+    re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/team-issues/$', portal_view, name='portal_view'),
+    re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/team-issues/(?P<issue_id>\d+)/$', portal_view, name='portal_view'),
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-base/(?P<children_id>\d+)/$', portal_view, name='portal_view'),
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-base/$', portal_view, name='portal_view'),
     re_path(r'^portal/(?P<project_uuid>[-0-9a-f]{36})/chat/(?P<session_uuid>[-0-9a-f]{36})/$', portal_view, name='portal_view'),
@@ -55,6 +58,7 @@ urlpatterns = [
 
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/issues/$', PortalIssuesView.as_view(), name='api-v1-portal-issues'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/my-issues/$', PortalMyIssuesView.as_view(), name='api-v1-portal-my-issues'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/team-issues/$', PortalTeamIssuesView.as_view(), name='api-v1-portal-team-issues'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/issues/(?P<issue_id>\d+)/$', PortalIssueView.as_view(), name='api-v1-portal-issue'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/issues/(?P<issue_id>\d+)/comments/$', PortalIssueCommentsView.as_view(), name='api-v1-portal-issue-comments'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/issues/(?P<issue_id>\d+)/comments/(?P<comment_id>\d+)/$', PortalIssueCommentView.as_view(), name='api-v1-portal-issue-comment'),

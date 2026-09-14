@@ -10,7 +10,7 @@ import SubmitIssue from './submit-issue';
 
 import './index.css';
 
-const MainPanel = ({ activePage, onPageChange, onHomeChatSend, isAnonymous, ...props }) => {
+const MainPanel = ({ activePage, onPageChange, onHomeChatSend, isAnonymous, isExternalUser, ...props }) => {
 
   const { isLoading: isMetadataLoading } = useMetadata();
   const { isLoading: isTagsDataLoading } = useTags();
@@ -30,7 +30,11 @@ const MainPanel = ({ activePage, onPageChange, onHomeChatSend, isAnonymous, ...p
         );
       case PORTAL_PAGE.MY_ISSUES:
         return (
-          <MyIssues { ...props } />
+          <MyIssues key={PORTAL_PAGE.MY_ISSUES} { ...props } />
+        );
+      case PORTAL_PAGE.TEAM_ISSUES:
+        return (
+          <MyIssues key={PORTAL_PAGE.TEAM_ISSUES} { ...props } isTeam={true} />
         );
       case PORTAL_PAGE.KNOWLEDGE_BASE:
         return <PortalKnowledgeBase { ...props } />;
@@ -43,9 +47,12 @@ const MainPanel = ({ activePage, onPageChange, onHomeChatSend, isAnonymous, ...p
     }
   };
 
-  const isIssuesPage = activePage === PORTAL_PAGE.SUBMIT_ISSUE || activePage === PORTAL_PAGE.MY_ISSUES;
+  const isIssuesPage = [PORTAL_PAGE.SUBMIT_ISSUE, PORTAL_PAGE.MY_ISSUES, PORTAL_PAGE.TEAM_ISSUES].includes(activePage);
   const activePrimaryTab = isIssuesPage ? TICKETS_TAB : activePage;
   const isHomePage = activePage === PORTAL_PAGE.HOME;
+  const ticketSecondaryTabs = isExternalUser ? TICKET_SECONDARY_TABS : TICKET_SECONDARY_TABS.filter(
+    (tab) => tab.value !== PORTAL_PAGE.TEAM_ISSUES
+  );
 
   return (
     <div className="seaqa-portal-main-panel" style={isHomePage ? { margin: 0, borderRadius: 0 } : {}}>
@@ -53,7 +60,7 @@ const MainPanel = ({ activePage, onPageChange, onHomeChatSend, isAnonymous, ...p
         <div className="seaqa-portal-sub-navigation">
           <CustomizeTabs
             className="seaqa-portal-secondary-tabs"
-            tabs={TICKET_SECONDARY_TABS}
+            tabs={ticketSecondaryTabs}
             value={activePage}
             onChange={onPageChange}
           />

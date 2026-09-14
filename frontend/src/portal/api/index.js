@@ -100,6 +100,21 @@ class PortalAPI {
     return this._sendPostRequest(url, form);
   }
 
+  listTeamIssues(projectUuid, { view_id = 'open', start = 0, limit = 1000, filters, filter_conjunction, basic_filters, sorts } = {}) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/team-issues/';
+    let form = new FormData();
+    form.append('view_id', view_id);
+    form.append('start', start);
+    form.append('limit', limit);
+    form.append('config', JSON.stringify({
+      filters: filters || [],
+      filter_conjunction: filter_conjunction || 'And',
+      basic_filters: basic_filters || [],
+      sorts: sorts || []
+    }));
+    return this._sendPostRequest(url, form);
+  }
+
   listTags(projectUuid) {
     let url = this.server + '/api/v1/portal/' + projectUuid + '/tags/';
     return this.req.get(url);
@@ -115,10 +130,55 @@ class PortalAPI {
     return this.req.get(url);
   }
 
-  createExternalInvitation(projectUuid, email) {
+  createExternalInvitation(projectUuid, email, customerId = null) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/external-invitations/';
-    const data = { email };
+    const data = { email, customer_id: customerId };
     return this.req.post(url, data);
+  }
+
+  listCustomers(projectUuid) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/customers/';
+    return this.req.get(url);
+  }
+
+  createCustomer(projectUuid, data) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/customers/';
+    return this.req.post(url, data);
+  }
+
+  getCustomer(projectUuid, customerId) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/customers/' + customerId + '/';
+    return this.req.get(url);
+  }
+
+  getCustomerMembers(projectUuid, customerId) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/customers/' + customerId + '/members/';
+    return this.req.get(url);
+  }
+
+  updateCustomer(projectUuid, customerId, data) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/customers/' + customerId + '/';
+    return this.req.put(url, data);
+  }
+
+  deleteCustomer(projectUuid, customerId) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/customers/' + customerId + '/';
+    return this.req.delete(url);
+  }
+
+  addCustomerMember(projectUuid, customerId, email) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/customers/' + customerId + '/members/';
+    return this.req.post(url, { email });
+  }
+
+  addCustomerMembers(projectUuid, customerId, emails) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/customers/' + customerId + '/members/';
+    return this.req.post(url, { emails });
+  }
+
+  removeCustomerMember(projectUuid, customerId, memberId) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/customers/' + customerId + '/members/' + memberId + '/';
+    return this.req.delete(url);
   }
 
   listExternalUsers(projectUuid) {
@@ -426,11 +486,6 @@ class PortalAPI {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/portal-issues/trash/';
     const params = { start, limit };
     return this.req.get(url, { params });
-  }
-
-  cleanPortalIssuesTrash(projectUuid) {
-    const url = this.server + '/api/v1/portal/' + projectUuid + '/portal-issues/trash/';
-    return this.req.delete(url);
   }
 
   restorePortalIssues(projectUuid, issueIds) {

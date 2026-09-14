@@ -76,12 +76,32 @@ def generate_views_unique_id(length, folders_views_ids=None):
 
     return id
 
+
+class PortalCustomer(models.Model):
+    STATUS_ACTIVE = 'active'
+    STATUS_DISABLED = 'disabled'
+    STATUS_CHOICES = (
+        (STATUS_ACTIVE, 'Active'),
+        (STATUS_DISABLED, 'Disabled'),
+    )
+
+    project_uuid = models.CharField(max_length=36, db_index=True)
+    name = models.CharField(max_length=255)
+    status = models.CharField(max_length=16, choices=STATUS_CHOICES, default=STATUS_ACTIVE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    class Meta:
+        unique_together = (('project_uuid', 'name'),)
+        db_table = 'portal_customers'
+
+
 class PortalExternalInvitationManager(models.Manager):
 
-    def add(self, inviter, email, project_uuid, expire_hours=72):
+    def add(self, inviter, email, project_uuid, customer_id=None, expire_hours=72):
         token = uuid4().hex
         expire_time = timezone.now() + timezone.timedelta(hours=int(expire_hours))
-        obj = self.model(token=token, inviter=inviter, email=email, project_uuid=project_uuid, expire_time=expire_time)
+        obj = self.model(token=token, inviter=inviter, email=email, project_uuid=project_uuid,
+            customer_id=customer_id, expire_time=expire_time)
         obj.save(using=self._db)
         return obj
 
@@ -97,6 +117,7 @@ class PortalExternalInvitation(models.Model):
     inviter = models.CharField(max_length=255)
     email = models.CharField(max_length=255)
     project_uuid = models.CharField(max_length=36, db_index=True)
+    customer_id = models.BigIntegerField(null=True, blank=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     expire_time = models.DateTimeField()
     accepted_at = models.DateTimeField(null=True, blank=True)
@@ -129,6 +150,7 @@ class ProjectExternalUser(models.Model):
     email = models.CharField(max_length=255, db_index=True)
     username = models.CharField(max_length=255, db_index=True)
     project_uuid = models.CharField(max_length=36, db_index=True)
+    customer_id = models.BigIntegerField(null=True, blank=True)
     activated = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     objects = ProjectExternalUserManager()
@@ -136,6 +158,7 @@ class ProjectExternalUser(models.Model):
     class Meta:
         unique_together = (('email', 'project_uuid'),)
         db_table = 'project_external_users'
+        indexes = [models.Index(fields=['project_uuid', 'customer_id'], name='project_ext_project_customer')]
 
 
 class PortalDomainAliasManager(models.Manager):

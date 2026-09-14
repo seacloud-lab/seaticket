@@ -20,7 +20,6 @@ const Body = ({ isLoading, emptyTip, columns = [], rows = [], loadMore, rowHeigh
 
   const onScroll = Utils.throttle(useCallback(() => {
     if (isLoading) return;
-    if (!loadMore) return;
     const clientHeight = tableRef.current.clientHeight;
     const scrollHeight = tableRef.current.scrollHeight;
     const scrollTop = tableRef.current.scrollTop;
@@ -36,7 +35,7 @@ const Body = ({ isLoading, emptyTip, columns = [], rows = [], loadMore, rowHeigh
     }
 
     const isBottom = (clientHeight + scrollTop + 1) >= scrollHeight;
-    if (!isBottom) return;
+    if (!isBottom || !loadMore) return;
     loadMore();
   }, [isLoading, loadMore, rows.length, rowHeight, startRenderIndex, endRenderIndex]), 100);
 

@@ -1,0 +1,21 @@
+.portal-users-search {
+  flex-shrink: 0;
+  margin-bottom: 16px;
+}
+
+.portal-users-search .seaqa-search-input-search .seaqa-icon-svg {
+  height: 16px;
+  width: 16px;
+}
+
+.portal-users-user-column {
+  width: 44%;
+}
+
+.portal-users-customer-column {
+  width: 26.5%;
+}
+
+.portal-users-status-column {
+  width: 14.5%;
+}

@@ -293,12 +293,12 @@ class TestPortalMyIssuesView:
 
         seadb_api = Mock()
 
-        def _list_my_portal_issues(_seadb, _project_uuid, _username, _state, _start, _limit, view_config):
+        def list_issues(_seadb, _project_uuid, _username, _state, _start, _limit, view_config):
             assert any(f.get('column_name') == 'creator' for f in view_config.get('basic_filters', []))
             return ([{'_pk': 1}], ['c1'])
 
         with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
-                patch('seahub.portal.apis.list_my_portal_issues', side_effect=_list_my_portal_issues):
+                patch('seahub.portal.apis.list_my_portal_issues', side_effect=list_issues):
             resp = PortalMyIssuesView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
@@ -1200,75 +1200,14 @@ class TestPortalIssueTrashAPIView:
 
         assert resp.status_code == 500
 
-    def test_delete_no_deleted_issues(self, factory, project_creator, real_project):
+    def test_delete_is_not_allowed(self, factory, project_creator, real_project):
         project = real_project
         request = factory.delete(f"/api/v1/portal/{project.uuid}/portal-issues/trash/", data={}, format='json')
         request.user = project_creator
 
-        seadb_api = Mock()
-        seadb_api.query_rows.return_value = {'results': []}
-        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api):
-            resp = PortalIssueTrashAPIView.as_view()(request, project_uuid=str(project.uuid))
+        resp = PortalIssueTrashAPIView.as_view()(request, project_uuid=str(project.uuid))
 
-        assert resp.status_code == 200
-        assert resp.data['success'] is True
-        seadb_api.delete_rows.assert_not_called()
-
-    def test_delete_success_without_linked_ticket(self, factory, project_creator, real_project):
-        project = real_project
-        request = factory.delete(f"/api/v1/portal/{project.uuid}/portal-issues/trash/", data={}, format='json')
-        request.user = project_creator
-
-        seadb_api = Mock()
-        seadb_api.query_rows.return_value = {'results': [{'_pk': 1, 'linked_ticket': None}]}
-        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
-                patch('seahub.portal.apis.delete_record_attachments_from_s3'):
-            resp = PortalIssueTrashAPIView.as_view()(request, project_uuid=str(project.uuid))
-
-        assert resp.status_code == 200
-        assert resp.data['success'] is True
-        seadb_api.delete_rows.assert_called_once()
-
-    def test_delete_success_with_linked_ticket(self, factory, project_creator, real_project):
-        project = real_project
-        request = factory.delete(f"/api/v1/portal/{project.uuid}/portal-issues/trash/", data={}, format='json')
-        request.user = project_creator
-
-        seadb_api = Mock()
-        # First call: query deleted portal issues
-        # Second call: query comments delete (per issue)
-        seadb_api.query_rows.side_effect = [
-            {'results': [{'_pk': 1, 'linked_ticket': 10}]},
-            {'results': []},  # comment delete for issue 1
-        ]
-
-        tickets = [{'_pk': 10, 'linked_connection_records': ['portal_1', '1_100']}]
-        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
-                patch('seahub.portal.apis.delete_record_attachments_from_s3'), \
-                patch('seahub.portal.apis.get_tickets_by_ids', return_value=tickets):
-            resp = PortalIssueTrashAPIView.as_view()(request, project_uuid=str(project.uuid))
-
-        assert resp.status_code == 200
-        assert resp.data['success'] is True
-        # Should update tickets to remove portal_1 from linked_connection_records
-        ticket_update_call = seadb_api.update_rows.call_args_list[0]
-        update_row = ticket_update_call[0][2][0]
-        assert update_row['pk'] == 10
-        assert 'portal_1' not in update_row['row']['linked_connection_records']
-        assert '1_100' in update_row['row']['linked_connection_records']
-        seadb_api.delete_rows.assert_called_once()
-
-    def test_delete_internal_error(self, factory, project_creator, real_project):
-        project = real_project
-        request = factory.delete(f"/api/v1/portal/{project.uuid}/portal-issues/trash/", data={}, format='json')
-        request.user = project_creator
-
-        seadb_api = Mock()
-        seadb_api.query_rows.side_effect = Exception('boom')
-        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api):
-            resp = PortalIssueTrashAPIView.as_view()(request, project_uuid=str(project.uuid))
-
-        assert resp.status_code == 500
+        assert resp.status_code == 405
 
 
 @pytest.mark.django_db
@@ -1359,12 +1298,14 @@ class TestPortalIssueViewPut:
         seadb_api = Mock()
         issue = {'_pk': 1, 'linked_ticket': None}
         ticket = {'_pk': 10, 'linked_connection_records': []}
-        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
+        with patch('seahub.portal.apis.check_portal_issue_permission', return_value='rw') as check_issue_permission, \
+                patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
                 patch('seahub.portal.apis.get_portal_issue', return_value=(issue, {})), \
                 patch('seahub.portal.apis.get_ticket', return_value=(ticket, {})):
             resp = PortalIssueView.as_view()(request, project_uuid=str(project.uuid), issue_id=1)
 
         assert resp.status_code == 200
+        check_issue_permission.assert_called_once_with(project_creator.username, project.workspace.owner, issue)
         assert 'row' in resp.data
         # Should update portal issue's linked_ticket
         portal_update = seadb_api.update_rows.call_args_list[-1]

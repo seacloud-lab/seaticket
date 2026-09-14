@@ -1094,11 +1094,12 @@ def _get_operator_by_type(column_type):
 
 class SQLGenerator(object):
 
-    def __init__(self, table_name, columns, view, username='', start=0, limit=0):
+    def __init__(self, table_name, columns, view, username='', start=0, limit=0, result_columns=None):
         self.table_name = table_name
         self.view = view
         self.columns = columns
-        self.column_names = [column['name'] for column in self.columns]
+        selected_columns = result_columns if result_columns is not None else self.columns
+        self.column_names = [column['name'] for column in selected_columns]
         self.start = start
         self.limit = limit
         self.username = username
@@ -1250,9 +1251,9 @@ class SQLGenerator(object):
         return sql
 
 
-def view_data_2_sql(table, columns, view, username, start, limit):
+def view_data_2_sql(table, columns, view, username, start, limit, result_columns=None):
     """ view to sql """
-    sql_generator = SQLGenerator(table, columns, view, username, start, limit)
+    sql_generator = SQLGenerator(table, columns, view, username, start, limit, result_columns)
     sql = sql_generator.to_sql()
     return sql
 
