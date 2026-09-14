@@ -441,7 +441,6 @@ const Settings = () => {
                 onChange={onToggleAnonymous}
                 placeholder={gettext('Allow anonymous access')}
                 textPosition="right"
-                size="large"
               />
             </div>
             {allowAnonymous && (
@@ -451,7 +450,6 @@ const Settings = () => {
                   onChange={onTogglePassword}
                   placeholder={gettext('Enable password protection')}
                   textPosition="right"
-                  size="large"
                 />
               </div>
             )}

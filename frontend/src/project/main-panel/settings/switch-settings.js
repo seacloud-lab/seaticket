@@ -18,7 +18,6 @@ const SwitchSettings = ({
     <>
       <Switch
         checked={value}
-        size="large"
         textPosition="right"
         className={classnames('w-100 h-6 d-flex align-items-center', className)}
         onChange={onValueChange}

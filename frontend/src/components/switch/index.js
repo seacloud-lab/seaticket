@@ -5,7 +5,7 @@ import Tooltip from '../tooltip';
 
 import './index.css';
 
-function Switch({ onChange, checked, placeholder, disabled, className, size, textPosition = 'left', setRef, checkedTooltip, uncheckedTooltip, tooltipPosition }) {
+function Switch({ onChange, checked, placeholder, disabled, className, textPosition = 'left', setRef, checkedTooltip, uncheckedTooltip, tooltipPosition, fontWeight = 500 }) {
   const switchRef = useRef(null);
   const tooltip = checked ? checkedTooltip : uncheckedTooltip;
   const setSwitchRef = (node) => {
@@ -15,8 +15,8 @@ function Switch({ onChange, checked, placeholder, disabled, className, size, tex
 
   return (
     <>
-      <div className={classnames('seaqa-switch position-relative', className, size, { 'disabled': disabled })} ref={setSwitchRef}>
-        <label className="custom-switch">
+      <div className={classnames('seaqa-switch position-relative', className, { 'disabled': disabled })}>
+        <label className="custom-switch" ref={setSwitchRef}>
           <input
             className="custom-switch-input"
             type="checkbox"
@@ -26,11 +26,11 @@ function Switch({ onChange, checked, placeholder, disabled, className, size, tex
             disabled={disabled}
           />
           {textPosition === 'left' &&
-            <span className="custom-switch-description text-truncate">{placeholder}</span>
+            <span className="custom-switch-description text-truncate" style={{ fontWeight }}>{placeholder}</span>
           }
           <span className={classnames('custom-switch-indicator', { 'disabled': disabled })}></span>
           {textPosition === 'right' &&
-            <span className="custom-switch-description text-truncate">{placeholder}</span>
+            <span className="custom-switch-description text-truncate" style={{ fontWeight }}>{placeholder}</span>
           }
         </label>
       </div>
@@ -44,13 +44,13 @@ Switch.propTypes = {
   disabled: PropTypes.bool,
   placeholder: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
   className: PropTypes.string,
-  size: PropTypes.oneOf(['large', 'small', undefined]),
   textPosition: PropTypes.oneOf(['left', 'right', undefined]),
   onChange: PropTypes.func,
   setRef: PropTypes.func,
   checkedTooltip: PropTypes.string,
   uncheckedTooltip: PropTypes.string,
   tooltipPosition: PropTypes.string,
+  fontWeight: PropTypes.oneOf([400, 500]),
 };
 
 export default Switch;

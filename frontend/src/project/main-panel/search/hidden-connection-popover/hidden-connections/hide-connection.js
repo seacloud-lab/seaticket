@@ -19,9 +19,9 @@ const HideConnection = ({
         className="hide-column-item-switch"
         disabled={readOnly}
         checked={isHidden}
-        size="large"
         placeholder={<span className="text-truncate">{connection.name}</span>}
         onChange={() => onChange(connection)}
+        fontWeight={400}
       />
     </div>
   );
