@@ -63,7 +63,7 @@
 
 .portal-customer-operation-btns .seaqa-icon-btn,
 .portal-customer-operation-btns .seaqa-icon-svg {
-  color: var(--bs-secondary-color);
+  color: var(--bs-icon-color);
 }
 
 .portal-customer-operation-btns {
@@ -95,7 +95,7 @@
 }
 
 .portal-customers-empty-tip .empty-tip-text {
-  color: var(--bs-secondary-color);
+  color: var(--bs-icon-color);
   font-size: 14px;
   margin-top: 16px;
 }
@@ -130,7 +130,7 @@
 }
 
 .portal-customer-create-back .seaqa-icon-btn {
-  color: var(--bs-secondary-color);
+  color: var(--bs-icon-color);
 }
 
 .portal-customer-create-back .seaqa-icon-btn:hover {
@@ -170,7 +170,7 @@
 }
 
 .portal-user-management-input::placeholder {
-  color: var(--bs-secondary-color);
+  color: var(--bs-icon-color);
   opacity: 1;
 }
 
@@ -203,7 +203,7 @@
 }
 
 .portal-customer-create-form .portal-customer-user-select .user-select-placeholder {
-  color: var(--bs-secondary-color);
+  color: var(--bs-icon-color);
   line-height: 24px;
 }
 
@@ -234,13 +234,13 @@
 }
 
 .portal-customer-create-form .portal-customer-user-select .user-remove .seaqa-icon-svg {
-  color: var(--bs-secondary-color);
+  color: var(--bs-icon-color);
   height: 12px;
   width: 12px;
 }
 
 .portal-customer-create-form .user-select-dropdown-indicator {
-  color: var(--bs-secondary-color);
+  color: var(--bs-icon-color);
   height: 24px;
   margin: 0 !important;
   position: absolute;
@@ -250,7 +250,7 @@
 }
 
 .portal-customer-create-form .user-select-dropdown-indicator .seaqa-icon-svg {
-  color: var(--bs-secondary-color);
+  color: var(--bs-icon-color);
   height: 14px !important;
   width: 14px !important;
 }
@@ -291,7 +291,7 @@
 }
 
 .portal-customer-user-select-popover .user-search-container .seaqa-clear-icon-button .seaqa-icon-svg {
-  color: var(--bs-secondary-color);
+  color: var(--bs-icon-color);
 }
 
 .portal-customer-user-select-popover .user-list-container {
@@ -326,7 +326,7 @@
 }
 
 .portal-customer-user-select-popover .collaborator-check-icon .seaqa-icon-svg {
-  color: var(--bs-secondary-color);
+  color: var(--bs-icon-color);
   height: 14px;
   width: 14px;
 }
@@ -380,7 +380,7 @@
 
 .portal-user-management-table th {
   background-color: var(--bs-body-bg);
-  color: var(--bs-secondary-color);
+  color: var(--bs-icon-color);
   font-weight: 400;
   position: sticky;
   top: 0;

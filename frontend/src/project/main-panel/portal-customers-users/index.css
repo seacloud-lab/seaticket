@@ -74,7 +74,7 @@
 }
 
 .portal-customers-sea-metadata .sea-metadata-table-main-container > .empty-tip .empty-tip-text {
-  color: var(--bs-secondary-color) !important;
+  color: var(--bs-icon-color) !important;
   margin-top: 16px;
 }
 
@@ -166,7 +166,7 @@
 }
 
 .portal-customer-members-operation .seaqa-icon-btn {
-  color: var(--bs-secondary-color);
+  color: var(--bs-icon-color);
 }
 
 .portal-customer-member-select .user-select-placeholder {
