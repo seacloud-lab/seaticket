@@ -93,7 +93,6 @@ const HideColumnItem = ({
         className="hide-column-item-switch"
         disabled={readOnly}
         checked={isHidden}
-        size='large'
         placeholder={(
           <>
             <Icon className="sea-metadata-icon" symbol={COLUMNS_ICON_CONFIG[column.type]} />
@@ -101,6 +100,7 @@ const HideColumnItem = ({
           </>
         )}
         onChange={update}
+        fontWeight={400}
       />
     </div>
   );

@@ -205,7 +205,6 @@ const Search = ({ title }) => {
               checked={semanticEnabled}
               onChange={toggleSemantic}
               placeholder={gettext('Semantic search')}
-              size="small"
               textPosition="right"
             />
           </div>

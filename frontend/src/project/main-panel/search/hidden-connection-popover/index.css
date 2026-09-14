@@ -136,17 +136,6 @@
   font-size: 14px;
 }
 
-.seaqa-hide-popover .hide-column-item .custom-switch .custom-switch-indicator {
-  border-radius: 8px;
-  height: 16px;
-  width: 28px;
-}
-
-.seaqa-hide-popover .hide-column-item .custom-switch .custom-switch-indicator:before {
-  height: 12px;
-  width: 12px;
-}
-
 .seaqa-hide-popover .hide-column-item .custom-switch .custom-switch-input:checked~.custom-switch-indicator:before {
   left: 14px;
 }

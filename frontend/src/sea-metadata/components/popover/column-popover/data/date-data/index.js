@@ -83,7 +83,6 @@ const DateData = ({ value, column, onChange }) => {
       <div className="pb-4">
         <Switch
           checked={showMinute}
-          size="large"
           textPosition="right"
           className="sea-metadata-date-column-data-minute w-100"
           onChange={onMinuteChange}

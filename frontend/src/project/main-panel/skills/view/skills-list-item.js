@@ -50,7 +50,6 @@ const SkillsListItem = ({ skill, isActive, onSelectSkill, onEditSkill, onToggleS
     >
       <div className="skills-list-item-switch" onClick={(event) => event.stopPropagation()}>
         <Switch
-          size="large"
           checked={Boolean(skill.enabled)}
           onChange={(event) => {
             event.stopPropagation();
