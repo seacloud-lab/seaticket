@@ -60,12 +60,6 @@ const DateData = ({ value, column, onChange }) => {
     onChange({ format: newFormat });
   }, [format, onChange]);
 
-  // const onSecondChange = useCallback((v) => {
-  //   let newFormat = format || 'YYYY-MM-DD HH:mm';
-  //   newFormat = format.indexOf('ss') === -1 ? newFormat + ':ss' : newFormat.slice(0, -3);
-  //   onChange({ format: newFormat });
-  // }, [format, onChange]);
-
   const yearFormat = (typeof format === 'string') ? format.split(' ')[0] : 'YYYY-MM-DD';
   const selectedValue = options.find(o => o.value === yearFormat) || options[0];
   const showMinute = format ? format.indexOf('HH:mm') > -1 : false;

@@ -37,6 +37,7 @@ const ManageSetter = ({ readOnly, view, modifyViewLock }) => {
             onChange={handleLockView}
             placeholder={gettext('Lock view')}
             textPosition="left"
+            fontWeight={400}
           />
         </DropdownItem>
       </DropdownMenu>

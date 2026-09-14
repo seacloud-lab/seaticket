@@ -67,6 +67,7 @@ const PortalChatSourceItem = ({ source, selected, disabled, onToggle }) => {
         checked={selected}
         placeholder={<span className="text-truncate">{source.name}</span>}
         onChange={() => onToggle(source.id)}
+        fontWeight={400}
       />
     </div>
   );
