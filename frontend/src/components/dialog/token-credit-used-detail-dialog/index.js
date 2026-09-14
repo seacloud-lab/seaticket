@@ -274,7 +274,7 @@ class TokenCreditUsedDetailDialog extends Component {
               </span>
             </div>
           </div>
-          <div className="w-100" style={{ height: 'calc(100% - 44px)' }}>
+          <div className="ai-statistics-content w-100">
             {isLoading ? (
               <Loading />
             ) : data && data.length > 0 ? (
