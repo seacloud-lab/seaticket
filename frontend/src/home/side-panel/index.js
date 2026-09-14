@@ -31,6 +31,8 @@ const propTypes = {
 const GROUP_ITEM_HEIGHT = 36;
 const INIT_SIDEBAR_WIDTH = 240;
 
+const { chromeExtensionInstallUrl } = window.app.pageOptions;
+
 class SidePanel extends React.Component {
 
   constructor(props) {
@@ -153,6 +155,24 @@ class SidePanel extends React.Component {
     );
   };
 
+  renderNavLink = ({ url, icon, title } = {}) => {
+    if (!url) return null;
+    return (
+      <div className="nav-item seaqa-nav-item projects-nav">
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={title}
+          className="nav-link seaqa-nav-link"
+        >
+          <Icon symbol={icon} className="nav-icon" />
+          <span className="nav-text">{title}</span>
+        </a>
+      </div>
+    );
+  };
+
   render() {
     const { workspaceList } = this.props;
     let groupsHeight = (workspaceList.length * GROUP_ITEM_HEIGHT + 1) || 0;
@@ -236,18 +256,16 @@ class SidePanel extends React.Component {
               </div>
               <span className="seaqa-nav-title help-resources-title">{gettext('Help and resources')}</span>
               <div className="nav nav-pills flex-column seaqa-nav-list help-resources-nav-list">
-                <div className="nav-item seaqa-nav-item projects-nav">
-                  <a
-                    href="https://user-docs.seaticket.ai/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={gettext('Manual')}
-                    className="nav-link seaqa-nav-link"
-                  >
-                    <Icon symbol="question-circle-filled" className="nav-icon" />
-                    <span className="nav-text">{gettext('Manual')}</span>
-                  </a>
-                </div>
+                {this.renderNavLink({
+                  url: 'https://user-docs.seaticket.ai/',
+                  title: gettext('Manual'),
+                  icon: 'question-circle-filled'
+                })}
+                {chromeExtensionInstallUrl && this.renderNavLink({
+                  url: chromeExtensionInstallUrl,
+                  title: gettext('Chrome extension'),
+                  icon: 'chrome-extension'
+                })}
               </div>
             </nav>
           </div>

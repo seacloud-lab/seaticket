@@ -448,6 +448,10 @@ SLIDE_CAPTCHA_IMAGE_URL = ''
 REQUEST_RATE_LIMIT_NUMBER = 3
 REQUEST_RATE_LIMIT_PERIOD = 60  # seconds
 
+# chrome extension
+CHROME_EXTENSION_ID = ''
+CHROME_EXTENSION_INSTALL_URL = ''
+
 # For security consideration, please set to match the host/domain of your site, e.g., ALLOWED_HOSTS = ['.example.com'].
 # Please refer https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts for details.
 ALLOWED_HOSTS = ['*']
@@ -907,3 +911,11 @@ GOOGLE_EMAIL_CLIENT_ID = configs.get('GOOGLE_EMAIL_CLIENT_ID', '')
 GOOGLE_EMAIL_CLIENT_SECRET = configs.get('GOOGLE_EMAIL_CLIENT_SECRET', '')
 MICROSOFT_EMAIL_CLIENT_ID = configs.get('MICROSOFT_EMAIL_CLIENT_ID', '')
 MICROSOFT_EMAIL_CLIENT_SECRET = configs.get('MICROSOFT_EMAIL_CLIENT_SECRET', '')
+
+if CHROME_EXTENSION_ID:
+    CSRF_TRUSTED_ORIGINS.append(f'chrome-extension://{CHROME_EXTENSION_ID}')
+    if SERVICE_URL.startswith('https://cloud.seaticket.ai'):
+        CHROME_EXTENSION_INSTALL_URL = f'https://chromewebstore.google.com/detail/seaticket/{CHROME_EXTENSION_ID}/'
+    else:
+        CHROME_EXTENSION_INSTALL_URL = 'https:\/\/dev.seafile.com/seahub/smart-link/d95a18a9-281a-469a-aa98-fd4e6a25efa5/'
+
