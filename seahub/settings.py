@@ -914,7 +914,7 @@ MICROSOFT_EMAIL_CLIENT_SECRET = configs.get('MICROSOFT_EMAIL_CLIENT_SECRET', '')
 
 if CHROME_EXTENSION_ID:
     CSRF_TRUSTED_ORIGINS.append(f'chrome-extension://{CHROME_EXTENSION_ID}')
-    if SERVICE_URL.startswith('https://cloud.seaticket.ai/'):
+    if SERVICE_URL.startswith('https://cloud.seaticket.ai'):
         CHROME_EXTENSION_INSTALL_URL = f'https://chromewebstore.google.com/detail/seaticket/{CHROME_EXTENSION_ID}/'
     else:
         CHROME_EXTENSION_INSTALL_URL = 'https:\/\/dev.seafile.com/seahub/smart-link/d95a18a9-281a-469a-aa98-fd4e6a25efa5/'
