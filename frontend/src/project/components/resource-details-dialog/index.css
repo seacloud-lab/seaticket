@@ -24,10 +24,13 @@
 
 .seaqa-resource-details-dialog .modal-content {
   height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .seaqa-resource-details-dialog .modal-content .modal-header {
   height: 37px;
+  flex-shrink: 0;
 }
 
 .seaqa-resource-details-dialog .modal-content .modal-header .modal-title {
@@ -88,6 +91,8 @@
 
 .seaqa-resource-details-dialog .modal-content .modal-body {
   padding: 16px;
+  flex: 1;
+  min-height: 0;
   overflow: auto;
 }
 

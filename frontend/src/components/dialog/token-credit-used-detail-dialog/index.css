@@ -10,9 +10,18 @@
   height: 100%;
 }
 
-.dialog-content {
-  overflow-y: auto;
+.ai-statistics-dialog .dialog-content {
+  display: flex;
+  flex-direction: column;
   flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.ai-statistics-dialog .ai-statistics-content {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
 }
 
 .ai-statistics-dialog .ai-statistics-filters {
