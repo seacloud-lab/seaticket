@@ -1,8 +1,8 @@
 import React from 'react';
 import { Button, Input } from 'reactstrap';
 import { CustomizeSelect, EmptyTip } from '@/components';
-import dayjs from '@/utils/dayjs';
 import { gettext, mediaUrl } from '@/constants';
+import dayjs from '@/utils/dayjs';
 import OperationButton from './operation-button';
 
 import './invite-users-page.css';

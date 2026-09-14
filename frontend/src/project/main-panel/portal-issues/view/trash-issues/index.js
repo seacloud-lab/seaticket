@@ -4,13 +4,10 @@ import { gettext } from '@/constants';
 import { portalAPI } from '@/portal/api';
 import { useData } from '@/project/hooks';
 import { VIEW_TOOL } from '@/sea-metadata';
-import { gettext } from '@/constants';
-import { toaster } from '@/components';
 import context from '@/sea-metadata/context';
 import Issues from '../../components/issues';
 import { PORTAL_ISSUE_TABLE_NAME } from '../../constants';
 import { usePortalIssuesPage } from '../../hooks';
-import CleanPortalIssues from './clean-portal-issues';
 
 const viewTools = [VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS, VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS, VIEW_TOOL.GROUPBYS];
 

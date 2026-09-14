@@ -210,7 +210,7 @@ const Issue = ({
     }
     return options;
   }, [
-    issue, deleteRow, canChatWithAI, handleResolveAttachmentsByAI, projectUuid, workspaceID, projectName, editable, chatIssuesByAI,
+    issue, deleteRow, canChatWithAI, handleResolveAttachmentsByAI, projectUuid, workspaceID, projectName, editable,
     createTicket, handleLinkAnExistingTicket, customGeneratorIssuesContextMenuOptions, togglePageSlugId,
   ]);
 

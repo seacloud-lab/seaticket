@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { IconButton, CenteredLoading } from '@/components';
 import { server, gettext, PERMISSION_TYPES } from '@/constants';
 import Issues from '@/project/main-panel/portal-issues/components/issues';
+import { PORTAL_ISSUE_TABLE_NAME } from '@/project/main-panel/portal-issues/constants';
 import Issue from '@/project/main-panel/portal-issues/view/issue';
 import TopBar from '@/project/main-panel/top-bar';
 import { VIEW_TOOL } from '@/sea-metadata';
@@ -11,7 +12,6 @@ import { portalAPI } from '../../api';
 import { PORTAL_PAGE } from '../../constants';
 import { buildPortalPath, getPortalPathSegments } from '../../path-utils';
 import MobileIssueCards from './mobile-issue-cards';
-import { PORTAL_ISSUE_TABLE_NAME } from '@/project/main-panel/portal-issues/constants';
 
 import './index.css';
 

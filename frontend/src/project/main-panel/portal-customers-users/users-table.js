@@ -1,8 +1,8 @@
 import React, { useCallback, useMemo } from 'react';
 import { gettext } from '@/constants';
+import SeaMetadata from '@/sea-metadata';
 import { CellType, VIEW_TOOL } from '@/sea-metadata/constants';
 import context from '@/sea-metadata/context';
-import SeaMetadata from '@/sea-metadata';
 
 const UserStatusFormatter = ({ value }) => (
   <span>{value ? gettext('Active') : gettext('Inactive')}</span>
