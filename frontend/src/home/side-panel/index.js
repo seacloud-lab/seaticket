@@ -256,22 +256,16 @@ class SidePanel extends React.Component {
               </div>
               <span className="seaqa-nav-title help-resources-title">{gettext('Help and resources')}</span>
               <div className="nav nav-pills flex-column seaqa-nav-list help-resources-nav-list">
-                <>
-                  {this.renderNavLink({
-                    url: 'https://user-docs.seaticket.ai/',
-                    title: gettext('Manual'),
-                    icon: 'question-circle-filled'
-                  })}
-                </>
-                {chromeExtensionInstallUrl && (
-                  <>
-                    {this.renderNavLink({
-                      url: chromeExtensionInstallUrl,
-                      title: gettext('Chrome extension'),
-                      icon: 'chrome-extension'
-                    })}
-                  </>
-                )}
+                {this.renderNavLink({
+                  url: 'https://user-docs.seaticket.ai/',
+                  title: gettext('Manual'),
+                  icon: 'question-circle-filled'
+                })}
+                {chromeExtensionInstallUrl && this.renderNavLink({
+                  url: chromeExtensionInstallUrl,
+                  title: gettext('Chrome extension'),
+                  icon: 'chrome-extension'
+                })}
               </div>
             </nav>
           </div>
