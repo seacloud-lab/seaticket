@@ -6,7 +6,7 @@ import { gettext } from '@/constants';
 import DateFormatter from '@/project/main-panel/connections/components/cell-formatter/date-formatter';
 import { FROM_NOW } from '@/sea-metadata/constants';
 import { RUN_STATUS, RUN_EVENT_NAME, SUGGESTIONS_STATUS } from '../../../constants';
-import { getAgentResource, getDisplayActions, getTriggerInfoFromRun } from '../../../utils';
+import { getDisplayActions, getEventSourceResource, getTriggerInfoFromRun } from '../../../utils';
 import Action from './action';
 import RunStatisticsDialog from './run-statistics-dialog';
 import ThoughtProcessDialog from './thought-process-dialog';
@@ -82,7 +82,7 @@ const RunDetail = ({
     return null;
   }, [run]);
 
-  const resource = useMemo(() => getAgentResource(run), [run]);
+  const resource = useMemo(() => getEventSourceResource(run), [run]);
   const trigger = useMemo(() => getTriggerInfoFromRun(run), [run]);
 
   const toggleExpanded = useCallback((event) => {
