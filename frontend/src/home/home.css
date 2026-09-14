@@ -9,6 +9,15 @@
   min-height: 0;
 }
 
+#main .home-page-resize-bar {
+  margin-left: -5px;
+}
+
+#main .home-page-resize-bar,
+#main .home-page-resize-bar .resize-bar-content {
+  background-color: var(--bs-body-third-bg);
+}
+
 .seaqa-nav-list .seaqa-nav-item {
   line-height: 38px;
   border-radius: 4px;
