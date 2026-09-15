@@ -37,11 +37,12 @@
 }
 
 .skill-detail-dialog .skill-detail-dialog-preview-name .skills-source {
-  height: 24px;
-  padding: 4px 8px;
+  height: 22px;
+  line-height: 22px;
+  align-items: center;
+  padding: 0 8px;
   color: var(--bs-body-secondary-color);
   font-size: 12px;
-  line-height: 1.2;
   border-radius: 4px;
 }
 
@@ -80,12 +81,6 @@
   min-height: 360px;
 }
 
-.skill-detail-dialog .skill-detail-dialog-subtitle {
-  margin-top: 2px;
-  color: var(--bs-body-secondary-color);
-  font-size: 13px;
-}
-
 .skill-detail-dialog .skill-detail-dialog-label {
   display: block;
   line-height: normal;
@@ -99,7 +94,6 @@
 }
 
 .skill-detail-dialog .skill-detail-dialog-content .seaqa-switch .custom-switch-description {
-  font-weight: 500;
   line-height: 24px;
 }
 

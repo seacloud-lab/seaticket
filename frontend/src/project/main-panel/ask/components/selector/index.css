@@ -1,5 +1,6 @@
 .seaqa-ai-chat-selector-display-editor .popover {
-  height: 276px;
+  height: auto;
+  max-height: 276px;
 }
 
 .seaqa-ai-chat-selector-display-editor .popover.bs-popover-auto[data-popper-placement^=top],
