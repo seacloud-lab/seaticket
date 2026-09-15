@@ -38,6 +38,8 @@ class TestPortalCustomersView:
 
         assert response.status_code == 201
         assert response.data['customer']['name'] == 'Acme'
+        assert response.data['customer']['created_at'].endswith('+00:00')
+        assert response.data['customer']['updated_at'].endswith('+00:00')
         assert 'code' not in response.data['customer']
 
         list_request = factory.get(f'/api/v1/portal/{real_project.uuid}/customers/')

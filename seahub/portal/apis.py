@@ -40,7 +40,6 @@ from seahub.tickets.ticket_utils import check_ticket_creation_interval, get_colu
     convert_select_field_names_to_option_ids, check_ticket_link_changes, TicketLinkValidationError
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.utils.decorators import require_org_context
-from seahub.utils.timeutils import datetime_to_isoformat_timestr
 from seahub.portal.permissions import PortalKnowledgeBasePermission, PortalIssuePermission, PortalAnonymousAccessPermission, \
     can_access_portal_issue, check_portal_issue_permission, get_request_external_user, get_request_portal_customer
 from seahub.portal.models import PortalCustomer, ProjectExternalUser, PortalCustomDomain, PortalDomainAlias, get_portal_tls_ask_cache_key,\
@@ -2006,8 +2005,8 @@ class PortalCustomersView(APIView):
                     'project_uuid': customer.project_uuid,
                     'name': customer.name,
                     'status': customer.status,
-                    'created_at': datetime_to_isoformat_timestr(customer.created_at),
-                    'updated_at': datetime_to_isoformat_timestr(customer.updated_at),
+                    'created_at': customer.created_at.isoformat(),
+                    'updated_at': customer.updated_at.isoformat(),
                 }
                 for customer in customers
             ],
@@ -2038,8 +2037,8 @@ class PortalCustomersView(APIView):
             'project_uuid': customer.project_uuid,
             'name': customer.name,
             'status': customer.status,
-            'created_at': datetime_to_isoformat_timestr(customer.created_at),
-            'updated_at': datetime_to_isoformat_timestr(customer.updated_at),
+            'created_at': customer.created_at.isoformat(),
+            'updated_at': customer.updated_at.isoformat(),
         }}, status=status.HTTP_201_CREATED)
 
 
@@ -2082,8 +2081,8 @@ class PortalCustomerView(APIView):
             'project_uuid': customer.project_uuid,
             'name': customer.name,
             'status': customer.status,
-            'created_at': datetime_to_isoformat_timestr(customer.created_at),
-            'updated_at': datetime_to_isoformat_timestr(customer.updated_at),
+            'created_at': customer.created_at.isoformat(),
+            'updated_at': customer.updated_at.isoformat(),
         }})
 
     @require_org_context
@@ -2289,7 +2288,7 @@ class PortalExternalInvitationsView(APIView):
                 data.append({
                     'token': iv.token,
                     'link': iv.get_link(request),
-                    'expire_time': datetime_to_isoformat_timestr(iv.expire_time),
+                    'expire_time': iv.expire_time.isoformat(),
                     'email': iv.email,
                     'inviter': iv.inviter,
                     'customer_id': iv.customer_id,
