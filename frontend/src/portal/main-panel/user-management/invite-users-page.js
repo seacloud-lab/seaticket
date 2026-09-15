@@ -28,6 +28,7 @@ const InviteCustomerSelect = ({ selectedCustomerId, customers, onChange, isInMod
       onChange={onChange}
       searchable={false}
       isInModal={isInModal}
+      noOptionsPlaceholder={gettext('No customers')}
     />
   );
 };
