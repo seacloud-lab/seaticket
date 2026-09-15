@@ -19,7 +19,6 @@ const SkillsListItem = ({ skill, isActive, onSelectSkill, onEditSkill, onToggleS
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setDeleting] = useState(false);
-  const isToggleDisabled = !isProjectAdmin || isToggling;
   const canEdit = isProjectAdmin && skill.source !== 'builtin';
   const canDelete = isProjectAdmin && skill.source !== 'builtin' && !isDeleting;
 
@@ -53,10 +52,9 @@ const SkillsListItem = ({ skill, isActive, onSelectSkill, onEditSkill, onToggleS
           checked={Boolean(skill.enabled)}
           onChange={(event) => {
             event.stopPropagation();
-            if (isToggleDisabled) return;
+            if (!isProjectAdmin || isToggling) return;
             onToggleSkill && onToggleSkill(skill);
           }}
-          disabled={isToggleDisabled}
           checkedTooltip={gettext('Disable skill')}
           uncheckedTooltip={gettext('Enable skill')}
           tooltipPosition="top"

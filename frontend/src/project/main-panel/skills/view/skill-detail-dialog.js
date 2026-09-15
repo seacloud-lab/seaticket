@@ -171,7 +171,7 @@ const SkillDetailDialog = ({ projectUuid, pageType, skillName, mode, isProjectAd
               <>
                 <IconButton
                   className="skill-detail-dialog-edit-button"
-                  icon="rename"
+                  icon="edit"
                   ref={editButtonRef}
                   onClick={onEdit}
                   aria-label={gettext('Edit skill')}
@@ -222,11 +222,6 @@ const SkillDetailDialog = ({ projectUuid, pageType, skillName, mode, isProjectAd
             </div>
           ) : (
             <div className="skill-detail-dialog-content">
-              {!isNew && (
-                <div className="skill-detail-dialog-subtitle mb-2">
-                  {readonly ? gettext('Builtin skill (content is read-only)') : gettext('Custom skill')}
-                </div>
-              )}
               <div className="skill-detail-dialog-field skill-detail-dialog-name-field">
                 <Label className="skill-detail-dialog-label mb-3" htmlFor="skill-name-input">{gettext('Name')}</Label>
                 <Input
@@ -286,7 +281,7 @@ const SkillDetailDialog = ({ projectUuid, pageType, skillName, mode, isProjectAd
                 <Input
                   id="skill-body-input"
                   type="textarea"
-                  className="form-control skill-detail-dialog-content-input mb-3"
+                  className="form-control skill-detail-dialog-content-input"
                   value={body}
                   onChange={(e) => {
                     setBody(e.target.value);

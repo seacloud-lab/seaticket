@@ -25,11 +25,11 @@ function Switch({ onChange, checked, placeholder, disabled, className, textPosit
             name="custom-switch-checkbox"
             disabled={disabled}
           />
-          {textPosition === 'left' &&
+          {placeholder && textPosition === 'left' &&
             <span className="custom-switch-description text-truncate" style={{ fontWeight }}>{placeholder}</span>
           }
           <span className={classnames('custom-switch-indicator', { 'disabled': disabled })}></span>
-          {textPosition === 'right' &&
+          {placeholder && textPosition === 'right' &&
             <span className="custom-switch-description text-truncate" style={{ fontWeight }}>{placeholder}</span>
           }
         </label>
