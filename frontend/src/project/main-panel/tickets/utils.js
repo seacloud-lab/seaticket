@@ -34,6 +34,19 @@ export const generatorTicketCopyLinkTool = ({ ticket, workspaceID, projectName }
   };
 };
 
+const generatorCreateTaskTools = ({ ticket, connections, createTask }) => {
+  if (!ticket || !createTask || !Array.isArray(connections)) return [];
+  return [
+    { type: CONNECTION_TYPE.GENERAL_TASK, label: gettext('Create task'), key: 'create_task' },
+    { type: CONNECTION_TYPE.JIRA_ISSUE, label: gettext('Create Jira task'), key: 'create_jira_task' },
+    { type: CONNECTION_TYPE.LINEAR, label: gettext('Create Linear task'), key: 'create_linear_task' },
+  ].filter(item => connections.some(connection => connection.type === item.type)).map(item => ({
+    label: item.label,
+    key: item.key,
+    callback: () => createTask(ticket, item.type),
+  }));
+};
+
 export const generatorRowsMoreTool = ({
   rows,
   columns,
@@ -86,12 +99,8 @@ export const generatorRowsMoreTool = ({
     });
   }
 
-  if (rows.length === 1 && createTask && Array.isArray(connections) && connections.some(c => c.type === CONNECTION_TYPE.GENERAL_TASK)) {
-    children.push({
-      label: gettext('Create task'),
-      key: 'create_task',
-      callback: () => createTask(rows[0]),
-    });
+  if (rows.length === 1) {
+    children.push(...generatorCreateTaskTools({ ticket: rows[0], connections, createTask }));
   }
 
   if (context.canModifyRows()) {
@@ -311,12 +320,8 @@ export const generatorTicketsContextMenuOptions = ({
           callback: () => createKnowledgeBaseRecord(rows[0]),
         });
       }
-      if (rows.length === 1 && createTask && Array.isArray(connections) && connections.some(c => c.type === CONNECTION_TYPE.GENERAL_TASK)) {
-        list.push({
-          label: gettext('Create task'),
-          key: 'create_task',
-          callback: () => createTask(rows[0]),
-        });
+      if (rows.length === 1) {
+        list.push(...generatorCreateTaskTools({ ticket: rows[0], connections, createTask }));
       }
       list.push('Divider');
     }
@@ -401,13 +406,7 @@ export const generatorTicketsContextMenuOptions = ({
       callback: () => createKnowledgeBaseRecord(row),
     });
   }
-  if (createTask && Array.isArray(connections) && connections.some(c => c.type === CONNECTION_TYPE.GENERAL_TASK)) {
-    list.push({
-      label: gettext('Create task'),
-      key: 'create_task',
-      callback: () => createTask(row),
-    });
-  }
+  list.push(...generatorCreateTaskTools({ ticket: row, connections, createTask }));
   list.push('Divider');
 
   list.push({

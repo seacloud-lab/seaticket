@@ -1071,6 +1071,18 @@ class ProjectConnectionOauth(models.Model):
         db_table = 'project_connection_oauth'
         unique_together = [['project_uuid', 'type', 'connection_id']]
 
+    def save_refreshed_token(self, token):
+        """Store a rotated token the moment its provider issues it.
+
+        Atlassian and Linear invalidate the previous refresh token on every
+        refresh, so waiting for the surrounding API call to succeed loses the
+        new one whenever that call fails and leaves a dead refresh token here.
+        """
+        self.access_token = token.get('access_token')
+        self.refresh_token = token.get('refresh_token')
+        self.expires_at = ProjectConnectionOauth.objects._normalize_expires_at(token.get('expires_at'))
+        self.save(update_fields=['access_token', 'refresh_token', 'expires_at'])
+
 
 # AI Usage Statistics Models
 

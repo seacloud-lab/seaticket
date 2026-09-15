@@ -10,7 +10,8 @@ logger = logging.getLogger(__name__)
 
 
 class ConfluenceAPI:
-    def __init__(self, access_token, refresh_token=None, expires_at=None, timeout=60):
+    def __init__(self, access_token, refresh_token=None, expires_at=None, timeout=60,
+                 on_token_refreshed=None):
         self.access_token = access_token
         self.refresh_token = refresh_token
         self.expires_at = expires_at
@@ -18,6 +19,9 @@ class ConfluenceAPI:
         self.client_secret = getattr(settings, 'CONFLUENCE_CLIENT_SECRET', '')
         self.token_url = 'https://auth.atlassian.com/oauth/token'
         self.timeout = timeout
+        # Called with the new token right after a refresh, so a rotated refresh
+        # token survives a failure of the request that triggered the refresh.
+        self.on_token_refreshed = on_token_refreshed
 
     def _headers(self):
         return {
@@ -62,11 +66,17 @@ class ConfluenceAPI:
         self.expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
             seconds=max(int(expires_in) - 60, 0)
         )
-        return {
+        token = {
             'access_token': self.access_token,
             'refresh_token': self.refresh_token,
             'expires_at': self.expires_at,
         }
+        if self.on_token_refreshed:
+            try:
+                self.on_token_refreshed(token)
+            except Exception as e:
+                logger.error('Failed to store the refreshed Confluence token: %s', e)
+        return token
 
     def list_accessible_resources(self):
         """Fetch all Atlassian cloud sites accessible by this token.

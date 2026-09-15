@@ -156,6 +156,84 @@ def build_general_task_row_data(task, sync_time=None):
     }
 
 
+def _to_utc_iso(value):
+    if not value:
+        return None
+    if isinstance(value, datetime.datetime):
+        parsed = value
+    else:
+        parsed = datetime.datetime.fromisoformat(str(value).replace('Z', '+00:00'))
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=datetime.UTC)
+    return parsed.astimezone(datetime.UTC).isoformat()
+
+
+def _normalize_jira_text(value):
+    if not value:
+        return ''
+    if isinstance(value, str):
+        return value
+    if isinstance(value, list):
+        return '\n'.join(filter(None, (_normalize_jira_text(item) for item in value)))
+    if not isinstance(value, dict):
+        return str(value)
+    text = value.get('text') or ''
+    children = _normalize_jira_text(value.get('content') or [])
+    if text and children:
+        return f'{text}\n{children}'
+    return text or children
+
+
+def build_jira_issue_row_data(issue, sync_time=None):
+    fields = issue.get('fields') or {}
+    now = sync_time or datetime.datetime.now(datetime.UTC).isoformat()
+    assignee = (fields.get('assignee') or {}).get('accountId')
+    return {
+        SchemaTables.JIRA_ISSUES.column.issue_id.name: int(issue.get('id')),
+        SchemaTables.JIRA_ISSUES.column.issue_key.name: issue.get('key'),
+        SchemaTables.JIRA_ISSUES.column.title.name: fields.get('summary') or '',
+        SchemaTables.JIRA_ISSUES.column.content.name: _normalize_jira_text(fields.get('description')),
+        SchemaTables.JIRA_ISSUES.column.status.name: (fields.get('status') or {}).get('name'),
+        SchemaTables.JIRA_ISSUES.column.priority.name: (fields.get('priority') or {}).get('name'),
+        SchemaTables.JIRA_ISSUES.column.assignees.name: [assignee] if assignee else [],
+        SchemaTables.JIRA_ISSUES.column.author.name: (fields.get('creator') or {}).get('accountId'),
+        SchemaTables.JIRA_ISSUES.column.issue_type.name: (fields.get('issuetype') or {}).get('name'),
+        SchemaTables.JIRA_ISSUES.column.due_date.name: fields.get('duedate'),
+        SchemaTables.JIRA_ISSUES.column.created_time.name: _to_utc_iso(fields.get('created')),
+        SchemaTables.JIRA_ISSUES.column.modified_time.name: _to_utc_iso(fields.get('updated')),
+        SchemaTables.JIRA_ISSUES.column.sync_time.name: now,
+        SchemaTables.JIRA_ISSUES.column.record_modified_time.name: now,
+        SchemaTables.JIRA_ISSUES.column.deleted.name: False,
+    }
+
+
+def build_linear_issue_row_data(issue, sync_time=None):
+    now = sync_time or datetime.datetime.now(datetime.UTC).isoformat()
+    assignee_name = (issue.get('assignee') or {}).get('name')
+    labels = [
+        item.get('name') for item in ((issue.get('labels') or {}).get('nodes') or [])
+        if item.get('name')
+    ]
+    return {
+        SchemaTables.LINEAR_ISSUES.column.issue_id.name: issue.get('id'),
+        SchemaTables.LINEAR_ISSUES.column.identifier.name: issue.get('identifier'),
+        SchemaTables.LINEAR_ISSUES.column.title.name: issue.get('title') or '',
+        SchemaTables.LINEAR_ISSUES.column.content.name: issue.get('description') or '',
+        SchemaTables.LINEAR_ISSUES.column.state.name: (issue.get('state') or {}).get('name'),
+        SchemaTables.LINEAR_ISSUES.column.author.name: (issue.get('creator') or {}).get('name'),
+        SchemaTables.LINEAR_ISSUES.column.labels.name: labels or None,
+        SchemaTables.LINEAR_ISSUES.column.assignees.name: json.dumps([assignee_name] if assignee_name else []),
+        SchemaTables.LINEAR_ISSUES.column.due_date.name: issue.get('dueDate'),
+        SchemaTables.LINEAR_ISSUES.column.sync_time.name: now,
+        SchemaTables.LINEAR_ISSUES.column.created_time.name: _to_utc_iso(issue.get('createdAt')),
+        SchemaTables.LINEAR_ISSUES.column.modified_time.name: _to_utc_iso(issue.get('updatedAt')),
+        SchemaTables.LINEAR_ISSUES.column.record_modified_time.name: now,
+        SchemaTables.LINEAR_ISSUES.column.closed_time.name: _to_utc_iso(issue.get('completedAt')),
+        SchemaTables.LINEAR_ISSUES.column.priority.name: issue.get('priority'),
+        SchemaTables.LINEAR_ISSUES.column.deleted.name: False,
+    }
+
+
 def get_current_table_metadata(tables, table_name):
     for table in tables:
         if table['name'] == table_name:

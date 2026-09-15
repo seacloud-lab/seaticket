@@ -6,6 +6,7 @@ import ResourceDetailsDialog from '@/project/components/resource-details-dialog'
 import { EVENT_BUS_TYPE as GLOBAL_EVENT_BUS_TYPE } from '@/project/constants';
 import { useData, useTags } from '@/project/hooks';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
+import { CONNECTION_TYPE } from '@/project/main-panel/connections/constants';
 import { useConnections } from '@/project/main-panel/connections/hooks';
 import { getTableName } from '@/project/main-panel/connections/utils';
 import SeaMetadata from '@/sea-metadata';
@@ -113,6 +114,7 @@ const Tickets = ({
   const [isShowTicketDetailsDialog, setIsShowTicketDetailsDialog] = useState(false);
   const [isShowCreateKBRecordDialog, setIsShowCreateKBRecordDialog] = useState(false);
   const [isShowCreateTaskDialog, setIsShowCreateTaskDialog] = useState(false);
+  const [createTaskConnectionType, setCreateTaskConnectionType] = useState(CONNECTION_TYPE.GENERAL_TASK);
 
   const handleExpandRow = useCallback((ticket) => {
     setCurrentTicket(ticket);
@@ -282,9 +284,10 @@ const Tickets = ({
     setIsShowCreateKBRecordDialog(true);
   }, []);
 
-  const createTask = useCallback((ticket) => {
+  const createTask = useCallback((ticket, connectionType = CONNECTION_TYPE.GENERAL_TASK) => {
     if (!ticket) return;
     setCurrentTicket(ticket);
+    setCreateTaskConnectionType(connectionType);
     setIsShowCreateTaskDialog(true);
   }, []);
 
@@ -477,6 +480,7 @@ const Tickets = ({
           workspaceID={workspaceID}
           projectName={projectName}
           ticket={convertTicketToTask(currentTicket, allColumns.current)}
+          connectionType={createTaskConnectionType}
           onClose={() => {
             setIsShowCreateTaskDialog(false);
             if (isShowTicketDetailsDialog) return;

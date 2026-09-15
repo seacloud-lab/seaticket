@@ -1113,11 +1113,17 @@ def compare_ticket_changes(old_ticket, new_data):
 
     return changes
 
-def record_create_task_activities(seadb_api, project_uuid, connection_id, task, creator = 'system'):
+def record_create_task_activities(
+    seadb_api, project_uuid, connection_id, task, creator='system',
+    connection_type=ConnectionType.GENERAL_TASK.value,
+):
     if not task:
         return []
     now = datetime.now(timezone.utc).isoformat()
-    event_type = 'general_task_added'
+    event_type = {
+        ConnectionType.JIRA_ISSUE.value: 'jira_issue_added',
+        ConnectionType.LINEAR.value: 'linear_issue_added',
+    }.get(connection_type, 'general_task_added')
     
     task_id = task.get('_pk', 0)
     task_title = task.get('title', '')
@@ -1130,6 +1136,7 @@ def record_create_task_activities(seadb_api, project_uuid, connection_id, task, 
         'activity_type': event_type,
         'detail': json.dumps({
             'connection_id': connection_id,
+            'connection_type': connection_type,
             'record_id': task_id,
             'task_title': task_title,
             'old_value': old_value,
@@ -1148,6 +1155,7 @@ def record_create_task_activities(seadb_api, project_uuid, connection_id, task, 
         activity = {
             'id': pks[i] if i < len(pks) else None,
             'connection_id': connection_id,
+            'connection_type': connection_type,
             'record_id': task_id,
             'ticket_id': linked_ticket,
             'activity_type': event_type,

@@ -161,7 +161,8 @@ class ProjectLinearTeams(APIView):
 
         linear_api = LinearAPI(
             access_token=linear_oauth.access_token,
-            refresh_token=linear_oauth.refresh_token
+            refresh_token=linear_oauth.refresh_token,
+            on_token_refreshed=linear_oauth.save_refreshed_token,
         )
 
         try:
@@ -202,6 +203,7 @@ class ProjectConfluenceWorkspaces(APIView):
             access_token=confluence_oauth.access_token,
             refresh_token=confluence_oauth.refresh_token,
             expires_at=confluence_oauth.expires_at,
+            on_token_refreshed=confluence_oauth.save_refreshed_token,
         )
 
         try:
@@ -210,11 +212,6 @@ class ProjectConfluenceWorkspaces(APIView):
             logger.error('Confluence API error fetching workspaces for project %s: %s', project_uuid, e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to fetch Confluence workspaces.')
 
-        if confluence_api.access_token != confluence_oauth.access_token:
-            ProjectConnectionOauth.objects.upsert_token(
-                project_uuid, ConnectionType.CONFLUENCE.value,
-                confluence_api.access_token, confluence_api.expires_at, confluence_api.refresh_token
-            )
         workspaces = []
         for resource in resources:
             scopes = resource.get('scopes') or []
@@ -268,6 +265,7 @@ class ProjectConfluenceSpaces(APIView):
             access_token=confluence_oauth.access_token,
             refresh_token=confluence_oauth.refresh_token,
             expires_at=confluence_oauth.expires_at,
+            on_token_refreshed=confluence_oauth.save_refreshed_token,
         )
 
         try:
@@ -275,12 +273,6 @@ class ProjectConfluenceSpaces(APIView):
         except Exception as e:
             logger.error('Confluence API error fetching spaces for project %s workspace %s: %s', project_uuid, workspace_id, e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to fetch Confluence spaces.')
-
-        if confluence_api.access_token != confluence_oauth.access_token:
-            ProjectConnectionOauth.objects.upsert_token(
-                project_uuid, ConnectionType.CONFLUENCE.value,
-                confluence_api.access_token, confluence_api.expires_at, confluence_api.refresh_token
-            )
 
         all_spaces.sort(key=lambda item: item['name'].lower())
         return Response({'spaces': all_spaces})
@@ -367,6 +359,7 @@ class ProjectJiraSites(APIView):
             access_token=jira_oauth.access_token,
             refresh_token=jira_oauth.refresh_token,
             expires_at=jira_oauth.expires_at,
+            on_token_refreshed=jira_oauth.save_refreshed_token,
         )
 
         try:
@@ -374,12 +367,6 @@ class ProjectJiraSites(APIView):
         except Exception as e:
             logger.error('Jira API error fetching sites for project %s: %s', project_uuid, e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to fetch Jira sites.')
-
-        if jira_api.access_token != jira_oauth.access_token:
-            ProjectConnectionOauth.objects.upsert_token(
-                project_uuid, ConnectionType.JIRA_ISSUE.value,
-                jira_api.access_token, jira_api.expires_at, jira_api.refresh_token
-            )
 
         sites = []
         for resource in resources:
@@ -430,6 +417,7 @@ class ProjectJiraProjects(APIView):
             access_token=jira_oauth.access_token,
             refresh_token=jira_oauth.refresh_token,
             expires_at=jira_oauth.expires_at,
+            on_token_refreshed=jira_oauth.save_refreshed_token,
         )
 
         try:
@@ -437,11 +425,5 @@ class ProjectJiraProjects(APIView):
         except Exception as e:
             logger.error('Jira API error fetching projects for project %s: %s', project_uuid, e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Failed to fetch Jira projects.')
-
-        if jira_api.access_token != jira_oauth.access_token:
-            ProjectConnectionOauth.objects.upsert_token(
-                project_uuid, ConnectionType.JIRA_ISSUE.value,
-                jira_api.access_token, jira_api.expires_at, jira_api.refresh_token
-            )
 
         return Response({'projects': projects_list})
