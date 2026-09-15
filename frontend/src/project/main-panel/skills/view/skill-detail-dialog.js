@@ -223,7 +223,7 @@ const SkillDetailDialog = ({ projectUuid, pageType, skillName, mode, isProjectAd
           ) : (
             <div className="skill-detail-dialog-content">
               <div className="skill-detail-dialog-field skill-detail-dialog-name-field">
-                <Label className="skill-detail-dialog-label mb-3" htmlFor="skill-name-input">{gettext('Name')}</Label>
+                <Label className="skill-detail-dialog-label" htmlFor="skill-name-input">{gettext('Name')}</Label>
                 <Input
                   id="skill-name-input"
                   type="text"
@@ -260,7 +260,7 @@ const SkillDetailDialog = ({ projectUuid, pageType, skillName, mode, isProjectAd
                 />
               </div>
               <div className="skill-detail-dialog-field skill-detail-dialog-description-field mb-3">
-                <Label className="skill-detail-dialog-label mb-3" htmlFor="skill-description-input">{gettext('Description')}</Label>
+                <Label className="skill-detail-dialog-label" htmlFor="skill-description-input">{gettext('Description')}</Label>
                 <Input
                   id="skill-description-input"
                   type="textarea"
@@ -277,7 +277,7 @@ const SkillDetailDialog = ({ projectUuid, pageType, skillName, mode, isProjectAd
                 {formErrors.description && <div className="error">{formErrors.description}</div>}
               </div>
               <div className="skill-detail-dialog-field skill-detail-dialog-instructions-field">
-                <Label className="skill-detail-dialog-label mb-3" htmlFor="skill-body-input">{gettext('Instructions (Markdown)')}</Label>
+                <Label className="skill-detail-dialog-label" htmlFor="skill-body-input">{gettext('Instructions (Markdown)')}</Label>
                 <Input
                   id="skill-body-input"
                   type="textarea"

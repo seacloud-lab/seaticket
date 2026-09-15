@@ -82,8 +82,7 @@
 }
 
 .skill-detail-dialog .skill-detail-dialog-label {
-  display: block;
-  line-height: normal;
+  line-height: 22px;
 }
 
 .skill-detail-dialog .skill-detail-dialog-hint {
