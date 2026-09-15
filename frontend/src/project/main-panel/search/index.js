@@ -186,9 +186,8 @@ const Search = ({ title }) => {
       <TopBar>
         <div className="w-100 text-truncate">{title}</div>
       </TopBar>
-      <div className="seaqa-project-search">
+      <div className="seaqa-project-search pt-3 px-4 d-flex flex-column align-items-center overflow-hidden w-100 flex-1">
         <GlobalSearchInput
-          className="mb-1"
           autoFocus={true}
           isClearable={true}
           size={38}
@@ -197,11 +196,12 @@ const Search = ({ title }) => {
           onClear={onClear}
           storeKey={SEARCH_STORE_KEY}
         />
-        <div className="search-filters-container" style={{ justifyContent: 'space-between' }}>
+        <div className="search-filters-container w-100 d-flex align-items-center justify-content-between">
           <HideConnectionSetter onConnectionIDsChange={handleConnectionIDsChange} connections={connections} />
           <FilterByDate date={filterDate} onChange={onFilterDateChange} />
-          <div className="search-filter ml-auto">
+          <div className="search-filter ml-auto mr-0">
             <Switch
+              className="d-flex"
               checked={semanticEnabled}
               onChange={toggleSemantic}
               placeholder={gettext('Semantic search')}

@@ -110,7 +110,7 @@ const HideConnectionPopover = ({ hidePopover, onChange, readOnly, target, placem
       boundariesElement={document.body}
     >
       <div ref={popoverRef} onClick={onPopoverInsideClick} className="seaqa-hide-container" style={{ maxHeight: window.innerHeight - 100 }}>
-        <div className="seaqa-hide-search-container">
+        <div className="seaqa-hide-search-container px-2 w-100">
           <SearchInput
             placeholder={gettext('Search')}
             onKeyDown={onKeyDown}
@@ -126,7 +126,7 @@ const HideConnectionPopover = ({ hidePopover, onChange, readOnly, target, placem
           onChange={hideConnection}
         />
         {!readOnly && !searchValue && (
-          <div className="seaqa-hide-connections-operations">
+          <div className="seaqa-hide-connections-operations px-2 mt-2 w-100 d-flex justify-content-between gap-2">
             <div
               className="sea-metadata-hide-connections-operation px-2"
               onClick={hideAll}

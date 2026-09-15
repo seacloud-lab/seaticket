@@ -83,11 +83,11 @@ const HiddenConnections = ({ readOnly, connections, hiddenConnectionIDs, onChang
               />
             );
           })}
-          <div className="hide-list-container-divider pb-2 mb-1 ml-2 mr-2"></div>
         </div>
       )}
       {issueConnections.length > 0 && (
         <div className="hide-list-container">
+          <div className="hide-list-container-divider pb-2 mb-1 ml-2 mr-2"></div>
           <div className="hide-list-title hide-list-title-row">
             <span className="hide-list-title-text">{window.gettext('Issues')}</span>
             <IconButton
@@ -109,11 +109,11 @@ const HiddenConnections = ({ readOnly, connections, hiddenConnectionIDs, onChang
               />
             );
           })}
-          <div className="hide-list-container-divider pb-2 mb-1 ml-2 mr-2"></div>
         </div>
       )}
       {taskConnections.length > 0 && (
         <div className="hide-list-container">
+          <div className="hide-list-container-divider pb-2 mb-1 ml-2 mr-2"></div>
           <div className="hide-list-title hide-list-title-row">
             <span className="hide-list-title-text">{window.gettext('Task')}</span>
             <IconButton
@@ -135,7 +135,6 @@ const HiddenConnections = ({ readOnly, connections, hiddenConnectionIDs, onChang
               />
             );
           })}
-          <div className="hide-list-container-divider pb-2 mb-1 ml-2 mr-2"></div>
         </div>
       )}
     </div>

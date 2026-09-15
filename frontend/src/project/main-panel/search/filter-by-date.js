@@ -142,7 +142,7 @@ const FilterByDate = ({ date, onChange }) => {
           className={classNames('search-filter-toggle', { 'active': isOpen && value, 'highlighted': value })}
           onClick={toggle}
         >
-          <div className="filter-label" style={{ maxWidth: 300 }} title={gettext('Last modified time')}>
+          <div className="filter-label mr-1 text-truncate d-inline-block" style={{ maxWidth: 300 }} title={gettext('Last modified time')}>
             {gettext('Last modified time')}
           </div>
           <Icon symbol="arrow-down"/>
