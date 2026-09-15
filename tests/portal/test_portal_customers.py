@@ -1,7 +1,9 @@
 import json
+from datetime import datetime, timezone
 from unittest.mock import Mock, patch
 
 import pytest
+import pytz
 from django.contrib.auth.models import AnonymousUser
 
 from seahub.portal.apis import PortalCustomerMemberView, PortalCustomerMembersView, PortalCustomerView, PortalCustomersView, PortalExternalInvitationsView, \
@@ -27,26 +29,55 @@ def _set_external_session(request, project_uuid, username):
 class TestPortalCustomersView:
 
     def test_create_and_list_customer(self, factory, project_creator, real_project):
+        project_uuid = str(real_project.uuid)
+        created_at = datetime(2026, 9, 15, 1, 2, 3, tzinfo=timezone.utc)
+        updated_at = datetime(2026, 9, 15, 4, 5, 6, tzinfo=timezone.utc)
+        expected_created_at = '2026-09-15T01:02:03+00:00'
+        expected_updated_at = '2026-09-15T04:05:06+00:00'
         request = factory.post(
-            f'/api/v1/portal/{real_project.uuid}/customers/',
+            f'/api/v1/portal/{project_uuid}/customers/',
             data={'name': 'Acme'},
             format='json',
         )
         request.user = project_creator
 
-        response = PortalCustomersView.as_view()(request, project_uuid=str(real_project.uuid))
+        with patch('django.db.models.fields.timezone.now', return_value=created_at), \
+                patch('seahub.utils.timeutils.current_timezone', pytz.timezone('Asia/Shanghai')):
+            response = PortalCustomersView.as_view()(request, project_uuid=project_uuid)
 
         assert response.status_code == 201
         assert response.data['customer']['name'] == 'Acme'
+        assert response.data['customer']['created_at'] == expected_created_at
+        assert response.data['customer']['updated_at'] == expected_created_at
         assert 'code' not in response.data['customer']
 
-        list_request = factory.get(f'/api/v1/portal/{real_project.uuid}/customers/')
+        list_request = factory.get(f'/api/v1/portal/{project_uuid}/customers/')
         list_request.user = project_creator
-        list_response = PortalCustomersView.as_view()(list_request, project_uuid=str(real_project.uuid))
+        list_response = PortalCustomersView.as_view()(list_request, project_uuid=project_uuid)
 
         assert list_response.status_code == 200
         assert list_response.data['customers'][0]['name'] == 'Acme'
+        assert list_response.data['customers'][0]['created_at'] == expected_created_at
+        assert list_response.data['customers'][0]['updated_at'] == expected_created_at
         assert 'member_count' not in list_response.data['customers'][0]
+
+        update_request = factory.put(
+            f'/api/v1/portal/{project_uuid}/customers/{response.data["customer"]["id"]}/',
+            data={'name': 'Acme Updated'},
+            format='json',
+        )
+        update_request.user = project_creator
+        with patch('django.db.models.fields.timezone.now', return_value=updated_at), \
+                patch('seahub.utils.timeutils.current_timezone', pytz.timezone('Asia/Shanghai')):
+            update_response = PortalCustomerView.as_view()(
+                update_request,
+                project_uuid=project_uuid,
+                customer_id=response.data['customer']['id'],
+            )
+
+        assert update_response.status_code == 200
+        assert update_response.data['customer']['created_at'] == expected_created_at
+        assert update_response.data['customer']['updated_at'] == expected_updated_at
 
     def test_create_customer_without_members(self, factory, project_creator, real_project):
         project_uuid = str(real_project.uuid)
