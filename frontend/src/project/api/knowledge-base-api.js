@@ -64,7 +64,7 @@ class KnowledgeBaseAPI {
     let params = {
       view_id,
       start,
-      limit
+      limit,
     };
     return this.req.get(url, { params: params });
   }

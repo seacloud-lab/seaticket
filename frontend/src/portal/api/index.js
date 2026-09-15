@@ -221,6 +221,11 @@ class PortalAPI {
     return this.req.get(url);
   }
 
+  listFeaturedArticles(projectUuid, { start = 0, limit = 100 } = {}) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/featured-articles/?start=' + start + '&limit=' + limit;
+    return this.req.get(url);
+  }
+
   getKBRecord(projectUuid, recordId) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/knowledge-bases/' + recordId + '/';
     return this.req.get(url);

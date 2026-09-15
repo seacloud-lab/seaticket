@@ -15,6 +15,8 @@ export const PortalSettingsProvider = ({
 }) => {
   const [logo, setLogo] = useState(propsLogo);
   const [name, setName] = useState(propsName);
+  const [featuredArticles, setFeaturedArticles] = useState(null);
+  const [isFeaturedArticlesLoading, setIsFeaturedArticlesLoading] = useState(true);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [isUpdatingNameOrLogo, setIsUpdatingNameOrLogo] = useState(false);
 
@@ -75,6 +77,17 @@ export const PortalSettingsProvider = ({
     }
   }, [logo]);
 
+  useEffect(() => {
+    setIsFeaturedArticlesLoading(true);
+    portalAPI.listFeaturedArticles(projectUuid).then(res => {
+      setFeaturedArticles(res.data || { columns: [], records: [] });
+    }).catch(() => {
+      setFeaturedArticles({ columns: [], records: [] });
+    }).finally(() => {
+      setIsFeaturedArticlesLoading(false);
+    });
+  }, [projectUuid]);
+
   return (
     <PortalSettingsContext.Provider value={{
       logo,
@@ -83,6 +96,8 @@ export const PortalSettingsProvider = ({
       isUpdatingNameOrLogo,
       updateNameOrLogo,
       updateHomeSetting,
+      featuredArticles,
+      isFeaturedArticlesLoading,
     }}>
       {children}
     </PortalSettingsContext.Provider>

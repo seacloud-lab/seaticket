@@ -197,7 +197,6 @@ def get_portal_settings(project):
         'enable_portal': bool(portal_settings.get('enable_portal', False)),
         'allow_anonymous': bool(portal_settings.get('allow_anonymous', False)),
         'enable_password_protection': bool(portal_settings.get('enable_password_protection', False)),
-        'show_kb_in_portal': bool(portal_settings.get('show_knowledge_base', False)),
         'password': portal_settings.get('password'),
         'streaming_response': streaming_response,
         'portal_name': portal_settings.get('portal_name', ''),

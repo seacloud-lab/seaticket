@@ -46,6 +46,7 @@ const ResourceDetailsDialog = ({
   createMoreOptions,
   getTicket,
   getKB,
+  isSupportPortal = false,
   getIssue = (projectUuid, issueID) => portalAPI.getPortalIssue(projectUuid, issueID),
 }) => {
   const [resourceDetails, setResourceDetails] = useState(null);
@@ -172,7 +173,7 @@ const ResourceDetailsDialog = ({
             </div>
           )}
           <div className="text-truncate" title={title}>{title}</div>
-          {internalNetworkAddress && (
+          {!isSupportPortal && internalNetworkAddress && (
             <IconButton
               className="open-in-new-tab-btn"
               icon="view-issue"
@@ -180,7 +181,7 @@ const ResourceDetailsDialog = ({
               onClick={() => window.open(internalNetworkAddress, '_blank', 'noopener,noreferrer')}
             />
           )}
-          {url && (
+          {!isSupportPortal && url && (
             <IconButton
               className="open-in-new-tab-btn"
               icon="open-in-new-tab"
@@ -188,7 +189,7 @@ const ResourceDetailsDialog = ({
               onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
             />
           )}
-          {canCopyRecordLink && internalNetworkAddress && (
+          {!isSupportPortal && canCopyRecordLink && internalNetworkAddress && (
             <IconButton
               className="open-in-new-tab-btn"
               icon="copy-link"

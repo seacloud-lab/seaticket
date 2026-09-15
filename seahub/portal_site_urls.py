@@ -6,8 +6,7 @@ from seahub.portal.views import portal_anonymous_validate, portal_external_invit
     portal_accounts_login_view, portal_login_view, portal_preview_view, portal_view
 from seahub.portal.apis import PortalCustomDomainTLSAskView, PortalExternalLoginSendCodeView, PortalExternalLoginVerifyCodeView, \
     PortalIssueCommentView, PortalIssueCommentsView, PortalIssueMetadataView, PortalIssueView, PortalIssuesView, PortalKnowledgeBaseRecordView, \
-    PortalKnowledgeBaseRecordsView, PortalKnowledgeBaseViewsView, PortalLogoView, PortalBackgroundImageView, PortalMyIssuesView, PortalTagsView, PortalUserListView, \
-    PortalTeamIssuesView
+    PortalKnowledgeBaseRecordsView, PortalKnowledgeBaseFeaturedArticlesView, PortalKnowledgeBaseViewsView, PortalLogoView, PortalBackgroundImageView, PortalMyIssuesView, PortalTagsView, PortalUserListView, PortalTeamIssuesView
 
 from seahub.portal.chat.apis import PortalChatMessagesView, PortalChatSessionTitleView, PortalChatSessionsView, PortalChatSessionView, \
     PortalChatView, PortalChatImageView
@@ -42,6 +41,7 @@ urlpatterns = [
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/tags/$', PortalTagsView.as_view(), name='api-v1-portal-tags'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-base-views/$', PortalKnowledgeBaseViewsView.as_view(), name='api-v1-portal-knowledge-base-views'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-bases/$', PortalKnowledgeBaseRecordsView.as_view(), name='api-v1-portal-knowledge-bases'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/featured-articles/$', PortalKnowledgeBaseFeaturedArticlesView.as_view(), name='api-v1-portal-featured-articles'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-bases/(?P<knowledge_id>\d+)/$', PortalKnowledgeBaseRecordView.as_view(), name='api-v1-portal-knowledge-base-record'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/user-list/$', PortalUserListView.as_view(), name='api-v1-portal-user-list'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/issue/metadata/$', PortalIssueMetadataView.as_view(), name='api-v1-portal-issue-metadata'),

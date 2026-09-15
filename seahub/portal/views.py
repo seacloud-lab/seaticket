@@ -69,7 +69,6 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
         return render_error(request, _('This project does not exist'))
     allow_anonymous = portal_settings['allow_anonymous']
     enable_password_protection = portal_settings['enable_password_protection']
-    show_kb_in_portal = portal_settings['show_kb_in_portal']
     enable_portal = portal_settings['enable_portal']
     streaming_response = portal_settings['streaming_response']
     
@@ -132,7 +131,6 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
         'portal': {
             'allow_anonymous': allow_anonymous,
             'enable_password_protection': enable_password_protection,
-            'show_kb_in_portal': show_kb_in_portal,
             'streaming_response': streaming_response,
             'portal_name': portal_settings.get('portal_name', ''),
             'portal_logo': portal_settings.get('portal_logo', ''),
@@ -318,7 +316,6 @@ def portal_edit_view(request, project_uuid, page=None, children_id=None, session
         return render_error(request, _('Permission denied'))
 
     streaming_response = portal_settings['streaming_response']
-    show_kb_in_portal = portal_settings['show_kb_in_portal']
     allow_anonymous = portal_settings['allow_anonymous']
     enable_password_protection = portal_settings['enable_password_protection']
     enable_portal = portal_settings['enable_portal']
@@ -342,7 +339,6 @@ def portal_edit_view(request, project_uuid, page=None, children_id=None, session
         'is_external_user': False,
         'can_access_issues': True,
         'portal': {
-            'show_kb_in_portal': show_kb_in_portal,
             'streaming_response': streaming_response,
             'portal_name': portal_settings.get('portal_name', ''),
             'portal_logo': portal_settings.get('portal_logo', ''),

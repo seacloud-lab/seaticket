@@ -97,6 +97,7 @@ class KnowledgeBasesAPIView(APIView):
                 SchemaTables.KNOWLEDGE_BASE.column.last_modifier.name: username,
                 SchemaTables.KNOWLEDGE_BASE.column.modified_time.name: now_datetime,
                 SchemaTables.KNOWLEDGE_BASE.column.deleted.name: False,
+                SchemaTables.KNOWLEDGE_BASE.column.featured.name: False,
              }
             res = seadb_api.insert_rows(project_uuid, SchemaTables.KNOWLEDGE_BASE.table_name(), [row])
             pks = res.get('pks', [])
@@ -307,6 +308,13 @@ class KnowledgeBaseAPIView(APIView):
                     error_msg = 'Upload files failed.'
                     return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
             row[SchemaTables.KNOWLEDGE_BASE.column.content.name] = content_text
+
+        if 'featured' in request.data:
+            featured = request.data.get('featured')
+            if not isinstance(featured, bool):
+                error_msg = 'featured invalid.'
+                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            row[SchemaTables.KNOWLEDGE_BASE.column.featured.name] = featured
 
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:

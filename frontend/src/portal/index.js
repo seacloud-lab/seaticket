@@ -22,7 +22,7 @@ import SidePanel from './side-panel';
 import './index.css';
 
 const {
-  projectUuid, isEditMode, showKBInPortal, needPassword, csrfToken, projectName,
+  projectUuid, isEditMode, needPassword, csrfToken, projectName,
   isAnonymous, workspaceID, isExternalUser, isPreviewUser, portalName, portalLogo,
   canAccessIssues,
 } = window.app.pageOptions;
@@ -35,7 +35,6 @@ const initSettings = {
 const Portal = () => {
   const [isLoading, setLoading] = useState(true);
   const [activePage, setActivePage] = useState(PORTAL_PAGE.HOME);
-  const [enableKB, setEnableKB] = useState(showKBInPortal === true);
   const APIRef = useRef(portalAPI);
   const [needPasswordState] = useState(!!needPassword);
   const [passwordInput, setPasswordInput] = useState('');
@@ -56,10 +55,10 @@ const Portal = () => {
       history.replaceState(null, null, buildPortalPath(PORTAL_PAGE.HOME));
       return;
     }
-    if (!enableKB && page === PORTAL_PAGE.KNOWLEDGE_BASE) return;
+    if (page === PORTAL_PAGE.KNOWLEDGE_BASE) return;
     setActivePage(targetPage);
     history.replaceState(null, null, buildPortalPath(targetPage));
-  }, [enableKB]);
+  }, []);
 
   const onHomeChatSend = useCallback((query) => {
     setActivePage(PORTAL_PAGE.CHAT);
@@ -79,7 +78,7 @@ const Portal = () => {
         } else if (!isExternalUser && pageKey === PORTAL_PAGE.TEAM_ISSUES) {
           setActivePage(PORTAL_PAGE.MY_ISSUES);
           history.replaceState(null, null, buildPortalPath(PORTAL_PAGE.MY_ISSUES));
-        } else if (!enableKB && pageKey === PORTAL_PAGE.KNOWLEDGE_BASE) {
+        } else if (pageKey === PORTAL_PAGE.KNOWLEDGE_BASE) {
           setActivePage(PORTAL_PAGE.HOME);
         } else {
           setActivePage(pageKey);
@@ -114,13 +113,6 @@ const Portal = () => {
     }
     setLoading(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    const handler = (e) => setEnableKB(!!(e.detail && e.detail.enabled));
-    window.addEventListener('portal:kb-visibility', handler);
-
-    return () => window.removeEventListener('portal:kb-visibility', handler);
   }, []);
 
   const onPasswordSubmit = useCallback(async (event) => {
@@ -234,7 +226,6 @@ const Portal = () => {
                 isEditMode={isEditMode}
                 activePage={activePage}
                 onPageChange={onPageChange}
-                enableKB={enableKB}
                 isAnonymous={isAnonymous}
                 isExternalUser={isExternalUser}
                 canAccessIssues={canAccessIssues}

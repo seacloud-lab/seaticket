@@ -3,7 +3,7 @@ from django.urls import re_path
 
 from seahub.project.views import project_view
 from .views import portal_edit_view
-from .apis import PortalTagsView, PortalKnowledgeBaseViewsView, PortalKnowledgeBaseRecordsView, PortalKnowledgeBaseRecordView, PortalIssueMetadataView, \
+from .apis import PortalTagsView, PortalKnowledgeBaseViewsView, PortalKnowledgeBaseRecordsView, PortalKnowledgeBaseFeaturedArticlesView, PortalKnowledgeBaseRecordView, PortalIssueMetadataView, \
     PortalSettingsView, PortalExternalInvitationsView, PortalIssueViewsView, PortalIssueViewView, PortalExternalUsersView, PortalUserListView, \
     PortalCustomersView, PortalCustomerView, PortalCustomerMembersView, PortalCustomerMemberView, PortalIssueViewsMoveView, PortalIssueViewsDuplicateView, \
     PortalIssuesView, PortalMyIssuesView, PortalTeamIssuesView, PortalIssueView, PortalIssueCommentsView, \
@@ -50,6 +50,7 @@ urlpatterns = [
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/tags/$', PortalTagsView.as_view(), name='api-v1-portal-tags'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-base-views/$', PortalKnowledgeBaseViewsView.as_view(), name='api-v1-portal-knowledge-base-views'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-bases/$', PortalKnowledgeBaseRecordsView.as_view(), name='api-v1-portal-knowledge-bases'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/featured-articles/$', PortalKnowledgeBaseFeaturedArticlesView.as_view(), name='api-v1-portal-featured-articles'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-bases/(?P<knowledge_id>\d+)/$', PortalKnowledgeBaseRecordView.as_view(), name='api-v1-portal-knowledge-base-record'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/user-list/$', PortalUserListView.as_view(), name='api-v1-portal-user-list'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/issue/metadata/$', PortalIssueMetadataView.as_view(), name='api-v1-portal-issue-metadata'),
