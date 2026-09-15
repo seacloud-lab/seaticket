@@ -45,7 +45,7 @@ from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_IN
     EMAIL_ACCOUNT_TYPE_PERSONAL, EMAIL_ATTACHMENT_TEMP_DIR, EMAIL_ATTACHMENTS_ZIP_NAME, \
     GENERAL_TASK_MUTABLE_FIELDS
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
-from seahub.project.oauth_utils import EmailOAuthUtils
+from seahub.project.oauth_utils import EmailOAuthUtils, NotionOAuthUtils
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_ticket, \
@@ -298,8 +298,12 @@ class ProjectConnectionsView(APIView):
 
         notion_data = None
         if connection_type == ConnectionType.NOTION.value:
-            notion_data = request.session.get('notion_oauth_data')
-            if not notion_data or notion_data.get('status') != 'authorized':
+            notion_data = NotionOAuthUtils.get_oauth_session(request)
+            if not notion_data or notion_data.get('project_uuid') != project_uuid:
+                return api_error(status.HTTP_404_NOT_FOUND, 'OAuth request not found.')
+            if notion_data.get('status') != 'authorized':
+                return api_error(status.HTTP_400_BAD_REQUEST, 'Notion OAuth authorization is required.')
+            if not notion_data.get('access_token') or not notion_data.get('refresh_token'):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Notion OAuth authorization is required.')
 
         record, error_response = create_connection(project, request.user.username, connection_type, name, config)
@@ -315,7 +319,7 @@ class ProjectConnectionsView(APIView):
                 notion_data['refresh_token'],
                 type=ConnectionType.NOTION.value,
             )
-            request.session.pop('notion_oauth_data', None)
+            NotionOAuthUtils.clear_oauth_session(request)
 
         if email_oauth_data: # for OAuth Email connection
             ProjectConnectionOauth.objects.upsert_connection_token(
@@ -1131,13 +1135,24 @@ class ProjectNotionOauthStatusView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        notion_data = request.session.get('notion_oauth_data') or {}
-        return Response({
-            'status': notion_data.get('status'),
-            'workspace_id': notion_data.get('workspace_id', ''),
-            'workspace_name': notion_data.get('workspace_name', ''),
-            'workspace_icon': notion_data.get('workspace_icon', ''),
-        })
+        notion_data = NotionOAuthUtils.get_oauth_session(request)
+        if not notion_data:
+            return api_error(status.HTTP_404_NOT_FOUND, 'OAuth request not found.')
+
+        if notion_data.get('project_uuid') != project_uuid:
+            return api_error(status.HTTP_404_NOT_FOUND, 'OAuth request not found.')
+
+        status_value = notion_data.get('status')
+        if status_value == 'failure':
+            return api_error(status.HTTP_401_UNAUTHORIZED, notion_data.get('error_msg') or 'OAuth authorization failed.')
+
+        response_data = {'status': status_value or 'in-progress'}
+        if status_value == 'authorized':
+            response_data['workspace_id'] = notion_data.get('workspace_id', '')
+            response_data['workspace_name'] = notion_data.get('workspace_name', '')
+            response_data['workspace_icon'] = notion_data.get('workspace_icon', '')
+
+        return Response(response_data)
 
 
 class ProjectConnectionRecordView(APIView):
