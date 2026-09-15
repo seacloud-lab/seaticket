@@ -14,16 +14,17 @@ const shortenInvitationLink = (link) => {
 
 const InviteCustomerSelect = ({ selectedCustomerId, customers, onChange, isInModal }) => {
   const options = [
-    { value: '', label: gettext('No customer') },
+    { value: '', label: '--' },
     ...customers.map(customer => ({ value: String(customer.id), label: customer.name })),
   ];
   const selectedValue = String(selectedCustomerId ?? '');
+  const validOptions = selectedValue === '' ? options.filter(option => option.value !== '') : options;
 
   return (
     <CustomizeSelect
       id="portal-invite-customer"
       value={selectedValue}
-      options={options}
+      options={validOptions}
       onChange={onChange}
       searchable={false}
       isInModal={isInModal}
