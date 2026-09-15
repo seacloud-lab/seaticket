@@ -67,7 +67,7 @@ const HideConnectionSetter = ({ onConnectionIDsChange, connections }) => {
           'active': isShowSetter && showSourcesLen > 0,
           'highlighted': showSourcesLen > 0,
         })} >
-          <div className="filter-label">
+          <div className="filter-label mr-1 text-truncate d-inline-block">
             {showSourcesLen > 0 ? `${showSourcesLen} ${gettext('Sources')}` : gettext('Sources')}
           </div>
           <Icon symbol="arrow-down"/>

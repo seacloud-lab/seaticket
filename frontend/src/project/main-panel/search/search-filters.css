@@ -1,9 +1,5 @@
 .search-filters-container {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  padding-top: 16px;
-  padding-bottom: 10px;
+  height: 48px;
   border-bottom: 1px solid #eee;
 }
 
@@ -11,7 +7,7 @@
   width: fit-content;
   display: flex;
   align-items: center;
-  margin-right: 8px;
+  margin-right: 12px;
 }
 
 .search-filters-container .search-filter .search-filter-toggle,
@@ -20,25 +16,19 @@
   align-items: center;
   cursor: pointer;
   padding: 2px 4px;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 .search-filters-container .search-filter .search-filter-toggle:hover,
 .search-filter-menu .search-filter-toggle:hover {
-  background-color: #efefef;
+  background-color: rgba(0, 0, 0, 0.04);
 }
 
 .search-filters-container .search-filter .filter-label {
   width: fit-content;
-  display: inline-block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  margin-right: 8px;
 }
 
-.search-filters-container .search-filter.filter-by-suffix-container .filter-label,
-.search-filters-container .search-filter.filter-by-creator-container .filter-label {
+.search-filters-container .search-filter.filter-by-suffix-container .filter-label {
   max-width: 120px;
 }
 
@@ -74,7 +64,7 @@
 }
 
 .search-filter-menu.filter-by-suffix-menu .clear-icon-right:hover {
-  background-color: #efefef;
+  background-color: rgba(0, 0, 0, 0.04);
 }
 
 .search-filter-menu {
@@ -197,10 +187,15 @@
 
 .search-filters-container .search-filter-toggle.active:hover,
 .search-filters-container .search-filter-toggle.highlighted:hover {
-  background-color: #efefef;
+  background-color: rgba(0, 0, 0, 0.04);
 }
 
-.search-filters-container .search-filter-toggle.highlighted,
-.search-filter-toggle.highlighted .sf3-font-down {
+.search-filters-container .search-filter-toggle.highlighted .seaqa-icon-svg,
+.search-filters-container .search-filter-toggle.highlighted {
   color: var(--bs-sf-orange);
+  font-weight: 500;
+}
+
+.search-filters-container .search-filter-toggle .seaqa-icon-svg {
+  color: var(--bs-icon-color);
 }
