@@ -20,5 +20,5 @@
 
 .seaqa-switch.disabled .custom-switch,
 .seaqa-switch .custom-switch-indicator.disabled {
-  cursor: not-allowed;
+  cursor: default;
 }
