@@ -38,6 +38,12 @@ MANUAL_CRAWL_INTERVAL = 24 * 60 * 60
 EMAIL_OAUTH_SESSION_KEY = 'oauth_email_connection'
 EMAIL_OAUTH_SESSION_TIMEOUT = 10 * 60
 
+NOTION_OAUTH_SESSION_KEY = 'notion_oauth_data'
+NOTION_OAUTH_SESSION_TIMEOUT = 10 * 60
+
+# Refresh the access token when it is within this many seconds of expiring.
+OAUTH_TOKEN_REFRESH_THRESHOLD_SECONDS = 60
+
 GENERAL_EMAIL_PROVIDER = 'general_email_provider'
 MICROSOFT_EMAIL_PROVIDER = 'Microsoft'
 MICROSOFT_OAUTH_URL_PREFIX = 'https://login.microsoftonline.com/'

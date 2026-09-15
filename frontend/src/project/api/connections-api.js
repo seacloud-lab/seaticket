@@ -89,13 +89,6 @@ class ConnectionsAPI {
     return this.req.get(url, { params: { state } });
   }
 
-  startNotionOAuth(projectUuid) {
-    const url = this.server + '/notion/oauth/';
-    let form = new FormData();
-    form.append('project_uuid', projectUuid);
-    return this.req.post(url, form);
-  }
-
   getConfluenceOauthStatus(projectUuid) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/confluence-oauth/';
     return this.req.get(url);
