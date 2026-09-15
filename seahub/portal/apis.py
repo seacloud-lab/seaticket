@@ -1427,7 +1427,7 @@ class PortalKnowledgeBaseFeaturedArticlesView(APIView):
             table_name = SchemaTables.KNOWLEDGE_BASE.table_name()
             sql = (
                 f"SELECT {query_fields} FROM `{table_name}` "
-                f"WHERE `featured_articles` = True AND (`deleted` = False OR `deleted` IS NULL) "
+                f"WHERE `featured` = True AND (`deleted` = False OR `deleted` IS NULL) "
                 f"LIMIT {limit} OFFSET {start}"
             )
             seadb_api = SeaDBAPI()

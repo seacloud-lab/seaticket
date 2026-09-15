@@ -439,7 +439,6 @@ class TestPortalSettingsView:
 
         assert resp.status_code == 200
         assert resp.data['allow_anonymous'] is True
-        assert 'show_knowledge_base' not in resp.data
 
     def test_post_permission_denied(self, factory, auth_user, real_project):
         project = real_project
@@ -503,7 +502,6 @@ class TestPortalSettingsView:
         portal_settings = settings_dict.get('portal', {})
         assert portal_settings.get('allow_anonymous') is True
         assert portal_settings.get('enable_password_protection') is False
-        assert 'show_knowledge_base' not in portal_settings
         assert 'password' not in portal_settings
         assert PortalCustomDomain.objects.filter(project_uuid=str(project.uuid)).first() is None
 
@@ -512,8 +510,7 @@ class TestPortalSettingsView:
         settings_dict = json.loads(project.settings) if project.settings else {}
         settings_dict['portal'] = {
             'allow_anonymous': True,
-            'enable_password_protection': False,
-            'show_knowledge_base': True,
+            'enable_password_protection': False
         }
         project.settings = json.dumps(settings_dict)
         project.save(update_fields=['settings'])
@@ -536,7 +533,6 @@ class TestPortalSettingsView:
         portal_settings = settings_dict.get('portal', {})
         assert portal_settings.get('allow_anonymous') is True
         assert portal_settings.get('enable_password_protection') is False
-        assert 'show_knowledge_base' not in portal_settings
         assert portal_settings.get('portal_name') == 'Custom support'
         assert portal_settings.get('portal_logo') == f'/api/v1/portal/{project.uuid}/logo/?v=1'
 
