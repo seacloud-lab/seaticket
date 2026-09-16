@@ -51,20 +51,20 @@ const ChatAnalysis = ({
   const viewsData = useMemo(() => ({
     navigation: [
       { _id: 'all_chat', type: 'view' },
-      { _id: 'user_usage', type: 'view' },
       { _id: 'statistics', type: 'view' },
+      { _id: 'user_usage', type: 'view' },
     ],
     views: [
       {
         _id: 'all_chat',
         name: gettext('All chat'),
       }, {
-        _id: 'user_usage',
-        name: gettext('User usage (this month)'),
-      }, {
         _id: 'statistics',
         name: gettext('Statistics'),
         type: VIEW_TYPE.STATISTIC,
+      }, {
+        _id: 'user_usage',
+        name: gettext('User usage'),
       }
     ]
   }), []);
@@ -115,6 +115,10 @@ const ChatAnalysis = ({
         is_name_column: true,
         frozen: true,
       }, {
+        name: gettext('Month'),
+        key: 'month',
+        type: CellType.TEXT,
+      }, {
         name: gettext('Sessions'),
         key: 'sessions',
         type: CellType.NUMBER,
@@ -153,7 +157,7 @@ const ChatAnalysis = ({
         const sorts = context.localStorage.getItem('user_usage_sorts') || [];
         return chatAPI.getAdminChatUserUsage(projectUuid, { start, limit, sorts }).then(res => {
           const users = res?.data?.users || [];
-          const records = users.map(user => ({ ...user, _pk: user.username }));
+          const records = users.map(user => ({ ...user, _pk: `${user.month}-${user.username}` }));
           return {
             data: { records }
           };

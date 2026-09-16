@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from django.core.cache import cache
 from django.http import FileResponse, StreamingHttpResponse
-from django.db.models import Count, Sum
+from django.db.models import Count, Sum, CharField, F, Func, Value
 from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -384,7 +384,7 @@ class PortalAdminChatStatisticsView(APIView):
 
 
 class PortalAdminChatUserUsageView(APIView):
-    """Per-user usage of portal chat sessions created in the current month."""
+    """Per-user usage of portal chat sessions created in the past three months."""
 
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (PortalAdminPermission,)
@@ -402,19 +402,35 @@ class PortalAdminChatUserUsageView(APIView):
             end = start + limit
             sorts = view_config.get('sorts', [])
             if not sorts:
-                sorts = [{'column_key': 'credit_used', 'sort_type': 'down'}]
+                sorts = [
+                    {'column_key': 'month', 'sort_type': 'down'},
+                    {'column_key': 'credit_used', 'sort_type': 'down'},
+                ]
             sorts = [
                 f'-{s["column_key"]}' if s['sort_type'] == 'down' else s['column_key']
                 for s in sorts
             ]
 
-            month_start = timezone.localdate().replace(day=1)
+            today = timezone.localdate()
+            month_start = today.replace(day=1) - relativedelta(months=2)
+            next_month_start = today.replace(day=1) + relativedelta(months=1)
             start_time = timezone.make_aware(datetime.combine(month_start, datetime.min.time()))
+            end_time = timezone.make_aware(datetime.combine(next_month_start, datetime.min.time()))
 
             users = (
                 PortalChatSessions.objects
-                .filter(project_uuid=project_uuid, created_at__gte=start_time)
-                .values('username')
+                .filter(
+                    project_uuid=project_uuid,
+                    created_at__gte=start_time,
+                    created_at__lt=end_time,
+                )
+                .annotate(month=Func(
+                    F('created_at'),
+                    Value('%Y-%m'),
+                    function='DATE_FORMAT',
+                    output_field=CharField(),
+                ))
+                .values('month', 'username')
                 .annotate(
                     sessions=Count('id'),
                     input_tokens=Sum('input_tokens'),
