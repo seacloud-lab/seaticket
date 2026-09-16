@@ -115,10 +115,6 @@ const ChatAnalysis = ({
         is_name_column: true,
         frozen: true,
       }, {
-        name: gettext('Questions'),
-        key: 'questions',
-        type: CellType.NUMBER,
-      }, {
         name: gettext('Sessions'),
         key: 'sessions',
         type: CellType.NUMBER,

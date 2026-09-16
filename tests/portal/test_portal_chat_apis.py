@@ -632,7 +632,7 @@ class TestPortalAdminChatAPIs:
         today = date(2026, 3, 21)
         project_uuid = str(real_project.uuid)
 
-        def _create_session(username, created, input_tokens, output_tokens, credit_used, user_messages):
+        def _create_session(username, created, input_tokens, output_tokens, credit_used):
             session = PortalChatSessions.objects.create_session(
                 project_uuid=project_uuid, session_name='s', username=username,
             )
@@ -642,18 +642,15 @@ class TestPortalAdminChatAPIs:
                 output_tokens=output_tokens,
                 credit_used=credit_used,
             )
-            for i in range(user_messages):
-                PortalChatMessages.objects.create_message(session.session_uuid, f'u{i}', 'user', 'q')
-                PortalChatMessages.objects.create_message(session.session_uuid, f'a{i}', 'assistant', 'a')
             return session
 
         # alice: two sessions this month, merged
-        _create_session('alice@example.com', datetime(2026, 3, 1, 0, 0, 0), 100, 40, 1.0, 2)
-        _create_session('alice@example.com', datetime(2026, 3, 21, 12, 0, 0), 50, 10, 0.5, 3)
+        _create_session('alice@example.com', datetime(2026, 3, 1, 0, 0, 0), 100, 40, 1.0)
+        _create_session('alice@example.com', datetime(2026, 3, 21, 12, 0, 0), 50, 10, 0.5)
         # bob: one session this month
-        _create_session('bob@example.com', datetime(2026, 3, 10, 8, 0, 0), 10, 5, 0.1, 1)
+        _create_session('bob@example.com', datetime(2026, 3, 10, 8, 0, 0), 10, 5, 0.1)
         # carol: session created last month, must be excluded
-        _create_session('carol@example.com', datetime(2026, 2, 28, 23, 59, 59), 999, 999, 9.9, 9)
+        _create_session('carol@example.com', datetime(2026, 2, 28, 23, 59, 59), 999, 999, 9.9)
 
         request = self._admin_post_request(
             factory, real_project, project_creator,
@@ -667,12 +664,11 @@ class TestPortalAdminChatAPIs:
         users = response.data['users']
         assert [u['username'] for u in users] == ['alice@example.com', 'bob@example.com']
         alice, bob = users
-        assert alice['questions'] == 5
+        assert all('questions' not in user for user in users)
         assert alice['sessions'] == 2
         assert alice['input_tokens'] == 150
         assert alice['output_tokens'] == 50
         assert alice['credit_used'] == pytest.approx(1.5)
-        assert bob['questions'] == 1
         assert bob['sessions'] == 1
 
     def test_user_usage_supports_sorts_and_pagination(self, factory, real_project, project_creator):

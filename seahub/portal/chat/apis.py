@@ -7,8 +7,7 @@ from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from django.core.cache import cache
 from django.http import FileResponse, StreamingHttpResponse
-from django.db.models import Count, Sum, OuterRef, Subquery, IntegerField
-from django.db.models.functions import Coalesce
+from django.db.models import Count, Sum
 from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -412,20 +411,12 @@ class PortalAdminChatUserUsageView(APIView):
             month_start = timezone.localdate().replace(day=1)
             start_time = timezone.make_aware(datetime.combine(month_start, datetime.min.time()))
 
-            question_count = (
-                PortalChatMessages.objects
-                .filter(session_uuid=OuterRef('session_uuid'), role='user')
-                .order_by().values('session_uuid')
-                .annotate(c=Count('id')).values('c')
-            )
             users = (
                 PortalChatSessions.objects
                 .filter(project_uuid=project_uuid, created_at__gte=start_time)
-                .annotate(question_count=Coalesce(Subquery(question_count, output_field=IntegerField()), 0))
                 .values('username')
                 .annotate(
                     sessions=Count('id'),
-                    questions=Sum('question_count'),
                     input_tokens=Sum('input_tokens'),
                     output_tokens=Sum('output_tokens'),
                     credit_used=Sum('credit_used'),
