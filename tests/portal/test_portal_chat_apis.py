@@ -10,6 +10,7 @@ from seahub.portal.chat.apis import (
     PortalAdminChatMessagesView,
     PortalAdminChatSessionsView,
     PortalAdminChatStatisticsView,
+    PortalAdminChatUserUsageView,
     PortalChatImageView,
     PortalChatMessagesView,
     PortalChatSessionsView,
@@ -626,6 +627,96 @@ class TestPortalAdminChatAPIs:
 
         assert response.status_code == 200
         assert len(response.data['sessions']) == 1
+
+    def test_user_usage_aggregates_current_month_sessions(self, factory, real_project, project_creator):
+        today = date(2026, 3, 21)
+        project_uuid = str(real_project.uuid)
+
+        def _create_session(username, created, input_tokens, output_tokens, credit_used):
+            session = PortalChatSessions.objects.create_session(
+                project_uuid=project_uuid, session_name='s', username=username,
+            )
+            PortalChatSessions.objects.filter(id=session.id).update(
+                created_at=timezone.make_aware(created),
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                credit_used=credit_used,
+            )
+            return session
+
+        # alice: two sessions this month, merged
+        _create_session('alice@example.com', datetime(2026, 3, 1, 0, 0, 0), 100, 40, 1.0)
+        _create_session('alice@example.com', datetime(2026, 3, 21, 12, 0, 0), 50, 10, 0.5)
+        _create_session('bob@example.com', datetime(2026, 3, 10, 8, 0, 0), 10, 5, 0.1)
+        # alice: one session in the previous month
+        _create_session('alice@example.com', datetime(2026, 2, 10, 8, 0, 0), 20, 5, 0.2)
+        # bob: one session in the month before that
+        _create_session('bob@example.com', datetime(2026, 1, 10, 8, 0, 0), 10, 5, 0.1)
+        # carol: session outside the three-month range, must be excluded
+        _create_session('carol@example.com', datetime(2025, 12, 31, 23, 59, 59), 999, 999, 9.9)
+
+        request = self._admin_post_request(
+            factory, real_project, project_creator,
+            f'/api/v1/portal/{project_uuid}/admin/chat/user-usage/',
+            data={'start': 0, 'limit': 1000},
+        )
+        with patch('seahub.portal.chat.apis.timezone.localdate', return_value=today):
+            response = PortalAdminChatUserUsageView.as_view()(request, project_uuid=project_uuid)
+
+        assert response.status_code == 200
+        users = response.data['users']
+        assert [(u['month'], u['username']) for u in users] == [
+            ('2026-03', 'alice@example.com'),
+            ('2026-03', 'bob@example.com'),
+            ('2026-02', 'alice@example.com'),
+            ('2026-01', 'bob@example.com'),
+        ]
+        alice, bob, alice_previous, bob_previous = users
+        assert all('questions' not in user for user in users)
+        assert alice['sessions'] == 2
+        assert alice['input_tokens'] == 150
+        assert alice['output_tokens'] == 50
+        assert alice['credit_used'] == pytest.approx(1.5)
+        assert bob['month'] == '2026-03'
+        assert bob['sessions'] == 1
+        assert alice_previous['sessions'] == 1
+        assert alice_previous['credit_used'] == pytest.approx(0.2)
+        assert bob_previous['sessions'] == 1
+        assert bob_previous['month'] == '2026-01'
+
+    def test_user_usage_supports_sorts_and_pagination(self, factory, real_project, project_creator):
+        today = date(2026, 3, 21)
+        project_uuid = str(real_project.uuid)
+        for username, tokens in (('a@example.com', 10), ('b@example.com', 30), ('c@example.com', 20)):
+            session = PortalChatSessions.objects.create_session(
+                project_uuid=project_uuid, session_name='s', username=username,
+            )
+            PortalChatSessions.objects.filter(id=session.id).update(
+                created_at=timezone.make_aware(datetime(2026, 3, 5)), input_tokens=tokens,
+            )
+
+        def _post(start, limit):
+            request = self._admin_post_request(
+                factory, real_project, project_creator,
+                f'/api/v1/portal/{project_uuid}/admin/chat/user-usage/',
+                data={
+                    'start': start,
+                    'limit': limit,
+                    'config': json.dumps({'sorts': [{'column_key': 'input_tokens', 'sort_type': 'up'}]}),
+                },
+            )
+            with patch('seahub.portal.chat.apis.timezone.localdate', return_value=today):
+                return PortalAdminChatUserUsageView.as_view()(request, project_uuid=project_uuid)
+
+        response = _post(0, 1000)
+        assert response.status_code == 200
+        assert [u['input_tokens'] for u in response.data['users']] == [10, 20, 30]
+
+        response = _post(0, 2)
+        assert [u['input_tokens'] for u in response.data['users']] == [10, 20]
+
+        response = _post(2, 2)
+        assert [u['input_tokens'] for u in response.data['users']] == [30]
 
     def test_get_session_messages(self, factory, real_project, project_creator):
         session = PortalChatSessions.objects.create_session(

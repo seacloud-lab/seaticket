@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from django.core.cache import cache
 from django.http import FileResponse, StreamingHttpResponse
-from django.db.models import Count, Sum
+from django.db.models import Count, Sum, CharField, F, Func, Value
 from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -378,6 +378,68 @@ class PortalAdminChatStatisticsView(APIView):
                 'current': current_month,
                 'change_percent': change_percent,
             })
+        except Exception as e:
+            logger.error(e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+
+class PortalAdminChatUserUsageView(APIView):
+    """Per-user usage of portal chat sessions created in the past three months."""
+
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (PortalAdminPermission,)
+    throttle_classes = (UserRateThrottle,)
+
+    @portal_endpoint
+    def post(self, request, project_uuid):
+        try:
+            try:
+                start = int(request.POST.get('start', 0))
+                limit = int(request.POST.get('limit', 1000))
+                view_config = json.loads(request.POST.get('config', '{}'))
+            except (TypeError, ValueError):
+                return api_error(status.HTTP_400_BAD_REQUEST, 'start, limit or config invalid')
+            end = start + limit
+            sorts = view_config.get('sorts', [])
+            if not sorts:
+                sorts = [
+                    {'column_key': 'month', 'sort_type': 'down'},
+                    {'column_key': 'credit_used', 'sort_type': 'down'},
+                ]
+            sorts = [
+                f'-{s["column_key"]}' if s['sort_type'] == 'down' else s['column_key']
+                for s in sorts
+            ]
+
+            today = timezone.localdate()
+            month_start = today.replace(day=1) - relativedelta(months=2)
+            next_month_start = today.replace(day=1) + relativedelta(months=1)
+            start_time = timezone.make_aware(datetime.combine(month_start, datetime.min.time()))
+            end_time = timezone.make_aware(datetime.combine(next_month_start, datetime.min.time()))
+
+            users = (
+                PortalChatSessions.objects
+                .filter(
+                    project_uuid=project_uuid,
+                    created_at__gte=start_time,
+                    created_at__lt=end_time,
+                )
+                .annotate(month=Func(
+                    F('created_at'),
+                    Value('%Y-%m'),
+                    function='DATE_FORMAT',
+                    output_field=CharField(),
+                ))
+                .values('month', 'username')
+                .annotate(
+                    sessions=Count('id'),
+                    input_tokens=Sum('input_tokens'),
+                    output_tokens=Sum('output_tokens'),
+                    credit_used=Sum('credit_used'),
+                )
+                .order_by(*sorts)[start:end]
+            )
+            return Response({'users': list(users)})
         except Exception as e:
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')

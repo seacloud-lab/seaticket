@@ -14,7 +14,8 @@ from .portal_issue_substates import PortalIssueSubstatesAPIView, PortalIssueSubs
 from .chat.apis import (
     PortalChatSessionsView, PortalChatSessionView, PortalChatMessagesView,
     PortalChatView, PortalChatSessionTitleView, PortalChatImageView,
-    PortalAdminChatSessionsView, PortalAdminChatMessagesView, PortalAdminChatStatisticsView
+    PortalAdminChatSessionsView, PortalAdminChatMessagesView, PortalAdminChatStatisticsView,
+    PortalAdminChatUserUsageView,
 )
 from .files import (
     PortalUploadFileView, GetPortalUploadFileView, PortalFileView,
@@ -109,4 +110,5 @@ urlpatterns = [
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/admin/chat/sessions/$', PortalAdminChatSessionsView.as_view(), name='api-v1-portal-admin-chat-sessions'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/admin/chat/sessions/(?P<session_uuid>[-0-9a-f]{36})/messages/$', PortalAdminChatMessagesView.as_view(), name='api-v1-portal-admin-chat-messages'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/admin/chat/statistics/$', PortalAdminChatStatisticsView.as_view(), name='api-v1-portal-admin-chat-statistics'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/admin/chat/user-usage/$', PortalAdminChatUserUsageView.as_view(), name='api-v1-portal-admin-chat-user-usage'),
 ]
