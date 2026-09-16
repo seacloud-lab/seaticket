@@ -78,6 +78,8 @@ const Agent = ({ title, settings, modifySettings }) => {
               isShowLogs={isShowLogs}
               showLogs={() => setIsShowLogs(true)}
               hideLogs={() => setIsShowLogs(false)}
+              isRunLogsLoading={isRunLogsLoading}
+              runLogs={runLogs}
               runLog={activeLog}
               statusFilterValue={statusFilterValue}
               statusFilterOptions={statusFilterOptions}

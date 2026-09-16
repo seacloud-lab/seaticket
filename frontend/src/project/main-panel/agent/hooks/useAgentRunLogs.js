@@ -104,7 +104,6 @@ export const useAgentRunLogs = () => {
         const nextLog = newRunLogs[runLogIndex + 1] || newRunLogs[runLogIndex - 1] || { key: '' };
         updateActiveLogKey(nextLog.key);
         newRunLogs.splice(runLogIndex, 1);
-        cursorRef.current = cursorRef.current - 1;
         if (newRunLogs.length < pageCount.current) {
           loadMore();
         }

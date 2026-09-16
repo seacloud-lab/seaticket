@@ -18,6 +18,8 @@ const { projectUuid } = window.app.pageOptions;
 const RunLogDetails = ({
   isShowLogs,
   runLog,
+  runLogs,
+  isRunLogsLoading,
   showLogs,
   settings,
   statusFilterValue,
@@ -364,69 +366,75 @@ const RunLogDetails = ({
           <ResourceTitle resource={resource} className="font-size-16 font-weight-500 text-truncate" />
         </div>
         <div className="seaqa-agent-run-log-details-body d-flex flex-1 o-hidden">
-          {(isLoading || !runLog) && (<CenteredLoading />)}
-          {!isLoading && runs.length === 0 && runLog && (
+          {runLogs.length === 0 && isRunLogsLoading ? (
+            <CenteredLoading />
+          ) : (
             <>
-              {statusFilterValue && (
-                <EmptyTip
-                  text={gettext('No logs match Status: %s in the list on the left, so there are no details to display').replace('%s', statusFilterOptionName)}
-                  className="w-100"
-                />
-              )}
-              {!statusFilterValue && (
-                <EmptyTip
-                  src={`${mediaUrl}img/no-items-tip.png`}
-                  title={gettext('No agent runs')}
-                  className="w-100"
-                />
-              )}
-            </>
-          )}
-          {!isLoading && runs.length !== 0 && runLog && (
-            <>
-              <div className="seaqa-agent-run-log-details h-100 d-flex flex-column p-4 w-100">
-                {!isShowAll && (
-                  <div className="seaqa-agent-run-detail collapsed seaqa-agent-run-detail-more-tip">
-                    <div className="seaqa-agent-run-detail-header">
-                      <div className="flex-1 text-truncate">
-                        <span className="font-weight-500">{gettext('% runs').replace('%', runs.length - 1)}</span>
-                        {` ${gettext('more')}`}
-                      </div>
-                      <div className="d-flex align-items-center">
-                        <IconTooltip
-                          icon="arrow-down-b"
-                          tip={gettext('Display more runs')}
-                          className="mx-0"
-                          placement="bottom"
-                          hoverBackground={true}
-                          size={{ btn: 24, icon: 16 }}
-                          onClick={() => setIsShowAll(true)}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {runs.map(((run, index) => {
-                  if (!isShowAll && index < (runs.length - 1)) return null;
-                  return (
-                    <RunDetail
-                      key={run.id || index}
-                      run={run}
-                      index={index}
-                      isExpanded={index === runs.length - 1 }
-                      onConfirmAction={onConfirmAction}
-                      onCancelAction={onCancelAction}
-                      onViewContent={openSuggestionDetailPanel}
+              {(isLoading) && (<CenteredLoading />)}
+              {!isLoading && runs.length === 0 && (
+                <>
+                  {statusFilterValue && (
+                    <EmptyTip
+                      text={gettext('No logs match Status: %s in the list on the left, so there are no details to display').replace('%s', statusFilterOptionName)}
+                      className="w-100"
                     />
-                  );
-                }))}
-              </div>
-              {suggestionDetail && (
-                <SuggestionDetailPanel
-                  suggestionDetail={suggestionDetail}
-                  onApprove={handleApproveAction}
-                  onClose={closeSuggestionDetailPanel}
-                />
+                  )}
+                  {!statusFilterValue && (
+                    <EmptyTip
+                      src={`${mediaUrl}img/no-items-tip.png`}
+                      title={gettext('No agent runs')}
+                      className="w-100"
+                    />
+                  )}
+                </>
+              )}
+              {!isLoading && runs.length !== 0 && runLog && (
+                <>
+                  <div className="seaqa-agent-run-log-details h-100 d-flex flex-column p-4 w-100">
+                    {!isShowAll && (
+                      <div className="seaqa-agent-run-detail collapsed seaqa-agent-run-detail-more-tip">
+                        <div className="seaqa-agent-run-detail-header">
+                          <div className="flex-1 text-truncate">
+                            <span className="font-weight-500">{gettext('% runs').replace('%', runs.length - 1)}</span>
+                            {` ${gettext('more')}`}
+                          </div>
+                          <div className="d-flex align-items-center">
+                            <IconTooltip
+                              icon="arrow-down-b"
+                              tip={gettext('Display more runs')}
+                              className="mx-0"
+                              placement="bottom"
+                              hoverBackground={true}
+                              size={{ btn: 24, icon: 16 }}
+                              onClick={() => setIsShowAll(true)}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {runs.map(((run, index) => {
+                      if (!isShowAll && index < (runs.length - 1)) return null;
+                      return (
+                        <RunDetail
+                          key={run.id || index}
+                          run={run}
+                          index={index}
+                          isExpanded={index === runs.length - 1 }
+                          onConfirmAction={onConfirmAction}
+                          onCancelAction={onCancelAction}
+                          onViewContent={openSuggestionDetailPanel}
+                        />
+                      );
+                    }))}
+                  </div>
+                  {suggestionDetail && (
+                    <SuggestionDetailPanel
+                      suggestionDetail={suggestionDetail}
+                      onApprove={handleApproveAction}
+                      onClose={closeSuggestionDetailPanel}
+                    />
+                  )}
+                </>
               )}
             </>
           )}

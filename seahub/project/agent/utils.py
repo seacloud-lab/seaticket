@@ -393,34 +393,30 @@ def _is_matched_log_status(log, log_status):
     return False
 
 
-def _load_agent_logs_cursor(cursor, project_uuid, status_filter):
+def _load_agent_logs_cursor(project_uuid, status_filter, cursor):
     if not cursor:
-        return 0, []
+        return 0
     try:
         payload = signing.loads(cursor, salt=AGENT_LOG_CURSOR_SALT)
     except (BadSignature, TypeError, ValueError):
         raise ValueError('Cursor is invalid.')
 
     source_offset = payload.get('source_offset')
-    pending_logs = payload.get('pending_logs')
     if (
         payload.get('project_uuid') != project_uuid
         or payload.get('status_filter') != status_filter
         or not isinstance(source_offset, int)
         or source_offset < 0
-        or not isinstance(pending_logs, list)
-        or not all(isinstance(log, dict) for log in pending_logs)
     ):
         raise ValueError('Cursor is invalid.')
-    return source_offset, pending_logs
+    return source_offset
 
 
-def _dump_agent_logs_cursor(project_uuid, status_filter, source_offset, pending_logs):
+def _dump_agent_logs_cursor(project_uuid, status_filter, source_offset):
     return signing.dumps({
         'project_uuid': project_uuid,
         'status_filter': status_filter,
         'source_offset': source_offset,
-        'pending_logs': pending_logs,
     }, salt=AGENT_LOG_CURSOR_SALT)
 
 
@@ -447,13 +443,14 @@ def _list_agent_logs_by_status(seadb_api, project_uuid, per_page, status_filter,
     """Paginate the derived log status after loading source log batches.
 
     A log's status depends on the aggregate state of its runs, so it cannot be
-    filtered in the source summary query. The signed cursor stores the next
-    unscanned source offset and the lookahead matches used to calculate
-    has_more, so those source logs are not scanned twice.
+    filtered in the source summary query. The signed cursor stores the source
+    offset after the last returned matching log. We intentionally rescan any
+    lookahead range when checking the next page so a log whose status changed
+    after the previous request is not skipped.
     """
     matched_logs = []
-    source_offset, pending_logs = _load_agent_logs_cursor(cursor, project_uuid, status_filter)
-    matched_logs.extend(pending_logs)
+    source_offset = _load_agent_logs_cursor(project_uuid, status_filter, cursor)
+    next_cursor_offset = None
 
     while len(matched_logs) <= per_page:
         summary_rows = _query_log_summary_rows(seadb_api, project_uuid, 1, per_page, source_offset)
@@ -467,8 +464,9 @@ def _list_agent_logs_by_status(seadb_api, project_uuid, per_page, status_filter,
             if not _is_matched_log_status(log, status_filter):
                 continue
             matched_logs.append(log)
+            if len(matched_logs) <= per_page:
+                next_cursor_offset = source_offset + index + 1
             if len(matched_logs) > per_page:
-                source_offset += index + 1
                 break
         else:
             source_offset += len(summary_rows)
@@ -483,8 +481,7 @@ def _list_agent_logs_by_status(seadb_api, project_uuid, per_page, status_filter,
         next_cursor = _dump_agent_logs_cursor(
             project_uuid,
             status_filter,
-            source_offset,
-            matched_logs[per_page:],
+            next_cursor_offset,
         )
 
     return {

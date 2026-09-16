@@ -192,7 +192,6 @@ def test_list_agent_logs_filters_from_the_cursor_and_returns_the_next_cursor():
         'project_uuid': 'project-1',
         'status_filter': 'processed',
         'source_offset': 2,
-        'pending_logs': [],
     }, salt='seahub.project.agent.logs')
     result = list_agent_logs(seadb_api, 'project-1', per_page=1, log_status='processed', cursor=cursor)
 
@@ -202,7 +201,7 @@ def test_list_agent_logs_filters_from_the_cursor_and_returns_the_next_cursor():
     assert 'LIMIT 2, 2' in seadb_api.query_rows.call_args_list[0].args[1]
 
 
-def test_list_agent_logs_cursor_preserves_the_lookahead_log_without_rescanning():
+def test_list_agent_logs_cursor_rescans_lookahead_logs_after_the_last_returned_match():
     seadb_api = Mock()
     seadb_api.query_rows.side_effect = [
         {
@@ -232,6 +231,21 @@ def test_list_agent_logs_cursor_preserves_the_lookahead_log_without_rescanning()
                     'suggestions_status': 'resolved',
                     'bucket_size': 1,
                 },
+            ]
+        },
+        {
+            'results': [
+                {
+                    'owner_source_id': '2',
+                    'owner_source_type': 'ticket',
+                    'owner_source_title': 'Done 2',
+                    'num_of_runs': 1,
+                    'last_active_at': '2026-08-19T00:00:00+00:00',
+                },
+            ]
+        },
+        {
+            'results': [
                 {
                     'owner_source_id': '2',
                     'owner_source_type': 'ticket',
@@ -243,33 +257,33 @@ def test_list_agent_logs_cursor_preserves_the_lookahead_log_without_rescanning()
         },
     ]
 
-    result = list_agent_logs(seadb_api, 'project-1', per_page=1, log_status='processed')
+    result = list_agent_logs(seadb_api, 'project-1', page=1, per_page=1, log_status='processed')
 
     assert [log['owner_source_title'] for log in result['logs']] == ['Done 1']
     assert result['has_more'] is True
     cursor_payload = signing.loads(result['next_cursor'], salt='seahub.project.agent.logs')
-    assert cursor_payload['source_offset'] == 2
-    assert [log['owner_source_title'] for log in cursor_payload['pending_logs']] == ['Done 2']
+    assert cursor_payload['source_offset'] == 1
 
+    seadb_api.query_rows.reset_mock()
     seadb_api.query_rows.side_effect = [
         {
             'results': [
                 {
-                    'owner_source_id': '3',
+                    'owner_source_id': '2',
                     'owner_source_type': 'ticket',
-                    'owner_source_title': 'Unprocessed',
+                    'owner_source_title': 'Done 2',
                     'num_of_runs': 1,
-                    'last_active_at': '2026-08-18T00:00:00+00:00',
+                    'last_active_at': '2026-08-19T00:00:00+00:00',
                 },
             ]
         },
         {
             'results': [
                 {
-                    'owner_source_id': '3',
+                    'owner_source_id': '2',
                     'owner_source_type': 'ticket',
-                    'status': 'running',
-                    'suggestions_status': 'pending',
+                    'status': 'completed',
+                    'suggestions_status': 'resolved',
                     'bucket_size': 1,
                 },
             ]
@@ -285,7 +299,7 @@ def test_list_agent_logs_cursor_preserves_the_lookahead_log_without_rescanning()
 
     assert [log['owner_source_title'] for log in next_result['logs']] == ['Done 2']
     assert next_result['has_more'] is False
-    assert 'LIMIT 2, 2' in seadb_api.query_rows.call_args_list[2].args[1]
+    assert 'LIMIT 1, 2' in seadb_api.query_rows.call_args_list[0].args[1]
 
 
 def test_query_run_status_counts_buckets_incomplete_runs_first():
