@@ -1,7 +1,7 @@
 import React, { forwardRef, useCallback, useEffect, useState, useImperativeHandle, useRef } from 'react';
 import axios from 'axios';
 import classnames from 'classnames';
-import { KeyCodes } from '@/constants';
+import { gettext, KeyCodes } from '@/constants';
 import { getSearchValueLength } from '@/utils/search';
 import { Utils } from '@/utils/utils';
 import SearchInput from '../../search-input';
@@ -120,6 +120,9 @@ const Container = forwardRef(({
     }
   }), [value]);
 
+  const searchValueLength = getSearchValueLength(searchValue);
+  const searchEmptyTip = !searchValue ? gettext('Enter characters to start searching') : (searchValueLength < 3 ? gettext('Enter more characters to start searching') : emptyTip);
+
   return (
     <div className={classnames('options-editor-container search-enabled', className)}>
       <div className="options-editor-search-wrapper">
@@ -141,7 +144,7 @@ const Container = forwardRef(({
         maxHeight={maxHeight - 26} // 26: padding-top(12) + padding-bottom(12) + border(2)
         isSearchEnabled={true}
         searchValue={searchValue}
-        emptyTip={emptyTip}
+        emptyTip={searchEmptyTip}
         value={value}
         checkPlacement={checkPlacement}
         optionHeight={optionHeight}

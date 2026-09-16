@@ -53,11 +53,11 @@ const ProjectSearcher = (props) => {
   };
 
   const startSearch = (searchStr) => {
+    setSearchStr(searchStr);
     if (getSearchValueLength(searchStr) < 3) {
       setIsLoading(false);
       setSearchedRes({});
     } else {
-      setSearchStr(searchStr);
       searchWithQueryData(searchStr, currQueryType);
     }
   };
@@ -135,14 +135,14 @@ const ProjectSearcher = (props) => {
     if (currentTypeRecentUsed.length === 0) {
       return (
         <div className='search-result-none'>
-          {gettext('No results matching')}
+          {getSearchValueLength(searchStr) < 3 ? gettext('Enter more characters to start searching') : gettext('No results matching')}
         </div>
       );
     }
 
     return (
       <div className='recent-used-search-results'>
-        <div className='recent-used-title'>{gettext('Search results visited recently')}</div>
+        <div className='recent-used-title mt-3 px-4'>{gettext('Search results visited recently')}</div>
         <SearchedList
           searchedList={currentTypeRecentUsed}
           handleUpArrow={handleUpArrow}
@@ -155,7 +155,11 @@ const ProjectSearcher = (props) => {
 
   const renderSearchedResults = () => {
     if (isLoading) {
-      return <Loading />;
+      return (
+        <div className='search-result-placeholder-container'>
+          <Loading />
+        </div>
+      );
     }
 
     const searchedList = searchedRes[SEARCHED_STORE_KEY[currQueryType]];
@@ -202,6 +206,7 @@ const ProjectSearcher = (props) => {
         value={searchStr}
         autoFocus={true}
         placeholder={gettext('Search')}
+        isShowClearIcon={searchStr.length > 0}
       />
       <div className='search-type-wrapper'>
         <CustomizeTabs

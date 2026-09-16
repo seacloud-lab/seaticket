@@ -17,7 +17,7 @@ const Tip = ({ isAsyncSearch = false, searchValue, tip, src, isShowSrc = false }
   }, [src]);
 
   const className = classnames('options-editor-empty-tip', { 'options-editor-empty-img-tip': isShowSrc && tipImgSrc });
-  if (!isAsyncSearch) {
+  if (!isAsyncSearch || tip) {
     return (<EmptyTip innerRef={tipRef} src={isShowSrc && tipImgSrc} text={tip} className={className} />);
   }
 
