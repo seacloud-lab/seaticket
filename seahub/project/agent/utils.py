@@ -1,6 +1,9 @@
 import logging
 import json
 
+from django.core import signing
+from django.core.signing import BadSignature
+
 from seahub.project.utils import get_current_table_metadata
 from seahub.seadb_models.models import SchemaTables
 
@@ -182,7 +185,10 @@ SUGGESTIONS_STATUS_PENDING = 'pending'
 SUGGESTIONS_STATUS_RESOLVED = 'resolved'
 SUGGESTIONS_STATUS_FAILED = 'failed'
 
-LOG_STATUS_DONE = 'done'
+LOG_STATUS_PROCESSED = 'processed'
+LOG_STATUS_UNPROCESSED = 'unprocessed'
+LOG_STATUS = (LOG_STATUS_PROCESSED, LOG_STATUS_UNPROCESSED)
+AGENT_LOG_CURSOR_SALT = 'seahub.project.agent.logs'
 
 
 def _is_suggestion_action(action):
@@ -203,8 +209,9 @@ def _query_owned_runs(seadb_api, project_uuid, owner_source_id, owner_source_typ
     return result.get('results', [])
 
 
-def _query_log_summary_rows(seadb_api, project_uuid, page, per_page):
-    offset = (page - 1) * per_page
+def _query_log_summary_rows(seadb_api, project_uuid, page, per_page, offset=None):
+    if offset is None:
+        offset = (page - 1) * per_page
     runs_table = SchemaTables.AGENT_RUNS.table_name()
     sql = (
         "SELECT `owner_source_id`, `owner_source_type`, "
@@ -357,17 +364,10 @@ def _calculate_log_status(summary_row):
         return ''
     if summary_row.get('open_suggestion_runs'):
         return ''
-    return LOG_STATUS_DONE
+    return LOG_STATUS_PROCESSED
 
 
-def list_agent_logs(seadb_api, project_uuid, page=1, per_page=20):
-    summary_rows = _query_log_summary_rows(seadb_api, project_uuid, page, per_page)
-    has_more = len(summary_rows) > per_page
-    if has_more:
-        summary_rows = summary_rows[:per_page]
-
-    status_counts = _query_run_status_counts(seadb_api, project_uuid, summary_rows)
-
+def _build_agent_logs(summary_rows, status_counts):
     logs = []
     for row in summary_rows:
         key = (row.get('owner_source_id', ''), row.get('owner_source_type', ''))
@@ -382,10 +382,115 @@ def list_agent_logs(seadb_api, project_uuid, page=1, per_page=20):
                 **status_counts.get(key, {}),
             }),
         })
+    return logs
+
+
+def _is_matched_log_status(log, log_status):
+    if log_status == LOG_STATUS_PROCESSED:
+        return log['status'] == LOG_STATUS_PROCESSED
+    if log_status == LOG_STATUS_UNPROCESSED:
+        return log['status'] != LOG_STATUS_PROCESSED
+    return False
+
+
+def _load_agent_logs_cursor(cursor, project_uuid, status_filter):
+    if not cursor:
+        return 0, []
+    try:
+        payload = signing.loads(cursor, salt=AGENT_LOG_CURSOR_SALT)
+    except (BadSignature, TypeError, ValueError):
+        raise ValueError('Cursor is invalid.')
+
+    source_offset = payload.get('source_offset')
+    pending_logs = payload.get('pending_logs')
+    if (
+        payload.get('project_uuid') != project_uuid
+        or payload.get('status_filter') != status_filter
+        or not isinstance(source_offset, int)
+        or source_offset < 0
+        or not isinstance(pending_logs, list)
+        or not all(isinstance(log, dict) for log in pending_logs)
+    ):
+        raise ValueError('Cursor is invalid.')
+    return source_offset, pending_logs
+
+
+def _dump_agent_logs_cursor(project_uuid, status_filter, source_offset, pending_logs):
+    return signing.dumps({
+        'project_uuid': project_uuid,
+        'status_filter': status_filter,
+        'source_offset': source_offset,
+        'pending_logs': pending_logs,
+    }, salt=AGENT_LOG_CURSOR_SALT)
+
+
+def list_agent_logs(seadb_api, project_uuid, page=1, per_page=20, log_status='', cursor=None):
+    if log_status in LOG_STATUS:
+        return _list_agent_logs_by_status(seadb_api, project_uuid, per_page, log_status, cursor)
+
+    summary_rows = _query_log_summary_rows(seadb_api, project_uuid, page, per_page)
+    has_more = len(summary_rows) > per_page
+    if has_more:
+        summary_rows = summary_rows[:per_page]
+
+    status_counts = _query_run_status_counts(seadb_api, project_uuid, summary_rows)
+    logs = _build_agent_logs(summary_rows, status_counts)
 
     return {
         'logs': logs,
         'has_more': has_more,
+        'next_cursor': None,
+    }
+
+
+def _list_agent_logs_by_status(seadb_api, project_uuid, per_page, status_filter, cursor):
+    """Paginate the derived log status after loading source log batches.
+
+    A log's status depends on the aggregate state of its runs, so it cannot be
+    filtered in the source summary query. The signed cursor stores the next
+    unscanned source offset and the lookahead matches used to calculate
+    has_more, so those source logs are not scanned twice.
+    """
+    matched_logs = []
+    source_offset, pending_logs = _load_agent_logs_cursor(cursor, project_uuid, status_filter)
+    matched_logs.extend(pending_logs)
+
+    while len(matched_logs) <= per_page:
+        summary_rows = _query_log_summary_rows(seadb_api, project_uuid, 1, per_page, source_offset)
+        has_more_source_rows = len(summary_rows) > per_page
+        if has_more_source_rows:
+            summary_rows = summary_rows[:per_page]
+
+        status_counts = _query_run_status_counts(seadb_api, project_uuid, summary_rows)
+        logs = _build_agent_logs(summary_rows, status_counts)
+        for index, log in enumerate(logs):
+            if not _is_matched_log_status(log, status_filter):
+                continue
+            matched_logs.append(log)
+            if len(matched_logs) > per_page:
+                source_offset += index + 1
+                break
+        else:
+            source_offset += len(summary_rows)
+
+        if len(matched_logs) > per_page or not has_more_source_rows:
+            break
+
+    has_more = len(matched_logs) > per_page
+    logs = matched_logs[:per_page]
+    next_cursor = None
+    if has_more:
+        next_cursor = _dump_agent_logs_cursor(
+            project_uuid,
+            status_filter,
+            source_offset,
+            matched_logs[per_page:],
+        )
+
+    return {
+        'logs': logs,
+        'has_more': has_more,
+        'next_cursor': next_cursor,
     }
 
 

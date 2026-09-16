@@ -2,7 +2,7 @@ import { gettext } from '@/constants';
 import { getResourceIconURL, getResourceTypeName } from '@/project/utils';
 import { isObject, isString } from '@/utils/type-detection';
 import { CONNECTION_TYPES } from '../connections/constants';
-import { ACTION_TYPE, RUN_EVENT, RUN_STATUS, SUGGESTIONS_STATUS } from './constants';
+import { ACTION_TYPE, LOG_STATUS, RUN_EVENT, RUN_STATUS, SUGGESTIONS_STATUS } from './constants';
 
 export const getTriggerInfoFromRun = (run) => {
   const eventType = run?.event?.type;
@@ -289,5 +289,5 @@ export const getRunLogStatusByRuns = (runs) => {
   if (suggestionsStatuses.some(item => [SUGGESTIONS_STATUS.PENDING, SUGGESTIONS_STATUS.FAILED, ''].includes(item))) {
     return '';
   }
-  return 'done';
+  return LOG_STATUS.PROCESSED;
 };

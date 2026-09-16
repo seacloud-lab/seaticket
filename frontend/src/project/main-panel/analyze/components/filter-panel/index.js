@@ -1,6 +1,5 @@
-import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
-import classnames from 'classnames';
-import { Icon, OptionsEditor } from '@/components';
+import React, { useCallback, useMemo } from 'react';
+import { FilterSelect } from '@/components';
 import { gettext } from '@/constants';
 import dayjs from '@/sea-metadata/utils/dayjs';
 import { presetLabelMapping, DATE_FORMAT } from './constants';
@@ -24,24 +23,6 @@ const FilterPanel = ({
   endDate,
   onDateFilterChange,
 }) => {
-  const [isShowPopover, setIsShowPopover] = useState(false);
-  const [isShowPresetPopover, setIsShowPresetPopover] = useState(false);
-  const popoverRef = useRef(null);
-  const presetPopoverRef = useRef(null);
-
-  useEffect(() => {
-    const handleHiddenPopover = (e) => {
-      if (popoverRef.current && !popoverRef.current.contains(e.target)) {
-        setIsShowPopover(false);
-      }
-      if (presetPopoverRef.current && !presetPopoverRef.current.contains(e.target)) {
-        setIsShowPresetPopover(false);
-      }
-    };
-
-    document.addEventListener('click', handleHiddenPopover);
-    return () => document.removeEventListener('click', handleHiddenPopover);
-  }, []);
 
   const activeState = useMemo(() => {
     return filters.find(item => item.field === 'state');
@@ -86,18 +67,13 @@ const FilterPanel = ({
 
   const stateOptions = useMemo(() => {
     const { state = [] } = filterableFieldOptions || {};
-    let newState = state;
-    if (!activeState || activeState?.value === '--') {
-      newState = state.filter(state => state !== '--');
-    }
-    return newState.map((state) => {
+    return state.map((state) => {
       return {
         label: STATE_LABELS[state],
-        name: state,
         value: state,
       };
     });
-  }, [filterableFieldOptions, activeState]);
+  }, [filterableFieldOptions]);
 
   const presetOptions = useMemo(() => {
     return Object.keys(presetLabelMapping).map((preset) => ({
@@ -122,15 +98,8 @@ const FilterPanel = ({
     };
   }, [selectedRange, maxIndex]);
 
-  const handleTogglePopover = useCallback(() => {
-    if (!isShowPopover) {
-      setIsShowPopover(true);
-    }
-  }, [isShowPopover]);
-
   const onStateChange = useCallback((value) => {
     handleFilterChange('state', value);
-    setIsShowPopover(false);
   }, [handleFilterChange]);
 
   const handleStartChange = useCallback((event) => {
@@ -151,41 +120,18 @@ const FilterPanel = ({
     if (!preset) return;
     const presetRange = buildPresetRange(preset, baseStartDate, baseEndDate);
     onDateFilterChange(presetRange.startDate, presetRange.endDate);
-    setIsShowPresetPopover(false);
   }, [onDateFilterChange, baseStartDate, baseEndDate]);
 
   const isShowDateRange = !!baseStartDate && !!baseEndDate;
 
   return (
     <div className="analyze-filter-panel d-flex align-items-end">
-      <div className="analyze-add-filter" ref={popoverRef}>
-        <div
-          className={classnames('analyze-add-filter-btn', { 'active': activeState && (activeState.value !== '--') })}
-          onClick={handleTogglePopover}
-        >
-          <span>{gettext('Status')}</span>
-          <Icon symbol="arrow-down" />
-        </div>
-        {isShowPopover && (
-          <OptionsEditor
-            className="analyze-filter-option-editor"
-            options={stateOptions}
-            target={popoverRef}
-            isSearchEnabled={false}
-            value={activeState ? activeState.value : ''}
-            onChange={onStateChange}
-            onToggle={() => {}}
-            modifiers={[
-              {
-                name: 'offset',
-                options: {
-                  offset: [0, 4],
-                }
-              }
-            ]}
-          />
-        )}
-      </div>
+      <FilterSelect
+        value={activeState?.value}
+        title={gettext('Status')}
+        options={stateOptions}
+        onChange={onStateChange}
+      />
       {isShowDateRange && (
         <>
           <div className="analyze-filter-divider"></div>
@@ -217,31 +163,14 @@ const FilterPanel = ({
             </div>
             <span className="analyze-date-filter-end-label">{selectedRange.endDate || '--'}</span>
           </div>
-          <div className="analyze-date-filter-dropdown" ref={presetPopoverRef}>
-            <div className="analyze-date-filter-dropdown-btn" onClick={() => {setIsShowPresetPopover(prev => !prev);}}>
-              <span>{rangeLabel}</span>
-              <Icon symbol="arrow-down" />
-            </div>
-            {isShowPresetPopover && (
-              <OptionsEditor
-                className="analyze-filter-option-editor analyze-date-filter-presets"
-                options={presetOptions}
-                target={presetPopoverRef}
-                isSearchEnabled={false}
-                value={selectedPresetValue}
-                onChange={handlePresetChange}
-                onToggle={() => {}}
-                modifiers={[
-                  {
-                    name: 'offset',
-                    options: {
-                      offset: [8, 4],
-                    }
-                  }
-                ]}
-              />
-            )}
-          </div>
+          <FilterSelect
+            className="ml-2"
+            isShowEmptyOption={false}
+            value={selectedPresetValue}
+            title={rangeLabel}
+            options={presetOptions}
+            onChange={handlePresetChange}
+          />
         </>
       )}
     </div>

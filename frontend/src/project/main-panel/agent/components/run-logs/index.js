@@ -1,12 +1,13 @@
 import React, { useCallback, useState, useRef, useEffect } from 'react';
 import classnames from 'classnames';
-import { CenteredLoading, IconTooltip, ResizeBar, toaster } from '@/components';
-import { gettext } from '@/constants';
+import { CenteredLoading, IconTooltip, ResizeBar, toaster, FilterSelect, EmptyTip } from '@/components';
+import { gettext, mediaUrl } from '@/constants';
 import { agentAPI } from '@/project/api';
 import { RefreshBtn } from '@/project/components';
 import ContextMenu from '@/sea-metadata/components/context-menu';
 import { isFunction } from '@/utils/type-detection';
 import { Utils } from '@/utils/utils';
+import { LOG_STATUS } from '../../constants';
 import { getRunLogStatusByRuns } from '../../utils';
 import RunLog from './run-log';
 
@@ -22,8 +23,11 @@ const RunLogs = ({
   hasMore,
   loadMore,
   reload,
-  activeLogIndex = 0,
-  setActiveLogIndex,
+  activeLogKey = '',
+  updateActiveLogKey,
+  statusFilterValue,
+  statusFilterOptions,
+  updateStatusFilterValue,
   hideLogs,
   updateRunLog,
   onRunsUpdated,
@@ -35,32 +39,31 @@ const RunLogs = ({
   const resizeObserverRef = useRef(null);
   const contextRunLogRef = useRef(null);
 
-  const handleClick = useCallback((index) => {
-    if (index === activeLogIndex) return;
-    setActiveLogIndex && setActiveLogIndex(index);
-  }, [activeLogIndex, setActiveLogIndex]);
+  const handleClick = useCallback((key) => {
+    if (key === activeLogKey) return;
+    updateActiveLogKey && updateActiveLogKey(key);
+  }, [activeLogKey, updateActiveLogKey]);
 
   const handleReload = useCallback(() => {
-    setActiveLogIndex(0);
     reload();
-  }, [setActiveLogIndex, reload]);
+  }, [reload]);
 
   const onContextMenuCapture = useCallback((event) => {
     const runLogElement = event.target.closest('.seaqa-agent-run-log');
     if (!runLogElement) return;
-    const index = Number(runLogElement.dataset.index);
-    const runLog = runLogs[index];
-    if (!runLog || runLog.status === 'done') {
+    const key = runLogElement.dataset.key;
+    const runLog = runLogs.find(item => item.key === key);
+    if (!runLog || runLog.status === LOG_STATUS.PROCESSED) {
       contextRunLogRef.current = null;
       return;
     }
     contextRunLogRef.current = runLog;
-    handleClick(index);
+    handleClick(key);
   }, [handleClick, runLogs]);
 
   const createContextMenuOptions = useCallback(() => {
     const runLog = contextRunLogRef.current;
-    if (!runLog || runLog.status === 'done') return [];
+    if (!runLog || runLog.status === LOG_STATUS.PROCESSED) return [];
 
     return [{
       label: gettext('Mark as done'),
@@ -138,32 +141,48 @@ const RunLogs = ({
             </div>
             <RefreshBtn onClick={handleReload} className="ml-1" />
           </div>
-          <IconTooltip
-            onClick={hideLogs}
-            icon="side-bar"
-            tip={gettext('Close the panel')}
-            placement="bottom"
-            className="mx-0"
-            hoverBackground={true}
-            size={{ btn: 24, icon: 16 }}
-          />
+          <div className="d-flex align-items-center o-hidden gap-2">
+            <FilterSelect
+              value={statusFilterValue}
+              options={statusFilterOptions}
+              title={gettext('Status')}
+              isSmall={true}
+              onChange={updateStatusFilterValue}
+            />
+            <div className="seaqa-agent-run-logs-header-divider ml-1"></div>
+            <IconTooltip
+              onClick={hideLogs}
+              icon="side-bar"
+              tip={gettext('Close the panel')}
+              placement="bottom"
+              className="mx-0"
+              hoverBackground={true}
+              size={{ btn: 24, icon: 16 }}
+            />
+          </div>
         </div>
         <div className="seaqa-agent-run-logs-body flex-1" onScroll={onScroll} onContextMenuCapture={onContextMenuCapture} ref={logsRef}>
-          {runLogs.map((log, index) => {
-            const { owner_source_id, owner_source_type } = log;
+          {Array.isArray(runLogs) && runLogs.length > 0 && runLogs.map(log => {
+            const { key } = log;
 
             return (
               <RunLog
-                key={`${owner_source_type}_${owner_source_id}`}
+                key={key}
                 runLog={log}
-                active={index === activeLogIndex}
-                index={index}
-                onClick={() => handleClick(index)}
+                active={key === activeLogKey}
+                onClick={() => handleClick(key)}
               />
             );
           })}
           {isLoading && (
             <CenteredLoading className={classnames({ 'seaqa-agent-run-log-load-more': runLogs.length > 0 })} />
+          )}
+          {!isLoading && runLogs.length === 0 && statusFilterValue && (
+            <EmptyTip
+              className="seaqa-agent-filter-run-logs-tip"
+              src={`${mediaUrl}img/no-items-tip.png`}
+              text={gettext('No record')}
+            />
           )}
         </div>
         <ContextMenu

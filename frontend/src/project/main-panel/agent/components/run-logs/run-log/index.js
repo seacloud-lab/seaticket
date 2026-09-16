@@ -4,18 +4,14 @@ import { IconButton } from '@/components';
 import { gettext } from '@/constants';
 import DateFormatter from '@/project/main-panel/connections/components/cell-formatter/date-formatter';
 import { FROM_NOW } from '@/sea-metadata/constants';
+import { LOG_STATUS } from '../../../constants';
 import { getAgentResource } from '../../../utils';
 import ResourceTitle from '../../resource-title';
 
 import './index.css';
 
-const RunLog = ({
-  active,
-  index,
-  runLog,
-  onClick,
-}) => {
-  const { owner_source_id, owner_source_type, num_of_runs, last_active_at, status } = runLog;
+const RunLog = ({ active, runLog, onClick }) => {
+  const { key, num_of_runs, last_active_at, status } = runLog;
 
   let runsTip = num_of_runs + ' ' + gettext('Runs');
   if (num_of_runs === 0) runsTip = '';
@@ -26,8 +22,7 @@ const RunLog = ({
 
   return (
     <div
-      key={`${owner_source_type}_${owner_source_id}`}
-      data-index={index}
+      data-key={key}
       className={classnames('seaqa-agent-run-log w-100 d-flex flex-column position-relative', { 'active': active })}
       onClick={onClick}
     >
@@ -40,7 +35,7 @@ const RunLog = ({
         </div>
         {status && (
           <>
-            {status === 'done' && (<IconButton size={12} className="no-hover-bg seaqa-agent-run-status run-done" icon="check-circle" />)}
+            {status === LOG_STATUS.PROCESSED && (<IconButton size={12} className="no-hover-bg seaqa-agent-run-status run-done" icon="check-circle" />)}
             {status === 'no_action_needed' && (<IconButton size={12} className="no-hover-bg seaqa-agent-run-status run-no-action-needed" icon="info-filled" />)}
           </>
         )}

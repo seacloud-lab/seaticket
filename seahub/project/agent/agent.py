@@ -40,6 +40,7 @@ from seahub.project.agent.utils import (
     get_agent_run_detail,
     get_agent_log_runs,
     list_agent_logs,
+    LOG_STATUS,
     cancel_agent_log_pending_actions,
 )
 
@@ -50,7 +51,7 @@ logger = logging.getLogger(__name__)
 class AgentLogsView(APIView):
     """
     List logs processed by the agent.
-    GET /api/v1/project/<project_uuid>/agent/logs/
+    GET /api/v1/project/<project_uuid>/agent/logs/?status=<processed|unprocessed>
     """
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
@@ -68,6 +69,10 @@ class AgentLogsView(APIView):
             page = 1
         if per_page < 1:
             per_page = 20
+        log_status = request.GET.get('status', '')
+        if log_status and log_status not in LOG_STATUS:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Status is invalid.')
+        cursor = request.GET.get('cursor')
 
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -78,7 +83,9 @@ class AgentLogsView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         try:
-            result = list_agent_logs(SeaDBAPI(), project_uuid, page, per_page)
+            result = list_agent_logs(SeaDBAPI(), project_uuid, page, per_page, log_status, cursor)
+        except ValueError as e:
+            return api_error(status.HTTP_400_BAD_REQUEST, str(e))
         except Exception as e:
             logger.error(f'Error listing agent items: {e}')
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')

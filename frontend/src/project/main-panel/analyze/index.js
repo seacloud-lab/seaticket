@@ -100,7 +100,6 @@ const Analyze = ({ title }) => {
       const uniqueValues = [...new Set(values.filter(v => v != null))].sort().reverse();
       if (uniqueValues.length > 0) {
         options[field] = uniqueValues;
-        options[field].unshift('--');
       }
     });
     return options;
@@ -222,7 +221,6 @@ const Analyze = ({ title }) => {
             onRemoveConnection={handleRemoveConnection}
             onClose={handleToggleSettings}
             filters={filters}
-            filterableFieldOptions={filterableFieldOptions}
             handleFilterChange={handleFilterChange}
             colorBy={colorBy}
             onColorByChange={handleColorByChange}

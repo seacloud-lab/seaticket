@@ -20,6 +20,8 @@ const RunLogDetails = ({
   runLog,
   showLogs,
   settings,
+  statusFilterValue,
+  statusFilterOptions,
   modifySettings,
   hideLogs,
   updateRunLog,
@@ -50,6 +52,11 @@ const RunLogDetails = ({
     if (!action) return null;
     return { runId, action, mode, event: run.event };
   }, [runs, suggestionInfo]);
+  const statusFilterOptionName = useMemo(() => {
+    if (!statusFilterValue) return '';
+    const option = statusFilterOptions.find(item => item.value === statusFilterValue) || statusFilterOptions[0];
+    return option.label;
+  }, [statusFilterValue, statusFilterOptions]);
 
   const openSuggestionDetailPanel = useCallback((runId, actionId, mode = 'view') => {
     setSuggestionInfo({ runId, actionId, mode });
@@ -357,15 +364,25 @@ const RunLogDetails = ({
           <ResourceTitle resource={resource} className="font-size-16 font-weight-500 text-truncate" />
         </div>
         <div className="seaqa-agent-run-log-details-body d-flex flex-1 o-hidden">
-          {isLoading && (<CenteredLoading />)}
-          {!isLoading && runs.length === 0 && (
-            <EmptyTip
-              src={`${mediaUrl}img/no-items-tip.png`}
-              title={gettext('No agent runs')}
-              className="w-100"
-            />
+          {(isLoading || !runLog) && (<CenteredLoading />)}
+          {!isLoading && runs.length === 0 && runLog && (
+            <>
+              {statusFilterValue && (
+                <EmptyTip
+                  text={gettext('No logs match Status: %s in the list on the left, so there are no details to display').replace('%s', statusFilterOptionName)}
+                  className="w-100"
+                />
+              )}
+              {!statusFilterValue && (
+                <EmptyTip
+                  src={`${mediaUrl}img/no-items-tip.png`}
+                  title={gettext('No agent runs')}
+                  className="w-100"
+                />
+              )}
+            </>
           )}
-          {!isLoading && runs.length !== 0 && (
+          {!isLoading && runs.length !== 0 && runLog && (
             <>
               <div className="seaqa-agent-run-log-details h-100 d-flex flex-column p-4 w-100">
                 {!isShowAll && (
