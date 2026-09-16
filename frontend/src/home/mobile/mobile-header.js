@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { MobileCommonHeader } from '../../components';
 import { gettext } from '../../constants';
 import ProjectMenuToolbar from './toolbar/project-menu-toolbar';
-// import SearchProject from '../search/search-project';
 
 const MOBILE_HEADER_TITLE = {
   projects: 'Projects',
@@ -28,10 +27,6 @@ export default class MobileHeader extends Component {
           loadWorkspaceList={this.props.loadWorkspaceList}
         />
         <div className="common-toolbar">
-          {/* <SearchProject
-            placeholder={this.props.searchPlaceholder || gettext('Search projects')}
-            onSearchedClick={this.props.onSearchedClick}
-          /> */}
         </div>
       </header>
     );

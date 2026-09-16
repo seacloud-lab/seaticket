@@ -71,7 +71,7 @@ class Header extends React.Component {
     const { isShowSearcher } = this.state;
     return (
       <div className={classnames('search', { active: isShowSearcher })}>
-        <div className={`search-mask ${isShowSearcher ? '' : 'hide'}`} onClick={this.onCloseSearcher} role="button" style={{ zIndex: Z_INDEX.SEARCH_MASK }}></div>
+        <div className={`modal-backdrop ${isShowSearcher ? 'show' : 'fade'}`} onClick={this.onCloseSearcher} role="button"></div>
         <div
           tabIndex={0}
           className="search-container"
