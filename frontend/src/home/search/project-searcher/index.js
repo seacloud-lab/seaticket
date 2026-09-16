@@ -163,14 +163,14 @@ const ProjectSearcher = (props) => {
       if (!searchStr) {
         return (
           <div className='search-result-none'>
-            {gettext('Type characters to start search')}
+            {gettext('Enter characters to start searching')}
           </div>
         );
       }
       else if (getSearchValueLength(searchStr) < 3) {
         return (
           <div className='search-result-none'>
-            {gettext('Type more characters to start search')}
+            {gettext('Enter more characters to start searching')}
           </div>
         );
       }
