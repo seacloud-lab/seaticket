@@ -1,0 +1,36 @@
+.seaqa-search-input-wrapper .seaqa-search-input-history-search {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background-color: #fff;
+  border: 1px solid rgba(0, 40, 100, 0.12);
+  border-radius: 8px;
+  box-shadow: 0 6px 14px 0 rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 4px;
+  min-width: 8rem;
+  padding: .5rem;
+  z-index: 1000;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.seaqa-search-input-wrapper .seaqa-search-input-history-search-item {
+  align-items: center;
+  display: flex;
+  height: 32px;
+  line-height: 1.5;
+  min-width: 200px;
+  padding: .25rem .5rem;
+  width: 100%;
+}
+
+.seaqa-search-input-wrapper .seaqa-search-input-history-search-item:active,
+.seaqa-search-input-wrapper .seaqa-search-input-history-search-item:focus,
+.seaqa-search-input-wrapper .seaqa-search-input-history-search-item:hover {
+  background-color: rgba(0, 0, 0, .04);
+  border-radius: 4px;
+  color: #212529;
+}
