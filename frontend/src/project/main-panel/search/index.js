@@ -11,8 +11,8 @@ import TopBar from '../top-bar';
 import { SEARCH_FILTERS_KEY, SEARCH_FILTER_BY_DATE_TYPE_KEY, SEARCH_FILTER_BY_DATE_OPTION_KEY } from './constants';
 import FilterByDate from './filter-by-date';
 import HideConnectionSetter from './hide-connection-setter';
-import ListItem from './list-item';
 import { SearchResult } from './models';
+import ProjectSearchResultListItem from './project-search-result-list-item';
 
 import './index.css';
 import './search-filters.css';
@@ -188,9 +188,6 @@ const Search = ({ title }) => {
       </TopBar>
       <div className="seaqa-project-search pt-3 px-4 d-flex flex-column align-items-center overflow-hidden w-100 flex-1">
         <GlobalSearchInput
-          autoFocus={true}
-          isClearable={true}
-          size={38}
           placeholder={gettext('Search')}
           onChange={(value) => onChange(value, hiddenConnectionIDs, connections, filterDate)}
           onClear={onClear}
@@ -226,7 +223,7 @@ const Search = ({ title }) => {
             {value && results.length > 0 &&
               <div className="seaqa-project-search-result-list">
                 {results.map((result, index) =>
-                  <ListItem
+                  <ProjectSearchResultListItem
                     key={result._id || result.uuid}
                     {...result}
                     searchValue={value}

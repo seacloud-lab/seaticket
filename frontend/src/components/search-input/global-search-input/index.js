@@ -1,11 +1,10 @@
 import React, { Component } from 'react';
-import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import ClearIconButton from '@/components/clear-icon-button';
-import { isFunction } from '@/utils/type-detection';
 import IconButton from '../../icon-button';
 
-import './index.css';
+import '../search-input/index.css';
+import './history-search.css';
 
 class GlobalSearchInput extends Component {
 
@@ -66,9 +65,8 @@ class GlobalSearchInput extends Component {
   };
 
   onClear = () => {
-    const { onClear } = this.props;
     this.setState({ searchValue: '' }, () => {
-      onClear && onClear();
+      this.props.onClear();
     });
   };
 
@@ -97,57 +95,33 @@ class GlobalSearchInput extends Component {
     this.setState({ oldSearchList: [], searchValue: item });
   };
 
-  renderClear = () => {
-    const { onClear, size = 38 } = this.props;
-    const { searchValue } = this.state;
-    if (!isFunction(onClear) || !searchValue) return null;
-    const clearButtonSize = 14;
-    const verticalOffset = (size - clearButtonSize) / 2;
-    return (
-      <ClearIconButton
-        onClick={this.onClear}
-        style={{
-          height: clearButtonSize,
-          width: clearButtonSize,
-          top: verticalOffset,
-          right: verticalOffset
-        }}
-      />
-    );
-  };
-
   render() {
-    const { placeholder, autoFocus, className, inputClassName, disabled = false, isShowSearchIcon = true, size = 38, onClear, style } = this.props;
+    const { placeholder } = this.props;
     const { searchValue } = this.state;
 
     return (
-      <div
-        ref={ref => this.globalSearchRef = ref}
-        className={classnames('seaqa-search-input-wrapper', className, { 'display-search-icon': isShowSearchIcon, 'display-clear-icon': isFunction(onClear) })}
-        style={{ ...style, height: size }}
-      >
-        {isShowSearchIcon && (
-          <IconButton icon="search" className="seaqa-search-input-search" style={{ height: size, width: size - 2 }} />
-        )}
+      <div ref={ref => this.globalSearchRef = ref} className='seaqa-search-input-wrapper'>
+        <IconButton icon="search" className="seaqa-search-input-search" style={{ height: 38, width: 36 }} />
         <input
           ref={ref => this.inputRef = ref}
           type="text"
           value={searchValue}
-          className={classnames('form-control seaqa-search-input', inputClassName)}
+          className='form-control seaqa-search-input'
           onChange={this.onChange}
-          autoFocus={autoFocus}
+          autoFocus={true}
           placeholder={placeholder}
           onCompositionStart={this.onCompositionStart}
           onCompositionEnd={this.onCompositionEnd}
           onKeyDown={this.onKeyDown}
-          disabled={disabled}
-          style={{ height: size, paddingLeft: isShowSearchIcon ? size + 2 : 12 }}
+          style={{ paddingLeft: 36 }}
         />
-        {this.renderClear()}
+        {this.state.searchValue &&
+          <ClearIconButton onClick={this.onClear} style={{ top: 9, right: 9 }} />
+        }
         {this.state.oldSearchList.length > 0 && (
-          <div className="seaqa-search-input-old-search">
+          <div className="seaqa-search-input-history-search">
             {this.state.oldSearchList.map((item, index) => (
-              <div key={index} className="seaqa-search-input-old-search-item" onClick={(e) => this.onClickOldSearch(e, item)}>
+              <div key={index} className="seaqa-search-input-history-search-item" onClick={(e) => this.onClickOldSearch(e, item)}>
                 {item}
               </div>
             ))}
@@ -160,14 +134,8 @@ class GlobalSearchInput extends Component {
 
 GlobalSearchInput.propTypes = {
   placeholder: PropTypes.string,
-  autoFocus: PropTypes.bool,
-  isShowSearchIcon: PropTypes.bool,
-  className: PropTypes.string,
-  inputClassName: PropTypes.string,
   onChange: PropTypes.func.isRequired,
   onKeyDown: PropTypes.func,
-  disabled: PropTypes.bool,
-  size: PropTypes.number,
   onClear: PropTypes.func,
   value: PropTypes.string,
   storeKey: PropTypes.string,

@@ -1,13 +1,13 @@
 import React, { useCallback, useRef } from 'react';
 import { getPreviewContent } from '@seafile/seafile-editor';
 import dayjs from 'dayjs';
+import { CONNECTION_TYPES, CONNECTION_TYPE } from '@/project/main-panel/connections/constants';
 import { getResourceIconURL } from '@/project/utils';
 import { formatWithTimezone } from '@/sea-metadata/utils/column';
-import { CONNECTION_TYPES, CONNECTION_TYPE } from '../../connections/constants';
 
-import './index.css';
+import './project-search-result-list-item.css';
 
-const ListItem = ({
+const ProjectSearchResultListItem = ({
   type, id, title, subtitle, content = '', bumped_at = '', searchValue, expandItem
 }) => {
   const connectionOption = CONNECTION_TYPES.find(c => c.type === type);
@@ -56,26 +56,26 @@ const ListItem = ({
   }
 
   return (
-    <div className="list-item" key={id} onClick={handleItemClick}>
-      <div className="list-item-icon">
+    <div className="seaqa-project-search-result-list-item" key={id} onClick={handleItemClick}>
+      <div className="seaqa-project-search-result-list-item-icon">
         <img src={iconSrc} alt={altText} className="seaqa-project-connection-type-icon" />
       </div>
-      <div className="list-item-content">
-        <div className="list-item-title">
-          <span className="text-truncate list-item-title-content" title={title || ''}>{title || ''}</span>
+      <div className="seaqa-project-search-result-list-item-content">
+        <div className="seaqa-project-search-result-list-item-title">
+          <span className="text-truncate seaqa-project-search-result-list-item-title-content" title={title || ''}>{title || ''}</span>
         </div>
-        <div className="list-item-path">{subtitle || ''}</div>
+        <div className="seaqa-project-search-result-list-item-path">{subtitle || ''}</div>
         {bumped_at &&
-          <div className="list-item-time" title={formatWithTimezone(bumped_at)}>
+          <div className="seaqa-project-search-result-list-item-time" title={formatWithTimezone(bumped_at)}>
             {dayjs(bumped_at).format('YYYY-MM-DD HH:mm:ss')}
           </div>
         }
         {content &&
-          <div className="list-item-detail" dangerouslySetInnerHTML={{ __html: detailContentRef.current }}></div>
+          <div className="seaqa-project-search-result-list-item-detail" dangerouslySetInnerHTML={{ __html: detailContentRef.current }}></div>
         }
       </div>
     </div>
   );
 };
 
-export default ListItem;
+export default ProjectSearchResultListItem;
