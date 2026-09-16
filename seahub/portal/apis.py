@@ -110,6 +110,8 @@ class PortalLogoView(APIView):
         file_path = PORTAL_LOGO_FILE_PATH
         try:
             metadata = get_project_file_head_from_s3(project_uuid, file_path)
+        except FileNotFound:
+            return api_error(status.HTTP_404_NOT_FOUND, 'File not found.')
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
