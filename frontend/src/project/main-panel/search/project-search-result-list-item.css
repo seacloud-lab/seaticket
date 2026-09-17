@@ -1,6 +1,6 @@
 .seaqa-project-search-result-list-item {
-  width: 100%;
   display: flex;
+  width: 100%;
   padding: 12px;
   cursor: pointer;
 }
@@ -22,20 +22,20 @@
 }
 
 .seaqa-project-search-result-list-item-content {
-  flex: 1;
   display: flex;
+  flex: 1;
   flex-direction: column;
   min-width: 0;
 }
 
 .seaqa-project-search-result-list-item-content .seaqa-project-search-result-list-item-title {
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 500;
   display: inline-flex;
-  width: fit-content;
-  max-width: 100%;
   align-items: center;
+  max-width: 100%;
+  width: fit-content;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
 }
 
 .seaqa-project-search-result-list-item-content .seaqa-project-search-result-list-item-title .seaqa-project-search-result-list-item-title-content {
@@ -43,47 +43,47 @@
 }
 
 .seaqa-project-search-result-list-item-content .seaqa-project-search-result-list-item-score {
-  font-size: 12px;
-  color: #888;
+  flex-shrink: 0;
+  height: 18px;
+  padding: 0px 6px;
   background-color: var(--bs-border-tertiary-color);
   border-radius: 9px;
-  padding: 0px 6px;
-  height: 18px;
-  flex-shrink: 0;
+  font-size: 12px;
+  color: #888;
 }
 
 .seaqa-project-search-result-list-item-content .seaqa-project-search-result-list-item-path {
-  font-size: 13px;
-  color: var(--bs-sf-grey-text);
-  white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
   margin-top: 2px;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--bs-sf-grey-text);
 }
 
 .seaqa-project-search-result-list-item-content .seaqa-project-search-result-list-item-time {
+  margin-top: 2px;
   font-size: 13px;
   color: var(--bs-sf-grey-text);
-  margin-top: 2px;
 }
 
 .seaqa-project-search-result-list-item-content .seaqa-project-search-result-list-item-detail {
+  display: -webkit-box;
+  overflow: hidden;
+  margin-top: 2px;
   font-size: 13px;
   line-height: 20px;
-  color: var(--bs-sf-grey-text);
-  overflow: hidden;
   text-overflow: ellipsis;
-  margin-top: 2px;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
+  color: var(--bs-sf-grey-text);
   -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
 }
 
 .seaqa-project-search-result-list-item-content .seaqa-project-search-result-list-item-detail pre {
   display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
   overflow-y: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
 }
 
 .seaqa-project-search-result-list-item-content .seaqa-project-search-result-list-item-detail svg {
@@ -92,14 +92,14 @@
 }
 
 .seaqa-project-search-result-list-item-detail-dialog .modal-body {
-  max-height: calc(100vh - 160px);
   overflow-y: auto;
+  max-height: calc(100vh - 160px);
 }
 
 .seaqa-project-search-result-list-item-detail-dialog .modal-title {
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
 }
 
 .seaqa-project-search-result-list-item-detail-dialog .seaqa-project-search-result-list-item-title-content {

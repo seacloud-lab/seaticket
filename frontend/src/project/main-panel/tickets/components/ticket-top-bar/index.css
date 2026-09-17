@@ -1,9 +1,9 @@
 .seaqa-project-toggle-tickets-btn {
   display: inline-flex;
-  margin-right: 4px;
+  flex-shrink: 0;
   height: 20px;
   width: 20px;
-  flex-shrink: 0;
+  margin-right: 4px;
 }
 
 .seaqa-project-toggle-tickets-btn .seaqa-icon-svg {

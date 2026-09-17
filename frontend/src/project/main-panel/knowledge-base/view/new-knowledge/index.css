@@ -1,35 +1,35 @@
 .seaqa-project-new-knowledge {
-  flex: 1;
-  width: 100%;
+  display: flex;
   overflow-x: hidden;
   overflow-y: scroll;
+  flex: 1;
+  width: 100%;
   padding: 16px;
-  display: flex;
 }
 
 .seaqa-project-new-knowledge .seaqa-project-knowledge-user {
-  width: 44px;
   overflow: hidden;
+  width: 44px;
 }
 
 .seaqa-project-new-knowledge .seaqa-project-knowledge-user img {
+  overflow: hidden;
   height: 32px;
   width: 32px;
-  border-radius: 50%;
-  overflow: hidden;
   margin-right: 12px;
+  border-radius: 50%;
 }
 
 .seaqa-project-new-knowledge .seaqa-project-knowledge-settings {
+  overflow-x: hidden;
   flex: 1;
   padding-top: 4px;
-  overflow-x: hidden;
 }
 
 .seaqa-project-new-knowledge .seaqa-project-knowledge-name {
+  width: 100%;
   font-size: 16px;
   font-weight: 600;
-  width: 100%;
 }
 
 .seaqa-project-new-knowledge .seaqa-project-knowledge-settings-container {
@@ -37,9 +37,9 @@
 }
 
 .seaqa-project-new-knowledge .seaqa-project-knowledge-content-settings {
-  width: 70%;
   display: flex;
   flex-direction: column;
+  width: 70%;
 }
 
 .seaqa-project-new-knowledge .seaqa-project-knowledge-content {
@@ -49,10 +49,10 @@
 }
 
 .seaqa-project-new-knowledge .seaqa-project-knowledge-other-settings {
-  width: 30%;
-  padding-left: 16px;
   display: flex;
   flex-direction: column;
+  width: 30%;
+  padding-left: 16px;
 }
 
 .seaqa-project-new-knowledge .seaqa-project-knowledge-footer {
@@ -82,8 +82,8 @@
 }
 
 .seaqa-project-new-knowledge.s .seaqa-project-knowledge-other-settings {
-  padding-left: 0;
   width: 100%;
+  padding-left: 0;
 }
 
 .seaqa-project-new-knowledge.s .seaqa-project-knowledge-other-settings .seaqa-settings-item:last-child {
@@ -95,9 +95,9 @@
 }
 
 .seaqa-project-new-knowledge.s .seaqa-project-knowledge-submit-btns {
-  margin-top: 10px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  margin-top: 10px;
   padding-bottom: 50px;
 }

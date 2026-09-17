@@ -1,9 +1,9 @@
 .seaqa-project-toggle-connections-btn {
   display: inline-flex;
-  margin-right: 4px;
+  flex-shrink: 0;
   height: 20px;
   width: 20px;
-  flex-shrink: 0;
+  margin-right: 4px;
 }
 
 .seaqa-project-toggle-connections-btn .seaqa-icon-svg {
@@ -12,11 +12,11 @@
 }
 
 .seaqa-project-syncing-connections-btn {
-  padding-top: 0;
-  padding-bottom: 0;
-  height: 28px;
   display: inline-flex;
   align-items: center;
+  height: 28px;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 .seaqa-project-syncing-connections-btn .seaqa-loading-icon {

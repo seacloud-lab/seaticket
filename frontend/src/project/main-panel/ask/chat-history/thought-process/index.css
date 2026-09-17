@@ -3,19 +3,19 @@
 }
 
 .seaqa-ai-thought-process-btn {
-  max-width: 100%;
-  width: fit-content;
   display: flex;
+  overflow: hidden;
   align-items: center;
   justify-content: center;
   height: 24px;
-  overflow: hidden;
+  max-width: 100%;
+  width: fit-content;
   color: var(--bs-sf-grey-text);
 }
 
 .seaqa-ai-thought-process-btn:hover {
-  cursor: pointer;
   color: var(--bas-dark);
+  cursor: pointer;
 }
 
 .seaqa-ai-thought-process-btn .seaqa-icon-svg-open-in-new-tab {
@@ -24,6 +24,6 @@
 }
 
 .seaqa-ai-thought-process-btn:hover .seaqa-icon-svg-open-in-new-tab {
-  cursor: pointer;
   color: var(--bas-dark);
+  cursor: pointer;
 }

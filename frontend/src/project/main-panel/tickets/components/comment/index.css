@@ -1,10 +1,10 @@
 .seaqa-project-ticket-comment {
-  width: 100%;
+  position: relative;
   display: flex;
-  gap: 16px;
+  width: 100%;
   margin-top: 4px;
   margin-bottom: 20px;
-  position: relative;
+  gap: 16px;
 }
 
 .seaqa-project-ticket-comment:first-child {
@@ -12,12 +12,12 @@
 }
 
 .seaqa-project-ticket-comment:not(.d-none-after)::after {
+  bottom: -20px;
   content: '';
-  position: absolute;
   left: 16px;
+  position: absolute;
   top: 36px;
   width: 1px;
-  bottom: -20px;
   background-color: var(--bs-border-secondary-color);
 }
 
@@ -28,38 +28,38 @@
 
 .seaqa-project-ticket-comment .seaqa-project-ticket-comment-user-avatar,
 .seaqa-project-ticket-comment .seaqa-project-ticket-comment-user-avatar img {
+  overflow: hidden;
+  flex-shrink: 0;
   height: 32px;
   width: 32px;
   border-radius: 50%;
-  overflow: hidden;
-  flex-shrink: 0;
 }
 
 .seaqa-project-ticket-comment .seaqa-project-ticket-comment-container {
+  overflow: hidden;
+  flex: 1;
+  height: fit-content;
   border: 1px solid #ddd;
   border-radius: 8px;
-  height: fit-content;
-  flex: 1;
-  overflow: hidden;
   scroll-margin-top: 16px;
 }
 
 .seaqa-project-ticket-comment .seaqa-project-ticket-comment-op {
-  border-bottom: 1px solid #ddd;
-  width: 100%;
   height: 38px;
+  width: 100%;
   padding: 4px 4px 4px 16px;
-  line-height: 30px;
-  font-size: 14px;
-  color: #59636e;
   background-color: var(--bs-body-third-bg);
+  border-bottom: 1px solid #ddd;
+  font-size: 14px;
+  line-height: 30px;
+  color: #59636e;
 }
 
 .seaqa-project-ticket-comment.editing .seaqa-project-ticket-comment-op {
-  padding: 4px 12px 4px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 4px 12px 4px 16px;
 }
 
 .seaqa-project-ticket-comment .seaqa-project-ticket-comment-user-name {
@@ -68,9 +68,9 @@
 }
 
 .seaqa-project-ticket-comment .seaqa-project-ticket-comment-content {
-  width: 100%;
-  min-height: 40px;
   display: flex;
+  min-height: 40px;
+  width: 100%;
 }
 
 .seaqa-project-ticket-comment .seaqa-project-ticket-comment-content:not(.editing) .article p:last-child {
@@ -91,8 +91,8 @@
   display: inline-flex;
   height: 24px;
   width: 24px;
-  line-height: 24px;
   margin-right: 8px;
+  line-height: 24px;
 }
 
 .seaqa-project-ticket-comment.s .seaqa-project-ticket-comment-user-avatar img {

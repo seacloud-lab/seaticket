@@ -5,9 +5,9 @@
 }
 
 .seaqa-project-connection-dialog .modal-content {
+  overflow: hidden;
   height: 100%;
   min-height: 400px;
-  overflow: hidden;
 }
 
 .seaqa-project-connection-dialog .seaqa-project-connection-body {
@@ -24,16 +24,16 @@
 .seaqa-project-connection-dialog .seaqa-project-new-connection-card {
   display: flex;
   align-items: center;
-  gap: 8px;
   min-height: 48px;
   width: 100%;
   padding: 0 16px;
   background: #fff;
   border: 1px solid #eee;
   border-radius: 8px;
-  cursor: pointer;
   text-align: left;
+  cursor: pointer;
   transition: background-color 0.15s ease, border-color 0.15s ease;
+  gap: 8px;
 }
 
 .seaqa-project-connection-dialog .seaqa-project-new-connection-card:hover {
@@ -45,29 +45,29 @@
 }
 
 .seaqa-project-connection-dialog .seaqa-project-new-connection-card-icon-wrap {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
+  align-items: center;
+  flex-shrink: 0;
+  justify-content: center;
+  height: 20px;
+  width: 20px;
 }
 
 .seaqa-project-connection-dialog .seaqa-project-new-connection-card-icon {
-  width: 20px;
   height: 20px;
+  width: 20px;
   object-fit: contain;
 }
 
 .seaqa-project-connection-dialog .seaqa-project-new-connection-card-name {
-  min-width: 0;
+  overflow: hidden;
   flex: 1;
+  min-width: 0;
   font-size: 14px;
   line-height: 22px;
-  white-space: nowrap;
-  overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .seaqa-project-connection-github-tip {
@@ -75,19 +75,19 @@
 }
 
 .seaqa-project-connection-dialog .seaqa-project-new-connection-footer {
-  margin-top: 40px;
   justify-content: flex-end;
+  margin-top: 40px;
 }
 
 .seaqa-project-connection-github-tip h4 {
-  font-weight: 500;
   font-size: 16px;
+  font-weight: 500;
   line-height: 24px;
 }
 
 .seaqa-project-connection-github-tip p {
-  font-weight: 400;
   font-size: 14px;
+  font-weight: 400;
   line-height: 22px;
   text-align: center;
   color: var(--bs-sf-grey-text);
@@ -99,19 +99,19 @@
 
 .seaqa-project-connection-oauth-tip {
   margin-bottom: 8px;
-  color: var(--bs-sf-grey-text);
   font-size: 12px;
   line-height: 18px;
+  color: var(--bs-sf-grey-text);
 }
 
 .seaqa-project-connection-oauth-pending {
   display: flex;
-  flex-direction: column;
   align-items: center;
+  flex-direction: column;
   justify-content: center;
   padding: 24px 0 8px;
-  color: var(--bs-sf-grey-text);
   font-size: 14px;
+  color: var(--bs-sf-grey-text);
 }
 
 .seaqa-project-linear-oauth {
@@ -119,23 +119,23 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px;
+  padding-left: 16px;
   background: var(--bs-body-third-bg);
   border-radius: 4px;
-  padding-left: 16px;
 }
 
 .seaqa-project-linear-oauth .linear-oauth-status {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
   font-size: 14px;
   font-weight: 500;
   color: var(--bs-body-color);
+  gap: 8px;
 }
 
 .seaqa-project-linear-oauth .linear-oauth-status .linear-status-icon svg {
-  width: 14px;
   height: 14px;
+  width: 14px;
 }
 
 .seaqa-project-linear-oauth .linear-oauth-status .linear-status-icon svg path {
@@ -147,9 +147,9 @@
 }
 
 .seaqa-project-linear-oauth .btn {
-  font-weight: 400;
   height: 26px;
   padding: 0 8px;
+  font-weight: 400;
 }
 
 .seaqa-project-jira-oauth {
@@ -157,23 +157,23 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px;
+  padding-left: 16px;
   background: var(--bs-body-third-bg);
   border-radius: 4px;
-  padding-left: 16px;
 }
 
 .seaqa-project-jira-oauth .jira-oauth-status {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
   font-size: 14px;
   font-weight: 500;
   color: var(--bs-body-color);
+  gap: 8px;
 }
 
 .seaqa-project-jira-oauth .jira-oauth-status .jira-status-icon svg {
-  width: 14px;
   height: 14px;
+  width: 14px;
 }
 
 .seaqa-project-jira-oauth .jira-oauth-status .jira-status-icon svg path {
@@ -185,9 +185,9 @@
 }
 
 .seaqa-project-jira-oauth .btn {
-  font-weight: 400;
   height: 26px;
   padding: 0 8px;
+  font-weight: 400;
 }
 
 .seaqa-project-discord-oauth {
@@ -202,15 +202,15 @@
 .seaqa-project-discord-oauth .discord-oauth-status {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
   font-size: 14px;
   font-weight: 500;
   color: var(--bs-body-color);
+  gap: 8px;
 }
 
 .seaqa-project-discord-oauth .discord-oauth-status .discord-status-icon svg {
-  width: 14px;
   height: 14px;
+  width: 14px;
 }
 
 .seaqa-project-discord-oauth .discord-oauth-status .discord-status-icon svg path {
@@ -222,27 +222,27 @@
 }
 
 .seaqa-project-discord-oauth .btn {
-  font-weight: 400;
   height: 26px;
   padding: 0 8px;
+  font-weight: 400;
 }
 
 .seaqa-project-connection-oauth-status {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   flex-wrap: wrap;
-  background: var(--bs-body-third-bg);
+  justify-content: space-between;
   height: 42px;
-  border-radius: 4px;
   padding: 0px 8px 0px 16px;
+  background: var(--bs-body-third-bg);
+  border-radius: 4px;
 }
 
 .seaqa-project-connection-oauth-status .oauth-status-badge .seaqa-icon-svg {
-  fill: var(--bs-sf-grey-text);
-  width: 14px;
   height: 14px;
+  width: 14px;
   margin-right: 8px;
+  fill: var(--bs-sf-grey-text);
 }
 
 .seaqa-project-connection-oauth-status .oauth-status-badge .seaqa-icon-svg-check-circle-filled {
@@ -254,8 +254,8 @@
 }
 
 .seaqa-project-connection-oauth-status .oauth-status-button {
-  font-weight: 400;
   height: 26px;
   padding-top: 0px;
   padding-bottom: 0px;
+  font-weight: 400;
 }

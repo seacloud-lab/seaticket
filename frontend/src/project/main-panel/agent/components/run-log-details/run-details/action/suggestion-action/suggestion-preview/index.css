@@ -7,14 +7,14 @@
 }
 
 .suggestion-content-preview {
+  overflow-y: auto;
   max-height: 160px;
   padding: 16px;
-  overflow-y: auto;
   font-size: 14px;
-  color: var(--bs-body-tertiary-color);
   line-height: 22px;
   white-space: pre-wrap;
   word-break: break-word;
+  color: var(--bs-body-tertiary-color);
 }
 
 .suggestion-content-preview.display-mask {

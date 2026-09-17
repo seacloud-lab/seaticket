@@ -1,19 +1,19 @@
 .seaqa-ai-side-panel-chat {
+  overflow-y: hidden;
+  flex: unset;
   height: 100%;
   background-color: var(--bs-body-bg);
   border-left: 1px solid var(--bs-border-secondary-color);
-  flex: unset;
-  overflow-y: hidden;
 }
 
 .seaqa-ai-side-panel-chat .seaqa-ai-ask-chats-header {
-  height: 40px;
-  padding: 0 0 0 16px ;
-  gap: 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  height: 40px;
+  padding: 0 0 0 16px ;
   border-bottom: 1px solid var(--bs-border-secondary-color);
+  gap: 16px;
 }
 
 .seaqa-ai-side-panel-chat .seaqa-ai-ask-chats-header .chat-header-title-content {
@@ -26,9 +26,9 @@
 }
 
 .seaqa-ai-side-panel-chat .resize-bar {
+  position: absolute;
   top: 0;
   height: 100%;
-  position: absolute;
 }
 
 .seaqa-ai-side-panel-chat .resize-bar-content {

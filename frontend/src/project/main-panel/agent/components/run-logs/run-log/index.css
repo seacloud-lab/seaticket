@@ -16,11 +16,11 @@
 
 .seaqa-agent-run-log.active::after {
   content: '';
-  position: absolute;
   left: 0;
+  position: absolute;
   top: 0;
-  width: 2px;
   height: 100%;
+  width: 2px;
   background-color: var(--bs-primary);
 }
 
@@ -41,30 +41,30 @@
 }
 
 .seaqa-agent-run-log .seaqa-agent-run-log-body {
-  width: fit-content;
-  max-width: 100%;
-  overflow: hidden;
-  line-height: 22px;
   display: -webkit-box;
+  overflow: hidden;
+  max-width: 100%;
+  width: fit-content;
+  line-height: 22px;
+  white-space: normal;
+  word-wrap: break-word;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   line-clamp: 2;
-  white-space: normal;
-  word-wrap: break-word;
 }
 
 .seaqa-agent-run-log .seaqa-agent-run-log-footer {
-  color: var(--bs-body-tertiary-color);
   font-size: 12px;
   line-height: 22px;
+  color: var(--bs-body-tertiary-color);
   gap: 4px;
 }
 
 .seaqa-agent-run-log .seaqa-agent-run-log-count {
-  font-size: 12px;
-  color: var(--bs-body-color);
   background-color: var(--bs-bg-secondary-color);
   border-radius: 11px;
+  font-size: 12px;
+  color: var(--bs-body-color);
 }
 
 .seaqa-agent-run-log-header .seaqa-agent-run-status {

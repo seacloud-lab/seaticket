@@ -3,27 +3,27 @@
 }
 
 .analyze-filter-panel .analyze-filter-divider {
-  width: 1px;
   height: 20px;
-  background-color: var(--bs-border-tertiary-color);
+  width: 1px;
   margin: 0px 12px 6px 12px;
+  background-color: var(--bs-border-tertiary-color);
 }
 
 /* analyze-date-filter */
 .analyze-date-filter {
   display: flex;
   align-items: center;
-  border: 1px solid var(--bs-border-tertiary-color);
-  border-radius: 4px;
   height: 32px;
   padding: 0px 12px;
+  border: 1px solid var(--bs-border-tertiary-color);
+  border-radius: 4px;
   gap: 12px;
 }
 
 .analyze-date-filter .analyze-date-filter-start-label,
 .analyze-date-filter .analyze-date-filter-end-label {
-  line-height: 20px;
   width: 82px;
+  line-height: 20px;
 }
 
 .analyze-date-filter .analyze-date-filter-start-label {
@@ -40,54 +40,54 @@
 }
 
 .analyze-date-filter .analyze-date-filter-slider .analyze-date-filter-track {
+  left: 0;
   position: absolute;
+  right: 0;
   top: -1.5px;
   height: 3px;
-  border-radius: 1.5px;
-  left: 0;
-  right: 0;
-  background: var(--bs-border-tertiary-color)
+  background: var(--bs-border-tertiary-color);
+  border-radius: 1.5px
 }
 
 .analyze-date-filter .analyze-date-filter-slider .analyze-date-filter-track-active {
   position: absolute;
   top: -1.5px;
   height: 3px;
-  border-radius: 1.5px;
   background: var(--bs-primary);
+  border-radius: 1.5px;
 }
 
 .analyze-date-filter .analyze-date-filter-slider .analyze-date-filter-range {
-  position: absolute;
   left: 0;
+  position: absolute;
   top: -6px;
   width: 100%;
   margin: 0;
-  pointer-events: none;
-  appearance: none;
-  -webkit-appearance: none;
   background: transparent;
+  pointer-events: none;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .analyze-date-filter-range::-webkit-slider-thumb {
+  height: 12px;
+  width: 12px;
+  background: #fff;
+  border: 2px solid var(--bs-primary);
+  border-radius: 50%;
+  cursor: ew-resize;
   pointer-events: auto;
   -webkit-appearance: none;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: 2px solid var(--bs-primary);
-  background: #fff;
-  cursor: ew-resize;
 }
 
 .analyze-date-filter-range::-moz-range-thumb {
-  pointer-events: auto;
-  width: 12px;
   height: 12px;
-  border-radius: 50%;
-  border: 2px solid var(--bs-primary);
+  width: 12px;
   background: #fff;
+  border: 2px solid var(--bs-primary);
+  border-radius: 50%;
   cursor: ew-resize;
+  pointer-events: auto;
 }
 
 .analyze-date-filter-range::-webkit-slider-runnable-track {

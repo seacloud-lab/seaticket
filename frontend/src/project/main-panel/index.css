@@ -1,22 +1,22 @@
 .seaqa-project-main-panel {
-  flex: 1;
-  overflow: hidden;
-  height: 100%;
   display: flex;
-  background: var(--bs-body-third-bg);
+  overflow: hidden;
+  flex: 1;
+  height: 100%;
   padding: 8px 8px 8px 0;
+  background: var(--bs-body-third-bg);
 }
 
 .seaqa-project-main-panel-content {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   position: relative;
+  display: flex;
+  overflow-y: auto;
+  align-items: center;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
   background: #ffff;
   border-radius: 8px;
-  overflow-y: auto;
 }
 
 .seaqa-project-main-panel .sea-metadata {
@@ -25,14 +25,14 @@
 }
 
 .seaqa-project-main-panel .sea-metadata .sea-metadata-views {
-  padding-left: 0;
   position: relative;
+  padding-left: 0;
 }
 
 .seaqa-project-main-panel .sea-metadata .sea-metadata-view-tools {
+  margin-left: 40px;
   padding-right: 0;
   padding-left: 0;
-  margin-left: 40px;
 }
 
 .seaqa-project-main-panel .sea-metadata .sea-metadata-table-footer {

@@ -1,10 +1,10 @@
 .seaqa-ai-ask-chat.seaqa-ai-ask-chat-thinking .seaqa-ai-ask-message-content {
-  border: unset;
-  border-radius: 0;
   display: inline-flex;
   align-items: center;
-  min-height: unset;
   height: fit-content;
+  min-height: unset;
+  border: unset;
+  border-radius: 0;
 }
 
 .seaqa-ai-ask-chat.seaqa-ai-ask-chat-thinking .seaqa-loading-tip {

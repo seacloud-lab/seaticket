@@ -1,19 +1,19 @@
 .github-issue-type-mapping-table {
-  width: fit-content;
-  display: flex;
-  flex-direction: column;
   position: relative;
+  display: flex;
   overflow: hidden;
+  flex-direction: column;
+  width: fit-content;
   border: 1px solid var(--bs-border-tertiary-color);
   border-radius: 8px;
 }
 
 .github-issue-type-mapping-table::after {
   content: '';
-  display: block;
-  position: absolute;
   left: 160px;
+  position: absolute;
   top: 0;
+  display: block;
   height: 100%;
   width: 1px;
   background-color: var(--bs-border-tertiary-color);
@@ -21,8 +21,8 @@
 
 .github-issue-type-mapping-table-row {
   display: flex;
-  width: 100%;
   height: 38px;
+  width: 100%;
 }
 
 .github-issue-type-mapping-table-row .github-issue-type-mapping-table-cell {
@@ -42,14 +42,14 @@
 }
 
 .github-issue-type-mapping-table-header.github-issue-type-mapping-table-row {
-  border-bottom: 1px solid var(--bs-border-tertiary-color);
   height: 41px;
+  border-bottom: 1px solid var(--bs-border-tertiary-color);
 }
 
 .github-issue-type-mapping-table-header .github-issue-type-mapping-table-cell {
-  padding: 0 16px;
   display: flex;
   align-items: center;
+  padding: 0 16px;
 }
 
 .github-issue-type-mapping-table-header .github-issue-type-mapping-table-cell:last-child {
@@ -89,8 +89,8 @@
 .github-issue-type-mapping-title {
   display: flex;
   align-items: center;
-  gap: 8px;
   font-size: 13px;
+  gap: 8px;
 }
 
 .github-issue-type-mapping-title-icon {
@@ -99,12 +99,12 @@
 }
 
 .github-issue-type-agent-type.seaqa-ui-option {
-  width: 100%;
   height: 26px;
-  border-radius: 13px;
-  line-height: 26px !important;
-  font-size: 14px;
+  width: 100%;
   border: 1px solid var(--bs-border-tertiary-color) !important;
+  border-radius: 13px;
+  font-size: 14px;
+  line-height: 26px !important;
   text-align: center;
 }
 
@@ -123,6 +123,6 @@
 .github-issue-type-mapping-tip-icon {
   height: 12px;
   width: 12px;
-  color: var(--bs-icon-secondary-color);
   margin-right: 8px;
+  color: var(--bs-icon-secondary-color);
 }

@@ -1,13 +1,13 @@
 .seaqa-project .seaqa-project-icon {
   display: flex;
+  overflow: hidden;
+  align-items: center;
+  justify-content: center;
   height: 32px;
   width: 32px;
-  border-radius: 4px;
   margin-right: 8px;
-  justify-content: center;
-  align-items: center;
+  border-radius: 4px;
   cursor: pointer;
-  overflow: hidden;
 }
 
 .seaqa-project .seaqa-project-icon .project-icon {
@@ -15,9 +15,9 @@
 }
 
 .seaqa-project .seaqa-project-icon .seaqa-project-return-home-icon {
-  color: #fff;
   height: 20px;
   width: 20px;
+  color: #fff;
 }
 
 .seaqa-project .seaqa-project-icon .seaqa-project-return-home-icon,
@@ -30,10 +30,10 @@
 }
 
 .seaqa-project .seaqa-project-name {
-  flex: 1;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  flex: 1;
   font-size: 18px;
   font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

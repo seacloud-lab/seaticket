@@ -1,48 +1,48 @@
 .seaqa-project-connection-dialog .seaqa-project-selected-connection {
-  margin-top: -16px;
-  min-height: 76px;
   display: flex;
-  justify-content: center;
   align-items: center;
   flex-direction: column;
+  justify-content: center;
+  min-height: 76px;
+  margin-top: -16px;
 }
 
 .seaqa-project-connection-dialog .seaqa-project-selected-connection .seaqa-project-new-connection-type {
-  width: 100%;
   display: inline-flex;
-  align-items: center;
   overflow: hidden;
+  align-items: center;
+  justify-content: space-between;
+  height: 48px;
+  width: 100%;
+  margin-bottom: 20px;
   padding: 0px 16px;
   background: var(--bs-body-third-bg);
   border: none;
   border-radius: 8px;
   cursor: default;
-  height: 48px;
-  justify-content: space-between;
-  margin-bottom: 20px;
 }
 
 .seaqa-project-connection-dialog .seaqa-project-selected-connection .seaqa-project-new-connection-type .seaqa-secondary-btn {
   height: 26px;
-  color: var(--bs-body-color);
-  font-weight: 400;
   font-size: 12px;
+  font-weight: 400;
   line-height: 22px;
+  color: var(--bs-body-color);
   vertical-align: middle;
 }
 
 .seaqa-project-connection-dialog .seaqa-project-new-connection-type .seaqa-project-new-connection-icon {
-  flex-shrink: 0;
-  margin-right: 8px;
   overflow: hidden;
-  width: 24px;
+  flex-shrink: 0;
   height: 24px;
+  width: 24px;
+  margin-right: 8px;
 }
 
 .seaqa-project-connection-help {
   margin: 1rem 0;
-  color: var(--bs-sf-grey-text);
-  font-weight: 400;
   font-size: 14px;
+  font-weight: 400;
   line-height: 22px;
+  color: var(--bs-sf-grey-text);
 }

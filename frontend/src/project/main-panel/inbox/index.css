@@ -1,12 +1,12 @@
 .seaqa-inbox-panel {
-  position: absolute;
   left: 0;
-  background-color: #ffffff;
+  position: absolute;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
   height: 100%;
   width: 389px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  background-color: #ffffff;
   box-shadow: 1px 0px 32px 0px rgba(0, 0, 0, 0.1);
 }
 
@@ -14,10 +14,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--bs-border-secondary-color);
   height: 48px;
-  line-height: 48px;
   width: calc(100% - 32px);
+  border-bottom: 1px solid var(--bs-border-secondary-color);
+  line-height: 48px;
 }
 
 .seaqa-inbox-header .heading {
@@ -28,12 +28,12 @@
 
 .seaqa-inbox-actions {
   display: flex;
-  gap: 8px;
   align-items: center;
-  cursor: pointer;
   height: 32px;
   padding: 8px;
   border-radius: 4px;
+  cursor: pointer;
+  gap: 8px;
 }
 
 .seaqa-inbox-actions:hover {
@@ -41,8 +41,8 @@
 }
 
 .seaqa-inbox-actions .seaqa-icon-svg {
-  width: 14px;
   height: 14px;
+  width: 14px;
   fill: var(--bs-sf-grey-text);
 }
 

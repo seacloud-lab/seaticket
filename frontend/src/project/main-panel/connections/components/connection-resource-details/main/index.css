@@ -1,6 +1,6 @@
 .seaqa-connection-resource-details {
-  height: 100%;
   overflow: auto;
+  height: 100%;
   padding: 0 16px;
 }
 
@@ -19,12 +19,12 @@
 }
 
 .seaqa-connection-github-comment-editor .github-comment-actions {
-  margin-top: 8px;
   display: flex;
   justify-content: flex-end;
+  margin-top: 8px;
 }
 
 .longtext-preview-container.seaqa-connection-general_task-resource-details {
-  height: fit-content;
   overflow: hidden;
+  height: fit-content;
 }

@@ -1,8 +1,8 @@
 .seaqa-project-refresh-btn {
   display: inline-flex;
+  flex-shrink: 0;
   height: 24px;
   width: 24px;
-  flex-shrink: 0;
 }
 
 .seaqa-project-refresh-btn-thought {

@@ -1,33 +1,33 @@
 .resolved-tag-container {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  box-sizing: border-box;
   padding: 3px 8px 3px 5px;
   background-color: #EDF8E2;
   border-radius: 10px;
-  box-sizing: border-box;
+  gap: 4px;
 }
 
 .resolved-tag-icon-bg {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background-color: #4CAF50;
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 12px;
+  width: 12px;
+  background-color: #4CAF50;
+  border-radius: 50%;
 }
 
 .resolved-tag-icon {
-  width: 8px;
-  height: 8px;
-  color: #FFFFFF;
   flex-shrink: 0;
+  height: 8px;
+  width: 8px;
+  color: #FFFFFF;
 }
 
 .resolved-tag-text {
-  color: #5EBA00;
   font-size: 12px;
   font-weight: 500;
   line-height: 1;
+  color: #5EBA00;
 }

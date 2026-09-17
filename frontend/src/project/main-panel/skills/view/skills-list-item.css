@@ -4,16 +4,16 @@
   padding: 16px 24px 16px 16px;
   border: 1px solid #eaeaea;
   border-radius: 8px;
-  cursor: pointer;
   outline: none;
+  cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
 .skills-list-item:hover,
 .skills-list-item:focus,
 .skills-list-item.active {
-  border: 1px solid var(--bs-border-secondary-color);
   background: rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--bs-border-secondary-color);
 }
 
 .skills-list-item .skills-list-item-switch {
@@ -28,28 +28,28 @@
 }
 
 .skills-list-item .skills-list-item-content {
+  flex: 1 1 720px;
+  max-width: 720px;
   min-width: 0;
   width: 100%;
-  max-width: 720px;
-  flex: 1 1 720px;
 }
 
 .skills-list-item .skills-list-item-chat-status {
+  align-self: center;
   flex: 0 0 auto;
   margin-left: auto;
   margin-right: 0;
   padding-left: 64px;
-  color: var(--bs-body-secondary-color);
   font-size: 12px;
   line-height: 22px;
-  align-self: center;
   white-space: nowrap;
+  color: var(--bs-body-secondary-color);
 }
 
 .skills-list-item .skills-list-item-more {
+  align-self: center;
   flex: 0 0 auto;
   margin-left: 64px;
-  align-self: center;
 }
 
 .skills-list-item .skills-list-item-header {
@@ -59,40 +59,40 @@
 }
 
 .skills-list-item .skills-list-item-header .skills-name {
-  font-size: 16px;
   margin-right: 8px;
-  color: var(--bs-body-color);
+  font-size: 16px;
   font-weight: 500;
   line-height: 24px;
+  color: var(--bs-body-color);
 }
 
 .skills-list-item .skills-list-item-header .skills-source {
   padding: 1px 8px;
-  color: var(--bs-body-secondary-color);
-  font-size: 12px;
   border-radius: 4px;
+  font-size: 12px;
+  color: var(--bs-body-secondary-color);
 }
 
 .skills-list-item .skills-list-item-header .skills-source.builtin {
-  border: 1px solid rgba(0, 40, 100, 0.12);
   background-color: #FAFAFA;
+  border: 1px solid rgba(0, 40, 100, 0.12);
 }
 
 .skills-list-item .skills-list-item-header .skills-source.custom {
-  border: 1px solid rgba(62, 132, 247, 0.12);
   background-color: rgba(62, 132, 247, 0.08);
+  border: 1px solid rgba(62, 132, 247, 0.12);
 }
 
 .skills-list-item .skills-desc {
-  color: var(--bs-body-secondary-color);
-  font-size: 12px;
-  line-height: 20px;
-  font-weight: 400;
-  margin-bottom: 0;
   display: -webkit-box;
+  overflow: hidden;
+  margin-bottom: 0;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--bs-body-secondary-color);
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
-  overflow: hidden;
 }
 
 @media (max-width: 768px) {

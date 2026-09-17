@@ -1,7 +1,7 @@
 .seaqa-agent-tool-suggestion-panel-content {
+  font-size: 14px;
+  line-height: 22px;
   white-space: pre-wrap;
   word-break: break-word;
   color: var(--bs-body-color);
-  font-size: 14px;
-  line-height: 22px;
 }

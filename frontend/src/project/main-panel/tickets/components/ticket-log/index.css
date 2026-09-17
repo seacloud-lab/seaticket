@@ -1,19 +1,19 @@
 .seaqa-log {
+  position: relative;
   display: flex;
   align-items: flex-start;
-  gap: 16px;
   margin-bottom: 16px;
   margin-top: 4px;
-  position: relative;
+  gap: 16px;
 }
 
 .seaqa-log:not(.d-none-after)::after {
+  bottom: -16px;
   content: '';
-  position: absolute;
   left: 16px;
+  position: absolute;
   top: 28px;
   width: 1px;
-  bottom: -16px;
   background-color: var(--bs-border-secondary-color);
 }
 
@@ -27,16 +27,16 @@
 }
 
 .seaqa-log .seaqa-log-type-container {
-  width: 32px;
   display: flex;
-  justify-content: center;
   flex-shrink: 0;
+  justify-content: center;
+  width: 32px;
 }
 
 .seaqa-log.s .seaqa-log-type-container {
-  width: 24px;
   display: flex;
   justify-content: center;
+  width: 24px;
 }
 
 .seaqa-log .seaqa-log-btn {
@@ -54,23 +54,23 @@
   align-items: center;
   flex-wrap: wrap;
   padding-top: 2px;
-  gap: 4px;
   font-size: 13px;
-  color: var(--bs-body-secondary-color);
   line-height: 1.5;
+  color: var(--bs-body-secondary-color);
+  gap: 4px;
 }
 
 .seaqa-log-creator {
-  background: unset;
   padding: 0;
+  background: unset;
+  border-radius: 0;
   font-weight: 600;
   color: var(--bs-body-color);
-  border-radius: 0;
 }
 
 .seaqa-log-time {
-  font-size: 12px;
   margin-left: 8px;
+  font-size: 12px;
 }
 
 .seaqa-log-date {
@@ -80,18 +80,18 @@
   max-width: 200px;
   margin-right: 4px;
   padding: 4px 8px;
-  border-radius: 4px;
   background-color: #f7f7f5;
-  color: var(--bs-body-color);
+  border-radius: 4px;
   font-size: 14px;
   line-height: 1.25;
+  color: var(--bs-body-color);
   vertical-align: middle;
 }
 
 .seaqa-log-date-icon {
   flex: 0 0 14px;
-  width: 14px;
   height: 14px;
+  width: 14px;
   margin-right: 4px;
   color: var(--bs-icon-color);
 }

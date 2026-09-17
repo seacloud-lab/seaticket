@@ -1,7 +1,7 @@
 .seaqa-create-task-dialog {
-  width: 850px;
-  max-width: 850px;
   height: calc(100% - 56px);
+  max-width: 850px;
+  width: 850px;
 }
 
 .seaqa-create-task-dialog .modal-content {
@@ -10,9 +10,9 @@
 
 .seaqa-create-task-dialog .modal-body {
   display: flex;
+  overflow-y: auto;
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
   gap: 24px;
 }
 
@@ -22,10 +22,10 @@
 }
 
 .seaqa-create-task-dialog .seaqa-create-task-other-settings {
-  width: 30%;
   display: flex;
   flex-direction: column;
   min-height: 0;
+  width: 30%;
 }
 
 .seaqa-create-task-dialog .seaqa-task-content {

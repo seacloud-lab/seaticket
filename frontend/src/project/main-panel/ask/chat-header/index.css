@@ -1,7 +1,7 @@
 .chat-header-title-content {
-  font-weight: 500;
-  font-size: 14px;
   overflow: hidden;
+  font-size: 14px;
+  font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -9,8 +9,8 @@
 .seaqa-ai-ask-chats-header .chat-header-divider {
   height: 12px;
   width: 1px;
-  background-color: var(--bs-border-tertiary-color);
   margin: 0 12px;
+  background-color: var(--bs-border-tertiary-color);
 }
 
 .seaqa-ai-ask-chats-header .seaqa-tooltip-icon-btn .seaqa-icon-svg {
