@@ -280,6 +280,22 @@ export const getAgentResource = (target) => {
   return buildResourceFromSourceInfo(sourceInfo);
 };
 
+// The resource the run's event fired on. It is persisted as a required
+// event.trigger_source field: when the run is owned by a ticket linked to an
+// external record, this is that external record (e.g. the GitHub issue), so
+// the "View source" entry always opens the actual source of the event.
+// Historical runs have no trigger_source; fall back to the owner source.
+export const getEventSourceResource = (run) => {
+  const triggerSource = run?.event?.trigger_source;
+  if (!triggerSource || !triggerSource.id) return getAgentResource(run);
+  const resource = buildResourceFromSourceInfo({
+    source_type: triggerSource.type || '',
+    source_id: triggerSource.id,
+    source_title: triggerSource.title || '',
+  });
+  return resource._id ? resource : getAgentResource(run);
+};
+
 export const getRunLogStatusByRuns = (runs) => {
   if (!Array.isArray(runs) || runs.length === 0) return '';
   const isAllCompleted = runs.every(run => run.status === RUN_STATUS.COMPLETED);
