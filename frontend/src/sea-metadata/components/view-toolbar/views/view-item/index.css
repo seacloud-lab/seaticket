@@ -1,10 +1,10 @@
 .sea-metadata-views .sea-metadata-view-container {
-  padding: 0 12px;
+  position: relative;
   display: flex;
   align-items: center;
   height: 100%;
   flex-shrink: 0;
-  position: relative;
+  padding: 0 12px;
 }
 
 .sea-metadata-views .sea-metadata-view-container:first-child {
@@ -34,8 +34,8 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  cursor: pointer;
   flex-shrink: 0;
+  cursor: pointer;
 }
 
 .sea-metadata-views .sea-metadata-view-item.disabled {
@@ -43,8 +43,8 @@
 }
 
 .sea-metadata-views .sea-metadata-view-item.active { 
-  color: var(--bs-sf-orange);
   position: relative;
+  color: var(--bs-sf-orange);
   font-weight: 500;
 }
 

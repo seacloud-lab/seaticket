@@ -2,14 +2,14 @@
 
 .sea-metadata-table-cell {
   position: absolute;
+  display: flex;
+  justify-content: flex-start;
   height: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   border-right: 1px solid var(--bs-border-tertiary-color);
   padding: 6px 8px;
-  display: flex;
-  justify-content: flex-start;
 }
 
 .sea-metadata-table-cell:not(.table-cell-uneditable):hover {
@@ -87,25 +87,25 @@
 }
 
 .sea-metadata-table-cell .sea-metadata-button-formatter.cell-formatter-container {
-  margin-top: 6px;
-  text-align: center;
-  height: 26px;
-  line-height: 14px;
-  min-width: 80px;
-  max-width: 100%;
-  width: fit-content;
   display: inline-flex;
   justify-content: center;
   align-items: center;
+  height: 26px;
+  min-width: 80px;
+  max-width: 100%;
+  width: fit-content;
+  margin-top: 6px;
   padding-left: 0.5rem;
   padding-right: 0.5rem;
   border-radius: 3px;
   border-width: 2px;
+  text-align: center;
+  line-height: 14px;
   font-weight: 500;
   font-size: 14px;
   font-family: inherit;
-  cursor: pointer;
   letter-spacing: 0.03em;
+  cursor: pointer;
 }
 
 .sea-metadata-table-cell .sea-metadata-button-formatter.cell-formatter-container.disabled {
@@ -225,9 +225,9 @@
 }
 
 .sea-metadata-table-cell .mobile-select-all-container .mobile-select-all-checkbox:checked + .select-all-checkbox-show {
+  position: relative;
   border: unset;
   background-color: #3b88fd;
-  position: relative;
 }
 
 .sea-metadata-table-cell .mobile-select-all-container .mobile-select-all-checkbox:checked + .select-all-checkbox-show::before {
