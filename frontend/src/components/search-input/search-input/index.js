@@ -19,12 +19,6 @@ class SearchInput extends Component {
     this.inputRef = null;
   }
 
-  static defaultProps = {
-    wait: 100,
-    disabled: false,
-    value: '',
-  };
-
   UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.value !== this.props.value) {
       this.setState({ searchValue: nextProps.value });
@@ -43,7 +37,7 @@ class SearchInput extends Component {
 
   onChange = (e) => {
     this.timer && clearTimeout(this.timer);
-    const { onChange, wait } = this.props;
+    const { onChange, wait = 100 } = this.props;
     let text = e.target.value;
     this.setState({ searchValue: text || '' }, () => {
       if (this.isInputtingChinese) return;
@@ -94,7 +88,7 @@ class SearchInput extends Component {
 
   render() {
     const {
-      placeholder, autoFocus, className, inputClassName, disabled, style,
+      placeholder, autoFocus, className, inputClassName, disabled = false, style,
       isShowSearchIcon = true, size = 38, isShowClearIcon = false,
       onClear, onKeyDown, inputStyle = {},
     } = this.props;
