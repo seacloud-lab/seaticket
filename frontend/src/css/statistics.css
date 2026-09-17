@@ -8,11 +8,10 @@
 
 .tab-nav-container .nav {
   display: flex;
-  margin: 0;
+  margin: 0 0 -1px;
   padding: 0;
   list-style: none;
   height: 48px;
-  margin-bottom: -1px;
 }
 
 .tab-nav-container .nav-item {
