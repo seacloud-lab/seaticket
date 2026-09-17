@@ -83,6 +83,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const [isNotionOauthConnected, setNotionOauthConnected] = useState(false);
   const [isCheckingNotionOauth] = useState(false);
   const [notionOauthError, setNotionOauthError] = useState('');
+  const [notionOauthState, setNotionOauthState] = useState('');
   const notionOauthWindowRef = useRef(null);
   const notionOauthIntervalRef = useRef(null);
 
@@ -153,6 +154,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     if (isJira && !isJiraOauthConnected) return false;
     if (isOAuthEmail && !emailOAuthState) return false;
     if (isNotion && !isNotionOauthConnected) return false;
+    if (isNotion && !notionOauthState) return false;
     return customColumns.length > 0 ? customColumns.every(c => {
       if (c.type === CONNECTION_FIELD_TYPE.GROUP) {
         return c.children.every(child => {
@@ -164,7 +166,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       return true;
     }) : true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [name, config, customColumns, isLinear, isLinearOauthConnected, isConfluence, isConfluenceOauthConnected, isDiscord, isOAuthEmail, emailOAuthState, isJira, isJiraOauthConnected, isNotion, isNotionOauthConnected]);
+  }, [name, config, customColumns, isLinear, isLinearOauthConnected, isConfluence, isConfluenceOauthConnected, isDiscord, isOAuthEmail, emailOAuthState, isJira, isJiraOauthConnected, isNotion, isNotionOauthConnected, notionOauthState]);
 
   useEffect(() => {
     const handleDiscordOAuthMessage = (event) => {
@@ -409,11 +411,11 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       }
     }
 
-    onSubmit({ type, name: name.trim(), config: _config }, () => {
+    onSubmit({ type, name: name.trim(), config: _config, oauthState: notionOauthState }, () => {
       setSubmitting(false);
     });
     return;
-  }, [name, type, config, isJira, isLinear, onSubmit, isConfluence, isGithub, selectedSpaceKeys, isDiscord, emailOAuthState]);
+  }, [name, type, config, isJira, isLinear, onSubmit, isConfluence, isGithub, selectedSpaceKeys, isDiscord, emailOAuthState, notionOauthState]);
 
   const listGitHubRepositories = useCallback((signal) => {
     return connectionsAPI.listGitHubRepositories(projectUuid, signal).then(res => {
@@ -622,6 +624,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   }, []);
 
   const handleConnectNotion = useCallback(() => {
+    setNotionOauthState('');
     const oauthUrl = `${server}/notion/oauth/?project_uuid=${projectUuid}`;
     notionOauthWindowRef.current = window.open(oauthUrl, 'notion-oauth', 'width=800,height=700');
     if (!notionOauthWindowRef.current) {
@@ -648,13 +651,8 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
           return;
         }
         setNotionOauthConnected(true);
+        setNotionOauthState(statusRes.data?.state || '');
         setNotionOauthError('');
-        setConfig(prevConfig => ({
-          ...prevConfig,
-          workspace_id: statusRes.data.workspace_id || '',
-          workspace_name: statusRes.data.workspace_name || '',
-          workspace_icon: statusRes.data.workspace_icon || '',
-        }));
         if (notionOauthWindowRef.current && !notionOauthWindowRef.current.closed) {
           notionOauthWindowRef.current.close();
         }

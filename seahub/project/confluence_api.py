@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class ConfluenceAPI:
-    def __init__(self, access_token, refresh_token=None, expires_at=None, timeout=60,
+    def __init__(self, access_token, refresh_token, expires_at=None, timeout=60,
                  on_token_refreshed=None):
         self.access_token = access_token
         self.refresh_token = refresh_token

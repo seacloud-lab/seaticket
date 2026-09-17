@@ -885,7 +885,6 @@ def notion_oauth_callback(request):
     notion_data['expires_at'] = CommonOAuthUtils.calc_expires_at(token_json.get('expires_in')).timestamp()
     notion_data['workspace_id'] = token_json.get('workspace_id', '')
     notion_data['workspace_name'] = token_json.get('workspace_name', '')
-    notion_data['workspace_icon'] = token_json.get('workspace_icon', '')
     notion_data['error_msg'] = ''
     NotionOAuthUtils.set_oauth_session(request, notion_data)
 

@@ -298,13 +298,22 @@ class ProjectConnectionsView(APIView):
 
         notion_data = None
         if connection_type == ConnectionType.NOTION.value:
+            oauth_state = request.POST.get('oauth_state')
+            if not oauth_state:
+                return api_error(status.HTTP_400_BAD_REQUEST, 'OAuth state is required.')
             notion_data = NotionOAuthUtils.get_oauth_session(request)
             if not notion_data or notion_data.get('project_uuid') != project_uuid:
                 return api_error(status.HTTP_404_NOT_FOUND, 'OAuth request not found.')
+            if oauth_state != notion_data.get('state'):
+                return api_error(status.HTTP_400_BAD_REQUEST, 'OAuth request is expired or has been replaced by a newer authorization.')
             if notion_data.get('status') != 'authorized':
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Notion OAuth authorization is required.')
             if not notion_data.get('access_token') or not notion_data.get('refresh_token'):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Notion OAuth authorization is required.')
+            config = {
+                'workspace_id': notion_data.get('workspace_id', ''),
+                'workspace_name': notion_data.get('workspace_name', ''),
+            }
 
         record, error_response = create_connection(project, request.user.username, connection_type, name, config)
         if error_response:
@@ -1146,13 +1155,10 @@ class ProjectNotionOauthStatusView(APIView):
         if status_value == 'failure':
             return api_error(status.HTTP_401_UNAUTHORIZED, notion_data.get('error_msg') or 'OAuth authorization failed.')
 
-        response_data = {'status': status_value or 'in-progress'}
-        if status_value == 'authorized':
-            response_data['workspace_id'] = notion_data.get('workspace_id', '')
-            response_data['workspace_name'] = notion_data.get('workspace_name', '')
-            response_data['workspace_icon'] = notion_data.get('workspace_icon', '')
-
-        return Response(response_data)
+        return Response({
+            'status': status_value or 'in-progress',
+            'state': notion_data.get('state', ''),
+        })
 
 
 class ProjectConnectionRecordView(APIView):
