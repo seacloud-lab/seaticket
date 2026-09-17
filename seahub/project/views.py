@@ -793,7 +793,8 @@ def notion_oauth(request):
         'owner': 'user',
         'state': state,
     }
-    return redirect('https://api.notion.com/v1/oauth/authorize?' + urlencode(params))
+    authorization_url = 'https://api.notion.com/v1/oauth/authorize?' + urlencode(params)
+    return JsonResponse({'auth_url': authorization_url, 'state': state})
 
 
 @login_required
