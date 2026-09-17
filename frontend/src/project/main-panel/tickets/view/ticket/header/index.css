@@ -89,7 +89,6 @@
 
 .seaqa-project-ticket .seaqa-project-ticket-header:not(.seaqa-project-ticket-simple-info-wrapper-sticky) .seaqa-project-ticket-title-prefix ~ .seaqa-project-ticket-number {
   align-self: flex-end;
-  line-height: 24px;
 }
 
 .seaqa-project-ticket .seaqa-project-ticket-number {
