@@ -82,8 +82,8 @@ const Header = forwardRef(({
   return (
     <div className={classnames('seaqa-project-ticket-header', className)} ref={domRef}>
       <div className="seaqa-project-ticket-title-wrapper">
-        <div className={classnames('seaqa-project-ticket-title-wrapper-left', { 'o-hidden': !isRenaming })}>
-          <div className={classnames('seaqa-project-ticket-title-number', { 'w-100': isRenaming, 'o-hidden': !isRenaming })}>
+        <div className={classnames('seaqa-project-ticket-title-wrapper-left h-100', { 'o-hidden': !isRenaming })}>
+          <div className={classnames('seaqa-project-ticket-title-number h-100', { 'w-100': isRenaming, 'o-hidden': !isRenaming })}>
             {titlePrefix && <div className="seaqa-project-ticket-title-prefix">{titlePrefix}</div>}
             {isRenaming ? (
               <Input value={title} autoFocus={true} className="seaqa-project-ticket-title-input" onChange={onChange} onKeyDown={onKeyDown} />
