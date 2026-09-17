@@ -22,7 +22,7 @@
   width: 100%;
   padding: 10px 0;
   background-color: var(--bs-body-bg);
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--bs-border-secondary-color);
   font-size: 24px;
   line-height: 1.5;
   gap: 8px;
