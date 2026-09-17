@@ -2,7 +2,7 @@
   display: flex;
   align-items: flex-start;
   padding: 16px 24px 16px 16px;
-  border: 1px solid var(--bs-border-tertiary-color);;
+  border: 1px solid var(--bs-border-tertiary-color);
   border-radius: 8px;
   outline: none;
   cursor: pointer;
