@@ -2,12 +2,12 @@
   position: absolute;
   top: 10px;
   right: 10px;
-  cursor: pointer;
-  color: var(--bs-icon-secondary-color);
-  height: 16px;
-  width: 16px;
   display: flex;
   align-items: center;
+  width: 16px;
+  height: 16px;
+  color: var(--bs-icon-secondary-color);
+  cursor: pointer;
 }
 
 .password-toggle:hover {

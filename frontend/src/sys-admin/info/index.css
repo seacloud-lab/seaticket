@@ -1,13 +1,3 @@
-.content {
-  padding: 0rem 1rem 8rem;
-  overflow: auto;
-}
-
-.system-admin-info dt,
-.system-admin-info dd {
-  color: inherit;
-}
-
 .info-item-content {
   margin-bottom: 2em;
 }
@@ -35,15 +25,11 @@
 
 .info-item-content table td {
   padding: 0 10px;
-  border-right: 1px solid #ddd;
   border-bottom: 1px solid #ddd;
+  border-right: 1px solid #ddd;
 }
 
 .info-item-content table tr td:first-child,
 .info-item-content table tr th:first-child {
   border-left: 1px solid #ddd;
-}
-
-.system-admin-info .btn {
-  min-width: 60px;
 }

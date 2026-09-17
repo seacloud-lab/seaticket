@@ -1,9 +1,9 @@
 .org-toolbar {
-  padding-right: 16px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
   height: 100%;
+  padding-right: 16px;
 }
 
 .org-toolbar .org-toolbar-item {
@@ -13,9 +13,9 @@
   border-radius: 3px;
   font-size: 14px;
   padding: 0 0.5rem;
-  cursor: pointer;
   font-weight: 500;
   color: var(--bs-sf-grey-text);
+  cursor: pointer;
 }
 
 .org-toolbar .org-toolbar-item:hover {

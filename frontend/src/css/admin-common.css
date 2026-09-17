@@ -1,7 +1,7 @@
 .org-admin,
 .sys-admin {
-  flex: 1;
   display: flex;
+  flex: 1;
   min-height: 0;
 }
 
@@ -21,8 +21,8 @@
 }
 
 .side-nav-con {
-  overflow: auto;
   padding: 0 8px;
+  overflow: auto;
 }
 
 .side-nav-con>.nav {
@@ -31,64 +31,8 @@
 
 .side-nav-con .nav .nav-item,
 .side-nav-con .nav .nav-item .nav-link {
-  display: block;
   padding-left: 0;
   margin-right: 0;
-}
-
-.side-nav-con .active [class^="sf2-icon-"],
-.side-nav-con .active [class^="sf3-font-"],
-.side-nav-con .active .sharp {
-  color: #fff;
-}
-
-.side-nav-con .sharp {
-  display: inline-block;
-  width: 2.625rem;
-  margin-right: 0.325rem;
-  text-align: right;
-  color: #aaa;
-}
-
-.side-nav-con .toggle-icon {
-  margin-right: 0.25rem;
-  height: 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--bs-icon-secondary-color);
-}
-
-.side-nav-con .draft-info {
-  position: relative;
-  line-height: 1.5rem;
-}
-
-.side-nav-con .draft-info .badge {
-  position: relative;
-  float: right;
-  margin-top: 0.2rem;
-  background-color: #EDEDEE;
-  color: #5B5F65;
-  display: flex;
-  align-items: center;
-  border-radius: 50%;
-  justify-content: center;
-  min-width: 1.3rem;
-  min-height: 1.3rem;
-  padding: 0 .3rem;
-}
-
-.side-nav-con .sub-nav {
-  display: block;
-  overflow: hidden;
-}
-
-.side-nav-con .sub-nav .nav-link {
-  padding: 0;
-  display: block;
-  font-size: 0.875rem;
-  line-height: 1.5rem;
 }
 
 .org-admin .side-nav-con svg.seaqa-icon-svg,
@@ -102,13 +46,13 @@
 
 .org-admin .side-nav-title,
 .sys-admin .side-nav-title {
-  color: var(--bs-sf-grey-text);
   padding: 0 8px;
-  line-height: 28px;
-  font-size: 14px;
   margin-top: 4px;
   height: 28px;
   display: block;
+  color: var(--bs-sf-grey-text);
+  font-size: 14px;
+  line-height: 28px;
 }
 
 .org-admin .main-panel .heading,
@@ -139,9 +83,9 @@
 
 .org-admin .main-panel .cur-view-path,
 .sys-admin .main-panel .cur-view-path {
-  border-bottom: 1px solid var(--bs-border-secondary-color);
   padding: 0 20px;
   margin: 0 -20px;
+  border-bottom: 1px solid var(--bs-border-secondary-color);
 }
 
 .org-admin .main-panel .cur-view-path:after,
@@ -226,17 +170,13 @@
   color: #888;
 }
 
-#org-users table tbody tr {
-  height: 42px;
-}
-
 .info-item-heading {
+  margin: 24px 0 .7em;
+  padding-bottom: .2em;
   border-bottom: 1px solid var(--bs-border-secondary-color);
   color: inherit;
   font-size: 15px;
   font-weight: 400;
-  margin: 24px 0 .7em;
-  padding-bottom: .2em;
 }
 
 .web-setting-icon-btn {
