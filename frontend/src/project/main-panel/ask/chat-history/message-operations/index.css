@@ -1,9 +1,9 @@
 .seaqa-ai-answer-operations {
-  margin-top: 12px;
-  width: 100%;
   display: flex;
   align-items: center;
   height: 24px;
+  width: 100%;
+  margin-top: 12px;
 }
 
 .seaqa-ai-reply.text:not(.ends-with-link) + .seaqa-ai-answer-operations {

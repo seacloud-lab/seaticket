@@ -1,10 +1,10 @@
 .ticket-state-formatter {
-  min-height: 38px;
-  width: 100%;
-  padding: 6px 0;
   display: flex;
   flex-wrap: wrap;
+  min-height: 38px;
+  width: 100%;
   margin-bottom: 8px;
+  padding: 6px 0;
   border-radius: 3px;
   cursor: pointer;
 }
@@ -21,8 +21,8 @@
 
 .seaqa-ticket-state-substate-option {
   display: flex;
-  align-items: center;
   overflow: hidden;
+  align-items: center;
 }
 
 .seaqa-ticket-state-substate-option .seaqa-ui-option {

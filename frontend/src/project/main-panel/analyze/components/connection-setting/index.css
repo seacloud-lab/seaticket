@@ -2,21 +2,21 @@
 .analyze-selected-connections {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
   margin-bottom: 8px;
+  gap: 8px;
 }
 
 .analyze-selected-connections .analyze-connection-tag {
-  align-items: center;
-  background-color: var(--bs-body-bg);
-  border: 1px solid #d1d9e0b3;
-  border-radius: 6px;
   display: inline-flex;
+  overflow: hidden;
+  align-items: center;
   flex-shrink: 0;
   height: 32px;
   max-width: 100%;
-  overflow: hidden;
   padding: 0 8px;
+  background-color: var(--bs-body-bg);
+  border: 1px solid #d1d9e0b3;
+  border-radius: 6px;
 }
 
 .analyze-selected-connections .analyze-connection-tag:hover {
@@ -25,26 +25,26 @@
 
 .analyze-selected-connections .analyze-connection-tag .analyze-tag-icon {
   flex-shrink: 0;
-  width: 16px;
   height: 16px;
+  width: 16px;
   margin-right: 8px;
 }
 
 .analyze-selected-connections .analyze-connection-tag .analyze-tag-name {
-  font-size: 14px;
   max-width: 100%;
+  font-size: 14px;
 }
 
 .analyze-selected-connections .analyze-connection-tag .analyze-tag-remove .seaqa-icon-svg {
-  color: var(--bs-icon-color);
   margin-top: 0;
+  color: var(--bs-icon-color);
 }
 
 .analyze-selected-connections .analyze-connection-tag .analyze-tag-remove {
-  width: 20px;
-  height: 20px;
-  margin-right: 0;
   display: inline-flex;
+  height: 20px;
+  width: 20px;
+  margin-right: 0;
 }
 
 .analyze-selected-connections .analyze-connection-tag .analyze-tag-remove:hover {
@@ -59,15 +59,15 @@
 .analyze-add-connection .analyze-add-btn {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 0px 6px;
-  width: fit-content;
   height: 32px;
-  line-height: 32px;
-  border-radius: 3px;
+  width: fit-content;
+  padding: 0px 6px;
   background-image: none;
   border: none;
+  border-radius: 3px;
+  line-height: 32px;
   cursor: pointer;
+  gap: 4px;
 }
 
 .analyze-add-connection .analyze-add-btn:hover {
@@ -75,15 +75,15 @@
 }
 
 .analyze-add-connection .analyze-add-btn .analyze-add-icon {
-  width: 16px;
   height: 16px;
+  width: 16px;
   color: var(--bs-icon-color);
 }
 
 /* Connection popover */
 .analyze-connection-popover {
-  max-height: 220px;
   overflow-y: auto;
+  max-height: 220px;
   padding: 8px 0px;
 }
 
@@ -96,7 +96,7 @@
 }
 
 .analyze-popover-item .analyze-connection-img {
-  width: 16px;
   height: 16px;
+  width: 16px;
   margin-right: 8px;
 }

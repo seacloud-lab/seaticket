@@ -7,17 +7,17 @@
 }
 
 .seaqa-related-issues-dialog .modal-content .modal-body {
-  padding: 0px;
   overflow: hidden;
+  padding: 0px;
 }
 
 .issues-list-item {
   display: flex;
   align-items: flex-start;
   padding: 10px 0px;
+  border-bottom: 1px solid #eee;
   cursor: pointer;
   transition: background-color 0.3s ease;
-  border-bottom: 1px solid #eee;
 }
 
 .issues-list-item:hover {
@@ -25,30 +25,30 @@
 }
 
 .issues-list-item-icon {
-  margin: 0 8px;
   display: flex;
   align-items: center;
-  justify-content: center;
   flex-shrink: 0;
+  justify-content: center;
+  margin: 0 8px;
 }
 
 .issues-list-item-icon .seaqa-project-connection-type-icon {
-  width: 24px;
   height: 24px;
+  width: 24px;
   object-fit: contain;
 }
 
 .issues-list-item-content {
+  overflow: hidden;
   flex: 1;
   min-width: 0;
-  overflow: hidden;
 }
 
 .issues-list-item-content .issues-list-item-title {
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
   justify-content: space-between;
+  margin-bottom: 8px;
 }
 
 .issues-list-item-content .issues-list-item-title .issues-list-item-title-content-container {
@@ -56,48 +56,48 @@
 }
 
 .issues-list-item-content .issues-list-item-title .issues-list-item-title-content-container .issues-list-item-title-content {
-  font-weight: 500;
-  margin-right: 8px;
-  font-size: 16px;
   display: inline-block;
   max-width: 100%;
+  margin-right: 8px;
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .issues-list-item-content .issues-list-item-score {
-  font-size: 12px;
-  color: #888;
+  flex-shrink: 0;
+  height: 18px;
+  padding: 0px 6px;
   background-color: var(--bs-border-tertiary-color);
   border-radius: 9px;
-  padding: 0px 6px;
-  height: 18px;
-  flex-shrink: 0;
+  font-size: 12px;
+  color: #888;
 }
 
 .issues-list-item-content .issues-list-item-path {
-  font-size: 0.85em;
-  color: var(--bs-sf-grey-text);
   margin-bottom: 4px;
+  font-size: 0.85em;
   word-break: break-all;
+  color: var(--bs-sf-grey-text);
 }
 
 .issues-list-item-content .issues-list-item-time {
-  font-size: 14px;
   padding-right: 8px;
+  font-size: 14px;
 }
 
 .issues-list-item-content .issues-list-item-detail {
-  font-size: 0.9em;
-  color: #555;
-  line-height: 1.5;
-  margin-top: 4px;
-  overflow: hidden;
   display: -webkit-box;
+  overflow: hidden;
+  margin-top: 4px;
+  font-size: 0.9em;
+  line-height: 1.5;
+  color: #555;
   -webkit-box-orient: vertical;
 }
 
 .issues-list-container {
-  height: 100%;
   overflow: auto;
+  height: 100%;
   padding: 0 16px;
 }
 

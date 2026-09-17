@@ -1,25 +1,25 @@
 .seaqa-ai-ask-wrapper {
-  width: 100%;
-  flex: 1;
-  overflow: hidden;
   display: flex;
+  overflow: hidden;
+  flex: 1;
   flex-direction: column;
+  width: 100%;
 }
 
 .seaqa-ai-ask-chats-header {
-  height: 40px;
   display: flex;
-  align-items: center;
   overflow: hidden;
+  align-items: center;
+  height: 40px;
   padding: 0 16px;
 }
 
 .seaqa-ai-ask-chats-body {
-  flex: 1;
   overflow: auto;
+  flex: 1;
+  min-height: 0;
   width: 100%;
   mask-image: linear-gradient(to bottom, var(--bs-body-secondary-bg) calc(100% - 24px), transparent);
-  min-height: 0;
 }
 
 .seaqa-ai-ask-chats-footer {
@@ -27,19 +27,19 @@
 }
 
 .seaqa-ai-ask-shared-readonly-footer {
-  min-height: 54px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  min-height: 54px;
 }
 
 .seaqa-ai-ask-chats {
   display: flex;
   flex-direction: column;
   min-height: 100%;
-  padding: 16px 0 34px;
   width: calc(100% - 360px);
   margin: 0 auto;
+  padding: 16px 0 34px;
 }
 
 .seaqa-ai-ask-wrapper.s .seaqa-ai-ask-chats {
@@ -55,8 +55,8 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  width: 100%;
   height: fit-content;
+  width: 100%;
   margin-top: 32px;
 }
 
@@ -65,32 +65,32 @@
 }
 
 .seaqa-ai-ask-chat.user-input-chat {
-  justify-content: flex-end;
-  margin-left: 18px;
   align-items: flex-end;
+  justify-content: flex-end;
   width: calc(100% - 18px);
+  margin-left: 18px;
   margin-top: 40px;
 }
 
 .seaqa-ai-ask-message-content {
-  max-width: 100%;
-  min-width: 48px;
-  min-height: 40px;
-  width: fit-content;
   overflow: hidden;
+  height: auto;
+  max-width: 100%;
+  min-height: 40px;
+  min-width: 48px;
+  width: fit-content;
+  background-color: #fff;
+  font-size: 14px;
   white-space: pre-wrap;
   word-wrap: break-word;
-  height: auto;
-  font-size: 14px;
   color: var(--bs-body-color);
-  background-color: #fff;
 }
 
 .user-input-chat .seaqa-ai-ask-message-content {
-  background-color: #FFF7F0;
-  border-radius: 8px 0 8px 8px;
-  border: unset;
   padding: 12px 16px;
+  background-color: #FFF7F0;
+  border: unset;
+  border-radius: 8px 0 8px 8px;
 }
 
 .seaqa-ai-ask .send-chat-btn {
@@ -104,16 +104,16 @@
 }
 
 .seaqa-ai-ask-wrapper.empty .seaqa-ai-ask-chats-body {
-  flex: unset;
-  height: fit-content;
   overflow: unset;
+  flex: unset;
   flex-shrink: 0;
+  height: fit-content;
 }
 
 .seaqa-ai-ask-chats .seaqa-ai-ask-chats-tip {
   display: flex;
-  flex-direction: column;
   align-items: center;
+  flex-direction: column;
   height: fit-content;
   width: 100%;
 }
@@ -128,8 +128,8 @@
   margin-top: 8px;
   margin-bottom: 8px;
   font-size: 24px;
-  line-height: 32px;
   font-weight: 500;
+  line-height: 32px;
 }
 
 .seaqa-ai-ask-chats .seaqa-ai-ask-chats-tip .seaqa-ai-ask-chats-tip-description {

@@ -1,9 +1,9 @@
 .seaqa-customize-select.seaqa-ai-chat-selector-display {
-  width: fit-content;
-  max-width: 100%;
-  background-image: none;
-  padding: 0 0.75rem;
   height: 36px;
+  max-width: 100%;
+  width: fit-content;
+  padding: 0 0.75rem;
+  background-image: none;
   border-radius: 8px;
   color: var(--bs-body-color);
 }
@@ -25,12 +25,12 @@
 }
 
 .seaqa-customize-select.seaqa-ai-chat-selector-display.highlight {
-  margin: 0;
-  min-height: unset;
   max-height: unset;
-  color: var(--bs-sf-orange);
-  border-color: var(--bs-sf-orange) !important;
+  min-height: unset;
+  margin: 0;
   background-color: rgba(237, 113, 9, 0.05);
+  border-color: var(--bs-sf-orange) !important;
+  color: var(--bs-sf-orange);
 }
 
 .seaqa-customize-select.seaqa-ai-chat-selector-display.highlight .seaqa-icon-svg {

@@ -1,8 +1,8 @@
 .seaqa-close-linked-github-issues-dialog {
-  width: 600px;
-  max-width:600px;
   height: fit-content;
   max-height: calc(100% - 56px);
+  max-width:600px;
+  width: 600px;
 }
 
 .seaqa-close-linked-github-issues-dialog .modal-content {
@@ -11,47 +11,47 @@
 
 .seaqa-close-linked-github-issues-dialog .modal-body {
   display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
   overflow-y: auto;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
   gap: 16px;
 }
 
 .seaqa-ticket-close-linked-github-issue {
-  padding: 6px 0;
   display: flex;
-  gap: 4px;
   flex-wrap: wrap;
+  padding: 6px 0;
+  gap: 4px;
 }
 
 .seaqa-ticket-close-linked-github-issue .link-item {
-  background-color: var(--bs-body-third-bg);
   height: 32px;
-  gap: 8px;
   padding: 0 8px;
+  background-color: var(--bs-body-third-bg);
   border-radius: 6px;
+  gap: 8px;
 }
 
 .seaqa-ticket-close-linked-github-issue .link-item .connection-icon {
-  width: 16px;
   height: 16px;
+  width: 16px;
 }
 
 .seaqa-ticket-close-linked-github-issue .link-item .link-item-name {
-  padding: 0;
   max-width: 100%;
+  padding: 0;
 }
 
 .seaqa-ticket-close-linked-github-issue .link-item .seaqa-tooltip-icon-btn {
-  width: 16px;
   height: 16px;
+  width: 16px;
   margin-right: 0;
 }
 
 .seaqa-ticket-close-linked-github-issue .link-item .seaqa-tooltip-icon-btn .seaqa-icon-svg {
-  width: 16px;
   height: 16px;
+  width: 16px;
 }
 
 .seaqa-ticket-close-linked-github-issue .link-item .seaqa-tooltip-icon-btn .seaqa-icon-svg-check-circle-stroked {

@@ -1,8 +1,8 @@
 .seaqa-project-side-panel {
-  height: 100%;
-  user-select: none;
   display: flex;
+  height: 100%;
   background-color: var(--bs-body-third-bg);
+  user-select: none;
 }
 
 .seaqa-project .seaqa-project-side-panel .seaqa-project-side-panel-header {
@@ -10,38 +10,38 @@
 }
 
 .seaqa-project-side-panel .seaqa-project-side-panel-container {
-  width: 100%;
-  flex: 1;
-  user-select: none;
   display: flex;
   overflow-y: auto;
+  flex: 1;
   flex-direction: column;
+  width: 100%;
+  user-select: none;
 }
 
 .seaqa-project-side-panel .seaqa-project-navigation {
-  width: 100%;
-  padding: 10px 8px;
   display: flex;
+  overflow: auto;
   flex: auto;
   flex-direction: column;
-  overflow: auto;
+  width: 100%;
+  padding: 10px 8px;
   font-size: 14px;
 }
 
 .seaqa-nav-list .side-panel-slide {
-  transition: all 0.3s ease-in-out;
   flex-shrink: 0;
+  transition: all 0.3s ease-in-out;
 }
 
 .seaqa-nav-list .side-panel-slide-up {
-  transition: all 0.3s ease-in-out;
   height: 0;
+  transition: all 0.3s ease-in-out;
 }
 
 .seaqa-project-side-panel .seaqa-project-side-panel-subtitle {
-  color: var(--bs-icon-color);
-  padding: 8px;
   margin-top: 10px;
+  padding: 8px;
+  color: var(--bs-icon-color);
 }
 
 .seaqa-side-panel-more-nav .dropdown-menu {

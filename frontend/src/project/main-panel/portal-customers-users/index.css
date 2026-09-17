@@ -3,8 +3,8 @@
   flex: 1;
   flex-direction: column;
   min-height: 0;
-  padding: 0;
   width: 100%;
+  padding: 0;
 }
 
 .portal-customers-users-content {
@@ -16,10 +16,10 @@
 }
 
 .portal-customers-users-view-tabs {
-  flex: 0 0 auto;
   overflow: visible;
-  padding-left: 0;
+  flex: 0 0 auto;
   width: auto;
+  padding-left: 0;
 }
 
 .portal-customers-users-view-tabs .sea-metadata-views-nav-container {
@@ -35,11 +35,11 @@
 }
 
 .portal-customers-users-view-tabs .sea-metadata-view-item {
+  padding: 0;
   background: transparent;
   border: 0;
-  color: var(--bs-body-color);
   font: inherit;
-  padding: 0;
+  color: var(--bs-body-color);
 }
 
 .portal-customers-users-view-tabs .sea-metadata-view-item.active {
@@ -74,13 +74,13 @@
 }
 
 .portal-customers-sea-metadata .sea-metadata-table-main-container > .empty-tip .empty-tip-text {
-  color: var(--bs-icon-color) !important;
   margin-top: 16px;
+  color: var(--bs-icon-color) !important;
 }
 
 .portal-invite-users-dialog {
-  margin: 8vh auto 0;
   max-width: 640px;
+  margin: 8vh auto 0;
 }
 
 .portal-invite-users-dialog .modal-body {
@@ -105,20 +105,20 @@
 }
 
 .portal-customer-dialog {
-  margin: 8vh auto 0;
   max-width: 560px;
+  margin: 8vh auto 0;
 }
 
 .portal-customer-members-dialog {
-  margin: 8vh auto 0;
   max-width: 640px;
+  margin: 8vh auto 0;
 }
 
 .portal-customer-members-dialog .modal-body {
   display: flex;
+  overflow: hidden;
   flex-direction: column;
   min-height: 390px;
-  overflow: hidden;
   padding: 24px;
 }
 
@@ -129,13 +129,13 @@
 
 .portal-customer-members-form label {
   display: block;
-  font-size: 14px;
   margin-bottom: 8px;
+  font-size: 14px;
 }
 
 .portal-customer-member-select {
-  min-height: 38px;
   max-width: 100%;
+  min-height: 38px;
 }
 
 .portal-customer-members-table {
@@ -145,24 +145,24 @@
 }
 
 .portal-customer-members-table > .seaqa-customize-table {
+  overflow-y: auto;
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
 }
 
 .portal-customer-members-empty {
-  align-items: center;
   display: flex;
+  align-items: center;
   flex: 1;
   justify-content: center;
   min-height: 170px;
 }
 
 .portal-customer-members-operation {
-  align-items: center;
   display: flex;
-  height: 100%;
+  align-items: center;
   justify-content: flex-end;
+  height: 100%;
 }
 
 .portal-customer-members-operation .seaqa-icon-btn {

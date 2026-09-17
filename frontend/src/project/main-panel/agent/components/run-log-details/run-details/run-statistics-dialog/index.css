@@ -1,14 +1,14 @@
 .run-statistics-dialog {
-  margin: 28px auto;
   height: calc(100% - 56px);
-  width: 70%;
   max-width: 900px;
+  width: 70%;
+  margin: 28px auto;
 }
 
 .run-statistics-dialog .modal-content {
+  overflow: hidden;
   height: 100%;
   max-height: 100%;
-  overflow: hidden;
 }
 
 .run-statistics-dialog .modal-body {
@@ -23,19 +23,19 @@
 }
 
 .run-statistics-section {
+  padding: 16px;
   background: #fafafa;
   border: 1px solid #eee;
   border-radius: 8px;
-  padding: 16px;
 }
 
 .run-statistics-section-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--bs-body-color);
   margin: 0 0 12px 0;
   padding-bottom: 8px;
   border-bottom: 1px solid #eee;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--bs-body-color);
 }
 
 .run-statistics-summary {
@@ -74,15 +74,15 @@
 .run-statistics-table th,
 .run-statistics-table td {
   padding: 10px 12px;
-  text-align: left;
   border-bottom: 1px solid #eee;
+  text-align: left;
 }
 
 .run-statistics-table th {
   background: var(--bs-body-secondary-bg);
   font-weight: 600;
-  color: var(--bs-body-color);
   white-space: nowrap;
+  color: var(--bs-body-color);
 }
 
 .run-statistics-table td {
@@ -94,8 +94,8 @@
 }
 
 .run-statistics-table .tool-name-cell {
-  max-width: 200px;
   overflow: hidden;
+  max-width: 200px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }

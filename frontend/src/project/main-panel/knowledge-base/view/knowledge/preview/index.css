@@ -1,27 +1,27 @@
 .seaqa-knowledge-preview {
-  width: 100%;
-  flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
+  flex: 1;
+  width: 100%;
   padding: 24px 143px 40px 143px;
 }
 
 .seaqa-knowledge-preview .seaqa-knowledge-create-info {
   display: flex;
+  overflow: hidden;
   align-items: center;
   justify-content: space-between;
-  overflow: hidden;
-  gap: 16px;
   margin-bottom: 24px;
+  gap: 16px;
 }
 
 .seaqa-knowledge-preview .seaqa-knowledge-create-info .seaqa-knowledge-creator {
-  border-radius: 0;
-  padding: 0;
-  background-color: inherit;
   flex: 1;
   max-width: unset;
   margin-right: 0;
+  padding: 0;
+  background-color: inherit;
+  border-radius: 0;
   font-size: 14px;
 }
 
@@ -32,25 +32,25 @@
 }
 
 .seaqa-knowledge-preview .seaqa-knowledge-create-info .seaqa-knowledge-create-time-content {
-  color: var(--bs-body-secondary-color);
   font-size: 14px;
   line-height: 20px;
+  color: var(--bs-body-secondary-color);
 }
 
 .seaqa-knowledge-preview .seaqa-knowledge-title {
   margin-bottom: 16px;
   border: none;
-  color: var(--bs-body-color);
   font-size: 26pt;
   font-weight: 700;
+  color: var(--bs-body-color);
 }
 
 .seaqa-knowledge-preview .seaqa-knowledge-tags {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 4px;
   margin-bottom: 32px;
+  gap: 4px;
 }
 
 .seaqa-knowledge-preview .seaqa-knowledge-tags .sea-metadata-tag {

@@ -1,17 +1,17 @@
 .seaqa-settings-item .link-settings-content {
-  padding: 6px 0;
-  margin-bottom: 8px;
   display: flex;
   flex-direction: column;
+  margin-bottom: 8px;
+  padding: 6px 0;
   gap: 4px;
 }
 
 .seaqa-settings-item .link-settings-content .link-item {
-  background-color: var(--bs-body-third-bg);
   height: 32px;
-  gap: 8px;
   padding: 0px 8px;
+  background-color: var(--bs-body-third-bg);
   border-radius: 6px;
+  gap: 8px;
 }
 
 .seaqa-settings-item .link-settings-content .link-item:hover {
@@ -19,24 +19,24 @@
 }
 
 .seaqa-settings-item .link-settings-content .link-item .link-item-name {
-  padding: 0px;
   max-width: 100%;
+  padding: 0px;
 }
 
 .seaqa-settings-item .link-settings-content .link-item .connection-icon {
-  width: 16px;
   height: 16px;
+  width: 16px;
 }
 
 .seaqa-settings-item .link-settings-content .link-item .seaqa-tooltip-icon-btn {
-  width: 16px;
   height: 16px;
+  width: 16px;
   margin-right: 0px;
 }
 
 .seaqa-settings-item .link-settings-content .link-item .seaqa-tooltip-icon-btn .seaqa-icon-svg {
-  width: 16px;
   height: 16px;
+  width: 16px;
 }
 
 .seaqa-settings-item .link-settings-content .link-item .seaqa-tooltip-icon-btn .seaqa-icon-svg-check-circle-stroked {

@@ -3,6 +3,6 @@
 }
 
 .edit-prompt-dialog .edit-prompt-textarea {
-  resize: none;
   min-height: 200px;
+  resize: none;
 }

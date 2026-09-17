@@ -1,9 +1,9 @@
 .seaqa-project-settings-item-header {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  margin-bottom: 8px;
   border-bottom: 1px solid var(--bs-border-secondary-color);
   font-size: 16px;
   font-weight: 400;
-  height: 40px;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
 }

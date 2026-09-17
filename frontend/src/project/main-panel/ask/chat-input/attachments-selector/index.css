@@ -2,8 +2,8 @@
   display: flex;
   align-items: center;
   flex: 1 0 auto;
-  width: 20px;
   height: 20px;
+  width: 20px;
 }
 
 .attachments-selector-dropdown .dropdown-toggle-button .seaqa-role-status-down-icon {
@@ -16,13 +16,13 @@
 }
 
 .attachments-selector-dropdown .dropdown-menu .label-container span {
-  word-wrap: normal;
   white-space: pre-wrap;
+  word-wrap: normal;
 }
 
 .attachments-selector-dropdown .attachments-selector-dropdown-toggle {
-  width: 36px !important;
   height: 36px !important;
+  width: 36px !important;
   padding: 0 10px !important;
   border-radius: 8px;
 }

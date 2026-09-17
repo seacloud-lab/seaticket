@@ -7,21 +7,21 @@
 }
 
 .seaqa-import-dialog .seaqa-import-content {
-  padding: 16px;
   overflow-y: auto;
+  padding: 16px;
 }
 
 .seaqa-import-example-file .btn-outline-primary {
   margin-top: 10px;
   padding: 1px 12px;
-  color: var(--bs-orange);
   border: solid 1px var(--bs-orange);
+  color: var(--bs-orange);
 }
 
 .seaqa-import-example-file .btn-outline-primary:hover {
-  color: var(--bs-body-bg);
-  border: solid 1px var(--bs-orange);
   background-color: #ff9800;
+  border: solid 1px var(--bs-orange);
+  color: var(--bs-body-bg);
 }
 
 .seaqa-import-upload-file-wrapper {
@@ -29,17 +29,17 @@
 }
 
 .seaqa-import-upload-file-wrapper .upload-file-box {
-  margin-top: 10px;
   height: 300px;
+  margin-top: 10px;
+  background-color: transparent;
   border: dashed 1px var(--bs-orange);
   border-radius: 6px;
-  background-color: transparent;
   cursor: pointer;
 }
 
 .seaqa-import-upload-file-wrapper .upload-file-box .upload-icon-wrapper .seaqa-icon-svg-upload {
-  width: 64px;
   height: 64px;
+  width: 64px;
   color: var(--bs-orange);
 }
 
@@ -53,17 +53,17 @@
 }
 
 .seaqa-import-upload-file-wrapper .preview-file-box .preview-file-title {
-  color: var(--bs-body-secondary-color);
   font-size: 12px;
+  color: var(--bs-body-secondary-color);
 }
 
 /* Preview table styles */
 .seaqa-preview-table {
+  display: block;
   width: 100%;
   margin-top: 10px;
   border-collapse: collapse;
   table-layout: fixed;
-  display: block;
 }
 
 .seaqa-preview-table thead {
@@ -72,8 +72,8 @@
 
 .seaqa-preview-table tbody {
   display: block;
-  max-height: 230px;
   overflow-y: auto;
+  max-height: 230px;
 }
 
 .seaqa-preview-table tr {
@@ -84,10 +84,10 @@
 
 .seaqa-preview-table th {
   height: 32px;
-  text-align: left;
+  padding: 0px 8px;
   background-color: var(--bs-th-bg);
   font-weight: var(--bs-body-font-weight);
-  padding: 0px 8px;
+  text-align: left;
 }
 
 /* Header */
@@ -108,19 +108,19 @@
 }
 
 .seaqa-preview-table .header-column-icon .seaqa-icon-svg {
-  color: var(--bs-icon-secondary-color);
   height: 14px;
-  margin-top: -2px;
   width: 14px;
+  margin-top: -2px;
+  color: var(--bs-icon-secondary-color);
 }
 
 /* Body */
 .seaqa-preview-table td {
-  padding: 0px 8px;
-  text-align: left;
-  border-bottom: 1px solid var(--bs-border-secondary-color);
-  background-color: var(--bs-body-bg);
   height: 32px;
+  padding: 0px 8px;
+  background-color: var(--bs-body-bg);
+  border-bottom: 1px solid var(--bs-border-secondary-color);
+  text-align: left;
 }
 
 .seaqa-preview-table .title-cell {

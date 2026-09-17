@@ -1,9 +1,9 @@
 .seaqa-rename-connection-title {
-  width: 100%;
-  height: 36px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  height: 36px;
+  width: 100%;
 }
 
 .seaqa-rename-connection-title .seaqa-rename-connection-title-input,

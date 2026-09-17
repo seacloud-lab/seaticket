@@ -1,7 +1,7 @@
 .seaqa-project-settings-tabs {
-  border-bottom: 1px solid var(--bs-border-secondary-color);
-  margin: 0 16px;
   width: calc(100% - 32px);
+  margin: 0 16px;
+  border-bottom: 1px solid var(--bs-border-secondary-color);
 }
 
 .seaqa-project-settings-body-container {

@@ -1,7 +1,7 @@
 .seaqa-discourse-reply-container .seaqa-discourse-reply-op-btns {
-  margin-top: 12px;
   display: flex;
   justify-content: flex-end;
+  margin-top: 12px;
   gap: 8px;
 }
 
@@ -24,8 +24,8 @@
 }
 
 .seaqa-discourse-reply-container .author-info-wrapper .author-info-left .author-avatar {
-  width: 32px;
   height: 32px;
+  width: 32px;
 }
 
 .seaqa-discourse-reply-container .author-info-wrapper .author-info-left .author-avatar img {

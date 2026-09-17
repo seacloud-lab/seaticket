@@ -7,8 +7,8 @@
 .seaqa-resource-detail-item-divider {
   height: 1px;
   width: 100%;
-  border-top: 1px solid var(--bs-border-secondary-color);
   margin: 8px 0;
+  border-top: 1px solid var(--bs-border-secondary-color);
 }
 
 .seaqa-resource-detail-item .author-info-wrapper {
@@ -30,8 +30,8 @@
 }
 
 .seaqa-resource-detail-item .author-info-wrapper .author-info-left .author-avatar {
-  width: 32px;
   height: 32px;
+  width: 32px;
 }
 
 .seaqa-resource-detail-item .author-info-wrapper .author-info-left .author-avatar img {

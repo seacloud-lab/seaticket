@@ -6,8 +6,8 @@
 }
 
 .seaqa-connection-record-details-in-dialog .seaqa-connection-record-details-in-dialog-main {
-  min-width: 0;
   flex: 1;
+  min-width: 0;
 }
 
 .seaqa-connection-record-details-in-dialog .seaqa-connection-record-details-in-dialog-main .empty-tip {
@@ -15,8 +15,8 @@
 }
 
 .seaqa-connection-record-details-in-dialog .seaqa-connection-record-details-in-dialog-others {
-  width: calc((100% - 24px) * 0.3);
   height: fit-content;
+  width: calc((100% - 24px) * 0.3);
 }
 
 .seaqa-connection-record-details-in-dialog .seaqa-connection-resource-details {

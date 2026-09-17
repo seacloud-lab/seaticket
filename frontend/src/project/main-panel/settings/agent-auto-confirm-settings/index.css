@@ -1,10 +1,10 @@
 .agent-auto-confirm-risk {
   height: 22px;
   width: fit-content;
-  font-size: 12px;
+  background-color: var(--bs-th-secondary-bg);
   border: 1px solid rgba(0, 40, 100, 0.12);
   border-radius: 4px;
-  background-color: var(--bs-th-secondary-bg);
-  color: var(--bs-body-secondary-color);
+  font-size: 12px;
   line-height: 20px;
+  color: var(--bs-body-secondary-color);
 }

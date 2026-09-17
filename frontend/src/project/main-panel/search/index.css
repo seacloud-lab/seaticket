@@ -1,37 +1,37 @@
 /* filters */
 .seaqa-project-search .seaqa-project-search-filter-wrapper {
-  height: 52px;
-  width: 100%;
   display: flex;
   align-items: center;
+  height: 52px;
+  width: 100%;
   padding-top: 16px;
   padding-bottom: 10px;
   border-bottom: 1px solid #eee;
 }
 
 .seaqa-project-search .seaqa-project-search-filter-wrapper .seaqa-project-search-filter {
-  margin-right: 8px;
   display: flex;
   align-items: center;
   width: fit-content;
-  border-radius: 3px;
+  margin-right: 8px;
   padding: 2px 4px;
+  border-radius: 3px;
 }
 
 .seaqa-project-search .seaqa-project-search-filter .seaqa-project-search-filter-value {
-  margin-right: 4px;
-  max-width: 120px;
   display: inline-block;
   overflow: hidden;
+  max-width: 120px;
+  width: fit-content;
+  margin-right: 4px;
   text-overflow: ellipsis;
   white-space: nowrap;
-  width: fit-content;
 }
 
 .seaqa-project-search .seaqa-project-search-filter .seaqa-icon-svg {
-  color: var(--bs-sf-grey-text);
   height: 12px;
   width: 12px;
+  color: var(--bs-sf-grey-text);
 }
 
 .seaqa-project-search .seaqa-project-search-filter-wrapper .seaqa-project-search-filter:hover {
@@ -47,8 +47,8 @@
 }
 
 .seaqa-project-search .seaqa-project-search-result-list {
-  width: 100%;
-  height: 100%;
-  margin: 8px 0;
   overflow-y: auto;
+  height: 100%;
+  width: 100%;
+  margin: 8px 0;
 }

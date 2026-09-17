@@ -3,11 +3,11 @@
 }
 
 .suggestion-create-ticket-preview-title {
+  margin-bottom: 8px;
   font-size: 16px;
   font-weight: 500;
   line-height: 24px;
   color: var(--bs-body-color);
-  margin-bottom: 8px;
 }
 
 .suggestion-create-ticket-preview-content {

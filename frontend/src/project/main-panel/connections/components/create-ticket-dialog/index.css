@@ -1,6 +1,6 @@
 .seaqa-create-ticket-dialog {
-  max-width: 850px;
   height: 550px;
+  max-width: 850px;
 }
 
 .seaqa-create-ticket-dialog .modal-content {
@@ -12,12 +12,12 @@
 }
 
 .seaqa-create-ticket-dialog .seaqa-create-ticket-dialog-other-settings {
-  width: 316px;
   display: flex;
-  flex-direction: column;
-  padding-left: 16px;
-  height: 388px;
   overflow-y: auto;
+  flex-direction: column;
+  height: 388px;
+  width: 316px;
+  padding-left: 16px;
 }
 
 .seaqa-create-ticket-dialog .seaqa-ticket-content {
@@ -29,6 +29,6 @@
 }
 
 .seaqa-create-ticket-dialog .modal-footer .seaqa-loading-icon {
-  width: 16px;
   height: 16px;
+  width: 16px;
 }

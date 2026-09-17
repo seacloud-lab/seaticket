@@ -1,38 +1,38 @@
 #wrapper {
+  overflow: hidden;
   height: 100%;
   width: 100%;
-  overflow: hidden;
 }
 
 .seaqa-project {
+  display: flex;
+  overflow: hidden;
+  align-items: center;
   height: 100%;
   width: 100%;
-  display: flex;
-  align-items: center;
-  overflow: hidden;
 }
 
 .seaqa-project .seaqa-project-panel-header {
-  flex-shrink: 0;
-  padding: 0 1rem;
-  width: 100%;
-  height: 48px;
   display: flex;
   align-items: center;
+  flex-shrink: 0;
+  height: 48px;
+  width: 100%;
+  padding: 0 1rem;
 }
 
 .required-tip {
-  color: #ff1920;
   display: inline-block;
   padding-left: 8px;
   padding-right: 6px;
+  color: #ff1920;
 }
 
 body {
-  --ticket-open-color: #1a7f37;
+  overflow-y: auto;
   --ticket-close-color: #8250df;
   --ticket-invalid-color: #59636e;
-  overflow-y: auto;
+  --ticket-open-color: #1a7f37;
 }
 
 /* icon color */
@@ -42,11 +42,11 @@ body {
 
 .seaqa-project-ticket-state-dot-circle-stroked-icon,
 .seaqa-project-ticket-state-loop-dot-icon {
-  color: var(--ticket-open-color);
   flex-shrink: 0;
+  color: var(--ticket-open-color);
 }
 
 .seaqa-project-ticket-state-circle-invalid-icon {
-  color: var(--ticket-invalid-color);
   flex-shrink: 0;
+  color: var(--ticket-invalid-color);
 }

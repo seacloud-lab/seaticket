@@ -1,12 +1,12 @@
 .seaqa-project-navigation-item {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
   height: 32px;
   width: 100%;
   padding: 0 .5rem;
   border-radius: 3px;
   cursor: pointer;
-  flex-shrink: 0;
 }
 
 .seaqa-project-navigation-item.seaqa-project-navigation-item-active,
@@ -15,8 +15,8 @@
 }
 
 .seaqa-project-navigation-item .seaqa-project-navigation-item-name {
-  flex: 1;
   overflow: hidden;
+  flex: 1;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -24,8 +24,8 @@
 .seaqa-project-navigation-item .seaqa-project-navigation-item-icon {
   height: 16px;
   width: 16px;
-  color: var(--bs-icon-color);
   margin-right: 8px;
+  color: var(--bs-icon-color);
 }
 
 .seaqa-project-navigation-item .seaqa-icon-btn:hover {

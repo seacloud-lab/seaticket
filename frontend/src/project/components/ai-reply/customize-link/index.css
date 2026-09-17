@@ -1,14 +1,14 @@
 .seaqa-ai-chat-customize-link {
-  width: 100%;
   overflow: hidden;
   height: auto;
+  width: 100%;
+  margin-top: -0.5px !important;
+  padding-bottom: 24px !important;
+  background-color: #FDFDFD;
   border: 1px solid var(--bs-border-tertiary-color);
   border-radius: 8px;
-  gap: 16px;
   cursor: pointer;
-  padding-bottom: 24px !important;
-  margin-top: -0.5px !important;
-  background-color: #FDFDFD;
+  gap: 16px;
 }
 
 .seaqa-ai-chat-customize-link + span {
@@ -16,39 +16,39 @@
 }
 
 .seaqa-ai-chat-customize-link .seaqa-ai-chat-customize-link-header {
-  width: 100%;
-  height: 40px;
-  padding: 0 16px !important;
-  overflow: hidden;
   display: flex;
+  overflow: hidden;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  border-bottom: 1px solid var(--bs-border-tertiary-color);
+  height: 40px;
+  width: 100%;
+  padding: 0 16px !important;
   background-color: var(--bs-body-third-bg);
+  border-bottom: 1px solid var(--bs-border-tertiary-color);
+  gap: 8px;
 }
 
 .seaqa-ai-chat-customize-link .seaqa-ai-chat-customize-link-header .seaqa-ai-chat-customize-link-name {
-  flex: 1;
   display: flex;
   align-items: center;
+  flex: 1;
   font-weight: 500;
   gap: 8px;
 }
 
 .seaqa-ai-chat-customize-link .seaqa-ai-chat-customize-md-link-body {
-  width: 100%;
-  height: unset;
-  min-height: 48px;
-  max-height: 106px;
-  -webkit-line-clamp: 3;
-  word-wrap: break-word;
   display: -webkit-box;
-  -webkit-box-orient: vertical;
-  white-space: pre-wrap;
   align-items: unset;
-  line-height: 1.5;
+  height: unset;
+  max-height: 106px;
+  min-height: 48px;
+  width: 100%;
   padding: 16px 16px 0 16px !important;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
 }
 
 .seaqa-ai-chat-customize-link .seaqa-ai-chat-customize-md-link-body .preview-text-content {

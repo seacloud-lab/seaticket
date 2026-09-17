@@ -8,9 +8,9 @@
 
 .seaqa-agent-action-suggestion-text-container {
   display: inline-flex;
+  overflow: hidden;
   align-items: center;
   min-width: 0;
-  overflow: hidden;
   gap: 12px;
 }
 
@@ -35,14 +35,14 @@
 }
 
 .seaqa-agent-action-suggestion-card-header > svg {
-  width: 14px;
   height: 14px;
+  width: 14px;
   color: var(--bs-icon-secondary-color);
 }
 
 .seaqa-agent-action-suggestion-card.seaqa-agent-action-suggestion-card-cancelled .seaqa-agent-action-suggestion-text-container .seaqa-agent-action-suggestion-text {
-  color: var(--bs-icon-secondary-color);
   text-decoration: line-through;
+  color: var(--bs-icon-secondary-color);
 }
 
 /* Suggestion ops (edit / details) */
@@ -51,9 +51,9 @@
 }
 
 .seaqa-agent-action-suggestion-resolved {
-  gap: 8px;
-  padding-top: 8px;
   height: 42px;
+  padding-top: 8px;
+  gap: 8px;
 }
 
 .seaqa-agent-action-suggestion-resolved .seaqa-agent-action-tool-result-text {
@@ -63,13 +63,13 @@
 }
 
 .seaqa-agent-suggestion-action-result-failed {
-  background-color: rgba(255, 0, 0, 0.1);
-  padding: 4px 8px;
   display: inline-flex;
-  gap: 4px;
   margin-top: 8px;
-  color: var(--bs-body-secondary-color);
+  padding: 4px 8px;
+  background-color: rgba(255, 0, 0, 0.1);
   border-radius: 4px;
+  color: var(--bs-body-secondary-color);
+  gap: 4px;
 }
 
 .seaqa-agent-ticket-result-link {

@@ -4,9 +4,9 @@
 }
 
 .search-filters-container .search-filter {
-  width: fit-content;
   display: flex;
   align-items: center;
+  width: fit-content;
   margin-right: 12px;
 }
 
@@ -14,9 +14,9 @@
 .search-filter-menu .search-filter-toggle {
   display: flex;
   align-items: center;
-  cursor: pointer;
   padding: 2px 4px;
   border-radius: 4px;
+  cursor: pointer;
 }
 
 .search-filters-container .search-filter .search-filter-toggle:hover,
@@ -42,25 +42,25 @@
 }
 
 .search-filter-menu.filter-by-suffix-menu {
-  width: 400px;
   position: relative;
+  width: 400px;
 }
 
 .search-filter-menu.filter-by-suffix-menu .clear-icon-right {
-  width: 20px;
-  height: 20px;
   position: absolute;
-  top: 16px;
   right: 16px;
+  top: 16px;
   display: flex;
-  justify-content: center;
   align-items: center;
-  color: var(--bs-sf-grey-text);
+  justify-content: center;
+  height: 20px;
+  width: 20px;
   margin: 9px;
+  padding: 0;
+  background-color: transparent;
   border: 0;
   border-radius: 3px;
-  background-color: transparent;
-  padding: 0;
+  color: var(--bs-sf-grey-text);
 }
 
 .search-filter-menu.filter-by-suffix-menu .clear-icon-right:hover {
@@ -73,67 +73,67 @@
 
 .search-filter-menu .input-container {
   position: relative;
-  border: 1px solid var(--bs-border-secondary-color);
-  border-radius: 4px;
-  padding: 4px 6px;
-  margin: 8px 16px;
-  min-height: 28px;
   display: flex;
   flex-wrap: wrap;
+  min-height: 28px;
+  margin: 8px 16px;
+  padding: 4px 6px;
+  border: 1px solid var(--bs-border-secondary-color);
+  border-radius: 4px;
   gap: 4px;
 }
 
 .search-filter-menu .input-container.focus {
   background: var(--bs-body-bg);
   border-color: var(--bs-custom-select-focus-border-color);
-  color: #495057;
   outline: 0;
+  color: #495057;
 }
 
 .search-filter-menu .input-container .search-input-wrapper {
   display: flex;
   align-items: center;
-  border: none;
-  padding: 0px;
-  width: auto;
-  background: transparent;
-  font-size: inherit;
-  line-height: 20px;
   flex: 1 1 60px;
   min-width: 60px;
+  width: auto;
+  padding: 0px;
+  background: transparent;
+  border: none;
   border-radius: 4px;
+  font-size: inherit;
+  line-height: 20px;
 }
 
 .search-filter-menu .input-container input {
+  display: block;
+  height: 20px;
+  width: 100%;
+  padding: 0px;
   border: none;
   outline: none;
-  width: 100%;
-  display: block;
   resize: none;
-  padding: 0px;
-  height: 20px;
 }
 
 .search-filter-menu .user-item {
-  height: 20px;
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: flex-start;
+  height: 20px;
 }
 
 .search-filter-menu .user-item .user-avatar {
-  width: 16px;
   height: 16px;
+  width: 16px;
   margin-right: 4px;
   border-radius: 50%;
 }
 
 .search-filter-menu .input-container .user-item {
+  margin-right: 2px;
+  padding: 0 4px 0 2px;
   background-color: var(--bs-border-tertiary-color);
   border-radius: 10px;
-  padding: 0 4px 0 2px;
-  margin-right: 2px;
   font-size: 13px;
 }
 
@@ -158,8 +158,8 @@
   align-items: center;
   justify-content: center;
   margin-right: 4px;
-  cursor: pointer;
   color: var(--bs-sf-grey-text);
+  cursor: pointer;
 }
 
 .filter-by-date-menu .filter-by-date-custom-date-container-outer {
@@ -168,15 +168,15 @@
 
 .filter-by-date-menu .filter-by-date-custom-date-container {
   width: calc(100% - 16px);
-  gap: 8px;
   background-color: #f9f9f9;
+  gap: 8px;
 }
 
 .filter-by-date-menu .filter-by-date-custom-date-container .custom-date-container {
   display: flex;
+  align-items: flex-start;
   flex-direction: column;
   justify-content: flex-start;
-  align-items: flex-start;
   font-size: 14px;
 }
 
@@ -192,8 +192,8 @@
 
 .search-filters-container .search-filter-toggle.highlighted .seaqa-icon-svg,
 .search-filters-container .search-filter-toggle.highlighted {
-  color: var(--bs-sf-orange);
   font-weight: 500;
+  color: var(--bs-sf-orange);
 }
 
 .search-filters-container .search-filter-toggle .seaqa-icon-svg {

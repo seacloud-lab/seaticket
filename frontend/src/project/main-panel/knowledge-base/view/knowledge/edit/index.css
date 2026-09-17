@@ -1,10 +1,10 @@
 .seaqa-project-edit-knowledge {
-  flex: 1;
-  width: 100%;
+  display: flex;
   overflow-x: hidden;
   overflow-y: scroll;
+  flex: 1;
+  width: 100%;
   padding: 16px;
-  display: flex;
 }
 
 .seaqa-project-edit-knowledge .seaqa-project-knowledge-settings {
@@ -14,9 +14,9 @@
 }
 
 .seaqa-project-edit-knowledge .seaqa-project-knowledge-name {
+  width: 100%;
   font-size: 16px;
   font-weight: 600;
-  width: 100%;
 }
 
 .seaqa-project-edit-knowledge .seaqa-project-knowledge-settings-container {
@@ -24,9 +24,9 @@
 }
 
 .seaqa-project-edit-knowledge .seaqa-project-knowledge-content-settings {
-  width: 70%;
   display: flex;
   flex-direction: column;
+  width: 70%;
 }
 
 .seaqa-project-edit-knowledge .seaqa-project-knowledge-content {
@@ -36,10 +36,10 @@
 }
 
 .seaqa-project-edit-knowledge .seaqa-project-knowledge-other-settings {
-  width: 30%;
-  padding-left: 16px;
   display: flex;
   flex-direction: column;
+  width: 30%;
+  padding-left: 16px;
 }
 
 .seaqa-project-edit-knowledge .seaqa-project-knowledge-footer {
@@ -69,8 +69,8 @@
 }
 
 .seaqa-project-edit-knowledge.s .seaqa-project-knowledge-other-settings {
-  padding-left: 0;
   width: 100%;
+  padding-left: 0;
 }
 
 .seaqa-project-edit-knowledge.s .seaqa-project-knowledge-other-settings .seaqa-settings-item:last-child {
@@ -82,10 +82,10 @@
 }
 
 .seaqa-project-edit-knowledge.s .seaqa-project-knowledge-submit-btns {
-  margin-top: 10px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  margin-top: 10px;
   padding-bottom: 40px;
 }
 

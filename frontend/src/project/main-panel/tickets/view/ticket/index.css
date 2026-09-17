@@ -1,21 +1,21 @@
 .seaqa-project-ticket {
-  flex: 1;
-  width: 100%;
+  display: flex;
   overflow-x: hidden;
   overflow-y: auto;
-  display: flex;
-  flex-direction: column;
   align-items: center;
+  flex: 1;
+  flex-direction: column;
+  width: 100%;
   padding: 0 16px;
 }
 
 .seaqa-project-ticket .seaqa-project-ticket-simple-info-wrapper-sticky {
-  height: 62px !important;
   position: sticky !important;
   top: 0px !important;
   z-index: 103 !important;
-  background-color: #FFF !important;
+  height: 62px !important;
   padding: 8px 0 !important;
+  background-color: #FFF !important;
   gap: 4px !important;
 }
 
@@ -24,11 +24,11 @@
 }
 
 .seaqa-project-ticket .seaqa-project-ticket-simple-info-wrapper-sticky .seaqa-project-ticket-title-number-type {
-  margin-left: 16px !important;
-  flex: 1 !important;
-  overflow: hidden !important;
   display: flex !important;
+  overflow: hidden !important;
+  flex: 1 !important;
   flex-direction: column !important;
+  margin-left: 16px !important;
   margin-right: 16px !important;
 }
 
@@ -43,15 +43,15 @@
 }
 
 .seaqa-project-ticket .seaqa-project-ticket-content-wrapper {
-  width: 100%;
   display: flex;
+  width: 100%;
   padding: 16px 0 50px 0;
 }
 
 .seaqa-project-ticket .seaqa-project-ticket-comment-container-wrapper {
-  width: calc((100% - 24px) * 0.7);
   display: flex;
   flex-direction: column;
+  width: calc((100% - 24px) * 0.7);
 }
 
 .seaqa-project-ticket .sf-long-text-inline-editor-container:has(*:focus) {
@@ -59,9 +59,9 @@
 }
 
 .seaqa-project-ticket .sf-slate-viewer-scroll-container {
-  padding: 0;
   overflow-x: hidden;
   width: 100%;
+  padding: 0;
 }
 
 .seaqa-project-ticket .sf-slate-viewer-scroll-container .sf-slate-article-content {
@@ -74,13 +74,13 @@
 }
 
 .seaqa-project-ticket .sf-slate-viewer-scroll-container .article {
-  padding: 10px 16px 24px 16px !important;
-  border: unset;
   height: auto;
-  width: 100%;
   max-width: 100%;
   min-height: 100%;
+  width: 100%;
+  padding: 10px 16px 24px 16px !important;
   background-color: #FDFDFD;
+  border: unset;
 }
 
 .seaqa-project-ticket .seaqa-project-ticket-comment.seaqa-project-ticket-add-comment .seaqa-project-ticket-comment-container {
@@ -89,16 +89,16 @@
 }
 
 .seaqa-project-ticket .seaqa-project-ticket-comment.seaqa-project-ticket-add-comment .seaqa-project-ticket-comment-op {
-  border-bottom: none;
-  color: inherit;
-  font-weight: 600;
-  font-size: 16px;
   height: 38px;
-  line-height: 32px;
   padding-left: 0;
   padding-top: 0;
   padding-bottom: 6px;
   background-color: transparent;
+  border-bottom: none;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 32px;
+  color: inherit;
 }
 
 /* small */
@@ -122,12 +122,12 @@
 }
 
 .seaqa-project-ticket .seaqa-project-ticket-footer .seaqa-project-ticket-submit-btns {
-  flex: 1;
-  margin-top: 16px;
-  min-width: fit-content;
   display: flex;
   align-items: center;
+  flex: 1;
   justify-content: flex-end;
+  min-width: fit-content;
+  margin-top: 16px;
 }
 
 .seaqa-project-ticket.s .seaqa-project-ticket-footer {
@@ -135,10 +135,10 @@
 }
 
 .seaqa-project-ticket.s .seaqa-project-ticket-footer .seaqa-project-ticket-submit-btns {
-  width: 100%;
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  width: 100%;
   margin-left: 0 !important;
 }
 
