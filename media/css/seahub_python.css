@@ -1,8 +1,8 @@
 /******* tags **********/
 html,
 body {
-  height: 100%;
   overflow: hidden;
+  height: 100%;
 }
 
 body,
@@ -20,8 +20,8 @@ textarea,
 select,
 button,
 img {
-  padding: 0;
   margin: 0;
+  padding: 0;
 }
 
 body,
@@ -31,8 +31,8 @@ button,
 select {
   font-size: 13px;
   line-height: 1.5;
-  color: var(--bs-body-color);
   word-wrap: break-word;
+  color: var(--bs-body-color);
 }
 
 input,
@@ -58,14 +58,14 @@ h1 {
 
 h3 {
   font-size: 16px;
-  color: var(--bs-body-color);
   font-weight: normal;
+  color: var(--bs-body-color);
 }
 
 h4 {
   font-size: 1.1em;
-  color: var(--bs-body-color);
   font-weight: normal;
+  color: var(--bs-body-color);
 }
 
 h5,
@@ -82,9 +82,9 @@ dl {
 }
 
 dt {
-  color: var(--bs-sf-grey-text);
   margin: 24px 0 2px;
   font-weight: normal;
+  color: var(--bs-sf-grey-text);
 }
 
 dd {
@@ -93,9 +93,9 @@ dd {
 }
 
 a {
-  color: var(--bs-sf-orange);
-  text-decoration: none;
   font-weight: bold;
+  text-decoration: none;
+  color: var(--bs-sf-orange);
 }
 
 a.normal {
@@ -166,15 +166,15 @@ input[type="radio"]:focus {
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   /*for input type="number" in chrome: to hide up/download arrow*/
-  -webkit-appearance: none;
   margin: 0;
+  -webkit-appearance: none;
 }
 
 input::-moz-focus-inner,
 button::-moz-focus-inner {
   /*Remove button padding in FF*/
-  border: 0;
   padding: 0;
+  border: 0;
 }
 
 input[type="submit"],
@@ -187,13 +187,13 @@ input[type="submit"]:hover,
 input[type="reset"]:hover,
 input[type="button"]:hover,
 button:hover {
-  cursor: pointer;
   background: #fff;
+  cursor: pointer;
 }
 
 input[type="file"] {
-  border: none;
   height: 24px;
+  border: none;
   line-height: 24px;
 }
 
@@ -223,14 +223,14 @@ table {
 }
 
 caption {
+  margin-bottom: 0.6em;
   font-size: 1.1em;
   font-weight: bold;
-  margin-bottom: 0.6em;
 }
 
 th {
-  text-align: left;
   font-weight: normal;
+  text-align: left;
   color: var(--bs-sf-grey-text);
 }
 
@@ -241,9 +241,9 @@ td {
 }
 
 td {
-  color: var(--bs-body-color);
   font-size: 14px;
   word-break: break-all;
+  color: var(--bs-body-color);
   /* mainly for lib/folder/file name */
 }
 
@@ -261,8 +261,8 @@ table img {
 }
 
 .tip {
-  color: var(--bs-sf-grey-text);
   font-size: 12px;
+  color: var(--bs-sf-grey-text);
 }
 
 /** for input, textarea in form **/
@@ -270,14 +270,14 @@ table img {
 .input,
 .textarea {
   width: 260px;
+  margin-bottom: 5px;
   padding: 2px 3px;
   border-radius: 2px;
-  margin-bottom: 5px;
 }
 
 input.short-input {
-  width: 50px;
   height: 18px;
+  width: 50px;
   margin: 0;
 }
 
@@ -286,10 +286,10 @@ input.short-input {
 }
 
 .big-btn-link {
-  font-size: 14px;
-  line-height: 1.5;
   padding: 6px 20px;
   border-radius: 3px;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 @media (max-width: 767px) {
@@ -305,20 +305,20 @@ input.short-input {
 }
 
 #lang {
-  font-weight: normal;
-  font-size: 13px;
   margin-top: 12px;
+  font-size: 13px;
+  font-weight: normal;
 }
 
 #lang-context-selector {
   position: absolute;
   top: 23px;
-  padding: 0.5rem 0;
-  white-space: nowrap;
-  width: auto;
   min-width: 12rem;
-  font-size: .875rem;
+  width: auto;
+  padding: 0.5rem 0;
   background-color: #fff;
+  font-size: .875rem;
+  white-space: nowrap;
 }
 
 #lang-context-selector .sf-popover-con {
@@ -326,8 +326,8 @@ input.short-input {
 }
 
 #lang-context-selector li {
-  padding: 0px 8px;
   min-height: 32px;
+  padding: 0px 8px;
   line-height: 32px;
 }
 
@@ -349,16 +349,16 @@ input.short-input {
 }
 
 #lang-context {
-  font-size: 14px !important;
-  color: var(--bs-body-color);
   display: flex;
-  gap: 4px;
-  user-select: none;
-  padding: 8px;
-  line-height: 22px;
-  height: 30px;
   align-items: center;
+  height: 30px;
+  padding: 8px;
   border-radius: 4px;
+  font-size: 14px !important;
+  line-height: 22px;
+  color: var(--bs-body-color);
+  user-select: none;
+  gap: 4px;
 }
 
 #lang-context:hover {
@@ -366,15 +366,15 @@ input.short-input {
 }
 
 #lang-context .seaqa-html-icon-svg svg {
-  margin-top: -2px;
-  width: 12px;
   height: 12px;
+  width: 12px;
+  margin-top: -2px;
 }
 
 /* seaqa-html-icon-svg style */
 .seaqa-html-icon-svg svg {
-  width: 14px;
   height: 14px;
+  width: 14px;
 }
 
 .seaqa-html-icon-svg svg path {
@@ -383,15 +383,15 @@ input.short-input {
 
 /* layout */
 #header {
-  background: #f4f4f7;
-  width: 100%;
   height: 53px;
-  font-size: 14px;
-  border-bottom: 1px solid #e8e8e8;
+  width: 100%;
   padding: 8px 16px 4px;
+  background: #f4f4f7;
+  border-bottom: 1px solid #e8e8e8;
+  font-size: 14px;
   /* display: flex; */
-  justify-content: space-between;
   flex-shrink: 0;
+  justify-content: space-between;
 }
 
 #wide-panel-noframe {
@@ -399,9 +399,9 @@ input.short-input {
 }
 
 .text-panel {
+  padding-top: 7em;
   font-size: 16px;
   text-align: center;
-  padding-top: 7em;
 }
 
 /* account */
@@ -411,8 +411,8 @@ input.short-input {
 }
 
 #account .avatar {
-  vertical-align: middle;
   border-radius: 1000px;
+  vertical-align: middle;
 }
 
 #my-info {
@@ -431,10 +431,10 @@ input.short-input {
   }
 
   .account-toggle {
+    margin-top: 8px;
     font-size: 18px;
     line-height: 1;
     color: var(--bs-icon-secondary-color);
-    margin-top: 8px;
   }
 }
 
@@ -443,23 +443,23 @@ input.short-input {
 }
 
 .account-popup .txt {
+  overflow: hidden;
   margin-left: 45px;
   line-height: 36px;
-  white-space: nowrap;
-  overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .account-popup {
   right: 0;
   top: 52px;
-  font-size: 13px;
   padding: 16px;
+  font-size: 13px;
 }
 
 .account-popup .outer-caret {
-  top: -10px;
   right: 16px;
+  top: -10px;
 }
 
 .account-popup .sf-popover-con {
@@ -467,10 +467,10 @@ input.short-input {
 }
 
 .account-popup .item {
-  font-size: 14px;
   display: block;
   padding: 8px 18px;
   border-bottom: 1px solid var(--bs-border-secondary-color);
+  font-size: 14px;
 }
 
 .account-popup .item:last-child {
@@ -478,8 +478,8 @@ input.short-input {
 }
 
 .account-popup a.item {
-  color: var(--bs-body-color);
   font-weight: normal;
+  color: var(--bs-body-color);
 }
 
 .account-popup a.item:hover {
@@ -488,8 +488,8 @@ input.short-input {
 }
 
 #account .manage {
-  position: absolute;
   left: 60px;
+  position: absolute;
   top: -16px;
 }
 
@@ -500,19 +500,19 @@ input.short-input {
 /* password toggle */
 .password-toggle {
   position: absolute;
-  top: 12px;
   right: 16px;
-  width: 14px;
+  top: 12px;
+  display: flex;
   height: 14px;
+  width: 14px;
   color: var(--bs-body-secondary-color);
   cursor: pointer;
-  display: flex;
 }
 
 .password-toggle .seaqa-html-icon-svg svg {
+  display: block;
   height: 16px;
   width: 16px;
-  display: block;
 }
 
 .password-toggle .eye-icon {
@@ -554,21 +554,21 @@ input.short-input {
 
 /* login-panel */
 .login-panel-wrapper {
-  width: fit-content;
-  position: absolute;
-  transform: translate(-50%, -50%);
   left: 50%;
+  position: absolute;
   top: 50%;
+  width: fit-content;
+  transform: translate(-50%, -50%);
 }
 
 .login-panel-wrapper .login-panel-content {
   width: fit-content;
-  padding: 64px 48px 40px;
   margin: 0 auto;
-  font-weight: 500;
-  border-radius: 8px;
-  border: 1px solid var(--bs-border-secondary-color);
+  padding: 64px 48px 40px;
   background-color: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-secondary-color);
+  border-radius: 8px;
+  font-weight: 500;
 }
 
 .login-panel-wrapper .login-panel-header .login-title {
@@ -583,14 +583,14 @@ input.short-input {
 }
 
 .login-panel-wrapper .login-form-wrapper .form-item-input {
-  font-size: 14px;
   height: 40px;
-  line-height: 40px;
-  padding: 0px 16px;
-  border-radius: 4px;
-  margin-bottom: 12px;
   width: 100%;
+  margin-bottom: 12px;
+  padding: 0px 16px;
   border: 1px solid rgba(0, 40, 100, 0.12);
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 40px;
 }
 
 .login-panel-wrapper .login-form-wrapper .position-relative .form-item-input {
@@ -608,34 +608,34 @@ input.short-input {
 
 .login-panel-wrapper .forgot-passwd {
   font-size: 14px;
-  color: var(--bs-orange);
   font-weight: normal;
+  color: var(--bs-orange);
 }
 
 .login-panel-wrapper .btn-sso {
-  margin-top: 12px;
   height: 40px;
-  border-radius: 4px;
+  margin-top: 12px;
   border: 1px solid rgba(0, 40, 100, 0.12);
+  border-radius: 4px;
 }
 
 .login-panel-wrapper .register-link {
   display: inline-flex;
   align-items: center;
-  width: 100%;
   justify-content: center;
+  width: 100%;
   margin-top: 32px;
 }
 
 .login-panel-wrapper .register-link a {
+  font-size: 14px;
   font-weight: 400;
   line-height: 22px;
-  font-size: 14px;
 }
 
 .login-panel-wrapper .login-panel-bottom-panel-layout {
-  margin-top: 12px;
   height: 30px;
+  margin-top: 12px;
 }
 
 .login-panel-wrapper .login-panel-bottom-container > :last-child {
@@ -644,21 +644,21 @@ input.short-input {
 
 /* multi-saml-sso-panel */
 .multi-saml-sso-panel-wrapper {
-  width: fit-content;
-  position: absolute;
-  transform: translate(-50%, -50%);
   left: 50%;
+  position: absolute;
   top: 50%;
+  width: fit-content;
+  transform: translate(-50%, -50%);
 }
 
 .multi-saml-sso-panel-wrapper .multi-saml-sso-panel-content {
   width: fit-content;
-  padding: 64px 48px 64px;
   margin: 0 auto;
-  font-weight: 500;
-  border-radius: 8px;
-  border: 1px solid var(--bs-border-secondary-color);
+  padding: 64px 48px 64px;
   background-color: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-secondary-color);
+  border-radius: 8px;
+  font-weight: 500;
 }
 
 .multi-saml-sso-panel-wrapper .multi-saml-sso-panel-header .multi-saml-sso-title {
@@ -673,14 +673,14 @@ input.short-input {
 }
 
 .multi-saml-sso-panel-wrapper .login-form-wrapper .form-item-input {
-  font-size: 14px;
   height: 40px;
-  line-height: 40px;
-  padding: 0px 16px;
-  border-radius: 4px;
-  margin-bottom: 0;
   width: 100%;
+  margin-bottom: 0;
+  padding: 0px 16px;
   border: 1px solid rgba(0, 40, 100, 0.12);
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 40px;
 }
 
 .multi-saml-sso-panel-wrapper .login-form-wrapper .form-item-input:focus {
@@ -688,9 +688,9 @@ input.short-input {
 }
 
 .multi-saml-sso-panel-wrapper .login-panel-bottom-container {
-  margin-top: 12px;
   display: flex;
   justify-content: center;
+  margin-top: 12px;
 }
 
 .multi-saml-sso-panel-wrapper .login-panel-bottom-container > div {
@@ -701,21 +701,21 @@ input.short-input {
 
 /* password-reset-panel */
 .password-reset-panel-wrapper {
-  width: fit-content;
-  position: absolute;
-  transform: translate(-50%, -50%);
   left: 50%;
+  position: absolute;
   top: 50%;
+  width: fit-content;
+  transform: translate(-50%, -50%);
 }
 
 .password-reset-panel-wrapper .password-reset-panel-content {
   width: fit-content;
-  padding: 64px 48px 64px;
   margin: 0 auto;
-  font-weight: 500;
-  border-radius: 8px;
-  border: 1px solid var(--bs-border-secondary-color);
+  padding: 64px 48px 64px;
   background-color: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-secondary-color);
+  border-radius: 8px;
+  font-weight: 500;
 }
 
 .password-reset-panel-wrapper .password-reset-panel-header .password-reset-title {
@@ -729,17 +729,17 @@ input.short-input {
 }
 
 .password-reset-panel-wrapper .password-reset-panel-logo img {
-  width: 180px;
   height: 120px;
+  width: 180px;
 }
 
 .password-reset-panel-wrapper .password-reset-panel-text {
-  margin-top: 16px;
   height: 22px;
-  line-height: 22px;
+  margin-top: 16px;
   font-size: 14px;
-  color: var(--bs-body-secondary-color);
+  line-height: 22px;
   text-align: center;
+  color: var(--bs-body-secondary-color);
 }
 
 .password-reset-panel-wrapper .login-form-wrapper {
@@ -748,14 +748,14 @@ input.short-input {
 }
 
 .password-reset-panel-wrapper .login-form-wrapper .form-item-input {
-  font-size: 14px;
   height: 40px;
-  line-height: 40px;
-  padding: 0px 16px;
-  border-radius: 4px;
   width: 100%;
   margin-bottom: 0;
+  padding: 0px 16px;
   border: 1px solid rgba(0, 40, 100, 0.12);
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 40px;
 }
 
 .password-reset-panel-wrapper .login-form-wrapper .form-item-input:focus {
@@ -764,12 +764,12 @@ input.short-input {
 
 .password-reset-panel-wrapper .login-form-wrapper .turnstile-wrapper,
 .org-register-panel-wrapper .login-form-wrapper .turnstile-wrapper {
-  width: 100%;
+  overflow: hidden;
   min-height: 67px;
+  width: 100%;
   margin-top: 12px;
   padding: 0;
   background-color: var(--bs-body-bg);
-  overflow: hidden;
 }
 
 .password-reset-panel-wrapper .login-form-wrapper .turnstile-wrapper .cf-turnstile,
@@ -787,14 +787,14 @@ input.short-input {
 }
 
 .password-reset-panel-wrapper .login-form-wrapper .btn-block {
-  margin-top: 16px;
   height: 40px;
+  margin-top: 16px;
 }
 
 .password-reset-panel-wrapper .password-reset-panel-bottom-container {
-  margin-top: 12px;
   display: flex;
   justify-content: center;
+  margin-top: 12px;
 }
 
 .password-reset-panel-wrapper .password-reset-panel-bottom-container > div {
@@ -805,21 +805,21 @@ input.short-input {
 
 /* org-register-panel */
 .org-register-panel-wrapper {
-  width: fit-content;
-  position: absolute;
-  transform: translate(-50%, -50%);
   left: 50%;
+  position: absolute;
   top: 50%;
+  width: fit-content;
+  transform: translate(-50%, -50%);
 }
 
 .org-register-panel-wrapper .org-register-panel-content {
   width: fit-content;
-  padding: 64px 48px 64px;
   margin: 0 auto;
-  font-weight: 500;
-  border-radius: 8px;
-  border: 1px solid var(--bs-border-secondary-color);
+  padding: 64px 48px 64px;
   background-color: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-secondary-color);
+  border-radius: 8px;
+  font-weight: 500;
 }
 
 .org-register-panel-wrapper .org-register-panel-header .org-register-title {
@@ -834,14 +834,14 @@ input.short-input {
 }
 
 .org-register-panel-wrapper .login-form-wrapper .form-item-input {
-  font-size: 14px;
   height: 40px;
-  line-height: 40px;
-  padding: 0px 16px;
-  border-radius: 4px;
-  margin-bottom: 12px;
   width: 100%;
+  margin-bottom: 12px;
+  padding: 0px 16px;
   border: 1px solid rgba(0, 40, 100, 0.12);
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 40px;
 }
 
 .org-register-panel-wrapper .login-form-wrapper .form-item-input:focus {
@@ -868,14 +868,14 @@ input.short-input {
 }
 
 .org-register-panel-wrapper .login-form-wrapper .btn-block {
-  margin-top: 24px;
   height: 40px;
+  margin-top: 24px;
 }
 
 .org-register-panel-wrapper .login-panel-bottom-container {
-  margin-top: 12px;
   display: flex;
   justify-content: center;
+  margin-top: 12px;
 }
 
 .org-register-panel-wrapper .login-panel-bottom-container > div {
@@ -886,21 +886,21 @@ input.short-input {
 
 /* individual-register-panel */
 .individual-register-panel-wrapper {
-  width: fit-content;
-  position: absolute;
-  transform: translate(-50%, -50%);
   left: 50%;
+  position: absolute;
   top: 50%;
+  width: fit-content;
+  transform: translate(-50%, -50%);
 }
 
 .individual-register-panel-wrapper .individual-register-panel-content {
   width: fit-content;
-  padding: 64px 48px 64px;
   margin: 0 auto;
-  font-weight: 500;
-  border-radius: 8px;
-  border: 1px solid var(--bs-border-secondary-color);
+  padding: 64px 48px 64px;
   background-color: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-secondary-color);
+  border-radius: 8px;
+  font-weight: 500;
 }
 
 .individual-register-panel-wrapper .individual-register-panel-header .individual-register-title {
@@ -915,14 +915,14 @@ input.short-input {
 }
 
 .individual-register-panel-wrapper .login-form-wrapper .form-item-input {
-  font-size: 14px;
   height: 40px;
-  line-height: 40px;
-  padding: 0px 16px;
-  border-radius: 4px;
-  margin-bottom: 12px;
   width: 100%;
+  margin-bottom: 12px;
+  padding: 0px 16px;
   border: 1px solid rgba(0, 40, 100, 0.12);
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 40px;
 }
 
 .individual-register-panel-wrapper .login-form-wrapper .form-item-input:focus {
@@ -945,14 +945,14 @@ input.short-input {
 }
 
 .individual-register-panel-wrapper .login-form-wrapper .btn-block {
-  margin-top: 24px;
   height: 40px;
+  margin-top: 24px;
 }
 
 .individual-register-panel-wrapper .login-panel-bottom-container {
-  margin-top: 12px;
   display: flex;
   justify-content: center;
+  margin-top: 12px;
 }
 
 .individual-register-panel-wrapper .login-panel-bottom-container > div {
@@ -968,8 +968,8 @@ input.short-input {
 .org-register-panel-wrapper .login-form-wrapper input:-webkit-autofill, 
 .individual-register-panel-wrapper .login-form-wrapper input:-webkit-autofill,
 .portal-login-panel-wrapper .login-form-wrapper input:-webkit-autofill {
-  -webkit-box-shadow: 0 0 0 1000px white inset !important;
   box-shadow: 0 0 0 1000px white inset !important;
+  -webkit-box-shadow: 0 0 0 1000px white inset !important;
 }
 
 .login-panel-wrapper .login-form-wrapper input::-webkit-input-placeholder,
@@ -987,8 +987,8 @@ input.short-input {
 .org-register-panel-wrapper .login-form-wrapper input::-moz-placeholder,
 .individual-register-panel .login-form-wrapper input::-moz-placeholder,
 .portal-login-panel-wrapper .login-form-wrapper input::-moz-placeholder { /* Firefox 19+ */
-  color: var(--bs-sf-grey-text-placeholder);
   opacity: 1;
+  color: var(--bs-sf-grey-text-placeholder);
 }
 
 .login-panel-wrapper .login-form-wrapper input:-ms-input-placeholder,
@@ -1023,10 +1023,10 @@ input.short-input {
 .login-panel-wrapper .login-form-wrapper .login-form-pass-member,
 .multi-saml-sso-panel-wrapper .login-form-wrapper .login-form-pass-member {
   margin: 12px 0px 32px;
-  color: var(--bs-body-secondary-color);
   font-size: 14px;
-  line-height: 22px;
   font-weight: 400;
+  line-height: 22px;
+  color: var(--bs-body-secondary-color);
 }
 
 .login-panel-wrapper .login-form-wrapper .login-form-pass-member .remember-input,
@@ -1036,16 +1036,16 @@ input.short-input {
 
 .login-panel-wrapper .login-form-wrapper .login-form-pass-member .remember-me-text,
 .multi-saml-sso-panel-wrapper .login-form-wrapper .login-form-pass-member .remember-me-text {
-  user-select: none;
   margin-left: 8px;
   cursor: pointer;
+  user-select: none;
 }
 
 /* login-panel, multi-saml-sso-panel, password-reset-panel --btn-block style */
 .login-panel-wrapper .login-form-wrapper .btn-block,
 .multi-saml-sso-panel-wrapper .login-form-wrapper .btn-block {
-  margin-top: 0px;
   height: 40px;
+  margin-top: 0px;
 }
 
 .login-panel-wrapper .login-form-wrapper .btn-block:focus,
@@ -1059,27 +1059,27 @@ input.short-input {
 
 /* portal-login-panel */
 .portal-login-panel-wrapper {
-  width: fit-content;
-  position: absolute;
-  transform: translate(-50%, -50%);
   left: 50%;
+  position: absolute;
   top: 50%;
+  width: fit-content;
+  transform: translate(-50%, -50%);
 }
 
 .portal-login-panel-wrapper .portal-login-panel-content {
   width: fit-content;
-  padding: 64px 40px;
   margin: 0 auto;
-  border-radius: 8px;
-  border: 1px solid var(--bs-border-secondary-color);
+  padding: 64px 40px;
   background-color: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-secondary-color);
+  border-radius: 8px;
 }
 
 .portal-login-panel-wrapper .portal-login-panel-header .portal-login-title {
+  max-width: 400px;
   font-size: 24px;
   font-weight: 500;
   line-height: 28px;
-  max-width: 400px;
 }
 
 .portal-login-panel-wrapper .login-form-wrapper {
@@ -1088,14 +1088,14 @@ input.short-input {
 }
 
 .portal-login-panel-wrapper .login-form-wrapper .form-item-input {
-  font-size: 14px;
   height: 40px;
-  line-height: 40px;
-  padding: 0px 16px;
-  border-radius: 4px;
-  margin-bottom: 8px;
   width: 100%;
+  margin-bottom: 8px;
+  padding: 0px 16px;
   border: 1px solid rgba(0, 40, 100, 0.12);
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 40px;
 }
 
 .portal-login-panel-wrapper .login-form-wrapper .form-item-input:focus {
@@ -1103,25 +1103,25 @@ input.short-input {
 }
 
 .portal-login-panel-wrapper .login-form-wrapper .prompt-text {
+  height: 20px;
   margin-bottom: 24px;
   font-size: 12px;
-  color: var(--bs-body-secondary-color);
-  height: 20px;
   line-height: 20px;
+  color: var(--bs-body-secondary-color);
 }
 
 .portal-login-panel-wrapper .login-form-wrapper .btn-block {
-  margin-top: 0px;
   height: 40px;
+  margin-top: 0px;
 }
 
 .portal-login-panel-wrapper .login-form-wrapper .countdown-wrapper {
-  margin-top: 16px;
-  color: var(--bs-body-secondary-color);
   height: 22px;
+  margin-top: 16px;
+  font-size: 14px;
   line-height: 22px;
   text-align: center;
-  font-size: 14px;
+  color: var(--bs-body-secondary-color);
 }
 
 /* confirm-password-panel */
@@ -1132,30 +1132,30 @@ input.short-input {
 
 .confirm-password-panel,
 .login-panel {
-  background: #fff;
-  border-radius: 3px;
-  padding: 30px 25px 15px;
   width: 336px;
   margin: 0 auto;
+  padding: 30px 25px 15px;
+  background: #fff;
+  border-radius: 3px;
   box-shadow: 0 0 8px #a7a6a9;
 }
 
 .confirm-password-panel .confirm-password-panel-hd,
 .login-panel .login-panel-hd {
   margin: 0 0 16px;
-  line-height: 1.5rem;
   font-size: 16px;
   font-weight: 500;
+  line-height: 1.5rem;
   text-align: center;
 }
 
 .confirm-password-panel .input,
 .login-panel .input {
-  margin: 0;
-  border: 1px solid #cdcdcd;
-  padding: 2px 10px;
   height: 34px;
   width: 264px;
+  margin: 0;
+  padding: 2px 10px;
+  border: 1px solid #cdcdcd;
   font-size: 13px;
 }
 
@@ -1163,8 +1163,8 @@ input.short-input {
 .password-reset-panel .email-input,
 .login-panel .name-input,
 .login-panel .passwd-input {
-  border-radius: 3px;
   margin-bottom: 12px;
+  border-radius: 3px;
 }
 
 .login-panel .remember {
@@ -1174,9 +1174,9 @@ input.short-input {
 
 .confirm-password-panel .submit,
 .login-panel .submit {
+  height: 40px;
   margin: 0px 0 12px;
   background-image: none;
-  height: 40px;
 }
 
 .confirm-password-panel .submit:focus,
@@ -1185,16 +1185,16 @@ input.short-input {
 }
 
 .login-panel .login-panel-bottom-container {
-  margin-top: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-top: 20px;
   font-size: 12px;
 }
 
 .login-panel .login-panel-bottom-container a {
-  color: #E16C0A;
   white-space: nowrap;
+  color: #E16C0A;
 }
 
 #signup-form .input {
@@ -1206,12 +1206,12 @@ input.short-input {
 }
 
 .registration-form-popover {
-  border: 1px solid #ddd;
-  padding: 12px;
   width: 250px;
-  filter: none;
-  color: var(--bs-body-color);
+  padding: 12px;
+  border: 1px solid #ddd;
   font-size: 14px;
+  color: var(--bs-body-color);
+  filter: none;
 }
 
 .registration-form-popover .arrow::before,
@@ -1232,16 +1232,16 @@ input.short-input {
 
 /* overwrite inline style */
 .registration-form-popover.mobile {
-  top: -142px !important;
-  right: 0 !important;
   left: unset !important;
+  right: 0 !important;
+  top: -142px !important;
   transform: unset !important;
 }
 
 .registration-form-popover.mobile .arrow {
-  margin: 0;
-  top: 100% !important;
   left: 20%;
+  top: 100% !important;
+  margin: 0;
 }
 
 .registration-form-popover.mobile .arrow::before,
@@ -1251,8 +1251,8 @@ input.short-input {
 }
 
 .registration-form-popover.mobile .arrow::before {
-  top: 1px;
   left: 1px;
+  top: 1px;
   border-top: 7px solid #ddd;
 }
 
@@ -1267,14 +1267,14 @@ input.short-input {
 
 .popover.registration-form-popover .popover-content {
   padding-top: 8px;
-  color: var(--bs-sf-grey-text);
   font-size: 12px;
+  color: var(--bs-sf-grey-text);
 }
 
 .popover.registration-form-popover .progress {
-  border-radius: 0;
   height: 4px;
   background-color: #fff;
+  border-radius: 0;
 }
 
 .popover.registration-form-popover .progress-bar {
@@ -1286,14 +1286,14 @@ input.short-input {
 /**** sf-popover ****/
 /* e.g. top notice popup, group members popup */
 .sf-popover-hd {
+  margin: 0 10px;
   padding: 5px 0 3px;
   border-bottom: 1px solid #dfdfe1;
-  margin: 0 10px;
 }
 
 a.sf-popover-item {
-  padding: 0 10px;
   margin: 5px -10px;
+  padding: 0 10px;
 }
 
 /**** simplemodal ****/
@@ -1306,12 +1306,12 @@ a.sf-popover-item {
 }
 
 #simplemodal-container {
+  box-sizing: content-box;
   padding: 20px;
   background-color: #fcfcfc;
-  -moz-border-radius: 4px;
   border-radius: 4px;
+  -moz-border-radius: 4px;
   -webkit-box-sizing: content-box;
-  box-sizing: content-box;
 }
 
 #simplemodal-container a {
@@ -1324,19 +1324,19 @@ a.sf-popover-item {
 
 .modalCloseImg {
   position: absolute;
-  width: 28px;
+  right: -14px;
+  top: -14px;
+  z-index: 3200;
   height: 28px;
+  width: 28px;
   background-position: 0 -1173px;
   cursor: pointer;
-  top: -14px;
-  right: -14px;
-  z-index: 3200;
 }
 
 #simplemodal-container h3 {
+  margin: 0 0 10px;
   font-size: 1.5em;
   word-wrap: break-word;
-  margin: 0 0 10px;
 }
 
 #simplemodal-container h3,
@@ -1351,8 +1351,8 @@ a.sf-popover-item {
 
 #simplemodal-container .radio-item,
 #simplemodal-container .checkbox-label {
-  font-weight: normal;
   margin: 4px 0;
+  font-weight: normal;
 }
 
 .simplemodal-close {
@@ -1366,35 +1366,35 @@ a.sf-popover-item {
 /**** messages ****/
 .messages {
   position: fixed;
-  border-radius: 2px;
-  -webkit-border-radius: 2px;
-  -moz-border-radius: 2px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  -moz-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  -webkit-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   z-index: 999;
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  -moz-border-radius: 2px;
+  -moz-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  -webkit-border-radius: 2px;
+  -webkit-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   /* for repo.html: to show on top of fixed-hd */
-  -webkit-transition: top 0.5s ease;
-  -moz-transition: top 0.5s ease;
   transition: top 0.5s ease;
+  -moz-transition: top 0.5s ease;
+  -webkit-transition: top 0.5s ease;
 }
 
 .messages .info {
+  margin: 0;
   padding: 5px;
   background: #f9edbe;
-  margin: 0;
 }
 
 .messages .success {
+  margin: 0;
   padding: 5px;
   background: #c4eca9;
-  margin: 0;
 }
 
 .messages .error {
+  margin: 0;
   padding: 5px;
   background: #fff;
-  margin: 0;
   color: #fc6440;
 }
 
@@ -1423,10 +1423,10 @@ a.sf-popover-item {
 }
 
 #tc-preview {
-  box-sizing: border-box;
-  padding: 40px;
-  width: 800px;
   overflow: auto;
+  box-sizing: border-box;
+  width: 800px;
+  padding: 40px;
 }
 
 /**** article ****/
@@ -1443,8 +1443,8 @@ a.sf-popover-item {
 .article h5,
 .article h6 {
   margin: 1.2em 0 0.4em;
-  color: var(--bs-body-color);
   font-weight: bold;
+  color: var(--bs-body-color);
 }
 
 .article h1+p,
@@ -1484,38 +1484,38 @@ a.sf-popover-item {
 
 .article ul,
 .article ol {
-  padding-left: 2em;
   margin: 0.5em 0;
+  padding-left: 2em;
 }
 
 .article code {
-  font-size: 12px;
-  white-space: pre-wrap;
+  margin: 0 2px;
   padding: 1px 5px 0;
   background-color: var(--bs-tr-hover-bg);
   border: 1px solid #dadada;
   border-radius: 2px;
+  font-size: 12px;
+  white-space: pre-wrap;
   -moz-border-radius: 2px;
   -webkit-border-radius: 2px;
-  margin: 0 2px;
 }
 
 .article pre {
-  font-size: 13px;
+  margin: 1em 0;
   padding: 5px 10px;
   background: var(--bs-tr-hover-bg);
   border: 1px solid #ddd;
   border-radius: 3px;
+  font-size: 13px;
   -moz-border-radius: 3px;
   -webkit-border-radius: 3px;
-  margin: 1em 0;
 }
 
 .article pre code {
-  white-space: pre-wrap;
-  padding: 0;
   margin: 0;
+  padding: 0;
   border: none;
+  white-space: pre-wrap;
 }
 
 .article a {
@@ -1523,16 +1523,16 @@ a.sf-popover-item {
 }
 
 .article blockquote {
-  color: #777;
+  margin: 1.2em 0;
   padding: 0 15px;
   border-left: 4px solid #DDD;
-  margin: 1.2em 0;
+  color: #777;
 }
 
 .article table {
-  table-layout: auto;
   width: auto;
   margin: 0.8em 0;
+  table-layout: auto;
 }
 
 .article tr:nth-child(2n) {
@@ -1548,20 +1548,20 @@ a.sf-popover-item {
 /* user profile */
 #user-profile {
   width: 290px;
+  margin: 50px auto 0;
   border: 1px solid #eee;
   border-radius: 5px;
-  margin: 50px auto 0;
 }
 
 #user-profile .avatar {
   display: block;
-  border-radius: 1000px;
   margin: 8px auto;
+  border-radius: 1000px;
 }
 
 .user-profile-nickname {
-  padding: 0 15px 8px;
   margin: 0;
+  padding: 0 15px 8px;
   font-size: 18px;
   text-align: center;
 }
@@ -1587,9 +1587,9 @@ a.sf-popover-item {
 }
 
 .tfa-panel .hd {
+  margin-bottom: .5rem;
   font-size: 1.5rem;
   font-weight: normal;
-  margin-bottom: .5rem;
 }
 
 .tfa-panel .con {
@@ -1610,35 +1610,35 @@ a.sf-popover-item {
 }
 
 .two-factor-auth-backup-token-list-container .token-list-hd {
-  font-size: .75rem;
   height: 2.5rem;
   border-bottom: 1px solid #eee;
+  font-size: .75rem;
 }
 
 .two-factor-auth-backup-token-list-container .token-list-hd .token-icon {
-  color: #444;
-  width: 16px;
   height: 16px;
+  width: 16px;
   margin-right: .5rem;
+  color: #444;
 }
 
 .two-factor-auth-backup-token-form {
-  text-align: center;
   margin-top: 2.5rem;
+  text-align: center;
 }
 
 .form-label {
   display: inline-block;
   margin: 0 0 .5rem 0;
-  font-weight: 400;
   font-size: 15px;
+  font-weight: 400;
 }
 
 .seaqa-multicolor-icon {
-  fill: currentColor;
-  height: 1em;
   overflow: hidden;
+  height: 1em;
   width: 1em;
+  fill: currentColor;
 }
 
 /* client-login-confirm-panel */
@@ -1647,8 +1647,8 @@ a.sf-popover-item {
 }
 
 .client-login-confirm-panel .hd {
-  font-size: 1.5rem;
   margin: 2.5rem 0 .5rem;
+  font-size: 1.5rem;
 }
 
 .client-login-confirm-panel .btn {
@@ -1665,8 +1665,8 @@ a.sf-popover-item {
 }
 
 .page-form-panel .tip {
-  color: var(--bs-body-secondary-color);
   font-size: .875rem;
+  color: var(--bs-body-secondary-color);
 }
 
 .page-form-panel .form {
