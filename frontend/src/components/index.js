@@ -26,6 +26,7 @@ import {
   LinkVerifiedDialog,
 } from './dialog';
 import EmptyTip from './empty-tip';
+import FilterSelect from './filter-select';
 import FixedWidthTable from './fixed-width-table';
 import Icon from './icon';
 import IconButton from './icon-button';
@@ -137,4 +138,5 @@ export {
   IconPopoverTip,
   LanguageSelect,
   RemoveButton,
+  FilterSelect,
 };

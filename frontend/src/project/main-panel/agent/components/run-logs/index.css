@@ -7,6 +7,12 @@
   border-bottom: 1px solid var(--bs-border-secondary-color);
 }
 
+.seaqa-agent-run-logs-header .seaqa-agent-run-logs-header-divider {
+  height: 18px;
+  width: 1px;
+  background-color: var(--bs-border-tertiary-color);
+}
+
 .seaqa-agent-run-logs-body {
   overflow-y: auto;
 }
@@ -23,4 +29,9 @@
 
 .seaqa-agent-run-logs-container .seaqa-agent-run-log-load-more {
   height: 40px !important;
+}
+
+.seaqa-agent-run-logs-container .seaqa-agent-filter-run-logs-tip .no-items-img-tip {
+  height: 48px;
+  width: 48px;
 }

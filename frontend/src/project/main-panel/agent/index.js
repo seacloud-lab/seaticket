@@ -10,7 +10,6 @@ import './index.css';
 
 const Agent = ({ title, settings, modifySettings }) => {
   const [isShowLogs, setIsShowLogs] = useState(true);
-  const [activeLogIndex, setActiveLogIndex] = useState(0);
   const [updatedRuns, setUpdatedRuns] = useState(null);
 
   const {
@@ -20,9 +19,16 @@ const Agent = ({ title, settings, modifySettings }) => {
     loadMore,
     refresh,
     updateRunLog,
+    activeLogKey,
+    updateActiveLogKey,
+    statusFilterValue,
+    statusFilterOptions,
+    updateStatusFilterValue,
   } = useAgentRunLogs();
 
   const enabledAgent = useMemo(() => settings?.agent.enabled, [settings?.agent]);
+  const activeLog = useMemo(() => runLogs.find(item => item.key === activeLogKey), [runLogs, activeLogKey]);
+
   const onRunsUpdated = useCallback((owner_source_id, owner_source_type, runs) => {
     setUpdatedRuns({ owner_source_id, owner_source_type, runs });
   }, []);
@@ -35,18 +41,22 @@ const Agent = ({ title, settings, modifySettings }) => {
         </div>
       </TopBar>
       <div className="seaqa-agent-container">
-        {isRunLogsLoading && runLogs.length === 0 && (
-          <CenteredLoading />
+        {!statusFilterValue && runLogs.length === 0 && (
+          <>
+            {isRunLogsLoading && (
+              <CenteredLoading />
+            )}
+            {!isRunLogsLoading && (
+              <EmptyTip
+                src={`${mediaUrl}img/no-items-tip.png`}
+                title={gettext('No agent logs')}
+                text={!enabledAgent && gettext('Enable the agent in settings to start')}
+                className="w-100"
+              />
+            )}
+          </>
         )}
-        {!isRunLogsLoading && runLogs.length === 0 && (
-          <EmptyTip
-            src={`${mediaUrl}img/no-items-tip.png`}
-            title={gettext('No agent logs')}
-            text={!enabledAgent && gettext('Enable the agent in settings to start')}
-            className="w-100"
-          />
-        )}
-        {runLogs.length > 0 && (
+        {(runLogs.length > 0 || statusFilterValue) && (
           <>
             <RunLogs
               isShowLogs={isShowLogs}
@@ -55,8 +65,11 @@ const Agent = ({ title, settings, modifySettings }) => {
               hasMore={hasMore}
               loadMore={loadMore}
               reload={refresh}
-              activeLogIndex={activeLogIndex}
-              setActiveLogIndex={setActiveLogIndex}
+              activeLogKey={activeLogKey}
+              updateActiveLogKey={updateActiveLogKey}
+              statusFilterValue={statusFilterValue}
+              statusFilterOptions={statusFilterOptions}
+              updateStatusFilterValue={updateStatusFilterValue}
               hideLogs={() => setIsShowLogs(false)}
               updateRunLog={updateRunLog}
               onRunsUpdated={onRunsUpdated}
@@ -65,7 +78,11 @@ const Agent = ({ title, settings, modifySettings }) => {
               isShowLogs={isShowLogs}
               showLogs={() => setIsShowLogs(true)}
               hideLogs={() => setIsShowLogs(false)}
-              runLog={runLogs[activeLogIndex]}
+              isRunLogsLoading={isRunLogsLoading}
+              runLogs={runLogs}
+              runLog={activeLog}
+              statusFilterValue={statusFilterValue}
+              statusFilterOptions={statusFilterOptions}
               settings={settings}
               modifySettings={modifySettings}
               updateRunLog={updateRunLog}

@@ -9,55 +9,6 @@
   margin: 0px 12px 6px 12px;
 }
 
-/* analyze-add-filter */
-.analyze-add-filter {
-  position: relative;
-}
-
-.analyze-add-filter .analyze-add-filter-btn {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  gap: 4px;
-  line-height: 32px;
-  height: 32px;
-  width: fit-content;
-  border-radius: 4px;
-  padding: 0px 8px 0px 12px;
-  border: 1px solid var(--bs-border-tertiary-color);
-}
-
-.analyze-add-filter .analyze-add-filter-btn:hover {
-  background-color: rgba(0, 0, 0, 0.04);
-}
-
-.analyze-add-filter .analyze-add-filter-btn .seaqa-icon-svg {
-  color: var(--bs-body-secondary-color);
-}
-
-.analyze-add-filter .analyze-add-filter-btn.active .seaqa-icon-svg,
-.analyze-add-filter .analyze-add-filter-btn.active {
-  color: var(--bs-orange);
-}
-
-/* Filter panel styles */
-.analyze-filter-option-editor .popover {
-  width: 120px;
-  min-height: fit-content;
-}
-
-.analyze-filter-option-editor .options-editor-container {
-  min-height: fit-content;
-}
-
-.analyze-filter-option-editor .options-editor-content {
-  min-height: fit-content;
-}
-
-.analyze-filter-option-editor .options-editor-option {
-  padding: 0 8px;
-}
-
 /* analyze-date-filter */
 .analyze-date-filter {
   display: flex;
@@ -157,36 +108,4 @@
 .analyze-date-filter-range:disabled::-moz-range-thumb {
   background: #c4c4c4;
   cursor: not-allowed;
-}
-
-/* analyze-date-filter-dropdown */
-.analyze-date-filter-dropdown {
-  position: relative;
-}
-
-.analyze-date-filter-dropdown .analyze-date-filter-dropdown-btn {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  height: 32px;
-  padding: 0px 8px 0px 12px;
-  border: 1px solid var(--bs-border-tertiary-color);
-  border-radius: 4px;
-  cursor: pointer;
-  margin-left: 8px;
-  color: var(--bs-orange);
-}
-
-.analyze-date-filter-dropdown .analyze-date-filter-dropdown-btn:hover {
-  background-color: rgba(0, 0, 0, 0.04);
-}
-
-.analyze-date-filter-presets .options-editor-option.disabled {
-  color: #BBB;
-  pointer-events: none;
-}
-
-.analyze-date-filter-presets .options-editor-option.disabled:hover {
-  background-color: transparent;
-  cursor: default;
 }
