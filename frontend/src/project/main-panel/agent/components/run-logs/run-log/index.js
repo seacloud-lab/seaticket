@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useLayoutEffect, useRef } from 'react';
 import classnames from 'classnames';
 import { IconButton } from '@/components';
 import { gettext } from '@/constants';
@@ -10,8 +10,22 @@ import ResourceTitle from '../../resource-title';
 
 import './index.css';
 
-const RunLog = ({ active, runLog, onClick }) => {
+const RunLog = ({ active, runLog, onClick, onRemove }) => {
   const { key, num_of_runs, last_active_at, status } = runLog;
+  const runLogRef = useRef(null);
+
+  useLayoutEffect(() => {
+    if (!runLog.isFiltered || !runLogRef.current) return;
+
+    const runLogElement = runLogRef.current;
+    runLogElement.style.height = `${runLogElement.getBoundingClientRect().height}px`;
+    runLogElement.getBoundingClientRect();
+    const animationFrame = requestAnimationFrame(() => {
+      runLogElement.style.height = '0';
+    });
+
+    return () => cancelAnimationFrame(animationFrame);
+  }, [runLog.isFiltered]);
 
   let runsTip = num_of_runs + ' ' + gettext('Runs');
   if (num_of_runs === 0) runsTip = '';
@@ -23,8 +37,15 @@ const RunLog = ({ active, runLog, onClick }) => {
   return (
     <div
       data-key={key}
-      className={classnames('seaqa-agent-run-log w-100 d-flex flex-column position-relative', { 'active': active })}
+      ref={runLogRef}
+      className={classnames('seaqa-agent-run-log w-100 d-flex flex-column position-relative', {
+        'active': active,
+        'seaqa-agent-run-log-filtered': runLog.isFiltered
+      })}
       onClick={onClick}
+      onTransitionEnd={(event) => {
+        if (event.target === event.currentTarget && event.propertyName === 'height') onRemove();
+      }}
     >
       <div className="seaqa-agent-run-log-header d-flex align-items-center">
         <div className="seaqa-agent-run-log-resource-icon d-flex justify-content-center align-items-center">

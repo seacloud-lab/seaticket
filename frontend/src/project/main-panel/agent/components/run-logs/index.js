@@ -30,6 +30,7 @@ const RunLogs = ({
   updateStatusFilterValue,
   hideLogs,
   updateRunLog,
+  removeRunLog,
   onRunsUpdated,
 }) => {
   const [left, setLeft] = useState(300);
@@ -53,7 +54,7 @@ const RunLogs = ({
     if (!runLogElement) return;
     const key = runLogElement.dataset.key;
     const runLog = runLogs.find(item => item.key === key);
-    if (!runLog || runLog.status === LOG_STATUS.PROCESSED) {
+    if (!runLog || runLog.isFiltered || runLog.status === LOG_STATUS.PROCESSED) {
       contextRunLogRef.current = null;
       return;
     }
@@ -62,8 +63,9 @@ const RunLogs = ({
   }, [handleClick, runLogs]);
 
   const createContextMenuOptions = useCallback(() => {
-    const runLog = contextRunLogRef.current;
-    if (!runLog || runLog.status === LOG_STATUS.PROCESSED) return [];
+    const contextRunLog = contextRunLogRef.current;
+    const runLog = runLogs.find(item => item.key === contextRunLog?.key);
+    if (!runLog || runLog.isFiltered || runLog.status === LOG_STATUS.PROCESSED) return [];
 
     return [{
       label: gettext('Mark as done'),
@@ -78,7 +80,7 @@ const RunLogs = ({
         });
       },
     }];
-  }, [onRunsUpdated, updateRunLog]);
+  }, [onRunsUpdated, runLogs, updateRunLog]);
 
   const onScroll = Utils.debounce(useCallback(() => {
     if (isLoading) return;
@@ -171,6 +173,7 @@ const RunLogs = ({
                 runLog={log}
                 active={key === activeLogKey}
                 onClick={() => handleClick(key)}
+                onRemove={() => removeRunLog(key)}
               />
             );
           })}

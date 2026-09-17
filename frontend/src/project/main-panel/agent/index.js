@@ -8,7 +8,7 @@ import { useAgentRunLogs } from './hooks/useAgentRunLogs';
 
 import './index.css';
 
-const Agent = ({ title, settings, modifySettings }) => {
+const Main = ({ title, settings, modifySettings }) => {
   const [isShowLogs, setIsShowLogs] = useState(true);
   const [updatedRuns, setUpdatedRuns] = useState(null);
 
@@ -24,9 +24,9 @@ const Agent = ({ title, settings, modifySettings }) => {
     statusFilterValue,
     statusFilterOptions,
     updateStatusFilterValue,
+    removeRunLog,
   } = useAgentRunLogs();
 
-  const enabledAgent = useMemo(() => settings?.agent.enabled, [settings?.agent]);
   const activeLog = useMemo(() => runLogs.find(item => item.key === activeLogKey), [runLogs, activeLogKey]);
 
   const onRunsUpdated = useCallback((owner_source_id, owner_source_type, runs) => {
@@ -50,7 +50,6 @@ const Agent = ({ title, settings, modifySettings }) => {
               <EmptyTip
                 src={`${mediaUrl}img/no-items-tip.png`}
                 title={gettext('No agent logs')}
-                text={!enabledAgent && gettext('Enable the agent in settings to start')}
                 className="w-100"
               />
             )}
@@ -72,6 +71,7 @@ const Agent = ({ title, settings, modifySettings }) => {
               updateStatusFilterValue={updateStatusFilterValue}
               hideLogs={() => setIsShowLogs(false)}
               updateRunLog={updateRunLog}
+              removeRunLog={removeRunLog}
               onRunsUpdated={onRunsUpdated}
             />
             <RunLogDetails
@@ -93,6 +93,16 @@ const Agent = ({ title, settings, modifySettings }) => {
       </div>
     </>
   );
+};
+
+const Agent = ({ settings, ...props }) => {
+  const enabledAgent = useMemo(() => settings?.agent.enabled, [settings?.agent]);
+
+  if (!enabledAgent) {
+    return (<EmptyTip text={gettext('Enable the agent in settings to start')} className="w-100"/>);
+  }
+
+  return (<Main settings={settings} { ...props } />);
 };
 
 export default Agent;
