@@ -5,8 +5,8 @@
 */
 
 .side-panel {
-  user-select: none;
   height: 100%;
+  user-select: none;
 }
 
 .side-panel .nav {
@@ -34,15 +34,15 @@
 }
 
 .image-view {
+  position: absolute;
   width: 200px;
   height: 150px;
-  position: absolute;
+  overflow: hidden;
   background-color: #fff;
   z-index: 1004;
   box-shadow: 0 0 10px #aaa;
   border-radius: 3px;
   line-height: 150px;
-  overflow: hidden;
   font-size: 0;
   text-align: center;
 }

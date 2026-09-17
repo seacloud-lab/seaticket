@@ -1,7 +1,7 @@
 .org-admin,
 .sys-admin {
-  flex: 1;
   display: flex;
+  flex: 1;
   min-height: 0;
 }
 
@@ -21,8 +21,8 @@
 }
 
 .side-nav-con {
-  overflow: auto;
   padding: 0 8px;
+  overflow: auto;
 }
 
 .side-nav-con>.nav {
@@ -46,13 +46,13 @@
 
 .org-admin .side-nav-title,
 .sys-admin .side-nav-title {
-  color: var(--bs-sf-grey-text);
   padding: 0 8px;
-  line-height: 28px;
-  font-size: 14px;
   margin-top: 4px;
   height: 28px;
   display: block;
+  color: var(--bs-sf-grey-text);
+  font-size: 14px;
+  line-height: 28px;
 }
 
 .org-admin .main-panel .heading,
@@ -83,9 +83,9 @@
 
 .org-admin .main-panel .cur-view-path,
 .sys-admin .main-panel .cur-view-path {
-  border-bottom: 1px solid var(--bs-border-secondary-color);
   padding: 0 20px;
   margin: 0 -20px;
+  border-bottom: 1px solid var(--bs-border-secondary-color);
 }
 
 .org-admin .main-panel .cur-view-path:after,
@@ -171,12 +171,12 @@
 }
 
 .info-item-heading {
+  margin: 24px 0 .7em;
+  padding-bottom: .2em;
   border-bottom: 1px solid var(--bs-border-secondary-color);
   color: inherit;
   font-size: 15px;
   font-weight: 400;
-  margin: 24px 0 .7em;
-  padding-bottom: .2em;
 }
 
 .web-setting-icon-btn {

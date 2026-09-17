@@ -25,8 +25,8 @@
 
 .info-item-content table td {
   padding: 0 10px;
-  border-right: 1px solid #ddd;
   border-bottom: 1px solid #ddd;
+  border-right: 1px solid #ddd;
 }
 
 .info-item-content table tr td:first-child,

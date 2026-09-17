@@ -25,9 +25,9 @@ body {
 }
 
 .profile-settings .main-panel {
+  width: calc(100% - 228px);
   background-color: #ffffff;
   border-radius: 10px 10px 0 0;
-  width: calc(100% - 228px);
 }
 
 .profile-settings .heading {
@@ -84,15 +84,15 @@ body {
 
 /* Navigation menu styles */
 .user-setting-nav .nav-item {
-  padding: 0 12px;
-  width: 100%;
-  box-sizing: border-box;
-  height: 32px;
-  line-height: 32px;
-  border-radius: 4px;
   display: flex;
   align-items: center;
+  width: 100%;
   min-width: 0;
+  height: 32px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  border-radius: 4px;
+  line-height: 32px;
 }
 
 .user-setting-nav .nav-item .seaqa-icon-svg {
@@ -100,12 +100,12 @@ body {
 }
 
 .user-setting-nav .nav-item .nav-link {
-  margin: 0;
-  padding: 0;
-  padding-left: 0.5rem;
   flex: auto;
   min-width: 0;
   overflow: hidden;
+  margin: 0;
+  padding: 0;
+  padding-left: 0.5rem;
 }
 
 .user-setting-nav .nav-item .nav-link .user-setting-nav-text {

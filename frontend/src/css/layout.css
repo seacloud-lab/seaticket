@@ -1,9 +1,9 @@
 #wrapper,
 .wrapper {
-  width: 100%;
-  height: 100%;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  height: 100%;
 }
 
 .side-panel {
@@ -14,10 +14,10 @@
 
 .main-panel {
   position: relative;
-  width: calc(100% - 240px);
-  overflow-x: hidden;
   display: flex;
   flex-direction: column;
+  width: calc(100% - 240px);
+  overflow-x: hidden;
   background-color: var(--bs-body-third-bg);
 }
 
@@ -39,9 +39,9 @@
 .side-panel-north,
 .main-panel-north {
   position: relative;
-  padding: 0.75rem 1.5rem 0.75rem 1rem;
   display: flex;
   flex-shrink: 0;
+  padding: 0.75rem 1.5rem 0.75rem 1rem;
   background: var(--bs-body-third-bg);
   z-index: 100;
 }
@@ -81,8 +81,8 @@
   flex-shrink: 0;
   padding: 16px 20px;
   border-top: 1px solid var(--bs-border-secondary-color);
-  cursor: pointer;
   align-items: center;
+  cursor: pointer;
 }
 
 .side-nav-footer .join-us-icon {
@@ -101,13 +101,13 @@
 
 .cur-view-path {
   position: relative; /* for the ':after' */
-  padding: 8px 16px;
   max-height: 48px;
-  background: rgb(247 247 245 / 50%);
   display: flex;
   align-items: center;
   flex-shrink: 0;
   justify-content: space-between;
+  padding: 8px 16px;
+  background: rgb(247 247 245 / 50%);
 }
 
 .cur-view-path:after {
@@ -171,12 +171,12 @@
 }
 
 .cur-view-detail {
-  display: block;
   position: absolute;
   right: 0;
-  background-color: #fff;
   width: 300px;
   height: 100%;
+  display: block;
+  background-color: #fff;
   box-shadow: -1px 0 3px 0 #ccc;
   animation: move 0.5s ease-in-out 1;
   z-index: 50;
