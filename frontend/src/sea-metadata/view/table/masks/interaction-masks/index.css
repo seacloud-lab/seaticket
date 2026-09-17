@@ -38,7 +38,7 @@
 }
 
 .rdg-selected:hover .drag-handle .glyphicon-arrow-down {
-  display: 'block';
+  display: block;
 }
 
 .react-grid-cell-dragged-over-down {
@@ -50,4 +50,3 @@
   border: 1px dashed black;
   background: rgba(0, 0, 255, 0.2) !important;
 }
-
