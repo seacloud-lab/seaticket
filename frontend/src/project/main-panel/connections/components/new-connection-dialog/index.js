@@ -625,45 +625,55 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
 
   const handleConnectNotion = useCallback(() => {
     setNotionOauthState('');
-    const oauthUrl = `${server}/notion/oauth/?project_uuid=${projectUuid}`;
-    notionOauthWindowRef.current = window.open(oauthUrl, 'notion-oauth', 'width=800,height=700');
-    if (!notionOauthWindowRef.current) {
-      toaster.danger(gettext('Failed to open authorization window. Please allow pop-ups and try again.'));
-      return;
-    }
-    setWaitingNotionOAuth(true);
-    stopNotionOAuthPolling();
-    notionOauthIntervalRef.current = window.setInterval(() => {
-      connectionsAPI.getNotionOauthStatus(projectUuid).then(statusRes => {
-        const notionStatus = statusRes?.data?.status;
-        if (notionStatus === 'in-progress') {
-          if (!notionOauthWindowRef.current.closed) return;
+    connectionsAPI.startNotionOAuth(projectUuid).then((res) => {
+      const authorizationUrl = res.data?.auth_url;
+      const oauthState = res.data?.state;
+      if (!authorizationUrl || !oauthState) {
+        toaster.danger(gettext('Failed to fetch authorization url'));
+        return;
+      }
+
+      notionOauthWindowRef.current = window.open(authorizationUrl, 'notion-oauth', 'width=800,height=700');
+      if (!notionOauthWindowRef.current) {
+        toaster.danger(gettext('Failed to open authorization window. Please allow pop-ups and try again.'));
+        return;
+      }
+      setWaitingNotionOAuth(true);
+      stopNotionOAuthPolling();
+      notionOauthIntervalRef.current = window.setInterval(() => {
+        connectionsAPI.getNotionOauthStatus(projectUuid, oauthState).then(statusRes => {
+          const notionStatus = statusRes?.data?.status;
+          if (notionStatus === 'in-progress') {
+            if (!notionOauthWindowRef.current.closed) return;
+            stopNotionOAuthPolling();
+            setWaitingNotionOAuth(false);
+            toaster.danger(gettext('OAuth authorization was cancelled.'));
+            return;
+          }
+
           stopNotionOAuthPolling();
           setWaitingNotionOAuth(false);
-          toaster.danger(gettext('OAuth authorization was cancelled.'));
-          return;
-        }
-
-        stopNotionOAuthPolling();
-        setWaitingNotionOAuth(false);
-        if (notionStatus !== 'authorized') {
-          toaster.danger(statusRes.data?.error_msg || gettext('OAuth authorization failed.'));
-          return;
-        }
-        setNotionOauthConnected(true);
-        setNotionOauthState(statusRes.data?.state || '');
-        setNotionOauthError('');
-        if (notionOauthWindowRef.current && !notionOauthWindowRef.current.closed) {
-          notionOauthWindowRef.current.close();
-        }
-      }).catch((error) => {
-        stopNotionOAuthPolling();
-        setWaitingNotionOAuth(false);
-        toaster.danger(notionOauthWindowRef.current?.closed
-          ? gettext('OAuth authorization was cancelled.')
-          : Utils.getErrorMsg(error));
-      });
-    }, 2000);
+          if (notionStatus !== 'authorized') {
+            toaster.danger(statusRes.data?.error_msg || gettext('OAuth authorization failed.'));
+            return;
+          }
+          setNotionOauthConnected(true);
+          setNotionOauthState(oauthState);
+          setNotionOauthError('');
+          if (notionOauthWindowRef.current && !notionOauthWindowRef.current.closed) {
+            notionOauthWindowRef.current.close();
+          }
+        }).catch((error) => {
+          stopNotionOAuthPolling();
+          setWaitingNotionOAuth(false);
+          toaster.danger(notionOauthWindowRef.current?.closed
+            ? gettext('OAuth authorization was cancelled.')
+            : Utils.getErrorMsg(error));
+        });
+      }, 2000);
+    }).catch((error) => {
+      toaster.danger(Utils.getErrorMsg(error));
+    });
   }, [stopNotionOAuthPolling]);
 
   const listJiraSites = useCallback((signal) => {

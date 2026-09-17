@@ -1144,12 +1144,19 @@ class ProjectNotionOauthStatusView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
+        oauth_state = request.GET.get('state')
+        if not oauth_state:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'OAuth state is required.')
+
         notion_data = NotionOAuthUtils.get_oauth_session(request)
         if not notion_data:
             return api_error(status.HTTP_404_NOT_FOUND, 'OAuth request not found.')
 
         if notion_data.get('project_uuid') != project_uuid:
             return api_error(status.HTTP_404_NOT_FOUND, 'OAuth request not found.')
+
+        if oauth_state != notion_data.get('state'):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'OAuth request is expired or has been replaced by a newer authorization.')
 
         status_value = notion_data.get('status')
         if status_value == 'failure':
