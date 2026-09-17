@@ -53,6 +53,7 @@
 
 .seaqa-connection-email-record-details .email-record-info-to {
   width: 100%;
+  flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -179,13 +180,6 @@
 
 .seaqa-connection-email-record-details.more .email-record-info-more-count {
   font-weight: 600;
-}
-
-.seaqa-connection-email-record-details .email-record-info-to {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .seaqa-connection-email-record-details .email-record-info-to-container {

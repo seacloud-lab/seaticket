@@ -70,7 +70,6 @@
   -webkit-box-orient: vertical;
   word-wrap: break-word;
   display: -webkit-box;
-  text-overflow: -o-ellipsis-lastline;
   white-space: pre-wrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis;

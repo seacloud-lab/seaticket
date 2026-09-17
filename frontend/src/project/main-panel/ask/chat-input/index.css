@@ -105,9 +105,6 @@
   height: 32px;
   z-index: 1;
   border-radius: 50%;
-}
-
-.seaqa-ai-ask-chat-operations-container .seaqa-ai-ask-icon-btn {
   background-color: var(--bs-hover-tertiary-bg);
 }
 

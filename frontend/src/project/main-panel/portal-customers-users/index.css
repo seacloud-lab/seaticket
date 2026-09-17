@@ -172,11 +172,3 @@
 .portal-customer-member-select .user-select-placeholder {
   color: #868e96;
 }
-
-@media (max-width: 900px) {
-  .portal-customers-sea-metadata {
-    min-width: 0;
-    width: 100%;
-  }
-
-}
