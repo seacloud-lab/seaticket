@@ -5,7 +5,7 @@
   padding: 16px 0 12px;
   flex-shrink: 0;
   flex-direction: column;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--bs-border-secondary-color);
   gap: 8px;
 }
 
@@ -72,7 +72,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 22px;
-  line-height: 24px;
+  line-height: 28px;
   font-weight: 500;
   margin-right: 8px;
 }
@@ -89,7 +89,6 @@
 
 .seaqa-project-ticket .seaqa-project-ticket-header:not(.seaqa-project-ticket-simple-info-wrapper-sticky) .seaqa-project-ticket-title-prefix ~ .seaqa-project-ticket-number {
   align-self: flex-end;
-  line-height: 24px;
 }
 
 .seaqa-project-ticket .seaqa-project-ticket-number {
@@ -97,6 +96,7 @@
   color: var(--bs-sf-grey-text);
   font-size: 18px;
   font-weight: 500;
+  line-height: 28px;
 }
 
 .seaqa-project-ticket .seaqa-project-ticket-header .seaqa-project-ticket-copy {
