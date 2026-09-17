@@ -25,14 +25,14 @@
 .run-statistics-section {
   padding: 16px;
   background: #fafafa;
-  border: 1px solid #eee;
+  border: 1px solid var(--bs-border-secondary-color);
   border-radius: 8px;
 }
 
 .run-statistics-section-title {
   margin: 0 0 12px 0;
   padding-bottom: 8px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--bs-border-secondary-color);
   font-size: 14px;
   font-weight: 600;
   color: var(--bs-body-color);
@@ -74,7 +74,7 @@
 .run-statistics-table th,
 .run-statistics-table td {
   padding: 10px 12px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--bs-border-secondary-color);
   text-align: left;
 }
 

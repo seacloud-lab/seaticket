@@ -9,7 +9,7 @@
   align-items: center;
   padding-right: 10px;
   background-color: #fff;
-  border: 1px solid #eee;
+  border: 1px solid var(--bs-border-secondary-color);
   border-radius: 8px;
   transition: margin .2s;
 }
@@ -130,7 +130,7 @@
 .seaqa-connection-email-record-details.expanded .email-body {
   width: 100%;
   padding: 10px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--bs-border-secondary-color);
   font-size: 14px;
 }
 

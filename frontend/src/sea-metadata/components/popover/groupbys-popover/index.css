@@ -106,7 +106,7 @@
 }
 
 .sea-metadata-groupbys-popover .popover-add-tool {
-  border-top: 1px solid #eeeeee;
+  border-top: 1px solid var(--bs-border-secondary-color);
   padding: 8px;
   display: flex;
   align-items: center;

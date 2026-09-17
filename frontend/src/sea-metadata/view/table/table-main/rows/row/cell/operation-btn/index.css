@@ -1,7 +1,7 @@
 .sea-metadata-cell-op-btn {
   align-items: center;
   background: #fff;
-  border: 1px solid #eee;
+  border: 1px solid var(--bs-border-secondary-color);
   border-radius: 2px;
   box-shadow: 0 0 1px;
   cursor: pointer;
