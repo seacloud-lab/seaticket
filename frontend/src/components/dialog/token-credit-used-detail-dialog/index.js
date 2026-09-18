@@ -3,10 +3,9 @@ import { Modal, ModalBody } from 'reactstrap';
 import classnames from 'classnames';
 import dayjs from 'dayjs';
 import PropTypes from 'prop-types';
-import { Loading, EmptyTip, ModalHeader } from '@/components';
+import { DatePicker, Loading, EmptyTip, ModalHeader } from '@/components';
 import toaster from '@/components/toaster';
 import { gettext, mediaUrl } from '@/constants';
-import DateAndTimePicker from '@/project/main-panel/search/date-and-time-picker';
 import { Utils } from '@/utils/utils';
 import TokenCreditUsed from '../../chart/token-credit-used';
 import CustomizeSelect from '../../customize-select';
@@ -254,8 +253,7 @@ class TokenCreditUsedDetailDialog extends Component {
             <div className="seaqa-ai-statistic-date-condition">
               <span className="date-range-title">{gettext('Date range: ')}</span>
               <span className="date-range-value">
-                <DateAndTimePicker
-                  showHourAndMinute={false}
+                <DatePicker
                   disabledDate={(date) => date > new Date(endDate) || date < dayjs().subtract(90, 'day')}
                   value={startDate}
                   onChange={(date) => this.onDateChange(date, 'start')}
@@ -264,8 +262,7 @@ class TokenCreditUsedDetailDialog extends Component {
               </span>
               <span className="date-range-">{'-'}</span>
               <span className="date-range-value">
-                <DateAndTimePicker
-                  showHourAndMinute={false}
+                <DatePicker
                   disabledDate={(date) => date < new Date(startDate) || date > dayjs()}
                   value={endDate}
                   onChange={(date) => this.onDateChange(date, 'end')}

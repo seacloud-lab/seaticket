@@ -1,7 +1,7 @@
 import React, { useMemo, useCallback } from 'react';
 import dayjs from 'dayjs';
 import PropTypes from 'prop-types';
-import DateAndTimePicker from '@/project/main-panel/search/date-and-time-picker';
+import { DatePicker } from '@/components';
 
 const DATE_INPUT_WIDTH = 120;
 const DateRangeSetting = ({ startDate, endDate, onChange, }) => {
@@ -25,23 +25,17 @@ const DateRangeSetting = ({ startDate, endDate, onChange, }) => {
 
   return (
     <div className="date-range-setting-wrapper d-flex justify-content-between align-items-center">
-      <DateAndTimePicker
-        showHourAndMinute={false}
+      <DatePicker
         disabledDate={disabledStartDate}
         value={fromValue}
-        onChange={(value) => {
-          onChange({ from: value?.endOf('day'), to: toValue });
-        }}
+        onChange={(value) => onChange({ from: value?.endOf('day'), to: toValue })}
         inputWidth={DATE_INPUT_WIDTH}
       />
       <span>--</span>
-      <DateAndTimePicker
-        showHourAndMinute={false}
+      <DatePicker
         disabledDate={disabledEndDate}
         value={toValue}
-        onChange={(value) => {
-          onChange({ from: fromValue, to: value?.endOf('day') });
-        }}
+        onChange={(value) => onChange({ from: fromValue, to: value?.endOf('day') })}
         inputWidth={DATE_INPUT_WIDTH}
       />
     </div>

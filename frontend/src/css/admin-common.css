@@ -98,11 +98,6 @@
   height: 43px;
 }
 
-.org-admin .main-panel .cur-view-content .rc-calendar table tbody tr,
-.sys-admin .main-panel .cur-view-content .rc-calendar table tbody tr {
-  height: 32px;
-}
-
 .org-admin .text-secondary,
 .sys-admin .text-secondary {
   color: #999 !important;
