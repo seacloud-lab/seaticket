@@ -94,9 +94,9 @@ class SearchInput extends Component {
     } = this.props;
     const { searchValue } = this.state;
 
-    let paddingLeft = size - 2;
-    if (!isShowSearchIcon) {
-      paddingLeft = 8;
+    let paddingLeft = 8;
+    if (isShowSearchIcon) {
+      paddingLeft = 8 + 12 + 14; // search icon 14px, icon left 12px, icon right 8px
     }
     let paddingRight = 8;
     if (isShowClearIcon && isFunction(onClear)) {
@@ -112,7 +112,8 @@ class SearchInput extends Component {
         style={{ ...style, height: size }}
       >
         {isShowSearchIcon && (
-          <IconButton icon="search" className="seaqa-search-input-search" style={{ height: size, width: size - 2 }} />
+          // search icon width === input padding left, so use width: paddingLeft
+          <IconButton icon="search" className="seaqa-search-input-search" style={{ height: size, width: paddingLeft }} />
         )}
         <input
           ref={ref => this.inputRef = ref}

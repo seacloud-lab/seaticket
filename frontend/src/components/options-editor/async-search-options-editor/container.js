@@ -129,7 +129,7 @@ const Container = forwardRef(({
         <SearchInput
           autoFocus={true}
           value={searchValue}
-          size={36}
+          size={32}
           placeholder={placeholder}
           onKeyDown={onKeyDown}
           onChange={onSearchValueChange}

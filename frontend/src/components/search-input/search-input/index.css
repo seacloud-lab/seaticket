@@ -50,6 +50,11 @@
 
 .seaqa-search-input-wrapper .seaqa-search-input-search .seaqa-icon-svg {
   color: var(--bs-sf-grey-text-placeholder);
+  height: 14px;
+  width: 14px;
+}
+
+.global-search-input-wrapper.seaqa-search-input-wrapper .seaqa-search-input-search .seaqa-icon-svg {
   height: 16px;
   width: 16px;
 }

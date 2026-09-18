@@ -116,7 +116,9 @@ const HideConnectionPopover = ({ hidePopover, onChange, readOnly, target, placem
             onKeyDown={onKeyDown}
             onChange={onChangeSearch}
             autoFocus={true}
-            size={28}
+            isShowClearIcon={!!searchValue}
+            onClear={() => setSearchValue('')}
+            size={32}
           />
         </div>
         <HiddenConnections
