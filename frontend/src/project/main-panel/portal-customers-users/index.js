@@ -70,10 +70,10 @@ const PortalCustomersUsers = ({ title }) => {
 
   const closeCustomerModal = useCallback(() => setCustomerToEdit(null), []);
 
-  const saveCustomer = useCallback((name) => {
+  const saveCustomer = useCallback((name, emailDomain) => {
     const request = customerToEdit?.id
-      ? portalAPI.updateCustomer(projectUuid, customerToEdit.id, { name })
-      : portalAPI.createCustomer(projectUuid, { name });
+      ? portalAPI.updateCustomer(projectUuid, customerToEdit.id, { name, email_domain: emailDomain })
+      : portalAPI.createCustomer(projectUuid, { name, email_domain: emailDomain });
     setSubmitting(true);
     request.then(() => {
       toaster.success(customerToEdit?.id ? gettext('Customer updated') : gettext('Customer created'));

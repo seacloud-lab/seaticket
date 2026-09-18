@@ -26,7 +26,7 @@ const CustomersTab = ({ customers, onEdit, onManageUsers, onDelete, viewTabs }) 
           _id: 'customers',
           type: 'table',
           name: gettext('Customers'),
-          columns_keys: ['name', 'status', 'updated_at'],
+          columns_keys: ['name', 'email_domain', 'status', 'updated_at'],
           sorts: context.localStorage?.getItem('sorts') || [],
         },
       },
@@ -52,6 +52,14 @@ const CustomersTab = ({ customers, onEdit, onManageUsers, onDelete, viewTabs }) 
             width: 360,
             frozen: true,
             is_name_column: true,
+            editable: false,
+          },
+          {
+            key: 'email_domain',
+            name: 'email_domain',
+            display_name: gettext('Email domain'),
+            type: CellType.TEXT,
+            width: 260,
             editable: false,
           },
           {
