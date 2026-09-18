@@ -101,12 +101,22 @@ export const useAgentRunLogs = () => {
       const runLog = newRunLogs[runLogIndex];
       if ((statusFilterValueRef.current === LOG_STATUS.PROCESSED && runLog.status !== LOG_STATUS.PROCESSED) ||
         statusFilterValueRef.current !== LOG_STATUS.PROCESSED && runLog.status === LOG_STATUS.PROCESSED) {
-        const nextLog = newRunLogs[runLogIndex + 1] || newRunLogs[runLogIndex - 1] || { key: '' };
-        updateActiveLogKey(nextLog.key);
-        newRunLogs.splice(runLogIndex, 1);
-        if (newRunLogs.length < pageCount.current) {
-          loadMore();
-        }
+        newRunLogs[runLogIndex] = { ...runLog, isFiltered: true };
+      }
+      return newRunLogs;
+    });
+  }, []);
+
+  const removeRunLog = useCallback((key) => {
+    setRunLogs(runLogs => {
+      let newRunLogs = runLogs.slice(0);
+      const runLogIndex = newRunLogs.findIndex(item => item.key === key);
+      if (runLogIndex === -1) return newRunLogs;
+      const nextLog = newRunLogs[runLogIndex + 1] || newRunLogs[runLogIndex - 1] || { key: '' };
+      updateActiveLogKey(nextLog.key);
+      newRunLogs.splice(runLogIndex, 1);
+      if (newRunLogs.length < pageCount.current) {
+        loadMore();
       }
       return newRunLogs;
     });
@@ -133,5 +143,6 @@ export const useAgentRunLogs = () => {
     statusFilterValue,
     statusFilterOptions,
     updateStatusFilterValue,
+    removeRunLog,
   };
 };
