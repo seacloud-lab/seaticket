@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useRef } from 'react';
 import Calendar from '@seafile/seafile-calendar';
-import DatePickerComponent from '@seafile/seafile-calendar/lib/Picker';
+import Picker from '@seafile/seafile-calendar/lib/Picker';
 import dayjs from 'dayjs';
 import localeData from 'dayjs/plugin/localeData';
 import utc from 'dayjs/plugin/utc';
@@ -18,71 +18,75 @@ dayjs.extend(weekOfYear);
 const DatePicker = ({
   disabled,
   disabledDate,
+  isRemainOpen = true,
   format = 'YYYY-MM-DD',
+  lang = '',
   value,
   inputWidth = 250,
   className,
+  calendarContainer,
+  calendarProps,
   children,
   onChange,
   onOpenChange,
-  onFocus,
-  calendarProps,
+  onInputClick,
   ...props
 }) => {
   const calendarContainerRef = useRef(null);
-  const inputRef = useRef(null);
 
-  const defaultCalendarValue = useMemo(() => {
+  const defaultValue = useMemo(() => {
     let now = dayjs();
-    let lang = window?.app?.config?.lang;
-    const isZhcn = lang === 'zh-cn';
+    const validLang = lang || window?.app?.config?.lang;
+    const isZhcn = validLang === 'zh-cn';
     if (isZhcn) {
       now = now.locale('zh-cn');
     } else {
       now = now.locale('en-gb');
     }
     return now.clone();
-  }, []);
+  }, [lang]);
 
   const showHourAndMinute = useMemo(() => {
-    if (Array.isArray(format)) return format.some(item => Boolean(item.split(' ')[1] || ''));
     const timeFormat = format.split(' ')[1] || '';
     return Boolean(timeFormat);
   }, [format]);
 
   const locale = useMemo(() => translateCalendar(), []);
 
+  const initCalendarProps = useMemo(() => {
+    return {
+      defaultValue,
+      disabledDate,
+      format,
+      locale,
+      showHourAndMinute,
+      ...calendarProps,
+    };
+  }, [defaultValue, disabledDate, format, locale, showHourAndMinute, calendarProps]);
+
   const getCalendarContainer = useCallback(() => {
-    return calendarContainerRef.current;
-  }, []);
+    return calendarContainer || calendarContainerRef.current;
+  }, [calendarContainer]);
 
   const onMouseDown = useCallback((event) => {
     event.preventDefault();
   }, []);
 
   return (
-    <DatePickerComponent
+    <Picker
       disabled={disabled}
       getCalendarContainer={getCalendarContainer}
-      isRemainOpen={true}
-      calendar={
-        <Calendar
-          defaultValue={defaultCalendarValue}
-          disabledDate={disabledDate}
-          format={format}
-          locale={locale}
-          showHourAndMinute={showHourAndMinute}
-          { ...calendarProps }
-        />
-      }
+      isRemainOpen={isRemainOpen}
+      calendar={<Calendar { ...initCalendarProps }/>}
       value={value}
       onChange={onChange}
       onOpenChange={onOpenChange}
       { ...props }
     >
       {({ value, ...others }) => {
+        const displayValue = (value && value.format(format)) || '';
         return (
-          <div className={className} tabIndex="0" onFocus={onFocus}>
+          <div className={className} tabIndex="0" onFocus={onInputClick}>
             {isFunction(children) ? children({ value, onMouseDown, ...others }) : (
               <input
                 placeholder={format}
@@ -90,9 +94,8 @@ const DatePicker = ({
                 tabIndex="-1"
                 disabled={disabled}
                 readOnly={true}
-                value={(value && value.format(format)) || ''}
+                value={displayValue}
                 className="form-control"
-                ref={inputRef}
                 onMouseDown={onMouseDown}
               />
             )}
@@ -100,18 +103,25 @@ const DatePicker = ({
           </div>
         );
       }}
-    </DatePickerComponent>
+    </Picker>
   );
 
 };
 
 DatePicker.propTypes = {
-  showHourAndMinute: PropTypes.bool.isRequired,
-  disabledDate: PropTypes.func.isRequired,
+  disabled: PropTypes.bool,
+  disabledDate: PropTypes.func,
+  isRemainOpen: PropTypes.bool,
+  format: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)]),
   value: PropTypes.object,
-  disabled: PropTypes.func,
-  inputWidth: PropTypes.number.isRequired,
-  onChange: PropTypes.func.isRequired
+  inputWidth: PropTypes.number,
+  className: PropTypes.string,
+  calendarContainer: PropTypes.any,
+  children: PropTypes.func,
+  onChange: PropTypes.func,
+  onOpenChange: PropTypes.func,
+  onInputClick: PropTypes.func,
+  calendarProps: PropTypes.object,
 };
 
 export default DatePicker;

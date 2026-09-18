@@ -96,7 +96,7 @@ class FilterCalendar extends Component {
     const state = this.state;
     if (readOnly) return (
       <input
-        className="ant-calendar-picker-input ant-input form-control"
+        className="form-control"
         value={state.value ? state.value.format(this.format) : ''}
         disabled={true}
       />
@@ -109,28 +109,17 @@ class FilterCalendar extends Component {
           onOpenChange={this.onOpenChange}
           open={state.open}
           style={{ zIndex: zIndex || 1001 }}
-          format={this.getCalendarFormat()}
+          format={this.format}
           calendarProps={{
             style: { zIndex: zIndex || 1001 },
+            format: this.getCalendarFormat(),
             dateInputPlaceholder: gettext('Enter date'),
             showDateInput: true,
             focusablePanel: false,
             onClear: this.onClear,
           }}
-          onFocus={this.onReadOnlyFocus}
-        >
-          {({ value, onMouseDown }) => {
-            return (
-              <input
-                tabIndex="-1"
-                readOnly
-                className="form-control"
-                value={value ? value.format(this.format) : ''}
-                onMouseDown={onMouseDown}
-              />
-            );
-          }}
-        </DatePicker>
+          onInputClick={this.onReadOnlyFocus}
+        />
       </div>
     );
   }

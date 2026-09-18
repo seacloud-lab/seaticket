@@ -104,14 +104,6 @@ class DateEditor extends Component {
     this.onBlur();
   };
 
-  getCalendarContainer = () => {
-    return document.body;
-  };
-
-  handleMouseDown = (e) => {
-    e.preventDefault();
-  };
-
   handleKeyDown = (e) => {
     const directionKeyCodes = [37, 38, 39, 40];
     if (directionKeyCodes.includes(e.keyCode)) {
@@ -179,7 +171,7 @@ class DateEditor extends Component {
     const state = this.state;
     if (isReadOnly) return (
       <input
-        className="ant-calendar-picker-input ant-input form-control"
+        className="form-control"
         value={state.value ? state.value.format(this.format) : ''}
         disabled={true}
       />
@@ -194,16 +186,18 @@ class DateEditor extends Component {
         <DatePicker
           open={true}
           style={{ zIndex: 1060 }}
-          format={this.getCalendarFormat()}
+          format={this.format}
           value={state.value}
           calendarProps={{
             style: { zIndex: 1060 },
+            format: this.getCalendarFormat(),
             showDateInput: true,
             focusablePanel: false,
             defaultMinutesTime: this.getDefaultMinutesTime(),
             onClear: this.onClear,
             onClickRightPanelTime: this.onClickRightPanelTime
           }}
+          calendarContainer={document.body}
           onChange={this.onChange}
           onOpenChange={this.onOpenChange}
         />
