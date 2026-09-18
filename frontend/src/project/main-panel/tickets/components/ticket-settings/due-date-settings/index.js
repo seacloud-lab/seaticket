@@ -40,6 +40,7 @@ const DueDateSettings = ({ isReadonly, value: propsValue, onChange }) => {
           value={formatValue}
           onChange={onDueDateChange}
           onOpenChange={onOpenChange}
+          className="ticket-due-date-content"
         >
           {({ value }) => {
             return (
