@@ -3,11 +3,13 @@ import { Dropdown, DropdownToggle } from 'reactstrap';
 import classNames from 'classnames';
 import dayjs from 'dayjs';
 import PropTypes from 'prop-types';
-import { CustomizeDropdownItem, CustomizeDropdownMenu, Icon, ModalPortal, CustomizeDropdownItemIcon, CustomizeDropdownItemText } from '@/components';
+import {
+  CustomizeDropdownItem, CustomizeDropdownMenu, Icon, ModalPortal, CustomizeDropdownItemIcon,
+  CustomizeDropdownItemText, DatePicker,
+} from '@/components';
 import { Utils } from '@/utils/utils';
 import { gettext } from '../../../constants';
 import { SEARCH_FILTERS_KEY, SEARCH_FILTER_BY_DATE_OPTION_KEY, SEARCH_FILTER_BY_DATE_TYPE_KEY } from './constants';
-import DateAndTimePicker from './date-and-time-picker';
 
 const DATE_INPUT_WIDTH = 118;
 
@@ -190,8 +192,7 @@ const FilterByDate = ({ date, onChange }) => {
                 <div className="filter-by-date-custom-date-container p-2 mx-2 d-flex align-items-center justify-content-between border-radius-4">
                   <div className="custom-date-container">
                     <div className="font-size-13 line-height-20 mb-1">{gettext('Start date')}</div>
-                    <DateAndTimePicker
-                      showHourAndMinute={false}
+                    <DatePicker
                       disabledDate={disabledStartDate}
                       value={time.from}
                       onChange={(value) => setTime({ ...time, from: value?.startOf('day') })}
@@ -200,8 +201,7 @@ const FilterByDate = ({ date, onChange }) => {
                   </div>
                   <div className="custom-date-container">
                     <div className="font-size-13 line-height-20 mb-1">{gettext('End date')}</div>
-                    <DateAndTimePicker
-                      showHourAndMinute={false}
+                    <DatePicker
                       disabledDate={disabledEndDate}
                       value={time.to}
                       onChange={(value) => setTime({ ...time, to: value?.endOf('day') })}

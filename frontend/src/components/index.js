@@ -1,6 +1,7 @@
 import Account from './account';
 import ActiveStatusEditor from './active-status-editor';
 import { IconTextBtn, SecondaryBtn } from './btn';
+import { DatePicker, MonthPicker } from './calendar-picker';
 import CenteredError from './centered-error';
 import CenteredLoading from './centered-loading';
 import { UsageCard, MultipleTextCard, InfoCard } from './chart';
@@ -139,4 +140,6 @@ export {
   LanguageSelect,
   RemoveButton,
   FilterSelect,
+  DatePicker,
+  MonthPicker,
 };

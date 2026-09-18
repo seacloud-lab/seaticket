@@ -1,20 +1,16 @@
 import React, { Component } from 'react';
-import Calendar from '@seafile/seafile-calendar';
-import DatePicker from '@seafile/seafile-calendar/lib/Picker';
 import localeData from 'dayjs/plugin/localeData';
 import utc from 'dayjs/plugin/utc';
 import weekOfYear from 'dayjs/plugin/weekOfYear';
 import PropTypes from 'prop-types';
+import { DatePicker } from '@/components';
 import { gettext } from '@/constants';
-import { translateCalendar } from '@/utils/date-format-utils';
 import context from '../../../../context';
 import { getDateColumnFormat } from '../../../../utils/column';
 import dayjs from '../../../../utils/dayjs';
 
 import 'dayjs/locale/zh-cn';
 import 'dayjs/locale/en-gb';
-
-import '@seafile/seafile-calendar/assets/index.css';
 
 dayjs.extend(utc);
 dayjs.extend(localeData);
@@ -55,10 +51,6 @@ class FilterCalendar extends Component {
     }
   }
 
-  handleMouseDown = (e) => {
-    e.preventDefault();
-  };
-
   onChange = (value) => {
     const { onChange } = this.props;
     const searchFormat = 'YYYY-MM-DD';
@@ -87,10 +79,6 @@ class FilterCalendar extends Component {
     }
   };
 
-  getCalendarContainer = () => {
-    return this.calendarContainerRef.current;
-  };
-
   getCalendarFormat = () => {
     if (this.format.indexOf('YYYY-MM-DD') > -1) {
       let newColumnDataFormat = this.format.replace('YYYY-MM-DD', 'YYYY-M-D');
@@ -116,42 +104,32 @@ class FilterCalendar extends Component {
     return (
       <div className="date-picker-container">
         <DatePicker
-          calendar={
-            <Calendar
-              className="seaqa-calendar"
-              locale={translateCalendar(this.lang)}
-              style={{ zIndex: zIndex || 1001 }}
-              dateInputPlaceholder={gettext('Enter date')}
-              format={this.getCalendarFormat()}
-              defaultValue={this.defaultCalendarValue}
-              showDateInput={true}
-              focusablePanel={false}
-              onClear={this.onClear}
-            />
-          }
           value={state.value}
           onChange={this.onChange}
-          getCalendarContainer={this.getCalendarContainer}
           onOpenChange={this.onOpenChange}
           open={state.open}
           style={{ zIndex: zIndex || 1001 }}
+          format={this.getCalendarFormat()}
+          calendarProps={{
+            style: { zIndex: zIndex || 1001 },
+            dateInputPlaceholder: gettext('Enter date'),
+            showDateInput: true,
+            focusablePanel: false,
+            onClear: this.onClear,
+          }}
+          onFocus={this.onReadOnlyFocus}
         >
-          {
-            ({ value }) => {
-              return (
-                <span tabIndex="0" onFocus={this.onReadOnlyFocus}>
-                  <input
-                    tabIndex="-1"
-                    readOnly
-                    className="ant-calendar-picker-input ant-input form-control"
-                    value={value ? value.format(this.format) : ''}
-                    onMouseDown={this.handleMouseDown}
-                  />
-                  <div ref={this.calendarContainerRef} />
-                </span>
-              );
-            }
-          }
+          {({ value, onMouseDown }) => {
+            return (
+              <input
+                tabIndex="-1"
+                readOnly
+                className="form-control"
+                value={value ? value.format(this.format) : ''}
+                onMouseDown={onMouseDown}
+              />
+            );
+          }}
         </DatePicker>
       </div>
     );

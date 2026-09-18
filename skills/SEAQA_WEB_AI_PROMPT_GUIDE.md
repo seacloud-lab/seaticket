@@ -170,7 +170,7 @@ frontend/src/
 - `@seafile/seafile-editor` 3.0.27 - Rich text editor for document editing and content authoring
 - `@seafile/sea-email-editor` ^0.0.13 - Email template editor for composing structured email content
 - `@seafile/react-image-lightbox` ^5.0.4 - Full-screen image preview and browsing component
-- `@seafile/seafile-calendar` 1.0.12 - Calendar component for date selection and scheduling UI
+- `@seafile/seafile-calendar` 1.0.21 - Calendar component for date selection and scheduling UI
 - `unified` 7.0.0 - Markdown and text transformation pipeline for parsing and rendering content
 
 ### Build and Styling

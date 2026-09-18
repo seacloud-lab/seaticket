@@ -1,22 +1,18 @@
 import React from 'react';
-import Calendar from '@seafile/seafile-calendar';
+import MonthCalendar from '@seafile/seafile-calendar/lib/MonthCalendar';
 import DatePicker from '@seafile/seafile-calendar/lib/Picker';
 import dayjs from 'dayjs';
 import localeData from 'dayjs/plugin/localeData';
 import utc from 'dayjs/plugin/utc';
-import weekOfYear from 'dayjs/plugin/weekOfYear';
 import PropTypes from 'prop-types';
-import { translateCalendar } from '@/utils/date-format-utils';
+import { translateCalendar } from './utils';
 
 import '@seafile/seafile-calendar/assets/index.css';
-import './date-and-time-picker.css';
 
 dayjs.extend(utc);
 dayjs.extend(localeData);
-dayjs.extend(weekOfYear);
 
-
-class DateAndTimePicker extends React.Component {
+class MonthPicker extends React.Component {
 
   constructor(props) {
     super(props);
@@ -38,27 +34,20 @@ class DateAndTimePicker extends React.Component {
   };
 
   render() {
-    let showHourAndMinute = true; // default: true
-    // eslint-disable-next-line
-    if (this.props.showHourAndMinute != undefined) {
-      showHourAndMinute = this.props.showHourAndMinute;
-    }
-
-    const format = showHourAndMinute ? 'YYYY-MM-DD HH:mm' : 'YYYY-MM-DD';
+    const format = 'YYYY-MM';
 
     return (
       <DatePicker
         disabled={this.props.disabled}
         getCalendarContainer={this.getCalendarContainer}
-        isRemainOpen={true}
         calendar={
-          <Calendar
+          <MonthCalendar
             defaultValue={this.defaultCalendarValue}
             disabledDate={this.props.disabledDate}
             format={format}
             locale={translateCalendar()}
-            showHourAndMinute={showHourAndMinute}
-            className="seaqa-calendar"
+            showHourAndMinute={false}
+            mode="month"
           />
         }
         value={this.props.value}
@@ -89,13 +78,17 @@ class DateAndTimePicker extends React.Component {
   }
 }
 
-DateAndTimePicker.propTypes = {
-  showHourAndMinute: PropTypes.bool.isRequired,
+MonthPicker.propTypes = {
   disabledDate: PropTypes.func.isRequired,
   value: PropTypes.object,
   disabled: PropTypes.func,
-  inputWidth: PropTypes.number.isRequired,
+  inputWidth: PropTypes.number,
   onChange: PropTypes.func.isRequired
 };
 
-export default DateAndTimePicker;
+MonthPicker.defaultProps = {
+  inputWidth: 200,
+  disabled: false
+};
+
+export default MonthPicker;
