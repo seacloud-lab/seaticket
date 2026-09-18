@@ -19,12 +19,6 @@ class SearchInput extends Component {
     this.inputRef = null;
   }
 
-  static defaultProps = {
-    wait: 100,
-    disabled: false,
-    value: '',
-  };
-
   UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.value !== this.props.value) {
       this.setState({ searchValue: nextProps.value });
@@ -43,7 +37,7 @@ class SearchInput extends Component {
 
   onChange = (e) => {
     this.timer && clearTimeout(this.timer);
-    const { onChange, wait } = this.props;
+    const { onChange, wait = 100 } = this.props;
     let text = e.target.value;
     this.setState({ searchValue: text || '' }, () => {
       if (this.isInputtingChinese) return;
@@ -94,16 +88,15 @@ class SearchInput extends Component {
 
   render() {
     const {
-      placeholder, autoFocus, className, inputClassName, disabled, style,
+      placeholder, autoFocus, className, inputClassName, disabled = false, style,
       isShowSearchIcon = true, size = 38, isShowClearIcon = false,
       onClear, onKeyDown, inputStyle = {},
     } = this.props;
     const { searchValue } = this.state;
 
-    const isSmallSize = size <= 30;
-    let paddingLeft = size - 2;
-    if (!isShowSearchIcon) {
-      paddingLeft = 8;
+    let paddingLeft = 8;
+    if (isShowSearchIcon) {
+      paddingLeft = 8 + 12 + 14; // search icon 14px, icon left 12px, icon right 8px
     }
     let paddingRight = 8;
     if (isShowClearIcon && isFunction(onClear)) {
@@ -119,13 +112,14 @@ class SearchInput extends Component {
         style={{ ...style, height: size }}
       >
         {isShowSearchIcon && (
-          <IconButton icon="search" className="seaqa-search-input-search" style={{ height: size, width: size - 2 }} />
+          // search icon width === input padding left, so use width: paddingLeft
+          <IconButton icon="search" className="seaqa-search-input-search" style={{ height: size, width: paddingLeft }} />
         )}
         <input
           ref={ref => this.inputRef = ref}
           type="text"
           value={searchValue}
-          className={classnames('form-control seaqa-search-input', inputClassName, { 'small-size': isSmallSize })}
+          className={classnames('form-control seaqa-search-input', inputClassName)}
           onChange={this.onChange}
           autoFocus={autoFocus}
           placeholder={placeholder}
@@ -133,7 +127,7 @@ class SearchInput extends Component {
           onCompositionEnd={this.onCompositionEnd}
           onKeyDown={onKeyDown}
           disabled={disabled}
-          style={Object.assign({}, { height: size, paddingLeft: paddingLeft, paddingRight: paddingRight }, inputStyle)}
+          style={Object.assign({}, { height: size, paddingLeft, paddingRight, fontSize: size <= 30 ? '13px' : '14px' }, inputStyle)}
           name="search-input"
           autoComplete="off"
         />
@@ -154,7 +148,7 @@ SearchInput.propTypes = {
   onKeyDown: PropTypes.func,
   wait: PropTypes.number,
   disabled: PropTypes.bool,
-  size: PropTypes.number,
+  size: PropTypes.oneOf([28, 32, 38]),
   onClear: PropTypes.func,
   value: PropTypes.string,
   inputStyle: PropTypes.object,

@@ -13,11 +13,6 @@
   border: 1px solid rgba(0, 40, 100, 0.12);
 }
 
-.seaqa-search-input-wrapper .seaqa-search-input.small-size {
-  border-radius: 4px;
-  border: 1px solid rgba(0, 40, 100, 0.12);
-}
-
 .seaqa-search-input-wrapper .seaqa-search-input:focus {
   border-color: var(--bs-custom-select-focus-border-color);
   box-shadow: none;
@@ -55,6 +50,11 @@
 
 .seaqa-search-input-wrapper .seaqa-search-input-search .seaqa-icon-svg {
   color: var(--bs-sf-grey-text-placeholder);
+  height: 14px;
+  width: 14px;
+}
+
+.global-search-input-wrapper.seaqa-search-input-wrapper .seaqa-search-input-search .seaqa-icon-svg {
   height: 16px;
   width: 16px;
 }

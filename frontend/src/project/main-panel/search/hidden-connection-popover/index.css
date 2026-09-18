@@ -22,16 +22,6 @@
   padding: 1rem 0.5rem;
 }
 
-.seaqa-hide-popover .seaqa-hide-search-container {
-  height: 28px;
-}
-
-.seaqa-hide-popover .seaqa-hide-search-container .form-control {
-  height: 28px;
-  width: 100%;
-  color: var(--bs-body-color);
-}
-
 .seaqa-hide-popover .hide-list {
   overflow: auto;
   max-height: 320px;

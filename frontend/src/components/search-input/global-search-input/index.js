@@ -100,7 +100,7 @@ class GlobalSearchInput extends Component {
     const { searchValue } = this.state;
 
     return (
-      <div ref={ref => this.globalSearchRef = ref} className='seaqa-search-input-wrapper'>
+      <div ref={ref => this.globalSearchRef = ref} className='seaqa-search-input-wrapper global-search-input-wrapper'>
         <IconButton icon="search" className="seaqa-search-input-search" style={{ height: 38, width: 36 }} />
         <input
           ref={ref => this.inputRef = ref}
