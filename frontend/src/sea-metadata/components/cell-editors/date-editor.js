@@ -194,7 +194,7 @@ class DateEditor extends Component {
         <DatePicker
           open={true}
           style={{ zIndex: 1060 }}
-          format={this.valueSubmitFormat}
+          format={this.getCalendarFormat()}
           value={state.value}
           calendarProps={{
             style: { zIndex: 1060 },
