@@ -80,7 +80,15 @@ const RUN_EVENT = {
   // ticket
   TICKET_DUE_SOON: 'ticket_due_soon',
   TICKET_OVER_DUE: 'ticket_over_due',
-  TICKET_TASK_FINISHED: 'general_task_updated',
+
+  // general task
+  GENERAL_TASK_UPDATED: 'general_task_updated',
+
+  // linear
+  LINEAR_ISSUE_UPDATED: 'linear_issue_updated',
+
+  // jira
+  JIRA_ISSUE_UPDATED: 'jira_issue_updated',
 };
 
 const RUN_EVENT_NAME = {
@@ -96,7 +104,9 @@ const RUN_EVENT_NAME = {
   [RUN_EVENT.DISCORD_THREAD_MESSAGE_ADDED]: gettext('New Discord message'),
   [RUN_EVENT.TICKET_DUE_SOON]: gettext('Ticket due soon'),
   [RUN_EVENT.TICKET_OVER_DUE]: gettext('Ticket overdue'),
-  [RUN_EVENT.TICKET_TASK_FINISHED]: gettext('Internal task finished'),
+  [RUN_EVENT.GENERAL_TASK_UPDATED]: gettext('Internal task updated'),
+  [RUN_EVENT.LINEAR_ISSUE_UPDATED]: gettext('Linear task updated'),
+  [RUN_EVENT.JIRA_ISSUE_UPDATED]: gettext('Jira task updated'),
 };
 
 const RUN_EVENT_VIEW_SOURCE_TEXT = {
@@ -110,7 +120,7 @@ const RUN_EVENT_VIEW_SOURCE_TEXT = {
   [RUN_EVENT.DISCORD_THREAD_MESSAGE_ADDED]: gettext('View comment'),
   [RUN_EVENT.TICKET_DUE_SOON]: gettext('View ticket'),
   [RUN_EVENT.TICKET_OVER_DUE]: gettext('View ticket'),
-  [RUN_EVENT.TICKET_TASK_FINISHED]: gettext('View ticket'),
+  [RUN_EVENT.GENERAL_TASK_UPDATED]: gettext('View ticket'),
 };
 
 const DEFAULT_VIEW_SOURCE_TEXT = gettext('View source');
