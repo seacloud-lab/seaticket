@@ -26,7 +26,7 @@ const PortalHome = ({ projectUuid, onHomeChatSend }) => {
   const { updateHomeSetting, featuredArticles, isFeaturedArticlesLoading } = usePortalSettings();
   const { columns = [], records = [] } = featuredArticles || {};
   const titleColumn = columns.find(column => column.name === 'title');
-  const columnTitles = records.map(record => ({ record, title: getCellValueByColumn(record, titleColumn) })).filter(({ title }) => title);
+  const featuredArticleItems = records.map(record => ({ record, title: getCellValueByColumn(record, titleColumn) })).filter(({ title }) => title);
 
   const heroSection = homePageStyle['portal_home_hero_section'];
   const cardsSection = homePageStyle['portal_home_cards_section'];
@@ -136,30 +136,32 @@ const PortalHome = ({ projectUuid, onHomeChatSend }) => {
             )}
           </section>
 
-          <section className="portal-home-featured-articles">
-            {isFeaturedArticlesLoading ? (
-              <CenteredLoading />
-            ) : (
-              <>
-                <h2 className="portal-home-featured-articles-title">{gettext('Featured')}</h2>
-                <div className="portal-home-featured-articles-list">
-                  {columnTitles.map(({ record, title }) => (
-                    <div
-                      className="portal-home-featured-article-card"
-                      onClick={() => handleFeaturedArticleClick(record)}
-                      role="button"
-                      tabIndex="0"
-                      title={title}
-                      key={record._pk}
-                    >
-                      <Icon symbol="knowledge-base" className="portal-home-featured-article-icon" aria-hidden="true" />
-                      <div className="portal-home-featured-article-title">{title}</div>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </section>
+          {(isFeaturedArticlesLoading || featuredArticleItems.length > 0) && (
+            <section className="portal-home-featured-articles">
+              {isFeaturedArticlesLoading ? (
+                <CenteredLoading />
+              ) : (
+                <>
+                  <h2 className="portal-home-featured-articles-title">{gettext('Featured')}</h2>
+                  <div className="portal-home-featured-articles-list">
+                    {featuredArticleItems.map(({ record, title }) => (
+                      <div
+                        className="portal-home-featured-article-card"
+                        onClick={() => handleFeaturedArticleClick(record)}
+                        role="button"
+                        tabIndex="0"
+                        title={title}
+                        key={record._pk}
+                      >
+                        <Icon symbol="knowledge-base" className="portal-home-featured-article-icon" aria-hidden="true" />
+                        <div className="portal-home-featured-article-title">{title}</div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </section>
+          )}
         </main>
         {selectedFeaturedArticle && (
           <ResourceDetailsDialog
