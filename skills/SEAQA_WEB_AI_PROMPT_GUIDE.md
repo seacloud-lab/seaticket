@@ -322,26 +322,26 @@ import './index.css';
 
 ### Directory Responsibility Table
 
-| Directory | Responsibility | Description |
+| Directory | Responsibility |
 |------|------|------|
-| `_i18n/` | Internationalization | Multi-language resource files and translation bootstrap. Common subdirectories: `en/`, `zh-cn/` |
-| `api/` | API wrappers | Encapsulated API requests and request helpers. Common files: `common.js`, domain API modules |
-| `assets/` | Static assets | Static files such as icons, images, and fonts. Common subdirectories: `images/`, `icons/`, `fonts/` |
-| `components/` | Shared components | Reusable UI building blocks. Common subdirectories: `common/`, `layout/`, `feedback/` |
-| `constants/` | Constant definitions | Global constants, enums, and fixed configuration. Common files: `index.js`, domain constant modules |
-| `css/` | Global styles | Global CSS and theme styles. Common subdirectories: `themes/`, shared variable files |
-| `home/` | Home entry point | Dashboard home page and main business entry point. Common subdirectories: `components/` |
-| `icon-page/` | Icon page | Icon preview and icon-related pages. Common files: `index.js`, feature components |
-| `models/` | Data models | Data entity models and schema definitions. Common files: `index.js`, domain model modules |
-| `org-admin/` | Organization management | Organization-level administration features. Common subdirectories: `components/`, `pages/` |
-| `portal/` | Portal entry | Shared portal entry and cross-module navigation. Common subdirectories: `components/` |
-| `profile-settings/` | User settings | User profile and preference settings. Common subdirectories: `components/`, `utils/` |
-| `project/` | Project business | Project-related pages and core business logic. Common subdirectories: `components/`, `pages/`, `utils/` |
-| `sea-metadata/` | Metadata module | Metadata display, parsing, and related UI logic. Common subdirectories: `components/` |
-| `sys-admin/` | System management | System-level administration features. Common subdirectories: `components/`, `pages/` |
-| `tests/` | Test assets | Frontend test files, mocks, and test helpers. Common subdirectories: `__mocks__/`, `utils/` |
-| `translation.js` | Translation bootstrap | Shared translation helper and i18n initialization entry |
-| `utils/` | Utility functions | General utility functions. Common files: `date.js`, `format.js`, `validate.js` |
+| `_i18n/` | Editor internationalization |
+| `api/` | Shared API modules |
+| `assets/` | Static assets |
+| `components/` | Shared reusable components |
+| `constants/` | Global constants and configuration |
+| `css/` | Global styles |
+| `home/` | Home page and workspace management |
+| `icon-page/` | Icon-related views |
+| `models/` | Shared data models |
+| `org-admin/` | Organization administration |
+| `portal/` | Portal views and navigation |
+| `profile-settings/` | User profile and settings |
+| `project/` | Project views and business logic |
+| `sea-metadata/` | Metadata display and editing |
+| `sys-admin/` | System administration |
+| `tests/` | Frontend tests |
+| `translation.js` | Translation bootstrap |
+| `utils/` | Shared utility functions |
 
 ### Finding Code Paths
 
