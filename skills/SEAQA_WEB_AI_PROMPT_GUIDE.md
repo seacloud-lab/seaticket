@@ -31,69 +31,136 @@ Requirement: Prefer existing implementations, make minimal changes, and explain 
 
 ```text
 frontend/src/
-├── _i18n/                       # Internationalization resources
-│   ├── en/                      # English translation resources
-│   ├── zh-cn/                   # Simplified Chinese translation resources
-│   └── *.js / *.json            # Translation resource definitions
-├── api/                         # API wrappers and request helpers
-│   ├── *.js                     # Domain-specific API modules
-│   └── common.js                # Shared request helpers and wrappers
+├── _i18n/                       # Editor-specific internationalization
+│   └── i18n-seafile-editor.js   # Seafile editor translation setup
+├── api/                         # Shared API modules
+│   ├── notification-api.js      # Notification API
+│   └── user-api.js              # User API
 ├── assets/                      # Static assets
-│   ├── images/                  # Image assets used by the frontend
-│   ├── icons/                   # Icon assets
-│   └── fonts/                   # Font assets
-├── components/                  # Shared components
-│   ├── common/                  # Generic reusable components such as Button, Modal, Icon
-│   ├── layout/                  # Layout-related components such as header, sidebar, and page shells
-│   └── feedback/                # Feedback components such as toast, loading, empty state
-├── constants/                   # Constant definitions
-│   ├── *.js                     # Global constants, enums, and fixed configuration
-│   └── index.js                 # Constant export entry
-├── css/                         # Global styles and theme files
-│   ├── index.css                # Global style entry
-│   ├── variables.css            # Shared CSS variables
-│   └── themes/                  # Theme-related style files
-├── home/                        # Home page or main business entry point
-│   ├── index.js                 # Home page entry file
-│   └── components/              # Home-page-specific components
-├── icon-page/                   # Icon preview and icon-related page entry
-│   ├── index.js                 # Icon page entry file
-│   └── components/              # Icon page components
-├── models/                      # Data models
-│   ├── *.js                     # Domain model definitions
-│   └── index.js                 # Model export entry
-├── org-admin/                   # Team administration
-│   ├── components/              # Organization admin components
-│   ├── index.js                 # Organization admin entry file
-│   └── pages/                   # Organization admin pages
-├── portal/                      # Portal entry and cross-module navigation
-│   ├── index.js                 # Portal entry file
-│   └── components/              # Portal-specific components
-├── profile-settings/            # User settings
-│   ├── components/              # Settings-related components
-│   ├── index.js                 # Settings module entry file
-│   └── utils/                   # Settings-related helpers
-├── project/                     # Project-related pages and logic
-│   ├── components/              # Project-specific components
-│   ├── index.js                 # Project module entry file
-│   ├── pages/                   # Project sub-pages
-│   └── utils/                   # Project-specific helper functions
-├── sea-metadata/                # Metadata display and parsing related logic
-│   ├── index.js                 # Metadata module entry file
-│   └── components/              # Metadata-related components
+│   ├── css/                     # Asset-specific styles
+│   └── icons/                   # SVG icons
+├── components/                  # Shared reusable components
+│   ├── account/                 # Account-related components
+│   ├── btn/                     # Button components
+│   ├── chart/                   # Chart components
+│   ├── common/                  # Shared common components
+│   ├── customize-select/        # Select controls
+│   ├── customize-table/         # Table components
+│   ├── dialog/                  # Dialog components
+│   ├── mobile/                  # Mobile-specific components
+│   ├── options-editor/          # Options editor components
+│   ├── search-input/            # Search input components
+│   ├── settings/                # Settings components
+│   ├── tooltip/                 # Tooltip components
+│   ├── toaster/                 # Toast notifications
+│   ├── index.js                 # Shared component exports
+│   └── *.js                     # Standalone shared components
+├── constants/                   # Global constants and configuration
+│   ├── config.js                # Frontend configuration
+│   ├── navigation.js            # Navigation constants
+│   ├── permission.js            # Permission constants
+│   └── index.js                 # Constant exports
+├── css/                         # Global styles
+│   ├── admin-common.css         # Administration styles
+│   ├── layout.css               # Layout styles
+│   ├── side-panel.css           # Side panel styles
+│   ├── statistics.css           # Statistics styles
+│   └── toolbar.css              # Toolbar styles
+├── home/                        # Home page and workspace management
+│   ├── components/              # Home-specific components
+│   ├── dialog/                  # Home dialogs
+│   ├── dropdown-menu/            # Home dropdown menus
+│   ├── header/                  # Home header
+│   ├── main-panel/              # Home main panel
+│   ├── mobile/                  # Mobile home views
+│   ├── models/                  # Home models
+│   ├── popover/                 # Home popovers
+│   ├── search/                  # Home search
+│   ├── side-panel/              # Home side panel
+│   ├── workspace/               # Workspace views
+│   ├── api.js                   # Home API module
+│   └── index.js                 # Home entry file
+├── icon-page/                   # Icon-related views
+│   ├── down/                    # Download-related icon view
+│   ├── eye-icon/                # Eye icon view
+│   └── more/                    # More icon view
+├── models/                      # Shared data models
+│   ├── system-admin/            # System administration models
+│   └── *.js                     # Domain model definitions
+├── org-admin/                   # Organization administration
+│   ├── group-info/              # Group information
+│   ├── group-members/           # Group members
+│   ├── group-projects/          # Group projects
+│   ├── groups/                  # Group management
+│   ├── info/                    # Organization information
+│   ├── main-panel/              # Administration main panel
+│   ├── models/                  # Organization admin models
+│   ├── projects/                # Organization projects
+│   ├── saml/                    # SAML settings
+│   ├── settings/                # Organization settings
+│   ├── statistics/              # Organization statistics
+│   ├── user-profile/            # User profiles
+│   ├── users/                   # User management
+│   ├── api.js                   # Organization admin API
+│   └── index.js                 # Organization admin entry file
+├── portal/                      # Portal views and navigation
+│   ├── api/                     # Portal API modules
+│   ├── hooks/                   # Portal hooks
+│   ├── left-bar/                # Portal left bar
+│   ├── main-panel/              # Portal main panel
+│   ├── side-panel/              # Portal side panel
+│   ├── constants.js             # Portal constants
+│   ├── path-utils.js            # Portal path helpers
+│   └── index.js                 # Portal entry file
+├── profile-settings/            # User profile and settings
+│   ├── dialog/                  # Settings dialogs
+│   ├── password-widgets/        # Password controls
+│   ├── session-logs/            # Session logs
+│   ├── api.js                   # Profile settings API
+│   └── index.js                 # Profile settings entry file
+├── project/                     # Project views and business logic
+│   ├── api/                     # Project API modules
+│   ├── components/              # Project components
+│   ├── constants/               # Project constants
+│   ├── hooks/                   # Project hooks
+│   ├── main-panel/              # Project main panel
+│   ├── side-panel/              # Project side panel
+│   ├── index.js                 # Project entry file
+│   └── utils.js                 # Project utilities
+├── sea-metadata/                # Metadata display and editing
+│   ├── components/              # Metadata components
+│   ├── constants/               # Metadata constants
+│   ├── hooks/                   # Metadata hooks
+│   ├── models/                  # Metadata models
+│   ├── store/                   # Metadata state management
+│   ├── utils/                   # Metadata utilities
+│   ├── view/                    # Metadata views
+│   ├── context.js               # Metadata context
+│   ├── index.js                 # Metadata entry file
+│   └── render.js                # Metadata renderer
 ├── sys-admin/                   # System administration
-│   ├── components/              # System admin components
-│   ├── index.js                 # System admin entry file
-│   └── pages/                   # System admin pages
-├── tests/                       # Frontend test files and test helpers
-│   ├── __mocks__/               # Mock data and mock modules
-│   └── utils/                   # Test utility helpers
-├── translation.js               # Shared translation helper and i18n bootstrap
-└── utils/                       # Utility functions
-    ├── date.js                  # Date-related helpers
-    ├── format.js                # Formatting helpers
-    ├── index.js                 # Utility export entry
-    └── validate.js              # Validation helpers
+│   ├── dialog/                  # System admin dialogs
+│   ├── group/                   # Group detail views
+│   ├── groups/                  # Group management
+│   ├── info/                    # System information
+│   ├── main-panel/              # Administration main panel
+│   ├── org/                     # Organization detail views
+│   ├── orgs/                    # Organization management
+│   ├── projects/                # Project management
+│   ├── statistics/              # System statistics
+│   ├── sys-constants/           # System admin constants
+│   ├── sys-popover/             # System admin popovers
+│   ├── user/                    # User detail views
+│   ├── users/                   # User management
+│   ├── api.js                   # System admin API
+│   ├── constants.js              # System admin constants
+│   └── index.js                 # System admin entry file
+├── tests/                       # Frontend tests
+│   └── *.test.js                # Utility and component tests
+├── translation.js               # Shared translation helper and bootstrap
+└── utils/                       # Shared utility functions
+    ├── validate/                # Validation utilities
+    └── *.js                     # Date, DOM, storage, and other helpers
 ```
 
 ## 2. Tech Stack Summary
@@ -255,26 +322,26 @@ import './index.css';
 
 ### Directory Responsibility Table
 
-| Directory | Responsibility | Description |
+| Directory | Responsibility |
 |------|------|------|
-| `_i18n/` | Internationalization | Multi-language resource files and translation bootstrap. Common subdirectories: `en/`, `zh-cn/` |
-| `api/` | API wrappers | Encapsulated API requests and request helpers. Common files: `common.js`, domain API modules |
-| `assets/` | Static assets | Static files such as icons, images, and fonts. Common subdirectories: `images/`, `icons/`, `fonts/` |
-| `components/` | Shared components | Reusable UI building blocks. Common subdirectories: `common/`, `layout/`, `feedback/` |
-| `constants/` | Constant definitions | Global constants, enums, and fixed configuration. Common files: `index.js`, domain constant modules |
-| `css/` | Global styles | Global CSS and theme styles. Common subdirectories: `themes/`, shared variable files |
-| `home/` | Home entry point | Dashboard home page and main business entry point. Common subdirectories: `components/` |
-| `icon-page/` | Icon page | Icon preview and icon-related pages. Common files: `index.js`, feature components |
-| `models/` | Data models | Data entity models and schema definitions. Common files: `index.js`, domain model modules |
-| `org-admin/` | Organization management | Organization-level administration features. Common subdirectories: `components/`, `pages/` |
-| `portal/` | Portal entry | Shared portal entry and cross-module navigation. Common subdirectories: `components/` |
-| `profile-settings/` | User settings | User profile and preference settings. Common subdirectories: `components/`, `utils/` |
-| `project/` | Project business | Project-related pages and core business logic. Common subdirectories: `components/`, `pages/`, `utils/` |
-| `sea-metadata/` | Metadata module | Metadata display, parsing, and related UI logic. Common subdirectories: `components/` |
-| `sys-admin/` | System management | System-level administration features. Common subdirectories: `components/`, `pages/` |
-| `tests/` | Test assets | Frontend test files, mocks, and test helpers. Common subdirectories: `__mocks__/`, `utils/` |
-| `translation.js` | Translation bootstrap | Shared translation helper and i18n initialization entry |
-| `utils/` | Utility functions | General utility functions. Common files: `date.js`, `format.js`, `validate.js` |
+| `_i18n/` | Editor internationalization |
+| `api/` | Shared API modules |
+| `assets/` | Static assets |
+| `components/` | Shared reusable components |
+| `constants/` | Global constants and configuration |
+| `css/` | Global styles |
+| `home/` | Home page and workspace management |
+| `icon-page/` | Icon-related views |
+| `models/` | Shared data models |
+| `org-admin/` | Organization administration |
+| `portal/` | Portal views and navigation |
+| `profile-settings/` | User profile and settings |
+| `project/` | Project views and business logic |
+| `sea-metadata/` | Metadata display and editing |
+| `sys-admin/` | System administration |
+| `tests/` | Frontend tests |
+| `translation.js` | Translation bootstrap |
+| `utils/` | Shared utility functions |
 
 ### Finding Code Paths
 
