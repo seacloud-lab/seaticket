@@ -8,6 +8,8 @@ from seahub.project.agent.agent import (
     AgentActionConfirmView,
     AgentActionCancelView,
     AgentActionUpdateView,
+    AgentRunRegenerateView,
+    AgentRunMaterializeView,
     AgentActionAutoExecuteView,
     GithubIssueTypesView,
 )
@@ -35,6 +37,8 @@ __all__ = [
     'AgentActionConfirmView',
     'AgentActionCancelView',
     'AgentActionUpdateView',
+    'AgentRunRegenerateView',
+    'AgentRunMaterializeView',
     'AgentActionAutoExecuteView',
     'GithubIssueTypesView',
     'AgentActionExecutor',

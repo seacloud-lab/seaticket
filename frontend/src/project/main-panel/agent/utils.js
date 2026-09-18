@@ -40,6 +40,7 @@ export const getDisplayActions = (actions) => {
     if (action.type === ACTION_TYPE.SUMMARY) return false;
     if (action.type === ACTION_TYPE.HANDLING) return false;
     if (action.type === ACTION_TYPE.TOOL_CALL) return false;
+    if (action.type === ACTION_TYPE.USER_INSTRUCTION) return false;
     return true;
   });
   let suggestionActions = [];

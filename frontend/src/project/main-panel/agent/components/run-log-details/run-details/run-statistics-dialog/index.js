@@ -22,11 +22,12 @@ const formatDuration = (durationMs) => {
   return (durationMs / 1000).toFixed(2);
 };
 
-const PHASE_ORDER = ['prelude', 'analysis', 'handling'];
+const PHASE_ORDER = ['prelude', 'analysis', 'handling', 'regeneration'];
 const PHASE_LABELS = {
   prelude: gettext('Prelude'),
   analysis: gettext('Analysis'),
   handling: gettext('Handling'),
+  regeneration: gettext('Regeneration'),
 };
 
 const getActionStepIndex = (action) => {
