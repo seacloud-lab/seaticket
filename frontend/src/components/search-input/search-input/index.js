@@ -94,7 +94,6 @@ class SearchInput extends Component {
     } = this.props;
     const { searchValue } = this.state;
 
-    const isSmallSize = size <= 30;
     let paddingLeft = size - 2;
     if (!isShowSearchIcon) {
       paddingLeft = 8;
@@ -119,7 +118,7 @@ class SearchInput extends Component {
           ref={ref => this.inputRef = ref}
           type="text"
           value={searchValue}
-          className={classnames('form-control seaqa-search-input', inputClassName, { 'small-size': isSmallSize })}
+          className={classnames('form-control seaqa-search-input', inputClassName)}
           onChange={this.onChange}
           autoFocus={autoFocus}
           placeholder={placeholder}
@@ -127,7 +126,7 @@ class SearchInput extends Component {
           onCompositionEnd={this.onCompositionEnd}
           onKeyDown={onKeyDown}
           disabled={disabled}
-          style={Object.assign({}, { height: size, paddingLeft: paddingLeft, paddingRight: paddingRight }, inputStyle)}
+          style={Object.assign({}, { height: size, paddingLeft, paddingRight, fontSize: size <= 30 ? '13px' : '14px' }, inputStyle)}
           name="search-input"
           autoComplete="off"
         />
@@ -148,7 +147,7 @@ SearchInput.propTypes = {
   onKeyDown: PropTypes.func,
   wait: PropTypes.number,
   disabled: PropTypes.bool,
-  size: PropTypes.number,
+  size: PropTypes.oneOf([28, 32, 38]),
   onClear: PropTypes.func,
   value: PropTypes.string,
   inputStyle: PropTypes.object,
