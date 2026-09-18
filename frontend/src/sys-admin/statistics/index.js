@@ -1,13 +1,11 @@
 import React, { Component, Fragment } from 'react';
 import dayjs from 'dayjs';
 import PropTypes from 'prop-types';
-import { CustomizeTabs, toaster } from '@/components';
+import { DatePicker, MonthPicker, CustomizeTabs, toaster } from '@/components';
 import CapsuleTabs from '@/components/capsule-tabs/capsule-tabs';
 import { TokenCreditUsedDetailDialog } from '@/components/dialog';
 import { gettext } from '@/constants';
 import { Utils } from '@/utils/utils';
-import DateAndTimePicker from '../../project/main-panel/search/date-and-time-picker';
-import MonthPicker from '../../project/main-panel/search/month-picker';
 import sysAdminAPI from '../api';
 import { TopBar } from '../main-panel';
 import StatisticList from './statistic-list';
@@ -220,8 +218,7 @@ class Statistics extends Component {
                   {queryDate === 'date' && (
                     <>
                       <span className="mr-2">{`${gettext('Date')}:`}</span>
-                      <DateAndTimePicker
-                        showHourAndMinute={false}
+                      <DatePicker
                         disabledDate={() => false}
                         value={date}
                         onChange={this.onDateChange}

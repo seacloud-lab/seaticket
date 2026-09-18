@@ -1,16 +1,12 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
-import Calendar from '@seafile/seafile-calendar';
-import DatePicker from '@seafile/seafile-calendar/lib/Picker';
+import React, { useCallback, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import localeData from 'dayjs/plugin/localeData';
 import utc from 'dayjs/plugin/utc';
 import weekOfYear from 'dayjs/plugin/weekOfYear';
 import PropTypes from 'prop-types';
-import { CustomizeLabel } from '@/components';
+import { DatePicker, CustomizeLabel } from '@/components';
 import { gettext } from '@/constants';
-import { translateCalendar } from '@/utils/date-format-utils';
 
-import '@seafile/seafile-calendar/assets/index.css';
 import './index.css';
 
 dayjs.extend(utc);
@@ -18,13 +14,8 @@ dayjs.extend(localeData);
 dayjs.extend(weekOfYear);
 
 const DueDateSettings = ({ isReadonly, value: propsValue, onChange }) => {
-  const calendarContainerRef = useRef(null);
   const [value, setValue] = useState(propsValue || '');
   const formatValue = useMemo(() => value ? dayjs(value) : null, [value]);
-
-  const getCalendarContainer = useCallback(() => {
-    return calendarContainerRef.current;
-  }, []);
 
   const onDueDateChange = useCallback((value) => {
     const newValue = value ? dayjs(value).format('YYYY-MM-DD') : '';
@@ -38,8 +29,6 @@ const DueDateSettings = ({ isReadonly, value: propsValue, onChange }) => {
     onChange && onChange(value);
   }, [isReadonly, value, propsValue, onChange]);
 
-  const locale = useMemo(() => translateCalendar(), []);
-
   return (
     <div className='seaqa-settings-item mb-4'>
       <CustomizeLabel icon="date">
@@ -47,31 +36,26 @@ const DueDateSettings = ({ isReadonly, value: propsValue, onChange }) => {
       </CustomizeLabel>
       <div className="ticket-due-date-formatter">
         <DatePicker
-          getCalendarContainer={getCalendarContainer}
-          calendar={<Calendar format='YYYY-MM-DD' locale={locale} className="seaqa-calendar"/>}
           disabled={isReadonly}
           value={formatValue}
           onChange={onDueDateChange}
           onOpenChange={onOpenChange}
-          isRemainOpen={true}
+          className="ticket-due-date-content"
         >
-          {
-            ({ value }) => {
-              return (
-                <div className="ticket-due-date-content">
-                  {!value && (
-                    <div className="seaqa-tip-default">{gettext('No due date')}</div>
-                  )}
-                  {value && (
-                    <div className="w-100 h-100 ticket-due-date-value">
-                      {dayjs(value).format('YYYY-MM-DD')}
-                    </div>
-                  )}
-                  <div ref={calendarContainerRef} />
-                </div>
-              );
-            }
-          }
+          {({ value }) => {
+            return (
+              <>
+                {!value && (
+                  <div className="seaqa-tip-default">{gettext('No due date')}</div>
+                )}
+                {value && (
+                  <div className="w-100 h-100 ticket-due-date-value">
+                    {dayjs(value).format('YYYY-MM-DD')}
+                  </div>
+                )}
+              </>
+            );
+          }}
         </DatePicker>
       </div>
     </div>
