@@ -92,9 +92,9 @@ class FilterCalendar extends Component {
   };
 
   render() {
-    const { isReadOnly = false, zIndex = 1061 } = this.props;
+    const { readOnly = false, zIndex = 1061 } = this.props;
     const state = this.state;
-    if (isReadOnly) return (
+    if (readOnly) return (
       <input
         className="ant-calendar-picker-input ant-input form-control"
         value={state.value ? state.value.format(this.format) : ''}
