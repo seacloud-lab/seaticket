@@ -63,7 +63,7 @@ def write_mapping(mapping: dict[str, str], output_file: Path) -> None:
 def main() -> int:
     logging.basicConfig(
         level=logging.INFO,
-        format="%(asctime)s [%(levelname)s] %(message)s",
+        format="[%(asctime)s] [%(levelname)s] %(name)s:%(lineno)s %(funcName)s %(message)s",
         stream=sys.stdout,
         force=True,
     )
@@ -145,7 +145,6 @@ def main() -> int:
             len(failed_base_ids),
             ", ".join(failed_base_ids),
         )
-        return 1
 
     logger.info(
         "All %d Base(s) imported successfully; mapping file: %s",

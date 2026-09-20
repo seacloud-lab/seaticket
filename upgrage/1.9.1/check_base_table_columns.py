@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """Check columns in all Seadb bases against the template base."""
 
+import argparse
+import json
 import logging
 import re
+from pathlib import Path
 from typing import Any
 import os
 import sys
@@ -16,10 +19,21 @@ from seahub.seadb_models.schema_loader import SCHEMA
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.models import Projects
 
+
+TABLE_SUFFIX_PATTERN = re.compile(r"_\d+$")
 logger = logging.getLogger(__name__)
 
 
-TABLE_SUFFIX_PATTERN = re.compile(r"_\d+$")
+def parse_metadata(output: str, base_id: str) -> dict[str, Any]:
+    try:
+        metadata = json.loads(output)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"Metadata for Base {base_id} is not valid JSON.") from exc
+
+    if not isinstance(metadata, dict) or not isinstance(metadata.get("tables"), list):
+        raise RuntimeError(f"Metadata for Base {base_id} has no valid tables field.")
+
+    return metadata
 
 
 def table_columns(table: Any) -> set[str]:
@@ -27,15 +41,6 @@ def table_columns(table: Any) -> set[str]:
         return set()
     return {
         column["name"]
-        for column in table["columns"]
-        if isinstance(column, dict) and isinstance(column.get("name"), str) and column.get('key') != '_pk'
-    }
-
-def get_autual_table_column_info(table: Any) -> dict[str, str]:
-    if not isinstance(table, dict) or not isinstance(table.get("columns"), list):
-        return {}
-    return {
-        column["name"]: column['key']
         for column in table["columns"]
         if isinstance(column, dict) and isinstance(column.get("name"), str) and column.get('key') != '_pk'
     }
@@ -69,7 +74,8 @@ def check_base(
     seadb_api,
     base_id: str,
     template_tables: dict[str, set[str]],
-):
+) -> dict[str, dict[str, Any]]:
+    differences: dict[str, dict[str, Any]] = {}
     metadata = seadb_api.get_base_metadata(base_id)
 
     for table in metadata["tables"]:
@@ -82,11 +88,15 @@ def check_base(
         table_name = table["name"]
         actual_columns = table_columns(table)
         template_name = find_template_name(table_name, template_tables)
-        table_id = table.get('id')
+
         if template_name is None:
-            seadb_api.delete_table(base_id, table_id)
+            differences[table_name] = {
+                "template_table": None,
+                "extra_columns": sorted(actual_columns),
+                "missing_columns": [],
+            }
             logger.warning(
-                "Table %s in Base %s has no matching template table, delete it.",
+                "Table %s in Base %s has no matching template table.",
                 table_name,
                 base_id,
             )
@@ -95,20 +105,22 @@ def check_base(
         expected_columns = template_tables[template_name]
         extra_columns = sorted(actual_columns - expected_columns)
         missing_columns = sorted(expected_columns - actual_columns)
-        if missing_columns:
-            seadb_api.delete_table(base_id, table_id)
-            logger.info('delete miss column table %s in Base %s', table_name, base_id)
-            continue
-        if extra_columns:
-            actual_table_column_name_to_key_dict = get_autual_table_column_info(table)
-            for column_name in extra_columns:
-                column_key = actual_table_column_name_to_key_dict.get(column_name)
-                if column_key:
-                    seadb_api.delete_column(base_id, table_id, column_key)
-                    logger.info('delete extra column %s table %s in Base %s', column_name, table_name, base_id)
+        if extra_columns or missing_columns:
+            differences[table_name] = {
+                "template_table": template_name,
+                "extra_columns": extra_columns,
+                "missing_columns": missing_columns,
+            }
+            logger.warning(
+                "Table %s in Base %s differs from template table %s; extra: %s, missing: %s.",
+                table_name,
+                base_id,
+                template_name,
+                extra_columns,
+                missing_columns,
+            )
 
-    return
-
+    return differences
 
 def get_base_template():
     base_template = {'tables': []}
@@ -150,10 +162,22 @@ def get_projects_by_page(limit, start):
 def main() -> int:
     logging.basicConfig(
         level=logging.INFO,
-        format="%(asctime)s [%(levelname)s] %(message)s",
+        format="[%(asctime)s] [%(levelname)s] %(name)s:%(lineno)s %(funcName)s %(message)s",
         stream=sys.stdout,
         force=True,
     )
+    parser = argparse.ArgumentParser(
+        description="Check table columns in all regular Seadb bases against the template base."
+    )
+
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=Path,
+        default=Path("base_table_column_differences.json"),
+        help="Output differences file (default: ./base_table_column_differences.json)",
+    )
+    args = parser.parse_args()
 
     try:
         template_metadata = get_base_template()
@@ -196,10 +220,21 @@ def main() -> int:
         if len(project_uuids) < limit:
             break
 
+    try:
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(
+            json.dumps(differences, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+    except OSError as exc:
+        logger.error("Failed to write result file: %s", exc, exc_info=True)
+        return 1
 
     logger.info(
-        "Check and fix completed: processed %d Base(s)",
-        len(base_ids)
+        "Check completed: processed %d Base(s), found differences in %d Base(s); results written to %s",
+        len(base_ids),
+        len(differences),
+        args.output,
     )
     if failed_base_ids:
         logger.error(

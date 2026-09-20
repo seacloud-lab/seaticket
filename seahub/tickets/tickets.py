@@ -191,7 +191,7 @@ class TicketsAPIView(APIView):
                 'error_msg': error_msg,
             })
         except Exception as e:
-            logger.exception(e)
+            logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 

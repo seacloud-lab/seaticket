@@ -48,7 +48,7 @@ def export_base(base_id: str, output_dir: Path) -> None:
 def main() -> int:
     logging.basicConfig(
         level=logging.INFO,
-        format="%(asctime)s [%(levelname)s] %(message)s",
+        format="[%(asctime)s] [%(levelname)s] %(name)s:%(lineno)s %(funcName)s %(message)s",
         stream=sys.stdout,
         force=True,
     )

@@ -79,7 +79,7 @@ def get_deletable_bases(
 def main() -> int:
     logging.basicConfig(
         level=logging.INFO,
-        format="%(asctime)s [%(levelname)s] %(message)s",
+        format="[%(asctime)s] [%(levelname)s] %(name)s:%(lineno)s %(funcName)s %(message)s",
         stream=sys.stdout,
         force=True,
     )

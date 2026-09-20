@@ -65,7 +65,7 @@ def get_base_metadata(base_id: str) -> dict[str, Any]:
     return metadata
 
 
-def build_mapping(base_ids: list[str], template_name: str) -> dict[str, dict[str, dict[str, str]]]:
+def build_mapping(base_ids: list[str]) -> dict[str, dict[str, dict[str, str]]]:
     mapping: dict[str, dict[str, dict[str, str]]] = {}
 
     for base_id in base_ids:
@@ -80,7 +80,7 @@ def build_mapping(base_ids: list[str], template_name: str) -> dict[str, dict[str
 
             table_name = table["name"]
             template_table_name = TABLE_SUFFIX_PATTERN.sub("", table_name)
-            table_mapping = {"template_table_name": template_table_name, 'template_base_name': template_name}
+            table_mapping = {"template_table_name": template_table_name}
             custom_columns = NEED_CUSTOM_COLUMNS.get(template_table_name)
             if custom_columns is not None:
                 table_mapping["custom_columns"] = custom_columns
@@ -94,7 +94,7 @@ def build_mapping(base_ids: list[str], template_name: str) -> dict[str, dict[str
 def main() -> int:
     logging.basicConfig(
         level=logging.INFO,
-        format="%(asctime)s [%(levelname)s] %(message)s",
+        format="[%(asctime)s] [%(levelname)s] %(name)s:%(lineno)s %(funcName)s %(message)s",
         stream=sys.stdout,
         force=True,
     )
@@ -109,16 +109,11 @@ def main() -> int:
         help="Output directory (default: current directory)",
     )
 
-    parser.add_argument(
-        "--template-name",
-        required=True,
-        help="Template name to use for every Base",
-    )
     args = parser.parse_args()
 
     try:
         base_ids = list_base_ids()
-        mapping = build_mapping(base_ids, args.template_name)
+        mapping = build_mapping(base_ids)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.mkdir(parents=True, exist_ok=True)
         for base_id, tables in mapping.items():

@@ -52,3 +52,5 @@ SAML_ATTRIBUTE_MAPPING = {
     'name': ('display_name', ),
     'mail': ('contact_email', ),
 }
+
+TEMPLATE_NAME = 'template'

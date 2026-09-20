@@ -8,7 +8,7 @@ from seahub.project.constants import ConnectionType, ExtraSourceType, CONNECTION
     PORTAL_ISSUE_DISPLAY_ALL_COLUMNS
 from seahub.project.view_utils import view_data_2_sql, SQLGenerator, SQLGeneratorOptionInvalidError
 from seahub.seadb_models.models import SchemaTables
-from seahub.settings import TEMPLATE_BASE_NAME
+from seahub.constants import TEMPLATE_NAME
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ def init_seadb_tables_from_schema(schema_tables, seadb_api, project_uuid, connec
     for schema_table in schema_tables:
         table_name = schema_table.table_name(connection_id)
         template_table_name = schema_table.table_name_schema.removesuffix('_{connection_id}')
-        seadb_api.create_table(project_uuid, table_name, template_table_name, TEMPLATE_BASE_NAME)
+        seadb_api.create_table(project_uuid, table_name, template_table_name, TEMPLATE_NAME)
 
 
 def ensure_general_task_column_options(seadb_api, project_uuid, connection_id, tasks):

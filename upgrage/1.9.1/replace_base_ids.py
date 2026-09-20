@@ -104,7 +104,8 @@ def release_original_ids(
     seadb_api: SeaDBAPI,
     state: dict[str, dict[str, Any]],
     state_file: Path,
-) -> None:
+) -> list[str]:
+    failed_base_ids: list[str] = []
     for old_base_id, item in state.items():
         if item["status"] in {"original_id_released", "completed"}:
             continue
@@ -115,23 +116,40 @@ def release_original_ids(
             old_base_id,
             temporary_base_id,
         )
-        seadb_api.update_base_id(old_base_id, temporary_base_id)
+        try:
+            seadb_api.update_base_id(old_base_id, temporary_base_id)
+        except Exception as exc:
+            failed_base_ids.append(old_base_id)
+            logger.error(
+                "Failed to release original Base ID %s: %s",
+                old_base_id,
+                exc,
+                exc_info=True,
+            )
+            continue
+
         item["status"] = "original_id_released"
         write_state(state, state_file)
+
+    return failed_base_ids
 
 
 def restore_original_ids(
     seadb_api: SeaDBAPI,
     state: dict[str, dict[str, Any]],
     state_file: Path,
-) -> None:
+) -> list[str]:
+    failed_base_ids: list[str] = []
     for old_base_id, item in state.items():
         if item["status"] == "completed":
             continue
         if item["status"] != "original_id_released":
-            raise RuntimeError(
-                f"Base {old_base_id} has not released its original ID."
+            logger.warning(
+                "Skipping Base %s because its original ID has not been released; status: %s.",
+                old_base_id,
+                item["status"],
             )
+            continue
 
         imported_base_id = item["imported_base_id"]
         logger.info(
@@ -139,15 +157,29 @@ def restore_original_ids(
             imported_base_id,
             old_base_id,
         )
-        seadb_api.update_base_id(imported_base_id, old_base_id)
+        try:
+            seadb_api.update_base_id(imported_base_id, old_base_id)
+        except Exception as exc:
+            failed_base_ids.append(old_base_id)
+            logger.error(
+                "Failed to restore original Base ID %s from imported Base %s: %s",
+                old_base_id,
+                imported_base_id,
+                exc,
+                exc_info=True,
+            )
+            continue
+
         item["status"] = "completed"
         write_state(state, state_file)
+
+    return failed_base_ids
 
 
 def main() -> int:
     logging.basicConfig(
         level=logging.INFO,
-        format="%(asctime)s [%(levelname)s] %(message)s",
+        format="[%(asctime)s] [%(levelname)s] %(name)s:%(lineno)s %(funcName)s %(message)s",
         stream=sys.stdout,
         force=True,
     )
@@ -178,9 +210,10 @@ def main() -> int:
         write_state(state, args.output)
         seadb_api = SeaDBAPI()
 
-        release_original_ids(seadb_api, state, args.output)
-
-        restore_original_ids(seadb_api, state, args.output)
+        failed_base_ids = release_original_ids(seadb_api, state, args.output)
+        failed_base_ids.extend(
+            restore_original_ids(seadb_api, state, args.output)
+        )
     except Exception as exc:
         logger.error("Base ID replacement failed: %s", exc, exc_info=True)
         try:
@@ -188,6 +221,14 @@ def main() -> int:
                 write_state(state, args.output)
         except OSError:
             logger.exception("Failed to save replacement state to %s.", args.output)
+        return 1
+
+    if failed_base_ids:
+        logger.error(
+            "%d Base(s) failed and can be retried on the next run: %s",
+            len(failed_base_ids),
+            ", ".join(failed_base_ids),
+        )
         return 1
 
     logger.info(
