@@ -202,6 +202,9 @@ def get_portal_settings(project):
         'portal_name': portal_settings.get('portal_name', ''),
         'portal_logo': portal_settings.get('portal_logo', ''),
         'portal_home_settings': portal_settings.get('portal_home_settings', {}),
+        'send_welcome_email': bool(portal_settings.get('send_welcome_email', False)),
+        'welcome_email_subject': portal_settings.get('welcome_email_subject', ''),
+        'welcome_email_content': portal_settings.get('welcome_email_content', ''),
     }
 
 

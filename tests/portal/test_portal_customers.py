@@ -365,6 +365,10 @@ class TestPortalCustomersView:
 
     def test_invitation_assigns_customer_only_when_accepted(self, factory, project_creator, real_project):
         customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
+        project_settings = json.loads(real_project.settings) if real_project.settings else {}
+        project_settings.setdefault('portal', {})['send_welcome_email'] = True
+        real_project.settings = json.dumps(project_settings)
+        real_project.save(update_fields=['settings'])
         member = ProjectExternalUser.objects.create(
             email='member@example.com',
             username='member',
@@ -457,6 +461,10 @@ class TestPortalCustomersView:
         self, factory, project_creator, real_project
     ):
         email = 'new-user@example.com'
+        project_settings = json.loads(real_project.settings) if real_project.settings else {}
+        project_settings.setdefault('portal', {})['send_welcome_email'] = True
+        real_project.settings = json.dumps(project_settings)
+        real_project.save(update_fields=['settings'])
         request = factory.post(
             f'/api/v1/portal/{real_project.uuid}/external-invitations/',
             data={'email': email},
@@ -478,6 +486,37 @@ class TestPortalCustomersView:
             email=email,
             project_uuid=str(real_project.uuid),
         ).exists()
+
+    def test_invitation_without_welcome_email_assigns_external_user_to_customer(
+        self, factory, project_creator, real_project
+    ):
+        email = 'new-user@example.com'
+        customer = PortalCustomer.objects.create(
+            project_uuid=str(real_project.uuid),
+            name='Acme',
+        )
+        request = factory.post(
+            f'/api/v1/portal/{real_project.uuid}/external-invitations/',
+            data={'email': email, 'customer_id': customer.id},
+            format='json',
+        )
+        request.user = project_creator
+
+        with patch('seahub.portal.apis.send_html_email_with_dj_template') as send_mail:
+            response = PortalExternalInvitationsView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert response.status_code == 200
+        external_user = ProjectExternalUser.objects.get(
+            email=email,
+            project_uuid=str(real_project.uuid),
+        )
+        assert external_user.customer_id == customer.id
+        assert external_user.activated is True
+        assert not PortalExternalInvitation.objects.filter(
+            email=email,
+            project_uuid=str(real_project.uuid),
+        ).exists()
+        send_mail.assert_not_called()
 
     def test_invitation_acceptance_rolls_back_on_user_update_failure(self, factory, project_creator, real_project):
         customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')

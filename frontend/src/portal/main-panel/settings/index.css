@@ -141,6 +141,18 @@
   margin-bottom: 12px;
 }
 
+.portal-welcome-email-editor {
+  padding: 20px;
+  border: 1px solid var(--bs-border-secondary-color);
+  border-radius: 8px;
+  background-color: var(--bs-body-secondary-bg);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.portal-welcome-email-editor .portal-welcome-email-content {
+  min-height: 320px;
+}
+
 .portal-dns-record-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto;

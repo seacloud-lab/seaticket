@@ -8,7 +8,13 @@ import { connectionsAPI } from '@/project/api/connections-api';
 import { Utils } from '@/utils/utils';
 import { portalAPI } from '../../api';
 import PortalChatSourceSelector from '../chat-source-selector';
-import { SETTING_TAB, SETTING_TABS, EMPTY_CHAT_ALLOWED_SOURCES } from './constants';
+import {
+  SETTING_TAB,
+  SETTING_TABS,
+  EMPTY_CHAT_ALLOWED_SOURCES,
+  DEFAULT_WELCOME_EMAIL_SUBJECT,
+  DEFAULT_WELCOME_EMAIL_CONTENT,
+} from './constants';
 import CustomizationSettings from './customization-settings';
 import { normalizeChatAllowedSources, isConnectionActive } from './utils';
 
@@ -46,6 +52,12 @@ const Settings = () => {
   const [serverChatAllowedSources, setServerChatAllowedSources] = useState(null);
   const [isSavingChat, setIsSavingChat] = useState(false);
 
+  // Welcome email
+  const [sendWelcomeEmail, setSendWelcomeEmail] = useState(false);
+  const [welcomeEmailSubject, setWelcomeEmailSubject] = useState(DEFAULT_WELCOME_EMAIL_SUBJECT);
+  const [welcomeEmailContent, setWelcomeEmailContent] = useState(DEFAULT_WELCOME_EMAIL_CONTENT);
+  const [isSavingWelcomeEmail, setIsSavingWelcomeEmail] = useState(false);
+
   const [customDomain, setCustomDomain] = useState('');
   const [savedCustomDomain, setSavedCustomDomain] = useState('');
   const [customDomainVerified, setCustomDomainVerified] = useState(false);
@@ -74,6 +86,9 @@ const Settings = () => {
     setHasSavedPassword(!!data.enable_password_protection);
     setIsEditingPassword(false);
     setServerChatAllowedSources(data.chat_allowed_sources);
+    setSendWelcomeEmail(!!data.send_welcome_email);
+    setWelcomeEmailSubject(data.welcome_email_subject || DEFAULT_WELCOME_EMAIL_SUBJECT);
+    setWelcomeEmailContent(data.welcome_email_content || DEFAULT_WELCOME_EMAIL_CONTENT);
   }, []);
 
   const applyLoadedCustomDomain = useCallback((data) => {
@@ -342,6 +357,23 @@ const Settings = () => {
       setIsSavingChat(false);
     });
   }, [chatSettings]);
+
+  const onSaveWelcomeEmailSettings = useCallback(() => {
+    if (isSavingWelcomeEmail) return;
+
+    setIsSavingWelcomeEmail(true);
+    portalAPI.updateSettings(projectUuid, {
+      send_welcome_email: sendWelcomeEmail ? 1 : 0,
+      welcome_email_subject: welcomeEmailSubject,
+      welcome_email_content: welcomeEmailContent,
+    }).then(() => {
+      toaster.success(gettext('Saved'), { duration: 2, hasCloseButton: false });
+    }).catch((error) => {
+      toaster.danger(Utils.getErrorMsg(error));
+    }).finally(() => {
+      setIsSavingWelcomeEmail(false);
+    });
+  }, [isSavingWelcomeEmail, sendWelcomeEmail, welcomeEmailSubject, welcomeEmailContent]);
 
   const hasUnsavedCustomDomain = trimmedCustomDomain !== savedCustomDomain;
   const isSavedCustomDomainCurrent = !!savedCustomDomain && !hasUnsavedCustomDomain;
@@ -658,6 +690,51 @@ const Settings = () => {
               disabled={isSavingChat || isConnectionsLoading || !hasLoadedPortalSettings}
             >
               {gettext('Save')}
+            </Button>
+          </div>
+        </TabPane>
+        <TabPane tabId={SETTING_TAB.EMAIL_NOTIFICATIONS}>
+          <div className="portal-settings-content">
+            <Switch
+              checked={sendWelcomeEmail}
+              onChange={() => setSendWelcomeEmail(prev => !prev)}
+              placeholder={gettext('Automatically send a welcome email when a user is added to the portal')}
+              textPosition="right"
+            />
+            <div className="portal-welcome-email-editor mt-4">
+              <label className="portal-settings-label">{gettext('Email subject')}</label>
+              <input
+                type="text"
+                className="form-control"
+                value={welcomeEmailSubject}
+                onChange={event => setWelcomeEmailSubject(event.target.value)}
+                disabled={!sendWelcomeEmail}
+              />
+              <label className="portal-settings-label mt-3">{gettext('Email content')}</label>
+              <textarea
+                className="form-control portal-welcome-email-content"
+                rows="8"
+                value={welcomeEmailContent}
+                onChange={event => setWelcomeEmailContent(event.target.value)}
+                disabled={!sendWelcomeEmail}
+              />
+              <div className="mt-3">
+                <Button color="primary" disabled size="sm">{gettext('Log in')}</Button>
+              </div>
+            </div>
+            <div className="portal-settings-help-text mt-2 mb-0">
+              {gettext('To insert the portal name, use {portal_name} in the field.')}
+            </div>
+            <div className="portal-settings-help-text mt-2 mb-0">
+              {gettext('A login button will be added to the end of the email. The button cannot be customized.')}
+            </div>
+            <Button
+              color="primary"
+              className="mt-3"
+              onClick={onSaveWelcomeEmailSettings}
+              disabled={isSavingWelcomeEmail}
+            >
+              {isSavingWelcomeEmail ? gettext('Saving...') : gettext('Save')}
             </Button>
           </div>
         </TabPane>
