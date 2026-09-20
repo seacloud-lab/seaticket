@@ -685,6 +685,7 @@ CREATE TABLE `portal_customers` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `project_uuid` char(36) NOT NULL,
   `name` varchar(255) NOT NULL,
+  `email_domain` varchar(255) NOT NULL DEFAULT '',
   `status` varchar(16) NOT NULL DEFAULT 'active',
   `created_at` datetime(6) NOT NULL,
   `updated_at` datetime(6) NOT NULL,

@@ -36,7 +36,7 @@ class TestPortalCustomersView:
         expected_updated_at = '2026-09-15T04:05:06+00:00'
         request = factory.post(
             f'/api/v1/portal/{project_uuid}/customers/',
-            data={'name': 'Acme'},
+            data={'name': 'Acme', 'email_domain': ' Acme.COM '},
             format='json',
         )
         request.user = project_creator
@@ -47,6 +47,7 @@ class TestPortalCustomersView:
 
         assert response.status_code == 201
         assert response.data['customer']['name'] == 'Acme'
+        assert response.data['customer']['email_domain'] == 'acme.com'
         assert response.data['customer']['created_at'] == expected_created_at
         assert response.data['customer']['updated_at'] == expected_created_at
         assert 'code' not in response.data['customer']
@@ -57,6 +58,7 @@ class TestPortalCustomersView:
 
         assert list_response.status_code == 200
         assert list_response.data['customers'][0]['name'] == 'Acme'
+        assert list_response.data['customers'][0]['email_domain'] == 'acme.com'
         assert list_response.data['customers'][0]['created_at'] == expected_created_at
         assert list_response.data['customers'][0]['updated_at'] == expected_created_at
         assert 'member_count' not in list_response.data['customers'][0]
@@ -92,6 +94,19 @@ class TestPortalCustomersView:
 
         assert response.status_code == 201
         assert response.data['customer']['name'] == 'Acme'
+        assert response.data['customer']['email_domain'] == ''
+
+    def test_create_customer_with_invalid_email_domain(self, factory, project_creator, real_project):
+        request = factory.post(
+            f'/api/v1/portal/{real_project.uuid}/customers/',
+            data={'name': 'Acme', 'email_domain': 'https://acme.com'},
+            format='json',
+        )
+        request.user = project_creator
+
+        response = PortalCustomersView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert response.status_code == 400
 
     def test_duplicate_name_returns_conflict(self, factory, project_creator, real_project):
         PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
@@ -198,6 +213,45 @@ class TestPortalCustomersView:
         assert response.status_code == 200
         customer.refresh_from_db()
         assert customer.name == 'Renamed customer'
+
+    def test_update_customer_email_domain(self, factory, project_creator, real_project):
+        project_uuid = str(real_project.uuid)
+        customer = PortalCustomer.objects.create(
+            project_uuid=project_uuid,
+            name='Acme',
+            email_domain='old.example.com',
+        )
+        request = factory.put(
+            f'/api/v1/portal/{project_uuid}/customers/{customer.id}/',
+            data={'email_domain': ' New.Example.COM '},
+            format='json',
+        )
+        request.user = project_creator
+
+        response = PortalCustomerView.as_view()(
+            request, project_uuid=project_uuid, customer_id=customer.id
+        )
+
+        assert response.status_code == 200
+        assert response.data['customer']['email_domain'] == 'new.example.com'
+        customer.refresh_from_db()
+        assert customer.email_domain == 'new.example.com'
+
+    def test_update_customer_with_invalid_email_domain(self, factory, project_creator, real_project):
+        project_uuid = str(real_project.uuid)
+        customer = PortalCustomer.objects.create(project_uuid=project_uuid, name='Acme')
+        request = factory.put(
+            f'/api/v1/portal/{project_uuid}/customers/{customer.id}/',
+            data={'email_domain': 'https://example.com'},
+            format='json',
+        )
+        request.user = project_creator
+
+        response = PortalCustomerView.as_view()(
+            request, project_uuid=project_uuid, customer_id=customer.id
+        )
+
+        assert response.status_code == 400
 
     def test_customer_detail_lists_active_and_inactive_members(self, factory, project_creator, real_project):
         customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')

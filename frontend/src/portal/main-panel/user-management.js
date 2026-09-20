@@ -81,6 +81,7 @@ const UserManagement = ({ projectUuid }) => {
   const [customers, setCustomers] = useState([]);
   const [isCreatingCustomer, setCreatingCustomer] = useState(false);
   const [newCustomerName, setNewCustomerName] = useState('');
+  const [newCustomerEmailDomain, setNewCustomerEmailDomain] = useState('');
   const [selectedCustomerUsers, setSelectedCustomerUsers] = useState([]);
   const [newCustomerMembers, setNewCustomerMembers] = useState([]);
   const [customerToDelete, setCustomerToDelete] = useState(null);
@@ -139,6 +140,7 @@ const UserManagement = ({ projectUuid }) => {
   const closeCreateCustomer = useCallback(() => {
     setCreatingCustomer(false);
     setNewCustomerName('');
+    setNewCustomerEmailDomain('');
     setSelectedCustomerUsers([]);
     setNewCustomerMembers([]);
   }, []);
@@ -149,6 +151,7 @@ const UserManagement = ({ projectUuid }) => {
     setSubmitting(true);
     portalAPI.createCustomer(projectUuid, {
       name,
+      email_domain: newCustomerEmailDomain.trim(),
       member_emails: getMemberEmails(newCustomerMembers, selectedCustomerUsers),
     }).then(() => {
       toaster.success(gettext('Customer created'));
@@ -159,7 +162,7 @@ const UserManagement = ({ projectUuid }) => {
       toaster.danger(error.response?.data?.error_msg || gettext('Failed to create customer'));
     }).finally(() => setSubmitting(false));
   }, [
-    newCustomerName, newCustomerMembers, selectedCustomerUsers, isSubmitting,
+    newCustomerName, newCustomerEmailDomain, newCustomerMembers, selectedCustomerUsers, isSubmitting,
     projectUuid, loadCustomers, loadUsers, closeCreateCustomer,
   ]);
 
@@ -210,6 +213,7 @@ const UserManagement = ({ projectUuid }) => {
     setSubmitting(true);
     portalAPI.updateCustomer(projectUuid, customer.id, {
       name: customer.name.trim(),
+      email_domain: (customer.email_domain || '').trim(),
       status: customer.status,
       member_emails: getMemberEmails(editCustomerMembers, selectedEditCustomerUsers),
     }).then(() => {
@@ -259,9 +263,10 @@ const UserManagement = ({ projectUuid }) => {
   }, [projectUuid, loadInvites]);
 
   const customerColumns = useMemo(() => [
-    { key: 'name', name: gettext('Name'), type: 'customer-name', width: 0.36, formatter: <TextCellFormatter /> },
+    { key: 'name', name: gettext('Name'), type: 'customer-name', width: 0.25, formatter: <TextCellFormatter /> },
+    { key: 'email_domain', name: gettext('Email domain'), type: 'customer-email-domain', width: 0.25, formatter: <TextCellFormatter /> },
     { key: 'status', name: gettext('Status'), type: 'customer-status', width: 0.22, formatter: <CustomerStatusFormatter /> },
-    { key: 'updated_at', name: gettext('Updated'), type: 'customer-updated', width: 0.42, formatter: <CustomerUpdatedFormatter /> },
+    { key: 'updated_at', name: gettext('Updated'), type: 'customer-updated', width: 0.28, formatter: <CustomerUpdatedFormatter /> },
     { key: 'op', name: '', type: 'customer-operation', width: 80, isFixed: true, formatter: <CustomerOperationsFormatter /> },
   ], []);
 
@@ -349,6 +354,17 @@ const UserManagement = ({ projectUuid }) => {
                   onChange={(event) => setNewCustomerName(event.target.value)}
                 />
               </FormGroup>
+              <FormGroup className="mb-4">
+                <label htmlFor="portal-customer-email-domain">{gettext('Email domain')}</label>
+                <Input
+                  id="portal-customer-email-domain"
+                  className="portal-user-management-input"
+                  value={newCustomerEmailDomain}
+                  maxLength={255}
+                  placeholder="example.com"
+                  onChange={(event) => setNewCustomerEmailDomain(event.target.value)}
+                />
+              </FormGroup>
               <div className="mb-4">
                 <label>{gettext('Add existing user')}</label>
                 <UserSelect
@@ -412,6 +428,15 @@ const UserManagement = ({ projectUuid }) => {
                       onChange={(event) => setCustomerDetail({ ...customerDetail, customer: { ...currentCustomer, name: event.target.value } })}
                     />
                   </div>
+                  <FormGroup className="mb-4">
+                    <label htmlFor="portal-edit-customer-email-domain">{gettext('Email domain')}</label>
+                    <Input
+                      id="portal-edit-customer-email-domain"
+                      className="portal-user-management-input"
+                      value={currentCustomer.email_domain || ''}
+                      onChange={(event) => setCustomerDetail({ ...customerDetail, customer: { ...currentCustomer, email_domain: event.target.value } })}
+                    />
+                  </FormGroup>
                   <div className="mb-4">
                     <label>{gettext('Add existing user')}</label>
                     <UserSelect
