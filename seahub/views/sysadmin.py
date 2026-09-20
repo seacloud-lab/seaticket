@@ -42,7 +42,6 @@ def sysadmin_react_fake_view(request, **kwargs):
         'is_show_unit': IS_SHOW_UNIT,
         'multi_tenancy': MULTI_TENANCY,
         'multi_institution': getattr(dj_settings, 'MULTI_INSTITUTION', False),
-        'send_email_on_adding_system_member': SEND_EMAIL_ON_ADDING_SYSTEM_MEMBER,
         'trash_repos_expire_days': expire_days if expire_days > 0 else 30,
         'available_roles': get_available_roles(),
         'available_admin_roles': get_available_admin_roles(),

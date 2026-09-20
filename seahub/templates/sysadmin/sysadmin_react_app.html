@@ -16,7 +16,6 @@
 			multi_institution: {% if multi_institution %} true {% else %} false {% endif %},
 			is_default_admin: {% if is_default_admin %} true {% else %} false {% endif %},
       trashReposExpireDays: {{ trash_repos_expire_days }},
-      send_email_on_adding_system_member: {% if send_email_on_adding_system_member %} true {% else %} false {% endif %},
       two_factor_auth_enabled: {% if two_factor_auth_enabled %} true {% else %} false {% endif %},
       availableRoles: (function() {
         var list = [];
