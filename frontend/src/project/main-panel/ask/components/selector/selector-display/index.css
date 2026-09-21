@@ -21,7 +21,7 @@
 }
 
 .seaqa-customize-select.seaqa-ai-chat-selector-display:not(.border):hover {
-  background-color: #EDEDEB;
+  background: linear-gradient(0deg, var(--option-bg-color) 0, var(--option-bg-color) 100%), var(--bs-body-third-bg);
 }
 
 .seaqa-customize-select.seaqa-ai-chat-selector-display.highlight {
