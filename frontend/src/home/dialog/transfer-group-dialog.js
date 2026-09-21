@@ -63,7 +63,7 @@ class TransferGroupDialog extends React.Component {
           <div className="error">{this.state.errMessage}</div>
         </ModalBody>
         <ModalFooter>
-          <Button color="secondary" onClick={this.toggle}>{gettext('Close')}</Button>
+          <Button color="secondary" onClick={this.toggle}>{gettext('Cancel')}</Button>
           <Button color="primary" onClick={this.transferGroup} disabled={selectedUsers.length < 1}>{gettext('Submit')}</Button>
         </ModalFooter>
       </Modal>

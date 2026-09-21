@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
+import { Modal, ModalBody } from 'reactstrap';
 import PropTypes from 'prop-types';
 import { ModalHeader } from '../../../components';
 import { gettext } from '../../../constants/config';
@@ -38,9 +38,6 @@ class ManageMembersDialog extends React.Component {
             loadWorkspaceList={loadWorkspaceList}
           />
         </ModalBody>
-        <ModalFooter>
-          <Button color="secondary" onClick={this.toggle}>{gettext('Close')}</Button>
-        </ModalFooter>
       </Modal>
     );
   }
