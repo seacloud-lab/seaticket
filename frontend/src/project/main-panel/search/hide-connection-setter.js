@@ -1,17 +1,19 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
+import { areArraysEqual } from '@/utils/array-utils';
 import Icon from '../../../components/icon';
 import { gettext } from '../../../constants';
 import HideConnectionPopover from './hidden-connection-popover';
 
-const HideConnectionSetter = ({ onConnectionIDsChange, connections }) => {
+const HideConnectionSetter = ({ onConnectionIDsChange, connections, projectUuid }) => {
   const target = 'hide-connection-popover';
   const readOnly = false;
+  const hiddenConnectionIDsStoreKey = `seaqa-${projectUuid}-hidden-connection-ids`;
   const [isShowSetter, setShowSetter] = useState(false);
 
   const [hiddenConnectionIDs, setHiddenConnectionIDs] = useState(() => {
-    const cachedValue = localStorage.getItem('seaqa-hidden-connection-ids');
+    const cachedValue = localStorage.getItem(hiddenConnectionIDsStoreKey);
     const hiddenConnectionIDs = cachedValue ? JSON.parse(cachedValue) : [];
     return hiddenConnectionIDs;
   });
@@ -25,17 +27,19 @@ const HideConnectionSetter = ({ onConnectionIDsChange, connections }) => {
 
   const modifyHiddenConnections = useCallback((newHiddenConnectionIDs) => {
     setHiddenConnectionIDs(newHiddenConnectionIDs);
-    localStorage.setItem('seaqa-hidden-connection-ids', JSON.stringify(newHiddenConnectionIDs));
+    localStorage.setItem(hiddenConnectionIDsStoreKey, JSON.stringify(newHiddenConnectionIDs));
     if (onConnectionIDsChange) {
       onConnectionIDsChange(newHiddenConnectionIDs);
     }
-  }, [onConnectionIDsChange]);
+  }, [hiddenConnectionIDsStoreKey, onConnectionIDsChange]);
 
   useEffect(() => {
     if (connections.length === 0) return;
     const validConnectionIds = connections.map((c) => c.id);
     const newHiddenConnectionIDs = hiddenConnectionIDs.filter((id) => validConnectionIds.includes(id) || id === '__kb__' || id === '__ticket__');
-    modifyHiddenConnections(newHiddenConnectionIDs);
+    if (!areArraysEqual(newHiddenConnectionIDs, hiddenConnectionIDs)) {
+      modifyHiddenConnections(newHiddenConnectionIDs);
+    }
   }, [connections, hiddenConnectionIDs, modifyHiddenConnections]);
 
   const onSetterToggle = useCallback(() => {
@@ -91,6 +95,7 @@ const HideConnectionSetter = ({ onConnectionIDsChange, connections }) => {
 HideConnectionSetter.propTypes = {
   onConnectionIDsChange: PropTypes.func.isRequired,
   connections: PropTypes.array.isRequired,
+  projectUuid: PropTypes.string.isRequired,
 };
 
 export default HideConnectionSetter;
