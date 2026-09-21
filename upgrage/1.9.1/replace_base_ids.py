@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import Any
 import sys
 import os
+import requests
+import base64
 
 
 sys.path.append('/opt/seaticket/seaqa-web')
@@ -16,10 +18,46 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'seahub.settings')
 import django
 
 django.setup()
-from seahub.project.seadb_api import SeaDBAPI
+from seahub.settings import SEADB_SERVER_URL
+from seahub.utils import uuid_str_to_36_chars
 
 
 logger = logging.getLogger(__name__)
+
+
+def parse_response(response):
+    if response.status_code >= 400 or response.status_code < 200:
+        raise ConnectionError(response.status_code, response.text)
+    else:
+        try:
+            return response.json()
+        except:
+            pass
+
+class SeaDBAPI:
+    def __init__(self, seadb_user, seadb_password, timeout=30):
+        self.timeout = timeout
+        self.server_url = SEADB_SERVER_URL
+        self.headers = None
+        self.user = seadb_user
+        self.password = seadb_password
+        self.gen_headers()
+
+    def gen_headers(self):
+        auth_str = f"{self.user}:{self.password}"
+        b64 = base64.b64encode(auth_str.encode("utf-8")).decode()
+        self.headers = {
+            "Authorization": f"Basic {b64}"
+        }
+    
+    def update_base_id(self, base_id, new_base_id):
+        base_id = uuid_str_to_36_chars(base_id)        
+        post_data = {
+            "base_id": new_base_id
+        }
+        url = f'{self.server_url}/api/v1/{base_id}/base/update-base-id'
+        response = requests.post(url, json=post_data, headers=self.headers, timeout=self.timeout)
+        return parse_response(response)
 
 
 def load_mapping(mapping_file: Path) -> dict[str, str]:
@@ -199,6 +237,17 @@ def main() -> int:
         default=Path("base_id_replace_mapping.json"),
         help="Checkpoint and result file (default: ./base_id_replace_mapping.json)",
     )
+
+    parser.add_argument(
+        "--admin-user",
+        required=True,
+        help="seadb admin user",
+    )
+    parser.add_argument(
+        "--admin-password",
+        required=True,
+        help="seadb admin password",
+    )
     args = parser.parse_args()
 
     try:
@@ -208,7 +257,7 @@ def main() -> int:
 
         state = prepare_state(imported_mapping, load_state(args.output))
         write_state(state, args.output)
-        seadb_api = SeaDBAPI()
+        seadb_api = SeaDBAPI(args.admin_user, args.admin_password)
 
         failed_base_ids = release_original_ids(seadb_api, state, args.output)
         failed_base_ids.extend(
