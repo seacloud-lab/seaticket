@@ -10,7 +10,6 @@ from typing import Any
 import os
 import sys
 
-sys.path.append('/opt/seaticket/seaqa-web')
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'seahub.settings')
 import django
 
