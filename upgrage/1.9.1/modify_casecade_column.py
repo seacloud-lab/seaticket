@@ -1,7 +1,7 @@
 import os
 import sys
 import logging
-sys.path.append('/opt/seaticket/seaqa-web')
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'seahub.settings')
 import django
 
