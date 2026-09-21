@@ -1,4 +1,4 @@
-import { getTime } from '../utils/date';
+import { getTime } from '../../utils/date';
 
 describe('getTime', () => {
 

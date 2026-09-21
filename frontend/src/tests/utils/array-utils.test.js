@@ -1,4 +1,4 @@
-import { areArraysEqual } from '../utils/array-utils';
+import { areArraysEqual } from '../../utils/array-utils';
 
 describe('areArraysEqual', () => {
 
