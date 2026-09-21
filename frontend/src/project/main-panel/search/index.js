@@ -194,7 +194,7 @@ const Search = ({ title }) => {
           storeKey={SEARCH_STORE_KEY}
         />
         <div className="search-filters-container w-100 d-flex align-items-center justify-content-between">
-          <HideConnectionSetter onConnectionIDsChange={handleConnectionIDsChange} connections={connections} />
+          <HideConnectionSetter onConnectionIDsChange={handleConnectionIDsChange} connections={connections} projectUuid={projectUuid} />
           <FilterByDate date={filterDate} onChange={onFilterDateChange} />
           <div className="search-filter ml-auto mr-0">
             <Switch

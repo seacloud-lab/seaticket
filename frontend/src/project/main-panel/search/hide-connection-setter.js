@@ -5,13 +5,14 @@ import Icon from '../../../components/icon';
 import { gettext } from '../../../constants';
 import HideConnectionPopover from './hidden-connection-popover';
 
-const HideConnectionSetter = ({ onConnectionIDsChange, connections }) => {
+const HideConnectionSetter = ({ onConnectionIDsChange, connections, projectUuid }) => {
   const target = 'hide-connection-popover';
   const readOnly = false;
+  const hiddenConnectionIDsStoreKey = `seaqa-${projectUuid}-hidden-connection-ids`;
   const [isShowSetter, setShowSetter] = useState(false);
 
   const [hiddenConnectionIDs, setHiddenConnectionIDs] = useState(() => {
-    const cachedValue = localStorage.getItem('seaqa-hidden-connection-ids');
+    const cachedValue = localStorage.getItem(hiddenConnectionIDsStoreKey);
     const hiddenConnectionIDs = cachedValue ? JSON.parse(cachedValue) : [];
     return hiddenConnectionIDs;
   });
@@ -25,11 +26,11 @@ const HideConnectionSetter = ({ onConnectionIDsChange, connections }) => {
 
   const modifyHiddenConnections = useCallback((newHiddenConnectionIDs) => {
     setHiddenConnectionIDs(newHiddenConnectionIDs);
-    localStorage.setItem('seaqa-hidden-connection-ids', JSON.stringify(newHiddenConnectionIDs));
+    localStorage.setItem(hiddenConnectionIDsStoreKey, JSON.stringify(newHiddenConnectionIDs));
     if (onConnectionIDsChange) {
       onConnectionIDsChange(newHiddenConnectionIDs);
     }
-  }, [onConnectionIDsChange]);
+  }, [hiddenConnectionIDsStoreKey, onConnectionIDsChange]);
 
   useEffect(() => {
     if (connections.length === 0) return;
@@ -91,6 +92,7 @@ const HideConnectionSetter = ({ onConnectionIDsChange, connections }) => {
 HideConnectionSetter.propTypes = {
   onConnectionIDsChange: PropTypes.func.isRequired,
   connections: PropTypes.array.isRequired,
+  projectUuid: PropTypes.string.isRequired,
 };
 
 export default HideConnectionSetter;
