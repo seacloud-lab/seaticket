@@ -120,7 +120,9 @@ const RUN_EVENT_VIEW_SOURCE_TEXT = {
   [RUN_EVENT.DISCORD_THREAD_MESSAGE_ADDED]: gettext('View comment'),
   [RUN_EVENT.TICKET_DUE_SOON]: gettext('View ticket'),
   [RUN_EVENT.TICKET_OVER_DUE]: gettext('View ticket'),
-  [RUN_EVENT.GENERAL_TASK_UPDATED]: gettext('View ticket'),
+  [RUN_EVENT.GENERAL_TASK_UPDATED]: gettext('View task'),
+  [RUN_EVENT.LINEAR_ISSUE_UPDATED]: gettext('View task'),
+  [RUN_EVENT.JIRA_ISSUE_UPDATED]: gettext('View task'),
 };
 
 const DEFAULT_VIEW_SOURCE_TEXT = gettext('View source');
