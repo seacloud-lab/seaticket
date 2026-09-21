@@ -9,7 +9,7 @@
   border-right: 1px solid var(--bs-border-secondary-color);
 }
 
-.analyze-settings-header {
+.analyze-settings-panel .analyze-settings-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -17,54 +17,21 @@
   border-bottom: 1px solid var(--bs-border-secondary-color);
 }
 
-.analyze-settings-title {
+.analyze-settings-panel .analyze-settings-title {
   font-size: 16px;
   font-weight: 500;
 }
 
-.analyze-settings-body {
+.analyze-settings-panel .analyze-settings-body {
   overflow-y: auto;
   flex: 1;
   padding: 16px 16px 0 16px;
 }
 
-.analyze-settings-body .analyze-settings-section {
+.analyze-settings-panel .analyze-settings-section {
   margin-bottom: 14px;
 }
 
-.analyze-settings-select {
+.analyze-settings-panel .analyze-settings-select {
   max-width: 100% !important;
-}
-
-.analyze-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  padding: 10px 16px;
-  background-color: #eb8205;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #fff;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  gap: 8px;
-}
-
-.analyze-btn:hover:not(:disabled) {
-  background-color: #d47504;
-}
-
-.analyze-btn:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-
-.analyze-btn .seaqa-loading-icon {
-  display: inline-block;
-  height: 14px;
-  width: 14px;
-  margin: 0;
 }

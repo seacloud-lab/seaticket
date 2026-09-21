@@ -6,7 +6,7 @@
   border-radius: 4px;
 }
 
-.prompt-preview-content {
+.prompt-settings-option .seaqa-project-settings-item-body .prompt-preview .prompt-preview-content {
   overflow-y: auto;
   max-height: 112px;
   width: 100%;
@@ -16,10 +16,4 @@
   word-break: break-word;
   --mask: linear-gradient(to bottom, var(--bs-th-secondary-bg) calc(100% - 24px), #0000);
   mask-image: var(--mask);
-}
-
-.seaqa-project-prompt-edit-btn {
-  height: 32px;
-  padding: 0 12px;
-  font-weight: normal;
 }

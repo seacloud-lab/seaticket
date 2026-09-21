@@ -105,7 +105,7 @@ const EditKnowledge = ({ knowledge, editorAPI, onChange, toggleKBRecordPreview, 
   const renderSubmitBtns = useCallback((className = 'ml-2') => {
     return (
       <div className={className}>
-        <Button className="mr-4" onClick={onCancel}>{gettext('Cancel')}</Button>
+        <Button className="mr-2" onClick={onCancel}>{gettext('Cancel')}</Button>
         <Button onClick={onSubmit} color="primary" disabled={disabled}>{gettext('Submit')}</Button>
       </div>
     );

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { FormGroup, Label } from 'reactstrap';
+import { Button, FormGroup, Label } from 'reactstrap';
 import { IconButton, Loading, CustomizeSelect } from '@/components';
 import { gettext } from '@/constants';
 import ConnectionSetting from '../connection-setting';
@@ -88,14 +88,15 @@ const SettingsPanel = ({
         </FormGroup>
       </div>
       <div className="p-4">
-        <button
-          className="analyze-btn"
+        <Button
+          color="primary"
+          className="w-100"
           onClick={onAnalyze}
           disabled={isLoading || selectedConnections.length === 0}
         >
           {isLoading && <Loading />}
           <span>{isLoading ? gettext('Analyzing') : gettext('Analyze')}</span>
-        </button>
+        </Button>
       </div>
     </div>
   );

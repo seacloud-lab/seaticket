@@ -157,7 +157,7 @@ const NewTicket = ({ editorAPI, projectUuid, toggleBar }) => {
     return (
       <div className={className}>
         {shouldShowCancelBtn && (
-          <Button className="mr-4" onClick={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.ALL)}>{gettext('Cancel')}</Button>
+          <Button className="mr-2" onClick={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.ALL)}>{gettext('Cancel')}</Button>
         )}
         <Button onClick={onSubmit} color="primary" disabled={disabled}>{gettext('Submit')}</Button>
       </div>

@@ -251,7 +251,7 @@ const Comment = ({
                   <div className="seaqa-project-ticket-footer mt-2 pl-0">
                     {editorAPI ? (<UploadFilesButton onChange={handleFiles} />) : (<div></div>)}
                     <div className="ml-2">
-                      <Button className="mr-4" onClick={closeEditor}>{gettext('Cancel')}</Button>
+                      <Button className="mr-2" onClick={closeEditor}>{gettext('Cancel')}</Button>
                       <Button
                         className="seaqa-project-ticket-footer-confirm-btn"
                         disabled={!isChangeRef.current || (isChangeRef.current && !content?.text) || isShowCommentLoading}
