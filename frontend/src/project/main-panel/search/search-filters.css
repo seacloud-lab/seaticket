@@ -162,29 +162,6 @@
   cursor: pointer;
 }
 
-.filter-by-date-menu .filter-by-date-custom-date-container-outer {
-  border-radius: 0 0 4px 4px;
-}
-
-.filter-by-date-menu .filter-by-date-custom-date-container {
-  width: calc(100% - 16px);
-  background-color: #f9f9f9;
-  gap: 8px;
-}
-
-.filter-by-date-menu .filter-by-date-custom-date-container .custom-date-container {
-  display: flex;
-  align-items: flex-start;
-  flex-direction: column;
-  justify-content: flex-start;
-  font-size: 14px;
-}
-
-.filter-by-date-menu .filter-by-date-custom-date-container .custom-date-container .form-control {
-  height: 28px;
-  font-size: 14px;
-}
-
 .search-filters-container .search-filter-toggle.active:hover,
 .search-filters-container .search-filter-toggle.highlighted:hover {
   background-color: rgba(0, 0, 0, 0.04);

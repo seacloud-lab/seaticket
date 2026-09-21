@@ -221,7 +221,7 @@ class TokenCreditUsedDetailDialog extends Component {
     } = this.state;
     const { groups, onCloseDialog } = this.props;
 
-    const customizeSelectClassName = 'sea-metadata-basic-filters-select sea-metadata-table-group-by-basic-checkbox-select seaqa-ai-statistic-condition-select';
+    const customizeSelectClassName = 'sea-metadata-table-group-by-basic-checkbox-select seaqa-ai-statistic-condition-select';
 
     return (
       <Modal isOpen={true} toggle={onCloseDialog} autoFocus={false} className="ai-statistics-dialog">
@@ -233,6 +233,7 @@ class TokenCreditUsedDetailDialog extends Component {
                 disabled={false}
                 supportMultipleSelect={false}
                 className={classnames(customizeSelectClassName, 'mr-4')}
+                hasBorder={false}
                 options={groups}
                 value={groupBy}
                 onChange={this.updateView}
@@ -243,7 +244,9 @@ class TokenCreditUsedDetailDialog extends Component {
             <CustomizeSelect
               disabled={false}
               supportMultipleSelect={true}
-              className={classnames(customizeSelectClassName, 'mr-4', { 'highlighted': selectedScenarios.length < ALL_SCENARIOS.length })}
+              className={classnames(customizeSelectClassName, 'mr-4')}
+              highlight={selectedScenarios.length < ALL_SCENARIOS.length}
+              hasBorder={false}
               value={selectedScenarios}
               options={ALL_SCENARIOS}
               onChange={this.updateFilterScenarios}

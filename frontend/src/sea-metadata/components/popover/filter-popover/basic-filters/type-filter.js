@@ -1,5 +1,4 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import classnames from 'classnames';
 import { OptionsEditor, RemoveButton, Option } from '@/components';
 import SelectTrigger from '@/components/customize-select/select-trigger';
 import { gettext } from '@/constants';
@@ -39,7 +38,8 @@ const TypeFilter = ({ readOnly = true, value = [], onChange: onChangeAPI }) => {
         innerRef={typeFilterRef}
         disabled={readOnly}
         focus={isShowEditor}
-        className={classnames('sea-metadata-basic-filters-select', { 'highlighted': validValue.length > 0 })}
+        highlight={validValue.length > 0}
+        hasBorder={false}
         selectedValue={(<span className="selected-option-show">{gettext('Type')}</span>)}
         onClick={openEditor}
       />

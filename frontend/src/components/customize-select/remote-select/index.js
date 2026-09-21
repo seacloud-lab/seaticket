@@ -23,6 +23,8 @@ const RemoteSelect = ({
   offset,
   onChange,
   searchable,
+  highlight,
+  hasBorder,
   searchPlaceholder = gettext('Select option'),
   noOptionsPlaceholder = gettext('No options'),
 }) => {
@@ -126,6 +128,8 @@ const RemoteSelect = ({
           disabled={disabled || !!errorMessage || isLoading}
           className={classnames('flex-1 seaqa-async-select', className)}
           selectedValue={renderSelected()}
+          highlight={highlight}
+          hasBorder={hasBorder}
           onClick={onToggle}
         >
           {isShowSelector && (
