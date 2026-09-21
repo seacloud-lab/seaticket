@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
+import { areArraysEqual } from '@/utils/array-utils';
 import Icon from '../../../components/icon';
 import { gettext } from '../../../constants';
 import HideConnectionPopover from './hidden-connection-popover';
@@ -36,6 +37,7 @@ const HideConnectionSetter = ({ onConnectionIDsChange, connections, projectUuid 
     if (connections.length === 0) return;
     const validConnectionIds = connections.map((c) => c.id);
     const newHiddenConnectionIDs = hiddenConnectionIDs.filter((id) => validConnectionIds.includes(id) || id === '__kb__' || id === '__ticket__');
+    if (areArraysEqual(newHiddenConnectionIDs, hiddenConnectionIDs)) return;
     modifyHiddenConnections(newHiddenConnectionIDs);
   }, [connections, hiddenConnectionIDs, modifyHiddenConnections]);
 
