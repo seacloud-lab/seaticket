@@ -10,7 +10,7 @@ SRCDIR=$(dirname "${TESTSDIR}")
 cd "$SRCDIR"
 
 function commit_dist_files() {
-    echo 'commit seaqa-web'
+    echo 'commit seaticket'
     git checkout -b dist-$GITHUB_BRANCH
     git add -u .
     git add -A frontend/build -f
@@ -24,8 +24,8 @@ function commit_dist_files() {
 }
 
 function upload_files() {
-    echo "Pushing dist to seaqa-web"
-    git remote add token-origin https://x-access-token:$GITHUB_TOKEN@github.com/seafileltd/seaqa-web.git
+    echo "Pushing dist to seaticket"
+    git remote add token-origin https://x-access-token:$GITHUB_TOKEN@github.com/seacloud-lab/seaticket.git
     git push -f token-origin dist-$GITHUB_BRANCH
 }
 
