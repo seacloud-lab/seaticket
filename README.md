@@ -1,4 +1,4 @@
-# SeaTicket - Ticketing system and AI agent that support your community
+# SeaTicket
 
 SeaTicket is a ticketing system and AI agent that support your community. SeaTicket’s vision is to build an AI agent that helps you resolve community support issues, so you can focus on building.
 
