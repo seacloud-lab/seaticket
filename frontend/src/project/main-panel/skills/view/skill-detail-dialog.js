@@ -200,9 +200,6 @@ const SkillDetailDialog = ({ projectUuid, pageType, skillName, mode, isProjectAd
             </div>
           )}
         </ModalBody>
-        <ModalFooter>
-          <Button color="secondary" onClick={onCancel}>{gettext('Close')}</Button>
-        </ModalFooter>
       </Modal>
     );
   }

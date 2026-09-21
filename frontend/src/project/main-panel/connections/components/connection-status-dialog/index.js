@@ -142,7 +142,7 @@ const ConnectionStatusDialog = ({ projectUuid, connectionId, onToggle, onManualS
         }
       </ModalBody>
       <ModalFooter>
-        <Button onClick={onToggle} color="secondary">{gettext('Close')}</Button>
+        <Button onClick={onToggle} color="secondary">{gettext('Cancel')}</Button>
         <Button onClick={() => { onManualSync(record); onToggle(); }} color="primary">{gettext('Sync now')}</Button>
       </ModalFooter>
     </Modal>
