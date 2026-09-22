@@ -1,5 +1,4 @@
 import { useCallback, useState, useRef } from 'react';
-import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import SelectTrigger from '@/components/customize-select/select-trigger';
 import { gettext } from '@/constants';
@@ -33,7 +32,8 @@ const TagsFilter = ({ readOnly, value, onChange }) => {
         innerRef={editorRef}
         disabled={readOnly}
         focus={isShowEditor}
-        className={classnames('sea-metadata-basic-filters-select', { 'highlighted': validValue.length > 0 })}
+        highlight={validValue.length > 0}
+        hasBorder={false}
         selectedValue={(<span className="selected-option-show">{gettext('Tags')}</span>)}
         onClick={openEditor}
       />

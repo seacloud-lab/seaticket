@@ -1,4 +1,4 @@
-import { isHexColor, parseColorToRGB, isDarkColor, isWhiteColor } from '../utils/color-utils';
+import { isHexColor, parseColorToRGB, isDarkColor, isWhiteColor } from '../../utils/color-utils';
 
 describe('Color Utilities', () => {
 

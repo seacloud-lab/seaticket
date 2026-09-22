@@ -1,0 +1,38 @@
+.seaqa-search-filter-by-date-trigger.seaqa-select {
+  max-width: 300px;
+}
+
+.seaqa-search-filter-by-date-trigger.seaqa-select .seaqa-select-container .selected-option:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.seaqa-search-filter-by-date-popover .options-editor-content {
+  max-height: fit-content;
+}
+
+.seaqa-search-filter-by-date-popover .options-editor-option {
+  padding: 0 12px;
+}
+
+.seaqa-search-filter-by-date-popover .filter-by-date-custom-date-container-outer {
+  border-radius: 0 0 4px 4px;
+}
+
+.seaqa-search-filter-by-date-popover .filter-by-date-custom-date-container {
+  width: calc(100% - 16px);
+  background-color: #f9f9f9;
+  gap: 8px;
+}
+
+.seaqa-search-filter-by-date-popover .filter-by-date-custom-date-container .custom-date-container {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  justify-content: flex-start;
+  font-size: 14px;
+}
+
+.seaqa-search-filter-by-date-popover .filter-by-date-custom-date-container .custom-date-container .form-control {
+  height: 28px;
+  font-size: 14px;
+}

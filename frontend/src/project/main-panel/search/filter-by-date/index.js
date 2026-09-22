@@ -1,15 +1,14 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Dropdown, DropdownToggle } from 'reactstrap';
-import classNames from 'classnames';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import classnames from 'classnames';
 import dayjs from 'dayjs';
 import PropTypes from 'prop-types';
-import {
-  CustomizeDropdownItem, CustomizeDropdownMenu, Icon, ModalPortal, CustomizeDropdownItemIcon,
-  CustomizeDropdownItemText, DatePicker,
+import { DatePicker, CustomizePopover, IconButton
 } from '@/components';
-import { Utils } from '@/utils/utils';
-import { gettext } from '../../../constants';
-import { SEARCH_FILTERS_KEY, SEARCH_FILTER_BY_DATE_OPTION_KEY, SEARCH_FILTER_BY_DATE_TYPE_KEY } from './constants';
+import SelectTrigger from '@/components/customize-select/select-trigger';
+import { gettext } from '../../../../constants';
+import { SEARCH_FILTERS_KEY, SEARCH_FILTER_BY_DATE_OPTION_KEY, SEARCH_FILTER_BY_DATE_TYPE_KEY } from '../constants';
+
+import './index.css';
 
 const DATE_INPUT_WIDTH = 118;
 
@@ -23,26 +22,32 @@ const FilterByDate = ({ date, onChange }) => {
     from: date.from,
     to: date.to,
   });
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+
+  const editorRef = useRef(null);
 
   const options = useMemo(() => {
     return [
       {
-        key: SEARCH_FILTER_BY_DATE_OPTION_KEY.TODAY,
+        value: SEARCH_FILTER_BY_DATE_OPTION_KEY.TODAY,
         label: gettext('Today'),
       }, {
-        key: SEARCH_FILTER_BY_DATE_OPTION_KEY.LAST_7_DAYS,
+        value: SEARCH_FILTER_BY_DATE_OPTION_KEY.LAST_7_DAYS,
         label: gettext('Last 7 days'),
       }, {
-        key: SEARCH_FILTER_BY_DATE_OPTION_KEY.LAST_30_DAYS,
+        value: SEARCH_FILTER_BY_DATE_OPTION_KEY.LAST_30_DAYS,
         label: gettext('Last 30 days'),
       },
       'Divider',
       {
-        key: SEARCH_FILTER_BY_DATE_OPTION_KEY.CUSTOM,
+        value: SEARCH_FILTER_BY_DATE_OPTION_KEY.CUSTOM,
         label: gettext('Custom time'),
-        id: 'custom-date',
       },
     ];
+  }, []);
+
+  const handleDatePickerOpenChange = useCallback((newValue) => {
+    setIsDatePickerOpen(newValue);
   }, []);
 
   const toggle = useCallback(() => setIsOpen(!isOpen), [isOpen]);
@@ -57,18 +62,17 @@ const FilterByDate = ({ date, onChange }) => {
     setIsOpen(false);
   }, []);
 
-  const onOptionClick = useCallback((e) => {
-    const option = Utils.getEventData(e, 'toggle') ?? e.currentTarget.getAttribute('data-toggle');
-    if (option === value) {
+  const onOptionClick = useCallback((newValue) => {
+    if (newValue === value) {
       onClearDate();
       return;
     }
     const today = dayjs().endOf('day');
-    const isCustomOption = option === SEARCH_FILTER_BY_DATE_OPTION_KEY.CUSTOM;
+    const isCustomOption = newValue === SEARCH_FILTER_BY_DATE_OPTION_KEY.CUSTOM;
     setIsCustomDate(isCustomOption);
-    setValue(option);
+    setValue(newValue);
     setIsOpen(isCustomOption);
-    switch (option) {
+    switch (newValue) {
       case SEARCH_FILTER_BY_DATE_OPTION_KEY.TODAY: {
         setTime({
           from: dayjs().startOf('day').unix(),
@@ -136,52 +140,57 @@ const FilterByDate = ({ date, onChange }) => {
     }
   }, [isOpen, date, time, type, value, onChange]);
 
+  const optionClassname = classnames('options-editor-option check-placement-right', { 'pe-none': isDatePickerOpen });
+
   return (
-    <div className="search-filter filter-by-date-container">
-      <Dropdown isOpen={isOpen} toggle={toggle}>
-        <DropdownToggle
-          tag="div"
-          className={classNames('search-filter-toggle', { 'active': isOpen && value, 'highlighted': value })}
-          onClick={toggle}
+    <>
+      <SelectTrigger
+        innerRef={editorRef}
+        className="seaqa-search-filter-by-date-trigger"
+        disabled={false}
+        focus={isOpen}
+        highlight={value}
+        hasBorder={false}
+        selectedValue={(<span className="selected-option-show">{gettext('Last modified time')}</span>)}
+        onClick={() => setIsOpen(true)}
+      />
+      {isOpen && (
+        <CustomizePopover
+          target={editorRef}
+          className="options-editor-popover seaqa-search-filter-by-date-popover"
+          containerClassName="options-editor-container"
+          canHidePopover={!isDatePickerOpen}
+          hidePopoverWithEsc={toggle}
+          hidePopover={toggle}
         >
-          <div className="filter-label mr-1 text-truncate d-inline-block" style={{ maxWidth: 300 }} title={gettext('Last modified time')}>
-            {gettext('Last modified time')}
-          </div>
-          <Icon symbol="arrow-down"/>
-        </DropdownToggle>
-        <ModalPortal>
-          <CustomizeDropdownMenu className="search-filter-menu filter-by-date-menu">
+          <div className="options-editor-content">
             {value && (
-              <CustomizeDropdownItem
-                tag="div"
-                tabIndex="-1"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={onClearDate}
-                toggle={false}
-              >
-                {'--'}
-              </CustomizeDropdownItem>
+              <div className={optionClassname} onClick={onClearDate}>
+                <div className="options-editor-option-content">
+                  <span className="text-truncate">{'--'}</span>
+                </div>
+              </div>
             )}
-            {options.map((option, i) => {
-              const isSelected = option.key === value;
-              if (option === 'Divider') return <div key={i} className="dropdown-divider"></div>;
+            {options.map((option, index) => {
+              if (option === 'Divider') {
+                return (<div className="options-editor-divider-option" key={index}></div>);
+              }
+              const isSelected = option?.value === value;
+              const isCustomDateOption = option.value === SEARCH_FILTER_BY_DATE_OPTION_KEY.CUSTOM;
               return (
-                <CustomizeDropdownItem
-                  key={option.key}
-                  tag="div"
-                  tabIndex="-1"
-                  data-toggle={option.key}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={onOptionClick}
-                  toggle={false}
-                  className="justify-content-between position-relative"
-                  onMouseEnter={option.id === 'custom-date' ? () => setIsCustomDateHover(true) : undefined }
-                  onMouseLeave={option.id === 'custom-date' ? () => setIsCustomDateHover(false) : undefined }
-                  style={(isCustomDate && option.id === 'custom-date') ? { borderRadius: '4px 4px 0px 0px' } : {}}
+                <div
+                  className={optionClassname}
+                  key={index}
+                  onClick={() => onOptionClick(option?.value)}
+                  onMouseEnter={isCustomDateOption ? () => setIsCustomDateHover(true) : undefined }
+                  onMouseLeave={isCustomDateOption ? () => setIsCustomDateHover(false) : undefined }
+                  style={(isCustomDate && isCustomDateOption) ? { borderRadius: '4px 4px 0px 0px' } : {}}
                 >
-                  <CustomizeDropdownItemText>{option.label}</CustomizeDropdownItemText>
-                  {isSelected && <CustomizeDropdownItemIcon symbol="check-mark" position="right" />}
-                </CustomizeDropdownItem>
+                  <div className="options-editor-option-content">
+                    <span className="text-truncate" title={option.label}>{option.label}</span>
+                  </div>
+                  <IconButton icon={isSelected ? 'check-mark-option' : ''} className="options-editor-option-check-btn no-hover-bg" />
+                </div>
               );
             })}
             {isCustomDate && (
@@ -197,6 +206,7 @@ const FilterByDate = ({ date, onChange }) => {
                       value={time.from}
                       onChange={(value) => setTime({ ...time, from: value?.startOf('day') })}
                       inputWidth={DATE_INPUT_WIDTH}
+                      onOpenChange={handleDatePickerOpenChange}
                     />
                   </div>
                   <div className="custom-date-container">
@@ -206,15 +216,16 @@ const FilterByDate = ({ date, onChange }) => {
                       value={time.to}
                       onChange={(value) => setTime({ ...time, to: value?.endOf('day') })}
                       inputWidth={DATE_INPUT_WIDTH}
+                      onOpenChange={handleDatePickerOpenChange}
                     />
                   </div>
                 </div>
               </div>
             )}
-          </CustomizeDropdownMenu>
-        </ModalPortal>
-      </Dropdown>
-    </div>
+          </div>
+        </CustomizePopover>
+      )}
+    </>
   );
 };
 

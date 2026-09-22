@@ -19,6 +19,8 @@ const StaticSelect = ({
   id,
   offset,
   placeholder,
+  highlight,
+  hasBorder,
   children,
   onChange,
 }) => {
@@ -85,6 +87,8 @@ const StaticSelect = ({
     <SelectTrigger
       focus={isShowSelector}
       disabled={disabled}
+      highlight={highlight}
+      hasBorder={hasBorder}
       className={className}
       id={id}
       innerRef={selectTriggerRef}

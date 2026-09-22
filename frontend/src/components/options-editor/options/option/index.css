@@ -43,3 +43,12 @@
   padding: 0 8px;
   gap: 0;
 }
+
+/* divider */
+.options-editor-divider-option {
+  border-top: 1px solid var(--bs-border-secondary-color);
+  height: 1px;
+  margin: 8px 0;
+  opacity: 1;
+  overflow: hidden
+}

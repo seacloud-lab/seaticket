@@ -1,5 +1,4 @@
 import React, { useCallback, useMemo } from 'react';
-import classnames from 'classnames';
 import { CustomizeSelect } from '@/components';
 import { gettext } from '@/constants';
 import { getColumnOptions, getOptionDisplayNameByOption } from '@/sea-metadata/utils/column';
@@ -40,7 +39,8 @@ const StateFilter = ({ readOnly = true, value = [], column, onChange: onChangeAP
     <CustomizeSelect
       disabled={readOnly}
       supportMultipleSelect={true}
-      className={classnames('sea-metadata-basic-filters-select', { 'highlighted': value.length > 0 })}
+      highlight={value.length > 0}
+      hasBorder={false}
       containerClassName="border-radius-8 sea-metadata-state-select-container"
       value={value}
       options={options}

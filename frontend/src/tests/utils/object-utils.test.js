@@ -2,7 +2,7 @@ import ObjectUtils, {
   hasOwnProperty,
   isEmptyObject,
   shallowCloneObject,
-} from '../utils/object-utils';
+} from '../../utils/object-utils';
 
 describe('ObjectUtils', () => {
   describe('getDataType', () => {

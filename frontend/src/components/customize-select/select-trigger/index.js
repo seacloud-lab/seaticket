@@ -7,6 +7,8 @@ import './index.css';
 const SelectTrigger = ({
   focus,
   disabled,
+  highlight = false,
+  hasBorder = true,
   className,
   id,
   innerRef,
@@ -20,6 +22,8 @@ const SelectTrigger = ({
       className={classnames('seaqa-select seaqa-customize-select position-relative', className,
         { 'focus': focus },
         { 'disabled': disabled },
+        { 'highlighted': highlight },
+        { 'border-0': !hasBorder },
       )}
       id={id}
       onClick={onClick}
