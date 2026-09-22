@@ -129,7 +129,7 @@ const HideColumnPopover = ({ hidePopover, onChange, readOnly, target, placement,
           modifyColumnOrder={modifyColumnOrder}
         />
         {!readOnly && !searchValue && (
-          <div className="seaqa-hide-columns-operations d-flex justify-content-around p-2 w-100">
+          <div className="seaqa-hide-columns-operations d-flex justify-content-around p-2 w-100 gap-2">
             <div className="d-flex align-items-center justify-content-center w-100 border-radius-4 cursor-pointer h-6" onClick={hideAll} aria-label={gettext('Hide all')}>{gettext('Hide all')}</div>
             <div className="d-flex align-items-center justify-content-center w-100 border-radius-4 cursor-pointer h-6" onClick={showAll} aria-label={gettext('Show all')}>{gettext('Show all')}</div>
           </div>

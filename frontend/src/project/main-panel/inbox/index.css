@@ -25,28 +25,3 @@
   font-size: 16px;
   font-weight: 500;
 }
-
-.seaqa-inbox-actions {
-  display: flex;
-  align-items: center;
-  height: 32px;
-  padding: 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  gap: 8px;
-}
-
-.seaqa-inbox-actions:hover {
-  background-color: rgba(0, 0, 0, 0.04);
-}
-
-.seaqa-inbox-actions .seaqa-icon-svg {
-  height: 14px;
-  width: 14px;
-  fill: var(--bs-sf-grey-text);
-}
-
-.seaqa-inbox-actions .mark-all-as-read {
-  font-size: 14px;
-  color: var(--bs-sf-grey-text);
-}

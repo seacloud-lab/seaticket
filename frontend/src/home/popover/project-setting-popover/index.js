@@ -87,10 +87,10 @@ class ProjectSettingPopover extends React.Component {
               />
             </PopoverBody>
             <div className="project-setting-popover-footer">
-              <Button color="secondary" onClick={this.props.onCancel} onKeyDown={this.onFooterButtonKeyDown}>
+              <Button color="secondary" onClick={this.props.onCancel} onKeyDown={this.onFooterButtonKeyDown} size="sm">
                 {gettext('Cancel')}
               </Button>
-              <Button color="primary" onClick={this.props.onSubmit} onKeyDown={this.onFooterButtonKeyDown}>
+              <Button color="primary" onClick={this.props.onSubmit} onKeyDown={this.onFooterButtonKeyDown} size="sm">
                 {gettext('Submit')}
               </Button>
             </div>

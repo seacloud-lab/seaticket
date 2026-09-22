@@ -4,7 +4,7 @@ import classnames from 'classnames';
 import deepcopy from 'deep-copy';
 import isHotkey from 'is-hotkey';
 import PropTypes from 'prop-types';
-import CustomizeAddTool from '@/components/customize-add-tool';
+import CustomizeButton from '@/components/btn/customize-button';
 import { gettext } from '@/constants';
 import context from '@/sea-metadata/context';
 import { getEventClassName } from '@/utils/dom';
@@ -197,7 +197,7 @@ class FilterPopover extends Component {
             </div>
             {!readOnly && (
               <div className="sea-metadata-filter-popover-add-btns">
-                <CustomizeAddTool
+                <CustomizeButton
                   className={`popover-add-tool ${canAddFilter ? '' : 'disabled'}`}
                   callBack={canAddFilter ? () => this.addFilter(scheduleUpdate) : () => {}}
                   name={gettext('Add filter')}

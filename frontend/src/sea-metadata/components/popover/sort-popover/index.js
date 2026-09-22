@@ -3,7 +3,7 @@ import { UncontrolledPopover } from 'reactstrap';
 import classnames from 'classnames';
 import isHotkey from 'is-hotkey';
 import PropTypes from 'prop-types';
-import CustomizeAddTool from '@/components/customize-add-tool';
+import CustomizeButton from '@/components/btn/customize-button';
 import Icon from '@/components/icon';
 import { gettext } from '@/constants';
 import context from '@/sea-metadata/context';
@@ -205,7 +205,7 @@ class SortPopover extends Component {
           </div>
           {!readOnly &&
             <div className="popover-add-tool">
-              <CustomizeAddTool
+              <CustomizeButton
                 callBack={this.addSort}
                 name={gettext('Add sort')}
               />

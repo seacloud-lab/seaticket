@@ -113,19 +113,6 @@
   justify-content: space-between;
 }
 
-.sea-metadata-groupbys-popover .popover-add-tool .customize-add-tool {
-  padding: 5px 12px;
-  width: fit-content;
-  height: 32px;
-  border-radius: 4px;
-}
-
-.sea-metadata-groupbys-popover .popover-add-tool .customize-add-tool .customize-add-tool-icon {
-  margin-right: 8px;
-  width: 14px;
-  height: 14px;
-}
-
 .sea-metadata-groupbys-popover .popover-add-tool .groupbys-tools {
   display: inline-flex;
   justify-content: flex-end;

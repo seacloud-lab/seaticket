@@ -14,9 +14,3 @@
   justify-content: flex-end;
   gap: 8px;
 }
-
-.project-setting-popover .project-setting-popover-footer .btn {
-  height: 32px;
-  padding-top: 0;
-  padding-bottom: 0;
-}

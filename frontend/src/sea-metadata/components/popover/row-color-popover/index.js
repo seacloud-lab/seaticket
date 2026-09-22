@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useSta
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { ColorSelectorPopover, IconButton } from '@/components';
-import CustomizeAddTool from '@/components/customize-add-tool';
+import CustomizeButton from '@/components/btn/customize-button';
 import CustomizePopover from '@/components/customize-popover';
 import { gettext, SELECT_OPTION_COLORS } from '@/constants';
 import { CellType } from '@/sea-metadata/constants';
@@ -251,7 +251,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
                   />
                   {!readOnly && (
                     <div className="seaqa-row-color-rule-filters-footer pb-2">
-                      <CustomizeAddTool
+                      <CustomizeButton
                         className="popover-add-tool"
                         callBack={() => addRuleFilter(ruleIndex)}
                         name={gettext('Add condition')}
@@ -266,7 +266,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
       </div>
       {!readOnly && (
         <div className="seaqa-row-color-add-btns">
-          <CustomizeAddTool
+          <CustomizeButton
             className={`popover-add-tool ${canAddRule ? '' : 'disabled'}`}
             callBack={canAddRule ? addRule : () => {}}
             name={gettext('Add rule')}

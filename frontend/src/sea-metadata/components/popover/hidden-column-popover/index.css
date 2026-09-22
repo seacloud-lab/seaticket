@@ -75,10 +75,6 @@
   align-items: center;
 }
 
-.seaqa-hide-columns-popover .seaqa-hide-columns-operations {
-  gap: 8px;
-}
-
 .seaqa-hide-columns-popover .seaqa-hide-columns-operations div {
   background: var(--bs-tr-hover-bg);
 }

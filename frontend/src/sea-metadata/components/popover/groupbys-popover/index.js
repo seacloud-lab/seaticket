@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { UncontrolledPopover } from 'reactstrap';
 import isHotkey from 'is-hotkey';
 import PropTypes from 'prop-types';
-import CustomizeAddTool from '@/components/customize-add-tool';
+import CustomizeButton from '@/components/btn/customize-button';
 import { gettext } from '@/constants';
 import context from '@/sea-metadata/context';
 import { getEventClassName } from '@/utils/dom';
@@ -125,7 +125,7 @@ const GroupbysPopover = ({ groupbys: propsGroupBys, readOnly, hidePopover, onCha
         {!readOnly && (
           <div className="popover-add-tool">
             {groupbys.length < MAX_GROUP_LEVEL ? (
-              <CustomizeAddTool
+              <CustomizeButton
                 callBack={addGroupby}
                 name={gettext('Add group')}
               />

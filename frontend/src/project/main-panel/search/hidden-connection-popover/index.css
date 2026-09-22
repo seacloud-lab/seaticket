@@ -153,18 +153,10 @@
 }
 
 .seaqa-hide-popover .seaqa-hide-connections-operations .sea-metadata-hide-connections-operation {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 32px;
-  width: 50%;
   background: var(--bs-tr-hover-bg);
-  border-radius: 3px;
   color: var(--bs-body-color);
 }
 
 .seaqa-hide-popover .seaqa-hide-connections-operations .sea-metadata-hide-connections-operation:hover {
   background: var(--bs-hover-bg);
-  color: var(--bs-body-color);
-  cursor: pointer;
 }
