@@ -1,8 +1,5 @@
 import logging
 
-import json
-from seahub.project.utils import url_to_filename
-from seahub.utils.storage import get_connection_file_from_s3
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.constants import ConnectionType
 from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE
@@ -23,7 +20,7 @@ class SiteSeaDBAPI:
             str(pk)
             for pk in pks
         ])
-        sql = "SELECT `_pk`, `title`, `url` " \
+        sql = "SELECT `_pk`, `title`, `url`, `content` " \
             f"FROM `{table_name}` WHERE `_pk` in ({pks_str}) AND (`deleted` = False OR `deleted` IS NULL)"
         response = self.seadb_api.query_rows(self.base_id, sql)
         if response and 'results' in response:
@@ -60,19 +57,16 @@ class SiteSeaDBAPI:
                 connection_ids_pks_map[connection_id].append(document_id)
 
         result = []
-        project_uuid_to_s3 = project_uuid.replace('-', '')
         for connection_id, document_ids in connection_ids_pks_map.items():
             current_sites = self.get_sites_by_pks(connection_id, document_ids)
             for site in current_sites:
-                file_obj = get_connection_file_from_s3(project_uuid_to_s3, connection_id, url_to_filename(site['url']))
-                if file_obj:
-                    content = json.loads(file_obj.read())['content']
-                    result.append({
-                        'type': ConnectionType.SITE.value,
-                        'connection_id': connection_id,
-                        'record_id': site['_pk'],
-                        'title': site['title'],
-                        'url': site['url'],
-                        'content': content[:ATTACHMENT_CONTENT_MAX_SIZE]
-                    })
+                content = site.get('content') or ''
+                result.append({
+                    'type': ConnectionType.SITE.value,
+                    'connection_id': connection_id,
+                    'record_id': site['_pk'],
+                    'title': site['title'],
+                    'url': site['url'],
+                    'content': content[:ATTACHMENT_CONTENT_MAX_SIZE]
+                })
         return result

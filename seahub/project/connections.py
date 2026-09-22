@@ -25,7 +25,7 @@ from seahub.api2.utils import api_error, to_python_boolean
 from seahub.utils import uuid_str_to_32_chars, gen_file_etag_and_modified_time
 from seahub.project.models import Projects, ProjectConnections, decrypt_config, \
     ConnectionsViews, ProjectGithubAppInstallation, ProjectConnectionOauth
-from seahub.project.utils import check_project_admin_permission, check_project_permission, url_to_filename, \
+from seahub.project.utils import check_project_admin_permission, check_project_permission, \
     extract_email_addresses, is_oauth_email_provider, create_connection, get_connection_related_users
 from seahub.utils.indexer import add_connection_sync_task, manual_sync_connection
 from seahub.utils.webhook import update_github_issue_by_webhook, update_discourse_topic_by_webhook
@@ -1125,12 +1125,6 @@ class ProjectConnectionRecordView(APIView):
             record, columns, linked_ticket_title = list_discourse_forum_replies_records(seadb_api, project_uuid, connection_id, record_id)
         elif project_connection.type == ConnectionType.SITE.value:
             record, columns, linked_ticket_title = list_site_record_details(seadb_api, project_uuid, connection_id, record_id)
-            url = record.get('url', '')
-            if url:
-                filename = url_to_filename(url)
-                file = get_connection_file_from_s3(project_uuid, connection_id, filename)
-                if file:
-                    record['content'] = json.loads(file.read()).get('content')
         elif project_connection.type == ConnectionType.GITHUB_ISSUE.value:
             record, columns, linked_ticket_title = list_github_issue_record_details(seadb_api, project_uuid, connection_id, record_id)
         elif project_connection.type == ConnectionType.SEAFILE.value:
