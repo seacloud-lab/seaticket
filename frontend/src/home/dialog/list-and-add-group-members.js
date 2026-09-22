@@ -148,8 +148,8 @@ class ListAndAddGroupMembers extends React.Component {
             selectedUsers={selectedOption}
           />
           {selectedOption ?
-            <Button color="secondary" onClick={this.addGroupMember}>{gettext('Submit')}</Button> :
-            <Button color="secondary" disabled>{gettext('Submit')}</Button>
+            <Button color="primary" onClick={this.addGroupMember}>{gettext('Submit')}</Button> :
+            <Button color="primary" disabled>{gettext('Submit')}</Button>
           }
         </div>
         {errMessage.length > 0 &&

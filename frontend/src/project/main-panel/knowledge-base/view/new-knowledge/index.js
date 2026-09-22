@@ -120,7 +120,7 @@ const NewKnowledge = ({ editorAPI, projectUuid }) => {
   const renderSubmitBtns = useCallback((className = 'ml-2') => {
     return (
       <div className={className}>
-        <Button className="mr-4" onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.ALL)}>{gettext('Cancel')}</Button>
+        <Button className="mr-2" onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.ALL)}>{gettext('Cancel')}</Button>
         <Button onClick={onSubmit} color="primary" disabled={disabled}>{gettext('Submit')}</Button>
       </div>
     );

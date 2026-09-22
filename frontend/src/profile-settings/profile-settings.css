@@ -122,10 +122,6 @@ body {
   color: var(--bs-sf-grey-text);
 }
 
-.profile-settings .btn {
-  min-width: 60px;
-}
-
 /* Session logs table styles */
 .logged-in-session-table .logged-state {
   width: 10px;

@@ -53,7 +53,7 @@ const PromptSettings = ({
             </div>
           </div>
         )}
-        <Button color="primary" outline className="seaqa-project-prompt-edit-btn" onClick={openDialog}>
+        <Button color="primary" outline onClick={openDialog}>
           {dialogTitle}
         </Button>
       </SettingsItem>
