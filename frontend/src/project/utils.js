@@ -48,7 +48,7 @@ export const getInternalNetworkAddress = (type, resourceID, { workspaceID, proje
       return generatorKnowledgeBaseURL({ kb: { _id: resourceID }, workspaceID, projectName });
     }
     default:
-      const baseURL = location.origin + siteRoot + 'workspace/' + workspaceID + '/project/' + projectName + '/';
+      const baseURL = location.origin + siteRoot + 'workspace/' + workspaceID + '/project/' + encodeURIComponent(projectName) + '/';
       return `${baseURL}connections/${connectionID}/records/${resourceID}/`;
   }
 };

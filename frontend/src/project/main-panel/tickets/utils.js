@@ -14,7 +14,7 @@ import { TicketForAI } from './models';
 export const generatorTicketURL = ({ ticket, workspaceID, projectName }) => {
   const { origin } = location;
   const ticketId = ticket._id || ticket.id;
-  const url = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}/${ticketId}/`;
+  const url = `${origin}${siteRoot}workspace/${workspaceID}/project/${encodeURIComponent(projectName)}/${BAR_TYPE.TICKET}/${ticketId}/`;
   const urlObject = new URL(url);
   return urlObject.href;
 };
