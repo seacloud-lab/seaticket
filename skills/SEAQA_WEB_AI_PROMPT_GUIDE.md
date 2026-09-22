@@ -1,6 +1,6 @@
 # seaqa-web AI Prompt Guide
 
-This document collects the frontend usage rules, technical conventions, and reusable prompt templates for the `seaqa-web` project.
+This document collects the frontend usage rules, technical conventions, and reusable prompt templates for the `seaticket` project.
 
 You can use it directly as the basis for AI work instructions, or replace the placeholders as needed.
 
@@ -9,9 +9,9 @@ You can use it directly as the basis for AI work instructions, or replace the pl
 ## Quick Start
 
 ```text
-Please handle this task according to the seaqa-web project rules.
-Project root: /seaqa-web
-Frontend directory: /seaqa-web/frontend
+Please handle this task according to the seaticket project rules.
+Project root: /seaticket
+Frontend directory: /seaticket/frontend
 Task: [your task]
 Target file: [file path]
 Requirement: Prefer existing implementations, make minimal changes, and explain the impact scope and verification commands after the change.
@@ -23,9 +23,9 @@ Requirement: Prefer existing implementations, make minimal changes, and explain 
 
 | Directory | Path | Purpose |
 |------|------|------|
-| Repository root | `/seaqa-web` | Project root |
-| Frontend directory | `/seaqa-web/frontend` | Frontend code root |
-| Frontend scripts | `/seaqa-web/frontend/scripts` | Build and startup scripts |
+| Repository root | `/seaticket` | Project root |
+| Frontend directory | `/seaticket/frontend` | Frontend code root |
+| Frontend scripts | `/seaticket/frontend/scripts` | Build and startup scripts |
 
 ### Core Source Tree
 
@@ -383,7 +383,7 @@ import './index.css';
 
 ```bash
 # Enter the frontend directory
-cd /seaqa-web/frontend
+cd /seaticket/frontend
 
 # Check code
 npm run lint
@@ -424,11 +424,11 @@ npm run build         # Build verification
 ### 6.1 Standard Version (Recommended)
 
 ```text
-Please handle the following task according to the seaqa-web project rules:
+Please handle the following task according to the seaticket project rules:
 
 📁 Project paths:
-- Root: /seaqa-web
-- Frontend: /seaqa-web/frontend
+- Root: /seaticket
+- Frontend: /seaticket/frontend
 
 🎯 Task goal:
 [write the task here]
@@ -449,10 +449,10 @@ Please handle the following task according to the seaqa-web project rules:
 ### 6.2 Minimal Version
 
 ```text
-Please handle this task according to the seaqa-web project rules.
+Please handle this task according to the seaticket project rules.
 
-Root: /seaqa-web
-Frontend: /seaqa-web/frontend
+Root: /seaticket
+Frontend: /seaticket/frontend
 
 Task: [write the task]
 Target file: [write the file or directory]
@@ -463,11 +463,11 @@ Requirement: find existing implementation first, make minimal changes, reuse dep
 ### 6.3 Detailed Version
 
 ```text
-Please handle the following task according to the seaqa-web project conventions:
+Please handle the following task according to the seaticket project conventions:
 
 📁 Project paths:
-- Root: /seaqa-web
-- Frontend: /seaqa-web/frontend
+- Root: /seaticket
+- Frontend: /seaticket/frontend
 
 ⚙️ Technical constraints:
 - Use axios for requests
@@ -504,7 +504,7 @@ Please handle the following task according to the seaqa-web project conventions:
 ### 7.1 Bug Fix
 
 ```text
-Please help me investigate and fix a seaqa-web frontend bug.
+Please help me investigate and fix a seaticket frontend bug.
 
 🐛 Problem description:
 [describe the symptom, such as: clicking a button does nothing, broken styles, API errors, etc.]
@@ -533,7 +533,7 @@ Please help me investigate and fix a seaqa-web frontend bug.
 ### 7.2 Add a Page or Feature
 
 ```text
-Please add a new feature to the seaqa-web frontend.
+Please add a new feature to the seaticket frontend.
 
 🎯 Feature goal:
 [write the feature description, such as: add a user management page]
@@ -562,7 +562,7 @@ Please add a new feature to the seaqa-web frontend.
 ### 7.3 API Integration
 
 ```text
-Please help me handle a frontend API integration issue in seaqa-web.
+Please help me handle a frontend API integration issue in seaticket.
 
 🌐 API information:
 - Method: [GET/POST/PUT/DELETE]
@@ -587,7 +587,7 @@ Please help me handle a frontend API integration issue in seaqa-web.
 ### 7.4 Fix Tests
 
 ```text
-Please help me fix a seaqa-web frontend test.
+Please help me fix a seaticket frontend test.
 
 🔴 Failure message:
 [paste the full error message]
@@ -609,7 +609,7 @@ Please help me fix a seaqa-web frontend test.
 ### 7.5 Style Adjustment
 
 ```text
-Please help me adjust the seaqa-web frontend styles.
+Please help me adjust the seaticket frontend styles.
 
 🎨 Adjustment goal:
 [describe the style change, such as: change button color, adjust spacing, etc.]
@@ -633,7 +633,7 @@ Please help me adjust the seaqa-web frontend styles.
 
 When assigning a task to AI, provide the information in this order:
 
-1. Project identifier: state that it is the seaqa-web project
+1. Project identifier: state that it is the seaticket project
 2. Directory paths: provide the root directory and frontend directory
 3. Target files: specify the files or directories to modify
 4. Task goal: clearly describe what needs to be done
@@ -643,9 +643,9 @@ When assigning a task to AI, provide the information in this order:
 ### Recommended Example
 
 ```text
-Please handle the task according to the seaqa-web project rules.
-Project root: /seaqa-web
-Frontend directory: /seaqa-web/frontend
+Please handle the task according to the seaticket project rules.
+Project root: /seaticket
+Frontend directory: /seaticket/frontend
 
 Task: Fix the search feature on the user list page
 Target file: frontend/src/org-admin/users/index.js
