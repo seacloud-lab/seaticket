@@ -45,7 +45,7 @@ from seahub.project.constants import ConnectionType, CrawlStatus, MANUAL_SYNC_IN
     EMAIL_ACCOUNT_TYPE_PERSONAL, EMAIL_ATTACHMENT_TEMP_DIR, EMAIL_ATTACHMENTS_ZIP_NAME, \
     GENERAL_TASK_MUTABLE_FIELDS
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
-from seahub.project.oauth_utils import EmailOAuthUtils
+from seahub.project.oauth_utils import EmailOAuthUtils, NotionOAuthUtils
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_ticket, \
@@ -296,9 +296,39 @@ class ProjectConnectionsView(APIView):
             if not ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.JIRA_ISSUE.value):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Jira OAuth authorization is required.')
 
+        notion_data = None
+        if connection_type == ConnectionType.NOTION.value:
+            oauth_state = request.POST.get('oauth_state')
+            if not oauth_state:
+                return api_error(status.HTTP_400_BAD_REQUEST, 'OAuth state is required.')
+            notion_data = NotionOAuthUtils.get_oauth_session(request)
+            if not notion_data or notion_data.get('project_uuid') != project_uuid:
+                return api_error(status.HTTP_404_NOT_FOUND, 'OAuth request not found.')
+            if oauth_state != notion_data.get('state'):
+                return api_error(status.HTTP_400_BAD_REQUEST, 'OAuth request is expired or has been replaced by a newer authorization.')
+            if notion_data.get('status') != 'authorized':
+                return api_error(status.HTTP_400_BAD_REQUEST, 'Notion OAuth authorization is required.')
+            if not notion_data.get('access_token') or not notion_data.get('refresh_token'):
+                return api_error(status.HTTP_400_BAD_REQUEST, 'Notion OAuth authorization is required.')
+            config = {
+                'workspace_id': notion_data.get('workspace_id', ''),
+                'workspace_name': notion_data.get('workspace_name', ''),
+            }
+
         record, error_response = create_connection(project, request.user.username, connection_type, name, config)
         if error_response:
             return error_response
+
+        if connection_type == ConnectionType.NOTION.value and notion_data:
+            ProjectConnectionOauth.objects.upsert_connection_token(
+                project_uuid,
+                record.id,
+                notion_data['access_token'],
+                notion_data['expires_at'],
+                notion_data['refresh_token'],
+                type=ConnectionType.NOTION.value,
+            )
+            NotionOAuthUtils.clear_oauth_session(request)
 
         if email_oauth_data: # for OAuth Email connection
             ProjectConnectionOauth.objects.upsert_connection_token(
@@ -1094,6 +1124,48 @@ class ProjectJiraOauthStatusView(APIView):
 
         connected = ProjectConnectionOauth.objects.get_by_project_uuid(project_uuid, ConnectionType.JIRA_ISSUE.value) is not None
         return Response({'connected': connected})
+
+
+class ProjectNotionOauthStatusView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def get(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            error_msg = f'Project {project_uuid} not found.'
+            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+        workspace = project.workspace
+
+        username = request.user.username
+        if not check_project_admin_permission(username, workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
+        oauth_state = request.GET.get('state')
+        if not oauth_state:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'OAuth state is required.')
+
+        notion_data = NotionOAuthUtils.get_oauth_session(request)
+        if not notion_data:
+            return api_error(status.HTTP_404_NOT_FOUND, 'OAuth request not found.')
+
+        if notion_data.get('project_uuid') != project_uuid:
+            return api_error(status.HTTP_404_NOT_FOUND, 'OAuth request not found.')
+
+        if oauth_state != notion_data.get('state'):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'OAuth request is expired or has been replaced by a newer authorization.')
+
+        status_value = notion_data.get('status')
+        if status_value == 'failure':
+            return api_error(status.HTTP_401_UNAUTHORIZED, notion_data.get('error_msg') or 'OAuth authorization failed.')
+
+        return Response({
+            'status': status_value or 'in-progress',
+            'state': notion_data.get('state', ''),
+        })
 
 
 class ProjectConnectionRecordView(APIView):
