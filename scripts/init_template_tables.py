@@ -6,7 +6,7 @@ import requests
 import base64
 from copy import deepcopy
 from urllib.parse import quote
-sys.path.append('/opt/seaticket/seaqa-web')
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'seahub.settings')
 import django
 
