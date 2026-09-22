@@ -77,3 +77,11 @@ class PropertyTypes:
     GEOLOCATION = 'geolocation'
     BUTTON = 'button'
     LIST = 'list'
+
+class ListTypes:
+    vector = {
+        "list_type": "float32",
+    }
+    int = {
+        "list_type": "int64",
+    }
