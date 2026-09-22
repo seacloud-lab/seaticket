@@ -1,10 +1,10 @@
 import json
 import re
 import logging
-import hashlib
+
 import requests
 import json
-from urllib.parse import quote_plus, quote, urlparse, unquote
+from urllib.parse import quote, urlparse, unquote
 from email.utils import getaddresses, formataddr
 
 from seahub.settings import SERVICE_URL, SEAQA_WEB_SERVICE_URL, ENABLE_GENERAL_TASK, PERSONAL_PROJECT_LIMIT, GROUP_PROJECT_LIMIT, FREE_ORG_PROJECT_LIMIT
@@ -419,27 +419,6 @@ def delete_project(project):
         DeletedProjects(project_uuid=project_uuid).save()
     except Exception as e:
         logger.error('delete project: %s error: %s', str(project_uuid), e)
-
-def url_to_filename(url):
-    """
-    Convert URL to valid filename
-    """
-    # Remove protocol prefix
-    url = re.sub(r'^https?://', '', url)
-
-    # Replace invalid characters
-    filename = quote_plus(url)
-    # filename = unquote(urllib.parse.quote_plus(url))
-
-    # Ensure filename doesn't exceed maximum length limit (255 characters)
-    if len(filename) > 240:
-        # Keep beginning and end, use hash value in the middle
-        hash_part = hashlib.md5(url.encode('utf-8')).hexdigest()[:16]
-        filename = filename[:110] + '_' + hash_part + '_' + filename[-110:]
-
-    # Add .json extension
-    return filename + '.json'
-
 
 def get_ai_credit_by_org_id(org_id):
     role = TEAM_FREE

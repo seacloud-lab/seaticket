@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import json
 import logging
 
 from rest_framework.views import APIView
@@ -9,17 +8,14 @@ from rest_framework import status
 from seahub.api2.throttling import AppRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils.auth import AUTHORIZATION_PREFIX
-from seahub.utils import uuid_str_to_32_chars
 from seahub.project.constants import ConnectionType
 from seahub.project.models import (
     ProjectConnections, ConnectionsViews, ProjectAPIToken
 )
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.project.utils import url_to_filename
-from seahub.utils.storage import get_connection_file_from_s3
 from seahub.seadb_models.utils import (
     list_connection_view_records, list_discourse_forum_replies_records,
-    list_github_issue_record_details
+    list_github_issue_record_details, get_site_content_by_url
 )
 
 logger = logging.getLogger(__name__)
@@ -208,14 +204,9 @@ class ProjectConnectionRowDetailByTokenView(APIView):
                 url = request.GET.get('url')
                 if not url:
                     return api_error(status.HTTP_400_BAD_REQUEST, 'Missing url.')
-                filename = url_to_filename(url)
-                uuid_32_chars = uuid_str_to_32_chars(project_uuid)
-                try:
-                    file_obj = get_connection_file_from_s3(uuid_32_chars, connection_id, filename)
-                    if file_obj:
-                        row_details = json.loads(file_obj.read())
-                except Exception as err:
-                    logger.error('Error retrieving site row details for %s: %s', name, err)
+                content = get_site_content_by_url(seadb_api, project_uuid, connection_id, url)
+                if content is not None:
+                    row_details = {'content': content}
             elif connection.type == ConnectionType.GITHUB_ISSUE.value:
                 _pk = request.GET.get('_pk')
                 if not _pk:

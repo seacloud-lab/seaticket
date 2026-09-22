@@ -809,7 +809,7 @@ def list_general_task_record_details(seadb_api, project_uuid, connection_id, _pk
 # site
 def get_site_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
     site_table_name = SchemaTables.WEB_CRAWL.table_name(connection_id)
-    sql = f"SELECT `_pk`, `title`, `url`, `modified_time`, `outdated` FROM `{site_table_name}` WHERE _pk = {_pk}"
+    sql = f"SELECT `_pk`, `title`, `url`, `content`, `modified_time`, `outdated` FROM `{site_table_name}` WHERE _pk = {_pk}"
     try:
         res = seadb_api.query_rows(project_uuid, sql)
         record = res.get('results')[0] if res.get('results') else {}
@@ -819,6 +819,18 @@ def get_site_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
         record = {}
         column_metadata = []
     return record, column_metadata, ''
+
+
+def get_site_content_by_url(seadb_api, project_uuid, connection_id, url):
+    site_table_name = SchemaTables.WEB_CRAWL.table_name(connection_id)
+    sql = f"SELECT `content` FROM `{site_table_name}` WHERE `url` = ? LIMIT 1"
+    try:
+        res = seadb_api.query_rows(project_uuid, sql, params=[url])
+        results = res.get('results') or []
+        return results[0].get('content') if results else None
+    except Exception as e:
+        logger.error(f'SeaDB query error for site content {site_table_name}: {e}')
+        return None
 
 
 def list_site_record_details(seadb_api, project_uuid, connection_id, _pk):
