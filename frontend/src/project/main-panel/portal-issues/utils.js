@@ -13,7 +13,7 @@ import { IssueForAI } from './models';
 export const generatorIssueURL = ({ issue, workspaceID, projectName }) => {
   const { origin } = location;
   const issueId = issue._id || issue.id;
-  const url = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.PORTAL_ISSUES}/${issueId}/`;
+  const url = `${origin}${siteRoot}workspace/${workspaceID}/project/${encodeURIComponent(projectName)}/${BAR_TYPE.PORTAL_ISSUES}/${issueId}/`;
   const urlObject = new URL(url);
   return urlObject.href;
 };
