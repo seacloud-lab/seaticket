@@ -18,16 +18,16 @@ class Command(BaseCommand):
         parser.add_argument('--admin-password')
 
     def handle(self, *args, **options):
+        if Organization.objects.exists():
+            self.stdout.write('SeaTicket team already exists; skipping first team initialization.')
+            return
+
         team_name = (options['team_name'] or os.environ.get('INIT_SEATICKET_TEAM_NAME', '')).strip()
         admin_email = (options['admin_email'] or os.environ.get('INIT_SEATICKET_TEAM_ADMIN_EMAIL', '')).strip().lower()
         admin_password = options['admin_password'] or os.environ.get('INIT_SEATICKET_TEAM_ADMIN_PASSWORD', '')
 
         if not team_name or not admin_email or not admin_password:
             raise CommandError('Team name, administrator email, and password must not be empty.')
-
-        if Organization.objects.exists():
-            self.stdout.write('SeaTicket team already exists; skipping first team initialization.')
-            return
 
         if Profile.objects.filter(contact_email=admin_email).exists():
             raise CommandError('The first team administrator email already belongs to an existing user.')
