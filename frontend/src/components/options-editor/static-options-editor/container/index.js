@@ -1,10 +1,10 @@
 import React, { forwardRef, useCallback, useEffect, useState, useImperativeHandle } from 'react';
 import classnames from 'classnames';
+import CustomizeButton from '@/components/btn/customize-button';
 import { gettext, KeyCodes } from '@/constants';
 import { searchOptions } from '@/utils/search';
 import { isFunction, isNumber } from '@/utils/type-detection';
 import { Utils } from '@/utils/utils';
-import CustomizeButton from '../../../btn/customize-button';
 import SearchInput from '../../../search-input';
 import toaster from '../../../toaster';
 import Options from '../../options';

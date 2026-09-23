@@ -198,8 +198,9 @@ class FilterPopover extends Component {
             {!readOnly && (
               <div className="sea-metadata-filter-popover-add-btns">
                 <CustomizeButton
-                  className={`popover-add-tool ${canAddFilter ? '' : 'disabled'}`}
-                  callBack={canAddFilter ? () => this.addFilter(scheduleUpdate) : () => {}}
+                  className="popover-add-tool"
+                  callBack={() => this.addFilter(scheduleUpdate)}
+                  disabled={!canAddFilter}
                   name={gettext('Add filter')}
                 />
               </div>
