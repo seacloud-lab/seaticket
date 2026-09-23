@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
-import { IconButton, IconTextBtn } from '@/components';
+import { Button } from 'reactstrap';
+import { Icon, IconButton } from '@/components';
 import { gettext, PERMISSION_TYPES } from '@/constants';
 import { RefreshBtn } from '@/project/components';
 import { BAR_TYPE } from '@/project/constants';
@@ -95,13 +96,19 @@ const TicketTopBar = ({ title, type, permission, toggleBar }) => {
     if (pageSlugId === TICKET_PAGE_SLUG_ID.TYPES && childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
       if (!isRW) return null;
       return (
-        <IconTextBtn icon="plus" onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_TYPE)} text={gettext('New type')} />
+        <Button color="primary" className="btn-xs" onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_TYPE)}>
+          <Icon symbol="plus" aria-hidden="true" />
+          {gettext('New type')}
+        </Button>
       );
     }
     if (pageSlugId === TICKET_PAGE_SLUG_ID.SUBSTATES && childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
       if (!isRW) return null;
       return (
-        <IconTextBtn icon="plus" onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_SUBSTATE)} text={gettext('New substate')} />
+        <Button color="primary" className="btn-xs" onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_SUBSTATE)}>
+          <Icon symbol="plus" aria-hidden="true" />
+          {gettext('New substate')}
+        </Button>
       );
     }
     if (
@@ -114,7 +121,10 @@ const TicketTopBar = ({ title, type, permission, toggleBar }) => {
     if (type === BAR_TYPE.NEW_TICKET) return null;
     if (type === BAR_TYPE.TRASH) return null;
     return (
-      <IconTextBtn icon="all-tickets" onClick={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.NEW)} text={gettext('New ticket')} />
+      <Button color="primary" className="btn-xs" onClick={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.NEW)}>
+        <Icon symbol="all-tickets" aria-hidden="true" />
+        {gettext('New ticket')}
+      </Button>
     );
   }, [type, permission, pageSlugId, childrenPageSlugId, togglePageSlugId]);
 

@@ -9,8 +9,6 @@ import { SKILL_DETAIL_MODE, SKILLS_PAGE_TYPE } from './constants';
 import SkillDetailDialog from './view/skill-detail-dialog';
 import SkillsList from './view/skills-list';
 
-import './index.css';
-
 const { projectUuid, isProjectAdmin } = window.app.pageOptions;
 
 const Skills = ({ title }) => {
@@ -114,8 +112,8 @@ const Skills = ({ title }) => {
       <TopBar>
         <div className="w-100 text-truncate">{title}</div>
         {isProjectAdmin && (
-          <Button color="primary" className="btn-sm create-skill-btn" onClick={onCreate}>
-            <Icon symbol="plus" className="mr-1" aria-hidden="true" />
+          <Button color="primary" className="btn-xs" onClick={onCreate}>
+            <Icon symbol="plus" aria-hidden="true" />
             {gettext('New skill')}
           </Button>
         )}

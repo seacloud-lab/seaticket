@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from 'reactstrap';
-import { IconButton, toaster, CenteredLoading, IconTextBtn } from '@/components';
+import { Icon, IconButton, toaster, CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
 import { AddButton, RefreshBtn } from '@/project/components';
 import { EVENT_BUS_TYPE } from '@/project/constants';
@@ -139,7 +139,10 @@ const TopBar = ({ title, modifyLocalBar }) => {
     if (pageSlugId === CONNECTION_PAGE_SLUG_ID.ALL) {
       if (!isProjectAdmin) return null;
       return (
-        <IconTextBtn onClick={handleNewConnection} text={gettext('New connection')} icon="connection" />
+        <Button color="primary" className="btn-xs" onClick={handleNewConnection}>
+          <Icon symbol="connection" aria-hidden="true" />
+          {gettext('New connection')}
+        </Button>
       );
     }
     if (isConnectionRecordsView(pageSlugId) && childrenPageSlugId) return null;
