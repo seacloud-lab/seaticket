@@ -28,8 +28,8 @@
   margin-bottom: 32px;
 }
 
-.seaqa-connection-record-details-in-dialog .seaqa-email-reply-container .seaqa-email-reply-header {
-  top: -16px;
+.seaqa-connection-record-details-in-dialog .seaqa-email-reply-container {
+  --seaqa-email-reply-header-sticky-top: -16px;
 }
 
 .seaqa-connection-record-details-in-dialog .seaqa-connection-seafile-resource-details .article,

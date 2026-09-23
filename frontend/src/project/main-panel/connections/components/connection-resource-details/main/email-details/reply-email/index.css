@@ -1,4 +1,5 @@
 .seaqa-email-reply-container {
+  --seaqa-email-reply-header-sticky-top: 0;
   margin-bottom: 16px;
   margin-top: 40px;
   background: var(--bs-body-bg);
@@ -19,7 +20,7 @@
   background: var(--bs-body-bg);
   border-radius: 8px 8px 0 0 ;
   position: sticky;
-  top: 0;
+  top: var(--seaqa-email-reply-header-sticky-top);
   z-index: 103;
 }
 

@@ -137,6 +137,6 @@
   font-size: 14px;
 }
 
-.seaqa-connection-record-details .seaqa-email-reply-container .seaqa-email-reply-header {
-  top: 57px;
+.seaqa-connection-record-details .seaqa-email-reply-container {
+  --seaqa-email-reply-header-sticky-top: 57px;
 }
