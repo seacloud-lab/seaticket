@@ -1,10 +1,10 @@
 import React, { forwardRef, useCallback, useEffect, useState, useImperativeHandle } from 'react';
 import classnames from 'classnames';
+import CustomizeButton from '@/components/btn/customize-button';
 import { gettext, KeyCodes } from '@/constants';
 import { searchOptions } from '@/utils/search';
 import { isFunction, isNumber } from '@/utils/type-detection';
 import { Utils } from '@/utils/utils';
-import CustomizeAddTool from '../../../customize-add-tool';
 import SearchInput from '../../../search-input';
 import toaster from '../../../toaster';
 import Options from '../../options';
@@ -153,13 +153,10 @@ const Container = forwardRef(({
       />
       {showCreateBtn && (
         <div className="options-editor-add-tool">
-          <CustomizeAddTool
-            className={classnames('options-editor-add-search-result')}
-            callBack={handleCreate}
-          >
+          <CustomizeButton callBack={handleCreate}>
             <span>{addToolText}</span>
             <span className="ml-1 font-weight-bold">{searchValue.trim()}</span>
-          </CustomizeAddTool>
+          </CustomizeButton>
         </div>
       )}
     </div>

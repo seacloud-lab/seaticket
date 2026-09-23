@@ -20,8 +20,3 @@
   cursor: not-allowed;
   background: var(--bs-body-bg);
 }
-
-.sea-metadata-filter-popover .popover-add-tool.disabled .customize-add-tool-icon,
-.sea-metadata-filter-popover .popover-add-tool.disabled {
-  color: #c2c2c2;
-}

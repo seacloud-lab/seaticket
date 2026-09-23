@@ -51,25 +51,6 @@
   flex-shrink: 0;
 }
 
-.sea-metadata-filter-popover .customize-add-tool.popover-add-tool {
-  height: 32px;
-  width: fit-content;
-  max-width: 100%;
-  font-weight: 400;
-  padding: 0 12px;
-}
-
-.sea-metadata-filter-popover .customize-add-tool.popover-add-tool:hover {
-  background-color: rgba(0, 0, 0, 0.04);
-}
-
-.sea-metadata-filter-popover .customize-add-tool .seaqa-icon-svg {
-  color: var(--bs-sf-grey-text);
-  height: 14px;
-  width: 14px;
-  transform: none;
-}
-
 .sea-metadata-data-filter-popover .popover.bs-popover-auto[data-popper-placement^=top],
 .sea-metadata-data-filter-popover .popover.bs-popover-top {
   margin-bottom: 0;

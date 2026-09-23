@@ -72,16 +72,3 @@
   border-top: 1px solid var(--bs-border-secondary-color);
   padding: 8px;
 }
-
-.sea-metadata-sort-popover .popover-add-tool .customize-add-tool {
-  padding: 5px 12px;
-  width: fit-content;
-  height: 32px;
-  border-radius: 4px;
-}
-
-.sea-metadata-sort-popover .popover-add-tool .customize-add-tool .customize-add-tool-icon {
-  margin-right: 8px;
-  width: 14px;
-  height: 14px;
-}

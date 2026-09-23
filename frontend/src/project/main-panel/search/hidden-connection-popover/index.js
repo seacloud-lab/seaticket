@@ -130,14 +130,14 @@ const HideConnectionPopover = ({ hidePopover, onChange, readOnly, target, placem
         {!readOnly && !searchValue && (
           <div className="seaqa-hide-connections-operations px-2 mt-2 w-100 d-flex justify-content-between gap-2">
             <div
-              className="sea-metadata-hide-connections-operation px-2"
+              className="sea-metadata-hide-connections-operation px-2 h-6 w-50 d-flex justify-content-center align-items-center border-radius-4 cursor-pointer"
               onClick={hideAll}
               aria-label={gettext('Close all')}
             >
               {gettext('Close all')}
             </div>
             <div
-              className="sea-metadata-hide-connections-operation px-2"
+              className="sea-metadata-hide-connections-operation px-2 h-6 w-50 d-flex justify-content-center align-items-center border-radius-4 cursor-pointer"
               onClick={showAll}
               aria-label={gettext('Open all')}
             >

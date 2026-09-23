@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef } from 'react';
-import { Icon } from '@/components';
+import CustomizeButton from '@/components/btn/customize-button';
 import InboxNotificationList from '@/components/common/notification/components/inbox-notification-list';
 import { useNotification } from '@/components/common/notification/hooks/notification';
 import { Z_INDEX, gettext } from '@/constants';
@@ -47,10 +47,11 @@ const Inbox = ({ toggleBar }) => {
     <div className="seaqa-inbox-panel" ref={inboxPanelRef} style={{ zIndex: Z_INDEX.INBOX }}>
       <div className="seaqa-inbox-header">
         <span className="heading">{title}</span>
-        <div className="seaqa-inbox-actions" onClick={markAllAsRead}>
-          <Icon symbol="mark-all-as-read" />
-          <div className="mark-all-as-read">{gettext('Mark all as read')}</div>
-        </div>
+        <CustomizeButton
+          callBack={markAllAsRead}
+          icon="mark-all-as-read"
+          name={gettext('Mark all as read')}
+        />
       </div>
       <InboxNotificationList
         loading={loading}
