@@ -11,10 +11,18 @@
   padding: 0 16px;
 }
 
-.seaqa-connection-record-details .seaqa-connection-record-details-header {
+.seaqa-connection-record-details .seaqa-connection-record-details-header-container {
   position: sticky;
   top: 0;
-  z-index: 103;
+  z-index: 104;
+  margin: 0 -16px;
+  height: fit-content;
+  width: calc(100% + 32px);
+  padding: 0 16px;
+  background-color: var(--bs-body-bg);
+}
+
+.seaqa-connection-record-details .seaqa-connection-record-details-header {
   display: flex;
   overflow: hidden;
   align-items: center;
@@ -86,7 +94,7 @@
 }
 
 .seaqa-connection-record-details .seaqa-connection-email-resource-details {
-  overflow-y: unset;
+  overflow: visible;
   padding-bottom: 28px !important;
 }
 
@@ -127,4 +135,8 @@
 
 .seaqa-connection-record-details .seaqa-connection-record-outdated-option .seaqa-ui-option-name {
   font-size: 14px;
+}
+
+.seaqa-connection-record-details .seaqa-email-reply-container .seaqa-email-reply-header {
+  top: 57px;
 }
