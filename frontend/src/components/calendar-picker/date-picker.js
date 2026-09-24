@@ -6,7 +6,9 @@ import localeData from 'dayjs/plugin/localeData';
 import utc from 'dayjs/plugin/utc';
 import weekOfYear from 'dayjs/plugin/weekOfYear';
 import PropTypes from 'prop-types';
+import { gettext } from '@/constants';
 import { isFunction } from '@/utils/type-detection';
+import IconTooltip from '../icon-tooltip';
 import { translateCalendar } from './utils';
 
 import '@seafile/seafile-calendar/assets/index.css';
@@ -54,12 +56,23 @@ const DatePicker = ({
   const locale = useMemo(() => translateCalendar(), []);
 
   const initCalendarProps = useMemo(() => {
+    const clearIcon = (
+      <IconTooltip
+        icon="close"
+        tip={gettext('Clear')}
+        size={{ btn: 20, icon: 12 }}
+        hoverBackground={true}
+        placement="bottom"
+        className="mx-0"
+      />
+    );
     return {
       defaultValue,
       disabledDate,
       format,
       locale,
       showHourAndMinute,
+      clearIcon,
       ...calendarProps,
     };
   }, [defaultValue, disabledDate, format, locale, showHourAndMinute, calendarProps]);
