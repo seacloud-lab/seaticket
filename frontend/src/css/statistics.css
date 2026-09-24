@@ -2,23 +2,23 @@
 
 /* Tab Navigation */
 .tab-nav-container {
-  border-bottom: 1px solid #e9ecef;
   margin-bottom: 20px;
+  border-bottom: 1px solid #e9ecef;
 }
 
 .tab-nav-container .nav {
   display: flex;
+  height: 48px;
   margin: 0 0 -1px;
   padding: 0;
   list-style: none;
-  height: 48px;
 }
 
 .tab-nav-container .nav-item {
   min-width: 96px;
-  text-align: center;
   height: 48px;
   padding: 0 32px;
+  text-align: center;
   line-height: 48px;
   border-right: 1px solid var(--bs-border-tertiary-color);
   border-bottom: 1px solid var(--bs-border-tertiary-color);

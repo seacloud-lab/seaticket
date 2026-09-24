@@ -20,15 +20,15 @@
 
 /* file-operation toolbar eg: edit, upload, new, share*/
 .btn.operation-item {
-  padding: 0 0.5rem;
   height: 30px;
   min-width: 55px;
   width: fit-content;
   margin-right: 0.75rem;
   margin-bottom: 16px;
-  background-color: #fff;
   line-height: 29px;
   font-weight: normal;
+  padding: 0 0.5rem;
+  background-color: #fff;
   border: 1px solid #ccc;
   border-radius: 4px;
 }
@@ -44,13 +44,13 @@
 }
 
 .group-operations .group-op-item {
-  padding: 0 0.5rem;
   height: 30px;
   min-width: 46px;
+  padding: 0 0.5rem;
   font-size: 1.125rem;
-  background-color: #fff;
   line-height: 29px;
   font-weight: normal;
+  background-color: #fff;
   border: 1px solid #ccc;
   border-radius: 2px;
 }
@@ -59,20 +59,20 @@
 /* begin view-mode toolbar */
 .detail-btn button,
 .sf-view-mode-btn {
-  padding: 0;
   height: 30px;
   min-width: 2rem;
+  padding: 0;
   color: #aaa;
-  background-color: #fff;
-  border: 1px solid #ccc;
   line-height: 29px;
   font-size: 18px;
+  background-color: #fff;
+  border: 1px solid #ccc;
   border-radius: 2px;
 }
 
 .detail-btn button {
-  font-size: 15px;
   padding-top: 1px;
+  font-size: 15px;
 }
 
 .sf-view-mode-btn.current-mode {
@@ -99,8 +99,8 @@
 
 .path-toolbar .toolbar-item {
   display: inline-block;
-  text-align: center;
   margin-left: 0.75rem;
+  text-align: center;
 }
 
 .path-toolbar .toolbar-item a {
