@@ -12,8 +12,8 @@ import {
   SETTING_TAB,
   SETTING_TABS,
   EMPTY_CHAT_ALLOWED_SOURCES,
-  DEFAULT_WELCOME_EMAIL_SUBJECT,
-  DEFAULT_WELCOME_EMAIL_CONTENT,
+  WELCOME_EMAIL_SUBJECT_MAX_LENGTH,
+  WELCOME_EMAIL_CONTENT_MAX_LENGTH,
 } from './constants';
 import CustomizationSettings from './customization-settings';
 import { normalizeChatAllowedSources, isConnectionActive } from './utils';
@@ -53,9 +53,9 @@ const Settings = () => {
   const [isSavingChat, setIsSavingChat] = useState(false);
 
   // Welcome email
-  const [sendWelcomeEmail, setSendWelcomeEmail] = useState(false);
-  const [welcomeEmailSubject, setWelcomeEmailSubject] = useState(DEFAULT_WELCOME_EMAIL_SUBJECT);
-  const [welcomeEmailContent, setWelcomeEmailContent] = useState(DEFAULT_WELCOME_EMAIL_CONTENT);
+  const [enableSendEmail, setEnableSendEmail] = useState(false);
+  const [welcomeEmailSubject, setWelcomeEmailSubject] = useState('');
+  const [welcomeEmailContent, setWelcomeEmailContent] = useState('');
   const [isSavingWelcomeEmail, setIsSavingWelcomeEmail] = useState(false);
 
   const [customDomain, setCustomDomain] = useState('');
@@ -86,9 +86,9 @@ const Settings = () => {
     setHasSavedPassword(!!data.enable_password_protection);
     setIsEditingPassword(false);
     setServerChatAllowedSources(data.chat_allowed_sources);
-    setSendWelcomeEmail(!!data.send_welcome_email);
-    setWelcomeEmailSubject(data.welcome_email_subject || DEFAULT_WELCOME_EMAIL_SUBJECT);
-    setWelcomeEmailContent(data.welcome_email_content || DEFAULT_WELCOME_EMAIL_CONTENT);
+    setEnableSendEmail(!!data.enable_send_email);
+    setWelcomeEmailSubject(data.welcome_email_subject || '');
+    setWelcomeEmailContent(data.welcome_email_content || '');
   }, []);
 
   const applyLoadedCustomDomain = useCallback((data) => {
@@ -363,7 +363,7 @@ const Settings = () => {
 
     setIsSavingWelcomeEmail(true);
     portalAPI.updateSettings(projectUuid, {
-      send_welcome_email: sendWelcomeEmail ? 1 : 0,
+      enable_send_email: enableSendEmail ? 1 : 0,
       welcome_email_subject: welcomeEmailSubject,
       welcome_email_content: welcomeEmailContent,
     }).then(() => {
@@ -373,7 +373,7 @@ const Settings = () => {
     }).finally(() => {
       setIsSavingWelcomeEmail(false);
     });
-  }, [isSavingWelcomeEmail, sendWelcomeEmail, welcomeEmailSubject, welcomeEmailContent]);
+  }, [isSavingWelcomeEmail, enableSendEmail, welcomeEmailSubject, welcomeEmailContent]);
 
   const hasUnsavedCustomDomain = trimmedCustomDomain !== savedCustomDomain;
   const isSavedCustomDomainCurrent = !!savedCustomDomain && !hasUnsavedCustomDomain;
@@ -696,8 +696,8 @@ const Settings = () => {
         <TabPane tabId={SETTING_TAB.EMAIL_NOTIFICATIONS}>
           <div className="portal-settings-content">
             <Switch
-              checked={sendWelcomeEmail}
-              onChange={() => setSendWelcomeEmail(prev => !prev)}
+              checked={enableSendEmail}
+              onChange={() => setEnableSendEmail(prev => !prev)}
               placeholder={gettext('Automatically send a welcome email when a user is added to the portal')}
               textPosition="right"
             />
@@ -708,7 +708,8 @@ const Settings = () => {
                 className="form-control"
                 value={welcomeEmailSubject}
                 onChange={event => setWelcomeEmailSubject(event.target.value)}
-                disabled={!sendWelcomeEmail}
+                maxLength={WELCOME_EMAIL_SUBJECT_MAX_LENGTH}
+                disabled={!enableSendEmail}
               />
               <label className="portal-settings-label mt-3">{gettext('Email content')}</label>
               <textarea
@@ -716,7 +717,8 @@ const Settings = () => {
                 rows="8"
                 value={welcomeEmailContent}
                 onChange={event => setWelcomeEmailContent(event.target.value)}
-                disabled={!sendWelcomeEmail}
+                maxLength={WELCOME_EMAIL_CONTENT_MAX_LENGTH}
+                disabled={!enableSendEmail}
               />
               <div className="mt-3">
                 <Button color="primary" disabled size="sm">{gettext('Log in')}</Button>

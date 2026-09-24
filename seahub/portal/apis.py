@@ -56,6 +56,8 @@ from seahub.utils.auth import gen_user_virtual_id
 from seahub.utils.mail import send_html_email_with_dj_template
 from seahub.portal.models import PortalExternalInvitation, PortalIssueViews
 from seahub.utils import is_valid_email, IS_EMAIL_CONFIGURED, normalize_cache_key
+from seahub.constants import PORTAL_WELCOME_EMAIL_CONTENT, PORTAL_WELCOME_EMAIL_SUBJECT, \
+    PORTAL_WELCOME_EMAIL_CONTENT_MAX_LENGTH, PORTAL_WELCOME_EMAIL_SUBJECT_MAX_LENGTH
 from seahub.knowledge_base.knowledge_base_utils import get_knowledge_base_record_by_pk
 from seahub.avatar.settings import AVATAR_MAX_SIZE
 
@@ -1554,9 +1556,9 @@ class PortalSettingsView(APIView):
                 'connection_ids': [],
                 'extra_sources': [],
             }
-        send_welcome_email = bool(portal_settings.get('send_welcome_email', False))
-        welcome_email_subject = portal_settings.get('welcome_email_subject', '')
-        welcome_email_content = portal_settings.get('welcome_email_content', '')
+        enable_send_email = bool(portal_settings.get('enable_send_email', True))
+        welcome_email_subject = portal_settings.get('welcome_email_subject') or PORTAL_WELCOME_EMAIL_SUBJECT
+        welcome_email_content = portal_settings.get('welcome_email_content') or PORTAL_WELCOME_EMAIL_CONTENT
         daily_chat_credit_limit = portal_settings.get('daily_chat_credit_limit', 50)
         try:
             daily_chat_credit_limit = int(daily_chat_credit_limit)
@@ -1571,7 +1573,7 @@ class PortalSettingsView(APIView):
             'chat_allowed_sources': chat_allowed_sources,
             'daily_chat_credit_limit': daily_chat_credit_limit,
             'portal_home_settings': portal_home_settings,
-            'send_welcome_email': send_welcome_email,
+            'enable_send_email': enable_send_email,
             'welcome_email_subject': welcome_email_subject,
             'welcome_email_content': welcome_email_content,
         })
@@ -1595,14 +1597,14 @@ class PortalSettingsView(APIView):
         portal_logo = request.data.get('portal_logo')
         portal_home_settings = request.data.get('portal_home_settings')
         chat_allowed_sources = request.data.get('chat_allowed_sources')
-        raw_send_welcome_email = request.data.get('send_welcome_email')
+        raw_enable_send_email = request.data.get('enable_send_email')
         welcome_email_subject = request.data.get('welcome_email_subject')
         welcome_email_content = request.data.get('welcome_email_content')
 
         bool_field_mapping = {
             'allow_anonymous': raw_allow_anonymous,
             'enable_password_protection': raw_enable_password_protection,
-            'send_welcome_email': raw_send_welcome_email,
+            'enable_send_email': raw_enable_send_email,
         }
         bool_updates = {}
         try:
@@ -1618,10 +1620,24 @@ class PortalSettingsView(APIView):
             error_msg = 'daily_chat_credit_limit invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        if welcome_email_subject is not None and not isinstance(welcome_email_subject, str):
-            return api_error(status.HTTP_400_BAD_REQUEST, 'welcome_email_subject invalid.')
-        if welcome_email_content is not None and not isinstance(welcome_email_content, str):
-            return api_error(status.HTTP_400_BAD_REQUEST, 'welcome_email_content invalid.')
+        if welcome_email_subject is not None:
+            if not isinstance(welcome_email_subject, str):
+                return api_error(status.HTTP_400_BAD_REQUEST, 'welcome_email_subject invalid.')
+            if len(welcome_email_subject) > PORTAL_WELCOME_EMAIL_SUBJECT_MAX_LENGTH:
+                return api_error(
+                    status.HTTP_400_BAD_REQUEST,
+                    'welcome_email_subject is too long (maximum is %s characters).' %
+                    PORTAL_WELCOME_EMAIL_SUBJECT_MAX_LENGTH,
+                )
+        if welcome_email_content is not None:
+            if not isinstance(welcome_email_content, str):
+                return api_error(status.HTTP_400_BAD_REQUEST, 'welcome_email_content invalid.')
+            if len(welcome_email_content) > PORTAL_WELCOME_EMAIL_CONTENT_MAX_LENGTH:
+                return api_error(
+                    status.HTTP_400_BAD_REQUEST,
+                    'welcome_email_content is too long (maximum is %s characters).' %
+                    PORTAL_WELCOME_EMAIL_CONTENT_MAX_LENGTH,
+                )
 
         enable_password_protection = bool_updates.get('enable_password_protection')
         if enable_password_protection and password and len(password) < 8:
@@ -2362,54 +2378,47 @@ class PortalExternalInvitationsView(APIView):
             error_msg = _('The user is already a member of your team. Cannot invite the user to the portal.')
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        if portal_settings.get('send_welcome_email') and not IS_EMAIL_CONFIGURED:
+        enable_send_email = portal_settings.get('enable_send_email', True)
+        if enable_send_email and not IS_EMAIL_CONFIGURED:
             error_msg = _('Failed to send email, email service is not properly configured, please contact administrator.')
             return api_error(status.HTTP_503_SERVICE_UNAVAILABLE, error_msg)
 
         created_external_user = False
-        send_welcome_email = portal_settings.get('send_welcome_email')
         try:
             with transaction.atomic():
-                invitation = None
-                if send_welcome_email:
-                    invitation = PortalExternalInvitation.objects.add(
-                        inviter=username,
-                        email=email,
-                        project_uuid=str(project.uuid),
-                        customer_id=customer.id if customer else None,
-                    )
+                invitation = PortalExternalInvitation.objects.add(
+                    inviter=username,
+                    email=email,
+                    project_uuid=str(project.uuid),
+                    customer_id=customer.id if customer else None,
+                )
                 if not external_user:
                     external_user = ProjectExternalUser.objects.create(
                         email=email,
                         username=gen_user_virtual_id(),
                         project_uuid=str(project.uuid),
-                        customer_id=customer.id if customer and not send_welcome_email else None,
-                        activated=not send_welcome_email,
+                        activated=False,
                     )
                     created_external_user = True
-                elif not send_welcome_email:
-                    external_user.customer_id = customer.id
-                    external_user.activated = True
-                    external_user.save(update_fields=['customer_id', 'activated'])
         except Exception as e:
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
-
-        if send_welcome_email:
-            invitation_link = invitation.get_link(request)
-            if not invitation_link:
+        
+        invitation_link = invitation.get_link(request)
+        if not invitation_link:
+            try:
+                invitation.delete()
+            except Exception as e:
+                logger.error(e)
+            if created_external_user:
                 try:
-                    invitation.delete()
+                    external_user.delete()
                 except Exception as e:
                     logger.error(e)
-                if created_external_user:
-                    try:
-                        external_user.delete()
-                    except Exception as e:
-                        logger.error(e)
-                error_msg = 'portal public domain is not configured.'
-                return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+            error_msg = 'portal public domain is not configured.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
+        if enable_send_email:
             raw_portal_name = portal_settings.get('portal_name')
             portal_name = raw_portal_name.strip() if isinstance(raw_portal_name, str) else ''
             portal_name = portal_name or _('Support portal')

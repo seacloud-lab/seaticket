@@ -23,6 +23,7 @@ from seahub.portal.visitor_session import (
 )
 from seahub.portal.custom_domain import is_request_using_portal_domain
 from seahub.portal.models import PortalCustomDomain, PortalDomainAlias
+from seahub.constants import PORTAL_WELCOME_EMAIL_CONTENT, PORTAL_WELCOME_EMAIL_SUBJECT
 
 
 
@@ -193,6 +194,7 @@ def get_portal_settings(project):
         project_settings = {}
     portal_settings = project_settings.get('portal', {})
     streaming_response = bool(project_settings.get('streaming_response', True))
+    enable_send_email = portal_settings.get('enable_send_email', True)
     return {
         'enable_portal': bool(portal_settings.get('enable_portal', False)),
         'allow_anonymous': bool(portal_settings.get('allow_anonymous', False)),
@@ -202,9 +204,9 @@ def get_portal_settings(project):
         'portal_name': portal_settings.get('portal_name', ''),
         'portal_logo': portal_settings.get('portal_logo', ''),
         'portal_home_settings': portal_settings.get('portal_home_settings', {}),
-        'send_welcome_email': bool(portal_settings.get('send_welcome_email', False)),
-        'welcome_email_subject': portal_settings.get('welcome_email_subject', ''),
-        'welcome_email_content': portal_settings.get('welcome_email_content', ''),
+        'enable_send_email': bool(enable_send_email),
+        'welcome_email_subject': portal_settings.get('welcome_email_subject') or PORTAL_WELCOME_EMAIL_SUBJECT,
+        'welcome_email_content': portal_settings.get('welcome_email_content') or PORTAL_WELCOME_EMAIL_CONTENT,
     }
 
 

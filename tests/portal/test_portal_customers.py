@@ -366,7 +366,7 @@ class TestPortalCustomersView:
     def test_invitation_assigns_customer_only_when_accepted(self, factory, project_creator, real_project):
         customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
         project_settings = json.loads(real_project.settings) if real_project.settings else {}
-        project_settings.setdefault('portal', {})['send_welcome_email'] = True
+        project_settings.setdefault('portal', {})['enable_send_email'] = True
         real_project.settings = json.dumps(project_settings)
         real_project.save(update_fields=['settings'])
         member = ProjectExternalUser.objects.create(
@@ -462,7 +462,7 @@ class TestPortalCustomersView:
     ):
         email = 'new-user@example.com'
         project_settings = json.loads(real_project.settings) if real_project.settings else {}
-        project_settings.setdefault('portal', {})['send_welcome_email'] = True
+        project_settings.setdefault('portal', {})['enable_send_email'] = True
         real_project.settings = json.dumps(project_settings)
         real_project.save(update_fields=['settings'])
         request = factory.post(
@@ -487,7 +487,7 @@ class TestPortalCustomersView:
             project_uuid=str(real_project.uuid),
         ).exists()
 
-    def test_invitation_without_welcome_email_assigns_external_user_to_customer(
+    def test_invitation_without_welcome_email_keeps_pending_invitation(
         self, factory, project_creator, real_project
     ):
         email = 'new-user@example.com'
@@ -495,6 +495,10 @@ class TestPortalCustomersView:
             project_uuid=str(real_project.uuid),
             name='Acme',
         )
+        project_settings = json.loads(real_project.settings) if real_project.settings else {}
+        project_settings.setdefault('portal', {})['enable_send_email'] = False
+        real_project.settings = json.dumps(project_settings)
+        real_project.save(update_fields=['settings'])
         request = factory.post(
             f'/api/v1/portal/{real_project.uuid}/external-invitations/',
             data={'email': email, 'customer_id': customer.id},
@@ -502,7 +506,8 @@ class TestPortalCustomersView:
         )
         request.user = project_creator
 
-        with patch('seahub.portal.apis.send_html_email_with_dj_template') as send_mail:
+        with patch.object(PortalExternalInvitation, 'get_link', return_value='https://portal.test/invite'), \
+                patch('seahub.portal.apis.send_html_email_with_dj_template') as send_mail:
             response = PortalExternalInvitationsView.as_view()(request, project_uuid=str(real_project.uuid))
 
         assert response.status_code == 200
@@ -510,13 +515,26 @@ class TestPortalCustomersView:
             email=email,
             project_uuid=str(real_project.uuid),
         )
-        assert external_user.customer_id == customer.id
-        assert external_user.activated is True
-        assert not PortalExternalInvitation.objects.filter(
+        assert external_user.customer_id is None
+        assert external_user.activated is False
+        invitation = PortalExternalInvitation.objects.get(
             email=email,
             project_uuid=str(real_project.uuid),
-        ).exists()
+        )
+        assert invitation.customer_id == customer.id
         send_mail.assert_not_called()
+
+        accept_request = factory.get(f'/external/accept/{invitation.token}/')
+        accept_response = portal_external_invitation_accept_view(
+            accept_request, invitation.token, str(real_project.uuid)
+        )
+
+        assert accept_response.status_code == 302
+        external_user.refresh_from_db()
+        invitation.refresh_from_db()
+        assert external_user.customer_id == customer.id
+        assert external_user.activated is True
+        assert invitation.accepted_at is not None
 
     def test_invitation_acceptance_rolls_back_on_user_update_failure(self, factory, project_creator, real_project):
         customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')

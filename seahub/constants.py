@@ -54,3 +54,18 @@ SAML_ATTRIBUTE_MAPPING = {
 }
 
 TEMPLATE_NAME = 'template'
+
+PORTAL_WELCOME_EMAIL_CONTENT = """Dear Customer,
+
+You are invited to join {portal_name} support portal.
+
+Through the {portal_name} support portal, you can submit requests, follow their progress, and communicate with our support team.
+
+If you did not expect this message or believe it was sent in error, please reply to this email to contact our support team. We look forward to assisting you.
+
+Best regards,
+{portal_name} Support Team"""
+
+PORTAL_WELCOME_EMAIL_SUBJECT = 'Welcome to {portal_name} Support'
+PORTAL_WELCOME_EMAIL_SUBJECT_MAX_LENGTH = 50
+PORTAL_WELCOME_EMAIL_CONTENT_MAX_LENGTH = 1000
