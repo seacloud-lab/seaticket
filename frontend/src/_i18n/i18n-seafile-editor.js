@@ -15,7 +15,7 @@ i18n
     fallbackLng: 'en',
     ns: ['seafile-editor'],
     defaultNS: 'seafile-editor',
-    whitelist: ['en', 'zh-CN'],
+    whitelist: ['en', 'fr', 'de', 'zh-CN'],
     backend: {
       loadPath: mediaUrl + 'locales/{{ ns }}/{{ lng }}.json',
       // loadPath: '/media/locales/{{lng}}/{{ns}}.json',
