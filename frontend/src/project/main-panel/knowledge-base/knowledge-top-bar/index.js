@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
-import { IconButton, IconTextBtn, SecondaryBtn } from '@/components';
+import { Button } from 'reactstrap';
+import { Icon, IconButton, SecondaryBtn } from '@/components';
 import { gettext, PERMISSION_TYPES } from '@/constants';
 import { RefreshBtn } from '@/project/components';
 import TopBar from '../../top-bar';
@@ -64,7 +65,10 @@ const KnowledgeTopBar = ({ title, permission }) => {
   const renderRightChildren = useCallback(() => {
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
       return (
-        <IconTextBtn onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.NEW)} text={gettext('New record')} icon="knowledge-base" />
+        <Button color="primary" className="btn-xs" onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.NEW)}>
+          <Icon symbol="knowledge-base" aria-hidden="true" />
+          {gettext('New record')}
+        </Button>
       );
     }
 

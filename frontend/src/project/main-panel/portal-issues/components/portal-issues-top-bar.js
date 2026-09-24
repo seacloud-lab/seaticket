@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
-import { IconButton, IconTextBtn } from '@/components';
+import { Button } from 'reactstrap';
+import { Icon, IconButton } from '@/components';
 import { gettext, PERMISSION_TYPES } from '@/constants';
 import { RefreshBtn } from '@/project/components';
 import { EVENT_BUS_TYPE } from '@/project/constants/event-bus-type';
@@ -60,13 +61,19 @@ const PortalIssuesTopBar = ({ title, permission, type }) => {
     if (pageSlugId === PORTAL_ISSUE_PAGE_SLUG_ID.TYPES) {
       if (!isRW) return null;
       return (
-        <IconTextBtn icon="plus" onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_TYPE)} text={gettext('New type')} />
+        <Button color="primary" className="btn-xs" onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_TYPE)}>
+          <Icon symbol="plus" aria-hidden="true" />
+          {gettext('New type')}
+        </Button>
       );
     }
     if (pageSlugId === PORTAL_ISSUE_PAGE_SLUG_ID.SUBSTATES) {
       if (!isRW) return null;
       return (
-        <IconTextBtn icon="plus" onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_SUBSTATE)} text={gettext('New substate')} />
+        <Button color="primary" className="btn-xs" onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_SUBSTATE)}>
+          <Icon symbol="plus" aria-hidden="true" />
+          {gettext('New substate')}
+        </Button>
       );
     }
     return null;

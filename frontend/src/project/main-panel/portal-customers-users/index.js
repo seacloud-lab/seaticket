@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { CommonOperationConfirmationDialog, IconTextBtn, toaster } from '@/components';
+import { Button } from 'reactstrap';
+import { CommonOperationConfirmationDialog, Icon, toaster } from '@/components';
 import { gettext } from '@/constants';
 import { portalAPI } from '@/portal/api';
 import { Utils } from '@/utils/utils';
@@ -233,19 +234,15 @@ const PortalCustomersUsers = ({ title }) => {
         {[
           <span key="title" className="text-truncate" title={title}>{title}</span>,
           activeTab === Tabs.CUSTOMERS ? (
-            <IconTextBtn
-              key="new-customer"
-              icon="plus"
-              onClick={() => setCustomerToEdit({})}
-              text={gettext('New customer')}
-            />
+            <Button key="new-customer" color="primary" className="btn-xs" onClick={() => setCustomerToEdit({})}>
+              <Icon symbol="plus" aria-hidden="true" />
+              {gettext('New customer')}
+            </Button>
           ) : (
-            <IconTextBtn
-              key="invite-users"
-              icon="invite-members"
-              onClick={() => setInviteDialogOpen(true)}
-              text={gettext('Invite users')}
-            />
+            <Button key="invite-users" color="primary" className="btn-xs" onClick={() => setInviteDialogOpen(true)}>
+              <Icon symbol="invite-members" aria-hidden="true" />
+              {gettext('Invite users')}
+            </Button>
           ),
         ]}
       </TopBar>
