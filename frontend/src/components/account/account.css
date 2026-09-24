@@ -23,7 +23,7 @@
   text-decoration: none;
 }
 
-@media (max-width:767px) {
+@media (max-width: 767px) {
   #account .account-toggle {
     font-size: 19px;
     line-height: 1;
