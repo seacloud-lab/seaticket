@@ -56,7 +56,8 @@ from seahub.utils.auth import gen_user_virtual_id
 from seahub.utils.mail import send_html_email_with_dj_template
 from seahub.portal.models import PortalExternalInvitation, PortalIssueViews
 from seahub.utils import is_valid_email, IS_EMAIL_CONFIGURED, normalize_cache_key
-from seahub.base.templatetags.seahub_tags import email2nickname
+from seahub.constants import PORTAL_WELCOME_EMAIL_CONTENT, PORTAL_WELCOME_EMAIL_SUBJECT, \
+    PORTAL_WELCOME_EMAIL_CONTENT_MAX_LENGTH, PORTAL_WELCOME_EMAIL_SUBJECT_MAX_LENGTH
 from seahub.knowledge_base.knowledge_base_utils import get_knowledge_base_record_by_pk
 from seahub.avatar.settings import AVATAR_MAX_SIZE
 
@@ -1555,6 +1556,9 @@ class PortalSettingsView(APIView):
                 'connection_ids': [],
                 'extra_sources': [],
             }
+        enable_send_email = bool(portal_settings.get('enable_send_email', True))
+        welcome_email_subject = portal_settings.get('welcome_email_subject') or PORTAL_WELCOME_EMAIL_SUBJECT
+        welcome_email_content = portal_settings.get('welcome_email_content') or PORTAL_WELCOME_EMAIL_CONTENT
         daily_chat_credit_limit = portal_settings.get('daily_chat_credit_limit', 50)
         try:
             daily_chat_credit_limit = int(daily_chat_credit_limit)
@@ -1569,6 +1573,9 @@ class PortalSettingsView(APIView):
             'chat_allowed_sources': chat_allowed_sources,
             'daily_chat_credit_limit': daily_chat_credit_limit,
             'portal_home_settings': portal_home_settings,
+            'enable_send_email': enable_send_email,
+            'welcome_email_subject': welcome_email_subject,
+            'welcome_email_content': welcome_email_content,
         })
 
     @require_org_context
@@ -1590,10 +1597,14 @@ class PortalSettingsView(APIView):
         portal_logo = request.data.get('portal_logo')
         portal_home_settings = request.data.get('portal_home_settings')
         chat_allowed_sources = request.data.get('chat_allowed_sources')
+        raw_enable_send_email = request.data.get('enable_send_email')
+        welcome_email_subject = request.data.get('welcome_email_subject')
+        welcome_email_content = request.data.get('welcome_email_content')
 
         bool_field_mapping = {
             'allow_anonymous': raw_allow_anonymous,
             'enable_password_protection': raw_enable_password_protection,
+            'enable_send_email': raw_enable_send_email,
         }
         bool_updates = {}
         try:
@@ -1608,6 +1619,25 @@ class PortalSettingsView(APIView):
         if daily_chat_credit_limit is not None and daily_chat_credit_limit < 0:
             error_msg = 'daily_chat_credit_limit invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
+        if welcome_email_subject is not None:
+            if not isinstance(welcome_email_subject, str):
+                return api_error(status.HTTP_400_BAD_REQUEST, 'welcome_email_subject invalid.')
+            if len(welcome_email_subject) > PORTAL_WELCOME_EMAIL_SUBJECT_MAX_LENGTH:
+                return api_error(
+                    status.HTTP_400_BAD_REQUEST,
+                    'welcome_email_subject is too long (maximum is %s characters).' %
+                    PORTAL_WELCOME_EMAIL_SUBJECT_MAX_LENGTH,
+                )
+        if welcome_email_content is not None:
+            if not isinstance(welcome_email_content, str):
+                return api_error(status.HTTP_400_BAD_REQUEST, 'welcome_email_content invalid.')
+            if len(welcome_email_content) > PORTAL_WELCOME_EMAIL_CONTENT_MAX_LENGTH:
+                return api_error(
+                    status.HTTP_400_BAD_REQUEST,
+                    'welcome_email_content is too long (maximum is %s characters).' %
+                    PORTAL_WELCOME_EMAIL_CONTENT_MAX_LENGTH,
+                )
 
         enable_password_protection = bool_updates.get('enable_password_protection')
         if enable_password_protection and password and len(password) < 8:
@@ -1646,6 +1676,10 @@ class PortalSettingsView(APIView):
 
         if chat_allowed_sources is not None:
             portal_settings['chat_allowed_sources'] = chat_allowed_sources
+        if welcome_email_subject is not None:
+            portal_settings['welcome_email_subject'] = welcome_email_subject
+        if welcome_email_content is not None:
+            portal_settings['welcome_email_content'] = welcome_email_content
         if daily_chat_credit_limit is not None:
             portal_settings['daily_chat_credit_limit'] = daily_chat_credit_limit
 
@@ -2320,7 +2354,8 @@ class PortalExternalInvitationsView(APIView):
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        if not get_portal_settings(project).get('enable_portal'):
+        portal_settings = get_portal_settings(project)
+        if not portal_settings.get('enable_portal'):
             error_msg = 'Portal is not enabled.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
@@ -2343,7 +2378,8 @@ class PortalExternalInvitationsView(APIView):
             error_msg = _('The user is already a member of your team. Cannot invite the user to the portal.')
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        if not IS_EMAIL_CONFIGURED:
+        enable_send_email = portal_settings.get('enable_send_email', True)
+        if enable_send_email and not IS_EMAIL_CONFIGURED:
             error_msg = _('Failed to send email, email service is not properly configured, please contact administrator.')
             return api_error(status.HTTP_503_SERVICE_UNAVAILABLE, error_msg)
 
@@ -2367,14 +2403,9 @@ class PortalExternalInvitationsView(APIView):
         except Exception as e:
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
-
-        context = {
-            'token': invitation.token,
-            'inviter_name': email2nickname(username),
-            'project_uuid': str(project.uuid),
-            'invitation_link': invitation.get_link(request),
-        }
-        if not context['invitation_link']:
+        
+        invitation_link = invitation.get_link(request)
+        if not invitation_link:
             try:
                 invitation.delete()
             except Exception as e:
@@ -2387,24 +2418,36 @@ class PortalExternalInvitationsView(APIView):
             error_msg = 'portal public domain is not configured.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        sent = False
-        try:
-            sent = send_html_email_with_dj_template(email, _('Support Portal Invitation'), 'portal/external_invitation_email.html', context=context)
-        except Exception as e:
-            logger.error(e)
+        if enable_send_email:
+            raw_portal_name = portal_settings.get('portal_name')
+            portal_name = raw_portal_name.strip() if isinstance(raw_portal_name, str) else ''
+            portal_name = portal_name or _('Support portal')
+            raw_subject = portal_settings.get('welcome_email_subject')
+            raw_content = portal_settings.get('welcome_email_content')
+            subject = raw_subject.replace('{portal_name}', portal_name) if isinstance(raw_subject, str) else ''
+            content = raw_content.replace('{portal_name}', portal_name) if isinstance(raw_content, str) else ''
+            context = {
+                'welcome_email_content': content,
+                'invitation_link': invitation_link,
+            }
             sent = False
-        if not sent:
             try:
-                invitation.delete()
+                sent = send_html_email_with_dj_template(email, subject, 'portal/external_welcome_email.html', context=context)
             except Exception as e:
                 logger.error(e)
-            if created_external_user:
+                sent = False
+            if not sent:
                 try:
-                    external_user.delete()
+                    invitation.delete()
                 except Exception as e:
                     logger.error(e)
-            error_msg = 'Internal Server Error'
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
+                if created_external_user:
+                    try:
+                        external_user.delete()
+                    except Exception as e:
+                        logger.error(e)
+                error_msg = 'Internal Server Error'
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({'success': True})
 

@@ -32,10 +32,14 @@ from seahub.portal.models import PortalCustomDomain, PortalDomainAlias, PortalEx
 from seahub.portal.utils import load_portal_preview_token
 from seahub.portal.portal_issue_types import PortalIssueTypeAPIView
 from seahub.portal.portal_issue_substates import PortalIssueSubstateAPIView
+from seahub.constants import PORTAL_WELCOME_EMAIL_CONTENT, PORTAL_WELCOME_EMAIL_SUBJECT, \
+    PORTAL_WELCOME_EMAIL_CONTENT_MAX_LENGTH, PORTAL_WELCOME_EMAIL_SUBJECT_MAX_LENGTH
 
 
 def _set_portal_settings(project, *, enable_portal=True, allow_anonymous=False,
-                         enable_password_protection=False, password=None):
+                         enable_password_protection=False, password=None,
+                         enable_send_email=None, welcome_email_subject=None,
+                         welcome_email_content=None, portal_name=None):
     settings_dict = json.loads(project.settings) if project.settings else {}
     portal = settings_dict.get('portal', {})
     portal['enable_portal'] = bool(enable_portal)
@@ -43,6 +47,14 @@ def _set_portal_settings(project, *, enable_portal=True, allow_anonymous=False,
     portal['enable_password_protection'] = bool(enable_password_protection)
     if password is not None:
         portal['password'] = password
+    if enable_send_email is not None:
+        portal['enable_send_email'] = bool(enable_send_email)
+    if welcome_email_subject is not None:
+        portal['welcome_email_subject'] = welcome_email_subject
+    if welcome_email_content is not None:
+        portal['welcome_email_content'] = welcome_email_content
+    if portal_name is not None:
+        portal['portal_name'] = portal_name
     settings_dict['portal'] = portal
     project.settings = json.dumps(settings_dict)
     project.save(update_fields=['settings'])
@@ -440,6 +452,37 @@ class TestPortalSettingsView:
         assert resp.status_code == 200
         assert resp.data['allow_anonymous'] is True
 
+    def test_get_returns_default_welcome_email_settings(self, factory, project_creator, real_project):
+        project = real_project
+        _set_portal_settings(project, allow_anonymous=False)
+
+        request = factory.get(f"/api/v1/portal/{project.uuid}/settings/")
+        request.user = project_creator
+
+        resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        assert resp.data['enable_send_email'] is True
+        assert resp.data['welcome_email_subject'] == PORTAL_WELCOME_EMAIL_SUBJECT
+        assert resp.data['welcome_email_content'] == PORTAL_WELCOME_EMAIL_CONTENT
+
+    def test_get_returns_custom_welcome_email_settings(self, factory, project_creator, real_project):
+        project = real_project
+        _set_portal_settings(
+            project,
+            welcome_email_subject='Custom subject',
+            welcome_email_content='Custom content',
+        )
+
+        request = factory.get(f"/api/v1/portal/{project.uuid}/settings/")
+        request.user = project_creator
+
+        resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        assert resp.data['welcome_email_subject'] == 'Custom subject'
+        assert resp.data['welcome_email_content'] == 'Custom content'
+
     def test_post_permission_denied(self, factory, auth_user, real_project):
         project = real_project
         request = factory.post(f"/api/v1/portal/{project.uuid}/settings/", data={'allow_anonymous': 1}, format='json')
@@ -457,6 +500,61 @@ class TestPortalSettingsView:
         resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 400
+
+    @pytest.mark.parametrize('field', ['welcome_email_subject', 'welcome_email_content'])
+    def test_post_rejects_non_string_welcome_email_field(self, factory, project_creator, real_project, field):
+        project = real_project
+        request = factory.post(
+            f"/api/v1/portal/{project.uuid}/settings/",
+            data={field: {'invalid': True}},
+            format='json',
+        )
+        request.user = project_creator
+
+        resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 400
+
+    @pytest.mark.parametrize('field, value', [
+        ('welcome_email_subject', 'x' * (PORTAL_WELCOME_EMAIL_SUBJECT_MAX_LENGTH + 1)),
+        ('welcome_email_content', 'x' * (PORTAL_WELCOME_EMAIL_CONTENT_MAX_LENGTH + 1)),
+    ])
+    def test_post_rejects_overlong_welcome_email_field(
+        self, factory, project_creator, real_project, field, value
+    ):
+        project = real_project
+        request = factory.post(
+            f"/api/v1/portal/{project.uuid}/settings/",
+            data={field: value},
+            format='json',
+        )
+        request.user = project_creator
+
+        resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 400
+
+    @pytest.mark.parametrize('field, value', [
+        ('welcome_email_subject', 'x' * PORTAL_WELCOME_EMAIL_SUBJECT_MAX_LENGTH),
+        ('welcome_email_content', 'x' * PORTAL_WELCOME_EMAIL_CONTENT_MAX_LENGTH),
+    ])
+    def test_post_accepts_welcome_email_field_at_max_length(
+        self, factory, project_creator, real_project, field, value
+    ):
+        project = real_project
+        request = factory.post(
+            f"/api/v1/portal/{project.uuid}/settings/",
+            data={field: value},
+            format='json',
+        )
+        request.user = project_creator
+
+        resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 200
+        project.refresh_from_db()
+        portal_settings = json.loads(project.settings)['portal']
+        assert portal_settings[field] == value
 
     def test_post_invalid_portal_home_hero_section(self, factory, project_creator, real_project):
         project = real_project
@@ -1002,6 +1100,13 @@ class TestPortalExternalInvitationsView:
     def test_post_uses_portal_alias_link_in_email_when_no_verified_custom_domain(self, factory, project_creator, real_project, settings):
         settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
         project = real_project
+        _set_portal_settings(
+            project,
+            enable_send_email=True,
+            portal_name='Acme',
+            welcome_email_subject='Welcome to {portal_name} Support',
+            welcome_email_content='Hello from {portal_name}.',
+        )
         PortalDomainAlias.objects.create(
             project_uuid=str(project.uuid),
             prefix='x765cd',
@@ -1014,7 +1119,10 @@ class TestPortalExternalInvitationsView:
         request.user = project_creator
         captured_context = {}
 
+        captured_mail = {}
+
         def send_mail(_email, _subject, _template, context):
+            captured_mail.update({'subject': _subject, 'template': _template})
             captured_context.update(context)
             return True
 
@@ -1023,6 +1131,11 @@ class TestPortalExternalInvitationsView:
             resp = PortalExternalInvitationsView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
+        assert captured_mail == {
+            'subject': 'Welcome to Acme Support',
+            'template': 'portal/external_welcome_email.html',
+        }
+        assert captured_context['welcome_email_content'] == 'Hello from Acme.'
         invitation_link = captured_context['invitation_link']
         assert invitation_link.startswith('http://x765cd.seaticket-portal.test/external/accept/')
         assert invitation_link.endswith('/')
