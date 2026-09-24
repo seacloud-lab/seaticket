@@ -360,58 +360,60 @@ const Record = ({ projectUuid, permission }) => {
   return (
     <>
       <div className={classnames('seaqa-connection-record-details', { 's': isSmallScreen })} ref={recordRef}>
-        <div className="seaqa-connection-record-details-header">
-          {isRenaming ? (
-            <Rename title={title} onToggle={() => setIsRenaming(false)} onSubmit={connection.type === CONNECTION_TYPE.GITHUB_ISSUE ? modifyGitHubRecord : handleOthersChange} />
-          ) : (
-            <>
-              <div className="seaqa-connection-record-details-header-left">
-                {title && (<div className="text-truncate d-inline-block" title={title}>{title}</div>)}
-                {title && isOutdated && (<Option option={{ name: gettext('Outdated'), color: '#999', text_color: '#fff' }} className="seaqa-connection-record-outdated-option" />)}
-                {url && (
-                  <IconButton
-                    className="open-in-new-tab-btn"
-                    icon="open-in-new-tab"
-                    title={gettext('Open the original URL in a new tab')}
-                    onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
-                  />
-                )}
-                {title && isSupportModifyTitle && permission === PERMISSION_TYPES.READ_WRITE && (
-                  <IconButton
-                    className="open-in-new-tab-btn"
-                    icon="rename"
-                    title={gettext('Edit title')}
-                    onClick={() => setIsRenaming(true)}
-                  />
-                )}
-              </div>
-              <div className="seaqa-connection-record-details-header-right">
-                {tools.length > 0 && (
-                  <Dropdown isOpen={isMoreMenuOpen} toggle={() => setIsMoreMenuOpen(!isMoreMenuOpen)}>
-                    <CustomizeDropdownMoreToggle isOpen={isMoreMenuOpen} title={gettext('More')} />
-                    <CustomizeDropdownMenu className="position-fixed">
-                      {tools.map((tool, index) => {
-                        if (tool.key === 'divider' || tool === 'Divider') {
-                          return <CustomizeDropdownItem key={index} divider />;
-                        }
-                        return (
-                          <CustomizeDropdownItem
-                            key={tool.key}
-                            onClick={() => {
-                              tool.callback && tool.callback();
-                              setIsMoreMenuOpen(false);
-                            }}
-                          >
-                            {tool.label}
-                          </CustomizeDropdownItem>
-                        );
-                      })}
-                    </CustomizeDropdownMenu>
-                  </Dropdown>
-                )}
-              </div>
-            </>
-          )}
+        <div className="seaqa-connection-record-details-header-container">
+          <div className="seaqa-connection-record-details-header">
+            {isRenaming ? (
+              <Rename title={title} onToggle={() => setIsRenaming(false)} onSubmit={connection.type === CONNECTION_TYPE.GITHUB_ISSUE ? modifyGitHubRecord : handleOthersChange} />
+            ) : (
+              <>
+                <div className="seaqa-connection-record-details-header-left">
+                  {title && (<div className="text-truncate d-inline-block" title={title}>{title}</div>)}
+                  {title && isOutdated && (<Option option={{ name: gettext('Outdated'), color: '#999', text_color: '#fff' }} className="seaqa-connection-record-outdated-option" />)}
+                  {url && (
+                    <IconButton
+                      className="open-in-new-tab-btn"
+                      icon="open-in-new-tab"
+                      title={gettext('Open the original URL in a new tab')}
+                      onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
+                    />
+                  )}
+                  {title && isSupportModifyTitle && permission === PERMISSION_TYPES.READ_WRITE && (
+                    <IconButton
+                      className="open-in-new-tab-btn"
+                      icon="rename"
+                      title={gettext('Edit title')}
+                      onClick={() => setIsRenaming(true)}
+                    />
+                  )}
+                </div>
+                <div className="seaqa-connection-record-details-header-right">
+                  {tools.length > 0 && (
+                    <Dropdown isOpen={isMoreMenuOpen} toggle={() => setIsMoreMenuOpen(!isMoreMenuOpen)}>
+                      <CustomizeDropdownMoreToggle isOpen={isMoreMenuOpen} title={gettext('More')} />
+                      <CustomizeDropdownMenu className="position-fixed">
+                        {tools.map((tool, index) => {
+                          if (tool.key === 'divider' || tool === 'Divider') {
+                            return <CustomizeDropdownItem key={index} divider />;
+                          }
+                          return (
+                            <CustomizeDropdownItem
+                              key={tool.key}
+                              onClick={() => {
+                                tool.callback && tool.callback();
+                                setIsMoreMenuOpen(false);
+                              }}
+                            >
+                              {tool.label}
+                            </CustomizeDropdownItem>
+                          );
+                        })}
+                      </CustomizeDropdownMenu>
+                    </Dropdown>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
         </div>
         <div className={classnames('seaqa-connection-record-details-body', { 'empty': !record || isContentEmpty })}>
           <div className="seaqa-connection-record-details-container">
