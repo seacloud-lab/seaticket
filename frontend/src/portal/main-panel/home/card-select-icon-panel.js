@@ -26,6 +26,7 @@ const CardSelectIconPanel = ({ currentIcon, onPrevious, onSubmit }) => {
         onPrevious={onPrevious}
         onSubmit={onSubmit}
         previousButtonText={gettext('Cancel')}
+        isHideFooter={true}
       />
     </aside>
   );
