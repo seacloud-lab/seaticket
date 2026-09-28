@@ -6,7 +6,7 @@ import { gettext } from '@/constants';
 import sysAdminAPI from '@/sys-admin/api';
 import { Utils } from '@/utils/utils';
 
-class AddUserToGroupsOperation extends React.Component {
+class AddUserToGroups extends React.Component {
 
   constructor(props) {
     super(props);
@@ -102,4 +102,4 @@ class AddUserToGroupsOperation extends React.Component {
   }
 }
 
-export default AddUserToGroupsOperation;
+export default AddUserToGroups;
