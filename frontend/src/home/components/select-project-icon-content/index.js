@@ -44,6 +44,9 @@ class SelectProjectIconContent extends React.Component {
 
   onSelectIcon = (selectedIcon) => {
     this.setState({ selectedIcon });
+    if (this.props.isHideFooter) {
+      this.props.onSubmit(selectedIcon);
+    }
   };
 
   onSubmit = () => {
@@ -68,7 +71,7 @@ class SelectProjectIconContent extends React.Component {
   };
 
   render() {
-    const { bgColor, onPrevious } = this.props;
+    const { bgColor, onPrevious, isHideFooter = false } = this.props;
     const currentIcon = this.props.currentIcon || DEFAULT_PROJECT_ICON;
     const selectedColor = bgColor || PROJECT_ICON_COLORS[0];
     const [red, green, blue] = parseColorToRGB(selectedColor);
@@ -128,10 +131,12 @@ class SelectProjectIconContent extends React.Component {
             <EmptyTip src={`${mediaUrl}img/no-items-tip.png`} text={gettext('No results matching')} />
           </div>
         )}
-        <div className="select-project-icon-content-footer">
-          <Button color="secondary" onClick={onPrevious}>{this.props.previousButtonText || gettext('Previous')}</Button>
-          <Button color="primary" disabled={selectedIcon === currentIcon} onClick={this.onSubmit}>{gettext('Submit')}</Button>
-        </div>
+        {!isHideFooter && (
+          <div className="select-project-icon-content-footer">
+            <Button color="secondary" onClick={onPrevious}>{this.props.previousButtonText || gettext('Previous')}</Button>
+            <Button color="primary" disabled={selectedIcon === currentIcon} onClick={this.onSubmit}>{gettext('Submit')}</Button>
+          </div>
+        )}
       </div>
     );
   }
