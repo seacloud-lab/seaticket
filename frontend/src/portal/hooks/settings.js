@@ -11,6 +11,7 @@ export const PortalSettingsProvider = ({
   logo: propsLogo,
   name: propsName,
   projectUuid,
+  onSettingsChange,
   syncPageMetadata = true,
   children,
 }) => {
@@ -51,6 +52,7 @@ export const PortalSettingsProvider = ({
       if (hasOwnProperty(serverData, 'portal_logo')) {
         setLogo(serverData['portal_logo']);
       }
+      onSettingsChange && onSettingsChange(serverData);
       callback && callback(serverData);
       setIsUpdatingNameOrLogo(false);
     }).catch(error => {
@@ -59,7 +61,7 @@ export const PortalSettingsProvider = ({
       setIsUploadingLogo(false);
       setIsUpdatingNameOrLogo(false);
     });
-  }, [projectUuid, isUploadingLogo, isUpdatingNameOrLogo]);
+  }, [onSettingsChange, projectUuid, isUploadingLogo, isUpdatingNameOrLogo]);
 
   const updateHomeSetting = useCallback((newSetting) => {
     return portalAPI.updateSettings(projectUuid, { 'portal_home_settings': newSetting });
