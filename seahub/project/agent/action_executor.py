@@ -1809,7 +1809,6 @@ class AgentActionExecutor:
             project_icon=project.icon,
         )
 
-        logger.info(f'Agent notified assignees for ticket #{ticket_id}')
         return self._successful_execution(f'Notification sent to {len(assignees)} assignee(s).')
 
     def _execute_close_ticket(
