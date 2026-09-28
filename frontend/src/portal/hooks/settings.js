@@ -11,6 +11,7 @@ export const PortalSettingsProvider = ({
   logo: propsLogo,
   name: propsName,
   projectUuid,
+  syncPageMetadata = true,
   children,
 }) => {
   const [logo, setLogo] = useState(propsLogo);
@@ -65,17 +66,19 @@ export const PortalSettingsProvider = ({
   }, [projectUuid]);
 
   useEffect(() => {
+    if (!syncPageMetadata) return;
     window.app.pageOptions.portalName = name;
     document.title = `${name} - ${gettext('Portal')}`;
-  }, [name]);
+  }, [name, syncPageMetadata]);
 
   useEffect(() => {
+    if (!syncPageMetadata) return;
     window.app.pageOptions.portalLogo = logo;
     const existingFavicon = document.querySelector('link[rel~="icon"]');
     if (existingFavicon) {
       existingFavicon.href = logo;
     }
-  }, [logo]);
+  }, [logo, syncPageMetadata]);
 
   useEffect(() => {
     setIsFeaturedArticlesLoading(true);

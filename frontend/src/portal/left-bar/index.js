@@ -1,18 +1,13 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { Modal, ModalBody } from 'reactstrap';
 import { gettext } from '@/constants';
 import { Utils } from '@/utils/utils';
 import { IconTooltip, toaster } from '../../components';
-import CustomModalHeader from '../../components/modal-header';
 import { portalAPI } from '../api';
-import Settings from '../main-panel/settings';
 import { getPortalPublicUrl } from '../path-utils';
 
 import './index.css';
-import './portal-settings-dialog.css';
 
 const LeftBar = () => {
-  const [isShowSettings, setIsShowSettings] = useState(false);
   const [isOpeningPortal, setIsOpeningPortal] = useState(false);
 
   const onOpenPortal = useCallback(() => {
@@ -41,10 +36,6 @@ const LeftBar = () => {
   const bars = useMemo(() => {
     return [
       {
-        icon: 'set-up',
-        tip: gettext('Settings'),
-        callback: () => setIsShowSettings(true),
-      }, {
         icon: 'eye',
         tip: gettext('Go to portal'),
         callback: onOpenPortal,
@@ -52,10 +43,6 @@ const LeftBar = () => {
       },
     ];
   }, [isOpeningPortal, onOpenPortal]);
-
-  const closeSettings = useCallback(() => {
-    setIsShowSettings(false);
-  }, []);
 
   return (
     <>
@@ -75,14 +62,6 @@ const LeftBar = () => {
           );
         })}
       </div>
-      {isShowSettings && (
-        <Modal isOpen={true} toggle={closeSettings} className="portal-settings-dialog">
-          <CustomModalHeader toggle={closeSettings}>{gettext('Settings')}</CustomModalHeader>
-          <ModalBody>
-            <Settings />
-          </ModalBody>
-        </Modal>
-      )}
     </>
   );
 };

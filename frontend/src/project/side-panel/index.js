@@ -1,5 +1,9 @@
-import React, { useCallback, useEffect, useRef } from 'react';
-import { gettext } from '@/constants';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Modal, ModalBody } from 'reactstrap';
+import CustomModalHeader from '@/components/modal-header';
+import { gettext, mediaUrl } from '@/constants';
+import { PortalSettingsProvider } from '@/portal/hooks';
+import Settings from '@/portal/main-panel/settings';
 import ResizeBar from '../../components/resize-bar';
 import { BAR_TYPE, BAR_TYPE_CONFIG } from '../constants';
 import Header from './header';
@@ -12,16 +16,26 @@ import PortalIssuesMoreNav from './nav/portal-issues-more-nav';
 import TicketsMoreNav from './nav/tickets-more-nav';
 
 import './index.css';
+import '@/portal/left-bar/portal-settings-dialog.css';
 
 const INIT_SIDEBAR_WIDTH = 300;
 const { isProjectAdmin } = window.app.pageOptions;
 
 const SidePanel = ({ activeBar, toggleBar, settings }) => {
   const ref = useRef(null);
+  const [isShowPortalSettings, setIsShowPortalSettings] = useState(false);
 
   const onResize = useCallback((width) => {
     localStorage.setItem('project_panel_width', width);
     ref.current.style.width = `${width}px`;
+  }, []);
+
+  const closePortalSettings = useCallback(() => {
+    setIsShowPortalSettings(false);
+  }, []);
+
+  const openPortalSettings = useCallback(() => {
+    setIsShowPortalSettings(true);
   }, []);
 
   useEffect(() => {
@@ -66,6 +80,7 @@ const SidePanel = ({ activeBar, toggleBar, settings }) => {
                 <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.SUPPORT_PORTAL]} {...commonProps} />
                 <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_ISSUES]} {...commonProps} />
                 {isProjectAdmin && <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_CUSTOMERS_AND_USERS]} {...commonProps} />}
+                {isProjectAdmin && <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_SETTINGS]} {...commonProps} onClick={openPortalSettings} />}
                 <PortalIssuesMoreNav onClick={toggleBar} isProjectAdmin={isProjectAdmin} />
               </>
             )}
@@ -73,6 +88,21 @@ const SidePanel = ({ activeBar, toggleBar, settings }) => {
         </div>
         <ResizeBar min={200} max={600} onResize={onResize} />
       </div>
+      {isShowPortalSettings && (
+        <Modal isOpen={true} toggle={closePortalSettings} className="portal-settings-dialog">
+          <CustomModalHeader toggle={closePortalSettings}>{gettext('Settings')}</CustomModalHeader>
+          <ModalBody>
+            <PortalSettingsProvider
+              projectUuid={window.app.pageOptions.projectUuid}
+              name={window.app.pageOptions.portalName || gettext('Support portal')}
+              logo={window.app.pageOptions.portalLogo || `${mediaUrl}img/portal-logo.png`}
+              syncPageMetadata={false}
+            >
+              <Settings />
+            </PortalSettingsProvider>
+          </ModalBody>
+        </Modal>
+      )}
     </>
   );
 };
