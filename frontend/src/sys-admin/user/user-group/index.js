@@ -8,7 +8,7 @@ import { Utils } from '@/utils/utils';
 import { TopBar, Main } from '../../main-panel';
 import Nav from '../user-nav';
 import UserTitle from '../user-title';
-import AddUserToGroupsOperation from './add-user-to-groups';
+import AddUserToGroups from './add-user-to-groups';
 
 const UserGroups = ({ email, onCloseSidePanel }) => {
   const [user, setUser] = useState({});
@@ -71,7 +71,7 @@ const UserGroups = ({ email, onCloseSidePanel }) => {
         )}
       </Main>
       {isShowAddGroupsDialog && (
-        <AddUserToGroupsOperation
+        <AddUserToGroups
           email={validEmail}
           groups={groupsTableRef.current.getGroups()}
           addToGroups={addToGroups}

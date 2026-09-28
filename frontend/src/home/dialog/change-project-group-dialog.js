@@ -99,6 +99,8 @@ class ChangeProjectGroupDialog extends React.Component {
         <ModalHeader toggle={toggleDialog}>{gettext('Change project group')}</ModalHeader>
         <ModalBody>
           <Label for="project-group-selector">{gettext('Move project {placeholder} to').replace('{placeholder}', `"${currentProject.name}"`)}</Label>
+          {/* 这里需要改成新的样式 */}
+          {/* 这里只能进行单选，因为只能将项目转让给一个群组，不能转让给多个群组，目前的设计稿是多选的样式，需要和设计师确定 */}
           <CustomizeSelect
             id="project-group-selector"
             value={selectedGroupID}
