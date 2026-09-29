@@ -829,7 +829,7 @@
     "Read-Only": "Lecture seule",
     "Read-Write": "Lecture-\u00c9criture",
     "Really want to delete your account?": "Voulez-vous vraiment supprimer votre compte ?",
-    "Recommended size is 156x256px.": "La taille recommand\u00e9e est de 156x256px.",
+    "Recommended size is 256x256px.": "La taille recommand\u00e9e est de 256x256px.",
     "Reconnect Confluence": "Reconnecter Confluence",
     "Reconnect Linear": "Reconnecter Linear",
     "Record": "Enregistrement",

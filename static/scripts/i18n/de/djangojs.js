@@ -829,7 +829,7 @@
     "Read-Only": "Schreibgesch\u00fctzt",
     "Read-Write": "Lesen/Schreiben",
     "Really want to delete your account?": "M\u00f6chten Sie Ihr Konto wirklich l\u00f6schen?",
-    "Recommended size is 156x256px.": "Empfohlene Gr\u00f6\u00dfe ist 156x256px.",
+    "Recommended size is 256x256px.": "Empfohlene Gr\u00f6\u00dfe ist 256x256px.",
     "Reconnect Confluence": "Confluence neu verbinden",
     "Reconnect Linear": "Linear neu verbinden",
     "Record": "Eintrag",

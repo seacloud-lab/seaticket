@@ -114,7 +114,7 @@ const Main = ({ name: oldName, logo: oldLogo }) => {
                     {gettext('Select a png or jpg image with in 5MB.')}
                   </div>
                   <div className="seaqa-tip-default">
-                    {gettext('Recommended size is 156x256px.')}
+                    {gettext('Recommended size is 256x256px.')}
                   </div>
                   <Button color="primary" outline className="portal-customization-settings-logo-upload-btn" onClick={showSystemUpload}>
                     {isDefaultLogo ? gettext('Upload logo') : gettext('Change logo')}

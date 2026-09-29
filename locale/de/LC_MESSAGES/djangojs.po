@@ -2535,8 +2535,8 @@ msgid "Select a png or jpg image with in 5MB."
 msgstr "Wählen Sie ein PNG- oder JPG-Bild bis zu 5 MB aus."
 
 #: frontend/src/portal/main-panel/settings/customization-settings/index.js:117
-msgid "Recommended size is 156x256px."
-msgstr "Empfohlene Größe ist 156x256px."
+msgid "Recommended size is 256x256px."
+msgstr "Empfohlene Größe ist 256x256px."
 
 #: frontend/src/portal/main-panel/settings/customization-settings/index.js:120
 msgid "Upload logo"

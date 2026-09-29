@@ -2560,7 +2560,7 @@ msgid "Select a png or jpg image with in 5MB."
 msgstr ""
 
 #: frontend/src/portal/main-panel/settings/customization-settings/index.js:117
-msgid "Recommended size is 156x256px."
+msgid "Recommended size is 256x256px."
 msgstr ""
 
 #: frontend/src/portal/main-panel/settings/customization-settings/index.js:120
