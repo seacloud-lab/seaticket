@@ -829,7 +829,7 @@
     "Read-Only": "\u53ea\u8bfb",
     "Read-Write": "\u53ef\u8bfb\u5199",
     "Really want to delete your account?": "\u786e\u5b9a\u8981\u6ce8\u9500\u8be5\u5e10\u53f7\u5417\uff1f",
-    "Recommended size is 156x256px.": "\u63a8\u8350\u5c3a\u5bf8\u4e3a156x256\u50cf\u7d20\u3002",
+    "Recommended size is 256x256px.": "\u63a8\u8350\u5c3a\u5bf8\u4e3a256x256\u50cf\u7d20\u3002",
     "Reconnect Confluence": "\u91cd\u65b0\u8fde\u63a5 Confluence",
     "Reconnect Linear": "\u91cd\u65b0\u8fde\u63a5 Linear",
     "Record": "\u8bb0\u5f55",

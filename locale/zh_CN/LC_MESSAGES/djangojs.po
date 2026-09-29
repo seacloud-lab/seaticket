@@ -2535,8 +2535,8 @@ msgid "Select a png or jpg image with in 5MB."
 msgstr "选择一张5MB以内的png或jpg图片。"
 
 #: frontend/src/portal/main-panel/settings/customization-settings/index.js:117
-msgid "Recommended size is 156x256px."
-msgstr "推荐尺寸为156x256像素。"
+msgid "Recommended size is 256x256px."
+msgstr "推荐尺寸为256x256像素。"
 
 #: frontend/src/portal/main-panel/settings/customization-settings/index.js:120
 msgid "Upload logo"
