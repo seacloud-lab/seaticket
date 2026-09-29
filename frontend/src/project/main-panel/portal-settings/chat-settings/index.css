@@ -1,0 +1,28 @@
+.seaqa-portal-chat-limits {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 680px;
+}
+
+.seaqa-portal-chat-limits-title {
+  font-weight: 500;
+  margin-bottom: 0;
+}
+
+.seaqa-portal-chat-limit-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) 100px minmax(140px, auto);
+  align-items: center;
+  gap: 12px;
+}
+
+@media (max-width: 700px) {
+  .seaqa-portal-chat-limit-row {
+    grid-template-columns: 1fr 100px;
+  }
+
+  .seaqa-portal-chat-limit-row > span {
+    grid-column: 1 / -1;
+  }
+}
