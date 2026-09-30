@@ -11,6 +11,8 @@ class Option {
     this.text_color = object.text_color || '';
     this.tickets_count = object.tickets_count || 0;
     this.parent_id = object.parent_id || '';
+    // only used by customers, which can be disabled without being deleted
+    this.status = object.status;
 
     const predefinedConfigInfo = predefinedConfig[this._id] || predefinedConfig[this.name];
 

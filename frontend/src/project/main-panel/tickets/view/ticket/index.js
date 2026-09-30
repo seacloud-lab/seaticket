@@ -27,7 +27,7 @@ import CreateKBRecordDialog from '../../components/create-kb-record-dialog';
 import CreateTaskDialog from '../../components/create-task-dialog';
 import RelatedIssuesDialog from '../../components/related-issues-dialog';
 import {
-  CollaboratorsSettings, TypeSettings, PrioritySettings,
+  CollaboratorsSettings, CustomerSettings, TypeSettings, PrioritySettings,
   StateSettings, SubStateSettings, DueDateSettings, LinkSettings,
 } from '../../components/ticket-settings';
 import {
@@ -389,6 +389,18 @@ const Ticket = ({
     });
   }, [ticket, modifyTicket]);
 
+  const onCustomerChange = useCallback((customerId) => {
+    // kept as a string so it stays equal to the option values the editor holds;
+    // the server parses it back to an int
+    const value = customerId === '' || customerId === null || customerId === undefined ? '' : String(customerId);
+    modifyTicket(ticket.id, { [PREDEFINED_TICKET_COLUMN_NAME.CUSTOMER_ID]: value }).then(res => {
+      // todo
+    }).catch(error => {
+      const errorMessage = Utils.getErrorMsg(error);
+      toaster.danger(errorMessage);
+    });
+  }, [ticket, modifyTicket]);
+
   const onTagsChange = useCallback((tags) => {
     if (!Array.isArray(tags)) return;
     return modifyTicket(ticket.id, { tags }).then(res => {
@@ -552,7 +564,7 @@ const Ticket = ({
     );
   }
 
-  const { id, state, title, creator, assignees = [], type, tags, priority, participants = [], substate, due_date, linked_connection_records } = ticket;
+  const { id, state, title, creator, assignees = [], type, tags, priority, participants = [], substate, due_date, linked_connection_records, customer_id } = ticket;
   const typeOption = getRowById(typesData, type);
   const editable = creator === user.email || permission === PERMISSION_TYPES.READ_WRITE;
   const stateOption = TICKET_STATE_CONFIG[state];
@@ -690,6 +702,7 @@ const Ticket = ({
           <StateSettings isReadonly={!editable} state={state} substate={substate} useMetadataContext={useMetadata} onChange={onStateChange} />
           <SubStateSettings isReadonly={!editable} state={state} substate={substate} useMetadataContext={useMetadata} onChange={onSubstateChange} />
           <TypeSettings id="type-editor-popover" isReadonly={!editable} value={type} useMetadataContext={useMetadata} onChange={onTypeChange} />
+          <CustomerSettings id="customer-editor-popover" isReadonly={!editable} value={customer_id} useMetadataContext={useMetadata} onChange={onCustomerChange} />
           <DueDateSettings isReadonly={!editable} value={due_date} onChange={onDueDateChange} />
           <CollaboratorsSettings
             isReadonly={!editable}

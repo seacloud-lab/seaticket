@@ -13,6 +13,7 @@ import {
   TypesDataProvider,
   SubstatesDataProvider,
   SelectedRowsProvider,
+  CustomersDataProvider,
 } from './hooks';
 import View from './view';
 
@@ -26,6 +27,7 @@ const Main = forwardRef(({
   typesData,
   createType,
   toggleAllTypes,
+  customersData,
   substatesData,
   createSubstate,
   toggleAllSubstates,
@@ -63,29 +65,31 @@ const Main = forwardRef(({
   return (
     <TagsDataProvider tagsData={tagsData} createTag={createTag} toggleAllTags={toggleAllTags} >
       <TypesDataProvider typesData={typesData} createType={createType} toggleAllTypes={toggleAllTypes} >
-        <SubstatesDataProvider substatesData={substatesData} createSubstate={createSubstate} toggleAllSubstates={toggleAllSubstates}>
-          <SelectedRowsProvider>
-            <MetadataProvider ref={metadataRef} viewID={viewID} tagsData={tagsData} typesData={typesData} { ...params }>
-              <div className={classnames('sea-metadata', className)}>
-                <ViewToolBar
-                  fixedColumnCount={fixedColumnCount}
-                  tools={viewTools}
-                  viewTabs={viewTabs}
-                  createRowsTools={createRowsTools}
-                  toggleView={toggleView}
-                  isMobileView={isMobileView}
-                />
-                <View
-                  fixedColumnCount={fixedColumnCount}
-                  expandRow={expandRow}
-                  CustomView={CustomView}
-                  onCustomViewRowClick={onCustomViewRowClick}
-                  children={children}
-                />
-              </div>
-            </MetadataProvider>
-          </SelectedRowsProvider>
-        </SubstatesDataProvider>
+        <CustomersDataProvider customersData={customersData} >
+          <SubstatesDataProvider substatesData={substatesData} createSubstate={createSubstate} toggleAllSubstates={toggleAllSubstates}>
+            <SelectedRowsProvider>
+              <MetadataProvider ref={metadataRef} viewID={viewID} tagsData={tagsData} typesData={typesData} customersData={customersData} { ...params }>
+                <div className={classnames('sea-metadata', className)}>
+                  <ViewToolBar
+                    fixedColumnCount={fixedColumnCount}
+                    tools={viewTools}
+                    viewTabs={viewTabs}
+                    createRowsTools={createRowsTools}
+                    toggleView={toggleView}
+                    isMobileView={isMobileView}
+                  />
+                  <View
+                    fixedColumnCount={fixedColumnCount}
+                    expandRow={expandRow}
+                    CustomView={CustomView}
+                    onCustomViewRowClick={onCustomViewRowClick}
+                    children={children}
+                  />
+                </div>
+              </MetadataProvider>
+            </SelectedRowsProvider>
+          </SubstatesDataProvider>
+        </CustomersDataProvider>
       </TypesDataProvider>
     </TagsDataProvider>
   );

@@ -17,6 +17,7 @@ const CellType = {
   TAG: 'tag',
   TAGS: 'tags',
   TYPE: 'type',
+  CUSTOMER: 'customer',
   PRIORITY: 'priority',
   UNREAD_STATUS: 'unread-status',
   REPLY_STATUS: 'reply-status',

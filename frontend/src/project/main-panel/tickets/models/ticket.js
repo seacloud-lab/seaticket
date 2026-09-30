@@ -46,6 +46,11 @@ class Ticket {
     this.tags = object.tags || [];
     this.priority = object.priority || 0;
 
+    // A customer id, or '' when the ticket has no customer. The server stores an
+    // int64 but the id is kept as a string here: the option editors compare the
+    // selected value to option values with `===`, and those are strings.
+    this.customer_id = object.customer_id === null || object.customer_id === undefined ? '' : String(object.customer_id);
+
     this.assignees = object.assignees || [];
     this.participants = object.participants || [];
 
