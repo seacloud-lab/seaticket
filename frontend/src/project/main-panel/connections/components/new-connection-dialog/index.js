@@ -882,11 +882,10 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
               </Label>
               <Input value={name} onChange={onNameChange} disabled={isSubmitting} />
             </FormGroup>
-            {isOAuthEmail ? basicCustomColumns.filter(column => column.key !== 'account_type').map(renderConnectionField) : (
-              isDiscord
-                ? basicCustomColumns.filter(column => column.key !== 'channel_id').map(renderConnectionField)
-                : basicCustomColumns.map(renderConnectionField)
-            )}
+            {isDiscord
+              ? basicCustomColumns.filter(column => column.key !== 'channel_id').map(renderConnectionField)
+              : basicCustomColumns.map(renderConnectionField)
+            }
             {isDiscord && (
               <FormGroup>
                 <Label>{gettext('Authorization')}</Label>
@@ -907,7 +906,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
               </FormGroup>
             )}
             {isDiscord && basicCustomColumns.filter(column => column.key === 'channel_id').map(renderConnectionField)}
-            {false && isOAuthEmail && basicCustomColumns.filter(column => column.key === 'account_type').map(renderConnectionField)}
             {advancedCustomColumns.map(renderConnectionField)}
             {isOAuthEmail && (
               <FormGroup>

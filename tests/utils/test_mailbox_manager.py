@@ -33,36 +33,58 @@ def response(payload):
 
 
 class TestGmailMailboxManager:
+    @pytest.mark.parametrize(
+        ('config', 'endpoint'),
+        [
+            ({'account_type': 'personal'}, 'https://gmail.googleapis.com/gmail/v1/users/me/messages'),
+            ({'account_type': 'shared', 'sender_email': 'shared+mail@example.com'},
+              'https://gmail.googleapis.com/gmail/v1/users/shared%2Bmail%40example.com/messages'),
+        ],
+    )
     @patch('seahub.utils.mailbox_manager.requests.post')
     @patch('seahub.utils.mailbox_manager.requests.get')
-    def test_moves_message_to_trash(self, get_mock, post_mock):
+    def test_moves_message_to_trash(self, get_mock, post_mock, config, endpoint):
         get_mock.return_value = response({'messages': [{'id': 'gmail-id'}]})
         post_mock.return_value = response({})
-        manager = GmailMailboxManager({}, make_oauth_token(), make_oauth_config())
+        manager = GmailMailboxManager(config, make_oauth_token(), make_oauth_config())
 
         result = manager.move_to_trash(['<message@example.com>'])
 
         assert result['moved_count'] == 1
+        assert get_mock.call_args.args[0] == endpoint
         post_mock.assert_called_once_with(
-            'https://gmail.googleapis.com/gmail/v1/users/me/messages/gmail-id/trash',
+            f'{endpoint}/gmail-id/trash',
             headers={'Authorization': 'Bearer access-token'},
         )
 
+    @pytest.mark.parametrize(
+        ('config', 'endpoint'),
+        [
+            ({'account_type': 'personal'}, 'https://gmail.googleapis.com/gmail/v1/users/me/messages'),
+            ({'account_type': 'shared', 'sender_email': 'shared+mail@example.com'},
+              'https://gmail.googleapis.com/gmail/v1/users/shared%2Bmail%40example.com/messages'),
+        ],
+    )
     @patch('seahub.utils.mailbox_manager.requests.post')
     @patch('seahub.utils.mailbox_manager.requests.get')
-    def test_moves_message_to_junk_by_modifying_labels(self, get_mock, post_mock):
+    def test_moves_message_to_junk_by_modifying_labels(self, get_mock, post_mock, config, endpoint):
         get_mock.return_value = response({'messages': [{'id': 'gmail-id'}]})
         post_mock.return_value = response({})
-        manager = GmailMailboxManager({}, make_oauth_token(), make_oauth_config())
+        manager = GmailMailboxManager(config, make_oauth_token(), make_oauth_config())
 
         result = manager.move_to_junk(['<message@example.com>'])
 
         assert result['moved_count'] == 1
+        assert get_mock.call_args.args[0] == endpoint
         post_mock.assert_called_once_with(
-            'https://gmail.googleapis.com/gmail/v1/users/me/messages/gmail-id/modify',
+            f'{endpoint}/gmail-id/modify',
             json={'addLabelIds': ['SPAM'], 'removeLabelIds': ['INBOX']},
             headers={'Authorization': 'Bearer access-token', 'Content-Type': 'application/json'},
         )
+
+    def test_shared_mailbox_requires_sender_email(self):
+        with pytest.raises(MailboxConfigError, match='Shared email sender address is required'):
+            GmailMailboxManager({'account_type': 'shared'}, make_oauth_token(), make_oauth_config())
 
 
 class TestMicrosoftMailboxManager:
