@@ -3,6 +3,7 @@ export { MetadataProvider, useMetadata } from './metadata';
 export { TagsDataProvider, useTagsData } from './tagsData';
 export { ViewsDataProvider, useViewsData } from './viewsData';
 export { TypesDataProvider, useTypesData } from './typesData';
+export { CustomersDataProvider, useCustomersData } from './customersData';
 export { SubstatesDataProvider, useSubstatesData } from './substatesData';
 export { SelectedRowsProvider, useSelectedRows } from './selected-rows';
 export { DataCacheProvider, useDataCache } from './data-cache';

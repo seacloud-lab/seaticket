@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { CellType } from '../../constants';
 import CollaboratorEditor from './collaborator-editor';
+import CustomerEditor from './customer-editor';
 import DateEditor from './date-editor';
 import LongTextEditor from './long-text-editor';
 import MultipleSelectEditor from './multiple-select-editor';
@@ -38,6 +39,9 @@ const Editor = React.forwardRef((props, ref) => {
     }
     case CellType.TYPE: {
       return (<TypeEditor ref={ref} { ...props} />);
+    }
+    case CellType.CUSTOMER: {
+      return (<CustomerEditor ref={ref} { ...props} />);
     }
     case CellType.TAGS: {
       return (<TagsEditor ref={ref} { ...props } />);

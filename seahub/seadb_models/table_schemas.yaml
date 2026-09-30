@@ -371,6 +371,8 @@ tables:
           format: YYYY-MM-DD
       last_agent_processed_at:
         column_type: datetime
+      customer_id:
+        column_type: int64
     indexes:
     - - priority
     - - state
@@ -383,6 +385,7 @@ tables:
     - - due_date
     - - ai_processed_time
     - - modified_time
+    - - customer_id
     table_name: tickets
   TicketCommentsTable:
     columns:

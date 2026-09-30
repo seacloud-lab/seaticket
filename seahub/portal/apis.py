@@ -37,7 +37,8 @@ from seahub.project.constants import DataEventType, PORTAL_ISSUE_DEFAULT_SUBSTAT
 from seahub.seadb_models.utils import list_knowledge_base_records, list_my_portal_issues, list_portal_issues_view_records, list_trash_portal_issues, list_portal_issue_comments_records, list_portal_issues_view_records
 from seahub.tickets.ticket_utils import check_ticket_creation_interval, get_column_from_columns_by_name, \
     build_linked_ticket_titles_map, TABLE_TICKETS, get_ticket, sync_links_in_connection,\
-    convert_select_field_names_to_option_ids, check_ticket_link_changes, TicketLinkValidationError
+    convert_select_field_names_to_option_ids, check_ticket_link_changes, TicketLinkValidationError, \
+    inherit_customer_from_portal_issues
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.utils.decorators import require_org_context
 from seahub.portal.permissions import PortalKnowledgeBasePermission, PortalIssuePermission, PortalAnonymousAccessPermission, \
@@ -946,6 +947,8 @@ class PortalIssueView(APIView):
                                 'pk': ticket.get('_pk'),
                                 'row': {'linked_connection_records': new_value}
                             }])
+                            inherit_customer_from_portal_issues(
+                                seadb_api, project_uuid, ticket.get('_pk'), [issue.get('customer_id')])
                 else:
                     # Unlink portal issue from ticket
                     if current_linked_ticket:

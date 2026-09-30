@@ -92,6 +92,10 @@ const GroupTitle = ({ column, cellValue, originalCellValue }) => {
         if (!cellValue || !item) return emptyTip;
         return (<CellFormatter value={cellValue} column={column}/>);
       }
+      case CellType.CUSTOMER: {
+        if (!originalCellValue) return emptyTip;
+        return (<CellFormatter value={originalCellValue} column={column} />);
+      }
       default: {
         return cellValue || emptyTip;
       }

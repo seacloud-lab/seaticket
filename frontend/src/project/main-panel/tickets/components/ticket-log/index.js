@@ -24,6 +24,7 @@ const LOG_TYPE = {
   SUBSTATE_CHANGED: 'substate_changed',
   STATE_SUBSTATE_CHANGED: 'state_substate_changed',
   TYPE_CHANGED: 'type_changed',
+  CUSTOMER_CHANGED: 'customer_changed',
 
   TAGS_ADDED: 'tags_added',
   TAGS_REMOVED: 'tags_removed',
@@ -62,6 +63,7 @@ const LOG_ICONS = {
   [LOG_TYPE.STATE_SUBSTATE_CHANGED]: 'dot-circle-stroked',
 
   [LOG_TYPE.TYPE_CHANGED]: 'type-stroked',
+  [LOG_TYPE.CUSTOMER_CHANGED]: 'single-select',
 
   [LOG_TYPE.TAGS_ADDED]: 'tag-stroked',
   [LOG_TYPE.TAGS_REMOVED]: 'tag-stroked',
@@ -100,7 +102,7 @@ export const getTicketLogAnchorId = (activityId) => `ticket-log-${activityId}`;
 
 const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, className, permission }) => {
   const { collaborators, collaboratorsCache, updateCollaboratorsCache, queryUser } = useCollaborators();
-  const { statesData, substatesData, typesData } = useMetadata();
+  const { statesData, substatesData, typesData, customersData } = useMetadata();
   const { tagsData } = useTags();
 
   const renderGithubIssueRef = useCallback((activity = {}) => {
@@ -397,6 +399,29 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
             name: TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.TYPE].op_name,
             oldValue: (<Option option={oldValueOption} className="seaqa-log-removed" />),
             newValue: (<Option option={newValueOption} />),
+          }
+        ];
+
+        return (<ModifyLog modifies={modifies} />);
+      }
+      case LOG_TYPE.CUSTOMER_CHANGED: {
+        const oldCustomerName = getRowById(customersData, old_value + '')?.name || gettext('Deleted option');
+        const newCustomerName = getRowById(customersData, new_value + '')?.name || gettext('Deleted option');
+        const name = TICKET_PREDEFINED_COLUMN_CONFIG[PREDEFINED_TICKET_COLUMN_NAME.CUSTOMER_ID].op_name;
+
+        if (!old_value) {
+          return (<AddLog name={gettext('added the customer')} value={newCustomerName} />);
+        }
+
+        if (!new_value) {
+          return (<RemoveLog name={gettext('removed the customer')} value={oldCustomerName} />);
+        }
+
+        const modifies = [
+          {
+            name,
+            oldValue: (<del className="seaqa-log-removed">{oldCustomerName}</del>),
+            newValue: newCustomerName,
           }
         ];
 
@@ -713,7 +738,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
         return <span>{gettext('made changes')}</span>;
     }
   }, [
-    activity, collaborators, collaboratorsCache, queryUser, statesData, tagsData, substatesData, typesData, updateCollaboratorsCache,
+    activity, collaborators, collaboratorsCache, customersData, queryUser, statesData, tagsData, substatesData, typesData, updateCollaboratorsCache,
     renderTaskRef, renderDiscordThreadRef, renderDiscourseTopicRef, renderEmailThreadRef, renderGithubIssueRef,
   ]);
 
