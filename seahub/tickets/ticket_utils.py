@@ -8,15 +8,17 @@ from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE, ATTACHMENT_ISSUE_MAX_COMMENTS
 from seahub.profile.models import Profile
-from seahub.project.constants import TICKET_DISPLAY_ALL_COLUMNS, ExtraSourceType
+from seahub.project.constants import TICKET_DETAIL_COLUMNS, TICKET_DISPLAY_ALL_COLUMNS, ExtraSourceType
 from seahub.utils import mq, uuid_str_to_32_chars, time_str_to_utc_time
-from seahub.seadb_models.utils import get_connection_records_by_pks
+from seahub.seadb_models.utils import get_connection_records_by_pks, get_seadb_table_columns, \
+    get_cached_ticket_table_columns, get_queryable_ticket_column_names
 from seahub.project.models import ProjectConnections, Projects
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES
 from seahub.project.utils import get_current_table_metadata
 from seahub.project.constants import ConnectionType
 from seahub.seadb_models.utils import get_connection_table_name
 from seahub.portal.portal_utils import get_portal_issue
+from seahub.portal.models import PortalCustomer
 from seahub.seadb_models.models import SchemaTables
 
 class TicketLinkValidationError(Exception):
@@ -607,8 +609,53 @@ def check_ticket_comment_creation_interval(seadb_api, project_uuid, username, ti
 
     return True
 
+def to_optional_int(value):
+    """Normalize an optional integer field, which may arrive from a request body or
+    from SeaDB as a string. Empty values become None; anything else that is not a
+    whole number is returned unchanged so callers can reject it.
+
+    `bool` and floats are deliberately not coerced: `bool` is a subclass of `int`
+    and `int(1.5)` truncates, so either would silently resolve to a real customer
+    id instead of failing validation.
+    """
+    if value in (None, '', 'null'):
+        return None
+    if isinstance(value, bool) or isinstance(value, float):
+        return value
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return value
+
+
+def validate_ticket_customer_id(project_uuid, customer_id):
+    """Validate a ticket's customer_id against this project's active customers.
+
+    Returns the customer id as int, or None when the value is empty (the caller
+    treats None as "no customer"). Raises ValueError for an unusable value.
+
+    The literal string 'null' is accepted as empty: the frontend serializes
+    requests as multipart FormData, which turns a None value into 'null'.
+    """
+    customer_id = to_optional_int(customer_id)
+    if customer_id is None:
+        return None
+    # `bool` passes isinstance(x, int), so it is excluded explicitly
+    if isinstance(customer_id, bool) or not isinstance(customer_id, int):
+        raise ValueError('customer_id invalid.')
+    is_active_customer = PortalCustomer.objects.filter(
+        id=customer_id,
+        project_uuid=project_uuid,
+        status=PortalCustomer.STATUS_ACTIVE,
+    ).exists()
+    if not is_active_customer:
+        raise ValueError('customer_id invalid.')
+    return customer_id
+
 def get_ticket(seadb_api, project_uuid, ticket_id):
-    sql = f"SELECT `_pk`, `title`, `content`, `state`, `substate`, `type`, `tags`, `assignees`, `participants`, `linked_connection_records`, `priority`, `creator`, `created_time`, `modified_time`, `due_date` FROM `{TABLE_TICKETS}` WHERE `_pk` = {ticket_id} AND (`deleted` = False OR `deleted` IS NULL)"
+    table_columns = get_cached_ticket_table_columns(seadb_api, project_uuid)
+    columns_join = ', '.join(get_queryable_ticket_column_names(table_columns, TICKET_DETAIL_COLUMNS))
+    sql = f"SELECT {columns_join} FROM `{TABLE_TICKETS}` WHERE `_pk` = {ticket_id} AND (`deleted` = False OR `deleted` IS NULL)"
     res = seadb_api.query_rows(project_uuid, sql)
     rows = res.get('results')
     return rows[0] if rows else None, res.get('metadata')
@@ -741,7 +788,8 @@ def get_ticket_counts_group_by_column_name(seadb_api, project_uuid, column_name,
 
 def filter_tickets_by_select(seadb_api, project_uuid, column_name, names):
     names_str = ', '.join(f"'{n}'" for n in names)
-    display_columns_join = ', '.join(TICKET_DISPLAY_ALL_COLUMNS)
+    table_columns = get_cached_ticket_table_columns(seadb_api, project_uuid)
+    display_columns_join = ', '.join(get_queryable_ticket_column_names(table_columns))
     sql = (
         f"SELECT {display_columns_join} FROM `{TABLE_TICKETS}` "
         f"WHERE `{column_name}` IN ({names_str}) AND (`deleted` = False OR `deleted` is NULL)"
@@ -1099,6 +1147,13 @@ def compare_ticket_changes(old_ticket, new_data):
     if 'priority' in new_data and new_data['priority'] != old_ticket.get('priority'):
         changes.append(('priority_changed', 'priority', old_ticket.get('priority'), new_data['priority']))
 
+    # customer changed
+    if 'customer_id' in new_data:
+        old_customer_id = to_optional_int(old_ticket.get('customer_id'))
+        new_customer_id = to_optional_int(new_data['customer_id'])
+        if old_customer_id != new_customer_id:
+            changes.append(('customer_changed', 'customer_id', old_customer_id, new_customer_id))
+
     # tags changed
     if 'tags' in new_data:
         old_tags = set(old_ticket.get('tags') or [])
@@ -1342,6 +1397,40 @@ def check_ticket_link_changes(seadb_api, project_uuid, ticket_link_diff):
     return sync_plan, connections
 
 
+def inherit_customer_from_portal_issues(seadb_api, project_uuid, ticket_id, portal_customer_ids):
+    """Carry a portal issue's customer onto the ticket it is linked to.
+
+    Only fills the ticket's customer when it has none, so a manually chosen
+    customer always wins. The order of portal_customer_ids decides which customer
+    wins when a ticket is linked to several issues of different customers.
+
+    Best-effort by design: a base that has not been migrated with the customer_id
+    column, or a transient SeaDB error, must never break link syncing. Returns the
+    applied customer id, or None when nothing was changed.
+
+    The write deliberately bypasses compare_ticket_changes / record_ticket_activities,
+    so inheriting a customer is NOT recorded in the ticket activity log and emits
+    no realtime update. That is intended: this is a side effect of linking, not a
+    user edit, and it must not fail link syncing midway. Pinned by
+    test_inheriting_does_not_record_an_activity.
+    """
+    customer_id = next((value for value in portal_customer_ids if value), None)
+    if not customer_id:
+        return None
+    try:
+        ticket, _ = get_ticket(seadb_api, project_uuid, ticket_id)
+        if not ticket or ticket.get('customer_id'):
+            return None
+        seadb_api.update_rows(project_uuid, TABLE_TICKETS, [{
+            'pk': int(ticket_id),
+            'row': {SchemaTables.TICKETS.column.customer_id.name: int(customer_id)},
+        }])
+        return int(customer_id)
+    except Exception as e:
+        logger.warning('Failed to inherit customer for ticket %s: %s', ticket_id, e)
+        return None
+
+
 def sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections):
     """
     Sync ticket links in connection tables (Discourse topics, GitHub issues, emails) and portal issues.
@@ -1352,7 +1441,11 @@ def sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections):
         sync_plan: TicketLinkSyncPlan instance
         connections: list of ProjectConnections
         now_datetime: current datetime string (required for portal issues)
+
+    Returns {ticket_id: customer_id} for customers inherited from linked portal
+    issues.
     """
+    inherited_customers = {}
     # Sync connection records
     if connections:
         # Get connections that support linked_ticket
@@ -1425,8 +1518,8 @@ def sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections):
                     portal_issue, _ = get_portal_issue(seadb_api, project_uuid, portal_issue_id)
                     if not portal_issue:
                         continue
+                    ticket_id = sync_plan.records_to_link.get('portal', {}).get(portal_issue_id)
                     if not portal_issue.get('linked_ticket'):
-                        ticket_id = sync_plan.records_to_link.get('portal', {}).get(portal_issue_id)
                         if ticket_id:
                             seadb_api.update_rows(project_uuid, SchemaTables.PORTAL_ISSUES.table_name(), [{
                                 'pk': int(portal_issue_id),
@@ -1434,8 +1527,21 @@ def sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections):
                                     'linked_ticket': int(ticket_id),
                                 }
                             }])
+                    # the issue's customer carries onto the ticket (only when unset)
+                    if ticket_id and portal_issue.get('customer_id'):
+                        inherited_customers.setdefault(int(ticket_id), portal_issue.get('customer_id'))
                 except Exception as e:
                     logger.error(f'Failed to update portal issue link: {e}')
+
+            for ticket_id in list(inherited_customers):
+                applied_customer_id = inherit_customer_from_portal_issues(
+                    seadb_api, project_uuid, ticket_id, [inherited_customers[ticket_id]])
+                if applied_customer_id:
+                    # report the normalized int that was actually persisted, not the
+                    # raw value SeaDB handed back
+                    inherited_customers[ticket_id] = applied_customer_id
+                else:
+                    del inherited_customers[ticket_id]
 
         # Sync removed links
         portal_unlink_map = sync_plan.records_to_unlink.get('portal', {})
@@ -1456,6 +1562,8 @@ def sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections):
                             }])
                 except Exception as e:
                     logger.error(f'Failed to unlink portal issue: {e}')
+
+    return inherited_customers
 
 def validate_ticket_state_substate_relation(table_columns, state_name, substate_name):
     state_column = get_column_from_columns_by_name(table_columns, SchemaTables.TICKETS.column.state.name)

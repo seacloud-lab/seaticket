@@ -1,0 +1,19 @@
+.ticket-customer-formatter {
+  display: flex;
+  flex-wrap: wrap;
+  min-height: 38px;
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 6px 0;
+  border-radius: 3px;
+}
+
+.ticket-customer-formatter.valid {
+  padding: 5px 0;
+}
+
+.ticket-customer-formatter .ticket-customer-name {
+  display: inline-block;
+  max-width: 100%;
+  line-height: 20px;
+}

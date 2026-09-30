@@ -6,6 +6,7 @@ import {
   MetadataProvider, useMetadata,
   ViewsDataProvider, useViewsData,
   DataCacheProvider, useDataCache,
+  CustomersDataProvider, useCustomersData,
 } from './hooks';
 import SeaMetadata from './render';
 import View from './view';
@@ -19,6 +20,7 @@ export {
   MetadataProvider, useMetadata,
   ViewsDataProvider, useViewsData,
   DataCacheProvider, useDataCache,
+  CustomersDataProvider, useCustomersData,
   ViewToolBar, View,
   CellType, context,
   VIEW_TOOL, EVENT_BUS_TYPE,

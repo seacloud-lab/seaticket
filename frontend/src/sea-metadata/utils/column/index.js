@@ -1,6 +1,7 @@
 export * from './collaborator';
 export * from './common';
 export * from './core';
+export * from './customer';
 export * from './date';
 export * from './long-text';
 export * from './number';

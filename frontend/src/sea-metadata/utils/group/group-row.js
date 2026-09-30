@@ -24,7 +24,8 @@ const _getFormattedCellValue = (cellValue, groupby) => {
     }
     case CellType.NUMBER:
     case CellType.RATE:
-    case CellType.PRIORITY: {
+    case CellType.PRIORITY:
+    case CellType.CUSTOMER: {
       return (cellValue || cellValue === 0) ? cellValue : null;
     }
     case CellType.CHECKBOX: {

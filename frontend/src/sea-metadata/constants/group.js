@@ -26,6 +26,7 @@ const SUPPORT_GROUP_COLUMN_TYPES = [
   CellType.UNREAD_STATUS,
   CellType.SINGLE_SELECT,
   CellType.TYPE,
+  CellType.CUSTOMER,
   CellType.MULTIPLE_SELECT,
   CellType.TAGS,
   CellType.COLLABORATOR,
