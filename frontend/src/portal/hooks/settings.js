@@ -11,6 +11,8 @@ export const PortalSettingsProvider = ({
   logo: propsLogo,
   name: propsName,
   projectUuid,
+  onSettingsChange,
+  syncPageMetadata = true,
   children,
 }) => {
   const [logo, setLogo] = useState(propsLogo);
@@ -50,6 +52,7 @@ export const PortalSettingsProvider = ({
       if (hasOwnProperty(serverData, 'portal_logo')) {
         setLogo(serverData['portal_logo']);
       }
+      onSettingsChange && onSettingsChange(serverData);
       callback && callback(serverData);
       setIsUpdatingNameOrLogo(false);
     }).catch(error => {
@@ -58,24 +61,26 @@ export const PortalSettingsProvider = ({
       setIsUploadingLogo(false);
       setIsUpdatingNameOrLogo(false);
     });
-  }, [projectUuid, isUploadingLogo, isUpdatingNameOrLogo]);
+  }, [onSettingsChange, projectUuid, isUploadingLogo, isUpdatingNameOrLogo]);
 
   const updateHomeSetting = useCallback((newSetting) => {
     return portalAPI.updateSettings(projectUuid, { 'portal_home_settings': newSetting });
   }, [projectUuid]);
 
   useEffect(() => {
+    if (!syncPageMetadata) return;
     window.app.pageOptions.portalName = name;
     document.title = `${name} - ${gettext('Portal')}`;
-  }, [name]);
+  }, [name, syncPageMetadata]);
 
   useEffect(() => {
+    if (!syncPageMetadata) return;
     window.app.pageOptions.portalLogo = logo;
     const existingFavicon = document.querySelector('link[rel~="icon"]');
     if (existingFavicon) {
       existingFavicon.href = logo;
     }
-  }, [logo]);
+  }, [logo, syncPageMetadata]);
 
   useEffect(() => {
     setIsFeaturedArticlesLoading(true);
