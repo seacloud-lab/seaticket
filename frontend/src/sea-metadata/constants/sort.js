@@ -25,6 +25,7 @@ const SORT_COLUMN_OPTIONS = [
   CellType.DATE,
   CellType.SINGLE_SELECT,
   CellType.TYPE,
+  CellType.CUSTOMER,
   CellType.MULTIPLE_SELECT,
   CellType.TAGS,
   CellType.COLLABORATOR,
@@ -47,6 +48,7 @@ const NUMBER_SORTER_COLUMN_TYPES = [
   CellType.NUMBER,
   CellType.RATE,
   CellType.PRIORITY,
+  CellType.CUSTOMER,
 ];
 
 export {

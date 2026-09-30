@@ -16,7 +16,7 @@ import { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { Utils } from '../../../../../utils/utils';
 import { ticketsAPI } from '../../../../api';
 import {
-  CollaboratorsSettings, TypeSettings, PrioritySettings,
+  CollaboratorsSettings, CustomerSettings, TypeSettings, PrioritySettings,
   StateSettings, SubStateSettings, DueDateSettings,
 } from '../../components/ticket-settings';
 import KeyboardShortcuts from '../../components/tickets-keyboard-shortcuts-dialog';
@@ -36,6 +36,7 @@ const NewTicket = ({ editorAPI, projectUuid, toggleBar }) => {
   const [type, setType] = useState('');
   const [tags, setTags] = useState([]);
   const [priority, setPriority] = useState(0);
+  const [customerId, setCustomerId] = useState('');
   const [due_date, setDueDate] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -92,6 +93,10 @@ const NewTicket = ({ editorAPI, projectUuid, toggleBar }) => {
     }
   }, [editorAPI]);
 
+  const onCustomerChange = useCallback((value) => {
+    setCustomerId(value === '' || value === null || value === undefined ? '' : Number(value));
+  }, []);
+
   const onSubmit = useCallback(() => {
     const validTitle = title.trim();
     if (!validTitle) {
@@ -105,7 +110,7 @@ const NewTicket = ({ editorAPI, projectUuid, toggleBar }) => {
       return;
     }
 
-    const data = { title: validTitle, content, type, assignees, tags, priority, due_date, state, substate, participants };
+    const data = { title: validTitle, content, type, assignees, tags, priority, due_date, state, substate, participants, [PREDEFINED_TICKET_COLUMN_NAME.CUSTOMER_ID]: customerId };
     let serverData = {};
     Object.keys(data).forEach(columnName => {
       let value = data[columnName];
@@ -135,7 +140,7 @@ const NewTicket = ({ editorAPI, projectUuid, toggleBar }) => {
       setIsSubmitting(false);
     });
   }, [
-    title, content, type, assignees, tags, priority, due_date, state, substate, participants, typesData, projectUuid, substatesData,
+    title, content, type, assignees, tags, priority, due_date, state, substate, participants, customerId, typesData, projectUuid, substatesData,
     insertRow, toggleBar,
   ]);
 
@@ -260,6 +265,7 @@ const NewTicket = ({ editorAPI, projectUuid, toggleBar }) => {
               onChange={setSubstate}
             />
             <TypeSettings id="type-editor-popover" isReadonly={isSubmitting} value={type} useMetadataContext={useMetadata} onChange={setType} />
+            <CustomerSettings id="customer-editor-popover" isReadonly={isSubmitting} value={customerId} useMetadataContext={useMetadata} onChange={onCustomerChange} />
             <DueDateSettings isReadonly={isSubmitting} value={due_date} onChange={setDueDate} />
             <CollaboratorsSettings
               id="participants-editor-popover"

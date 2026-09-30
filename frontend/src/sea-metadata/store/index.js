@@ -30,6 +30,7 @@ class Store {
     this.dataDidMount = props.dataDidMount || null;
     this.tagsData = props?.tagsData || {};
     this.typesData = props?.typesData || {};
+    this.customersData = props?.customersData || {};
     this.columnOrderRules = props?.columnOrderRules || null;
     this.columnWidthRules = props?.columnWidthRules || null;
     this.notDisplayColumns = props?.notDisplayColumns || [];
@@ -47,6 +48,7 @@ class Store {
     this.dataDidMount = null;
     this.tagsData = {};
     this.typesData = {};
+    this.customersData = {};
     this.notDisplayColumns = [];
     this.mounted = false;
   };
@@ -61,6 +63,7 @@ class Store {
       collaborators: this.collaborators,
       username: context.getUsername(),
       typesData: this.typesData,
+      customersData: this.customersData,
       tagsData: this.tagsData
     });
   }
@@ -285,6 +288,7 @@ class Store {
       username: context.getUsername(),
       tagsData: this.tagsData,
       typesData: this.typesData,
+      customersData: this.customersData,
     });
   }
 

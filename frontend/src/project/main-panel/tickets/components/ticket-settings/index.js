@@ -1,4 +1,5 @@
 import CollaboratorsSettings from './collaborators-settings';
+import CustomerSettings from './customer-settings';
 import DueDateSettings from './due-date-settings';
 import LinkSettings from './link-settings';
 import PrioritySettings from './priority-settings';
@@ -8,6 +9,7 @@ import TypeSettings from './type-settings';
 
 export {
   CollaboratorsSettings,
+  CustomerSettings,
   TypeSettings,
   PrioritySettings,
   StateSettings,

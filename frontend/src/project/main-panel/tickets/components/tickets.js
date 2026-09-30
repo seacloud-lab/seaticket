@@ -52,6 +52,7 @@ const Tickets = ({
   const { handleResolveAttachmentsByAI } = useAIChatTools();
   const {
     typesData, createType,
+    customersData,
     substatesData, createSubstate,
   } = useMetadata();
   const { connections } = useConnections();
@@ -436,6 +437,7 @@ const Tickets = ({
         createTag={createTag}
         typesData={typesData}
         createType={createType}
+        customersData={customersData}
         toggleAllTypes={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.TYPES)}
         substatesData={substatesData}
         createSubstate={createSubstate}

@@ -19,6 +19,7 @@ export const PREDEFINED_TICKET_COLUMN_NAME = {
   AI_PROCESSED_TIME: 'ai_processed_time',
   ASSIGNEES: 'assignees',
   TAGS: 'tags',
+  CUSTOMER_ID: 'customer_id',
   PARTICIPANTS: 'participants',
   CREATED_TIME: 'created_time',
   MODIFIED_TIME: 'modified_time',
@@ -188,6 +189,14 @@ export const TICKET_PREDEFINED_COLUMN_CONFIG = {
     editable: true,
     modify_data_able: true,
   },
+  [PREDEFINED_TICKET_COLUMN_NAME.CUSTOMER_ID]: {
+    type: CellType.CUSTOMER,
+    display_name: gettext('Customer'),
+    op_name: gettext('customer'),
+    editable: true,
+    // customers are managed in the support portal, never created from a ticket cell
+    modify_data_able: false,
+  },
   [PREDEFINED_TICKET_COLUMN_NAME.PARTICIPANTS]: {
     type: CellType.COLLABORATOR,
     display_name: gettext('Participants'),
@@ -248,15 +257,16 @@ export const TICKET_COLUMNS_ORDER_CONFIG = {
   'assignees': 6,
   'participants': 7,
   'tags': 8,
+  'customer_id': 9,
 
-  'content': 9,
-  'ai_summary': 10,
-  'ai_processed_time': 11,
-  'creator': 12,
-  'created_time': 13,
-  'modified_time': 14,
-  'closed_time': 15,
-  'due_date': 16,
+  'content': 10,
+  'ai_summary': 11,
+  'ai_processed_time': 12,
+  'creator': 13,
+  'created_time': 14,
+  'modified_time': 15,
+  'closed_time': 16,
+  'due_date': 17,
 };
 
 export const TICKET_COLUMNS_WIDTH_CONFIG = {
@@ -270,6 +280,7 @@ export const TICKET_COLUMNS_WIDTH_CONFIG = {
   'assignees': 200,
   'participants': 200,
   'tags': 200,
+  'customer_id': 200,
 
   'content': 400,
   'ai_summary': 200,
@@ -295,6 +306,7 @@ export const TICKET = {
   [PREDEFINED_TICKET_COLUMN_NAME.SUB_STATE]: '',
   [PREDEFINED_TICKET_COLUMN_NAME.TYPE]: '',
   [PREDEFINED_TICKET_COLUMN_NAME.TAGS]: [],
+  [PREDEFINED_TICKET_COLUMN_NAME.CUSTOMER_ID]: '',
   [PREDEFINED_TICKET_COLUMN_NAME.PRIORITY]: 0,
   [PREDEFINED_TICKET_COLUMN_NAME.DUE_DATE]: '',
 };
