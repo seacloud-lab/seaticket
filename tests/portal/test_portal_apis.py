@@ -451,6 +451,34 @@ class TestPortalSettingsView:
 
         assert resp.status_code == 200
         assert resp.data['allow_anonymous'] is True
+        assert resp.data['external_chat_user_rate_limit'] == 20
+        assert resp.data['external_chat_project_rate_limit'] == 100
+        assert resp.data['anonymous_chat_session_daily_limit'] == 20
+        assert resp.data['anonymous_chat_ip_daily_limit'] == 50
+        assert resp.data['daily_chat_credit_limit'] == 50
+
+    def test_get_returns_custom_chat_limits(self, factory, project_creator, real_project):
+        settings_dict = json.loads(real_project.settings) if real_project.settings else {}
+        settings_dict['portal'] = {
+            'external_chat_user_rate_limit': 5,
+            'external_chat_project_rate_limit': 40,
+            'anonymous_chat_session_daily_limit': 3,
+            'anonymous_chat_ip_daily_limit': 10,
+            'daily_chat_credit_limit': 12,
+        }
+        real_project.settings = json.dumps(settings_dict)
+        real_project.save(update_fields=['settings'])
+        request = factory.get(f"/api/v1/portal/{real_project.uuid}/settings/")
+        request.user = project_creator
+
+        resp = PortalSettingsView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert resp.status_code == 200
+        assert resp.data['external_chat_user_rate_limit'] == 5
+        assert resp.data['external_chat_project_rate_limit'] == 40
+        assert resp.data['anonymous_chat_session_daily_limit'] == 3
+        assert resp.data['anonymous_chat_ip_daily_limit'] == 10
+        assert resp.data['daily_chat_credit_limit'] == 12
 
     def test_get_returns_default_welcome_email_settings(self, factory, project_creator, real_project):
         project = real_project
@@ -500,6 +528,48 @@ class TestPortalSettingsView:
         resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 400
+
+    @pytest.mark.parametrize('field', [
+        'external_chat_user_rate_limit',
+        'external_chat_project_rate_limit',
+        'anonymous_chat_session_daily_limit',
+        'anonymous_chat_ip_daily_limit',
+        'daily_chat_credit_limit',
+    ])
+    def test_post_rejects_negative_chat_limit(self, factory, project_creator, real_project, field):
+        request = factory.post(
+            f"/api/v1/portal/{real_project.uuid}/settings/",
+            data={field: -1},
+            format='json',
+        )
+        request.user = project_creator
+
+        resp = PortalSettingsView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert resp.status_code == 400
+
+    def test_post_updates_chat_limits(self, factory, project_creator, real_project):
+        data = {
+            'external_chat_user_rate_limit': 5,
+            'external_chat_project_rate_limit': 40,
+            'anonymous_chat_session_daily_limit': 3,
+            'anonymous_chat_ip_daily_limit': 10,
+            'daily_chat_credit_limit': 12,
+        }
+        request = factory.post(
+            f"/api/v1/portal/{real_project.uuid}/settings/",
+            data=data,
+            format='json',
+        )
+        request.user = project_creator
+
+        resp = PortalSettingsView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert resp.status_code == 200
+        real_project.refresh_from_db()
+        portal_settings = json.loads(real_project.settings)['portal']
+        for field, value in data.items():
+            assert portal_settings[field] == value
 
     @pytest.mark.parametrize('field', ['welcome_email_subject', 'welcome_email_content'])
     def test_post_rejects_non_string_welcome_email_field(self, factory, project_creator, real_project, field):

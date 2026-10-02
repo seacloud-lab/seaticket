@@ -60,6 +60,7 @@ from seahub.constants import PORTAL_WELCOME_EMAIL_CONTENT, PORTAL_WELCOME_EMAIL_
     PORTAL_WELCOME_EMAIL_CONTENT_MAX_LENGTH, PORTAL_WELCOME_EMAIL_SUBJECT_MAX_LENGTH
 from seahub.knowledge_base.knowledge_base_utils import get_knowledge_base_record_by_pk
 from seahub.avatar.settings import AVATAR_MAX_SIZE
+from seahub.portal.chat.utils import get_portal_chat_settings
 
 from seahub.portal.portal_utils import get_portal_issue, get_portal_issue_comments, get_portal_issue_comment_by_pk, get_portal_issues, \
     send_portal_issue_update_msg, send_portal_issue_data_update_msg, check_portal_issue_comment_creation_interval
@@ -1559,19 +1560,17 @@ class PortalSettingsView(APIView):
         enable_send_email = bool(portal_settings.get('enable_send_email', True))
         welcome_email_subject = portal_settings.get('welcome_email_subject') or PORTAL_WELCOME_EMAIL_SUBJECT
         welcome_email_content = portal_settings.get('welcome_email_content') or PORTAL_WELCOME_EMAIL_CONTENT
-        daily_chat_credit_limit = portal_settings.get('daily_chat_credit_limit', 50)
-        try:
-            daily_chat_credit_limit = int(daily_chat_credit_limit)
-        except (TypeError, ValueError):
-            daily_chat_credit_limit = 50
-        if daily_chat_credit_limit < 0:
-            daily_chat_credit_limit = 50
+        chat_settings = get_portal_chat_settings(project)
 
         return Response({
             'allow_anonymous': allow_anonymous,
             'enable_password_protection': enable_password_protection,
             'chat_allowed_sources': chat_allowed_sources,
-            'daily_chat_credit_limit': daily_chat_credit_limit,
+            'external_chat_user_rate_limit': chat_settings['external_chat_user_rate_limit'],
+            'external_chat_project_rate_limit': chat_settings['external_chat_project_rate_limit'],
+            'anonymous_chat_session_daily_limit': chat_settings['anonymous_chat_session_daily_limit'],
+            'anonymous_chat_ip_daily_limit': chat_settings['anonymous_chat_ip_daily_limit'],
+            'daily_chat_credit_limit': chat_settings['daily_chat_credit_limit'],
             'portal_home_settings': portal_home_settings,
             'enable_send_email': enable_send_email,
             'welcome_email_subject': welcome_email_subject,
@@ -1591,7 +1590,14 @@ class PortalSettingsView(APIView):
 
         raw_allow_anonymous = request.data.get('allow_anonymous')
         raw_enable_password_protection = request.data.get('enable_password_protection')
-        raw_daily_chat_credit_limit = request.data.get('daily_chat_credit_limit')
+        chat_limit_fields = (
+            'external_chat_user_rate_limit',
+            'external_chat_project_rate_limit',
+            'anonymous_chat_session_daily_limit',
+            'anonymous_chat_ip_daily_limit',
+            'daily_chat_credit_limit',
+        )
+        raw_chat_limits = {field: request.data.get(field) for field in chat_limit_fields}
         password = request.data.get('password', '')
         portal_name = request.data.get('portal_name')
         portal_logo = request.data.get('portal_logo')
@@ -1611,14 +1617,17 @@ class PortalSettingsView(APIView):
             for key, value in bool_field_mapping.items():
                 if value is not None:
                     bool_updates[key] = bool(int(value))
-            daily_chat_credit_limit = None if raw_daily_chat_credit_limit is None else int(raw_daily_chat_credit_limit)
+            chat_limits = {
+                field: None if value is None else int(value)
+                for field, value in raw_chat_limits.items()
+            }
         except Exception:
             error_msg = 'Invalid params.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        if daily_chat_credit_limit is not None and daily_chat_credit_limit < 0:
-            error_msg = 'daily_chat_credit_limit invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+        for field, value in chat_limits.items():
+            if value is not None and value < 0:
+                return api_error(status.HTTP_400_BAD_REQUEST, f'{field} invalid.')
 
         if welcome_email_subject is not None:
             if not isinstance(welcome_email_subject, str):
@@ -1680,8 +1689,9 @@ class PortalSettingsView(APIView):
             portal_settings['welcome_email_subject'] = welcome_email_subject
         if welcome_email_content is not None:
             portal_settings['welcome_email_content'] = welcome_email_content
-        if daily_chat_credit_limit is not None:
-            portal_settings['daily_chat_credit_limit'] = daily_chat_credit_limit
+        for field, value in chat_limits.items():
+            if value is not None:
+                portal_settings[field] = value
 
         if portal_name is not None:
             portal_settings['portal_name'] = portal_name
