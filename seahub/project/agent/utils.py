@@ -6,6 +6,7 @@ from django.core.signing import BadSignature
 
 from seahub.project.utils import get_current_table_metadata
 from seahub.seadb_models.models import SchemaTables
+from seahub.tickets.ticket_utils import get_ticket
 
 
 logger = logging.getLogger(__name__)
@@ -780,3 +781,233 @@ def sync_issue_type_column_options(seadb_api, project_uuid, connection_id, githu
             )
 
     return added, added_names, updated, deleted
+
+
+EVENT_REGENERATION_TOOLS = {
+    'discord_thread_added': (
+        'suggest_reply',
+        'suggest_create_ticket',
+        'suggest_link_existing_ticket',
+    ),
+    'discord_thread_message_added': (
+        'suggest_reply',
+        'suggest_create_ticket',
+        'suggest_link_existing_ticket',
+        'suggest_notify_assignee',
+    ),
+    'discourse_topic_added': (
+        'suggest_reply',
+        'suggest_create_ticket',
+        'suggest_link_existing_ticket',
+    ),
+    'discourse_topic_comment_added': (
+        'suggest_reply',
+        'suggest_create_ticket',
+        'suggest_link_existing_ticket',
+        'suggest_notify_assignee',
+    ),
+    'email_message_added': (
+        'suggest_reply',
+        'suggest_create_ticket',
+        'suggest_link_existing_ticket',
+        'suggest_notify_assignee',
+    ),
+    'email_thread_added': (
+        'suggest_reply',
+        'suggest_create_ticket',
+        'suggest_link_existing_ticket',
+        'suggest_move_to_spam',
+    ),
+    'general_task_updated': (
+        'suggest_close_ticket',
+        'suggest_reply_external_targets',
+    ),
+    'github_issue_added': (
+        'suggest_modify_type',
+        'suggest_assign_labels',
+        'suggest_reply',
+        'suggest_create_ticket',
+        'suggest_link_existing_ticket',
+    ),
+    'github_issue_comment_added': (
+        'suggest_reply',
+        'suggest_create_ticket',
+        'suggest_link_existing_ticket',
+        'suggest_notify_assignee',
+    ),
+    'portal_issue_added': (
+        'suggest_reply',
+        'suggest_create_ticket',
+        'suggest_link_existing_ticket',
+    ),
+    'portal_issue_comment_added': (
+        'suggest_reply',
+        'suggest_create_ticket',
+        'suggest_link_existing_ticket',
+        'suggest_notify_assignee',
+    ),
+    'ticket_due_soon': (
+        'suggest_notify_assignee',
+        'suggest_close_ticket',
+    ),
+    'ticket_over_due': (
+        'suggest_notify_assignee',
+        'suggest_close_ticket',
+    ),
+}
+
+PAYLOAD_ALLOWED_FIELDS = {
+    'suggest_assign_labels': ('suggested_labels',),
+    'suggest_link_existing_ticket': ('related_ticket',),
+    'suggest_modify_type': ('current_issue_type', 'suggested_type'),
+}
+
+
+class RegenerationValidationError(ValueError):
+    pass
+
+
+def validate_materialize_suggestions(seadb_api, project_uuid, run, existing_suggestions, drafts):
+    if not isinstance(drafts, list) or not drafts:
+        raise RegenerationValidationError('suggestions are required.')
+
+    event = _parse_run_event(run.get('event')) or {}
+    event_type = event.get('type')
+    allowed_tools = EVENT_REGENERATION_TOOLS.get(event_type)
+    if not allowed_tools:
+        raise RegenerationValidationError('Unsupported event type for regeneration.')
+
+    allowed_targets = _build_allowed_targets(run, event, existing_suggestions)
+    sanitized = []
+    for index, draft in enumerate(drafts):
+        if not isinstance(draft, dict):
+            raise RegenerationValidationError(f'Suggestion {index + 1} is invalid.')
+        sanitized.append(
+            _sanitize_draft(
+                seadb_api,
+                project_uuid,
+                draft,
+                allowed_tools,
+                allowed_targets,
+                index,
+            )
+        )
+    return sanitized
+
+
+def _build_allowed_targets(run, event, existing_suggestions):
+    allowed = set()
+    trigger_source = event.get('trigger_source')
+    if isinstance(trigger_source, dict):
+        _add_target(allowed, trigger_source.get('type'), trigger_source.get('id'))
+    _add_target(allowed, run.get('owner_source_type'), run.get('owner_source_id'))
+    if isinstance(existing_suggestions, list):
+        for suggestion in existing_suggestions:
+            if not isinstance(suggestion, dict):
+                continue
+            _add_target(
+                allowed,
+                suggestion.get('target_item_type'),
+                suggestion.get('target_item_id'),
+            )
+    return allowed
+
+
+def _add_target(allowed, target_type, target_id):
+    target_type = str(target_type or '').strip()
+    target_id = str(target_id or '').strip()
+    if target_type and target_id:
+        allowed.add((target_type, target_id))
+
+
+def _sanitize_draft(seadb_api, project_uuid, draft, allowed_tools, allowed_targets, index):
+    tool_name = str(draft.get('tool_name') or '').strip()
+    if tool_name not in allowed_tools:
+        raise RegenerationValidationError(
+            f'Suggestion {index + 1} uses an unsupported tool.'
+        )
+
+    target_item_type = str(draft.get('target_item_type') or '').strip()
+    target_item_id = str(draft.get('target_item_id') or '').strip()
+    if not target_item_type or not target_item_id:
+        raise RegenerationValidationError(
+            f'Suggestion {index + 1} is missing a target.'
+        )
+    if (target_item_type, target_item_id) not in allowed_targets:
+        raise RegenerationValidationError(
+            f'Suggestion {index + 1} targets an unauthorized record.'
+        )
+
+    payload = _sanitize_payload(
+        seadb_api, project_uuid, tool_name, draft.get('suggestion_payload'), index,
+    )
+    return {
+        'tool_name': tool_name,
+        'suggestion_reason': str(draft.get('suggestion_reason') or ''),
+        'suggestion_content': str(draft.get('suggestion_content') or ''),
+        'suggestion_payload': payload,
+        'target_item_type': target_item_type,
+        'target_item_id': target_item_id,
+        'target_item_title': str(draft.get('target_item_title') or ''),
+        'status': 'pending',
+        'action_type': 'suggestion',
+        'phase': 'regeneration',
+    }
+
+
+def _sanitize_payload(seadb_api, project_uuid, tool_name, raw_payload, index):
+    payload = raw_payload
+    if isinstance(payload, str):
+        try:
+            payload = json.loads(payload)
+        except (TypeError, ValueError):
+            payload = {}
+    if not isinstance(payload, dict):
+        payload = {}
+
+    allowed_fields = PAYLOAD_ALLOWED_FIELDS.get(tool_name)
+    if not allowed_fields:
+        return {}
+
+    sanitized = {}
+    if tool_name == 'suggest_assign_labels':
+        labels = payload.get('suggested_labels')
+        if not isinstance(labels, list) or not all(isinstance(label, str) and label.strip() for label in labels):
+            raise RegenerationValidationError(
+                f'Suggestion {index + 1} has invalid suggested_labels.'
+            )
+        sanitized['suggested_labels'] = [label.strip() for label in labels]
+        return sanitized
+
+    if tool_name == 'suggest_link_existing_ticket':
+        try:
+            related_ticket = int(payload.get('related_ticket'))
+        except (TypeError, ValueError):
+            raise RegenerationValidationError(
+                f'Suggestion {index + 1} has invalid related_ticket.'
+            )
+        if related_ticket <= 0:
+            raise RegenerationValidationError(
+                f'Suggestion {index + 1} has invalid related_ticket.'
+            )
+        ticket, _ = get_ticket(seadb_api, project_uuid, related_ticket)
+        if not ticket:
+            raise RegenerationValidationError(
+                f'Suggestion {index + 1} related_ticket does not belong to this project.'
+            )
+        sanitized['related_ticket'] = related_ticket
+        return sanitized
+
+    if tool_name == 'suggest_modify_type':
+        suggested_type = str(payload.get('suggested_type') or '').strip()
+        if not suggested_type:
+            raise RegenerationValidationError(
+                f'Suggestion {index + 1} is missing suggested_type.'
+            )
+        sanitized['suggested_type'] = suggested_type
+        current_issue_type = payload.get('current_issue_type')
+        if current_issue_type is not None:
+            sanitized['current_issue_type'] = str(current_issue_type)
+        return sanitized
+
+    return {}

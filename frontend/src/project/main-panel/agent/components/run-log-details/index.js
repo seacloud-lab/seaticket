@@ -8,6 +8,7 @@ import { Utils } from '@/utils/utils';
 import { getAgentResource, getRunLogStatusByRuns } from '../../utils';
 import AgentType2GithubTypeMappingDialog from '../agent-type-to-github-type-mapping-dialog';
 import ResourceTitle from '../resource-title';
+import RegenerateChatPanel from './regenerate-chat-panel';
 import RunDetail from './run-details';
 import SuggestionDetailPanel from './suggestion-detail-panel';
 
@@ -33,9 +34,12 @@ const RunLogDetails = ({
   const [runs, setRuns] = useState([]);
   const [pendingMapping, setPendingMapping] = useState(null);
   const [suggestionInfo, setSuggestionInfo] = useState(null);
+  const [regenerateInfo, setRegenerateInfo] = useState(null);
+  const [hasUnappliedRegenerateDrafts, setHasUnappliedRegenerateDrafts] = useState(false);
   const { openCloseLinkedGitHubIssuesWarningDialog } = useCloseLinkedIssues();
   const [isShowAll, setIsShowAll] = useState(true);
   const runsRequestVersionRef = useRef(0);
+  const [runsRefreshKey, setRunsRefreshKey] = useState(0);
 
   const { owner_source_id, owner_source_type } = useMemo(() => ({
     owner_source_id: runLog?.owner_source_id,
@@ -54,13 +58,22 @@ const RunLogDetails = ({
     if (!action) return null;
     return { runId, action, mode, event: run.event };
   }, [runs, suggestionInfo]);
+
   const statusFilterOptionName = useMemo(() => {
     if (!statusFilterValue) return '';
     const option = statusFilterOptions.find(item => item.value === statusFilterValue) || statusFilterOptions[0];
     return option.label;
   }, [statusFilterValue, statusFilterOptions]);
 
+  const regenerateRun = useMemo(() => {
+    if (!regenerateInfo) return null;
+    if (!Array.isArray(runs) || runs.length === 0) return null;
+    return runs.find(run => run.id === regenerateInfo.runId) || null;
+  }, [runs, regenerateInfo]);
+
   const openSuggestionDetailPanel = useCallback((runId, actionId, mode = 'view') => {
+    setRegenerateInfo(null);
+    setHasUnappliedRegenerateDrafts(false);
     setSuggestionInfo({ runId, actionId, mode });
     hideLogs();
   }, [hideLogs]);
@@ -69,6 +82,23 @@ const RunLogDetails = ({
     setSuggestionInfo(null);
     showLogs();
   }, [showLogs]);
+
+  const openRegeneratePanel = useCallback((run) => {
+    setSuggestionInfo(null);
+    setRegenerateInfo({ runId: run.id });
+    hideLogs();
+  }, [hideLogs]);
+
+  const closeRegeneratePanel = useCallback(() => {
+    setRegenerateInfo(null);
+    setHasUnappliedRegenerateDrafts(false);
+    showLogs();
+  }, [showLogs]);
+
+  const handleRegenerateApplied = useCallback(() => {
+    setHasUnappliedRegenerateDrafts(false);
+    setRunsRefreshKey(key => key + 1);
+  }, []);
 
   const updateRunAction = useCallback((runId, actionId, update, runUpdate = null) => {
     setRuns(runs => {
@@ -306,6 +336,8 @@ const RunLogDetails = ({
       setIsLoading(false);
       setRuns([]);
       setSuggestionInfo(null);
+      setRegenerateInfo(null);
+      setHasUnappliedRegenerateDrafts(false);
       setPendingMapping(null);
       return () => controller.abort();
     }
@@ -313,6 +345,8 @@ const RunLogDetails = ({
     setIsLoading(true);
     setRuns([]);
     setSuggestionInfo(null);
+    setRegenerateInfo(null);
+    setHasUnappliedRegenerateDrafts(false);
     setPendingMapping(null);
     agentAPI.listAgentLogRuns(projectUuid, owner_source_id, owner_source_type, controller.signal).then(res => {
       if (controller.signal.aborted || requestVersion !== runsRequestVersionRef.current) return;
@@ -333,7 +367,7 @@ const RunLogDetails = ({
 
     return () => controller.abort();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [owner_source_id, owner_source_type]);
+  }, [owner_source_id, owner_source_type, runsRefreshKey]);
 
   useEffect(() => {
     if (!updatedRuns) return;
@@ -341,12 +375,15 @@ const RunLogDetails = ({
       updatedRuns.owner_source_id !== owner_source_id ||
       updatedRuns.owner_source_type !== owner_source_type
     ) return;
+    if (regenerateInfo && hasUnappliedRegenerateDrafts) return;
     runsRequestVersionRef.current += 1;
     setRuns(updatedRuns.runs);
     setSuggestionInfo(null);
+    setRegenerateInfo(null);
+    setHasUnappliedRegenerateDrafts(false);
     setPendingMapping(null);
     setIsShowAll(updatedRuns.runs.length <= 8);
-  }, [owner_source_id, owner_source_type, updatedRuns]);
+  }, [owner_source_id, owner_source_type, updatedRuns, regenerateInfo, hasUnappliedRegenerateDrafts]);
 
   return (
     <>
@@ -423,6 +460,7 @@ const RunLogDetails = ({
                           onConfirmAction={onConfirmAction}
                           onCancelAction={onCancelAction}
                           onViewContent={openSuggestionDetailPanel}
+                          onChatToRefine={openRegeneratePanel}
                         />
                       );
                     }))}
@@ -435,6 +473,15 @@ const RunLogDetails = ({
                     />
                   )}
                 </>
+              )}
+              {regenerateRun && !suggestionDetail && (
+                <RegenerateChatPanel
+                  key={regenerateRun.id}
+                  run={regenerateRun}
+                  onClose={closeRegeneratePanel}
+                  onApplied={handleRegenerateApplied}
+                  onDraftsChange={setHasUnappliedRegenerateDrafts}
+                />
               )}
             </>
           )}

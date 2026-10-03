@@ -103,6 +103,16 @@ class AgentAPI {
     return this.req.patch(url, data);
   }
 
+  regenerateAgentRun(projectUuid, runId, data) {
+    const url = this.server + `/api/v1/project/${projectUuid}/agent/runs/${runId}/regenerate/`;
+    return this.req.post(url, data, { timeout: 600000 });
+  }
+
+  materializeAgentRun(projectUuid, runId, data) {
+    const url = this.server + `/api/v1/project/${projectUuid}/agent/runs/${runId}/materialize/`;
+    return this.req.post(url, data);
+  }
+
   // Execute agent immediately
   executeAgent(projectUuid) {
     const url = this.server + `/api/v1/project/${projectUuid}/agent/execute/`;

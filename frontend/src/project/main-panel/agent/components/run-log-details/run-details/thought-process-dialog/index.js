@@ -19,11 +19,12 @@ const PRIMARY_SECTION = {
   icon: 'action-steps',
   isPrimaryContainer: true,
 };
-const PHASE_ORDER = ['prelude', 'analysis', 'handling'];
+const PHASE_ORDER = ['prelude', 'analysis', 'handling', 'regeneration'];
 const PHASE_LABELS = {
   prelude: gettext('Prelude'),
   analysis: gettext('Analysis'),
   handling: gettext('Handling'),
+  regeneration: gettext('Regeneration'),
 };
 
 const getActionTitle = (action, index) => {
