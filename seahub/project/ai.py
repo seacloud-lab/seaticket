@@ -30,6 +30,23 @@ from seahub.seadb_models.models import SchemaTables
 
 
 logger = logging.getLogger(__name__)
+
+
+def _generated_ticket_fields(draft):
+    draft = draft if isinstance(draft, dict) else {}
+    priority = draft.get('priority')
+    if isinstance(priority, bool) or not isinstance(priority, int):
+        priority = 0
+    tags = draft.get('tags')
+    return {
+        'title': draft.get('title') or '',
+        'content': draft.get('content') or '',
+        'type': draft.get('type') or '',
+        'priority': priority,
+        'tags': tags if isinstance(tags, list) else [],
+    }
+
+
 MAX_LENGTH = 10000
 
 
@@ -237,17 +254,16 @@ class ConvertRecordToTicket(APIView):
             'scenario': AIScenario.RECORD_GENERATION.value,
         }
         try:
-            ai_title, ai_content = convert_record_to_ticket(params)
-            if not ai_title:
-                ai_title = default_title
+            draft = _generated_ticket_fields(convert_record_to_ticket(params))
+            if not draft['title']:
+                draft['title'] = default_title
         except Exception as e:
             logger.error(f'AI service error: {e}')
             error_msg = 'AI service error.'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         return Response({
-            'title': ai_title,
-            'content': ai_content,
+            **draft,
             'related_url': related_url,
             'linked_connection_records': [f'{connection_id}_{record_id}'],
         })
@@ -332,9 +348,9 @@ class ConvertPortalIssueToTicket(APIView):
         }
 
         try:
-            ai_title, ai_content = convert_record_to_ticket(params)
-            if not ai_title:
-                ai_title = default_title
+            draft = _generated_ticket_fields(convert_record_to_ticket(params))
+            if not draft['title']:
+                draft['title'] = default_title
         except Exception as e:
             logger.error(f'AI service error: {e}')
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'AI service error.')
@@ -342,8 +358,7 @@ class ConvertPortalIssueToTicket(APIView):
         related_url = build_portal_issue_related_url(request, project, issue_id)
 
         return Response({
-            'title': ai_title,
-            'content': ai_content,
+            **draft,
             'related_url': related_url,
             'linked_connection_records': [f'portal_{issue_id}'],
         })

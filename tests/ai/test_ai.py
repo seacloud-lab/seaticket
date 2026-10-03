@@ -98,12 +98,21 @@ class TestConvertRecordToTicket:
 
         with patch('seahub.project.ai.check_ai_limit', return_value=False), \
                 patch('seahub.project.ai.GitHubSeaDBAPI', return_value=github_api), \
-                patch('seahub.project.ai.convert_record_to_ticket', return_value=('ai-title', 'ai-content')):
+                patch('seahub.project.ai.convert_record_to_ticket', return_value={
+                    'title': 'ai-title',
+                    'content': 'ai-content',
+                    'type': '0002',
+                    'priority': 4,
+                    'tags': [7],
+                }):
             resp = ConvertRecordToTicket.as_view()(request)
 
         assert resp.status_code == 200
         assert resp.data['title'] == 'ai-title'
         assert resp.data['content'] == 'ai-content'
+        assert resp.data['type'] == '0002'
+        assert resp.data['priority'] == 4
+        assert resp.data['tags'] == [7]
 
 
 class TestEmbeddingAnalysisView:
