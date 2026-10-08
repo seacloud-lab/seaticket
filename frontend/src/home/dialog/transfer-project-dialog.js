@@ -14,13 +14,13 @@ const propTypes = {
   loadWorkspaceList: PropTypes.func.isRequired,
 };
 
-class ChangeProjectGroupDialog extends React.Component {
+class TransferProjectDialog extends React.Component {
 
   constructor(props) {
     super(props);
     this.state = {
-      groups: [],
-      selectedGroupID: '',
+      workspaces: [],
+      selectedWorkspaceID: '',
       errMessage: '',
       isLoading: true,
       isSubmitting: false,
@@ -42,7 +42,7 @@ class ChangeProjectGroupDialog extends React.Component {
           label: workspace.name,
         }));
       this.setState({
-        groups: workspaces,
+        workspaces,
         isLoading: false,
       });
     }).catch((error) => {
@@ -54,29 +54,29 @@ class ChangeProjectGroupDialog extends React.Component {
     });
   };
 
-  onGroupChange = (groupID) => {
+  onWorkspaceChange = (workspaceID) => {
     this.setState({
-      selectedGroupID: groupID || '',
+      selectedWorkspaceID: workspaceID || '',
       errMessage: '',
     });
   };
 
   onSubmit = () => {
-    const { selectedGroupID } = this.state;
+    const { selectedWorkspaceID } = this.state;
     const { currentProject, currentWorkspace } = this.props;
-    const workspaceTargetID = String(currentWorkspace.id);
-    if (!selectedGroupID) {
+    const targetWorkspaceID = String(currentWorkspace.id);
+    if (!selectedWorkspaceID) {
       this.setState({ errMessage: gettext('Please select a group.') });
       return;
     }
-    if (selectedGroupID === workspaceTargetID) {
+    if (selectedWorkspaceID === targetWorkspaceID) {
       this.setState({ errMessage: gettext('Project is already in this group.') });
       return;
     }
 
     this.setState({ isSubmitting: true, errMessage: '' });
-    homeAPI.updateProject(currentWorkspace.id, currentProject.name, { workspace_id: selectedGroupID }).then(() => {
-      toaster.success(gettext('Project moved'));
+    homeAPI.updateProject(currentWorkspace.id, currentProject.name, { workspace_id: selectedWorkspaceID }).then(() => {
+      toaster.success(gettext('Project transferred'));
       this.props.toggleDialog();
       this.props.loadWorkspaceList();
     }).catch((error) => {
@@ -90,20 +90,20 @@ class ChangeProjectGroupDialog extends React.Component {
 
   render() {
     const { currentProject, currentWorkspace, toggleDialog } = this.props;
-    const { groups, selectedGroupID, errMessage, isLoading, isSubmitting } = this.state;
-    const workspaceTargetID = String(currentWorkspace.id);
-    const disabled = isLoading || !selectedGroupID || selectedGroupID === workspaceTargetID || isSubmitting;
+    const { workspaces, selectedWorkspaceID, errMessage, isLoading, isSubmitting } = this.state;
+    const targetWorkspaceID = String(currentWorkspace.id);
+    const disabled = isLoading || !selectedWorkspaceID || selectedWorkspaceID === targetWorkspaceID || isSubmitting;
 
     return (
       <Modal isOpen={true} toggle={toggleDialog}>
-        <ModalHeader toggle={toggleDialog}>{gettext('Change project group')}</ModalHeader>
+        <ModalHeader toggle={toggleDialog}>{gettext('Transfer project')}</ModalHeader>
         <ModalBody>
-          <Label for="project-group-selector">{gettext('Move project {placeholder} to').replace('{placeholder}', `"${currentProject.name}"`)}</Label>
+          <Label for="project-group-selector">{gettext('Transfer project {placeholder} to').replace('{placeholder}', `"${currentProject.name}"`)}</Label>
           <CustomizeSelect
             id="project-group-selector"
-            value={selectedGroupID}
-            options={groups}
-            onChange={this.onGroupChange}
+            value={selectedWorkspaceID}
+            options={workspaces}
+            onChange={this.onWorkspaceChange}
             placeholder={gettext('Select a group')}
             noOptionsPlaceholder={gettext('No groups available')}
             disabled={isLoading || isSubmitting}
@@ -120,6 +120,6 @@ class ChangeProjectGroupDialog extends React.Component {
   }
 }
 
-ChangeProjectGroupDialog.propTypes = propTypes;
+TransferProjectDialog.propTypes = propTypes;
 
-export default ChangeProjectGroupDialog;
+export default TransferProjectDialog;
