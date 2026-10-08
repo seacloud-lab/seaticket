@@ -19,6 +19,12 @@ const PortalHomeChatInput = ({ description_text, onHomeChatSend }) => {
         className="portal-home-chat-textarea"
         value={value}
         onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            handleSend();
+          }
+        }}
         placeholder={description_text}
         aria-label={gettext('Chat with AI')}
       />
