@@ -8,6 +8,13 @@ PORTAL_ANON_CHAT_IP_DAILY_LIMIT = 50
 PORTAL_ANON_CHAT_DAILY_TTL = 24 * 60 * 60
 
 PORTAL_CHAT_DAILY_CREDIT_LIMIT_DEFAULT = 50
+PORTAL_CHAT_LIMIT_DEFAULTS = {
+    'external_chat_user_rate_limit': PORTAL_EXTERNAL_CHAT_USER_RATE_LIMIT,
+    'external_chat_project_rate_limit': PORTAL_EXTERNAL_CHAT_PROJECT_RATE_LIMIT,
+    'anonymous_chat_session_daily_limit': PORTAL_ANON_CHAT_SESSION_DAILY_LIMIT,
+    'anonymous_chat_ip_daily_limit': PORTAL_ANON_CHAT_IP_DAILY_LIMIT,
+    'daily_chat_credit_limit': PORTAL_CHAT_DAILY_CREDIT_LIMIT_DEFAULT,
+}
 
 PORTAL_CHAT_IMAGE_TOKEN_AUDIENCE = 'portal-chat-image'
 PORTAL_CHAT_ADMIN_IMAGE_TOKEN_TYPE = 'portal-chat-admin-image'

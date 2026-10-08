@@ -516,7 +516,9 @@ class PortalChatView(APIView):
 
         portal_settings = get_portal_chat_settings(request.project)
         if request.identity['is_external_user']:
-            rate_limit_error = check_external_chat_rate_limit(project_uuid, request.identity['username'])
+            rate_limit_error = check_external_chat_rate_limit(
+                project_uuid, request.identity['username'], portal_settings
+            )
             if rate_limit_error:
                 return rate_limit_error
 
@@ -524,7 +526,7 @@ class PortalChatView(APIView):
         ip = ''
         if request.identity['is_anonymous']:
             ip = get_remote_ip(request)
-            rate_limit_error = check_anonymous_chat_rate_limit(visitor_uuid, ip)
+            rate_limit_error = check_anonymous_chat_rate_limit(visitor_uuid, ip, portal_settings)
             if rate_limit_error:
                 return rate_limit_error
 

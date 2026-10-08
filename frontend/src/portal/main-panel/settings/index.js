@@ -50,6 +50,13 @@ const Settings = () => {
   const [isConnectionsLoading, setIsConnectionsLoading] = useState(true);
   const [chatSettings, setChatSettings] = useState(EMPTY_CHAT_ALLOWED_SOURCES);
   const [serverChatAllowedSources, setServerChatAllowedSources] = useState(null);
+  const [chatLimits, setChatLimits] = useState({
+    external_chat_user_rate_limit: 20,
+    external_chat_project_rate_limit: 100,
+    anonymous_chat_session_daily_limit: 20,
+    anonymous_chat_ip_daily_limit: 50,
+    daily_chat_credit_limit: 50,
+  });
   const [isSavingChat, setIsSavingChat] = useState(false);
 
   // Welcome email
@@ -86,6 +93,13 @@ const Settings = () => {
     setHasSavedPassword(!!data.enable_password_protection);
     setIsEditingPassword(false);
     setServerChatAllowedSources(data.chat_allowed_sources);
+    setChatLimits({
+      external_chat_user_rate_limit: data.external_chat_user_rate_limit ?? 20,
+      external_chat_project_rate_limit: data.external_chat_project_rate_limit ?? 100,
+      anonymous_chat_session_daily_limit: data.anonymous_chat_session_daily_limit ?? 20,
+      anonymous_chat_ip_daily_limit: data.anonymous_chat_ip_daily_limit ?? 50,
+      daily_chat_credit_limit: data.daily_chat_credit_limit ?? 50,
+    });
     setEnableSendEmail(!!data.enable_send_email);
     setWelcomeEmailSubject(data.welcome_email_subject || '');
     setWelcomeEmailContent(data.welcome_email_content || '');
@@ -347,6 +361,7 @@ const Settings = () => {
 
     portalAPI.updateSettings(projectUuid, {
       chat_allowed_sources: nextChatAllowedSources,
+      ...chatLimits,
     }).then(() => {
       setServerChatAllowedSources(nextChatAllowedSources);
       toaster.success(gettext('Saved'), { duration: 2, hasCloseButton: false });
@@ -356,7 +371,14 @@ const Settings = () => {
     }).finally(() => {
       setIsSavingChat(false);
     });
-  }, [chatSettings]);
+  }, [chatSettings, chatLimits]);
+
+  const onChatLimitChange = useCallback((event) => {
+    const { name, value } = event.target;
+    setChatLimits(prev => ({ ...prev, [name]: value === '' ? '' : Number(value) }));
+  }, []);
+
+  const isChatLimitsValid = Object.values(chatLimits).every(value => Number.isInteger(value) && value >= 0);
 
   const onSaveWelcomeEmailSettings = useCallback(() => {
     if (isSavingWelcomeEmail) return;
@@ -683,11 +705,82 @@ const Settings = () => {
                 onChange={handleSourceChange}
               />
             </div>
+            <label className="portal-settings-label mt-4">{gettext('Chat limits')}</label>
+            <p className="portal-settings-help-text">
+              {gettext('Configure the request and credit limits for portal chat. The time periods are fixed.')}
+            </p>
+            <div className="portal-chat-limits">
+              <label className="portal-chat-limit-row">
+                <span>{gettext('External user')}</span>
+                <input
+                  type="number"
+                  min="0"
+                  name="external_chat_user_rate_limit"
+                  className="form-control portal-chat-limit-input"
+                  value={chatLimits.external_chat_user_rate_limit}
+                  onChange={onChatLimitChange}
+                  disabled={isSavingChat || !hasLoadedPortalSettings}
+                />
+                <span className="portal-chat-limit-unit">{gettext('requests / 10 minutes')}</span>
+              </label>
+              <label className="portal-chat-limit-row">
+                <span>{gettext('All external users in this project')}</span>
+                <input
+                  type="number"
+                  min="0"
+                  name="external_chat_project_rate_limit"
+                  className="form-control portal-chat-limit-input"
+                  value={chatLimits.external_chat_project_rate_limit}
+                  onChange={onChatLimitChange}
+                  disabled={isSavingChat || !hasLoadedPortalSettings}
+                />
+                <span className="portal-chat-limit-unit">{gettext('requests / hour')}</span>
+              </label>
+              <label className="portal-chat-limit-row">
+                <span>{gettext('Anonymous visitor')}</span>
+                <input
+                  type="number"
+                  min="0"
+                  name="anonymous_chat_session_daily_limit"
+                  className="form-control portal-chat-limit-input"
+                  value={chatLimits.anonymous_chat_session_daily_limit}
+                  onChange={onChatLimitChange}
+                  disabled={isSavingChat || !hasLoadedPortalSettings}
+                />
+                <span className="portal-chat-limit-unit">{gettext('requests / day')}</span>
+              </label>
+              <label className="portal-chat-limit-row">
+                <span>{gettext('Anonymous IP')}</span>
+                <input
+                  type="number"
+                  min="0"
+                  name="anonymous_chat_ip_daily_limit"
+                  className="form-control portal-chat-limit-input"
+                  value={chatLimits.anonymous_chat_ip_daily_limit}
+                  onChange={onChatLimitChange}
+                  disabled={isSavingChat || !hasLoadedPortalSettings}
+                />
+                <span className="portal-chat-limit-unit">{gettext('requests / day')}</span>
+              </label>
+              <label className="portal-chat-limit-row">
+                <span>{gettext('Project credit')}</span>
+                <input
+                  type="number"
+                  min="0"
+                  name="daily_chat_credit_limit"
+                  className="form-control portal-chat-limit-input"
+                  value={chatLimits.daily_chat_credit_limit}
+                  onChange={onChatLimitChange}
+                  disabled={isSavingChat || !hasLoadedPortalSettings}
+                />
+                <span className="portal-chat-limit-unit">{gettext('Credit / day')}</span>
+              </label>
+            </div>
             <Button
               color="primary"
-              className="mt-2"
+              className="mt-3"
               onClick={onSaveChatSettings}
-              disabled={isSavingChat || isConnectionsLoading || !hasLoadedPortalSettings}
+              disabled={isSavingChat || isConnectionsLoading || !hasLoadedPortalSettings || !isChatLimitsValid}
             >
               {gettext('Save')}
             </Button>
