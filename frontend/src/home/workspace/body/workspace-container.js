@@ -33,7 +33,7 @@ class WorkspaceContainer extends Component {
               onUnsetPasswordToggle={this.props.onUnsetPasswordToggle}
               onModifyPasswordToggle={this.props.onModifyPasswordToggle}
               onDeleteProjectToggle={this.props.onDeleteProjectToggle}
-              onChangeProjectGroupToggle={this.props.onChangeProjectGroupToggle}
+              onTransferProjectToggle={this.props.onTransferProjectToggle}
               onCopyProjectToggle={this.props.onCopyProjectToggle}
               onUpdateProject={this.props.onUpdateProject}
               onMobileUpdateProjectToggle={this.props.onMobileUpdateProjectToggle}
@@ -73,7 +73,7 @@ WorkspaceContainer.propTypes = {
   onUnsetPasswordToggle: PropTypes.func,
   onModifyPasswordToggle: PropTypes.func,
   onDeleteProjectToggle: PropTypes.func,
-  onChangeProjectGroupToggle: PropTypes.func,
+  onTransferProjectToggle: PropTypes.func,
   onAPITokenToggle: PropTypes.func,
   onCopyProjectToggle: PropTypes.func,
   onUpdateProject: PropTypes.func,

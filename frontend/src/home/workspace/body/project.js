@@ -14,7 +14,7 @@ const siteRoot = window.app.config.siteRoot;
 const propTypes = {
   project: PropTypes.object.isRequired,
   onDeleteProjectToggle: PropTypes.func.isRequired,
-  onChangeProjectGroupToggle: PropTypes.func.isRequired,
+  onTransferProjectToggle: PropTypes.func.isRequired,
   onAPITokenToggle: PropTypes.func,
   onUpdateProject: PropTypes.func.isRequired,
   onFreezedItem: PropTypes.func.isRequired,
@@ -77,8 +77,8 @@ class Project extends React.Component {
     this.props.onDeleteProjectToggle(this.props.project);
   };
 
-  onChangeProjectGroupToggle = () => {
-    this.props.onChangeProjectGroupToggle(this.props.project);
+  onTransferProjectToggle = () => {
+    this.props.onTransferProjectToggle(this.props.project);
   };
 
   dropdownToggle = (e) => {
@@ -243,7 +243,7 @@ class Project extends React.Component {
                   project={project}
                   onToggle={this.toggleProjectDropdown}
                   onProjectSettingsToggle={this.onProjectSettingsToggle}
-                  onChangeProjectGroupToggle={this.onChangeProjectGroupToggle}
+                  onTransferProjectToggle={this.onTransferProjectToggle}
                   onAPITokenToggle={this.props.onAPITokenToggle}
                   onDeleteProjectToggle={this.onDeleteProjectToggle}
                 />
