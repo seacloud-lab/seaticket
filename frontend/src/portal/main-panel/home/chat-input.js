@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { gettext } from '@/constants';
 import './chat-input.css';
 
 const PortalHomeChatInput = ({ description_text, onHomeChatSend }) => {
   const [value, setValue] = useState('');
+  const isComposing = useRef(false);
 
   const handleSend = () => {
     const nextValue = value.trim();
@@ -19,7 +20,10 @@ const PortalHomeChatInput = ({ description_text, onHomeChatSend }) => {
         className="portal-home-chat-textarea"
         value={value}
         onChange={(e) => setValue(e.target.value)}
+        onCompositionStart={() => { isComposing.current = true; }}
+        onCompositionEnd={() => { isComposing.current = false; }}
         onKeyDown={(e) => {
+          if (isComposing.current) return;
           if (e.key === 'Enter') {
             e.preventDefault();
             handleSend();
