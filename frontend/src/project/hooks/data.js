@@ -266,8 +266,8 @@ export const DataProvider = ({
     });
   }, [data, updateData]);
 
-  const getMetadata = useCallback((tableName, { view_id, start, limit, is_reload = false }, api, isBuiltIn = false) => {
-    let table = getTableByName(tableName);
+  const getMetadata = useCallback((tableName, { view_id, start, limit, is_reload = false, use_cache = true }, api, isBuiltIn = false) => {
+    let table = use_cache ? getTableByName(tableName) : deepcopy(EMPTY_TABLE);
     const viewMapName = isBuiltIn ? 'built_in_view_map' : 'id_view_map';
     const view = table[viewMapName][view_id] || {};
     let recordsName = 'records';
@@ -305,36 +305,42 @@ export const DataProvider = ({
         timestamp: Date.now(),
         has_more: rows.length >= limit,
       };
-      setData(data => {
-        const newData = deepcopy(data);
-        let _table = newData[tableName] || deepcopy(EMPTY_TABLE);
-        newData[tableName] = {
-          ..._table,
-          id_row_map,
-          key_column_map,
-          [viewMapName]: view_map,
-          linked_records,
-          linked_github_issue_state_map,
-          related_users: relatedUsers,
-        };
+      if (use_cache) {
+        setData(data => {
+          const newData = deepcopy(data);
+          let _table = newData[tableName] || deepcopy(EMPTY_TABLE);
+          newData[tableName] = {
+            ..._table,
+            id_row_map,
+            key_column_map,
+            [viewMapName]: view_map,
+            linked_records,
+            linked_github_issue_state_map,
+            related_users: relatedUsers,
+          };
 
-        if (tableName !== TICKET_TABLE_NAME && tableName !== KB_TABLE_NAME && data[TICKET_TABLE_NAME]) {
-          const ticketTable = newData[TICKET_TABLE_NAME];
-          const titleColumn = Object.values(ticketTable?.key_column_map || {}).find(c => c.name === PREDEFINED_TICKET_COLUMN_NAME.TITLE);
-          if (titleColumn) {
-            Object.keys(linkedRecords).forEach(ticketKey => {
-              const ticket = ticketTable.id_row_map[ticketKey + ''] || {};
-              ticketTable.id_row_map[ticketKey + ''] = { ...ticket, [titleColumn.key]: linkedRecords[ticketKey] };
-            });
-            newData[TICKET_TABLE_NAME] = ticketTable;
+          if (tableName !== TICKET_TABLE_NAME && tableName !== KB_TABLE_NAME && data[TICKET_TABLE_NAME]) {
+            const ticketTable = newData[TICKET_TABLE_NAME];
+            const titleColumn = Object.values(ticketTable?.key_column_map || {}).find(c => c.name === PREDEFINED_TICKET_COLUMN_NAME.TITLE);
+            if (titleColumn) {
+              Object.keys(linkedRecords).forEach(ticketKey => {
+                const ticket = ticketTable.id_row_map[ticketKey + ''] || {};
+                ticketTable.id_row_map[ticketKey + ''] = { ...ticket, [titleColumn.key]: linkedRecords[ticketKey] };
+              });
+              newData[TICKET_TABLE_NAME] = ticketTable;
+            }
           }
-        }
 
-        newData.version = newData.version + 1;
-        return newData;
-      });
+          newData.version = newData.version + 1;
+          return newData;
+        });
+      }
       return _.merge(res, { data: { has_more: rows.length >= limit } });
     });
+
+    if (!use_cache) {
+      return func();
+    }
 
     if (!is_reload && view && start < view?.rows?.length && !shouldReload(view.timestamp)) {
       func = () => new Promise((resolve, reject) => {
