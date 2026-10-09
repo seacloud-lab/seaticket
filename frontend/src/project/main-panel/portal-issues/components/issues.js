@@ -41,11 +41,10 @@ const Issues = ({
   togglePageSlugId = () => {},
   isLoading = false,
   settings = {},
-  metadataCacheTableName = PORTAL_ISSUE_TABLE_NAME,
   getIssue = (uuid, issueNumber) => portalAPI.getPortalIssue(uuid, issueNumber),
   onRefresh,
   onCustomViewRowClick,
-  forceReload = false,
+  useCache = true,
   ...props
 }) => {
   const { handleResolveAttachmentsByAI } = useAIChatTools();
@@ -78,7 +77,7 @@ const Issues = ({
     // metadata
     if (isFunction(api.getMetadata)) {
       _api.getMetadata = (...params) => {
-        return getMetadata(metadataCacheTableName, { ...params[0], is_reload: forceReload }, () => api.getMetadata(...params).then(res => {
+        return getMetadata(PORTAL_ISSUE_TABLE_NAME, { ...params[0], use_cache: useCache }, () => api.getMetadata(...params).then(res => {
           return {
             data: {
               ...res.data,
@@ -176,7 +175,7 @@ const Issues = ({
 
     return _api;
   }, [
-    projectUuid, isBuiltInView, metadataCacheTableName, api, getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView, forceReload,
+    projectUuid, isBuiltInView, api, getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView, useCache,
     getMetadata, modifyRow, modifyRows, deleteRow, deleteRows, togglePageSlugId,
   ]);
 
