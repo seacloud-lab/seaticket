@@ -1397,40 +1397,6 @@ def check_ticket_link_changes(seadb_api, project_uuid, ticket_link_diff):
     return sync_plan, connections
 
 
-def inherit_customer_from_portal_issues(seadb_api, project_uuid, ticket_id, portal_customer_ids):
-    """Carry a portal issue's customer onto the ticket it is linked to.
-
-    Only fills the ticket's customer when it has none, so a manually chosen
-    customer always wins. The order of portal_customer_ids decides which customer
-    wins when a ticket is linked to several issues of different customers.
-
-    Best-effort by design: a base that has not been migrated with the customer_id
-    column, or a transient SeaDB error, must never break link syncing. Returns the
-    applied customer id, or None when nothing was changed.
-
-    The write deliberately bypasses compare_ticket_changes / record_ticket_activities,
-    so inheriting a customer is NOT recorded in the ticket activity log and emits
-    no realtime update. That is intended: this is a side effect of linking, not a
-    user edit, and it must not fail link syncing midway. Pinned by
-    test_inheriting_does_not_record_an_activity.
-    """
-    customer_id = next((value for value in portal_customer_ids if value), None)
-    if not customer_id:
-        return None
-    try:
-        ticket, _ = get_ticket(seadb_api, project_uuid, ticket_id)
-        if not ticket or ticket.get('customer_id'):
-            return None
-        seadb_api.update_rows(project_uuid, TABLE_TICKETS, [{
-            'pk': int(ticket_id),
-            'row': {SchemaTables.TICKETS.column.customer_id.name: int(customer_id)},
-        }])
-        return int(customer_id)
-    except Exception as e:
-        logger.warning('Failed to inherit customer for ticket %s: %s', ticket_id, e)
-        return None
-
-
 def sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections):
     """
     Sync ticket links in connection tables (Discourse topics, GitHub issues, emails) and portal issues.
@@ -1441,11 +1407,7 @@ def sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections):
         sync_plan: TicketLinkSyncPlan instance
         connections: list of ProjectConnections
         now_datetime: current datetime string (required for portal issues)
-
-    Returns {ticket_id: customer_id} for customers inherited from linked portal
-    issues.
     """
-    inherited_customers = {}
     # Sync connection records
     if connections:
         # Get connections that support linked_ticket
@@ -1518,8 +1480,8 @@ def sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections):
                     portal_issue, _ = get_portal_issue(seadb_api, project_uuid, portal_issue_id)
                     if not portal_issue:
                         continue
-                    ticket_id = sync_plan.records_to_link.get('portal', {}).get(portal_issue_id)
                     if not portal_issue.get('linked_ticket'):
+                        ticket_id = sync_plan.records_to_link.get('portal', {}).get(portal_issue_id)
                         if ticket_id:
                             seadb_api.update_rows(project_uuid, SchemaTables.PORTAL_ISSUES.table_name(), [{
                                 'pk': int(portal_issue_id),
@@ -1527,21 +1489,8 @@ def sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections):
                                     'linked_ticket': int(ticket_id),
                                 }
                             }])
-                    # the issue's customer carries onto the ticket (only when unset)
-                    if ticket_id and portal_issue.get('customer_id'):
-                        inherited_customers.setdefault(int(ticket_id), portal_issue.get('customer_id'))
                 except Exception as e:
                     logger.error(f'Failed to update portal issue link: {e}')
-
-            for ticket_id in list(inherited_customers):
-                applied_customer_id = inherit_customer_from_portal_issues(
-                    seadb_api, project_uuid, ticket_id, [inherited_customers[ticket_id]])
-                if applied_customer_id:
-                    # report the normalized int that was actually persisted, not the
-                    # raw value SeaDB handed back
-                    inherited_customers[ticket_id] = applied_customer_id
-                else:
-                    del inherited_customers[ticket_id]
 
         # Sync removed links
         portal_unlink_map = sync_plan.records_to_unlink.get('portal', {})
@@ -1562,8 +1511,6 @@ def sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections):
                             }])
                 except Exception as e:
                     logger.error(f'Failed to unlink portal issue: {e}')
-
-    return inherited_customers
 
 def validate_ticket_state_substate_relation(table_columns, state_name, substate_name):
     state_column = get_column_from_columns_by_name(table_columns, SchemaTables.TICKETS.column.state.name)
