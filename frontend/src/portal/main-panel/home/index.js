@@ -87,6 +87,7 @@ const PortalHome = ({ projectUuid, onHomeChatSend }) => {
   };
 
   const handleCardDragStart = (event, cardId) => {
+    if (!isEditMode) return;
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData(CARD_ORDER_MIME_TYPE, cardId);
     const cardElement = event.currentTarget.closest('.portal-home-card');
@@ -131,7 +132,7 @@ const PortalHome = ({ projectUuid, onHomeChatSend }) => {
   };
 
   const handleCardDragOver = (event, cardId) => {
-    if (!draggingCardId) return;
+    if (!isEditMode || !draggingCardId) return;
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
     setDragOverCardId(cardId);
@@ -153,6 +154,7 @@ const PortalHome = ({ projectUuid, onHomeChatSend }) => {
   };
 
   const handleCardDrop = (event, targetCardId) => {
+    if (!isEditMode) return;
     event.preventDefault();
     const sourceCardId = event.dataTransfer.getData(CARD_ORDER_MIME_TYPE);
     if (!sourceCardId || sourceCardId === targetCardId) return;
@@ -168,13 +170,15 @@ const PortalHome = ({ projectUuid, onHomeChatSend }) => {
       const nextCards = previousCards.slice();
       const [sourceCard] = nextCards.splice(sourceIndex, 1);
       nextCards.splice(targetIndex, 0, sourceCard);
-      return {
+      const next = {
         ...prev,
         'portal_home_cards_section': {
           ...prev['portal_home_cards_section'],
           cards: nextCards,
         },
       };
+      updateHomeSetting(JSON.stringify(next));
+      return next;
     });
   };
 
@@ -226,8 +230,8 @@ const PortalHome = ({ projectUuid, onHomeChatSend }) => {
                 key={card.id}
                 id={card.id}
                 onClick={() => handleCardClick(card)}
-                onDragOver={(event) => handleCardDragOver(event, card.id)}
-                onDrop={(event) => handleCardDrop(event, card.id)}
+                onDragOver={isEditMode ? (event) => handleCardDragOver(event, card.id) : undefined}
+                onDrop={isEditMode ? (event) => handleCardDrop(event, card.id) : undefined}
               >
                 {isEditMode && (
                   <IconButton
