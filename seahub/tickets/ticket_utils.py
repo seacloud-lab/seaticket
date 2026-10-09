@@ -8,10 +8,9 @@ from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE, ATTACHMENT_ISSUE_MAX_COMMENTS
 from seahub.profile.models import Profile
-from seahub.project.constants import TICKET_DETAIL_COLUMNS, TICKET_DISPLAY_ALL_COLUMNS, ExtraSourceType
+from seahub.project.constants import TICKET_DISPLAY_ALL_COLUMNS, ExtraSourceType
 from seahub.utils import mq, uuid_str_to_32_chars, time_str_to_utc_time
-from seahub.seadb_models.utils import get_connection_records_by_pks, get_seadb_table_columns, \
-    get_cached_ticket_table_columns, get_queryable_ticket_column_names
+from seahub.seadb_models.utils import get_connection_records_by_pks
 from seahub.project.models import ProjectConnections, Projects
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES
 from seahub.project.utils import get_current_table_metadata
@@ -611,14 +610,18 @@ def check_ticket_comment_creation_interval(seadb_api, project_uuid, username, ti
 
 def to_optional_int(value):
     """Normalize an optional integer field, which may arrive from a request body or
-    from SeaDB as a string. Empty values become None; anything else that is not a
-    whole number is returned unchanged so callers can reject it.
+    from SeaDB as a string. Empty values (`None` / `''`) become None; anything else
+    that is not a whole number is returned unchanged so callers can reject it.
 
     `bool` and floats are deliberately not coerced: `bool` is a subclass of `int`
     and `int(1.5)` truncates, so either would silently resolve to a real customer
     id instead of failing validation.
+
+    The string 'null' is NOT treated as empty -- it is a multipart FormData
+    artifact (JSON.stringify(null)) that this client no longer emits, so it is left
+    for the caller to reject rather than silently clearing the field.
     """
-    if value in (None, '', 'null'):
+    if value in (None, ''):
         return None
     if isinstance(value, bool) or isinstance(value, float):
         return value
@@ -633,9 +636,6 @@ def validate_ticket_customer_id(project_uuid, customer_id):
 
     Returns the customer id as int, or None when the value is empty (the caller
     treats None as "no customer"). Raises ValueError for an unusable value.
-
-    The literal string 'null' is accepted as empty: the frontend serializes
-    requests as multipart FormData, which turns a None value into 'null'.
     """
     customer_id = to_optional_int(customer_id)
     if customer_id is None:
@@ -653,9 +653,7 @@ def validate_ticket_customer_id(project_uuid, customer_id):
     return customer_id
 
 def get_ticket(seadb_api, project_uuid, ticket_id):
-    table_columns = get_cached_ticket_table_columns(seadb_api, project_uuid)
-    columns_join = ', '.join(get_queryable_ticket_column_names(table_columns, TICKET_DETAIL_COLUMNS))
-    sql = f"SELECT {columns_join} FROM `{TABLE_TICKETS}` WHERE `_pk` = {ticket_id} AND (`deleted` = False OR `deleted` IS NULL)"
+    sql = f"SELECT `_pk`, `title`, `content`, `state`, `substate`, `type`, `tags`, `assignees`, `participants`, `linked_connection_records`, `priority`, `creator`, `created_time`, `modified_time`, `due_date`, `customer_id` FROM `{TABLE_TICKETS}` WHERE `_pk` = {ticket_id} AND (`deleted` = False OR `deleted` IS NULL)"
     res = seadb_api.query_rows(project_uuid, sql)
     rows = res.get('results')
     return rows[0] if rows else None, res.get('metadata')
@@ -788,8 +786,7 @@ def get_ticket_counts_group_by_column_name(seadb_api, project_uuid, column_name,
 
 def filter_tickets_by_select(seadb_api, project_uuid, column_name, names):
     names_str = ', '.join(f"'{n}'" for n in names)
-    table_columns = get_cached_ticket_table_columns(seadb_api, project_uuid)
-    display_columns_join = ', '.join(get_queryable_ticket_column_names(table_columns))
+    display_columns_join = ', '.join(TICKET_DISPLAY_ALL_COLUMNS)
     sql = (
         f"SELECT {display_columns_join} FROM `{TABLE_TICKETS}` "
         f"WHERE `{column_name}` IN ({names_str}) AND (`deleted` = False OR `deleted` is NULL)"

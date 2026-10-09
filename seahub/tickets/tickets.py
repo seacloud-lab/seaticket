@@ -28,9 +28,9 @@ from seahub.project.utils import check_project_permission, \
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.utils.storage import upload_files_to_s3, delete_record_attachments_from_s3
 from seahub.project.constants import GITHUB_ISSUE_ACTIVITY_TYPES, DISCOURSE_TOPIC_ACTIVITY_TYPES, EMAIL_ACTIVITY_TYPES, \
-    DISCORD_THREAD_ACTIVITY_TYPES, TASK_ACTIVITY_TYPES, TICKET_DETAIL_COLUMNS
+    DISCORD_THREAD_ACTIVITY_TYPES, TASK_ACTIVITY_TYPES
 from seahub.seadb_models.utils import list_tickets_view_records, list_tickets_by_search, \
-    list_trash_tickets, list_my_tickets, get_cached_ticket_table_columns, get_queryable_ticket_column_names
+    list_trash_tickets, list_my_tickets
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     check_ticket_comment_creation_interval, get_ticket_comment_by_pk, check_ticket_creation_interval, \
@@ -493,10 +493,8 @@ class TicketsAPIView(APIView):
         try:
             ticket_ids = ticket_id_to_row.keys()
             ticket_ids_str = ','.join(ticket_ids)
-            table_columns = get_cached_ticket_table_columns(seadb_api, project_uuid)
-            columns_join = ', '.join(get_queryable_ticket_column_names(table_columns, TICKET_DETAIL_COLUMNS))
             sql = f"""
-            SELECT {columns_join}
+            SELECT `_pk`, `assignees`, `title`, `state`, `substate`, `type`, `tags`, `priority`, `due_date`, `linked_connection_records`, `customer_id`
             FROM `tickets`
             WHERE `_pk` IN ({ticket_ids_str})
             """

@@ -41,11 +41,14 @@ describe('getCustomerDisplayString', () => {
 });
 
 describe('isEmptyCustomerId', () => {
-  test('treats null, undefined, empty string and the FormData "null" as empty', () => {
+  test('treats null, undefined and empty string as empty', () => {
     expect(isEmptyCustomerId(null)).toBe(true);
     expect(isEmptyCustomerId(undefined)).toBe(true);
     expect(isEmptyCustomerId('')).toBe(true);
-    expect(isEmptyCustomerId('null')).toBe(true);
+  });
+
+  test('does not treat the FormData "null" string as empty', () => {
+    expect(isEmptyCustomerId('null')).toBe(false);
   });
 
   test('treats ids as set, including 0', () => {

@@ -16,14 +16,17 @@ const isTableRows = (rows) => (
 );
 
 /**
- * A customer cell holds a customer id, or nothing at all. Null, undefined, ''
- * and the literal 'null' all mean "no customer": the latter reaches the client
- * because null values survive a round-trip through multipart FormData as 'null'.
+ * A customer cell holds a customer id, or nothing at all: null, undefined and ''
+ * all mean "no customer".
+ *
+ * The string 'null' is deliberately NOT treated as empty. It is a multipart
+ * FormData artifact (JSON.stringify(null)) that this client no longer emits, and
+ * treating it as empty would silently hide a bad value instead of surfacing it.
  * @param {any} value
  * @returns bool
  */
 const isEmptyCustomerId = (value) => (
-  value === null || value === undefined || value === '' || value === 'null'
+  value === null || value === undefined || value === ''
 );
 
 const updateTableRowsWithRowsData = (tables, tableId, rowsData = []) => {

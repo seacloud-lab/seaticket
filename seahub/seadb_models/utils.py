@@ -3,8 +3,6 @@ import json
 import logging
 from copy import deepcopy
 
-from django.core.cache import cache
-
 from seahub.project.constants import ConnectionType, ExtraSourceType, CONNECTION_DISPLAY_ALL_COLUMNS, \
     CONNECTION_MUST_RETURN_COLUMNS, TICKET_DISPLAY_ALL_COLUMNS, KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS, \
     PORTAL_ISSUE_DISPLAY_ALL_COLUMNS
@@ -15,11 +13,6 @@ from seahub.constants import TEMPLATE_NAME
 logger = logging.getLogger(__name__)
 
 PORTAL_ISSUE_INTERNAL_COLUMN_NAMES = {'customer_id'}
-
-# Long enough to absorb the per-ticket metadata calls during a link sync, short
-# enough that a freshly migrated base is not stale for long.
-TICKET_TABLE_COLUMNS_CACHE_TTL = 5 * 60
-
 
 CONNECTION_TYPE_TO_SCHEMA_TABLE = {
     ConnectionType.GITHUB_ISSUE.value: SchemaTables.GITHUB_ISSUES,
@@ -258,55 +251,6 @@ def get_seadb_table_columns(seadb_api, project_uuid, table_name):
     columns = table_metadata.get('columns') or []
     return columns
 
-def get_cached_ticket_table_columns(seadb_api, project_uuid):
-    """Ticket table columns, memoised briefly.
-
-    The column set only changes when a base is migrated, but this is consulted on
-    every ticket read -- including once per ticket while link syncing inherits
-    customers -- so fetching metadata each time would be an N+1 of HTTP calls to
-    SeaDB. A short TTL keeps a freshly migrated base from being stale for long.
-
-    A cache outage must not take the ticket reads down with it: if the cache is
-    unreachable the columns are fetched directly instead. An empty result is not
-    cached, so a transient SeaDB failure is retried on the next read rather than
-    being remembered as "this base has no columns" for the whole TTL.
-    """
-    cache_key = f'ticket_table_columns_{project_uuid}'
-    try:
-        columns = cache.get(cache_key)
-    except Exception as e:
-        logger.warning('Ticket column cache read failed, reading metadata directly: %s', e)
-        return get_seadb_table_columns(seadb_api, project_uuid, 'tickets')
-    if columns is None:
-        columns = get_seadb_table_columns(seadb_api, project_uuid, 'tickets')
-        if columns:
-            try:
-                cache.set(cache_key, columns, TICKET_TABLE_COLUMNS_CACHE_TTL)
-            except Exception as e:
-                logger.warning('Ticket column cache write failed, continuing uncached: %s', e)
-    return columns
-
-
-def get_queryable_ticket_column_names(columns, wanted_columns=None):
-    """Restrict `wanted_columns` (default TICKET_DISPLAY_ALL_COLUMNS) to the
-    columns this project's tickets table actually has, so a base that has not
-    been migrated with a newer column does not fail the query. `_pk` is always
-    kept as it is the row id the frontend relies on.
-
-    An empty `columns` means the base has no tickets table at all, in which case
-    the caller's query fails on the missing table whatever this returns -- that
-    is why the wanted list is passed through unchanged rather than narrowed.
-    """
-    wanted_columns = wanted_columns or TICKET_DISPLAY_ALL_COLUMNS
-    existing_column_names = {column.get('name') for column in columns}
-    if not existing_column_names:
-        return list(wanted_columns)
-    return [
-        column_name for column_name in wanted_columns
-        if column_name == '_pk' or column_name in existing_column_names
-    ]
-
-
 def list_tickets_view_records(seadb_api, project_uuid, view, username, start, limit):
     metadata = seadb_api.get_base_metadata(project_uuid)
     tables_metadata = metadata.get('tables') or []
@@ -375,7 +319,7 @@ def list_tickets_by_search(seadb_api, project_uuid, search_text, start, end):
 
 
 def list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limit, view_config={}):
-    columns = get_cached_ticket_table_columns(seadb_api, project_uuid)
+    columns = get_seadb_table_columns(seadb_api, project_uuid, 'tickets')
     all_columns_names = TICKET_DISPLAY_ALL_COLUMNS.copy()
     if ticket_state == 'open':
         all_columns_names = [column_name for column_name in all_columns_names if column_name != 'closed_time']
@@ -421,16 +365,16 @@ def list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limi
 
 
 def list_trash_tickets(seadb_api, project_uuid, start, limit):
-    columns = get_cached_ticket_table_columns(seadb_api, project_uuid)
+    query_fields = ", ".join(TICKET_DISPLAY_ALL_COLUMNS)
+    sql =  f"SELECT {query_fields} FROM `tickets` WHERE deleted = True LIMIT {limit} OFFSET {start}"
+    res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
+    records = res.get('results', [])
+    columns = get_seadb_table_columns(seadb_api, project_uuid, 'tickets')
     display_columns = []
     for column in columns:
         name = column['name']
         if name in TICKET_DISPLAY_ALL_COLUMNS:
             display_columns.append(column)
-    query_fields = ", ".join(get_queryable_ticket_column_names(columns))
-    sql =  f"SELECT {query_fields} FROM `tickets` WHERE deleted = True LIMIT {limit} OFFSET {start}"
-    res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
-    records = res.get('results', [])
     return records, display_columns
 
 

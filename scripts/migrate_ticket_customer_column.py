@@ -7,13 +7,15 @@ updated separately with:
         --table-name tickets --column-name customer_id --column-type int64 --need-add-index true
 
 Every base created before that change already has its own `tickets` table, so it
-needs this one-off backfill. The script is idempotent: a base that already has the
+needs this one-off migration. The script is idempotent: a base that already has the
 column is skipped, so it is safe to re-run after a partial failure.
 
 Order of operations: update the template base, run this script, then deploy the
-code. The ticket read paths query only the columns a base actually has, so a base
-this script missed degrades to "no Customer column" rather than erroring. Run this
-first anyway, so the column is in place before the UI starts offering it.
+code. **The order is mandatory.** The ticket read paths use fixed column lists
+(they do not inspect a base's columns), so on a base this script missed, opening a
+ticket, the trash, the type/substate drill-downs and grid edits all fail with an
+unknown-column error, and writes may fail too. Confirm this script reports no
+failures before deploying.
 
 Usage:
     python scripts/migrate_ticket_customer_column.py --dry-run

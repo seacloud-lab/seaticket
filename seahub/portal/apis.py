@@ -2156,10 +2156,6 @@ class PortalCustomerView(APIView):
                 )
                 seadb_api.query_rows(project_uuid, sql).get('results', [])
 
-                # Tickets that reference this customer keep the id: deleting a
-                # referenced entity does not rewrite the tickets that point at it
-                # (same as tags and connections, which also leave the reference in
-                # place). The client renders such a ticket as having no customer.
                 customer.delete()
         except Exception:
             logger.exception('Failed to delete portal customer: project=%s customer=%s', project_uuid, customer_id)
