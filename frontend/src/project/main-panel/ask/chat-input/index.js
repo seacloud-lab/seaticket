@@ -467,10 +467,6 @@ const ChatInput = forwardRef(({
   }, [onImagesUpload]);
 
   useEffect(() => {
-    inputRef.current && inputRef.current.focus();
-  }, []);
-
-  useEffect(() => {
     const query = new URLSearchParams(window.location.search).get('query')?.trim();
     if (!query || readOnly) return;
 
@@ -530,6 +526,11 @@ const ChatInput = forwardRef(({
   const messageText = enableSkills ? getMessageWithoutLeadingSkillCommand(value, skillCommands) : value.trim();
   const sendDisabled = disabled || !messageText || isUploadingAttachment;
 
+  useEffect(() => {
+    if (disabled) return;
+    inputRef.current?.focus();
+  }, [disabled]);
+
   const domProps = allowImageAttachments && !disabled ? {
     onDragStart,
     onDragEnter,
@@ -557,7 +558,6 @@ const ChatInput = forwardRef(({
           />
           <div className="seaqa-ai-ask-chat-input-content" ref={inputContentRef}>
             <textarea
-              autoFocus
               className={classnames('message-input-value message-input', { 'message-input-value-highlighted': selectedSkillCommandRange })}
               ref={inputRef}
               value={value}
