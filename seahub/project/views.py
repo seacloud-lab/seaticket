@@ -185,7 +185,7 @@ def email_oauth(request, project_uuid):
 
     oauth_payload, error_response = EmailOAuthUtils.build_email_oauth_config(request)
     if error_response:
-        return error_response
+        return JsonResponse(error_response.data, status=error_response.status_code)
 
     name = oauth_payload['name']
     config = oauth_payload['config']
@@ -229,7 +229,7 @@ def email_oauth_callback(request):
     if not oauth_data:
         return render(request, 'error.html', {'error_msg': _('Request not found')})
 
-    if oauth_data.get('status') == 'success':
+    if oauth_data.get('status') in ('authorized', 'success'):
         return render(request, 'authorization_success.html')
 
     project_uuid = oauth_data.get('project_uuid')
@@ -249,9 +249,21 @@ def email_oauth_callback(request):
         return render(request, 'error.html', {'error_msg': _('Permission denied.')})
 
     config = oauth_data.get('config') or {}
+
+    provider_error = request.GET.get('error')
+    if provider_error:
+        detail = request.GET.get('error_description') or provider_error
+        logger.error(
+            'Email OAuth provider returned an error, state: %s, provider: %s, error: %s, description: %s',
+            request_state, config.get('server_provider'), provider_error, detail,
+        )
+        error_msg = _('The email provider rejected the authorization.') + f' {detail}'
+        EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
+        return render(request, 'error.html', {'error_msg': error_msg})
+
     oauth_config = oauth_data.get('oauth_config') or {}
     if not all([oauth_config, oauth_data.get('oauth_state')]):
-        error_msg = 'Invalid request, please try again later'
+        error_msg = 'This authorization request is no longer valid, please start over.'
         EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
         return render(request, 'error.html', {'error_msg': _(error_msg)})
 
@@ -275,7 +287,11 @@ def email_oauth_callback(request):
             authorization_response=authorization_response_url,
         )
     except Exception as e:
-        logger.error(e)
+        logger.error(
+            'Email OAuth token exchange failed, provider: %s, token_url: %s, error_type: %s, details: %s',
+            config.get('server_provider'), oauth_config.get('token_url'),
+            type(e).__name__, getattr(e, '__dict__', None) or repr(e),
+        )
         error_msg = 'Failed to request token, please check your connection configurations'
         EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
         return render(request, 'error.html', {'error_msg': _(error_msg)})

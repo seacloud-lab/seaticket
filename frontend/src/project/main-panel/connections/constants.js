@@ -118,6 +118,7 @@ export const CONNECTION_FIELDS = {
       is_custom: true,
       options: [
         { value: EMAIL_SERVER_PROVIDER.GENERAL, label: gettext('General email provider') },
+        { value: EMAIL_SERVER_PROVIDER.GMAIL, label: gettext('Gmail') },
         { value: EMAIL_SERVER_PROVIDER.MICROSOFT, label: gettext('Microsoft (Microsoft 365 and Outlook)') },
       ],
       default_value: EMAIL_SERVER_PROVIDER.GENERAL,

@@ -50,7 +50,7 @@ class TestEmailOAuthUtils:
         assert 'Mail.ReadWrite' in EMAIL_OAUTH_CONFIGS['Microsoft']['scopes']['personal']
         assert 'Mail.ReadWrite.Shared' in EMAIL_OAUTH_CONFIGS['Microsoft']['scopes'][EMAIL_ACCOUNT_TYPE_SHARED]
 
-    def test_get_oauth_session_removes_expired_transactions(self):
+    def test_get_oauth_session_ignores_expired_transactions(self):
         now = datetime.datetime(2026, 8, 3, tzinfo=datetime.timezone.utc)
         current_timestamp = now.timestamp()
         request = SimpleNamespace(session=DummySession({
@@ -62,12 +62,14 @@ class TestEmailOAuthUtils:
 
         with patch('seahub.project.oauth_utils.timezone.now', return_value=now):
             oauth_data = EmailOAuthUtils.get_oauth_session(request, 'active-state')
+            expired_data = EmailOAuthUtils.get_oauth_session(request, 'expired-state')
 
         assert oauth_data == {'created_at': current_timestamp}
-        assert request.session['oauth_email_connection'] == {
-            'active-state': {'created_at': current_timestamp},
-        }
-        assert request.session.modified is True
+        assert expired_data is None
+        # The lookup must not write: this is called by the 2s polling endpoint,
+        # and a write there can save a stale snapshot over the callback's
+        # just-written failure. The prune is still applied on write paths.
+        assert request.session.modified is False
 
     def test_shared_gmail_uses_server_endpoints_and_scopes(self, factory):
         request = factory.post('/', data={
@@ -697,6 +699,86 @@ class TestProjectEmailOAuthCallbackView:
         assert resp.status_code == 200
         assert request.session['oauth_email_connection']['state-1']['status'] == 'in-progress'
         assert request.session['oauth_email_connection']['state-2']['status'] == 'failure'
+
+    def _transaction_with_status(self, project_uuid, status, state='state-1'):
+        transaction = self._oauth_transaction(project_uuid, state=state)
+        transaction['status'] = status
+        return transaction
+
+    def _build_callback_request(self, factory, project_creator, real_project, query, status):
+        session = DummySession({
+            'oauth_email_connection': {
+                'state-1': self._transaction_with_status(real_project.uuid, status),
+            }
+        })
+        request = factory.get('/api/v1/connections/email/oauth/callback/?' + query)
+        request.user = project_creator
+        request.session = session
+        request.is_mobile = False
+        request.is_tablet = False
+        return request
+
+    def test_repeat_callback_on_authorized_transaction_is_idempotent(
+            self, factory, project_creator, real_project):
+        # Reproduces the bug: the success path pops oauth_config, so a repeat
+        # visit used to fall through to the oauth_config check, report
+        # 'Invalid request', and clobber the transaction into 'failure' --
+        # which then also blocked connection creation.
+        request = self._build_callback_request(
+            factory, project_creator, real_project, 'state=state-1&code=used-code', 'authorized')
+
+        with patch('seahub.project.views.OAuth2Session') as oauth_session_cls:
+            resp = email_oauth_callback(request)
+
+        assert resp.status_code == 200
+        oauth_session_cls.assert_not_called()
+        assert request.session['oauth_email_connection']['state-1']['status'] == 'authorized'
+        assert request.session.modified is False
+
+    def test_repeat_callback_on_created_connection_shows_success(
+            self, factory, project_creator, real_project):
+        request = self._build_callback_request(
+            factory, project_creator, real_project, 'state=state-1&code=used-code', 'success')
+
+        with patch('seahub.project.views.OAuth2Session') as oauth_session_cls:
+            resp = email_oauth_callback(request)
+
+        assert resp.status_code == 200
+        oauth_session_cls.assert_not_called()
+        assert request.session['oauth_email_connection']['state-1']['status'] == 'success'
+
+    def test_failed_transaction_can_be_retried(self, factory, project_creator, real_project):
+        # A failure may occur before the code is redeemed (oauthlib raises on
+        # insecure transport before any HTTP call), so a repeat visit must not
+        # be frozen on the stored error.
+        request = self._build_callback_request(
+            factory, project_creator, real_project, 'state=state-1&code=retry-code', 'failure')
+
+        oauth_session = Mock()
+        oauth_session.fetch_token.side_effect = Exception('still failing')
+        with patch('seahub.project.views.OAuth2Session', return_value=oauth_session):
+            resp = email_oauth_callback(request)
+
+        assert resp.status_code == 200
+        oauth_session.fetch_token.assert_called_once()
+
+    def test_provider_error_is_surfaced_without_token_exchange(
+            self, factory, project_creator, real_project):
+        # Passing a provider error to fetch_token makes oauthlib raise inside
+        # the token exchange, which used to surface as the misleading
+        # 'Failed to request token, please check your connection configurations'.
+        request = self._build_callback_request(
+            factory, project_creator, real_project,
+            'state=state-1&error=server_error&error_description=AADSTS90033', 'in-progress')
+
+        with patch('seahub.project.views.OAuth2Session') as oauth_session_cls:
+            resp = email_oauth_callback(request)
+
+        assert resp.status_code == 200
+        oauth_session_cls.assert_not_called()
+        stored = request.session['oauth_email_connection']['state-1']
+        assert stored['status'] == 'failure'
+        assert 'AADSTS90033' in stored['error_msg']
 
 
 class TestProjectEmailOAuthViews:

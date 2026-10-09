@@ -270,6 +270,12 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   }, [config]);
 
   const handleEmailOAuthLogin = useCallback(() => {
+    // Starting a new authorization attempt invalidates the previous result.
+    // Without this, a stale state kept the submit button enabled, so a submit
+    // landing before the new authorization completed would create the
+    // connection from the earlier token instead of the one just granted.
+    setEmailOAuthState('');
+    setEmailOAuthSender(null);
     let _config = { ...config };
     _config = sanitizeEmailConfigByProvider(_config);
     if (!hasValidMicrosoftOAuthUrls(_config)) {

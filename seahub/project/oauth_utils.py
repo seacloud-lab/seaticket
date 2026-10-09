@@ -87,10 +87,10 @@ class EmailOAuthUtils(CommonOAuthUtils):
 
     @classmethod
     def get_oauth_session(cls, request, state):
-        stored_transactions = cls._get_oauth_transactions(request)
-        transactions = cls._remove_expired_transactions(stored_transactions)
-        if transactions != stored_transactions:
-            cls._set_oauth_transactions(request, transactions)
+        # Keep this read-only, prune included: the 2s polling endpoint calls it,
+        # and writing here saves the whole session row, which can clobber a
+        # concurrent callback's just-written status. Write paths still prune.
+        transactions = cls._remove_expired_transactions(cls._get_oauth_transactions(request))
         return transactions.get(state)
 
     @classmethod
