@@ -267,7 +267,7 @@ export const DataProvider = ({
   }, [data, updateData]);
 
   const getMetadata = useCallback((tableName, { view_id, start, limit, is_reload = false, use_cache = true }, api, isBuiltIn = false) => {
-    let table = getTableByName(tableName);
+    let table = use_cache ? getTableByName(tableName) : deepcopy(EMPTY_TABLE);
     const viewMapName = isBuiltIn ? 'built_in_view_map' : 'id_view_map';
     const view = table[viewMapName][view_id] || {};
     let recordsName = 'records';
