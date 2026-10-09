@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import classnames from 'classnames';
 import slugid from 'slugid';
 import { CenteredLoading, Icon, IconButton } from '@/components';
@@ -17,12 +17,17 @@ import { CARD_LAYOUT_OPTIONS, DEFAULT_NEW_CARD, getSafeCardLink, normalizeHomePa
 import './index.css';
 
 const { isEditMode, portalHomeSettings } = window.app.pageOptions;
+const CARD_ORDER_MIME_TYPE = 'application/portal-home-card-order';
 
 const PortalHome = ({ projectUuid, onHomeChatSend }) => {
   const [isEdit, setIsEdit] = useState(false);
   const [homePageStyle, setHomePageStyle] = useState(() => normalizeHomePageStyle(portalHomeSettings));
   const [activeCard, setActiveCard] = useState('');
+  const [draggingCardId, setDraggingCardId] = useState('');
+  const [dragOverCardId, setDragOverCardId] = useState('');
+  const [selfDropIndicator, setSelfDropIndicator] = useState(null);
   const [selectedFeaturedArticle, setSelectedFeaturedArticle] = useState(null);
+  const cardDragPreviewRef = useRef(null);
   const { updateHomeSetting, featuredArticles, isFeaturedArticlesLoading } = usePortalSettings();
   const { columns = [], records = [] } = featuredArticles || {};
   const titleColumn = columns.find(column => column.name === 'title');
@@ -33,11 +38,18 @@ const PortalHome = ({ projectUuid, onHomeChatSend }) => {
   const { title_text, description_text, title_size, background_color, theme_type, theme_background_image_URL } = heroSection;
   const { card_layout, cards } = cardsSection;
   const validCards = Array.isArray(cards) ? cards.filter(Boolean) : [];
+  const draggingCardIndex = validCards.findIndex(card => card.id === draggingCardId);
   const cardColumnCount = isMobile ? 1 : (CARD_LAYOUT_OPTIONS.includes(Number(card_layout)) ? Number(card_layout) : 3);
 
   const heroStyle = theme_type === 'image' && theme_background_image_URL
     ? { backgroundImage: `url(${theme_background_image_URL})` }
     : { backgroundColor: background_color };
+
+  useEffect(() => {
+    return () => {
+      cardDragPreviewRef.current?.remove();
+    };
+  }, []);
 
   const closeEditPanel = () => {
     updateHomeSetting(JSON.stringify(homePageStyle));
@@ -74,6 +86,106 @@ const PortalHome = ({ projectUuid, onHomeChatSend }) => {
     }
   };
 
+  const handleCardDragStart = (event, cardId) => {
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData(CARD_ORDER_MIME_TYPE, cardId);
+    const cardElement = event.currentTarget.closest('.portal-home-card');
+    if (cardElement) {
+      cardDragPreviewRef.current?.remove();
+      const { left, top, width, height } = cardElement.getBoundingClientRect();
+      const previewPage = document.createElement('div');
+      const previewCards = document.createElement('div');
+      const previewCard = cardElement.cloneNode(true);
+
+      previewPage.className = 'portal-home-page';
+      previewCards.className = 'portal-home-cards';
+      previewCard.removeAttribute('id');
+      previewCard.classList.remove('dragging', 'drop-before', 'drop-after');
+      Object.assign(previewPage.style, {
+        left: '-10000px',
+        pointerEvents: 'none',
+        position: 'fixed',
+        top: '-10000px',
+        width: `${width}px`,
+      });
+      Object.assign(previewCards.style, {
+        display: 'block',
+        margin: '0',
+        width: `${width}px`,
+      });
+      Object.assign(previewCard.style, {
+        borderRadius: '16px',
+        boxSizing: 'border-box',
+        height: `${height}px`,
+        opacity: '0.45',
+        overflow: 'hidden',
+        width: `${width}px`,
+      });
+      previewCards.appendChild(previewCard);
+      previewPage.appendChild(previewCards);
+      document.body.appendChild(previewPage);
+      cardDragPreviewRef.current = previewPage;
+      event.dataTransfer.setDragImage(previewCard, event.clientX - left, event.clientY - top);
+    }
+    setDraggingCardId(cardId);
+  };
+
+  const handleCardDragOver = (event, cardId) => {
+    if (!draggingCardId) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    setDragOverCardId(cardId);
+    if (draggingCardId !== cardId) {
+      setSelfDropIndicator(null);
+      return;
+    }
+
+    const cardsElement = event.currentTarget.closest('.portal-home-cards');
+    if (!cardsElement) return;
+    const cardRect = event.currentTarget.getBoundingClientRect();
+    const cardsRect = cardsElement.getBoundingClientRect();
+    const columnGap = parseFloat(window.getComputedStyle(cardsElement).columnGap) || 0;
+    setSelfDropIndicator({
+      height: cardRect.height,
+      left: cardRect.left - cardsRect.left - columnGap / 2,
+      top: cardRect.top - cardsRect.top,
+    });
+  };
+
+  const handleCardDrop = (event, targetCardId) => {
+    event.preventDefault();
+    const sourceCardId = event.dataTransfer.getData(CARD_ORDER_MIME_TYPE);
+    if (!sourceCardId || sourceCardId === targetCardId) return;
+
+    setHomePageStyle((prev) => {
+      const previousCards = Array.isArray(prev['portal_home_cards_section']?.cards)
+        ? prev['portal_home_cards_section'].cards
+        : [];
+      const sourceIndex = previousCards.findIndex(card => card?.id === sourceCardId);
+      const targetIndex = previousCards.findIndex(card => card?.id === targetCardId);
+      if (sourceIndex < 0 || targetIndex < 0) return prev;
+
+      const nextCards = previousCards.slice();
+      const [sourceCard] = nextCards.splice(sourceIndex, 1);
+      nextCards.splice(targetIndex, 0, sourceCard);
+      return {
+        ...prev,
+        'portal_home_cards_section': {
+          ...prev['portal_home_cards_section'],
+          cards: nextCards,
+        },
+      };
+    });
+  };
+
+  const clearCardDragState = () => {
+    cardDragPreviewRef.current?.remove();
+    cardDragPreviewRef.current = null;
+    setDraggingCardId('');
+    setDragOverCardId('');
+    setSelfDropIndicator(null);
+  };
+
   const handleFeaturedArticleClick = (record) => {
     setSelectedFeaturedArticle({ ...record, _id: record._id || record._pk, type: KNOWLEDGE_BASE_TYPE });
   };
@@ -103,13 +215,32 @@ const PortalHome = ({ projectUuid, onHomeChatSend }) => {
           </section>
 
           <section className="portal-home-cards" aria-label={gettext('Portal features')} style={{ gridTemplateColumns: `repeat(${cardColumnCount}, minmax(0, 1fr))` }}>
-            {validCards.map((card) => (
+            {validCards.map((card, cardIndex) => (
               <article
-                className={classnames('portal-home-card', { active: activeCard === card.id })}
+                className={classnames('portal-home-card', {
+                  active: activeCard === card.id,
+                  dragging: draggingCardId === card.id,
+                  'drop-before': dragOverCardId === card.id && draggingCardIndex > cardIndex,
+                  'drop-after': dragOverCardId === card.id && draggingCardIndex < cardIndex,
+                })}
                 key={card.id}
                 id={card.id}
                 onClick={() => handleCardClick(card)}
+                onDragOver={(event) => handleCardDragOver(event, card.id)}
+                onDrop={(event) => handleCardDrop(event, card.id)}
               >
+                {isEditMode && (
+                  <IconButton
+                    className="portal-home-card-drag-handle"
+                    icon="drag"
+                    draggable={true}
+                    onClick={(event) => event.stopPropagation()}
+                    onDragStart={(event) => handleCardDragStart(event, card.id)}
+                    onDragEnd={clearCardDragState}
+                    title={gettext('Drag to reorder')}
+                    aria-label={gettext('Drag to reorder')}
+                  />
+                )}
                 <div className="portal-home-card-icon" aria-hidden="true">
                   <i
                     className={classnames('project-icon project-icon-style', {
@@ -124,6 +255,12 @@ const PortalHome = ({ projectUuid, onHomeChatSend }) => {
                 </div>
               </article>
             ))}
+            {selfDropIndicator && (
+              <span
+                className="portal-home-card-self-drop-indicator"
+                style={selfDropIndicator}
+              />
+            )}
             {isEditMode && (
               <article
                 className={classnames('portal-home-card', 'portal-home-card-add', { active: false })}
