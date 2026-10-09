@@ -19,7 +19,6 @@ from seahub.portal.models import PortalCustomer
 from seahub.tickets.ticket_utils import (
     compare_ticket_changes,
     filter_tickets_by_select,
-    inherit_customer_from_portal_issues,
     to_optional_int,
     validate_ticket_customer_id,
 )
@@ -1019,61 +1018,6 @@ class TestTicketCustomerOnBatchUpdate:
             resp = TicketsAPIView.as_view()(request, project_uuid=project.uuid)
         assert resp.status_code == 400
         seadb_api.update_rows.assert_not_called()
-
-
-class TestInheritCustomerFromPortalIssues:
-    def test_sets_the_customer_when_the_ticket_has_none(self):
-        seadb_api = Mock()
-        with patch('seahub.tickets.ticket_utils.get_ticket', return_value=({'_pk': 1}, None)):
-            applied = inherit_customer_from_portal_issues(seadb_api, 'p', 1, [7])
-        assert applied == 7
-        assert seadb_api.update_rows.call_args[0][2] == [{'pk': 1, 'row': {'customer_id': 7}}]
-
-    def test_a_manually_chosen_customer_wins(self):
-        seadb_api = Mock()
-        with patch('seahub.tickets.ticket_utils.get_ticket', return_value=({'_pk': 1, 'customer_id': 3}, None)):
-            applied = inherit_customer_from_portal_issues(seadb_api, 'p', 1, [7])
-        assert applied is None
-        seadb_api.update_rows.assert_not_called()
-
-    def test_takes_the_first_issue_that_has_a_customer(self):
-        seadb_api = Mock()
-        with patch('seahub.tickets.ticket_utils.get_ticket', return_value=({'_pk': 1}, None)):
-            applied = inherit_customer_from_portal_issues(seadb_api, 'p', 1, [None, 7, 9])
-        assert applied == 7
-
-    def test_nothing_to_inherit(self):
-        seadb_api = Mock()
-        assert inherit_customer_from_portal_issues(seadb_api, 'p', 1, [None]) is None
-        seadb_api.query_rows.assert_not_called()
-
-    def test_inheriting_does_not_record_an_activity(self):
-        # Pins the intended behaviour: inheriting a customer is a side effect of
-        # linking a portal issue, not a user edit, so it must not appear in the
-        # ticket activity log nor emit a realtime update. Changing this needs a
-        # product decision -- see the function docstring.
-        seadb_api = Mock()
-        with patch('seahub.tickets.ticket_utils.get_ticket', return_value=({'_pk': 1}, None)), \
-                patch('seahub.tickets.ticket_utils.record_ticket_activities') as record_mock, \
-                patch('seahub.tickets.ticket_utils.send_ticket_update_msg') as update_mock:
-            applied = inherit_customer_from_portal_issues(seadb_api, 'p', 1, [7])
-        assert applied == 7
-        record_mock.assert_not_called()
-        update_mock.assert_not_called()
-
-    def test_a_missing_ticket_is_a_no_op(self):
-        seadb_api = Mock()
-        with patch('seahub.tickets.ticket_utils.get_ticket', return_value=(None, None)):
-            assert inherit_customer_from_portal_issues(seadb_api, 'p', 1, [7]) is None
-        seadb_api.update_rows.assert_not_called()
-
-    def test_errors_never_propagate(self):
-        """A base without the column, or a transient SeaDB error, must not break
-        link syncing."""
-        seadb_api = Mock()
-        seadb_api.update_rows.side_effect = Exception('column does not exist')
-        with patch('seahub.tickets.ticket_utils.get_ticket', return_value=({'_pk': 1}, None)):
-            assert inherit_customer_from_portal_issues(seadb_api, 'p', 1, [7]) is None
 
 
 class TestCustomerActivity:

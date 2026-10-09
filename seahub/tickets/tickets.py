@@ -415,10 +415,7 @@ class TicketsAPIView(APIView):
                     # rollback ticket creation if discourse topic already claimed or portal issue already linked
                     seadb_api.delete_rows(project_uuid, TABLE_TICKETS, [int(ticket_pk)])
                     return api_error(status.HTTP_400_BAD_REQUEST, str(e))
-                inherited_customers = sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections)
-                inherited_customer_id = inherited_customers.get(int(ticket_pk))
-                if inherited_customer_id:
-                    row[SchemaTables.TICKETS.column.customer_id.name] = inherited_customer_id
+                sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
