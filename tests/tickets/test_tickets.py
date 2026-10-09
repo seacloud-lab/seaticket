@@ -58,22 +58,33 @@ class TestTicketDueDate:
 
         assert tickets[0][due_date_key] == '2026-08-01'
 
-    def test_filter_tickets_omits_columns_missing_from_the_base(self):
+    def test_filter_tickets_selects_the_fixed_column_list(self):
+        # The selected columns are hard-coded (TICKET_DISPLAY_ALL_COLUMNS), not derived
+        # from the base's metadata, so customer_id is always in the SELECT even on a
+        # base that has not been migrated. Such a base is expected to fail the query
+        # rather than quietly drop the column -- that is the deliberate trade-off of
+        # not consulting metadata here.
         seadb_api = Mock()
-        seadb_api.get_base_metadata.return_value = {
-            'tables': [{
-                'name': 'tickets',
-                'columns': [{'key': 'k_type', 'name': 'type'}],
-            }],
-        }
         seadb_api.query_rows.return_value = {'results': [], 'metadata': []}
 
         filter_tickets_by_select(seadb_api, 'project-id', 'type', ['Bug'])
 
         sql = seadb_api.query_rows.call_args[0][1]
+        # column names are bare in the SELECT list, backticked in the WHERE clause
+        assert 'customer_id' in sql
+        assert 'due_date' in sql
         assert '`type`' in sql
-        assert '`_pk`' in sql
-        assert '`customer_id`' not in sql
+        assert "IN ('Bug')" in sql
+
+    def test_filter_tickets_does_not_read_column_metadata(self):
+        # Guards the simplification: this path must not spend an HTTP call on
+        # metadata just to decide the column list.
+        seadb_api = Mock()
+        seadb_api.query_rows.return_value = {'results': [], 'metadata': []}
+
+        filter_tickets_by_select(seadb_api, 'project-id', 'type', ['Bug'])
+
+        seadb_api.get_base_metadata.assert_not_called()
 
 
 class TestBuildTicketDataEvent:
@@ -856,7 +867,7 @@ def get_customer_base_metadata():
 
 
 class TestToOptionalInt:
-    @pytest.mark.parametrize('value', [None, '', 'null'])
+    @pytest.mark.parametrize('value', [None, ''])
     def test_empty_forms_become_none(self, value):
         assert to_optional_int(value) is None
 
@@ -864,8 +875,11 @@ class TestToOptionalInt:
     def test_numeric_forms_become_int(self, value, expected):
         assert to_optional_int(value) == expected
 
-    def test_non_numeric_is_returned_unchanged_so_callers_can_reject_it(self):
-        assert to_optional_int('Acme') == 'Acme'
+    @pytest.mark.parametrize('value', ['Acme', 'null'])
+    def test_non_numeric_is_returned_unchanged_so_callers_can_reject_it(self, value):
+        # 'null' is a FormData artifact this client no longer emits; it must not be
+        # silently treated as "no customer"
+        assert to_optional_int(value) == value
 
     @pytest.mark.parametrize('value', [True, False, 1.5, 2.0])
     def test_bool_and_float_are_not_coerced(self, value):
@@ -875,7 +889,7 @@ class TestToOptionalInt:
 
 
 class TestValidateTicketCustomerId:
-    @pytest.mark.parametrize('value', [None, '', 'null'])
+    @pytest.mark.parametrize('value', [None, ''])
     def test_empty_value_means_no_customer(self, value, real_project):
         assert validate_ticket_customer_id(str(real_project.uuid), value) is None
 
@@ -894,7 +908,7 @@ class TestValidateTicketCustomerId:
         with pytest.raises(ValueError):
             validate_ticket_customer_id(str(real_project.uuid), other.id)
 
-    @pytest.mark.parametrize('value', ['Acme', '1.5', '{}'])
+    @pytest.mark.parametrize('value', ['Acme', '1.5', '{}', 'null'])
     def test_rejects_a_non_numeric_value(self, value, real_project):
         with pytest.raises(ValueError):
             validate_ticket_customer_id(str(real_project.uuid), value)

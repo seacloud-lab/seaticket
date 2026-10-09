@@ -1071,7 +1071,6 @@ class AgentActionExecutor:
             SchemaTables.TICKETS.column.due_date.name: ticket_due_date,
             SchemaTables.TICKETS.column.deleted.name: False,
             SchemaTables.TICKETS.column.linked_connection_records.name: [source_id],
-            SchemaTables.TICKETS.column.customer_id.name: None,
         }
         try:
             insert_result = seadb_api.insert_rows(project_uuid, SchemaTables.TICKETS.table_name(), [ticket_row])
