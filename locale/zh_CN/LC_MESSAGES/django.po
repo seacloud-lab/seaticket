@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: seaqa-web\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-09 14:37+0800\n"
-"PO-Revision-Date: 2026-10-09 07:15\n"
+"PO-Revision-Date: 2026-10-10 07:53\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Language: zh\n"
@@ -266,7 +266,7 @@ msgstr "项目提示包含不允许的标签类内容。"
 
 #: seahub/api2/endpoints/project.py:473
 msgid "Portal chat prompt contains disallowed tag-like content."
-msgstr "门户聊天提示包含不允许的类标签内容。"
+msgstr "门户对话提示包含不允许的类标签内容。"
 
 #: seahub/api2/endpoints/project.py:479
 msgid "Ticket processing rules must be text, and cannot contain tag-like content."
@@ -441,7 +441,7 @@ msgstr[0] "%(seconds)d 秒前"
 
 #: seahub/chats/view.py:519
 msgid "New chat"
-msgstr "新聊天"
+msgstr "新对话"
 
 #: seahub/chats/view.py:557
 msgid "Images with the same name are not allowed."
@@ -1188,7 +1188,7 @@ msgstr "你在 %(site_name)s 申请注册帐号，如果你未进行过此操作
 #: seahub/templates/registration/activation_email.html:15
 #, python-format
 msgid "To activate this account, please click the following link within the next %(expiration_days)s days: "
-msgstr "请在 %(expiration_days)s 天内，点击以下链接激活你的账号："
+msgstr "请在 %(expiration_days)s 天内，点击以下链接激活你的账号： "
 
 #: seahub/templates/registration/logged_out.html:8
 #: seahub/templates/registration/logout.html:8
@@ -1352,7 +1352,7 @@ msgstr "注册功能未启用。"
 
 #: seahub/templates/registration/registration_form.html:18
 msgid "Welcome back, you are already signed in."
-msgstr "欢迎回来，你已登录！"
+msgstr "欢迎回来，你已登录。"
 
 #: seahub/templates/registration/registration_form.html:18
 msgid "Return to the homepage"
@@ -1404,7 +1404,7 @@ msgstr "密码错误"
 #: seahub/templates/sysadmin/user_add_email.html:13
 #, python-format
 msgid "%(escaped_nickname)s invited you to join organization \"%(org_name)s\" on %(site_name)s."
-msgstr "%(escaped_nickname)s 邀请你加入 %(site_name)s 上的机构 %(org_name)s： "
+msgstr "%(escaped_nickname)s 邀请你加入 %(site_name)s 上的机构 %(org_name)s。"
 
 #: seahub/templates/sysadmin/user_add_email.html:15
 #: seahub/templates/sysadmin/user_batch_add_email.html:12

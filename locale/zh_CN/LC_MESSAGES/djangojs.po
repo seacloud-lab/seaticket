@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: seaqa-web\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-09 14:37+0800\n"
-"PO-Revision-Date: 2026-10-09 07:15\n"
+"PO-Revision-Date: 2026-10-10 07:53\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Language: zh\n"
@@ -2115,7 +2115,7 @@ msgstr "首页"
 #: frontend/src/project/constants/bar.js:34
 #: frontend/src/project/main-panel/portal-issues/view/chat-analysis/index.js:261
 msgid "Chat"
-msgstr "聊天"
+msgstr "对话"
 
 #: frontend/src/portal/constants.js:40
 msgid "Submit issue"
@@ -2233,7 +2233,7 @@ msgstr "全选"
 #: frontend/src/project/main-panel/ask/index.js:48
 #: frontend/src/project/main-panel/ask/index.js:49
 msgid "New chat"
-msgstr "新建聊天"
+msgstr "新建对话"
 
 #: frontend/src/portal/main-panel/chat/index.js:68
 #: frontend/src/portal/main-panel/chat/index.js:69
@@ -2358,7 +2358,7 @@ msgstr "选择大小"
 
 #: frontend/src/portal/main-panel/home/edit-panel.js:136
 msgid "Chat placeholder"
-msgstr "聊天占位符"
+msgstr "对话占位符"
 
 #: frontend/src/portal/main-panel/home/edit-panel.js:147
 msgid "Header background"
@@ -2743,7 +2743,7 @@ msgstr "在验证之前保存自定义域名。"
 
 #: frontend/src/portal/main-panel/settings/index.js:674
 msgid "Chat sources"
-msgstr "聊天来源"
+msgstr "对话来源"
 
 #: frontend/src/portal/main-panel/settings/index.js:676
 msgid "Select which data sources can be used for AI responses in the portal."
@@ -3488,7 +3488,7 @@ msgstr "管理子状态"
 #: frontend/src/project/main-panel/portal-issues/components/portal-issues-top-bar.js:37
 #: frontend/src/project/main-panel/portal-issues/components/portal-issues-top-bar.js:38
 msgid "Portal chat analysis"
-msgstr "门户聊天分析"
+msgstr "门户对话分析"
 
 #: frontend/src/project/constants/bar.js:101
 #: frontend/src/project/main-panel/analyze/components/settings-panel/index.js:98
@@ -4193,7 +4193,7 @@ msgstr "你可以说“请帮助解决以下问题：<issue description>”，�
 
 #: frontend/src/project/main-panel/ask/chat/index.js:569
 msgid "Start a new chat from this conversation"
-msgstr "基于此对话开始新聊天"
+msgstr "基于此对话开始新对话"
 
 #: frontend/src/project/main-panel/ask/components/attachments/attachment/index.js:65
 #: frontend/src/project/main-panel/ask/models/attachment-object.js:49
@@ -4235,7 +4235,7 @@ msgstr "展开"
 
 #: frontend/src/project/main-panel/ask/hooks/sessions.js:43
 msgid "Started a new chat from this conversation"
-msgstr "已基于此对话开始新聊天"
+msgstr "已基于此对话开始新对话"
 
 #: frontend/src/project/main-panel/ask/models/attachment-object.js:37
 #: frontend/src/project/main-panel/connections/view/connection/records/index.js:78
@@ -4278,7 +4278,7 @@ msgstr "页面内容"
 
 #: frontend/src/project/main-panel/ask/sessions/index.js:61
 msgid "No chats"
-msgstr "没有聊天"
+msgstr "没有对话"
 
 #: frontend/src/project/main-panel/ask/sessions/session/index.js:95
 msgid "Unshare within team"
@@ -4290,15 +4290,15 @@ msgstr "团队内共享"
 
 #: frontend/src/project/main-panel/ask/sessions/session/index.js:119
 msgid "Chat name"
-msgstr "聊天名称"
+msgstr "对话名称"
 
 #: frontend/src/project/main-panel/ask/sessions/session/index.js:127
 msgid "Delete chat"
-msgstr "删除聊天"
+msgstr "删除对话"
 
 #: frontend/src/project/main-panel/ask/sessions/session/index.js:128
 msgid "Are you sure you want to delete chat {placeholder} ?"
-msgstr "确定要删除聊天记录 {placeholder} 吗？"
+msgstr "确定要删除对话记录 {placeholder} 吗？"
 
 #: frontend/src/project/main-panel/connections/components/cell-formatter/op-formatter/index.js:55
 msgid "Logs"
@@ -4749,7 +4749,7 @@ msgstr "Linear 授权"
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/linear-connection-config.js:63
 msgid "Waiting for Linear authorization to complete..."
-msgstr "正在等待 Linear 授权完成..."
+msgstr "正在等待 Linear 授权完成……"
 
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/selected-connection-header.js:16
 msgid "Help Docs"
@@ -5141,7 +5141,7 @@ msgstr "截止日期"
 
 #: frontend/src/project/main-panel/connections/constants.js:855
 msgid "Views count"
-msgstr "视图数量"
+msgstr "浏览次数"
 
 #: frontend/src/project/main-panel/connections/constants.js:892
 msgid "Parent folder"
@@ -5200,19 +5200,19 @@ msgstr "未分配"
 
 #: frontend/src/project/main-panel/connections/utils.js:379
 msgid "Chat task"
-msgstr "聊天任务"
+msgstr "对话任务"
 
 #: frontend/src/project/main-panel/connections/utils.js:379
 msgid "Chat issue"
-msgstr "聊天问题 (issue)"
+msgstr "对话问题"
 
 #: frontend/src/project/main-panel/connections/utils.js:379
 msgid "Chat tasks"
-msgstr "聊天任务"
+msgstr "对话任务"
 
 #: frontend/src/project/main-panel/connections/utils.js:379
 msgid "Chat issues"
-msgstr "聊天问题 (issue)"
+msgstr "对话问题"
 
 #: frontend/src/project/main-panel/connections/utils.js:424
 msgid "Mark as active"
@@ -5224,7 +5224,7 @@ msgstr "标记为过时"
 
 #: frontend/src/project/main-panel/connections/utils.js:466
 msgid "Find related issues"
-msgstr "查找相关问题 (issue)"
+msgstr "查找相关问题"
 
 #: frontend/src/project/main-panel/connections/utils.js:482
 msgid "Link an existing ticket"
@@ -5440,15 +5440,15 @@ msgstr "用户"
 
 #: frontend/src/project/main-panel/portal-issues/components/issues.js:187
 msgid "issue"
-msgstr "问题 (issue)"
+msgstr "问题"
 
 #: frontend/src/project/main-panel/portal-issues/components/issues.js:188
 msgid "issues"
-msgstr "问题 (issue)"
+msgstr "问题"
 
 #: frontend/src/project/main-panel/portal-issues/components/issues.js:189
 msgid "Issue"
-msgstr "问题 (issue)"
+msgstr "问题"
 
 #: frontend/src/project/main-panel/portal-issues/components/portal-issues-top-bar.js:26
 #: frontend/src/project/main-panel/tickets/components/ticket-top-bar/index.js:45
@@ -5482,7 +5482,7 @@ msgstr "关闭问题"
 
 #: frontend/src/project/main-panel/portal-issues/view/chat-analysis/index.js:60
 msgid "All chat"
-msgstr "所有聊天"
+msgstr "所有对话"
 
 #: frontend/src/project/main-panel/portal-issues/view/chat-analysis/index.js:67
 msgid "User usage"
@@ -5506,15 +5506,15 @@ msgstr "过去一个月的每日对话"
 
 #: frontend/src/project/main-panel/portal-issues/view/chat-analysis/index.js:259
 msgid "chat"
-msgstr "聊天"
+msgstr "对话"
 
 #: frontend/src/project/main-panel/portal-issues/view/chat-analysis/index.js:260
 msgid "chats"
-msgstr "聊天"
+msgstr "对话"
 
 #: frontend/src/project/main-panel/portal-issues/view/chat-analysis/index.js:262
 msgid "Chats"
-msgstr "聊天"
+msgstr "对话"
 
 #: frontend/src/project/main-panel/portal-issues/view/issue/index.js:174
 msgid "Issue deleted"
@@ -5722,7 +5722,7 @@ msgstr "启用支持门户"
 
 #: frontend/src/project/main-panel/settings/index.js:67
 msgid "Portal chat prompt"
-msgstr "门户聊天提示"
+msgstr "门户对话提示"
 
 #: frontend/src/project/main-panel/settings/index.js:68
 msgid "Define rules for AI conversations with external support portal users."
@@ -5730,11 +5730,11 @@ msgstr "定义 AI 与外部支持门户用户对话的规则。"
 
 #: frontend/src/project/main-panel/settings/index.js:69
 msgid "Edit portal chat prompt"
-msgstr "编辑门户聊天提示"
+msgstr "编辑门户对话提示"
 
 #: frontend/src/project/main-panel/settings/index.js:69
 msgid "Add portal chat prompt"
-msgstr "添加门户聊天提示"
+msgstr "添加门户对话提示"
 
 #: frontend/src/project/main-panel/settings/index.js:70
 msgid "Define rules for AI conversations with external support portal users. Specify response tone, information boundaries, escalation guidance, and any topics the AI should avoid."
@@ -5742,7 +5742,7 @@ msgstr "定义 AI 与外部支持门户用户对话的规则。指定回复语�
 
 #: frontend/src/project/main-panel/settings/index.js:71
 msgid "Portal chat prompt cannot contain tag-like content such as <system-reminder>."
-msgstr "门户聊天提示不能包含类标签内容，如 <system-reminder>。"
+msgstr "门户对话提示不能包含类标签内容，如 <system-reminder>。"
 
 #: frontend/src/project/main-panel/settings/index.js:85
 #: frontend/src/project/main-panel/settings/index.js:87
@@ -5874,12 +5874,12 @@ msgstr "技能名称无法修改"
 
 #: frontend/src/project/main-panel/skills/view/skill-detail-dialog.js:251
 msgid "Use in agent too"
-msgstr "也在智能体中使用"
+msgstr "在智能体中也使用"
 
 #: frontend/src/project/main-panel/skills/view/skill-detail-dialog.js:254
 #: frontend/src/project/main-panel/skills/view/skill-detail-dialog.js:255
 msgid "Chat only by default. Turn on for Agent."
-msgstr "默认仅用于聊天。开启后可用于智能体。"
+msgstr "默认仅用于对话。开启后可用于智能体。"
 
 #: frontend/src/project/main-panel/skills/view/skill-detail-dialog.js:277
 msgid "Instructions (Markdown)"
@@ -5903,7 +5903,7 @@ msgstr "无描述"
 
 #: frontend/src/project/main-panel/skills/view/skills-list-item.js:74
 msgid "Chat only"
-msgstr "仅聊天"
+msgstr "仅对话"
 
 #: frontend/src/project/main-panel/skills/view/skills-list-item.js:104
 msgid "Delete skill"
@@ -6083,7 +6083,7 @@ msgstr "未找到工单"
 
 #: frontend/src/project/main-panel/tickets/components/ticket-in-dialog/index.js:281
 msgid "Issue not found"
-msgstr "未找到问题 (issue)"
+msgstr "未找到问题"
 
 #: frontend/src/project/main-panel/tickets/components/ticket-log/add-log.js:7
 #: frontend/src/project/main-panel/tickets/components/ticket-log/index.js:311
