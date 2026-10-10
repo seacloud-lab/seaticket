@@ -230,11 +230,22 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
       setLoading(false);
       return;
     }
+    // Drop the previous options and re-raise the loading flag before requesting, so
+    // nothing from a previous load stays selectable while the new one is in flight.
+    // (Today this provider only ever mounts once -- switching projects is a full
+    // page navigation -- but the merge-instead-of-replace below would otherwise
+    // keep the old project's options alive.)
+    setLoading(true);
+    setSubstatesData(new OptionsData());
+    setTypesData(new OptionsData());
+    setStatesData(new OptionsData());
+    setCustomersData(new OptionsData());
+
     api.getTicketMetadata(projectUuid).then(res => {
       const { states, substates, types, customers } = res?.data || {};
-      initSubStates(substates?.options, substates?.cascade_settings);
-      applyCreateTypes(types?.options);
-      applyCreateStates(states?.options);
+      initSubStates(substates?.options, substates?.cascade_settings, true);
+      applyCreateTypes(types?.options, true);
+      applyCreateStates(states?.options, true);
       setCustomersData(buildOptionsData(customers?.options));
       setLoading(false);
     }).catch(error => {
