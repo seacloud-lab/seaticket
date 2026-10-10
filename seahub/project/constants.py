@@ -634,9 +634,7 @@ class ConnectionCategory:
             ConnectionType.EMAIL.value,
             ConnectionType.DISCOURSE_FORUM.value,
             ConnectionType.GITHUB_ISSUE.value,
-            ConnectionType.LINEAR.value,
             ConnectionType.DISCORD.value,
-            ConnectionType.JIRA_ISSUE.value,
         ],
         DOCUMENT: [
             ConnectionType.SEAFILE.value,
@@ -645,6 +643,8 @@ class ConnectionCategory:
         ],
         TASK: [
             ConnectionType.GENERAL_TASK.value,
+            ConnectionType.JIRA_ISSUE.value,
+            ConnectionType.LINEAR.value,
         ]
     }
 

@@ -80,13 +80,13 @@ export const DOCUMENT_CONNECTION_TYPE_MAP = {
 export const ISSUE_CONNECTION_TYPE_MAP = {
   [CONNECTION_TYPE.EMAIL]: true,
   [CONNECTION_TYPE.GITHUB_ISSUE]: true,
-  [CONNECTION_TYPE.JIRA_ISSUE]: true,
   [CONNECTION_TYPE.DISCOURSE_FORUM]: true,
   [CONNECTION_TYPE.DISCORD]: true,
 };
 
 export const TASK_CONNECTION_TYPE_MAP = {
   [CONNECTION_TYPE.GENERAL_TASK]: true,
+  [CONNECTION_TYPE.JIRA_ISSUE]: true,
   [CONNECTION_TYPE.LINEAR]: true,
 };
 
@@ -530,7 +530,7 @@ export const CONNECTION_TYPES = [
     name: gettext('Jira'),
     help_text: gettext('Authorize SeaTicket with your Atlassian account, then select the Jira site and project to sync issues from. If any problem occurs, check the'),
     help_link: HELP_WEB_URL + 'Jira',
-    sub_types: CONNECTION_SUB_TYPE_MAP.issues,
+    sub_types: CONNECTION_SUB_TYPE_MAP.tasks,
   }, {
     type: CONNECTION_TYPE.DISCOURSE_FORUM,
     icon: 'discourse-logo',
