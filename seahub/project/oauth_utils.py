@@ -1,3 +1,4 @@
+import datetime
 import json
 
 from django.utils import timezone
@@ -8,11 +9,23 @@ from rest_framework import status
 from seahub import settings
 from seahub.api2.utils import api_error
 from seahub.project.constants import EMAIL_OAUTH_SESSION_KEY, EMAIL_OAUTH_SESSION_TIMEOUT, \
-    EMAIL_ACCOUNT_TYPE_PERSONAL, EMAIL_ACCOUNT_TYPE_SHARED, EMAIL_OAUTH_CONFIGS, MICROSOFT_OAUTH_URL_PREFIX
+    EMAIL_ACCOUNT_TYPE_PERSONAL, EMAIL_ACCOUNT_TYPE_SHARED, EMAIL_OAUTH_CONFIGS, MICROSOFT_OAUTH_URL_PREFIX, \
+    NOTION_OAUTH_SESSION_KEY, NOTION_OAUTH_SESSION_TIMEOUT
 from seahub.project.utils import is_oauth_email_provider
 
 
 class CommonOAuthUtils:
+    @staticmethod
+    def calc_expires_at(expires_in):
+        """Turn an OAuth token response's `expires_in` (seconds) into an absolute
+        expiry datetime (UTC aware). Callers apply their own refresh threshold.
+        """
+        try:
+            expires_in = int(expires_in or 3600)
+        except (TypeError, ValueError):
+            expires_in = 3600
+        return datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=expires_in)
+
     @classmethod
     def get_oauth_session(cls, key, request):
         oauth_data = request.session.get(key)
@@ -31,6 +44,38 @@ class CommonOAuthUtils:
         oauth_data['status'] = 'failure'
         oauth_data['error_msg'] = error_msg
         CommonOAuthUtils.set_oauth_session(key, request, oauth_data)
+
+
+class NotionOAuthUtils(CommonOAuthUtils):
+    @classmethod
+    def get_oauth_session(cls, request):
+        oauth_data = super().get_oauth_session(NOTION_OAUTH_SESSION_KEY, request)
+        if not oauth_data:
+            return None
+
+        if oauth_data.get('created_at', 0) < timezone.now().timestamp() - NOTION_OAUTH_SESSION_TIMEOUT:
+            cls.clear_oauth_session(request)
+            return None
+
+        return oauth_data
+
+    @classmethod
+    def set_oauth_session(cls, request, data):
+        super().set_oauth_session(NOTION_OAUTH_SESSION_KEY, request, data)
+
+    @classmethod
+    def clear_oauth_session(cls, request):
+        request.session.pop(NOTION_OAUTH_SESSION_KEY, None)
+        request.session.modified = True
+
+    @classmethod
+    def set_oauth_failure(cls, request, error_msg):
+        oauth_data = cls.get_oauth_session(request)
+        if not oauth_data:
+            return
+        oauth_data['status'] = 'failure'
+        oauth_data['error_msg'] = error_msg
+        cls.set_oauth_session(request, oauth_data)
 
 
 class EmailOAuthUtils(CommonOAuthUtils):

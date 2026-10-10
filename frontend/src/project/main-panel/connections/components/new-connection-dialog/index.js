@@ -9,7 +9,7 @@ import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_
 import { useConnections } from '../../hooks/connections';
 import { getVisibleEmailFields, getEmailProvider, isOAuthEmailProvider, hasValidMicrosoftOAuthUrls, sanitizeEmailConfigByProvider } from '../../utils';
 import ConnectionConfigEditor from '../connection-config-editor';
-import { ConfluenceConfig, DiscordConfig, GithubConfig, JiraConfig, LinearConfig } from './connection-config';
+import { ConfluenceConfig, DiscordConfig, GithubConfig, JiraConfig, LinearConfig, NotionConfig } from './connection-config';
 import ConnectionDialogFooter from './connection-dialog-footer';
 import ConnectionTypeSections from './connection-type-sections';
 import SelectedConnectionHeader from './selected-connection-header';
@@ -79,6 +79,13 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const [jiraProjectsVersion, setJiraProjectsVersion] = useState(0);
   const [isCheckingJiraOauth, setCheckingJiraOauth] = useState(false);
   const [jiraOauthError, setJiraOauthError] = useState('');
+  const [isWaitingNotionOAuth, setWaitingNotionOAuth] = useState(false);
+  const [isNotionOauthConnected, setNotionOauthConnected] = useState(false);
+  const [isCheckingNotionOauth] = useState(false);
+  const [notionOauthError, setNotionOauthError] = useState('');
+  const [notionOauthState, setNotionOauthState] = useState('');
+  const notionOauthWindowRef = useRef(null);
+  const notionOauthIntervalRef = useRef(null);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -121,6 +128,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const isConfluence = useMemo(() => type === CONNECTION_TYPE.CONFLUENCE, [type]);
   const isDiscord = useMemo(() => type === CONNECTION_TYPE.DISCORD, [type]);
   const isJira = useMemo(() => type === CONNECTION_TYPE.JIRA_ISSUE, [type]);
+  const isNotion = useMemo(() => type === CONNECTION_TYPE.NOTION, [type]);
 
   const isOAuthEmail = useMemo(() => {
     return isEmail && isOAuthEmailProvider(getEmailProvider(config));
@@ -145,6 +153,8 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     if (isDiscord && !config.guild_id) return false;
     if (isJira && !isJiraOauthConnected) return false;
     if (isOAuthEmail && !emailOAuthState) return false;
+    if (isNotion && !isNotionOauthConnected) return false;
+    if (isNotion && !notionOauthState) return false;
     return customColumns.length > 0 ? customColumns.every(c => {
       if (c.type === CONNECTION_FIELD_TYPE.GROUP) {
         return c.children.every(child => {
@@ -156,7 +166,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       return true;
     }) : true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [name, config, customColumns, isLinear, isLinearOauthConnected, isConfluence, isConfluenceOauthConnected, isDiscord, isOAuthEmail, emailOAuthState, isJira, isJiraOauthConnected]);
+  }, [name, config, customColumns, isLinear, isLinearOauthConnected, isConfluence, isConfluenceOauthConnected, isDiscord, isOAuthEmail, emailOAuthState, isJira, isJiraOauthConnected, isNotion, isNotionOauthConnected, notionOauthState]);
 
   useEffect(() => {
     const handleDiscordOAuthMessage = (event) => {
@@ -192,18 +202,29 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     }
   }, []);
 
+  const stopNotionOAuthPolling = useCallback(() => {
+    if (notionOauthIntervalRef.current) {
+      window.clearInterval(notionOauthIntervalRef.current);
+      notionOauthIntervalRef.current = null;
+    }
+  }, []);
+
   useEffect(() => {
     return () => {
       stopEmailOAuthPolling();
       stopConfluenceOAuthPolling();
+      stopNotionOAuthPolling();
       if (emailOauthWindowRef.current && !emailOauthWindowRef.current.closed) {
         emailOauthWindowRef.current.close();
       }
       if (confluenceOauthWindowRef.current && !confluenceOauthWindowRef.current.closed) {
         confluenceOauthWindowRef.current.close();
       }
+      if (notionOauthWindowRef.current && !notionOauthWindowRef.current.closed) {
+        notionOauthWindowRef.current.close();
+      }
     };
-  }, [stopEmailOAuthPolling, stopConfluenceOAuthPolling]);
+  }, [stopEmailOAuthPolling, stopConfluenceOAuthPolling, stopNotionOAuthPolling]);
 
   const onNameChange = useCallback((event) => {
     const newValue = event.target.value;
@@ -390,11 +411,11 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       }
     }
 
-    onSubmit({ type, name: name.trim(), config: _config }, () => {
+    onSubmit({ type, name: name.trim(), config: _config, oauthState: notionOauthState }, () => {
       setSubmitting(false);
     });
     return;
-  }, [name, type, config, isJira, isLinear, onSubmit, isConfluence, isGithub, selectedSpaceKeys, isDiscord, emailOAuthState]);
+  }, [name, type, config, isJira, isLinear, onSubmit, isConfluence, isGithub, selectedSpaceKeys, isDiscord, emailOAuthState, notionOauthState]);
 
   const listGitHubRepositories = useCallback((signal) => {
     return connectionsAPI.listGitHubRepositories(projectUuid, signal).then(res => {
@@ -601,6 +622,59 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       });
     }, 2000);
   }, []);
+
+  const handleConnectNotion = useCallback(() => {
+    setNotionOauthState('');
+    connectionsAPI.startNotionOAuth(projectUuid).then((res) => {
+      const authorizationUrl = res.data?.auth_url;
+      const oauthState = res.data?.state;
+      if (!authorizationUrl || !oauthState) {
+        toaster.danger(gettext('Failed to fetch authorization url'));
+        return;
+      }
+
+      notionOauthWindowRef.current = window.open(authorizationUrl, 'notion-oauth', 'width=800,height=700');
+      if (!notionOauthWindowRef.current) {
+        toaster.danger(gettext('Failed to open authorization window. Please allow pop-ups and try again.'));
+        return;
+      }
+      setWaitingNotionOAuth(true);
+      stopNotionOAuthPolling();
+      notionOauthIntervalRef.current = window.setInterval(() => {
+        connectionsAPI.getNotionOauthStatus(projectUuid, oauthState).then(statusRes => {
+          const notionStatus = statusRes?.data?.status;
+          if (notionStatus === 'in-progress') {
+            if (!notionOauthWindowRef.current.closed) return;
+            stopNotionOAuthPolling();
+            setWaitingNotionOAuth(false);
+            toaster.danger(gettext('OAuth authorization was cancelled.'));
+            return;
+          }
+
+          stopNotionOAuthPolling();
+          setWaitingNotionOAuth(false);
+          if (notionStatus !== 'authorized') {
+            toaster.danger(statusRes.data?.error_msg || gettext('OAuth authorization failed.'));
+            return;
+          }
+          setNotionOauthConnected(true);
+          setNotionOauthState(oauthState);
+          setNotionOauthError('');
+          if (notionOauthWindowRef.current && !notionOauthWindowRef.current.closed) {
+            notionOauthWindowRef.current.close();
+          }
+        }).catch((error) => {
+          stopNotionOAuthPolling();
+          setWaitingNotionOAuth(false);
+          toaster.danger(notionOauthWindowRef.current?.closed
+            ? gettext('OAuth authorization was cancelled.')
+            : Utils.getErrorMsg(error));
+        });
+      }, 2000);
+    }).catch((error) => {
+      toaster.danger(Utils.getErrorMsg(error));
+    });
+  }, [stopNotionOAuthPolling]);
 
   const listJiraSites = useCallback((signal) => {
     if (!isJiraOauthConnected) {
@@ -873,7 +947,22 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
             handleConnectDiscord={handleConnectDiscord}
           />
         )}
-        {step.key === STEP.CONFIG && !isGithub && !isJira && !isConfluence && !isLinear && !isDiscord && (
+        {step.key === STEP.CONFIG && isNotion && (
+          <NotionConfig
+            isNotionOauthConnected={isNotionOauthConnected}
+            isWaitingNotionOAuth={isWaitingNotionOAuth}
+            setWaitingNotionOAuth={setWaitingNotionOAuth}
+            isSubmitting={isSubmitting}
+            isCheckingNotionOauth={isCheckingNotionOauth}
+            handleConnectNotion={handleConnectNotion}
+            notionOauthError={notionOauthError}
+            name={name}
+            onNameChange={onNameChange}
+            basicCustomColumns={basicCustomColumns}
+            renderConnectionField={renderConnectionField}
+          />
+        )}
+        {step.key === STEP.CONFIG && !isGithub && !isJira && !isConfluence && !isLinear && !isDiscord && !isNotion && (
           <div className="seaqa-project-new-connection-config">
             <FormGroup>
               <Label>
@@ -962,7 +1051,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
       </ModalBody>
       <ConnectionDialogFooter
         stepIndex={stepIndex}
-        isSubmitDisabled={isSubmitting || isWaitingEmailOAuth || isWaitingConfluenceOAuth || isWaitingJiraOAuth || isWaitingLinearOAuth || !isValid || !name}
+        isSubmitDisabled={isSubmitting || isWaitingEmailOAuth || isWaitingConfluenceOAuth || isWaitingJiraOAuth || isWaitingLinearOAuth || isWaitingNotionOAuth || !isValid || !name}
         onToggle={onToggle}
         setStepIndex={setStepIndex}
         onSubmit={handleSubmit}

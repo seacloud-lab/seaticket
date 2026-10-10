@@ -1002,8 +1002,8 @@ class ProjectConnectionOauthManager(models.Manager):
             return datetime.datetime.fromtimestamp(expires_at, tz=datetime.timezone.utc)
         return expires_at
 
-    def get_by_project_uuid(self, project_uuid, type):
-        return self.filter(project_uuid=project_uuid, type=type).first()
+    def get_by_project_uuid(self, project_uuid, type, connection_id=0):
+        return self.filter(project_uuid=project_uuid, type=type, connection_id=connection_id).first()
 
     def upsert_token(self, project_uuid, type, access_token, expires_at, refresh_token):
         expires_at = self._normalize_expires_at(expires_at)
