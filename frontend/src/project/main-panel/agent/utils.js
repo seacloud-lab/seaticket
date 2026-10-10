@@ -298,11 +298,11 @@ export const getEventSourceResource = (run) => {
 
 export const getRunLogStatusByRuns = (runs) => {
   if (!Array.isArray(runs) || runs.length === 0) return '';
-  const isAllCompleted = runs.every(run => run.status === RUN_STATUS.COMPLETED);
+  const isAllCompleted = runs.every(run => [RUN_STATUS.COMPLETED, RUN_STATUS.FAILED].includes(run.status));
   if (!isAllCompleted) return '';
 
   const suggestionsStatuses = runs.map(run => (run.suggestions_status || '').trim());
-  if (suggestionsStatuses.some(item => [SUGGESTIONS_STATUS.PENDING, SUGGESTIONS_STATUS.FAILED, ''].includes(item))) {
+  if (suggestionsStatuses.some(item => [SUGGESTIONS_STATUS.PENDING, ''].includes(item))) {
     return '';
   }
   return LOG_STATUS.PROCESSED;
