@@ -469,7 +469,9 @@ class PortalChatSessions(models.Model):
 
 class PortalChatMessagesManager(models.Manager):
 
-    def create_message(self, session_uuid, message_id, role, content, as_context=True, attachments=[]):
+    def create_message(self, session_uuid, message_id, role, content, as_context=True, attachments=[], sources=None, evaluation=None, evaluated_at=None):
+        if sources is not None and not isinstance(sources, str):
+            sources = json.dumps(sources)
         message = self.model(
             session_uuid=session_uuid,
             message_id=message_id,
@@ -477,6 +479,9 @@ class PortalChatMessagesManager(models.Manager):
             content=content,
             as_context=as_context,
             attachments=json.dumps(attachments),
+            sources=sources,
+            evaluation=evaluation,
+            evaluated_at=evaluated_at,
         )
         message.save()
         return message
@@ -501,6 +506,13 @@ class PortalChatMessages(models.Model):
     role = models.CharField(max_length=20)
     content = models.TextField(null=True)
     attachments = models.TextField(null=True)
+    sources = models.TextField(null=True)
+    evaluated_at = models.DateTimeField(null=True)
+    evaluation = models.CharField(max_length=20, null=True)
+    evaluation_reason = models.TextField(null=True)
+    normalized_question = models.TextField(null=True)
+    gap_suggestion = models.TextField(null=True)
+    gap_status = models.CharField(max_length=16, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     as_context = models.BooleanField(default=True)
@@ -511,6 +523,7 @@ class PortalChatMessages(models.Model):
         db_table = 'portal_chat_messages'
         indexes = [
             models.Index(fields=['session_uuid', 'created_at']),
+            models.Index(fields=['evaluation', 'gap_status'], name='idx_portal_chat_msg_evaluation'),
         ]
 
     def to_dict(self):
