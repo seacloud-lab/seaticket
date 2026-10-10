@@ -335,6 +335,161 @@ def test_query_run_status_counts_buckets_incomplete_runs_first():
     }
 
 
+@pytest.mark.parametrize('completed_runs', [0, 1])
+@pytest.mark.parametrize('stored_status', ['', 'failed', 'none', 'pending', 'resolved'])
+@pytest.mark.parametrize('action_statuses, expected', [
+    ([], 'processed'),
+    (['cancelled', 'executed'], 'processed'),
+    (['pending'], ''),
+    (['executing'], ''),
+    (['failed'], ''),
+])
+def test_failed_runs_use_actual_suggestions_for_log_status(completed_runs, stored_status, action_statuses, expected):
+    seadb_api = Mock()
+    seadb_api.query_rows.side_effect = [
+        {'results': [{
+            'owner_source_id': '42', 'owner_source_type': 'ticket',
+            'num_of_runs': completed_runs + 1,
+        }]},
+        {'results': [
+            {'owner_source_id': '42', 'owner_source_type': 'ticket',
+             'status': 'completed', 'suggestions_status': 'resolved', 'bucket_size': completed_runs},
+            {'owner_source_id': '42', 'owner_source_type': 'ticket',
+             'status': 'failed', 'suggestions_status': stored_status, 'bucket_size': 1},
+        ]},
+        {'results': [{'_pk': 7, 'owner_source_id': '42', 'owner_source_type': 'ticket'}]},
+        {'results': [{'run_id': 7, 'status': value} for value in action_statuses]},
+    ]
+
+    result = list_agent_logs(seadb_api, 'project-1')
+
+    assert result['logs'][0]['status'] == expected
+    assert seadb_api.update_rows.call_count == 0
+    suggestion_sql = seadb_api.query_rows.call_args_list[3].args[1]
+    assert "`action_type` = 'suggestion'" in suggestion_sql
+    assert 'GROUP BY `run_id`, `status` LIMIT 0, 10000' in suggestion_sql
+
+
+@pytest.mark.parametrize('action_statuses, expected', [
+    ([], 'none'),
+    (['cancelled', 'executed'], 'resolved'),
+    (['pending'], 'pending'),
+    (['executing'], 'pending'),
+    (['failed'], 'failed'),
+])
+def test_failed_run_details_derive_suggestions_without_changing_failure(action_statuses, expected):
+    seadb_api = Mock()
+    seadb_api.query_rows.side_effect = [
+        {'results': [{
+            '_pk': 7, 'status': 'failed', 'suggestions_status': 'failed',
+            'owner_source_id': '42', 'owner_source_type': 'ticket',
+            'error_message': 'Agent error',
+        }]},
+        {'results': [
+            {'_pk': 1, 'run_id': 7, 'action_type': 'analysis', 'status': 'failed'},
+            *[{'_pk': index + 2, 'run_id': 7, 'action_type': 'suggestion', 'status': value}
+              for index, value in enumerate(action_statuses)],
+        ]},
+    ]
+
+    run = get_agent_log_runs(seadb_api, 'project-1', '42', 'ticket')['runs'][0]
+
+    assert run['status'] == 'failed'
+    assert run['error_message'] == 'Agent error'
+    assert run['suggestions_status'] == expected
+    assert seadb_api.update_rows.call_count == 0
+
+
+def test_cancel_pending_suggestion_on_failed_run_preserves_failed_result():
+    seadb_api = Mock()
+    seadb_api.query_rows.side_effect = [
+        {'results': [{'_pk': 7}]},
+        {'results': [{'_pk': 1, 'run_id': 7}]},
+        {'results': [{'status': 'cancelled'}]},
+        {'results': [{
+            '_pk': 7, 'status': 'failed', 'suggestions_status': 'resolved',
+            'owner_source_id': '42', 'owner_source_type': 'ticket',
+            'error_message': 'Agent error',
+        }]},
+        {'results': [{'_pk': 1, 'run_id': 7, 'action_type': 'suggestion', 'status': 'cancelled'}]},
+    ]
+
+    result = cancel_agent_log_pending_actions(
+        seadb_api, 'project-1', '42', 'ticket', 'Cancelled by Alice', '2026-10-10T00:00:00Z',
+    )
+
+    assert result['runs'][0]['status'] == 'failed'
+    assert result['runs'][0]['suggestions_status'] == 'resolved'
+    assert result['runs'][0]['error_message'] == 'Agent error'
+    assert seadb_api.update_rows.call_args_list[1].args[2] == [
+        {'pk': 7, 'row': {'suggestions_status': 'resolved'}},
+    ]
+
+
+def test_failed_run_pending_suggestion_beyond_default_action_limit_is_not_hidden():
+    seadb_api = Mock()
+    seadb_api.query_rows.side_effect = [
+        {'results': [{
+            '_pk': 7, 'status': 'failed', 'suggestions_status': '',
+            'owner_source_id': '42', 'owner_source_type': 'ticket',
+        }]},
+        {'results': [
+            {'_pk': index, 'run_id': 7, 'action_type': 'analysis', 'status': 'completed'}
+            for index in range(1000)
+        ]},
+        {'results': [{'_pk': 1001, 'run_id': 7, 'action_type': 'suggestion', 'status': 'pending'}]},
+    ]
+
+    run = get_agent_log_runs(seadb_api, 'project-1', '42', 'ticket')['runs'][0]
+
+    assert run['suggestions_status'] == 'pending'
+    assert len(run['actions']) == 1001
+    assert 'LIMIT 1000, 1000' in seadb_api.query_rows.call_args_list[2].args[1]
+
+
+def test_pending_run_beyond_first_run_batch_is_included():
+    seadb_api = Mock()
+    seadb_api.query_rows.side_effect = [
+        {'results': [
+            {'_pk': index, 'status': 'failed', 'suggestions_status': 'failed'}
+            for index in range(1000)
+        ]},
+        {'results': [{'_pk': 1000, 'status': 'completed', 'suggestions_status': 'pending'}]},
+        {'results': [{'_pk': 1, 'run_id': 1000, 'action_type': 'suggestion', 'status': 'pending'}]},
+    ]
+
+    runs = get_agent_log_runs(seadb_api, 'project-1', '42', 'ticket')['runs']
+
+    assert len(runs) == 1001
+    assert runs[-1]['suggestions_status'] == 'pending'
+    assert 'LIMIT 1000, 1000' in seadb_api.query_rows.call_args_list[1].args[1]
+
+
+def test_failed_suggestion_on_later_failed_run_batch_prevents_done():
+    seadb_api = Mock()
+    seadb_api.query_rows.side_effect = [
+        {'results': [{
+            'owner_source_id': '42', 'owner_source_type': 'ticket',
+            'status': 'failed', 'suggestions_status': 'failed', 'bucket_size': 1001,
+        }]},
+        {'results': [
+            {'_pk': index, 'owner_source_id': '42', 'owner_source_type': 'ticket'}
+            for index in range(1000)
+        ]},
+        {'results': []},
+        {'results': [{'_pk': 1000, 'owner_source_id': '42', 'owner_source_type': 'ticket'}]},
+        {'results': [{'run_id': 1000, 'status': 'failed'}]},
+    ]
+
+    counts = _query_run_status_counts(seadb_api, 'project-1', [
+        {'owner_source_id': '42', 'owner_source_type': 'ticket'},
+    ])
+
+    assert counts[('42', 'ticket')]['incomplete_runs'] == 0
+    assert counts[('42', 'ticket')]['open_suggestion_runs'] == 1
+    assert 'LIMIT 1000, 1000' in seadb_api.query_rows.call_args_list[3].args[1]
+
+
 def test_get_agent_log_runs_includes_all_suggestions_for_non_ticket():
     seadb_api = Mock()
     seadb_api.query_rows.side_effect = [

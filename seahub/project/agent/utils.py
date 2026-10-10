@@ -174,6 +174,7 @@ VISIBLE_LOG_ACTION_TYPES = ('prelude', 'analysis', 'suggestion')
 SUGGESTION_ACTION_TYPE = 'suggestion'
 
 RUN_STATUS_COMPLETED = 'completed'
+RUN_STATUS_FAILED = 'failed'
 
 ACTION_STATUS_PENDING = 'pending'
 ACTION_STATUS_EXECUTING = 'executing'
@@ -205,8 +206,16 @@ def _query_owned_runs(seadb_api, project_uuid, owner_source_id, owner_source_typ
         "WHERE `owner_source_id` = ? AND `owner_source_type` = ? "
         "ORDER BY `_pk` ASC"
     )
-    result = seadb_api.query_rows(project_uuid, sql, params=[owner_source_id, owner_source_type])
-    return result.get('results', [])
+    runs = []
+    batch_size = 1000
+    while True:
+        batch = seadb_api.query_rows(
+            project_uuid, f'{sql} LIMIT {len(runs)}, {batch_size}',
+            params=[owner_source_id, owner_source_type],
+        ).get('results', [])
+        runs.extend(batch)
+        if len(batch) < batch_size:
+            return runs
 
 
 def _query_log_summary_rows(seadb_api, project_uuid, page, per_page, offset=None):
@@ -259,13 +268,14 @@ def _query_run_status_counts(seadb_api, project_uuid, summary_rows):
             ('42',  'ticket'):       {'incomplete_runs': 1, 'open_suggestion_runs': 1, 'resolved_runs': 0},
         }
 
-    A run that is not completed counts only towards incomplete_runs: its
+    A run that has not finished counts only towards incomplete_runs: its
     suggestions_status is not final yet, so it must not also count as an open
     suggestion. The explicit LIMIT 0, 10000 is required because SeaDB silently
     caps queries without LIMIT at 100 rows, and truncated buckets would corrupt
     the log badge status.
     """
     counts = {}
+    failed_owners = set()
     owner_filters = []
     params = []
     for row in summary_rows:
@@ -292,15 +302,65 @@ def _query_run_status_counts(seadb_api, project_uuid, summary_rows):
             continue
         bucket_size = int(row.get('bucket_size') or 0)
         run_status = str(row.get('status') or '').strip()
+        if run_status == RUN_STATUS_FAILED:
+            failed_owners.add(key)
+            continue
         if run_status != RUN_STATUS_COMPLETED:
             counts[key]['incomplete_runs'] += bucket_size
             continue
         suggestions_status = str(row.get('suggestions_status') or '').strip()
-        if suggestions_status in ('', SUGGESTIONS_STATUS_PENDING, SUGGESTIONS_STATUS_FAILED):
+        if suggestions_status not in (SUGGESTIONS_STATUS_NONE, SUGGESTIONS_STATUS_RESOLVED):
             counts[key]['open_suggestion_runs'] += bucket_size
         elif suggestions_status == SUGGESTIONS_STATUS_RESOLVED:
             counts[key]['resolved_runs'] += bucket_size
+    if failed_owners:
+        _count_failed_run_suggestions(seadb_api, project_uuid, failed_owners, counts)
     return counts
+
+
+def _count_failed_run_suggestions(seadb_api, project_uuid, owners, counts):
+    """Failed runs can have a placeholder suggestions_status; inspect their actions.
+
+    Page runs and bucket suggestion statuses to avoid SeaDB's default row limit.
+    Reads do not overwrite the stored execution result or suggestion summary.
+    """
+    owner_filters = []
+    params = []
+    for owner_source_id, owner_source_type in sorted(owners):
+        owner_filters.append("(`owner_source_id` = ? AND `owner_source_type` = ?)")
+        params.extend([owner_source_id, owner_source_type])
+    offset = 0
+    batch_size = 1000
+    while True:
+        sql = (
+            "SELECT `_pk`, `owner_source_id`, `owner_source_type` "
+            f"FROM `{SchemaTables.AGENT_RUNS.table_name()}` "
+            f"WHERE `status` = '{RUN_STATUS_FAILED}' AND ({' OR '.join(owner_filters)}) "
+            f"ORDER BY `_pk` ASC LIMIT {offset}, {batch_size}"
+        )
+        runs = seadb_api.query_rows(project_uuid, sql, params=params).get('results', [])
+        if not runs:
+            break
+        run_ids = ','.join(str(int(run['_pk'])) for run in runs)
+        suggestion_sql = (
+            "SELECT `run_id`, `status` "
+            f"FROM `{SchemaTables.AGENT_ACTIONS.table_name()}` "
+            f"WHERE `run_id` IN ({run_ids}) AND `action_type` = '{SUGGESTION_ACTION_TYPE}' "
+            "GROUP BY `run_id`, `status` LIMIT 0, 10000"
+        )
+        statuses = {}
+        for action in seadb_api.query_rows(project_uuid, suggestion_sql).get('results', []):
+            statuses.setdefault(int(action['run_id']), []).append(action.get('status', ''))
+        for run in runs:
+            key = (run.get('owner_source_id', ''), run.get('owner_source_type', ''))
+            suggestions_status = _calculate_suggestions_status(statuses.get(int(run['_pk']), []))
+            if suggestions_status in (SUGGESTIONS_STATUS_PENDING, SUGGESTIONS_STATUS_FAILED):
+                counts[key]['open_suggestion_runs'] += 1
+            elif suggestions_status == SUGGESTIONS_STATUS_RESOLVED:
+                counts[key]['resolved_runs'] += 1
+        if len(runs) < batch_size:
+            break
+        offset += len(runs)
 
 
 def _calculate_suggestions_status(suggestion_statuses):
@@ -355,8 +415,7 @@ def _calculate_log_status(summary_row):
     """Derive the log badge status from the aggregate counters of one summary row.
 
     Returns '' (no badge) while any run is incomplete or still has open
-    suggestions, 'done' once all runs completed and at least one resolved its
-    suggestions, and 'done' once all runs completed without open suggestions.
+    suggestions, and 'processed' once all runs finished without open suggestions.
     """
     if not summary_row.get('num_of_runs'):
         return ''
@@ -513,8 +572,15 @@ def _query_log_actions_by_runs(seadb_api, project_uuid, run_ids):
         f"AND `action_type` IN ({action_types_str}) "
         "ORDER BY `run_id` ASC, `_pk` ASC"
     )
-    result = seadb_api.query_rows(project_uuid, sql)
-    return result.get('results', [])
+    actions = []
+    batch_size = 1000
+    while True:
+        batch = seadb_api.query_rows(
+            project_uuid, f'{sql} LIMIT {len(actions)}, {batch_size}',
+        ).get('results', [])
+        actions.extend(batch)
+        if len(batch) < batch_size:
+            return actions
 
 
 def get_agent_log_runs(seadb_api, project_uuid, owner_source_id, owner_source_type):
@@ -532,6 +598,14 @@ def get_agent_log_runs(seadb_api, project_uuid, owner_source_id, owner_source_ty
             continue
         run_id = int(run_id)
         actions_by_run.setdefault(run_id, []).append(_serialize_action(action))
+
+    for run in runs:
+        if run.get('status') == RUN_STATUS_FAILED:
+            run['suggestions_status'] = _calculate_suggestions_status([
+                action.get('status', '')
+                for action in actions_by_run.get(int(run['_pk']), [])
+                if action.get('type') == SUGGESTION_ACTION_TYPE
+            ])
 
     return {
         'runs': [{
