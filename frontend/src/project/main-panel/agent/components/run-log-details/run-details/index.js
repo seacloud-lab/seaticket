@@ -22,6 +22,7 @@ const RunDetail = ({
   onConfirmAction,
   onCancelAction,
   onViewContent,
+  onChatToRefine,
 }) => {
   const [isExpanded, setIsExpanded] = useState(Boolean(initIsExpanded));
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -115,6 +116,12 @@ const RunDetail = ({
     setShowThoughtProcessDialog(false);
   }, []);
 
+  const handleChatToRefine = useCallback((e) => {
+    e.stopPropagation();
+    setDropdownOpen(false);
+    onChatToRefine && onChatToRefine(run);
+  }, [onChatToRefine, run]);
+
   const { id, started_at, actions = [], event } = run;
   const displayActions = getDisplayActions(actions);
 
@@ -155,6 +162,11 @@ const RunDetail = ({
                 {thoughtProcessEnabled && (
                   <DropdownItem onClick={handleShowThoughtProcess}>
                     {gettext('Thought process')}
+                  </DropdownItem>
+                )}
+                {run.status !== RUN_STATUS.RUNNING && (
+                  <DropdownItem onClick={handleChatToRefine}>
+                    {gettext('Chat to regenerate')}
                   </DropdownItem>
                 )}
               </DropdownMenu>

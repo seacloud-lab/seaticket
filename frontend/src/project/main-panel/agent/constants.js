@@ -35,6 +35,7 @@ const ACTION_TYPE = {
   HANDLING: 'handling',
   TOOL_CALL: 'tool_call',
   SUGGESTION: 'suggestion',
+  USER_INSTRUCTION: 'user_instruction',
   SUMMARY: 'summary',
   ERROR: 'error',
 };

@@ -10,6 +10,8 @@ from seahub.settings import SEAQA_AI_INNER_SERVER_URL, JWT_PRIVATE_KEY
 
 logger = logging.getLogger(__name__)
 
+AGENT_REGENERATE_TIMEOUT = 600
+
 
 def _build_headers():
     payload = {'exp': int(time.time()) + 300}
@@ -94,3 +96,25 @@ def get_builtin_skill(name):
     if resp.status_code != 200:
         raise Exception(f'get builtin skill error status: {resp.status_code} body: {resp.text}')
     return resp.json().get('skill')
+
+
+def regenerate_agent_suggestions(params):
+    headers = _build_headers()
+    url = urljoin(SEAQA_AI_INNER_SERVER_URL, '/regenerate-agent-suggestions')
+    resp = requests.post(url, json=params, headers=headers, timeout=AGENT_REGENERATE_TIMEOUT)
+    if resp.status_code == 400:
+        error_msg = ''
+        try:
+            error_msg = resp.json().get('error_msg') or ''
+        except Exception:
+            error_msg = resp.text
+        raise ValueError(error_msg or 'Failed to regenerate agent suggestions.')
+    if resp.status_code != 200:
+        raise Exception(
+            f'regenerate agent suggestions error status: {resp.status_code} body: {resp.text}'
+        )
+    result = resp.json()
+    if not isinstance(result, dict) or not isinstance(result.get('suggestions'), list):
+        raise Exception('regenerate agent suggestions returned an invalid response')
+    return result
+
