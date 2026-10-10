@@ -8,6 +8,13 @@ import { VIEW_TYPE, STATISTIC_TYPE } from '@/sea-metadata/constants';
 import context from '@/sea-metadata/context';
 import { Utils } from '@/utils/utils';
 import { PORTAL_CHAT_TABLE_NAME } from '../../constants';
+import SidePanelKnowledgeGap from './side-panel-knowledge-gap';
+
+const KNOWLEDGE_GAP_STATUS_OPTIONS = [
+  { id: 'open', name: gettext('Open'), text_color: '#FFF', color: '#1a7f37', border_color: '#1a7f37' },
+  { id: 'resolved', name: gettext('Resolved'), text_color: '#FFF', color: '#0969da', border_color: '#0969da' },
+  { id: 'dismissed', name: gettext('Dismissed'), text_color: '#FFF', color: '#6e7781', border_color: '#6e7781' },
+];
 
 const viewTools = [
   VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS,
@@ -24,6 +31,13 @@ const settings = {
 };
 
 const formatTokenCount = (count) => Utils.formatSize({ bytes: count, precision: 0 }).replace('B', '');
+
+const AnalysisSidePanel = ({ row, ...props }) => {
+  if (row?._panel === 'knowledge_gap') {
+    return <SidePanelKnowledgeGap row={row} {...props} />;
+  }
+  return <SidePanelChat row={row} {...props} />;
+};
 
 const formatComparison = (changePercent) => {
   if (changePercent === null || changePercent === undefined || Number.isNaN(Number(changePercent))) {
@@ -46,13 +60,14 @@ const ChatAnalysis = ({
   workspaceID,
   isAdmin: isProjectAdmin,
 }) => {
-  const { getMetadata } = useData();
+  const { getMetadata, modifyLocalRow } = useData();
 
   const viewsData = useMemo(() => ({
     navigation: [
       { _id: 'all_chat', type: 'view' },
       { _id: 'statistics', type: 'view' },
       { _id: 'user_usage', type: 'view' },
+      { _id: 'knowledge_gaps', type: 'view' },
     ],
     views: [
       {
@@ -65,6 +80,9 @@ const ChatAnalysis = ({
       }, {
         _id: 'user_usage',
         name: gettext('User usage'),
+      }, {
+        _id: 'knowledge_gaps',
+        name: gettext('Knowledge gaps'),
       }
     ]
   }), []);
@@ -138,7 +156,61 @@ const ChatAnalysis = ({
     ];
   }, []);
 
-  const getSortsKey = (viewID) => (viewID === 'user_usage' ? 'user_usage_sorts' : 'sorts');
+  const knowledgeGapColumns = useMemo(() => {
+    return [
+      {
+        name: gettext('Question'),
+        key: 'normalized_question',
+        type: CellType.TEXT,
+        editable: false,
+        is_name_column: true,
+        frozen: true,
+        width: 320,
+        click: (row) => {
+          context.eventBus.dispatch(EVENT_BUS_TYPE.EXPAND_ROW, row);
+        },
+      }, {
+        name: gettext('Suggested knowledge'),
+        key: 'gap_suggestion',
+        type: CellType.TEXT,
+        editable: false,
+        width: 320,
+      }, {
+        name: gettext('Status'),
+        key: 'gap_status',
+        type: CellType.SINGLE_SELECT,
+        editable: true,
+        width: 140,
+        data: {
+          options: KNOWLEDGE_GAP_STATUS_OPTIONS,
+        },
+      }, {
+        name: gettext('User'),
+        key: 'username',
+        type: CellType.TEXT,
+        editable: false,
+        width: 180,
+      }, {
+        name: gettext('Time'),
+        key: 'created_at',
+        type: CellType.CTIME,
+        editable: false,
+        width: 180,
+      },
+    ];
+  }, []);
+
+  const getColumns = (viewID) => {
+    if (viewID === 'user_usage') return userUsageColumns;
+    if (viewID === 'knowledge_gaps') return knowledgeGapColumns;
+    return columns;
+  };
+
+  const getSortsKey = (viewID) => {
+    if (viewID === 'user_usage') return 'user_usage_sorts';
+    if (viewID === 'knowledge_gaps') return 'knowledge_gaps_sorts';
+    return 'sorts';
+  };
 
   const api = useMemo(() => ({
     getMetadata: (...params) => getMetadata(PORTAL_CHAT_TABLE_NAME, params[0], () => {
@@ -158,6 +230,21 @@ const ChatAnalysis = ({
         return chatAPI.getAdminChatUserUsage(projectUuid, { start, limit, sorts }).then(res => {
           const users = res?.data?.users || [];
           const records = users.map(user => ({ ...user, _pk: `${user.month}-${user.username}` }));
+          return {
+            data: { records }
+          };
+        });
+      }
+      if (view_id === 'knowledge_gaps') {
+        const sorts = context.localStorage.getItem('knowledge_gaps_sorts') || [];
+        return chatAPI.listAdminKnowledgeGaps(projectUuid, { start, limit, sorts }).then(res => {
+          const gaps = res?.data?.gaps || [];
+          const records = gaps.map(gap => ({
+            ...gap,
+            _pk: gap.id,
+            _panel: 'knowledge_gap',
+            gap_reason: gap.evaluation_reason,
+          }));
           return {
             data: { records }
           };
@@ -227,7 +314,7 @@ const ChatAnalysis = ({
       return {
         data: {
           rows: res?.data.records || [],
-          columns: view_id === 'user_usage' ? userUsageColumns : columns,
+          columns: getColumns(view_id),
         }
       };
     }),
@@ -245,6 +332,16 @@ const ChatAnalysis = ({
       });
     },
 
+    modifyRow: (rowId, rowUpdate) => {
+      if (!rowUpdate || !rowUpdate.gap_status) {
+        return Promise.resolve({ data: { row: rowUpdate } });
+      }
+      return chatAPI.updateAdminKnowledgeGapStatus(projectUuid, rowId, rowUpdate.gap_status).then(() => {
+        modifyLocalRow(PORTAL_CHAT_TABLE_NAME, rowId, rowUpdate);
+        return { data: { row: rowUpdate } };
+      });
+    },
+
     modifyView: (viewID, viewData) => new Promise((resolve, reject) => {
       Object.keys(viewData).forEach(key => {
         const storageKey = key === 'sorts' ? getSortsKey(viewID) : key;
@@ -252,7 +349,7 @@ const ChatAnalysis = ({
       });
       resolve({ data: { success: true } });
     }),
-  }), [projectUuid, viewsData, columns, userUsageColumns, getMetadata]);
+  }), [projectUuid, viewsData, columns, userUsageColumns, knowledgeGapColumns, getMetadata, modifyLocalRow]);
 
   const t = useMemo(() => {
     return {
@@ -275,7 +372,7 @@ const ChatAnalysis = ({
       viewTools={viewTools}
       settings={settings}
     >
-      <SidePanelChat
+      <AnalysisSidePanel
         projectUuid={projectUuid}
         projectName={projectName}
         workspaceID={workspaceID}
