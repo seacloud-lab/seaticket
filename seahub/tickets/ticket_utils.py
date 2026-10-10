@@ -17,6 +17,7 @@ from seahub.project.utils import get_current_table_metadata
 from seahub.project.constants import ConnectionType
 from seahub.seadb_models.utils import get_connection_table_name
 from seahub.portal.portal_utils import get_portal_issue
+from seahub.portal.models import PortalCustomer
 from seahub.seadb_models.models import SchemaTables
 
 class TicketLinkValidationError(Exception):
@@ -607,8 +608,52 @@ def check_ticket_comment_creation_interval(seadb_api, project_uuid, username, ti
 
     return True
 
+def to_optional_int(value):
+    """Normalize an optional integer field, which may arrive from a request body or
+    from SeaDB as a string. Empty values (`None` / `''`) become None; anything else
+    that is not a whole number is returned unchanged so callers can reject it.
+
+    `bool` and floats are deliberately not coerced: `bool` is a subclass of `int`
+    and `int(1.5)` truncates, so either would silently resolve to a real customer
+    id instead of failing validation.
+
+    The string 'null' is NOT treated as empty -- it is a multipart FormData
+    artifact (JSON.stringify(null)) that this client no longer emits, so it is left
+    for the caller to reject rather than silently clearing the field.
+    """
+    if value in (None, ''):
+        return None
+    if isinstance(value, bool) or isinstance(value, float):
+        return value
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return value
+
+
+def validate_ticket_customer_id(project_uuid, customer_id):
+    """Validate a ticket's customer_id against this project's active customers.
+
+    Returns the customer id as int, or None when the value is empty (the caller
+    treats None as "no customer"). Raises ValueError for an unusable value.
+    """
+    customer_id = to_optional_int(customer_id)
+    if customer_id is None:
+        return None
+    # `bool` passes isinstance(x, int), so it is excluded explicitly
+    if isinstance(customer_id, bool) or not isinstance(customer_id, int):
+        raise ValueError('customer_id invalid.')
+    is_active_customer = PortalCustomer.objects.filter(
+        id=customer_id,
+        project_uuid=project_uuid,
+        status=PortalCustomer.STATUS_ACTIVE,
+    ).exists()
+    if not is_active_customer:
+        raise ValueError('customer_id invalid.')
+    return customer_id
+
 def get_ticket(seadb_api, project_uuid, ticket_id):
-    sql = f"SELECT `_pk`, `title`, `content`, `state`, `substate`, `type`, `tags`, `assignees`, `participants`, `linked_connection_records`, `priority`, `creator`, `created_time`, `modified_time`, `due_date` FROM `{TABLE_TICKETS}` WHERE `_pk` = {ticket_id} AND (`deleted` = False OR `deleted` IS NULL)"
+    sql = f"SELECT `_pk`, `title`, `content`, `state`, `substate`, `type`, `tags`, `assignees`, `participants`, `linked_connection_records`, `priority`, `creator`, `created_time`, `modified_time`, `due_date`, `customer_id` FROM `{TABLE_TICKETS}` WHERE `_pk` = {ticket_id} AND (`deleted` = False OR `deleted` IS NULL)"
     res = seadb_api.query_rows(project_uuid, sql)
     rows = res.get('results')
     return rows[0] if rows else None, res.get('metadata')
@@ -1098,6 +1143,13 @@ def compare_ticket_changes(old_ticket, new_data):
     # priority changed
     if 'priority' in new_data and new_data['priority'] != old_ticket.get('priority'):
         changes.append(('priority_changed', 'priority', old_ticket.get('priority'), new_data['priority']))
+
+    # customer changed
+    if 'customer_id' in new_data:
+        old_customer_id = to_optional_int(old_ticket.get('customer_id'))
+        new_customer_id = to_optional_int(new_data['customer_id'])
+        if old_customer_id != new_customer_id:
+            changes.append(('customer_changed', 'customer_id', old_customer_id, new_customer_id))
 
     # tags changed
     if 'tags' in new_data:

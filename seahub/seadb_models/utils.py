@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 
 PORTAL_ISSUE_INTERNAL_COLUMN_NAMES = {'customer_id'}
 
-
 CONNECTION_TYPE_TO_SCHEMA_TABLE = {
     ConnectionType.GITHUB_ISSUE.value: SchemaTables.GITHUB_ISSUES,
     ConnectionType.DISCOURSE_FORUM.value: SchemaTables.DISCOURSE_TOPICS,

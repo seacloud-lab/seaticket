@@ -5,7 +5,7 @@ import { ModalHeader, CenteredLoading, EmptyTip, SearchInput, toaster } from '@/
 import { gettext, KeyCodes, mediaUrl } from '@/constants';
 import { searchAPI } from '@/project/api';
 import { useMetadata, useTags } from '@/project/hooks';
-import { TagsDataProvider, TypesDataProvider, SubstatesDataProvider, SelectedRowsProvider, useSelectedRows } from '@/sea-metadata/hooks';
+import { TagsDataProvider, TypesDataProvider, SubstatesDataProvider, SelectedRowsProvider, CustomersDataProvider, useSelectedRows } from '@/sea-metadata/hooks';
 import { Metadata } from '@/sea-metadata/models';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { getColumnByName, normalizeColumns } from '@/sea-metadata/utils/column';
@@ -42,7 +42,7 @@ const Main = ({
   const metadata = useRef({});
 
   const { tagsData } = useTags();
-  const { typesData, substatesData } = useMetadata();
+  const { typesData, substatesData, customersData } = useMetadata();
   const { selectedRowIds, updateSelectedRowIds } = useSelectedRows();
 
   const onSearchValueChange = useCallback((newSearchValue) => {
@@ -118,12 +118,18 @@ const Main = ({
       <TagsDataProvider tagsData={tagsData}>
         <TypesDataProvider typesData={typesData} >
           <SubstatesDataProvider substatesData={substatesData}>
-            <Card metadata={metadata.current} isShowHeader={false} />
+            {/* The card renders cell formatters, so it needs the same data
+                providers SeaMetadata mounts -- including customers, which the
+                customer column's formatter reads from its own context. Without
+                this the dialog throws as soon as a result row renders. */}
+            <CustomersDataProvider customersData={customersData}>
+              <Card metadata={metadata.current} isShowHeader={false} />
+            </CustomersDataProvider>
           </SubstatesDataProvider>
         </TypesDataProvider>
       </TagsDataProvider>
     );
-  }, [isLoading, searchValue, ticketsData, tagsData, typesData, substatesData]);
+  }, [isLoading, searchValue, ticketsData, customersData, tagsData, typesData, substatesData]);
 
   useEffect(() => {
     if (lastSearchValue.current === searchValue) return;

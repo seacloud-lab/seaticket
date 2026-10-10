@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import IconBtn from '@/components/icon-button';
 import { gettext } from '@/constants';
 import { useTags } from '@/project/hooks';
-import { useTypesData } from '@/sea-metadata/hooks';
+import { useTypesData, useCustomersData } from '@/sea-metadata/hooks';
 import { isEnter, isSpace } from '@/utils/hotkey';
 import { getType } from '@/utils/type-detection';
 import { VIEW_TYPE } from '../../constants';
@@ -28,6 +28,7 @@ const FilterSetter = ({
   const [isShowSetter, setShowSetter] = useState(false);
 
   const { typesData } = useTypesData();
+  const { customersData } = useCustomersData();
   const { tagsData } = useTags();
 
   const filters = useMemo(() => {
@@ -92,6 +93,7 @@ const FilterSetter = ({
           columns={columns}
           collaborators={collaborators}
           typesData={typesData}
+          customersData={customersData}
           tagsData={tagsData}
           filterConjunction={filterConjunction}
           filters={filters}

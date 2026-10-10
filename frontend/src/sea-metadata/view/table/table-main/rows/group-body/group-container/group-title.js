@@ -4,8 +4,9 @@ import { gettext } from '@/constants';
 import CellFormatter from '@/sea-metadata/components/cell-formatter';
 import Tag from '@/sea-metadata/components/tag';
 import { CellType, DELETED_OPTION_BACKGROUND_COLOR, PRIORITY_MAP } from '@/sea-metadata/constants';
-import { useTagsData, useTypesData } from '@/sea-metadata/hooks';
+import { useCustomersData, useTagsData, useTypesData } from '@/sea-metadata/hooks';
 import { getOption, getColumnOptions, getTypesOptions, getOptionDisplayNameByOption, getTagsOptions } from '@/sea-metadata/utils/column';
+import { getRowById } from '@/sea-metadata/utils/row';
 
 const GroupTitle = ({ column, cellValue, originalCellValue }) => {
   const emptyTip = useMemo(() => `(${gettext('Empty')})`, []);
@@ -13,6 +14,7 @@ const GroupTitle = ({ column, cellValue, originalCellValue }) => {
 
   const { typesData } = useTypesData();
   const { tagsData } = useTagsData();
+  const { customersData } = useCustomersData();
 
   const renderGroupCellVal = useCallback(() => {
     const { type } = column;
@@ -92,11 +94,32 @@ const GroupTitle = ({ column, cellValue, originalCellValue }) => {
         if (!cellValue || !item) return emptyTip;
         return (<CellFormatter value={cellValue} column={column}/>);
       }
+      case CellType.CUSTOMER: {
+        if (!originalCellValue) return emptyTip;
+        // A customer deleted after the fact leaves a dangling id on the ticket. The
+        // cell hides it (see the customer formatter), but grouping still surfaces it
+        // under a placeholder rather than merging those rows into the empty group --
+        // the same treatment the single-select and tags branches give a deleted
+        // reference.
+        if (!getRowById(customersData, originalCellValue)) {
+          return (
+            <div
+              className="sea-metadata-single-select-option"
+              style={{ backgroundColor: DELETED_OPTION_BACKGROUND_COLOR }}
+              key={cellValue}
+              title={deletedOptionTip}
+            >
+              {deletedOptionTip}
+            </div>
+          );
+        }
+        return (<CellFormatter value={originalCellValue} column={column} />);
+      }
       default: {
         return cellValue || emptyTip;
       }
     }
-  }, [column, cellValue, originalCellValue, emptyTip, deletedOptionTip, tagsData, typesData]);
+  }, [column, cellValue, originalCellValue, emptyTip, deletedOptionTip, customersData, tagsData, typesData]);
 
   return (
     <div className="group-title">

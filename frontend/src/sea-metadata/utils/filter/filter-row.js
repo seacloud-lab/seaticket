@@ -56,7 +56,8 @@ const getFilterResult = (row, filter, { username, userId, tagsData }) => {
     }
     case CellType.NUMBER:
     case CellType.RATE:
-    case CellType.PRIORITY: {
+    case CellType.PRIORITY:
+    case CellType.CUSTOMER: {
       return numberFilter(cellValue, filter);
     }
     case CellType.COLLABORATOR: {

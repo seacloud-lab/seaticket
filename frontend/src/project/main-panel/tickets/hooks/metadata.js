@@ -9,25 +9,32 @@ import { OptionsData, Option } from '../models';
 
 const MetadataContext = React.createContext(null);
 
+const appendOptions = (data, options, predefinedConfig) => {
+  if (Array.isArray(options) && options.length > 0) {
+    options.forEach(option => {
+      const newOption = option instanceof Option ? option : new Option(option, predefinedConfig);
+      data.rows.push(newOption);
+      data.row_ids.push(newOption._id);
+      data.id_row_map[newOption._id] = newOption;
+    });
+  }
+  return data;
+};
+
+const buildOptionsData = (options) => appendOptions(new OptionsData({}), options);
+
 export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) => {
   const [isLoading, setLoading] = useState(true);
 
   const [substatesData, setSubstatesData] = useState(new OptionsData());
   const [typesData, setTypesData] = useState(new OptionsData());
   const [statesData, setStatesData] = useState(new OptionsData());
+  const [customersData, setCustomersData] = useState(new OptionsData());
 
   // type
   const applyCreateTypes = useCallback((newTypes, isReload = false) => {
     let newData = isReload ? new OptionsData({}) : deepCopy(typesData);
-    if (Array.isArray(newTypes) && newTypes.length > 0) {
-      newTypes.forEach(type => {
-        const newType = type instanceof Option ? type : new Option(type);
-        newData.rows.push(newType);
-        newData.row_ids.push(newType._id);
-        newData.id_row_map[newType._id] = newType;
-      });
-    }
-    setTypesData(newData);
+    setTypesData(appendOptions(newData, newTypes));
   }, [typesData]);
 
   const applyDeleteTypes = useCallback((typeIDs) => {
@@ -116,15 +123,7 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
   // substate
   const applyCreateSubstates = useCallback((newSubstates, isReload = false) => {
     let newData = isReload ? new OptionsData({}) : deepCopy(substatesData);
-    if (Array.isArray(newSubstates) && newSubstates.length > 0) {
-      newSubstates.forEach(substate => {
-        const newSubstate = substate instanceof Option ? substate : new Option(substate, PREDEFINED_TICKET_SUBSTATE_OPTION);
-        newData.rows.push(newSubstate);
-        newData.row_ids.push(newSubstate._id);
-        newData.id_row_map[newSubstate._id] = newSubstate;
-      });
-    }
-    setSubstatesData(newData);
+    setSubstatesData(appendOptions(newData, newSubstates, PREDEFINED_TICKET_SUBSTATE_OPTION));
   }, [substatesData]);
 
   const applyDeleteSubstates = useCallback((substateIDs) => {
@@ -223,15 +222,7 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
   // state
   const applyCreateStates = useCallback((newStates, isReload = false) => {
     let newData = isReload ? new OptionsData({}) : deepCopy(statesData);
-    if (Array.isArray(newStates) && newStates.length > 0) {
-      newStates.forEach(state => {
-        const option = state instanceof Option ? state : new Option(state);
-        newData.rows.push(option);
-        newData.row_ids.push(option._id);
-        newData.id_row_map[option._id] = option;
-      });
-    }
-    setStatesData(newData);
+    setStatesData(appendOptions(newData, newStates));
   }, [statesData]);
 
   useEffect(() => {
@@ -239,11 +230,23 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
       setLoading(false);
       return;
     }
+    // Drop the previous options and re-raise the loading flag before requesting, so
+    // nothing from a previous load stays selectable while the new one is in flight.
+    // (Today this provider only ever mounts once -- switching projects is a full
+    // page navigation -- but the merge-instead-of-replace below would otherwise
+    // keep the old project's options alive.)
+    setLoading(true);
+    setSubstatesData(new OptionsData());
+    setTypesData(new OptionsData());
+    setStatesData(new OptionsData());
+    setCustomersData(new OptionsData());
+
     api.getTicketMetadata(projectUuid).then(res => {
-      const { states, substates, types } = res?.data || {};
-      initSubStates(substates?.options, substates?.cascade_settings);
-      applyCreateTypes(types?.options);
-      applyCreateStates(states?.options);
+      const { states, substates, types, customers } = res?.data || {};
+      initSubStates(substates?.options, substates?.cascade_settings, true);
+      applyCreateTypes(types?.options, true);
+      applyCreateStates(states?.options, true);
+      setCustomersData(buildOptionsData(customers?.options));
       setLoading(false);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
@@ -264,7 +267,10 @@ export const MetadataProvider = ({ projectUuid, api = ticketsAPI, children }) =>
       deleteTypes,
       loadTypes,
 
+      customersData,
+
       statesData,
+
       substatesData,
       createSubstate,
       modifySubstate,

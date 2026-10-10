@@ -273,7 +273,7 @@ class DataProcessor {
     }
   }
 
-  static syncOperationOnData(table, operation, { collaborators, username, tagsData, typesData }) {
+  static syncOperationOnData(table, operation, { collaborators, username, tagsData, typesData, customersData }) {
     switch (operation.op_type) {
       case OPERATION_TYPE.INSERT_ROW: {
         const { row } = operation;
@@ -427,7 +427,7 @@ class DataProcessor {
             const copyRegValue = regValue.map(item => ({ ...item }));
             for (let j = 0; j < columns.length; j++) {
               const column = columns[j];
-              const cellValue = getCellValueDisplayString(row, column, { collaborators, tagsData, typesData });
+              const cellValue = getCellValueDisplayString(row, column, { collaborators, tagsData, typesData, customersData });
               for (let k = 0; k < copyRegValue.length; k++) {
                 const reg = copyRegValue[k].reg;
                 const isMatched = reg.test(cellValue);

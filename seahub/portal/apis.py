@@ -2155,6 +2155,7 @@ class PortalCustomerView(APIView):
                     "AND (`deleted` = False OR `deleted` IS NULL)"
                 )
                 seadb_api.query_rows(project_uuid, sql).get('results', [])
+
                 customer.delete()
         except Exception:
             logger.exception('Failed to delete portal customer: project=%s customer=%s', project_uuid, customer_id)
