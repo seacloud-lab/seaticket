@@ -15,7 +15,7 @@ from .chat.apis import (
     PortalChatSessionsView, PortalChatSessionView, PortalChatMessagesView,
     PortalChatView, PortalChatSessionTitleView, PortalChatImageView,
     PortalAdminChatSessionsView, PortalAdminChatMessagesView, PortalAdminChatStatisticsView,
-    PortalAdminChatUserUsageView,
+    PortalAdminChatUserUsageView, PortalAdminKnowledgeGapsView, PortalAdminKnowledgeGapView,
 )
 from .files import (
     PortalUploadFileView, GetPortalUploadFileView, PortalFileView,
@@ -111,4 +111,6 @@ urlpatterns = [
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/admin/chat/sessions/(?P<session_uuid>[-0-9a-f]{36})/messages/$', PortalAdminChatMessagesView.as_view(), name='api-v1-portal-admin-chat-messages'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/admin/chat/statistics/$', PortalAdminChatStatisticsView.as_view(), name='api-v1-portal-admin-chat-statistics'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/admin/chat/user-usage/$', PortalAdminChatUserUsageView.as_view(), name='api-v1-portal-admin-chat-user-usage'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/admin/knowledge-gaps/$', PortalAdminKnowledgeGapsView.as_view(), name='api-v1-portal-admin-knowledge-gaps'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/admin/knowledge-gaps/(?P<gap_id>\d+)/$', PortalAdminKnowledgeGapView.as_view(), name='api-v1-portal-admin-knowledge-gap'),
 ]
