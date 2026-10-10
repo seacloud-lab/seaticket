@@ -26,3 +26,4 @@ gettext('Current GitHub connection is invalid.');
 gettext('GitHub App missing "Issue Types" permission.');
 gettext('Failed to load GitHub issue types.');
 gettext('GitHub issue types are only available for organizations.');
+gettext('The issue link has been copied');
