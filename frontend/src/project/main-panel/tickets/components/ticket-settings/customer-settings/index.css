@@ -12,8 +12,10 @@
   padding: 5px 0;
 }
 
-.ticket-customer-formatter .ticket-customer-name {
-  display: inline-block;
-  max-width: 100%;
-  line-height: 20px;
+/* The customer renders with the link chip (see the component). Give it the same
+   vertical margin the sibling chips get, so it sits centred in this 38px row
+   instead of hugging the top -- mirrors .ticket-types-formatter .seaqa-ui-option. */
+.ticket-customer-formatter .link-item {
+  margin-top: 4px;
+  margin-bottom: 4px;
 }

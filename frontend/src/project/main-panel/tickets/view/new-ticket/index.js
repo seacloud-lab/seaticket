@@ -46,7 +46,7 @@ const NewTicket = ({ editorAPI, projectUuid, toggleBar }) => {
   const contentEditorRef = useRef(null);
   const ticketRef = useRef(null);
 
-  const { typesData, substatesData } = useMetadata();
+  const { typesData, substatesData, customersData } = useMetadata();
   const { insertRow } = useData();
   const { tagsData, createTag } = useTags();
 
@@ -112,6 +112,15 @@ const NewTicket = ({ editorAPI, projectUuid, toggleBar }) => {
       return;
     }
 
+    // A customer can be disabled or deleted after it was picked here. The server
+    // only accepts an active one, so catch it now instead of surfacing its
+    // "customer_id invalid." after the whole form has been submitted.
+    const customerOption = customerId ? getRowById(customersData, customerId) : null;
+    if (customerId && !customerOption) {
+      toaster.danger(gettext('Customer invalid.'));
+      return;
+    }
+
     const data = { title: validTitle, content, type, assignees, tags, priority, due_date, state, substate, participants, [PREDEFINED_TICKET_COLUMN_NAME.CUSTOMER_ID]: customerId };
     let serverData = {};
     Object.keys(data).forEach(columnName => {
@@ -142,7 +151,7 @@ const NewTicket = ({ editorAPI, projectUuid, toggleBar }) => {
       setIsSubmitting(false);
     });
   }, [
-    title, content, type, assignees, tags, priority, due_date, state, substate, participants, customerId, typesData, projectUuid, substatesData,
+    title, content, type, assignees, tags, priority, due_date, state, substate, participants, customerId, typesData, projectUuid, substatesData, customersData,
     insertRow, toggleBar,
   ]);
 

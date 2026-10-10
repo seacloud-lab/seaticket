@@ -58,11 +58,19 @@ const CustomerSettings = ({
           {gettext('Customer')}
         </CustomizeLabel>
         <div className={classnames('ticket-customer-formatter', { 'valid': customerOption, 'cursor-pointer': !isReadonly })} onClick={openEditor} ref={editorRef}>
-          {/* A customer deleted after the ticket was created stays referenced in the
-              database but is not shown here either -- same as the table cell, and as
-              TypeSettings does for a deleted type. Picking a new customer, or the
-              same-named one, replaces it. */}
-          {customerOption ? <span className="ticket-customer-name text-truncate">{customerOption.name}</span> : <div className="seaqa-tip-default">{gettext('No customer')}</div>}
+          {/* Same chip markup as the ticket-list column (CustomerFormatter) so the
+              two surfaces look identical; the chip's styles come from the link
+              stylesheets, which are already in this bundle (the portal customers
+              table relies on that too). A customer deleted after the ticket was
+              created stays referenced in the database but is not shown here either
+              -- picking a new customer replaces it. */}
+          {customerOption ? (
+            <div className="link-item">
+              <span className="link-item-name" title={customerOption.name}>{customerOption.name}</span>
+            </div>
+          ) : (
+            <div className="seaqa-tip-default">{gettext('No customer')}</div>
+          )}
         </div>
       </div>
       {!isReadonly && isShowEditor && (
