@@ -24,9 +24,17 @@ def convert_record_to_ticket(params):
     if resp.status_code == 500:
         raise Exception(f'convert record to ticket error status: {resp.status_code} body: {resp.text}')
     resp_json = resp.json()
-    title = resp_json.get('title', '')
-    content = resp_json.get('description', '')
-    return title, content
+    priority = resp_json.get('priority')
+    if isinstance(priority, bool) or not isinstance(priority, int):
+        priority = 0
+    tags = resp_json.get('tags')
+    return {
+        'title': resp_json.get('title', ''),
+        'content': resp_json.get('description', ''),
+        'type': resp_json.get('type', '') or '',
+        'priority': priority,
+        'tags': tags if isinstance(tags, list) else [],
+    }
 
 
 def convert_ticket_to_kb_record(params):
