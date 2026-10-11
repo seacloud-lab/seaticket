@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { IconButton, CenteredLoading } from '@/components';
 import { server, gettext, PERMISSION_TYPES } from '@/constants';
 import Issues from '@/project/main-panel/portal-issues/components/issues';
-import { PORTAL_ISSUE_TABLE_NAME } from '@/project/main-panel/portal-issues/constants';
 import Issue from '@/project/main-panel/portal-issues/view/issue';
 import TopBar from '@/project/main-panel/top-bar';
 import { VIEW_TOOL } from '@/sea-metadata';
@@ -191,8 +190,7 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID, isTeam = 
       projectName={projectName}
       permission={PERMISSION_TYPES.READ_WRITE}
       api={api}
-      metadataCacheTableName={`${PORTAL_ISSUE_TABLE_NAME}-${isTeam ? 'team' : 'my'}`}
-      forceReload={true}
+      useCache={false}
       localStorageNamePrefix={localStorageNamePrefix}
       settings={{ isFilterComputedOnServer: true, isSortComputedOnServer: true, canManageView: false }}
       dataDidMount={dataDidMount}
