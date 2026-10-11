@@ -30,7 +30,6 @@ export const DataProvider = ({
   api,
   enablePortal,
   isSubscribeConnectionsSyncStatus = true,
-  toggleBar,
   useNotification,
   children
 }) => {
@@ -730,7 +729,7 @@ export const DataProvider = ({
       modifyTablesRows,
       modifyLocalGitHubIssuesClosed,
     }}>
-      <AIChatToolsProvider toggleBar={toggleBar}>
+      <AIChatToolsProvider projectUuid={projectUuid} projectName={projectName} workspaceID={workspaceID}>
         <NotificationWrapper {...(useNotification ? { projectUuid } : {})}>
           <CollaboratorsProvider listUserInfo={listUserInfo} getCollaborators={getCollaborators}>
             <TagsProvider projectUuid={projectUuid} api={api}>
