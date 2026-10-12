@@ -88,6 +88,7 @@ export const PortalSettingsProvider = ({
   }, [logo, syncPageMetadata]);
 
   useEffect(() => {
+    if (!syncPageMetadata) return;
     setIsFeaturedArticlesLoading(true);
     portalAPI.listFeaturedArticles(projectUuid).then(res => {
       setFeaturedArticles(res.data || { columns: [], records: [] });
@@ -96,7 +97,7 @@ export const PortalSettingsProvider = ({
     }).finally(() => {
       setIsFeaturedArticlesLoading(false);
     });
-  }, [projectUuid]);
+  }, [projectUuid, syncPageMetadata]);
 
   return (
     <PortalSettingsContext.Provider value={{
