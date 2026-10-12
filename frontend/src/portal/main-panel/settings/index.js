@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Nav, NavItem, NavLink, TabContent, TabPane, Button } from 'reactstrap';
 import classnames from 'classnames';
 import copy from 'copy-to-clipboard';
@@ -77,6 +77,8 @@ const Settings = () => {
   const { isLoading: isConnectionsLoading, connections: allConnections } = useConnections();
   const connections = useMemo(() => allConnections.filter(isConnectionActive), [allConnections]);
 
+  const hasInitializedChatSettingsRef = useRef(false);
+
   const trimmedCustomDomain = customDomain.trim();
   const currentPortalDomain = currentSubdomainDomain || getHostFromUrl(subdomainPublicUrl);
   const customDomainHint = currentPortalDomain
@@ -146,11 +148,12 @@ const Settings = () => {
   }, [loadDomainAlias]);
 
   useEffect(() => {
-    if (!hasLoadedPortalSettings || isConnectionsLoading) {
+    if (!hasLoadedPortalSettings || isConnectionsLoading || hasInitializedChatSettingsRef.current) {
       return;
     }
 
     setChatSettings(normalizeChatAllowedSources(serverChatAllowedSources, connections));
+    hasInitializedChatSettingsRef.current = true;
   }, [connections, hasLoadedPortalSettings, isConnectionsLoading, serverChatAllowedSources]);
 
   const onCopyUrl = useCallback((value) => {
