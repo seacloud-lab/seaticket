@@ -1,5 +1,6 @@
 import json
 from types import SimpleNamespace
+from unittest.mock import Mock
 from uuid import uuid4
 
 import pytest
@@ -10,7 +11,8 @@ from django.urls import resolve
 
 from seahub.portal.apis import (
     PortalCustomDomainTLSAskView, PortalCustomDomainVerificationView, PortalCustomDomainView,
-    PortalDomainAliasView, PortalPreviewTokenView,
+    PortalDomainAliasView, PortalIssueMetadataView, PortalKnowledgeBaseFeaturedArticlesView, PortalMyIssuesView,
+    PortalPreviewTokenView, PortalTagsView,
 )
 from seahub.portal.middleware import PortalDomainMiddleware
 from seahub.portal.models import PortalCustomDomain, PortalDomainAlias, PortalExternalInvitation, ProjectExternalUser
@@ -23,6 +25,7 @@ from seahub.utils.hasher import AESPasswordHasher
 def path_mode(settings):
     settings.ENABLE_PORTAL_DOMAIN = False
     settings.PORTAL_SERVICE_ROOT_DOMAIN = ''
+    settings.IS_PORTAL_MODE = False
     cache.clear()
     yield
     cache.clear()
@@ -94,7 +97,7 @@ def test_unknown_disabled_and_domain_mode_portals_are_unavailable(factory, alias
 
 
 @pytest.mark.django_db
-def test_alias_api_returns_main_site_url_without_domain_config(factory, real_project, project_creator, settings):
+def test_alias_api_returns_main_site_url_without_domain_config(factory, alias, real_project, project_creator, settings):
     settings.SITE_ROOT = '/tickets/'
     request = factory.get('/api/v1/portal/%s/domain-alias/' % real_project.uuid, HTTP_HOST='ticket.example.com:8443', secure=True)
     request.user = project_creator
@@ -102,9 +105,73 @@ def test_alias_api_returns_main_site_url_without_domain_config(factory, real_pro
 
     assert response.status_code == 200
     prefix = response.data['subdomain_prefix']
-    assert prefix
+    assert prefix == alias.prefix
     assert response.data['public_url'] == 'https://ticket.example.com:8443/tickets/portals/%s/' % prefix
     assert response.data['portal_service_root_domain'] == ''
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize('enable_portal_domain', [False, True])
+@pytest.mark.parametrize('api_path,view,response_key', [
+    ('issue/metadata/', PortalIssueMetadataView, None),
+    ('tags/', PortalTagsView, 'tags'),
+    ('featured-articles/', PortalKnowledgeBaseFeaturedArticlesView, 'records'),
+])
+@pytest.mark.parametrize('enable_portal,allow_anonymous,password_protection,verified,expected_status', [
+    (True, True, False, False, 200),
+    (True, True, True, False, 403),
+    (True, True, True, True, 200),
+    (True, False, False, False, 403),
+    (False, True, False, False, 403),
+])
+def test_path_mode_anonymous_public_data_apis(
+    factory, real_project, settings, monkeypatch, enable_portal_domain, api_path, view, response_key,
+    enable_portal, allow_anonymous, password_protection, verified, expected_status,
+):
+    settings.ENABLE_PORTAL_DOMAIN = enable_portal_domain
+    if enable_portal_domain:
+        expected_status = 403
+    project_uuid = str(real_project.uuid)
+    real_project.settings = json.dumps({'portal': {
+        'enable_portal': enable_portal, 'allow_anonymous': allow_anonymous,
+        'enable_password_protection': password_protection, 'password': 'encoded-password',
+    }})
+    real_project.save(update_fields=['settings'])
+    request = factory.get('/api/v1/portal/%s/%s' % (project_uuid, api_path))
+    if verified:
+        request.session['portal_verified_token_%s' % project_uuid] = 'encoded-password'
+
+    records = [{'_pk': 1, 'name': 'Public content', 'content': 'Article content'}]
+    seadb_api = Mock()
+    seadb_api.query_rows.return_value = {'metadata': [], 'results': records}
+    seadb_api.get_base_metadata.return_value = {'tables': []}
+    seadb_factory = Mock(return_value=seadb_api)
+    monkeypatch.setattr('seahub.portal.apis.SeaDBAPI', seadb_factory)
+    monkeypatch.setattr('seahub.portal.apis.get_current_table_metadata', lambda *args: {'columns': []})
+
+    response = view.as_view()(request, project_uuid=project_uuid)
+
+    assert response.status_code == expected_status
+    if expected_status == 200:
+        if response_key is None:
+            assert response.data == {}
+        else:
+            assert response.data[response_key] == records
+    else:
+        assert 'detail' in response.data
+        seadb_factory.assert_not_called()
+
+
+@pytest.mark.django_db
+def test_path_mode_anonymous_cannot_list_issues(factory, real_project):
+    real_project.settings = json.dumps({'portal': {'enable_portal': True, 'allow_anonymous': True}})
+    real_project.save(update_fields=['settings'])
+    request = factory.get('/api/v1/portal/%s/my-issues/' % real_project.uuid)
+
+    response = PortalMyIssuesView.as_view()(request, project_uuid=str(real_project.uuid))
+
+    assert response.status_code == 403
+    assert 'detail' in response.data
 
 
 @pytest.mark.django_db

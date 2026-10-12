@@ -64,7 +64,7 @@ def get_service_portal_domain(project_uuid, ensure_alias=False):
 
 
 def get_service_portal_path(project_uuid, *segments):
-    alias = PortalDomainAlias.objects.ensure_alias(project_uuid)
+    alias = PortalDomainAlias.objects.get_by_project_uuid(project_uuid)
     suffix = '/'.join(str(segment).strip('/') for segment in segments)
     path = '%sportals/%s/' % (settings.SITE_ROOT.rstrip('/') + '/', alias.prefix)
     return '%s%s/' % (path, suffix) if suffix else path
