@@ -177,9 +177,9 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
           if (stateColumn) {
             context.setSetting('stateColumnKey', stateColumn.key);
           }
-          const typeColum = targetColumns.find(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.ISSUE_TYPE);
-          if (typeColum) {
-            const options = typeColum.data?.options || [];
+          const typeColumn = targetColumns.find(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.ISSUE_TYPE);
+          if (typeColumn) {
+            const options = typeColumn.data?.options || [];
             const _typesData = options.map(o => ({ ...o, _id: o.id }));
             setTypesData({
               rows: _typesData,
@@ -188,7 +188,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
                 return pre;
               }, {})
             });
-            context.setSetting('typeColumnKey', typeColum.key);
+            context.setSetting('typeColumnKey', typeColumn.key);
           }
           const titleColumnIndex = targetColumns.findIndex(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.TITLE);
           if (titleColumnIndex > -1) {

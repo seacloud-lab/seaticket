@@ -101,9 +101,12 @@ const Issues = ({
               ...otherConfig,
             };
           });
-          const typeColum = columns.find(c => c.name === PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.TYPE);
-          if (typeColum) {
-            context.setSetting('typeColumnKey', typeColum.key);
+          const typeColumn = columns.find(c => c.name === PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.TYPE);
+          if (typeColumn) {
+            context.setSetting('typeColumnKey', typeColumn.key);
+            if (isBuiltInView) {
+              typeColumn.modify_data_able = false;
+            }
           }
           const stateColumn = columns.find(c => c.name === PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.STATE);
           if (stateColumn) {
