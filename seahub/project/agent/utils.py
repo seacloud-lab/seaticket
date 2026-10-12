@@ -913,7 +913,15 @@ EVENT_REGENERATION_TOOLS = {
     ),
     'general_task_updated': (
         'suggest_close_ticket',
-        'suggest_reply_external_targets',
+        'suggest_reply',
+    ),
+    'jira_issue_updated': (
+        'suggest_close_ticket',
+        'suggest_reply',
+    ),
+    'linear_issue_updated': (
+        'suggest_close_ticket',
+        'suggest_reply',
     ),
     'github_issue_added': (
         'suggest_modify_type',
