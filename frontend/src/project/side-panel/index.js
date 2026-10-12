@@ -73,10 +73,10 @@ const SidePanel = ({ activeBar, toggleBar, settings }) => {
             <ConnectionsNav nav={BAR_TYPE_CONFIG[BAR_TYPE.CONNECTION]} {...commonProps} />
             <InboxNav nav={BAR_TYPE_CONFIG[BAR_TYPE.INBOX]} level={1} />
             {isProjectAdmin &&
-            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.SKILLS]} {...commonProps} />
-            }
-            {isProjectAdmin &&
-            <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.SETTINGS]} {...commonProps} />
+              <>
+                <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.SKILLS]} {...commonProps} />
+                <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.SETTINGS]} {...commonProps} />
+              </>
             }
             <DefaultMoreNav onClick={toggleBar} />
             <div className="seaqa-project-side-panel-subtitle">{gettext('Tickets')}</div>
@@ -92,9 +92,14 @@ const SidePanel = ({ activeBar, toggleBar, settings }) => {
                 <div className="seaqa-project-side-panel-subtitle">{gettext('Support portal')}</div>
                 <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.SUPPORT_PORTAL]} {...commonProps} />
                 <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_ISSUES]} {...commonProps} />
-                {isProjectAdmin && <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_CUSTOMERS_AND_USERS]} {...commonProps} />}
-                {isProjectAdmin && <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_SETTINGS]} {...commonProps} onClick={openPortalSettings} />}
-                <PortalIssuesMoreNav onClick={toggleBar} isProjectAdmin={isProjectAdmin} />
+                {isProjectAdmin &&
+                  <>
+                    <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_CUSTOMERS_AND_USERS]} {...commonProps} />
+                    <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_CHAT_ANALYSIS]} {...commonProps} />
+                    <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_SETTINGS]} {...commonProps} onClick={openPortalSettings} />
+                  </>
+                }
+                <PortalIssuesMoreNav onClick={toggleBar} />
               </>
             )}
           </div>
