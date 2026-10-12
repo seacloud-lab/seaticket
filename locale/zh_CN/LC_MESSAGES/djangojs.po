@@ -3811,7 +3811,7 @@ msgstr "无记录"
 
 #: frontend/src/project/main-panel/agent/components/run-logs/run-log/index.js:30
 msgid "Runs"
-msgstr "运行次数"
+msgstr "运行"
 
 #: frontend/src/project/main-panel/agent/constants.js:87
 msgid "New GitHub issue"
