@@ -1,3 +1,4 @@
+import sqlite3
 from unittest.mock import Mock
 
 from django.core import signing
@@ -9,10 +10,12 @@ from seahub.project.agent.utils import (
     _calculate_suggestions_status,
     _query_run_status_counts,
     _reformat_actions,
+    _refresh_run_suggestions_status,
     cancel_agent_log_pending_actions,
     get_agent_log_runs,
     list_agent_logs,
 )
+from seahub.seadb_models.models import SchemaTables
 
 
 def test_reformat_actions_ignores_actions_without_a_phase():
@@ -713,3 +716,115 @@ def test_cancel_agent_log_pending_actions_cancels_only_pending_actions():
         },
     ]
     assert seadb_api.update_rows.call_count == 2
+
+
+@pytest.fixture
+def limited_seadb():
+    """Execute real SQL with SeaDB's default 100-row limit and mutable rows."""
+    connection = sqlite3.connect(':memory:')
+    connection.row_factory = sqlite3.Row
+    runs_table = SchemaTables.AGENT_RUNS.table_name()
+    actions_table = SchemaTables.AGENT_ACTIONS.table_name()
+    connection.execute(f'CREATE TABLE `{runs_table}` ('
+                       '`_pk` INTEGER PRIMARY KEY, `status` TEXT, `suggestions_status` TEXT, '
+                       '`owner_source_id` TEXT, `owner_source_type` TEXT, `owner_source_title` TEXT, '
+                       '`started_at` TEXT, `finished_at` TEXT, `error_message` TEXT, `event` TEXT)')
+    connection.execute(f'CREATE TABLE `{actions_table}` ('
+                       '`_pk` INTEGER PRIMARY KEY, `run_id` INTEGER, `status` TEXT, '
+                       '`action_type` TEXT, `tool_name` TEXT, `result` TEXT, '
+                       '`suggestion_reason` TEXT, `suggestion_content` TEXT, `suggestion_payload` TEXT, '
+                       '`references` TEXT, `target_item_type` TEXT, `target_item_id` TEXT, '
+                       '`target_item_title` TEXT, `created_at` TEXT, `executed_at` TEXT)')
+    for run_id, run_status in [(7, 'completed'), (8, 'failed')]:
+        connection.execute(
+            f'INSERT INTO `{runs_table}` '
+            '(`_pk`, `status`, `suggestions_status`, `owner_source_id`, `owner_source_type`, `error_message`) '
+            'VALUES (?, ?, ?, ?, ?, ?)',
+            [run_id, run_status, 'pending', '42', 'ticket', 'Agent error' if run_id == 8 else ''],
+        )
+
+    def query_rows(project_uuid, sql, params=None):
+        if 'LIMIT' not in sql.upper():
+            sql += ' LIMIT 0, 100'
+        return {'results': [dict(row) for row in connection.execute(sql, params or [])]}
+
+    def update_rows(project_uuid, table_name, updates):
+        for update in updates:
+            fields = update['row']
+            assignments = ', '.join(f'`{field}` = ?' for field in fields)
+            connection.execute(
+                f'UPDATE `{table_name}` SET {assignments} WHERE `_pk` = ?',
+                [*fields.values(), update['pk']],
+            )
+
+    api = Mock()
+    api.query_rows.side_effect = query_rows
+    api.update_rows.side_effect = update_rows
+    yield api, connection
+    connection.close()
+
+
+@pytest.mark.parametrize('num_pending', [101, 201, 1000])
+@pytest.mark.parametrize('split_runs', [False, True])
+@pytest.mark.parametrize('remaining_status', [None, 'executing', 'failed'])
+def test_cancel_all_pending_suggestions_across_batches(limited_seadb, num_pending, split_runs, remaining_status):
+    api, connection = limited_seadb
+    actions_table = SchemaTables.AGENT_ACTIONS.table_name()
+    connection.executemany(
+        f'INSERT INTO `{actions_table}` (`_pk`, `run_id`, `action_type`, `status`) VALUES (?, ?, ?, ?)',
+        [(index, 7 + index % 2 if split_runs else 7, 'suggestion', 'pending')
+         for index in range(1, num_pending + 1)]
+        + [(num_pending + 1, 7, 'suggestion', 'executed')]
+        + ([(num_pending + 2, 8, 'suggestion', remaining_status)] if remaining_status else []),
+    )
+
+    result = cancel_agent_log_pending_actions(
+        api, 'project-1', '42', 'ticket', 'Cancelled by Alice', '2026-10-12T00:00:00Z',
+    )
+
+    assert connection.execute(
+        f"SELECT COUNT(*) FROM `{actions_table}` WHERE `status` = 'pending'",
+    ).fetchone()[0] == 0
+    assert connection.execute(
+        f"SELECT COUNT(*) FROM `{actions_table}` WHERE `status` = 'cancelled' "
+        "AND `result` = 'Cancelled by Alice' AND `executed_at` = '2026-10-12T00:00:00Z'",
+    ).fetchone()[0] == num_pending
+    runs = result['runs']
+    assert runs[0]['suggestions_status'] == 'resolved'
+    assert runs[1]['suggestions_status'] == (
+        'pending' if remaining_status == 'executing' else remaining_status or ('resolved' if split_runs else 'none')
+    )
+    assert runs[1]['status'] == 'failed'
+    assert runs[1]['error_message'] == 'Agent error'
+    assert len([action for run in runs for action in run['actions'] if action['status'] == 'cancelled']) == num_pending
+    assert get_agent_log_runs(api, 'project-1', '42', 'ticket') == result
+    logs = list_agent_logs(api, 'project-1')['logs']
+    assert logs[0]['status'] == ('' if remaining_status else 'processed')
+    action_updates = [call for call in api.update_rows.call_args_list if call.args[1] == actions_table]
+    assert len(action_updates) == (num_pending + 99) // 100
+    assert all(len(call.args[2]) <= 100 for call in action_updates)
+    cancellation_queries = [call.args[1] for call in api.query_rows.call_args_list
+                            if "`status` = 'pending'" in call.args[1]]
+    assert all('ORDER BY `_pk` ASC LIMIT 0, 100' in sql for sql in cancellation_queries)
+    assert 'AND `_pk` > 100' in cancellation_queries[1]
+
+
+@pytest.mark.parametrize('last_status, expected', [
+    ('pending', 'pending'), ('executing', 'pending'), ('failed', 'failed'), ('cancelled', 'resolved'),
+])
+def test_refresh_suggestions_includes_status_after_first_100(limited_seadb, last_status, expected):
+    api, connection = limited_seadb
+    actions_table = SchemaTables.AGENT_ACTIONS.table_name()
+    connection.executemany(
+        f'INSERT INTO `{actions_table}` (`_pk`, `run_id`, `action_type`, `status`) VALUES (?, ?, ?, ?)',
+        [(index, 7, 'suggestion', 'executed') for index in range(1, 101)]
+        + [(101, 7, 'suggestion', last_status)],
+    )
+
+    assert _refresh_run_suggestions_status(api, 'project-1', 7) == expected
+
+    stored_status = connection.execute(
+        f'SELECT `suggestions_status` FROM `{SchemaTables.AGENT_RUNS.table_name()}` WHERE `_pk` = 7',
+    ).fetchone()[0]
+    assert stored_status == expected
+    assert 'GROUP BY `status` ORDER BY `status` ASC LIMIT 0, 100' in api.query_rows.call_args.args[1]

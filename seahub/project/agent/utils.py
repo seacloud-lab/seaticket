@@ -385,12 +385,18 @@ def _refresh_run_suggestions_status(seadb_api, project_uuid, run_id):
         "SELECT `status` "
         f"FROM `{actions_table}` "
         f"WHERE `run_id` = {int(run_id)} AND `action_type` = '{SUGGESTION_ACTION_TYPE}' "
+        "GROUP BY `status` ORDER BY `status` ASC"
     )
-    suggestion_rows = seadb_api.query_rows(project_uuid, suggestion_sql).get('results', [])
-    suggestions_status = _calculate_suggestions_status([
-        row.get('status', '')
-        for row in suggestion_rows
-    ])
+    suggestion_statuses = []
+    batch_size = 100
+    while True:
+        suggestion_rows = seadb_api.query_rows(
+            project_uuid, f'{suggestion_sql} LIMIT {len(suggestion_statuses)}, {batch_size}',
+        ).get('results', [])
+        suggestion_statuses.extend(row.get('status', '') for row in suggestion_rows)
+        if len(suggestion_rows) < batch_size:
+            break
+    suggestions_status = _calculate_suggestions_status(suggestion_statuses)
     seadb_api.update_rows(
         project_uuid,
         runs_table,
@@ -641,8 +647,16 @@ def cancel_agent_log_pending_actions(seadb_api, project_uuid, owner_source_id, o
         f"FROM `{actions_table}` "
         f"WHERE `run_id` IN ({run_ids_str}) AND `status` = '{ACTION_STATUS_PENDING}'"
     )
-    pending_actions = seadb_api.query_rows(project_uuid, sql).get('results', [])
-    if pending_actions:
+    batch_size = 100
+    last_action_id = None
+    updated_run_ids = set()
+    while True:
+        cursor_filter = f' AND `_pk` > {last_action_id}' if last_action_id is not None else ''
+        pending_actions = seadb_api.query_rows(
+            project_uuid, f'{sql}{cursor_filter} ORDER BY `_pk` ASC LIMIT 0, {batch_size}',
+        ).get('results', [])
+        if not pending_actions:
+            break
         seadb_api.update_rows(
             project_uuid,
             actions_table,
@@ -655,8 +669,13 @@ def cancel_agent_log_pending_actions(seadb_api, project_uuid, owner_source_id, o
                 },
             } for action in pending_actions],
         )
-        for run_id in {int(action['run_id']) for action in pending_actions}:
-            refresh_run_suggestions_status_safely(seadb_api, project_uuid, run_id)
+        updated_run_ids.update(int(action['run_id']) for action in pending_actions)
+        last_action_id = max(int(action['_pk']) for action in pending_actions)
+        if len(pending_actions) < batch_size:
+            break
+
+    for run_id in sorted(updated_run_ids):
+        refresh_run_suggestions_status_safely(seadb_api, project_uuid, run_id)
 
     return get_agent_log_runs(seadb_api, project_uuid, owner_source_id, owner_source_type)
 
