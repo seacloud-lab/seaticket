@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { toaster } from '@/components';
-import { gettext } from '@/constants';
+import { gettext, mediaUrl } from '@/constants';
 import { hasOwnProperty } from '@/utils/object-utils';
 import { Utils } from '@/utils/utils';
 import { portalAPI } from '../api';
@@ -15,12 +15,17 @@ export const PortalSettingsProvider = ({
   syncPageMetadata = true,
   children,
 }) => {
-  const [logo, setLogo] = useState(propsLogo);
-  const [name, setName] = useState(propsName);
+  const [logo, setLogo] = useState(propsLogo || `${mediaUrl}img/portal-logo.png`);
+  const [name, setName] = useState(propsName || gettext('Support portal'));
   const [featuredArticles, setFeaturedArticles] = useState(null);
   const [isFeaturedArticlesLoading, setIsFeaturedArticlesLoading] = useState(true);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [isUpdatingNameOrLogo, setIsUpdatingNameOrLogo] = useState(false);
+
+  const applyNameOrLogo = useCallback(({ name, logo }) => {
+    if (name) setName(name);
+    if (logo) setLogo(logo);
+  }, []);
 
   const updateNameOrLogo = useCallback((update, callback) => {
     if (isUploadingLogo || isUpdatingNameOrLogo) return;
@@ -103,6 +108,7 @@ export const PortalSettingsProvider = ({
       updateHomeSetting,
       featuredArticles,
       isFeaturedArticlesLoading,
+      applyNameOrLogo,
     }}>
       {children}
     </PortalSettingsContext.Provider>

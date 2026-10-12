@@ -2,8 +2,9 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { Nav, NavItem, NavLink, TabContent, TabPane, Button } from 'reactstrap';
 import classnames from 'classnames';
 import copy from 'copy-to-clipboard';
-import { CommonOperationConfirmationDialog, Icon, toaster, Switch, PasswordInput } from '@/components';
+import { CommonOperationConfirmationDialog, Icon, toaster, Switch, PasswordInput, CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
+import { usePortalSettings } from '@/portal/hooks';
 import { connectionsAPI } from '@/project/api/connections-api';
 import { Utils } from '@/utils/utils';
 import { portalAPI } from '../../api';
@@ -74,6 +75,8 @@ const Settings = () => {
   const [isSavingDomainAlias, setIsSavingDomainAlias] = useState(false);
   const [isOpeningPortalPreview, setIsOpeningPortalPreview] = useState(false);
 
+  const { applyNameOrLogo } = usePortalSettings();
+
   const trimmedCustomDomain = customDomain.trim();
   const currentPortalDomain = currentSubdomainDomain || getHostFromUrl(subdomainPublicUrl);
   const customDomainHint = currentPortalDomain
@@ -89,7 +92,8 @@ const Settings = () => {
     setEnableSendEmail(!!data.enable_send_email);
     setWelcomeEmailSubject(data.welcome_email_subject || '');
     setWelcomeEmailContent(data.welcome_email_content || '');
-  }, []);
+    applyNameOrLogo && applyNameOrLogo({ name: data.portal_name, logo: data.portal_logo });
+  }, [applyNameOrLogo]);
 
   const applyLoadedCustomDomain = useCallback((data) => {
     setCustomDomain(data.custom_domain);
@@ -402,344 +406,350 @@ const Settings = () => {
         </Nav>
       </div>
       <TabContent activeTab={activeTab} className={classnames('portal-settings-dialog-main', activeTab)}>
-        <CustomizationSettings />
-        <TabPane tabId={SETTING_TAB.OPEN_ACCESS}>
-          <div className="portal-settings-content">
-            <label className="portal-settings-label">{gettext('Your current portal domain is')}</label>
-            <div className="portal-url-container">
-              <input
-                type="text"
-                className="form-control portal-url-input"
-                value={subdomainPublicUrl}
-                readOnly
-                placeholder={!domainAliasRoot ? gettext('Portal service root domain is not configured') : ''}
-              />
-              <Button
-                color="outline-primary"
-                onClick={() => onCopyUrl(subdomainPublicUrl)}
-                disabled={!subdomainPublicUrl}
-                title={gettext('Copy URL')}
-              >
-                <Icon symbol="copy" />
-              </Button>
-              <Button
-                color="outline-primary"
-                onClick={onOpenPortalPreview}
-                disabled={isOpeningPortalPreview}
-                title={gettext('Open preview')}
-              >
-                <Icon symbol="open-in-new-tab" />
-              </Button>
-            </div>
-            {!domainAliasRoot && (
-              <p className="portal-settings-help-text mt-2 mb-0">
-                {gettext('Portal service root domain is not configured, so the default portal URL is unavailable.')}
-              </p>
-            )}
-            <div className="mt-4">
-              <Switch
-                checked={allowAnonymous}
-                onChange={onToggleAnonymous}
-                placeholder={gettext('Allow anonymous access')}
-                textPosition="right"
-              />
-            </div>
-            {allowAnonymous && (
-              <div className="mt-2">
-                <Switch
-                  checked={enablePassword}
-                  onChange={onTogglePassword}
-                  placeholder={gettext('Enable password protection')}
-                  textPosition="right"
-                />
-              </div>
-            )}
-            {allowAnonymous && enablePassword && (
-              <>
-                {!isEditingPassword && hasSavedPassword && (
+        {hasLoadedPortalSettings ? (
+          <>
+            <CustomizationSettings />
+            <TabPane tabId={SETTING_TAB.OPEN_ACCESS}>
+              <div className="portal-settings-content">
+                <label className="portal-settings-label">{gettext('Your current portal domain is')}</label>
+                <div className="portal-url-container">
+                  <input
+                    type="text"
+                    className="form-control portal-url-input"
+                    value={subdomainPublicUrl}
+                    readOnly
+                    placeholder={!domainAliasRoot ? gettext('Portal service root domain is not configured') : ''}
+                  />
+                  <Button
+                    color="outline-primary"
+                    onClick={() => onCopyUrl(subdomainPublicUrl)}
+                    disabled={!subdomainPublicUrl}
+                    title={gettext('Copy URL')}
+                  >
+                    <Icon symbol="copy" />
+                  </Button>
+                  <Button
+                    color="outline-primary"
+                    onClick={onOpenPortalPreview}
+                    disabled={isOpeningPortalPreview}
+                    title={gettext('Open preview')}
+                  >
+                    <Icon symbol="open-in-new-tab" />
+                  </Button>
+                </div>
+                {!domainAliasRoot && (
+                  <p className="portal-settings-help-text mt-2 mb-0">
+                    {gettext('Portal service root domain is not configured, so the default portal URL is unavailable.')}
+                  </p>
+                )}
+                <div className="mt-4">
+                  <Switch
+                    checked={allowAnonymous}
+                    onChange={onToggleAnonymous}
+                    placeholder={gettext('Allow anonymous access')}
+                    textPosition="right"
+                  />
+                </div>
+                {allowAnonymous && (
+                  <div className="mt-2">
+                    <Switch
+                      checked={enablePassword}
+                      onChange={onTogglePassword}
+                      placeholder={gettext('Enable password protection')}
+                      textPosition="right"
+                    />
+                  </div>
+                )}
+                {allowAnonymous && enablePassword && (
                   <>
-                    <label className="portal-settings-label mt-2">
-                      {gettext('Password (at least 8 characters)')}
-                    </label>
-                    <div className="d-flex gap-2 align-items-center">
-                      <PasswordInput
-                        value={'********'}
-                        onChange={() => { }}
-                        disabled={true}
-                        enableRandomGeneration={false}
-                        enableCheckStrength={false}
-                        placeholder={gettext('Enter password')}
+                    {!isEditingPassword && hasSavedPassword && (
+                      <>
+                        <label className="portal-settings-label mt-2">
+                          {gettext('Password (at least 8 characters)')}
+                        </label>
+                        <div className="d-flex gap-2 align-items-center">
+                          <PasswordInput
+                            value={'********'}
+                            onChange={() => { }}
+                            disabled={true}
+                            enableRandomGeneration={false}
+                            enableCheckStrength={false}
+                            placeholder={gettext('Enter password')}
+                          />
+                          <Button color="outline-primary" onClick={onEditPassword} title={gettext('Replace password')}>
+                            <Icon symbol="rename" />
+                          </Button>
+                        </div>
+                      </>
+                    )}
+                    {(isEditingPassword || !hasSavedPassword) && (
+                      <>
+                        <label className="portal-settings-label mt-2">
+                          {gettext('Password (at least 8 characters)')}
+                        </label>
+                        <PasswordInput
+                          value={password}
+                          onChange={onPasswordChange}
+                          enableRandomGeneration={false}
+                          enableCheckStrength={false}
+                          placeholder={gettext('Enter password')}
+                        />
+                        <label className="portal-settings-label mt-2">
+                          {gettext('Confirm password')}
+                        </label>
+                        <PasswordInput
+                          value={confirmPassword}
+                          onChange={onConfirmPasswordChange}
+                          enableRandomGeneration={false}
+                          enableCheckStrength={false}
+                          placeholder={gettext('Re-enter password')}
+                        />
+                      </>
+                    )}
+                  </>
+                )}
+                <div className="mt-4">
+                  <Button color="primary" onClick={onSaveSettings}>{gettext('Save')}</Button>
+                </div>
+              </div>
+            </TabPane>
+            <TabPane tabId={SETTING_TAB.PORTAL_DOMAIN}>
+              <div className="portal-settings-content">
+                <label className="portal-settings-label">{gettext('Your current portal domain is')}</label>
+                <div className="portal-url-container">
+                  <input
+                    type="text"
+                    className="form-control portal-url-input"
+                    value={subdomainPublicUrl}
+                    readOnly
+                    placeholder={!domainAliasRoot ? gettext('Portal service root domain is not configured') : ''}
+                  />
+                  <Button
+                    color="outline-primary"
+                    onClick={() => onCopyUrl(subdomainPublicUrl)}
+                    disabled={!subdomainPublicUrl}
+                    title={gettext('Copy URL')}
+                  >
+                    <Icon symbol="copy" />
+                  </Button>
+                </div>
+                {!domainAliasRoot && (
+                  <p className="portal-settings-help-text mt-2 mb-0">
+                    {gettext('Portal service root domain is not configured, so the portal domain is unavailable.')}
+                  </p>
+                )}
+                {domainAliasRoot && (
+                  <>
+                    <label className="portal-settings-label mt-3">{gettext('Customize the prefix:')}</label>
+                    <div className="portal-url-container">
+                      <input
+                        type="text"
+                        className="form-control portal-subdomain-prefix-input"
+                        value={subdomainPrefix}
+                        onChange={onCustomSubdomainPrefixChange}
+                        placeholder={gettext('my-brand')}
+                        spellCheck={false}
+                        autoComplete="off"
                       />
-                      <Button color="outline-primary" onClick={onEditPassword} title={gettext('Replace password')}>
-                        <Icon symbol="rename" />
+                      <input
+                        type="text"
+                        className="form-control portal-subdomain-root-input"
+                        value={`.${domainAliasRoot}`}
+                        readOnly
+                      />
+                    </div>
+                    <div className="mt-3">
+                      <Button color="primary" size="sm" onClick={onSaveDomainAlias} disabled={!canSaveDomainAlias}>
+                        {isSavingDomainAlias ? gettext('Saving...') : gettext('Save')}
                       </Button>
                     </div>
                   </>
                 )}
-                {(isEditingPassword || !hasSavedPassword) && (
-                  <>
-                    <label className="portal-settings-label mt-2">
-                      {gettext('Password (at least 8 characters)')}
-                    </label>
-                    <PasswordInput
-                      value={password}
-                      onChange={onPasswordChange}
-                      enableRandomGeneration={false}
-                      enableCheckStrength={false}
-                      placeholder={gettext('Enter password')}
-                    />
-                    <label className="portal-settings-label mt-2">
-                      {gettext('Confirm password')}
-                    </label>
-                    <PasswordInput
-                      value={confirmPassword}
-                      onChange={onConfirmPasswordChange}
-                      enableRandomGeneration={false}
-                      enableCheckStrength={false}
-                      placeholder={gettext('Re-enter password')}
-                    />
-                  </>
-                )}
-              </>
-            )}
-            <div className="mt-4">
-              <Button color="primary" onClick={onSaveSettings}>{gettext('Save')}</Button>
-            </div>
-          </div>
-        </TabPane>
-        <TabPane tabId={SETTING_TAB.PORTAL_DOMAIN}>
-          <div className="portal-settings-content">
-            <label className="portal-settings-label">{gettext('Your current portal domain is')}</label>
-            <div className="portal-url-container">
-              <input
-                type="text"
-                className="form-control portal-url-input"
-                value={subdomainPublicUrl}
-                readOnly
-                placeholder={!domainAliasRoot ? gettext('Portal service root domain is not configured') : ''}
-              />
-              <Button
-                color="outline-primary"
-                onClick={() => onCopyUrl(subdomainPublicUrl)}
-                disabled={!subdomainPublicUrl}
-                title={gettext('Copy URL')}
-              >
-                <Icon symbol="copy" />
-              </Button>
-            </div>
-            {!domainAliasRoot && (
-              <p className="portal-settings-help-text mt-2 mb-0">
-                {gettext('Portal service root domain is not configured, so the portal domain is unavailable.')}
-              </p>
-            )}
-            {domainAliasRoot && (
-              <>
-                <label className="portal-settings-label mt-3">{gettext('Customize the prefix:')}</label>
+              </div>
+            </TabPane>
+            <TabPane tabId={SETTING_TAB.CUSTOM_DOMAIN}>
+              <div className="portal-settings-content">
+                <p className="portal-settings-help-text mt-2">
+                  {customDomainHint}
+                </p>
                 <div className="portal-url-container">
                   <input
                     type="text"
-                    className="form-control portal-subdomain-prefix-input"
-                    value={subdomainPrefix}
-                    onChange={onCustomSubdomainPrefixChange}
-                    placeholder={gettext('my-brand')}
+                    className="form-control portal-custom-domain-input"
+                    value={customDomain}
+                    onChange={onCustomDomainChange}
+                    placeholder={gettext('support.example.com')}
                     spellCheck={false}
                     autoComplete="off"
                   />
-                  <input
-                    type="text"
-                    className="form-control portal-subdomain-root-input"
-                    value={`.${domainAliasRoot}`}
-                    readOnly
-                  />
-                </div>
-                <div className="mt-3">
-                  <Button color="primary" size="sm" onClick={onSaveDomainAlias} disabled={!canSaveDomainAlias}>
-                    {isSavingDomainAlias ? gettext('Saving...') : gettext('Save')}
+                  <Button className="portal-custom-domain-action-btn" color="primary" size="sm" onClick={onSaveCustomDomain} disabled={!canSaveCustomDomain}>
+                    {isSavingCustomDomain ? gettext('Saving...') : gettext('Save')}
                   </Button>
-                </div>
-              </>
-            )}
-          </div>
-        </TabPane>
-        <TabPane tabId={SETTING_TAB.CUSTOM_DOMAIN}>
-          <div className="portal-settings-content">
-            <p className="portal-settings-help-text mt-2">
-              {customDomainHint}
-            </p>
-            <div className="portal-url-container">
-              <input
-                type="text"
-                className="form-control portal-custom-domain-input"
-                value={customDomain}
-                onChange={onCustomDomainChange}
-                placeholder={gettext('support.example.com')}
-                spellCheck={false}
-                autoComplete="off"
-              />
-              <Button className="portal-custom-domain-action-btn" color="primary" size="sm" onClick={onSaveCustomDomain} disabled={!canSaveCustomDomain}>
-                {isSavingCustomDomain ? gettext('Saving...') : gettext('Save')}
-              </Button>
-              {savedCustomDomain && (
-                <Button className="portal-custom-domain-action-btn" color="outline-danger" size="sm" onClick={onOpenRemoveCustomDomainConfirm} disabled={!canRemoveCustomDomain}>
-                  {gettext('Remove')}
-                </Button>
-              )}
-            </div>
-            {trimmedCustomDomain && currentPortalDomain && (
-              <>
-                <p className="portal-settings-help-text mt-3 mb-0">
-                  {gettext('Add a CNAME record in your DNS hosting provider to make custom domain work. The CNAME record should be as following:')}
-                </p>
-                <div className="portal-dns-record-row mt-2">
-                  <input
-                    type="text"
-                    className="form-control portal-url-input"
-                    value={trimmedCustomDomain}
-                    readOnly
-                  />
-                  <span className="portal-dns-record-type">CNAME</span>
-                  <input
-                    type="text"
-                    className="form-control portal-url-input"
-                    value={currentPortalDomain}
-                    readOnly
-                  />
-                  <Button color="outline-primary" onClick={() => onCopyUrl(currentPortalDomain)} title={gettext('Copy URL')}>
-                    <Icon symbol="copy" />
-                  </Button>
-                </div>
-              </>
-            )}
-            {isSavedCustomDomainCurrent && (
-              <>
-                <p className="portal-settings-help-text mt-3 mb-0">
-                  {gettext('You also need to add a TXT record to verify the ownership of your custom domain.')}
-                </p>
-              </>
-            )}
-            {isSavedCustomDomainCurrent && customDomainTxtRecordName && customDomainTxtRecordValue && (
-              <>
-                <label className="portal-settings-label mt-3">{gettext('TXT record name')}</label>
-                <div className="portal-url-container">
-                  <input
-                    type="text"
-                    className="form-control portal-url-input"
-                    value={customDomainTxtRecordName}
-                    readOnly
-                  />
-                  <Button color="outline-primary" onClick={() => onCopyUrl(customDomainTxtRecordName)} title={gettext('Copy URL')}>
-                    <Icon symbol="copy" />
-                  </Button>
-                </div>
-                <label className="portal-settings-label mt-3">{gettext('TXT record value')}</label>
-                <div className="portal-url-container">
-                  <input
-                    type="text"
-                    className="form-control portal-url-input"
-                    value={customDomainTxtRecordValue}
-                    readOnly
-                  />
-                  <Button color="outline-primary" onClick={() => onCopyUrl(customDomainTxtRecordValue)} title={gettext('Copy URL')}>
-                    <Icon symbol="copy" />
-                  </Button>
-                </div>
-                {!customDomainVerified && (
-                  <div className="mt-3">
-                    <Button
-                      color="outline-primary"
-                      size="sm"
-                      disabled={!canVerifyCustomDomain}
-                      onClick={onVerifyCustomDomain}
-                    >
-                      {isVerifyingCustomDomain ? gettext('Verifying...') : gettext('Verify')}
+                  {savedCustomDomain && (
+                    <Button className="portal-custom-domain-action-btn" color="outline-danger" size="sm" onClick={onOpenRemoveCustomDomainConfirm} disabled={!canRemoveCustomDomain}>
+                      {gettext('Remove')}
                     </Button>
-                  </div>
+                  )}
+                </div>
+                {trimmedCustomDomain && currentPortalDomain && (
+                  <>
+                    <p className="portal-settings-help-text mt-3 mb-0">
+                      {gettext('Add a CNAME record in your DNS hosting provider to make custom domain work. The CNAME record should be as following:')}
+                    </p>
+                    <div className="portal-dns-record-row mt-2">
+                      <input
+                        type="text"
+                        className="form-control portal-url-input"
+                        value={trimmedCustomDomain}
+                        readOnly
+                      />
+                      <span className="portal-dns-record-type">CNAME</span>
+                      <input
+                        type="text"
+                        className="form-control portal-url-input"
+                        value={currentPortalDomain}
+                        readOnly
+                      />
+                      <Button color="outline-primary" onClick={() => onCopyUrl(currentPortalDomain)} title={gettext('Copy URL')}>
+                        <Icon symbol="copy" />
+                      </Button>
+                    </div>
+                  </>
                 )}
-                {customDomainVerified && (
-                  <p className="portal-settings-help-text mt-3 mb-0 text-success">
-                    {gettext('Verified')}
+                {isSavedCustomDomainCurrent && (
+                  <>
+                    <p className="portal-settings-help-text mt-3 mb-0">
+                      {gettext('You also need to add a TXT record to verify the ownership of your custom domain.')}
+                    </p>
+                  </>
+                )}
+                {isSavedCustomDomainCurrent && customDomainTxtRecordName && customDomainTxtRecordValue && (
+                  <>
+                    <label className="portal-settings-label mt-3">{gettext('TXT record name')}</label>
+                    <div className="portal-url-container">
+                      <input
+                        type="text"
+                        className="form-control portal-url-input"
+                        value={customDomainTxtRecordName}
+                        readOnly
+                      />
+                      <Button color="outline-primary" onClick={() => onCopyUrl(customDomainTxtRecordName)} title={gettext('Copy URL')}>
+                        <Icon symbol="copy" />
+                      </Button>
+                    </div>
+                    <label className="portal-settings-label mt-3">{gettext('TXT record value')}</label>
+                    <div className="portal-url-container">
+                      <input
+                        type="text"
+                        className="form-control portal-url-input"
+                        value={customDomainTxtRecordValue}
+                        readOnly
+                      />
+                      <Button color="outline-primary" onClick={() => onCopyUrl(customDomainTxtRecordValue)} title={gettext('Copy URL')}>
+                        <Icon symbol="copy" />
+                      </Button>
+                    </div>
+                    {!customDomainVerified && (
+                      <div className="mt-3">
+                        <Button
+                          color="outline-primary"
+                          size="sm"
+                          disabled={!canVerifyCustomDomain}
+                          onClick={onVerifyCustomDomain}
+                        >
+                          {isVerifyingCustomDomain ? gettext('Verifying...') : gettext('Verify')}
+                        </Button>
+                      </div>
+                    )}
+                    {customDomainVerified && (
+                      <p className="portal-settings-help-text mt-3 mb-0 text-success">
+                        {gettext('Verified')}
+                      </p>
+                    )}
+                  </>
+                )}
+                {hasUnsavedCustomDomain && (
+                  <p className="portal-settings-help-text mt-2 mb-0">
+                    {gettext('Save the custom domain before verification.')}
                   </p>
                 )}
-              </>
-            )}
-            {hasUnsavedCustomDomain && (
-              <p className="portal-settings-help-text mt-2 mb-0">
-                {gettext('Save the custom domain before verification.')}
-              </p>
-            )}
-          </div>
-        </TabPane>
-        <TabPane tabId={SETTING_TAB.CHAT}>
-          <div className="portal-settings-content">
-            <label className="portal-settings-label">{gettext('Chat sources')}</label>
-            <p className="portal-settings-help-text">
-              {gettext('Select which data sources can be used for AI responses in the portal.')}
-            </p>
-            <div className="portal-settings-source-selector-wrapper">
-              <PortalChatSourceSelector
-                connections={connections}
-                value={chatSettings}
-                disabled={isSavingChat || isConnectionsLoading || !hasLoadedPortalSettings}
-                onChange={handleSourceChange}
-              />
-            </div>
-            <Button
-              color="primary"
-              className="mt-2"
-              onClick={onSaveChatSettings}
-              disabled={isSavingChat || isConnectionsLoading || !hasLoadedPortalSettings}
-            >
-              {gettext('Save')}
-            </Button>
-          </div>
-        </TabPane>
-        <TabPane tabId={SETTING_TAB.EMAIL_NOTIFICATIONS}>
-          <div className="portal-settings-content">
-            <Switch
-              checked={enableSendEmail}
-              onChange={() => setEnableSendEmail(prev => !prev)}
-              placeholder={gettext('Automatically send a welcome email when a user is added to the portal')}
-              textPosition="right"
-            />
-            <div className="portal-welcome-email-editor mt-4">
-              <label className="portal-settings-label">{gettext('Email subject')}</label>
-              <input
-                type="text"
-                className="form-control"
-                value={welcomeEmailSubject}
-                onChange={event => setWelcomeEmailSubject(event.target.value)}
-                maxLength={WELCOME_EMAIL_SUBJECT_MAX_LENGTH}
-                disabled={!enableSendEmail}
-              />
-              <label className="portal-settings-label mt-3">{gettext('Email content')}</label>
-              <textarea
-                className="form-control portal-welcome-email-content"
-                rows="8"
-                value={welcomeEmailContent}
-                onChange={event => setWelcomeEmailContent(event.target.value)}
-                maxLength={WELCOME_EMAIL_CONTENT_MAX_LENGTH}
-                disabled={!enableSendEmail}
-              />
-              <div className="mt-3">
-                <Button color="primary" disabled size="sm">{gettext('Log in')}</Button>
               </div>
-            </div>
-            <div className="portal-settings-help-text mt-2 mb-0">
-              {gettext('To insert the portal name, use {portal_name} in the field.')}
-            </div>
-            <div className="portal-settings-help-text mt-2 mb-0">
-              {gettext('A login button will be added to the end of the email. The button cannot be customized.')}
-            </div>
-            <Button
-              color="primary"
-              className="mt-3"
-              onClick={onSaveWelcomeEmailSettings}
-              disabled={isSavingWelcomeEmail}
-            >
-              {isSavingWelcomeEmail ? gettext('Saving...') : gettext('Save')}
-            </Button>
-          </div>
-        </TabPane>
+            </TabPane>
+            <TabPane tabId={SETTING_TAB.CHAT}>
+              <div className="portal-settings-content">
+                <label className="portal-settings-label">{gettext('Chat sources')}</label>
+                <p className="portal-settings-help-text">
+                  {gettext('Select which data sources can be used for AI responses in the portal.')}
+                </p>
+                <div className="portal-settings-source-selector-wrapper">
+                  <PortalChatSourceSelector
+                    connections={connections}
+                    value={chatSettings}
+                    disabled={isSavingChat || isConnectionsLoading || !hasLoadedPortalSettings}
+                    onChange={handleSourceChange}
+                  />
+                </div>
+                <Button
+                  color="primary"
+                  className="mt-2"
+                  onClick={onSaveChatSettings}
+                  disabled={isSavingChat || isConnectionsLoading || !hasLoadedPortalSettings}
+                >
+                  {gettext('Save')}
+                </Button>
+              </div>
+            </TabPane>
+            <TabPane tabId={SETTING_TAB.EMAIL_NOTIFICATIONS}>
+              <div className="portal-settings-content">
+                <Switch
+                  checked={enableSendEmail}
+                  onChange={() => setEnableSendEmail(prev => !prev)}
+                  placeholder={gettext('Automatically send a welcome email when a user is added to the portal')}
+                  textPosition="right"
+                />
+                <div className="portal-welcome-email-editor mt-4">
+                  <label className="portal-settings-label">{gettext('Email subject')}</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={welcomeEmailSubject}
+                    onChange={event => setWelcomeEmailSubject(event.target.value)}
+                    maxLength={WELCOME_EMAIL_SUBJECT_MAX_LENGTH}
+                    disabled={!enableSendEmail}
+                  />
+                  <label className="portal-settings-label mt-3">{gettext('Email content')}</label>
+                  <textarea
+                    className="form-control portal-welcome-email-content"
+                    rows="8"
+                    value={welcomeEmailContent}
+                    onChange={event => setWelcomeEmailContent(event.target.value)}
+                    maxLength={WELCOME_EMAIL_CONTENT_MAX_LENGTH}
+                    disabled={!enableSendEmail}
+                  />
+                  <div className="mt-3">
+                    <Button color="primary" disabled size="sm">{gettext('Log in')}</Button>
+                  </div>
+                </div>
+                <div className="portal-settings-help-text mt-2 mb-0">
+                  {gettext('To insert the portal name, use {portal_name} in the field.')}
+                </div>
+                <div className="portal-settings-help-text mt-2 mb-0">
+                  {gettext('A login button will be added to the end of the email. The button cannot be customized.')}
+                </div>
+                <Button
+                  color="primary"
+                  className="mt-3"
+                  onClick={onSaveWelcomeEmailSettings}
+                  disabled={isSavingWelcomeEmail}
+                >
+                  {isSavingWelcomeEmail ? gettext('Saving...') : gettext('Save')}
+                </Button>
+              </div>
+            </TabPane>
+          </>
+        ) : (
+          <CenteredLoading />
+        )}
       </TabContent>
       {isShowRemoveCustomDomainConfirm && (
         <CommonOperationConfirmationDialog
