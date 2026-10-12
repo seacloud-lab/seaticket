@@ -22,7 +22,7 @@ from seahub.portal.visitor_session import (
     touch_visitor_session,
 )
 from seahub.portal.custom_domain import is_request_using_portal_domain
-from seahub.portal.models import PortalCustomDomain, PortalDomainAlias
+from seahub.portal.models import PortalCustomDomain, PortalDomainAlias, get_service_portal_path
 from seahub.constants import PORTAL_WELCOME_EMAIL_CONTENT, PORTAL_WELCOME_EMAIL_SUBJECT
 
 
@@ -39,7 +39,7 @@ PORTAL_PREVIEW_SESSION_USERNAME_KEY = 'portal_preview_username'
 PORTAL_PREVIEW_SESSION_PROJECT_KEY = 'portal_preview_project_uuid'
 
 def resolve_portal_domain(host):
-    if not host:
+    if not settings.ENABLE_PORTAL_DOMAIN or not host:
         return None
 
     alias = PortalDomainAlias.objects.get_by_host(host)
@@ -303,6 +303,8 @@ def finalize_visitor_session_response(response, identity):
 
 
 def portal_path(request, project_uuid, *segments, is_edit_mode=False):
+    if not is_edit_mode and not settings.ENABLE_PORTAL_DOMAIN:
+        return get_service_portal_path(project_uuid, *segments)
     suffix = '/'.join(str(segment).strip('/') for segment in segments)
     if not is_edit_mode and is_request_using_portal_domain(request, project_uuid):
         return '/%s/' % suffix if suffix else '/'

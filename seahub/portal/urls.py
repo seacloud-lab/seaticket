@@ -2,7 +2,7 @@
 from django.urls import re_path
 
 from seahub.project.views import project_view
-from .views import portal_edit_view
+from .views import portal_edit_view, portal_path_view
 from .apis import PortalTagsView, PortalKnowledgeBaseViewsView, PortalKnowledgeBaseRecordsView, PortalKnowledgeBaseFeaturedArticlesView, PortalKnowledgeBaseRecordView, PortalIssueMetadataView, \
     PortalSettingsView, PortalExternalInvitationsView, PortalIssueViewsView, PortalIssueViewView, PortalExternalUsersView, PortalUserListView, \
     PortalCustomersView, PortalCustomerView, PortalCustomerMembersView, PortalCustomerMemberView, PortalIssueViewsMoveView, PortalIssueViewsDuplicateView, \
@@ -23,6 +23,7 @@ from .files import (
 
 
 urlpatterns = [
+    re_path(r'^portals/(?P<portal_token>[^/]+)/(?P<portal_page>.*)$', portal_path_view, name='portal_path_view'),
     # portal edit page (for admins)
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/submit-issue/$', portal_edit_view, name='portal_edit_view'),
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/my-issues/$', portal_edit_view, name='portal_edit_view'),

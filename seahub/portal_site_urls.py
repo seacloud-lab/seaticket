@@ -3,7 +3,7 @@ from django.conf import settings
 from django.urls import include, re_path
 
 from seahub.portal.views import portal_anonymous_validate, portal_external_invitation_accept_view, portal_external_logout_view, \
-    portal_accounts_login_view, portal_login_view, portal_preview_view, portal_view
+    portal_accounts_login_view, portal_login_view, portal_path_view, portal_preview_view, portal_view
 from seahub.portal.apis import PortalCustomDomainTLSAskView, PortalExternalLoginSendCodeView, PortalExternalLoginVerifyCodeView, \
     PortalIssueCommentView, PortalIssueCommentsView, PortalIssueMetadataView, PortalIssueView, PortalIssuesView, PortalKnowledgeBaseRecordView, \
     PortalKnowledgeBaseRecordsView, PortalKnowledgeBaseFeaturedArticlesView, PortalKnowledgeBaseViewsView, PortalLogoView, PortalBackgroundImageView, PortalMyIssuesView, PortalTagsView, PortalUserListView, PortalTeamIssuesView
@@ -15,6 +15,7 @@ from seahub.views import custom_css_view, i18n
 
 
 urlpatterns = [
+    re_path(r'^portals/(?P<portal_token>[^/]+)/(?P<portal_page>.*)$', portal_path_view, name='portal_path_view'),
     re_path(r'^custom-css/$', custom_css_view, name='custom_css'),
     re_path(r'^i18n/$', i18n, name='i18n'),
     re_path(r'^captcha/', include('captcha.urls')),

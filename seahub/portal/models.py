@@ -37,6 +37,8 @@ def get_portal_tls_ask_cache_key(domain):
 
 
 def get_preferred_portal_domain(project_uuid, ensure_alias=False):
+    if not settings.ENABLE_PORTAL_DOMAIN:
+        return ''
     custom_domain = PortalCustomDomain.objects.get_verified_by_project_uuid(project_uuid)
     if custom_domain:
         return custom_domain.domain
@@ -45,6 +47,8 @@ def get_preferred_portal_domain(project_uuid, ensure_alias=False):
 
 
 def get_service_portal_domain(project_uuid, ensure_alias=False):
+    if not settings.ENABLE_PORTAL_DOMAIN:
+        return ''
     root_domain = getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
     if not root_domain:
         return ''
@@ -57,6 +61,13 @@ def get_service_portal_domain(project_uuid, ensure_alias=False):
         return ''
 
     return '%s.%s' % (alias.prefix, root_domain)
+
+
+def get_service_portal_path(project_uuid, *segments):
+    alias = PortalDomainAlias.objects.ensure_alias(project_uuid)
+    suffix = '/'.join(str(segment).strip('/') for segment in segments)
+    path = '%sportals/%s/' % (settings.SITE_ROOT.rstrip('/') + '/', alias.prefix)
+    return '%s%s/' % (path, suffix) if suffix else path
 
 
 def generate_random_string_lower_digits(length):
@@ -131,6 +142,8 @@ class PortalExternalInvitation(models.Model):
         return timezone.now() >= self.expire_time
 
     def get_link(self, request):
+        if not settings.ENABLE_PORTAL_DOMAIN:
+            return request.build_absolute_uri(get_service_portal_path(self.project_uuid, 'external', 'accept', self.token))
         path = '/external/accept/%s/' % self.token
         domain = get_preferred_portal_domain(self.project_uuid, ensure_alias=True)
         if not domain:

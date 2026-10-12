@@ -2,6 +2,7 @@
 import json
 import logging
 
+from django.conf import settings as django_settings
 from django.contrib.auth import logout
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
@@ -9,16 +10,15 @@ from django.db import transaction
 from django.utils.translation import gettext as _
 from django.http import HttpResponseRedirect, Http404
 from django.utils import timezone
+from django.urls import Resolver404, resolve
 
 from seahub.auth import REDIRECT_FIELD_NAME
 from seahub.auth import views as auth_views
-from seahub.portal.models import PortalCustomer, PortalExternalInvitation, ProjectExternalUser
-from seahub.portal.visitor_session import (
-    ensure_visitor_cookie,
-)
+from seahub.portal.models import PortalCustomer, PortalDomainAlias, PortalExternalInvitation, ProjectExternalUser
+from seahub.portal.paths import get_internal_portal_path
+from seahub.portal.visitor_session import ensure_visitor_cookie
 from seahub.portal.utils import can_preview_portal, get_portal_preview_username, load_portal_preview_token, portal_path, \
-    set_portal_preview_session, get_request_project_and_portal_settings, PORTAL_PREVIEW_SESSION_PROJECT_KEY, \
-    PORTAL_PREVIEW_SESSION_USERNAME_KEY
+    set_portal_preview_session, get_request_project_and_portal_settings
 from seahub.portal.custom_domain import is_request_using_portal_domain
 from seahub import settings
 from seahub.project.utils import check_project_admin_permission, check_same_org_permission
@@ -29,6 +29,32 @@ from seahub.settings import MEDIA_URL
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
 logger = logging.getLogger(__name__)
+
+
+def portal_path_view(request, portal_token, portal_page):
+    if django_settings.ENABLE_PORTAL_DOMAIN:
+        raise Http404
+
+    alias = PortalDomainAlias.objects.get_by_prefix(portal_token)
+    if not alias:
+        raise Http404
+    project, portal_settings = get_request_project_and_portal_settings(request, alias.project_uuid)
+    if not project or not portal_settings.get('enable_portal'):
+        raise Http404
+    if portal_page.startswith('preview/'):
+        token = portal_page[len('preview/'):].rstrip('/')
+        return portal_preview_view(request, token)
+
+    internal_path = get_internal_portal_path(alias.project_uuid, '/%s' % portal_page)
+    if not internal_path:
+        raise Http404
+    # Resolve only public routes, including when the main application serves the portal.
+    internal_path = internal_path[len(django_settings.SITE_ROOT.rstrip('/')):]
+    try:
+        match = resolve(internal_path, urlconf='seahub.portal_site_urls')
+    except Resolver404:
+        raise Http404
+    return match.func(request, *match.args, **match.kwargs)
 
 
 def _get_external_session_user(request, project_uuid):

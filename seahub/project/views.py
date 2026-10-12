@@ -93,6 +93,7 @@ def project_view(request, workspace_id, project_name, children_id = '', record_i
         'settings': project_settings,
         'is_project_admin': is_project_admin,
         'enable_general_task': ENABLE_GENERAL_TASK,
+        'enable_portal_domain': settings.ENABLE_PORTAL_DOMAIN,
         'thought_process_enabled': THOUGHT_PROCESS_ENABLED,
         'permission': permission if permission else PERMISSION_READ,
         'llm_models': json.dumps(LLM_MODELS),

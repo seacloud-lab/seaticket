@@ -13,6 +13,7 @@ import { useConnections } from '../connections/hooks';
 import { isConnectionActive } from './utils';
 
 const PortalSettingsContext = React.createContext(null);
+const enablePortalDomain = window.app.pageOptions.enablePortalDomain !== false;
 
 const enqueueSave = (queueRef, save) => {
   const savePromise = queueRef.current.catch(() => undefined).then(save);
@@ -120,10 +121,11 @@ export const PortalSettingsProvider = ({ projectUuid, isActive, children }) => {
     const controller = new AbortController();
     domainAliasLoadController.current = controller;
 
-    portalAPI.getDomainAlias(projectUuid, controller.signal).then(res => {
+    return portalAPI.getDomainAlias(projectUuid, controller.signal).then(res => {
       if (controller.signal.aborted || !isActiveRef.current) return;
       const value = { ...PORTAL_DOMAIN_ALIAS_DEFAULT_SETTINGS, ...(res?.data || {}) };
       setDomainAliasSettings(value);
+      return value;
     }).catch(error => {
       if (controller.signal.aborted || !isActiveRef.current) return;
       const errorMessage = Utils.getErrorMsg(error);
@@ -136,6 +138,10 @@ export const PortalSettingsProvider = ({ projectUuid, isActive, children }) => {
   }, [projectUuid]);
 
   const reloadCustomDomainSettings = useCallback((callback) => {
+    if (!enablePortalDomain) {
+      callback && callback();
+      return;
+    }
     if (!isActiveRef.current) return;
     customDomainLoadController.current?.abort();
     const controller = new AbortController();
@@ -162,9 +168,15 @@ export const PortalSettingsProvider = ({ projectUuid, isActive, children }) => {
         await portalAPI.updateDomainAlias(projectUuid, update);
       } catch (error) {
         const errorMessage = Utils.getErrorMsg(error);
-        toaster.danger(errorMessage);
-        callback && callback(false);
+        if (enablePortalDomain) toaster.danger(errorMessage);
+        callback && callback(false, errorMessage);
         return false;
+      }
+
+      if (!enablePortalDomain) {
+        const value = await reloadDomainAliasSettings();
+        callback && callback(!!value);
+        return !!value;
       }
 
       callback && callback(true);
