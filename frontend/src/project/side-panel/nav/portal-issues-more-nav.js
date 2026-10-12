@@ -6,7 +6,7 @@ import { Icon } from '../../../components';
 import { CustomizeDropdownMenu, CustomizeDropdownItem, CustomizeDropdownItemIcon, CustomizeDropdownItemText } from '../../../components/';
 import { BAR_TYPE_CONFIG, BAR_TYPE } from '../../constants';
 
-const PortalIssuesMoreNav = ({ isProjectAdmin, onClick }) => {
+const PortalIssuesMoreNav = ({ onClick }) => {
   const [isShowChildren, setIsShowChildren] = useState(false);
 
   const toggleShowChildren = useCallback(() => {
@@ -40,12 +40,6 @@ const PortalIssuesMoreNav = ({ isProjectAdmin, onClick }) => {
           <CustomizeDropdownItemIcon symbol={'manage-types'} />
           <CustomizeDropdownItemText>{BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_ISSUE_SUBSTATES].name}</CustomizeDropdownItemText>
         </CustomizeDropdownItem>
-        {isProjectAdmin && (
-          <CustomizeDropdownItem onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_CHAT_ANALYSIS].key)}>
-            <CustomizeDropdownItemIcon symbol={BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_CHAT_ANALYSIS].icon} />
-            <CustomizeDropdownItemText>{BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_CHAT_ANALYSIS].name}</CustomizeDropdownItemText>
-          </CustomizeDropdownItem>
-        )}
         <div className="dropdown-divider"></div>
         <CustomizeDropdownItem onClick={() => handleItemClick(BAR_TYPE_CONFIG[BAR_TYPE.PORTAL_ISSUES_TRASH].key)}>
           <CustomizeDropdownItemIcon symbol={'trash'} />
