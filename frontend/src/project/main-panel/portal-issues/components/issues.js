@@ -388,6 +388,7 @@ const Issues = ({
         <ResourceDetailsDialog
           projectUuid={projectUuid}
           resource={currentIssue}
+          isReadonly={isBuiltInView}
           columns={allColumns.current}
           switchResource={handleSwitchIssue}
           onToggle={() => setIsShowIssueDetailsDialog(false)}

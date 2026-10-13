@@ -808,6 +808,31 @@ class TestPortalCustomerIssueAccess:
         assert response.status_code == 404
         detail_query.assert_not_called()
 
+    def test_external_member_cannot_update_readonly_issue_fields(self, factory, real_project):
+        customer = PortalCustomer.objects.create(
+            project_uuid=str(real_project.uuid), name='Acme'
+        )
+        member = self._create_external_member(real_project, customer)
+        request = factory.put(
+            f'/api/v1/portal/{real_project.uuid}/issues/10/',
+            data={'priority': 5},
+            format='json',
+        )
+        request.user = _external_request_user()
+        _set_external_session(request, real_project.uuid, member.username)
+        seadb_api = Mock()
+
+        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.portal.apis.get_portal_issue', return_value=({
+                    '_pk': 10, 'customer_id': customer.id, 'creator': member.username,
+                }, {})):
+            response = PortalIssueView.as_view()(
+                request, project_uuid=str(real_project.uuid), issue_id=10
+            )
+
+        assert response.status_code == 403
+        seadb_api.update_rows.assert_not_called()
+
     def test_same_customer_member_can_comment(self, factory, real_project):
         customer = PortalCustomer.objects.create(
             project_uuid=str(real_project.uuid), name='Acme'
