@@ -278,12 +278,11 @@ const HeaderDropdownMenu = forwardRef(({
           */}
           {CellType.TYPE === type && isFunction(toggleAllTypes) &&
             <DropdownItem
-              title={gettext('Types')}
+              title={gettext('Manage types')}
               onChange={toggleAllTypes}
               onMouseEnter={hideSubMenu}
             />
           }
-
           {CellType.SINGLE_SELECT === type && column?.name === 'substate' && isFunction(toggleAllSubstates) && (
             <DropdownItem
               title={gettext('Substates')}
@@ -291,7 +290,6 @@ const HeaderDropdownMenu = forwardRef(({
               onMouseEnter={hideSubMenu}
             />
           )}
-
         </div>
       </CustomizeDropdownMenu>
     );
