@@ -18,7 +18,6 @@ const SuggestionAction = ({
   runId,
   action,
   isShowTitle,
-  event,
   onConfirm,
   onCancel,
   onViewContent,
@@ -36,7 +35,7 @@ const SuggestionAction = ({
 
   const suggestionTitle = useMemo(() => getSuggestionTitle(action), [action]);
   const resource = useMemo(() => getAgentResource(action), [action]);
-  const defaultReplyTo = useMemo(() => getEmailReplyDefaultTo(event), [event]);
+  const defaultReplyTo = useMemo(() => getEmailReplyDefaultTo(action), [action]);
   const { typesData } = useMetadata();
 
   const handleConfirm = useCallback((e) => {

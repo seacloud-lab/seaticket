@@ -40,6 +40,7 @@ from seahub.project.agent.utils import (
     sync_issue_type_column_options,
     get_agent_run_detail,
     get_agent_log_runs,
+    populate_email_reply_defaults,
     list_agent_logs,
     LOG_STATUS,
     cancel_agent_log_pending_actions,
@@ -734,6 +735,7 @@ class AgentRunRegenerateView(APIView):
                 'run': run,
                 'phase_actions': _query_run_phase_actions(seadb_api, project_uuid, run_id),
             })
+            populate_email_reply_defaults(seadb_api, project_uuid, result.get('suggestions') or [])
             return Response(result, status=status.HTTP_200_OK)
         except ValueError as e:
             return api_error(status.HTTP_400_BAD_REQUEST, str(e) or 'Failed to regenerate suggestions.')

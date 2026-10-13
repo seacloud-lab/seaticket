@@ -15,9 +15,9 @@ const MIN_WIDTH = 480;
 const MAX_WIDTH = 720;
 const WIDTH_STORAGE_KEY = 'project_agent_regenerate_chat_panel_width';
 
-const DraftSuggestionCard = ({ action, event }) => {
+const DraftSuggestionCard = ({ action }) => {
   const title = useMemo(() => getSuggestionTitle(action), [action]);
-  const defaultReplyTo = useMemo(() => getEmailReplyDefaultTo(event), [event]);
+  const defaultReplyTo = useMemo(() => getEmailReplyDefaultTo(action), [action]);
   const hasContent = !!action?.suggestion_content;
   return (
     <div className="seaqa-agent-regenerate-draft-card">
@@ -187,7 +187,6 @@ const RegenerateChatPanel = ({
                 <DraftSuggestionCard
                   key={`${suggestion.tool_name || 'draft'}-${suggestionIndex}`}
                   action={suggestion}
-                  event={run.event}
                 />
               ))}
             </div>

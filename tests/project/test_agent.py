@@ -1,5 +1,6 @@
 import sqlite3
 from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from django.core import signing
 import pytest
@@ -14,6 +15,7 @@ from seahub.project.agent.utils import (
     cancel_agent_log_pending_actions,
     get_agent_log_runs,
     list_agent_logs,
+    populate_email_reply_defaults,
 )
 from seahub.seadb_models.models import SchemaTables
 
@@ -640,6 +642,101 @@ def test_get_agent_log_runs_raises_when_owner_not_found():
     seadb_api.query_rows.return_value = {'results': []}
     with pytest.raises(ValueError, match='Item not found.'):
         get_agent_log_runs(seadb_api, 'project-1', '1_9', 'github_issue')
+
+
+def test_general_task_run_email_reply_uses_target_thread_sender():
+    seadb_api = Mock()
+    seadb_api.query_rows.side_effect = [
+        {'results': [{
+            '_pk': 10,
+            'event': '{"type":"general_task_updated","new_value":{"state":"done"}}',
+        }]},
+        {'results': [
+            {'_pk': 1, 'run_id': 10, 'tool_name': 'suggest_close_ticket', 'target_item_type': 'ticket'},
+            {'_pk': 2, 'run_id': 10, 'tool_name': 'suggest_reply', 'target_item_type': 'email', 'target_item_id': '3_9'},
+        ]},
+        {'results': [
+            {'thread_id': 9, 'email_from': 'first@example.com', 'is_sender': False},
+            {'thread_id': 9, 'email_from': 'customer@example.com', 'is_sender': False},
+            {'thread_id': 9, 'email_from': 'support@example.com', 'is_sender': True},
+        ]},
+    ]
+    with patch('seahub.project.agent.utils.ProjectConnections.objects.get_connection_in_project_by_id',
+               return_value=Mock(type='email')) as get_connection:
+        result = get_agent_log_runs(seadb_api, 'project-1', '7_12', 'general_task')
+
+    close_ticket, reply = result['runs'][0]['actions']
+    assert 'default_reply_to' not in close_ticket
+    assert reply['default_reply_to'] == ['customer@example.com']
+    get_connection.assert_called_once_with('project-1', 3)
+    emails_sql = seadb_api.query_rows.call_args_list[2].args[1]
+    assert 'thread_id` in (9)' in emails_sql
+    assert 'deleted = false' in emails_sql
+
+
+def test_email_reply_defaults_are_batched_by_connection_and_target():
+    actions = [
+        {'tool_name': 'suggest_reply', 'target_item_type': 'email', 'target_item_id': target}
+        for target in ('3_9', '3_9', '3_10')
+    ]
+    with patch('seahub.project.agent.utils.ProjectConnections.objects.get_connection_in_project_by_id',
+               return_value=Mock(type='email')), \
+            patch('seahub.project.agent.utils.EmailSeaDBAPI') as email_api:
+        email_api.return_value.get_emails_by_thread_ids.return_value = {
+            9: [{'email_from': 'alice@example.com', 'is_sender': False}],
+            10: [{'email_from': 'bob@example.com', 'is_sender': False}],
+        }
+        populate_email_reply_defaults(Mock(), 'project-1', actions)
+
+    assert [action['default_reply_to'] for action in actions] == [
+        ['alice@example.com'], ['alice@example.com'], ['bob@example.com'],
+    ]
+    email_api.return_value.get_emails_by_thread_ids.assert_called_once_with(3, [9, 10])
+
+
+@pytest.mark.parametrize('connection', [None, Mock(type='github_issue')])
+def test_email_reply_defaults_require_an_email_connection_in_the_project(connection):
+    action = {'tool_name': 'suggest_reply', 'target_item_type': 'email', 'target_item_id': '3_9'}
+    with patch('seahub.project.agent.utils.ProjectConnections.objects.get_connection_in_project_by_id',
+               return_value=connection) as get_connection, \
+            patch('seahub.project.agent.utils.EmailSeaDBAPI') as email_api:
+        populate_email_reply_defaults(Mock(), 'project-1', [action])
+
+    get_connection.assert_called_once_with('project-1', 3)
+    email_api.return_value.get_emails_by_thread_ids.assert_not_called()
+    assert action['default_reply_to'] == []
+
+
+@pytest.mark.parametrize('target_id', ['', 'invalid', '3_9_extra', '0_9', '3_-1'])
+def test_email_reply_defaults_skip_invalid_targets(target_id):
+    action = {'tool_name': 'suggest_reply', 'target_item_type': 'email', 'target_item_id': target_id}
+    with patch('seahub.project.agent.utils.ProjectConnections.objects.get_connection_in_project_by_id') as get_connection:
+        populate_email_reply_defaults(Mock(), 'project-1', [action])
+    get_connection.assert_not_called()
+    assert action['default_reply_to'] == []
+
+
+@pytest.mark.parametrize('emails', [[], [{'email_from': 'support@example.com', 'is_sender': True}]])
+def test_email_reply_defaults_stay_empty_without_an_inbound_email(emails):
+    action = {'tool_name': 'suggest_reply', 'target_item_type': 'email', 'target_item_id': '3_9'}
+    with patch('seahub.project.agent.utils.ProjectConnections.objects.get_connection_in_project_by_id',
+               return_value=Mock(type='email')), \
+            patch('seahub.project.agent.utils.EmailSeaDBAPI') as email_api:
+        email_api.return_value.get_emails_by_thread_ids.return_value = {9: emails}
+        populate_email_reply_defaults(Mock(), 'project-1', [action])
+    assert action['default_reply_to'] == []
+
+
+def test_email_reply_default_lookup_failure_does_not_hide_suggestions():
+    action = {'tool_name': 'suggest_reply', 'target_item_type': 'email', 'target_item_id': '3_9'}
+    with patch('seahub.project.agent.utils.ProjectConnections.objects.get_connection_in_project_by_id',
+               return_value=Mock(type='email')), \
+            patch('seahub.project.agent.utils.EmailSeaDBAPI') as email_api, \
+            patch('seahub.project.agent.utils.logger') as logger:
+        email_api.return_value.get_emails_by_thread_ids.side_effect = RuntimeError('Email lookup failed')
+        populate_email_reply_defaults(Mock(), 'project-1', [action])
+    assert action['default_reply_to'] == []
+    logger.exception.assert_called_once()
 
 
 def test_cancel_agent_log_pending_actions_cancels_only_pending_actions():

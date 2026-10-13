@@ -107,11 +107,9 @@ const normalizeEmailAddressList = (value) => {
   return text ? [text] : [];
 };
 
-export const getEmailReplyDefaultTo = (event) => {
-  if (!event || typeof event !== 'object') return [];
-  const type = String(event.type || '');
-  if (!type.startsWith('email_')) return [];
-  return extractEmailAddresses(event.new_value?.email_from);
+export const getEmailReplyDefaultTo = (action) => {
+  if (action?.tool_name !== 'suggest_reply' || action?.target_item_type !== 'email') return [];
+  return normalizeEmailAddressList(action.default_reply_to);
 };
 
 export const extractEmailAddresses = (addressText) => {

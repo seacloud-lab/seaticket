@@ -4,12 +4,46 @@ import json
 from django.core import signing
 from django.core.signing import BadSignature
 
+from seahub.project.agent.action_executor import AgentActionExecutor
+from seahub.project.constants import ConnectionType
+from seahub.project.models import ProjectConnections
 from seahub.project.utils import get_current_table_metadata
+from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.models import SchemaTables
 from seahub.tickets.ticket_utils import get_ticket
 
 
 logger = logging.getLogger(__name__)
+
+
+def populate_email_reply_defaults(seadb_api, project_uuid, actions):
+    """Resolve reply recipients from suggestion targets, regardless of the trigger event."""
+    targets_by_connection = {}
+    for action in actions:
+        if action.get('tool_name') != 'suggest_reply' or action.get('target_item_type') != ConnectionType.EMAIL.value:
+            continue
+        action['default_reply_to'] = []
+        try:
+            connection_id, thread_id = map(int, str(action.get('target_item_id') or '').split('_', 1))
+        except (TypeError, ValueError):
+            continue
+        if connection_id <= 0 or thread_id <= 0:
+            continue
+        targets_by_connection.setdefault(connection_id, {}).setdefault(thread_id, []).append(action)
+
+    email_api = EmailSeaDBAPI(project_uuid, seadb_api=seadb_api)
+    for connection_id, targets in targets_by_connection.items():
+        try:
+            connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
+            if not connection or connection.type != ConnectionType.EMAIL.value:
+                continue
+            emails_by_thread = email_api.get_emails_by_thread_ids(connection_id, list(targets))
+            for thread_id, target_actions in targets.items():
+                default_to = AgentActionExecutor.default_reply_to_from_emails(emails_by_thread.get(thread_id, []))
+                for action in target_actions:
+                    action['default_reply_to'] = default_to
+        except Exception:
+            logger.exception('Failed to resolve email reply defaults for connection %s', connection_id)
 
 
 def _update_action_status(seadb_api, project_uuid, action_id, row):
@@ -80,6 +114,8 @@ def _serialize_action(action, with_trace=False):
         'target_item_id': action.get('target_item_id', ''),
         'target_item_title': action.get('target_item_title', ''),
     }
+    if 'default_reply_to' in action:
+        data['default_reply_to'] = action['default_reply_to']
     if with_trace:
         data.update({
             'phase': action.get('phase', ''),
@@ -136,6 +172,7 @@ def get_agent_run_detail(seadb_api, project_uuid, run_id):
             f"WHERE `run_id` = {run_id} ORDER BY `created_at` ASC"
         actions_result = seadb_api.query_rows(project_uuid, actions_sql)
         actions = actions_result.get('results', [])
+        populate_email_reply_defaults(seadb_api, project_uuid, actions)
         owner_source = {
             'source_type': run.get('owner_source_type', ''),
             'source_id': run.get('owner_source_id', ''),
@@ -597,6 +634,7 @@ def get_agent_log_runs(seadb_api, project_uuid, owner_source_id, owner_source_ty
 
     run_ids = [int(run['_pk']) for run in runs if run.get('_pk') is not None]
     actions = _query_log_actions_by_runs(seadb_api, project_uuid, run_ids)
+    populate_email_reply_defaults(seadb_api, project_uuid, actions)
 
     actions_by_run = {}
     for action in actions:
