@@ -33,7 +33,7 @@ const SuggestionDetailPanel = ({
     suggestionDetail?.action?.tool_name === 'suggest_reply'
     && suggestionDetail?.action?.target_item_type === 'email'
   ), [suggestionDetail?.action?.tool_name, suggestionDetail?.action?.target_item_type]);
-  const defaultReplyTo = useMemo(() => getEmailReplyDefaultTo(suggestionDetail?.event), [suggestionDetail?.event]);
+  const defaultReplyTo = useMemo(() => getEmailReplyDefaultTo(suggestionDetail?.action), [suggestionDetail?.action]);
   const canApprove = useMemo(() => {
     if (isSaving) return false;
     if (suggestionDetail?.action?.tool_name === 'suggest_create_ticket') {
