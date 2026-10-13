@@ -4,6 +4,7 @@ import { gettext } from '@/constants';
 
 const CustomerModal = ({ customer, isSubmitting, onClose, onSubmit, triggerRef }) => {
   const [name, setName] = useState(customer?.name || '');
+  const [emailDomain, setEmailDomain] = useState(customer?.email_domain || '');
   const inputRef = useRef(null);
   const isEditing = Boolean(customer);
 
@@ -14,7 +15,7 @@ const CustomerModal = ({ customer, isSubmitting, onClose, onSubmit, triggerRef }
   const handleSubmit = () => {
     const trimmedName = name.trim();
     if (!trimmedName || isSubmitting) return;
-    onSubmit(trimmedName);
+    onSubmit(trimmedName, emailDomain.trim());
   };
 
   const handleClosed = () => {
@@ -37,6 +38,16 @@ const CustomerModal = ({ customer, isSubmitting, onClose, onSubmit, triggerRef }
               if (event.key === 'Enter') handleSubmit();
             }}
             autoFocus
+          />
+        </FormGroup>
+        <FormGroup className="mt-3 mb-0">
+          <Label for="portal-customer-email-domain">{gettext('Email domain (optional)')}</Label>
+          <Input
+            id="portal-customer-email-domain"
+            value={emailDomain}
+            maxLength={255}
+            placeholder="example.com"
+            onChange={(event) => setEmailDomain(event.target.value)}
           />
         </FormGroup>
       </ModalBody>

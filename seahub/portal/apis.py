@@ -2,6 +2,7 @@
 import datetime
 import logging
 import json
+import re
 from urllib.parse import quote
 
 from dateutil.relativedelta import relativedelta
@@ -70,6 +71,22 @@ logger = logging.getLogger(__name__)
 
 
 MAX_LENGTH = 10000
+
+
+def _normalize_portal_customer_email_domain(email_domain):
+    if email_domain is None:
+        return ''
+    if not isinstance(email_domain, str):
+        raise ValueError
+
+    email_domain = email_domain.strip().lower()
+    if not email_domain:
+        return ''
+    if len(email_domain) > 255 or not re.fullmatch(
+            r'[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+',
+            email_domain):
+        raise ValueError
+    return email_domain
 
 
 def _replace_kb_file_urls_for_portal(project_uuid, value):
@@ -2046,6 +2063,7 @@ class PortalCustomersView(APIView):
                     'id': customer.id,
                     'project_uuid': customer.project_uuid,
                     'name': customer.name,
+                    'email_domain': customer.email_domain,
                     'status': customer.status,
                     'created_at': customer.created_at.isoformat(),
                     'updated_at': customer.updated_at.isoformat(),
@@ -2067,8 +2085,17 @@ class PortalCustomersView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, 'name invalid.')
 
         try:
+            email_domain = _normalize_portal_customer_email_domain(request.data.get('email_domain'))
+        except ValueError:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'email_domain invalid.')
+
+        try:
             with transaction.atomic():
-                customer = PortalCustomer.objects.create(project_uuid=project_uuid, name=name)
+                customer = PortalCustomer.objects.create(
+                    project_uuid=project_uuid,
+                    name=name,
+                    email_domain=email_domain,
+                )
         except IntegrityError:
             return api_error(status.HTTP_409_CONFLICT, 'Customer name already exists.')
         except Exception:
@@ -2078,6 +2105,7 @@ class PortalCustomersView(APIView):
             'id': customer.id,
             'project_uuid': customer.project_uuid,
             'name': customer.name,
+            'email_domain': customer.email_domain,
             'status': customer.status,
             'created_at': customer.created_at.isoformat(),
             'updated_at': customer.updated_at.isoformat(),
@@ -2104,15 +2132,22 @@ class PortalCustomerView(APIView):
         name = request.data.get('name', customer.name)
         if not name or len(name) > 255:
             return api_error(status.HTTP_400_BAD_REQUEST, 'name invalid.')
+        try:
+            email_domain = _normalize_portal_customer_email_domain(
+                request.data.get('email_domain', customer.email_domain)
+            )
+        except ValueError:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'email_domain invalid.')
         customer_status = request.data.get('status', customer.status)
         if customer_status not in (PortalCustomer.STATUS_ACTIVE, PortalCustomer.STATUS_DISABLED):
             return api_error(status.HTTP_400_BAD_REQUEST, 'status invalid.')
 
         customer.name = name
+        customer.email_domain = email_domain
         customer.status = customer_status
         try:
             with transaction.atomic():
-                customer.save(update_fields=['name', 'status', 'updated_at'])
+                customer.save(update_fields=['name', 'email_domain', 'status', 'updated_at'])
         except IntegrityError:
             return api_error(status.HTTP_409_CONFLICT, 'Customer name already exists.')
         except Exception:
@@ -2122,6 +2157,7 @@ class PortalCustomerView(APIView):
             'id': customer.id,
             'project_uuid': customer.project_uuid,
             'name': customer.name,
+            'email_domain': customer.email_domain,
             'status': customer.status,
             'created_at': customer.created_at.isoformat(),
             'updated_at': customer.updated_at.isoformat(),

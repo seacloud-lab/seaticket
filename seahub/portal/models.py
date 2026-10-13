@@ -87,6 +87,7 @@ class PortalCustomer(models.Model):
 
     project_uuid = models.CharField(max_length=36, db_index=True)
     name = models.CharField(max_length=255)
+    email_domain = models.CharField(max_length=255, blank=True, default='')
     status = models.CharField(max_length=16, choices=STATUS_CHOICES, default=STATUS_ACTIVE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
