@@ -1,11 +1,11 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Nav, NavItem, NavLink, TabContent, TabPane, Button } from 'reactstrap';
 import classnames from 'classnames';
 import copy from 'copy-to-clipboard';
 import { CommonOperationConfirmationDialog, Icon, toaster, Switch, PasswordInput, CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
 import { usePortalSettings } from '@/portal/hooks';
-import { connectionsAPI } from '@/project/api/connections-api';
+import { useConnections } from '@/project/main-panel/connections/hooks';
 import { Utils } from '@/utils/utils';
 import { portalAPI } from '../../api';
 import PortalChatSourceSelector from '../chat-source-selector';
@@ -47,8 +47,6 @@ const Settings = () => {
   const [hasLoadedPortalSettings, setHasLoadedPortalSettings] = useState(false);
 
   // chat
-  const [connections, setConnections] = useState([]);
-  const [isConnectionsLoading, setIsConnectionsLoading] = useState(true);
   const [chatSettings, setChatSettings] = useState(EMPTY_CHAT_ALLOWED_SOURCES);
   const [serverChatAllowedSources, setServerChatAllowedSources] = useState(null);
   const [isSavingChat, setIsSavingChat] = useState(false);
@@ -76,6 +74,10 @@ const Settings = () => {
   const [isOpeningPortalPreview, setIsOpeningPortalPreview] = useState(false);
 
   const { applyNameOrLogo } = usePortalSettings();
+  const { isLoading: isConnectionsLoading, connections: allConnections } = useConnections();
+  const connections = useMemo(() => allConnections.filter(isConnectionActive), [allConnections]);
+
+  const hasInitializedChatSettingsRef = useRef(false);
 
   const trimmedCustomDomain = customDomain.trim();
   const currentPortalDomain = currentSubdomainDomain || getHostFromUrl(subdomainPublicUrl);
@@ -146,23 +148,12 @@ const Settings = () => {
   }, [loadDomainAlias]);
 
   useEffect(() => {
-    setIsConnectionsLoading(true);
-    connectionsAPI.listConnections(projectUuid, 1, 1000).then((res) => {
-      setConnections(res.data.records.filter(isConnectionActive));
-    }).catch((error) => {
-      toaster.danger(Utils.getErrorMsg(error));
-      setConnections([]);
-    }).finally(() => {
-      setIsConnectionsLoading(false);
-    });
-  }, []);
-
-  useEffect(() => {
-    if (!hasLoadedPortalSettings || isConnectionsLoading) {
+    if (!hasLoadedPortalSettings || isConnectionsLoading || hasInitializedChatSettingsRef.current) {
       return;
     }
 
     setChatSettings(normalizeChatAllowedSources(serverChatAllowedSources, connections));
+    hasInitializedChatSettingsRef.current = true;
   }, [connections, hasLoadedPortalSettings, isConnectionsLoading, serverChatAllowedSources]);
 
   const onCopyUrl = useCallback((value) => {
