@@ -39,6 +39,7 @@ const TicketInDialog = ({
   permission,
   updateTicket,
   ticketType = TICKET_TYPE,
+  isReadonly = false,
   getTicket = (projectUuid, ticketID) => ticketsAPI.getProjectTicket(projectUuid, ticketID),
 }) => {
   const [isLoading, setLoading] = useState(true);
@@ -64,8 +65,8 @@ const TicketInDialog = ({
       email: username,
       avatar_url: avatarURL
     };
-    return ticket.creator === user.email || permission === PERMISSION_TYPES.READ_WRITE;
-  }, [ticket, permission]);
+    return !isReadonly && (ticket.creator === user.email || permission === PERMISSION_TYPES.READ_WRITE);
+  }, [ticket, permission, isReadonly]);
 
   const handleUpdateRowsCacheData = useCallback((currentTicketID, update) => {
     const tableName = ticketType === TICKET_TYPE ? TICKET_TABLE_NAME : PORTAL_ISSUE_TABLE_NAME;

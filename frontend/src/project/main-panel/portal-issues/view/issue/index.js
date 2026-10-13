@@ -39,7 +39,7 @@ import { generatorIssuesContextMenuOptions } from '../../utils';
 import '@/project/main-panel/tickets/view/ticket/index.css';
 
 const Issue = ({
-  editorAPI, projectUuid, issueID, permission, isAdmin, projectName, workspaceID,
+  editorAPI, projectUuid, issueID, permission, isAdmin, projectName, workspaceID, isBuiltInView,
   canEditAllIssues = permission === PERMISSION_TYPES.READ_WRITE,
   canChatWithAI = false,
   isMobile = false,
@@ -555,18 +555,18 @@ const Issue = ({
         </div>
         {!isMobile && (
           <div className="seaqa-project-ticket-other-settings">
-            <PrioritySettings isReadonly={!editable} value={priority} onChange={onPriorityChange} />
+            <PrioritySettings isReadonly={isBuiltInView} value={priority} onChange={onPriorityChange} />
             <TagsSettings
               id="tags-editor-popover"
-              isReadonly={!editable}
+              isReadonly={isBuiltInView}
               value={tags}
               tagsData={tagsData}
               createTag={createTag}
               onChange={onTagsChange}
             />
-            <StateSettings isReadonly={!editable} state={state} substate={substate} useMetadataContext={usePortalIssuesMetadata} onChange={onStateChange} />
-            <SubStateSettings isReadonly={!editable} state={state} substate={substate} useMetadataContext={usePortalIssuesMetadata} onChange={onSubstateChange} />
-            <TypeSettings id="type-editor-popover" isReadonly={!editable} value={type} useMetadataContext={usePortalIssuesMetadata} onChange={onTypeChange} />
+            <StateSettings isReadonly={isBuiltInView} state={state} substate={substate} useMetadataContext={usePortalIssuesMetadata} onChange={onStateChange} />
+            <SubStateSettings isReadonly={isBuiltInView} state={state} substate={substate} useMetadataContext={usePortalIssuesMetadata} onChange={onSubstateChange} />
+            <TypeSettings id="type-editor-popover" isReadonly={isBuiltInView} value={type} useMetadataContext={usePortalIssuesMetadata} onChange={onTypeChange} />
             <LinkSettings value={[linked_ticket]} linkedRecords={linkedRecords} />
           </div>
         )}

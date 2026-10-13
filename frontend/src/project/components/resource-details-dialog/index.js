@@ -47,6 +47,7 @@ const ResourceDetailsDialog = ({
   getTicket,
   getKB,
   isSupportPortal = false,
+  isReadonly = false,
   getIssue = (projectUuid, issueID) => portalAPI.getPortalIssue(projectUuid, issueID),
 }) => {
   const [resourceDetails, setResourceDetails] = useState(null);
@@ -70,12 +71,12 @@ const ResourceDetailsDialog = ({
   }, [resourceDetails, columns]);
 
   const moreOptions = useMemo(() => {
-    if (!createMoreOptions) return [];
+    if (isReadonly || !createMoreOptions) return [];
     return createMoreOptions(currentResource, resourceDetails, {
       columns: currentColumns,
       updateResourceDetails: setResourceDetails,
     }) || [];
-  }, [createMoreOptions, currentResource, resourceDetails, currentColumns]);
+  }, [isReadonly, createMoreOptions, currentResource, resourceDetails, currentColumns]);
 
   const title = useMemo(() => {
 
@@ -229,7 +230,7 @@ const ResourceDetailsDialog = ({
           <TicketInDialog ticketID={resource._id} updateTicket={handleUpdateTicket} getTicket={getTicket} { ...props } />
         )}
         {type === PORTAL_ISSUE_TYPE && (
-          <TicketInDialog ticketType={PORTAL_ISSUE_TYPE} ticketID={resource._id} updateTicket={handleUpdateIssue} getTicket={getIssue} { ...props } />
+          <TicketInDialog ticketType={PORTAL_ISSUE_TYPE} ticketID={resource._id} updateTicket={handleUpdateIssue} getTicket={getIssue} isReadonly={isReadonly} { ...props } />
         )}
       </ModalBody>
     </Modal>

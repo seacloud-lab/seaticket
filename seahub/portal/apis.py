@@ -49,7 +49,7 @@ from seahub.portal.utils import PORTAL_EXTERNAL_LOGIN_CODE_TTL, PORTAL_EXTERNAL_
     PORTAL_EXTERNAL_LOGIN_VERIFY_LOCK_TTL, PORTAL_PREVIEW_TOKEN_SALT, clear_portal_external_login_code, clear_portal_external_login_state, \
     get_portal_external_login_cooldown_key, get_portal_external_login_fail_key, get_portal_external_login_lock_key, incr_portal_external_login_fail, \
     is_user_in_the_same_team, is_portal_external_login_locked, normalize_external_login_email, portal_path, get_portal_external_login_code_key, \
-    get_portal_settings, build_absolute_portal_url, can_preview_portal
+    get_portal_settings, build_absolute_portal_url, can_preview_portal, get_portal_preview_username
 from seahub.portal.custom_domain import normalize_portal_custom_domain, query_dns_txt_values, validate_portal_subdomain_prefix_available, \
     CUSTOM_DOMAIN_TXT_RECORD_PREFIX, CUSTOM_DOMAIN_VERIFICATION_VALUE_PREFIX
 from seahub.utils.verify import get_random_code
@@ -858,6 +858,16 @@ class PortalIssueView(APIView):
         if not issue or not can_access_portal_issue(request, project, issue):
             error_msg = 'Issue not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        readonly_fields = {'type', 'priority', 'tags', 'state', 'substate', 'linked_ticket'}
+        is_portal_request = (
+            getattr(settings, 'IS_PORTAL_MODE', False)
+            or getattr(request, 'portal_domain', None)
+            or get_request_external_user(request, project_uuid)
+            or get_portal_preview_username(request, project_uuid)
+        )
+        if is_portal_request and readonly_fields.intersection(request.data):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         # permission check
         if not check_portal_issue_permission(username, workspace.owner, issue):

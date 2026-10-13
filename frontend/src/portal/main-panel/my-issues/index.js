@@ -177,6 +177,7 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID, isTeam = 
           togglePageSlugId={closeIssue}
           generatorIssuesContextMenuOptions={() => []}
           isMobile={isMobile}
+          isBuiltInView={true}
         />
       </>
     );
