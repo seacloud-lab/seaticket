@@ -532,7 +532,7 @@ const Issue = ({
             {!isMobile && <UploadFilesButton className="mt-4" onChange={handleFiles} />}
             <div className="seaqa-project-ticket-submit-btns ml-2">
               {isMobile && <UploadFilesButton className="mobile mr-auto" isShowText={false} onChange={handleFiles} />}
-              {editable && (
+              {editable && !isBuiltInView && (
                 <StatusToggleButton
                   state={state}
                   substate={substate}
@@ -555,18 +555,18 @@ const Issue = ({
         </div>
         {!isMobile && (
           <div className="seaqa-project-ticket-other-settings">
-            <PrioritySettings isReadonly={isBuiltInView} value={priority} onChange={onPriorityChange} />
+            <PrioritySettings isReadonly={isBuiltInView || !editable} value={priority} onChange={onPriorityChange} />
             <TagsSettings
               id="tags-editor-popover"
-              isReadonly={isBuiltInView}
+              isReadonly={isBuiltInView || !editable}
               value={tags}
               tagsData={tagsData}
               createTag={createTag}
               onChange={onTagsChange}
             />
-            <StateSettings isReadonly={isBuiltInView} state={state} substate={substate} useMetadataContext={usePortalIssuesMetadata} onChange={onStateChange} />
-            <SubStateSettings isReadonly={isBuiltInView} state={state} substate={substate} useMetadataContext={usePortalIssuesMetadata} onChange={onSubstateChange} />
-            <TypeSettings id="type-editor-popover" isReadonly={isBuiltInView} value={type} useMetadataContext={usePortalIssuesMetadata} onChange={onTypeChange} />
+            <StateSettings isReadonly={isBuiltInView || !editable} state={state} substate={substate} useMetadataContext={usePortalIssuesMetadata} onChange={onStateChange} />
+            <SubStateSettings isReadonly={isBuiltInView || !editable} state={state} substate={substate} useMetadataContext={usePortalIssuesMetadata} onChange={onSubstateChange} />
+            <TypeSettings id="type-editor-popover" isReadonly={isBuiltInView || !editable} value={type} useMetadataContext={usePortalIssuesMetadata} onChange={onTypeChange} />
             <LinkSettings value={[linked_ticket]} linkedRecords={linkedRecords} />
           </div>
         )}
