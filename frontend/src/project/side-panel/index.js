@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Modal, ModalBody } from 'reactstrap';
 import CustomModalHeader from '@/components/modal-header';
-import { gettext, mediaUrl } from '@/constants';
+import { gettext } from '@/constants';
 import { PortalSettingsProvider } from '@/portal/hooks';
 import Settings from '@/portal/main-panel/settings';
 import ResizeBar from '../../components/resize-bar';
@@ -20,13 +20,9 @@ import '@/portal/left-bar/portal-settings-dialog.css';
 
 const INIT_SIDEBAR_WIDTH = 300;
 const { isProjectAdmin } = window.app.pageOptions;
-const initialPortalName = window.app.pageOptions.portalName || gettext('Support portal');
-const initialPortalLogo = window.app.pageOptions.portalLogo || `${mediaUrl}img/portal-logo.png`;
 
 const SidePanel = ({ activeBar, toggleBar, settings }) => {
   const ref = useRef(null);
-  const [portalName, setPortalName] = useState(initialPortalName);
-  const [portalLogo, setPortalLogo] = useState(initialPortalLogo);
   const [isShowPortalSettings, setIsShowPortalSettings] = useState(false);
 
   const onResize = useCallback((width) => {
@@ -40,15 +36,6 @@ const SidePanel = ({ activeBar, toggleBar, settings }) => {
 
   const openPortalSettings = useCallback(() => {
     setIsShowPortalSettings(true);
-  }, []);
-
-  const onPortalSettingsChange = useCallback((serverData) => {
-    if (serverData.portal_name) {
-      setPortalName(serverData.portal_name);
-    }
-    if (serverData.portal_logo) {
-      setPortalLogo(serverData.portal_logo);
-    }
   }, []);
 
   useEffect(() => {
@@ -112,9 +99,6 @@ const SidePanel = ({ activeBar, toggleBar, settings }) => {
           <ModalBody>
             <PortalSettingsProvider
               projectUuid={window.app.pageOptions.projectUuid}
-              name={portalName}
-              logo={portalLogo}
-              onSettingsChange={onPortalSettingsChange}
               syncPageMetadata={false}
             >
               <Settings />

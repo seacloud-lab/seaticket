@@ -1547,6 +1547,8 @@ class PortalSettingsView(APIView):
         allow_anonymous = bool(portal_settings.get('allow_anonymous', False))
         enable_password_protection = bool(portal_settings.get('enable_password_protection', False))
         portal_home_settings = portal_settings.get('portal_home_settings', {})
+        portal_name = portal_settings.get('portal_name', '')
+        portal_logo = portal_settings.get('portal_logo', '')
         if not isinstance(portal_home_settings, dict):
             portal_home_settings = {}
 
@@ -1568,6 +1570,8 @@ class PortalSettingsView(APIView):
             daily_chat_credit_limit = 50
 
         return Response({
+            'portal_name': portal_name,
+            'portal_logo': portal_logo,
             'allow_anonymous': allow_anonymous,
             'enable_password_protection': enable_password_protection,
             'chat_allowed_sources': chat_allowed_sources,
