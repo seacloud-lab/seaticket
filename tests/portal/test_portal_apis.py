@@ -452,6 +452,15 @@ class TestPortalSettingsView:
         assert resp.status_code == 200
         assert resp.data['allow_anonymous'] is True
 
+    def test_get_permission_denied(self, factory, auth_user, real_project):
+        project = real_project
+        request = factory.get(f"/api/v1/portal/{project.uuid}/settings/")
+        request.user = auth_user
+
+        resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
+
+        assert resp.status_code == 403
+
     def test_get_returns_default_welcome_email_settings(self, factory, project_creator, real_project):
         project = real_project
         _set_portal_settings(project, allow_anonymous=False)

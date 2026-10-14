@@ -3,6 +3,7 @@ import { I18nextProvider } from 'react-i18next';
 import _ from 'lodash';
 import { createRoot } from 'react-dom/client';
 import { siteRoot } from '@/constants';
+import { PortalSettingsProvider } from '@/project/main-panel/portal-settings/hooks';
 import { Utils } from '@/utils/utils';
 import i18n from '../_i18n/i18n-seafile-editor';
 import { CenteredLoading, toaster } from '../components';
@@ -205,10 +206,10 @@ const Project = () => {
           {isLoading ? (
             <CenteredLoading />
           ) : (
-            <>
+            <PortalSettingsProvider projectUuid={projectUuid} isActive={activeBar[0] === BAR_TYPE.PORTAL_SETTINGS}>
               <SidePanel activeBar={activeBar} toggleBar={toggleBar} settings={settings} />
               <MainPanel activeBar={activeBar} settings={settings} modifySettings={modifySettings} toggleBar={toggleBar} modifyLocalBar={modifyLocalBar} />
-            </>
+            </PortalSettingsProvider>
           )}
         </div>
       </I18nextProvider>

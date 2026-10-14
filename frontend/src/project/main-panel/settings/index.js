@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { CustomizeTabs } from '@/components';
+import { CustomizeTabs, SettingsItem, SwitchSettings } from '@/components';
 import { gettext } from '@/constants';
 import TopBar from '../top-bar';
 import AgentAutoConfirmSettings from './agent-auto-confirm-settings';
@@ -7,9 +7,6 @@ import { SETTINGS_TAB_TYPE, SETTINGS_TABS } from './constants';
 import GitHubIssueTypeMappingSettings from './github-issue-type-mapping';
 import LanguageSettings from './language-settings';
 import PromptSettings from './prompt-settings';
-import SettingsItem from './settings-item';
-import SwitchSettings from './switch-settings';
-
 import './index.css';
 
 const Settings = ({

@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
+import { SettingsItem, SwitchSettings } from '@/components';
 import { gettext } from '@/constants';
-import SettingsItem from '../settings-item';
-import SwitchSettings from '../switch-settings';
 
 import './index.css';
 
