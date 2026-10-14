@@ -95,9 +95,11 @@ const CustomersTab = ({ customers, onEdit, onManageUsers, onInviteUsers, onDelet
     return [
       { label: gettext('Edit customer'), key: 'edit_customer', callback: () => onEdit(row) },
       { label: gettext('Delete customer'), key: 'delete_customer', callback: () => onDelete(row) },
-      'Divider',
-      { label: gettext('Users management'), key: 'manage_customer_users', callback: () => onManageUsers(row) },
-      { label: gettext('Invite users'), key: 'invite_customer_users', callback: () => onInviteUsers(row) },
+      ...(row.status === 'active' ? [
+        'Divider',
+        { label: gettext('Users management'), key: 'manage_customer_users', callback: () => onManageUsers(row) },
+        { label: gettext('Invite users'), key: 'invite_customer_users', callback: () => onInviteUsers(row) },
+      ] : []),
     ];
   }, [onDelete, onEdit, onManageUsers, onInviteUsers]);
 
