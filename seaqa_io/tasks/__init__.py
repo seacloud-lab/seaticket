@@ -18,7 +18,10 @@ from seaqa_io.log import setup_logger
 from seaqa_io.sql_view import filter_display_columns, view_data_2_sql
 from seaqa_io.utils import uuid_str_to_32_chars
 from seaqa_io.utils.knowledge_base_utils import send_knowledge_base_update_msg
-from seaqa_io.utils.storage import get_connection_file_from_s3
+from seaqa_io.utils.attachment_backend import (
+    CONNECTION_ATTACHMENTS,
+    get_backend,
+)
 
 
 logger = setup_logger('seaqa_io', propagate=False)
@@ -338,6 +341,11 @@ def generate_embeddings_2d_with_tsne(vectors):
     return result
 
 
+def gen_connection_file_path(project_uuid, connection_id, filename):
+    project_uuid = uuid_str_to_32_chars(project_uuid)
+    return f'{project_uuid}/{connection_id}/{filename}'
+
+
 def download_email_attachments(project_uuid, connection_id, pk):
     project_uuid = uuid_str_to_32_chars(project_uuid)
     seadb_api = SeaDBAPI()
@@ -357,12 +365,14 @@ def download_email_attachments(project_uuid, connection_id, pk):
     if not attachments:
         raise Exception('attachments not exist.')
 
+    backend = get_backend()
     with zipfile.ZipFile(local_zip_path, "w", zipfile.ZIP_DEFLATED) as zip_file:
         for file_name in attachments:
             relative_path = str(pk) + '/' + file_name
             try:
-                file = get_connection_file_from_s3(project_uuid, str(connection_id), relative_path)
-                zip_file.writestr(file_name, file.read())
+                path = gen_connection_file_path(project_uuid, str(connection_id), relative_path)
+                with backend.get_file_by_path(CONNECTION_ATTACHMENTS, path) as file:
+                    zip_file.writestr(file_name, file.read())
 
             except Exception as e:
                 if os.path.exists(local_zip_path):

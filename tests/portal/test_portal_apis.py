@@ -120,7 +120,7 @@ class TestPortalIssuesView:
 
         with patch('seahub.portal.apis.SeaDBAPI', return_value=Mock()), \
                 patch('seahub.portal.apis.check_ticket_creation_interval', return_value=True), \
-                patch('seahub.portal.apis.upload_portal_files_to_s3', side_effect=Exception('boom')):
+                patch('seahub.portal.apis.upload_portal_files', side_effect=Exception('boom')):
             resp = PortalIssuesView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 500
@@ -167,7 +167,7 @@ class TestPortalIssuesView:
 
         with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
                 patch('seahub.portal.apis.check_ticket_creation_interval', return_value=True), \
-                patch('seahub.portal.apis.upload_portal_files_to_s3', return_value={'http://x/a.png': 's3://a'}), \
+                patch('seahub.portal.apis.upload_portal_files', return_value={'http://x/a.png': 's3://a'}), \
                 patch('seahub.portal.apis.replace_file_url_in_content', return_value='x'), \
                 patch('seahub.portal.apis.send_portal_issue_update_msg'), \
                 patch('seahub.portal.apis.send_portal_issue_data_update_msg') as send_data_event:
@@ -650,7 +650,7 @@ class TestPortalSettingsView:
         )
         request.user = project_creator
 
-        with patch('seahub.portal.apis.delete_file_from_s3') as delete_mock:
+        with patch('seahub.portal.apis.delete_file') as delete_mock:
             resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
@@ -672,7 +672,7 @@ class TestPortalSettingsView:
         )
         request.user = project_creator
 
-        with patch('seahub.portal.apis.delete_file_from_s3') as delete_mock:
+        with patch('seahub.portal.apis.delete_file') as delete_mock:
             resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
@@ -688,7 +688,7 @@ class TestPortalSettingsView:
         request.user = project_creator
 
         with patch.object(Projects, 'save', side_effect=Exception('boom')), \
-                patch('seahub.portal.apis.delete_file_from_s3') as delete_mock:
+                patch('seahub.portal.apis.delete_file') as delete_mock:
             with pytest.raises(Exception, match='boom'):
                 PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
 
@@ -714,7 +714,7 @@ class TestPortalSettingsView:
         )
         request.user = project_creator
 
-        with patch('seahub.portal.apis.delete_file_from_s3') as delete_mock:
+        with patch('seahub.portal.apis.delete_file') as delete_mock:
             resp = PortalSettingsView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
@@ -1152,8 +1152,8 @@ class TestPortalLogoView:
             'ContentType': 'image/png',
         }
 
-        with patch('seahub.portal.apis.get_project_file_head_from_s3', return_value=metadata), \
-                patch('seahub.portal.apis.get_project_file_from_s3', return_value=BytesIO(b'png')):
+        with patch('seahub.portal.apis.get_project_file_metadata', return_value=metadata), \
+                patch('seahub.portal.apis.get_project_file', return_value=BytesIO(b'png')):
             resp = PortalLogoView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
@@ -1167,8 +1167,8 @@ class TestPortalLogoView:
             'ContentType': 'image/png',
         }
 
-        with patch('seahub.portal.apis.get_project_file_head_from_s3', return_value=metadata) as metadata_mock, \
-                patch('seahub.portal.apis.get_project_file_from_s3', return_value=BytesIO(b'png')) as file_mock:
+        with patch('seahub.portal.apis.get_project_file_metadata', return_value=metadata) as metadata_mock, \
+                patch('seahub.portal.apis.get_project_file', return_value=BytesIO(b'png')) as file_mock:
             resp = PortalLogoView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200
@@ -1179,15 +1179,15 @@ class TestPortalLogoView:
 @pytest.mark.django_db
 class TestPortalBackgroundImageView:
 
-    def test_get_uses_s3_background_image(self, factory, real_project):
+    def test_get_uses_project_attachment_backend_for_background_image(self, factory, real_project):
         project = real_project
         request = factory.get(f"/api/v1/portal/{project.uuid}/background-image/")
         metadata = {
             'ContentType': 'image/png',
         }
 
-        with patch('seahub.portal.apis.get_project_file_head_from_s3', return_value=metadata) as metadata_mock, \
-                patch('seahub.portal.apis.get_project_file_from_s3', return_value=BytesIO(b'png')) as file_mock:
+        with patch('seahub.portal.apis.get_project_file_metadata', return_value=metadata) as metadata_mock, \
+                patch('seahub.portal.apis.get_project_file', return_value=BytesIO(b'png')) as file_mock:
             resp = PortalBackgroundImageView.as_view()(request, project_uuid=str(project.uuid))
 
         assert resp.status_code == 200

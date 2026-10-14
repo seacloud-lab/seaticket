@@ -2,7 +2,7 @@ import base64
 
 import requests
 
-from seahub.utils.storage import get_project_file_from_s3
+from seahub.utils.storage import get_project_file
 from seahub.utils.date_utils import normalize_date
 
 GENERAL_TASK_ACTIVITY_FIELDS = ('title', 'status', 'size', 'priority', 'assignees', 'version', 'due_date')
@@ -37,7 +37,7 @@ def prepare_image_data_for_adapter(project_uuid, description):
         if file_url.startswith('http'):
             continue
         file_path = file_url[len(file_prefix):]
-        body = get_project_file_from_s3(project_uuid, file_path)
+        body = get_project_file(project_uuid, file_path)
         image_data_map[file_url] = base64.b64encode(body.read()).decode('utf-8')
     return image_data_map if image_data_map else None
 

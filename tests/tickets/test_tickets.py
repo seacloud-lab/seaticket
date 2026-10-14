@@ -654,7 +654,7 @@ class TestTicketTrashAPIView:
 
         with patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api), \
                 patch('seahub.tickets.tickets.get_deleted_tickets', return_value=deleted_tickets), \
-                patch('seahub.tickets.tickets.delete_record_attachments_from_s3'), \
+                patch('seahub.tickets.tickets.delete_record_attachments'), \
                 patch('seahub.tickets.tickets.delete_ticket_comments_by_ids'), \
                 patch('seahub.tickets.tickets.delete_ticket_activities_by_ids'):
             resp = TicketTrashAPIView.as_view()(request, project_uuid=project.uuid)
@@ -680,7 +680,7 @@ class TestTicketTrashAPIView:
 
         with patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api), \
                 patch('seahub.tickets.tickets.get_deleted_tickets', return_value=deleted_tickets), \
-                patch('seahub.tickets.tickets.delete_record_attachments_from_s3'), \
+                patch('seahub.tickets.tickets.delete_record_attachments'), \
                 patch('seahub.tickets.tickets.delete_ticket_comments_by_ids'), \
                 patch('seahub.tickets.tickets.delete_ticket_activities_by_ids'), \
                 patch('seahub.tickets.tickets.ProjectConnections') as mock_conn_cls:

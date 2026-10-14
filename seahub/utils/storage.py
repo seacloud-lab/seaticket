@@ -3,17 +3,34 @@ import json
 import logging
 from datetime import datetime, timezone
 
-from botocore.exceptions import ClientError
 from django.utils.http import parse_etags
+from django.http import FileResponse
 
-from seahub.utils import mq, s3_client
-from seahub.settings import S3_FILE_BUCKET, S3_WEB_CRAWL_BUCKET
-from seahub.utils import uuid_str_to_32_chars, uuid_str_to_36_chars
+from seahub.utils import mq, uuid_str_to_32_chars, uuid_str_to_36_chars
+from seahub.utils.attachment_backend import (
+    CONNECTION_ATTACHMENTS,
+    PROJECT_ATTACHMENTS,
+    FileNotFound,
+    get_backend,
+)
 
 logger = logging.getLogger(__name__)
 PORTAL_LOGO_FILE_PATH = 'portal/logo'
 PORTAL_BACKGROUND_IMAGE_FILE_PATH = 'portal/background-image'
 PROJECT_STORAGE_UPDATE_CHANNEL = 'project_storage_update'
+INLINE_ATTACHMENT_CONTENT_TYPES = {
+    '.bmp': 'image/bmp',
+    '.gif': 'image/gif',
+    '.heic': 'image/heic',
+    '.ico': 'image/x-icon',
+    '.jfif': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.jpg': 'image/jpeg',
+    '.png': 'image/png',
+    '.tif': 'image/tiff',
+    '.tiff': 'image/tiff',
+    '.webp': 'image/webp',
+}
 
 
 def publish_project_storage_update(project_uuid):
@@ -48,17 +65,15 @@ def if_none_match_hit(request, etag):
             return True
     return False
 
-class FileNotFound(Exception):
-    pass
-
-def gen_s3_project_file_path(project_uuid, file_path):
+def gen_project_file_path(project_uuid, file_path):
     project_uuid = uuid_str_to_36_chars(project_uuid)
     return f'/projects/{project_uuid}/{file_path}'
 
 
-def gen_s3_connection_file_path(project_uuid, connection_id, filename):
+def gen_connection_file_path(project_uuid, connection_id, filename):
     project_uuid = uuid_str_to_32_chars(project_uuid)
     return f"{project_uuid}/{connection_id}/" + filename
+
 
 def gen_record_file_path(entity_type, record_id, filename=''):
     parent_dir = 'portal' if entity_type == 'portal-issues' else 'attachments'
@@ -83,8 +98,9 @@ def upload_file_to_tmp_dir(project_uuid, file, subdir=''):
     return tmp_upload_file_path
 
 
-def upload_files_to_s3(project_uuid, file_urls, username, entity_type, record_id):
+def upload_files(project_uuid, file_urls, username, entity_type, record_id):
     new_file_urls_dict = {}
+    backend = get_backend()
     for file_url in file_urls:
         if '/upload-file/project/' not in file_url:
             continue
@@ -96,12 +112,15 @@ def upload_files_to_s3(project_uuid, file_urls, username, entity_type, record_id
             continue
 
         final_file_path = gen_record_file_path(entity_type, record_id, file_name)
-        s3_file_path = gen_s3_project_file_path(project_uuid, final_file_path)
-        if check_file_exists_from_s3(s3_file_path):
-            logger.warning(s3_file_path + ' already exists.')
+        storage_path = gen_project_file_path(project_uuid, final_file_path)
+        if check_file_exists(backend, PROJECT_ATTACHMENTS, storage_path):
+            logger.warning(storage_path + ' already exists.')
             continue
 
-        s3_client.upload_file(tmp_upload_file_path, S3_FILE_BUCKET, s3_file_path, ExtraArgs={'Metadata': {'username': username}})
+        backend.upload_file_by_path(
+            PROJECT_ATTACHMENTS, tmp_upload_file_path, storage_path,
+            extra_args={'Metadata': {'username': username}},
+        )
         publish_project_storage_update(project_uuid)
 
         new_file_url = f'/file/project/{project_uuid}/{final_file_path}'
@@ -115,9 +134,10 @@ def upload_files_to_s3(project_uuid, file_urls, username, entity_type, record_id
     return new_file_urls_dict
 
 
-def upload_portal_files_to_s3(project_uuid, file_urls, username, entity_type, record_id):
+def upload_portal_files(project_uuid, file_urls, username, entity_type, record_id):
     portal_prefix = f'/upload-file/portal/{project_uuid}/'
     new_file_urls_dict = {}
+    backend = get_backend()
     for file_url in file_urls:
         if not isinstance(file_url, str) or not file_url.startswith(portal_prefix):
             continue
@@ -129,13 +149,15 @@ def upload_portal_files_to_s3(project_uuid, file_urls, username, entity_type, re
             continue
 
         final_file_path = gen_record_file_path(entity_type, record_id, file_name)
-        s3_file_path = gen_s3_project_file_path(project_uuid, final_file_path)
-        if check_file_exists_from_s3(s3_file_path):
-            logger.warning(s3_file_path + ' already exists.')
+        storage_path = gen_project_file_path(project_uuid, final_file_path)
+        if check_file_exists(backend, PROJECT_ATTACHMENTS, storage_path):
+            logger.warning(storage_path + ' already exists.')
             continue
 
-        s3_client.upload_file(tmp_upload_file_path, S3_FILE_BUCKET, s3_file_path,
-                              ExtraArgs={'Metadata': {'username': username}})
+        backend.upload_file_by_path(
+            PROJECT_ATTACHMENTS, tmp_upload_file_path, storage_path,
+            extra_args={'Metadata': {'username': username}},
+        )
         publish_project_storage_update(project_uuid)
 
         new_file_url = f'/file/portal/{project_uuid}/{final_file_path}'
@@ -149,8 +171,8 @@ def upload_portal_files_to_s3(project_uuid, file_urls, username, entity_type, re
     return new_file_urls_dict
 
 
-def upload_portal_logo_file_to_s3(project_uuid, file):
-    s3_file_path = gen_s3_project_file_path(project_uuid, PORTAL_LOGO_FILE_PATH)
+def upload_portal_logo_file(project_uuid, file):
+    storage_path = gen_project_file_path(project_uuid, PORTAL_LOGO_FILE_PATH)
     content_type = getattr(file, 'content_type', None) or 'application/octet-stream'
     version = int(datetime.now(timezone.utc).timestamp())
 
@@ -160,11 +182,9 @@ def upload_portal_logo_file_to_s3(project_uuid, file):
         with open(tmp_upload_file_path, 'wb') as fd:
             fd.write(file.read())
 
-        s3_client.upload_file(
-            tmp_upload_file_path,
-            S3_FILE_BUCKET,
-            s3_file_path,
-            ExtraArgs={'ContentType': content_type}
+        get_backend().upload_file_by_path(
+            PROJECT_ATTACHMENTS, tmp_upload_file_path, storage_path,
+            extra_args={'ContentType': content_type},
         )
         publish_project_storage_update(project_uuid)
     finally:
@@ -177,8 +197,8 @@ def upload_portal_logo_file_to_s3(project_uuid, file):
     return f'/api/v1/portal/{project_uuid}/logo/?v={version}'
 
 
-def upload_portal_background_image_file_to_s3(project_uuid, file):
-    s3_file_path = gen_s3_project_file_path(project_uuid, PORTAL_BACKGROUND_IMAGE_FILE_PATH)
+def upload_portal_background_image_file(project_uuid, file):
+    storage_path = gen_project_file_path(project_uuid, PORTAL_BACKGROUND_IMAGE_FILE_PATH)
     content_type = getattr(file, 'content_type', None) or 'application/octet-stream'
     version = int(datetime.now(timezone.utc).timestamp())
 
@@ -188,11 +208,9 @@ def upload_portal_background_image_file_to_s3(project_uuid, file):
         with open(tmp_upload_file_path, 'wb') as fd:
             fd.write(file.read())
 
-        s3_client.upload_file(
-            tmp_upload_file_path,
-            S3_FILE_BUCKET,
-            s3_file_path,
-            ExtraArgs={'ContentType': content_type}
+        get_backend().upload_file_by_path(
+            PROJECT_ATTACHMENTS, tmp_upload_file_path, storage_path,
+            extra_args={'ContentType': content_type},
         )
     finally:
         if os.path.exists(tmp_upload_file_path):
@@ -204,90 +222,78 @@ def upload_portal_background_image_file_to_s3(project_uuid, file):
     return f'/api/v1/portal/{project_uuid}/background-image/?v={version}'
 
 
-def check_file_exists_from_s3(s3_file_path):
+def check_file_exists(backend, attachment_type, path):
     try:
-        s3_client.head_object(Bucket=S3_FILE_BUCKET, Key=s3_file_path)
+        backend.get_file_metadata(attachment_type, path)
         return True
-    except Exception:
+    except FileNotFound:
         return False
 
 
-def get_project_file_from_s3(project_uuid, file_path):
-    s3_file_path = gen_s3_project_file_path(project_uuid, file_path)
-    response = s3_client.get_object(Bucket=S3_FILE_BUCKET, Key=s3_file_path)
-    return response['Body']
+def is_safe_inline_attachment(file_path, content_type=None):
+    extension = os.path.splitext(file_path)[1].lower()
+    if extension:
+        expected_content_type = INLINE_ATTACHMENT_CONTENT_TYPES.get(extension)
+        return expected_content_type is not None and content_type in (None, expected_content_type)
+    return content_type in INLINE_ATTACHMENT_CONTENT_TYPES.values()
 
 
-def get_project_file_head_from_s3(project_uuid, file_path):
-    s3_file_path = gen_s3_project_file_path(project_uuid, file_path)
-    try:
-        return s3_client.head_object(Bucket=S3_FILE_BUCKET, Key=s3_file_path)
-    except ClientError as e:
-        error_code = e.response['Error']['Code']
-        if error_code in ('NoSuchKey', '404'):
-            raise FileNotFound()
-        raise
+def get_attachment_file_response(file, file_path, content_type=None, force_download=False):
+    safe_inline = is_safe_inline_attachment(file_path, content_type)
+    as_attachment = force_download or not safe_inline
+    inline_content_type = INLINE_ATTACHMENT_CONTENT_TYPES.get(
+        os.path.splitext(file_path)[1].lower(), content_type
+    )
+    response = FileResponse(
+        file,
+        as_attachment=as_attachment,
+        filename=os.path.basename(file_path) if as_attachment else None,
+        content_type='application/octet-stream' if as_attachment else inline_content_type,
+    )
+    response['X-Content-Type-Options'] = 'nosniff'
+    return response
 
 
-def get_connection_file_head_from_s3(project_uuid, site_id, filename):
-    s3_file_path = gen_s3_connection_file_path(project_uuid, site_id, filename)
-    try:
-        return s3_client.head_object(Bucket=S3_WEB_CRAWL_BUCKET, Key=s3_file_path)
-    except ClientError as e:
-        error_code = e.response['Error']['Code']
-        if error_code in ('NoSuchKey', '404'):
-            raise FileNotFound()
-        raise
+def get_project_file(project_uuid, file_path):
+    storage_path = gen_project_file_path(project_uuid, file_path)
+    return get_backend().get_file_by_path(PROJECT_ATTACHMENTS, storage_path)
 
 
-def get_connection_file_from_s3(project_uuid, connection_id, filename):
-    s3_file_path = gen_s3_connection_file_path(project_uuid, connection_id, filename)
-    try:
-        response = s3_client.get_object(Bucket=S3_WEB_CRAWL_BUCKET, Key=s3_file_path)
-    except ClientError as e:
-        error_code = e.response['Error']['Code']
-        if error_code in ('NoSuchKey', '404'):
-            raise FileNotFound()
-        raise
-    return response['Body']
+def get_project_file_metadata(project_uuid, file_path):
+    storage_path = gen_project_file_path(project_uuid, file_path)
+    return get_backend().get_file_metadata(PROJECT_ATTACHMENTS, storage_path)
 
 
-def delete_file_from_s3(project_uuid, file_path):
-    s3_file_path = gen_s3_project_file_path(project_uuid, file_path)
-    s3_client.delete_object(Bucket=S3_FILE_BUCKET, Key=s3_file_path)
+def get_connection_file_metadata(project_uuid, site_id, filename):
+    storage_path = gen_connection_file_path(project_uuid, site_id, filename)
+    return get_backend().get_file_metadata(CONNECTION_ATTACHMENTS, storage_path)
+
+
+def get_connection_file(project_uuid, connection_id, filename):
+    storage_path = gen_connection_file_path(project_uuid, connection_id, filename)
+    return get_backend().get_file_by_path(CONNECTION_ATTACHMENTS, storage_path)
+
+
+def delete_file(project_uuid, file_path):
+    storage_path = gen_project_file_path(project_uuid, file_path)
+    get_backend().delete_file(PROJECT_ATTACHMENTS, storage_path)
     publish_project_storage_update(project_uuid)
-    return s3_file_path
+    return storage_path
 
 
-def _delete_s3_prefix(prefix):
-    continuation_token = None
-    while True:
-        kwargs = {'Bucket': S3_FILE_BUCKET, 'Prefix': prefix}
-        if continuation_token:
-            kwargs['ContinuationToken'] = continuation_token
-        response = s3_client.list_objects_v2(**kwargs)
-        contents = response.get('Contents') or []
-        if contents:
-            objects_to_delete = [{'Key': obj['Key']} for obj in contents]
-            s3_client.delete_objects(Bucket=S3_FILE_BUCKET, Delete={'Objects': objects_to_delete})
-        if response.get('IsTruncated'):
-            continuation_token = response.get('NextContinuationToken')
-            if not continuation_token:
-                break
-        else:
-            break
-
-
-def delete_record_attachments_from_s3(project_uuid, entity_type, record_id):
-    prefix = gen_s3_project_file_path(project_uuid, gen_record_file_path(entity_type, record_id))
-    _delete_s3_prefix(prefix)
+def delete_record_attachments(project_uuid, entity_type, record_id):
+    prefix = gen_project_file_path(project_uuid, gen_record_file_path(entity_type, record_id))
+    get_backend().delete_files_by_prefix(PROJECT_ATTACHMENTS, prefix)
     publish_project_storage_update(project_uuid)
     return prefix
 
 
-def delete_project_dir_from_s3(project_uuid):
-    s3_dir_path = gen_s3_project_file_path(project_uuid, '')
-    _delete_s3_prefix(s3_dir_path)
+def delete_project_attachments(project_uuid):
+    prefix = gen_project_file_path(project_uuid, '')
+    backend = get_backend()
+    backend.delete_files_by_prefix(PROJECT_ATTACHMENTS, prefix)
+    backend.delete_files_by_prefix(
+        CONNECTION_ATTACHMENTS, gen_connection_file_path(project_uuid, '', '')
+    )
     publish_project_storage_update(project_uuid)
-    logger.info(f'Deleted {project_uuid} s3 files.')
-    return s3_dir_path
+    return prefix

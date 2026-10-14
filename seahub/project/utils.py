@@ -31,7 +31,7 @@ from seahub.api2.utils import api_error, get_user_common_info
 from seahub.utils import normalize_cache_key, uuid_str_to_32_chars, get_service_url
 from seahub.utils.timeutils import get_month_date_range
 from seahub.utils.ai_client import rank_related_records
-from seahub.utils.storage import delete_record_attachments_from_s3
+from seahub.utils.storage import delete_record_attachments
 from seahub.constants import PERMISSION_READ_WRITE, TEAM_FREE
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.constants import USER_PROJECT_CACHE_PREFIX, USER_PROJECT_CACHE_CACHE_TIMEOUT, \
@@ -384,7 +384,7 @@ def delete_sessions(session_uuids):
         )
         for session_uuid, project_uuid in session_project_map.items():
             try:
-                delete_record_attachments_from_s3(project_uuid, 'chat', session_uuid)
+                delete_record_attachments(project_uuid, 'chat', session_uuid)
             except Exception as e:
                 logger.warning('clean s3 chat images for session %s error: %s', session_uuid, e)
 
@@ -402,7 +402,7 @@ def delete_portal_sessions(session_uuids):
         )
         for session_uuid, project_uuid in session_project_map.items():
             try:
-                delete_record_attachments_from_s3(project_uuid, 'portal-chat', session_uuid)
+                delete_record_attachments(project_uuid, 'portal-chat', session_uuid)
             except Exception as e:
                 logger.warning('clean s3 portal chat images for session %s error: %s', session_uuid, e)
 

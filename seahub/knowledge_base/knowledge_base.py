@@ -17,7 +17,7 @@ from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.utils import check_project_permission, get_current_table_metadata, replace_file_url_in_content
-from seahub.utils.storage import upload_files_to_s3
+from seahub.utils.storage import upload_files
 from seahub.project.constants import KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS
 from seahub.seadb_models.utils import list_knowledge_base_records
 from seahub.knowledge_base.knowledge_base_utils import get_knowledge_base_record_by_pk, TABLE_KNOWLEDGE_BASE, \
@@ -112,7 +112,7 @@ class KnowledgeBasesAPIView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         if file_urls:
-            new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'knowledgebase', int(insert_row_pk))
+            new_file_urls_dict = upload_files(project_uuid, file_urls, username, 'knowledgebase', int(insert_row_pk))
             updated_content = replace_file_url_in_content(content_text, new_file_urls_dict)
             try:
                 seadb_api.update_rows(project_uuid, SchemaTables.KNOWLEDGE_BASE.table_name(), [{
@@ -301,7 +301,7 @@ class KnowledgeBaseAPIView(APIView):
 
             if len(file_urls) > 0:
                 try:
-                    new_file_urls_dict = upload_files_to_s3(project_uuid, file_urls, username, 'knowledgebase', int(knowledge_id))
+                    new_file_urls_dict = upload_files(project_uuid, file_urls, username, 'knowledgebase', int(knowledge_id))
                     content_text = replace_file_url_in_content(content_text, new_file_urls_dict)
                 except Exception as e:
                     logger.error(e)

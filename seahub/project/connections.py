@@ -29,8 +29,8 @@ from seahub.project.utils import check_project_admin_permission, check_project_p
     extract_email_addresses, is_oauth_email_provider, create_connection, get_connection_related_users
 from seahub.utils.indexer import add_connection_sync_task, manual_sync_connection
 from seahub.utils.webhook import update_github_issue_by_webhook, update_discourse_topic_by_webhook
-from seahub.utils.storage import get_connection_file_from_s3, FileNotFound
-from seahub.utils.storage import if_none_match_hit, get_connection_file_head_from_s3
+from seahub.utils.storage import get_attachment_file_response, get_connection_file, FileNotFound
+from seahub.utils.storage import if_none_match_hit, get_connection_file_metadata, is_safe_inline_attachment
 from seahub.seadb_models.utils import init_seadb_tables_from_schema, list_discourse_forum_replies_records, \
     list_connection_view_records, list_github_issue_record_details, list_seafile_record_details, \
     list_site_record_details, list_email_record_details, get_issue_record_by_pk, list_notion_record_details, \
@@ -71,6 +71,7 @@ from django.utils import timezone
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
 logger = logging.getLogger(__name__)
+
 
 
 
@@ -2248,7 +2249,7 @@ class ConnectionFileView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
         try:
-            s3_meta = get_connection_file_head_from_s3(project_uuid, str(connection_id), file_path)
+            s3_meta = get_connection_file_metadata(project_uuid, str(connection_id), file_path)
         except FileNotFound:
             error_msg = 'File not exist'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -2258,19 +2259,23 @@ class ConnectionFileView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         etag = s3_meta.get('ETag')
-        if if_none_match_hit(request, etag):
+        is_download = request.query_params.get('download') == '1'
+        force_download = is_download or not is_safe_inline_attachment(file_path)
+        if not force_download and if_none_match_hit(request, etag):
             not_modified = HttpResponseNotModified()
             not_modified['Cache-Control'] = 'max-age=604800, private'
             return not_modified
 
         try:
-            file = get_connection_file_from_s3(project_uuid, str(connection_id), file_path)
+            file = get_connection_file(project_uuid, str(connection_id), file_path)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        response = FileResponse(file)
+        response = get_attachment_file_response(
+            file, file_path, force_download=is_download
+        )
         response['Cache-Control'] = 'max-age=604800, private'
         if etag:
             response['ETag'] = etag
