@@ -6,9 +6,9 @@ import InviteUsersPage from '@/portal/main-panel/user-management/invite-users-pa
 
 import '@/portal/main-panel/user-management/index.css';
 
-const InviteUsersDialog = ({ customers, invitations, isSubmitting, onInvite, onCopy, onRevoke, onClose }) => {
+const InviteUsersDialog = ({ customers, customerId, invitations, isSubmitting, onInvite, onCopy, onRevoke, onClose }) => {
   const [email, setEmail] = useState('');
-  const [selectedCustomerId, setSelectedCustomerId] = useState('');
+  const [selectedCustomerId, setSelectedCustomerId] = useState(customerId || '');
 
   const invite = () => {
     const inviteEmail = email.trim();

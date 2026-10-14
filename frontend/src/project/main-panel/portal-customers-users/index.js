@@ -33,6 +33,7 @@ const PortalCustomersUsers = ({ title }) => {
   const [isLoadingCustomerMembers, setLoadingCustomerMembers] = useState(false);
   const [userOperation, setUserOperation] = useState(null);
   const [isInviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [inviteCustomerId, setInviteCustomerId] = useState('');
   const customerMembersRequestRef = useRef(0);
 
   const showError = useCallback((error, fallback) => {
@@ -239,7 +240,7 @@ const PortalCustomersUsers = ({ title }) => {
               {gettext('New customer')}
             </Button>
           ) : (
-            <Button key="invite-users" color="primary" className="btn-xs" onClick={() => setInviteDialogOpen(true)}>
+            <Button key="invite-users" color="primary" className="btn-xs" onClick={() => { setInviteCustomerId(''); setInviteDialogOpen(true); }}>
               <Icon symbol="invite-members" aria-hidden="true" />
               {gettext('Invite users')}
             </Button>
@@ -253,6 +254,7 @@ const PortalCustomersUsers = ({ title }) => {
               customers={customers}
               onEdit={setCustomerToEdit}
               onManageUsers={manageUsers}
+              onInviteUsers={(customer) => { setInviteCustomerId(customer.id); setInviteDialogOpen(true); }}
               onDelete={setCustomerToDelete}
               viewTabs={(
                 <CustomerUsersTabs
@@ -283,12 +285,13 @@ const PortalCustomersUsers = ({ title }) => {
       {isInviteDialogOpen && (
         <InviteUsersDialog
           customers={customers.filter(customer => customer.status === 'active')}
+          customerId={inviteCustomerId}
           invitations={invitations}
           isSubmitting={isSubmitting}
           onInvite={inviteUser}
           onCopy={copyInvitation}
           onRevoke={revokeInvitation}
-          onClose={() => setInviteDialogOpen(false)}
+          onClose={() => { setInviteCustomerId(''); setInviteDialogOpen(false); }}
         />
       )}
       {customerToEdit && (
