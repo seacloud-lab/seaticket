@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Popover, PopoverBody } from 'reactstrap';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
@@ -6,6 +6,7 @@ import { Icon, Switch } from '@/components';
 import SearchInput from '@/components/search-input';
 import { gettext } from '@/constants';
 import { DOCUMENT_CONNECTION_TYPE_MAP, ISSUE_CONNECTION_TYPE_MAP, TASK_CONNECTION_TYPE_MAP } from '@/project/main-panel/connections/constants';
+import { normalizeChatAllowedSources } from '../../utils';
 
 import './index.css';
 
@@ -73,7 +74,7 @@ const PortalChatSourceItem = ({ source, selected, disabled, onToggle }) => {
   );
 };
 
-const PortalChatSourceSelector = ({ connections, disabled, value, onChange }) => {
+const PortalChatSourceSelector = ({ connections, disabled, onChange, ...props }) => {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const targetIdRef = useRef(`portal-chat-source-selector-${Math.random().toString(36).slice(2, 10)}`);
@@ -85,6 +86,7 @@ const PortalChatSourceSelector = ({ connections, disabled, value, onChange }) =>
     { id: TICKET_SOURCE_ID, key: TICKET_SOURCE_ID, name: gettext('Ticket') },
   ];
 
+  const value = useMemo(() => normalizeChatAllowedSources(props.value, connections), [props, connections]);
   const selectedSourceIds = getSelectedSourceIds(value);
   const selectedCount = selectedSourceIds.size;
 

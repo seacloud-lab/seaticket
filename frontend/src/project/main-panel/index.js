@@ -12,6 +12,7 @@ import Inbox from './inbox';
 import KnowledgeBase from './knowledge-base';
 import PortalCustomersUsers from './portal-customers-users';
 import PortalIssues from './portal-issues';
+import PortalSettings from './portal-settings';
 import Search from './search';
 import Settings from './settings';
 import Skills from './skills';
@@ -87,6 +88,9 @@ const Container = ({ activeBar, settings, modifySettings, toggleBar, modifyLocal
     }
     case BAR_TYPE.PORTAL_CUSTOMERS_AND_USERS: {
       return (<PortalCustomersUsers title={title} />);
+    }
+    case BAR_TYPE.PORTAL_SETTINGS: {
+      return (<PortalSettings title={title} />);
     }
     default:
       return (<Connections title={title} toggleBar={toggleBar} modifyLocalBar={modifyLocalBar} />);

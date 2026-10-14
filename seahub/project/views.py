@@ -72,6 +72,10 @@ def project_view(request, workspace_id, project_name, children_id = '', record_i
     if not permission:
         return render_error(request, _('Permission denied'))
 
+    url_name = request.resolver_match.url_name
+    if url_name in ['project_portal_settings_view', 'project_settings_view'] and not is_project_admin:
+        return render(request, 'error.html', {'error_msg': _('Permission denied')}, status=403)
+
     portal_settings = get_portal_settings(project)
     enable_portal = portal_settings.get('enable_portal', False)
     if not enable_portal and request.resolver_match.url_name == 'project_portal_issues_view':

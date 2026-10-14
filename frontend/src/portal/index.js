@@ -8,7 +8,7 @@ import i18n from '../_i18n/i18n-seafile-editor';
 import { CenteredLoading } from '../components';
 import { portalAPI } from './api';
 import { PORTAL_PAGE } from './constants';
-import { PortalSettingsProvider } from './hooks';
+import { PortalFeaturedArticlesProvider } from './hooks';
 import LeftBar from './left-bar';
 import MainPanel from './main-panel';
 import {
@@ -26,11 +26,6 @@ const {
   isAnonymous, workspaceID, isExternalUser, isPreviewUser, portalName, portalLogo,
   canAccessIssues,
 } = window.app.pageOptions;
-
-const initSettings = {
-  name: portalName || gettext('Support portal'),
-  logo: portalLogo || `${mediaUrl}img/portal-logo.png`,
-};
 
 const Portal = () => {
   const [isLoading, setLoading] = useState(true);
@@ -164,6 +159,18 @@ const Portal = () => {
     }
   }, [passwordError]);
 
+  useEffect(() => {
+    const name = portalName || gettext('Support portal');
+    document.title = `${name} - ${gettext('Portal')}`;
+  }, []);
+
+  useEffect(() => {
+    const logo = portalLogo || `${mediaUrl}img/portal-logo.png`;
+    const existingFavicon = document.querySelector('link[rel~="icon"]');
+    if (existingFavicon) {
+      existingFavicon.href = logo;
+    }
+  }, []);
 
   if (needPasswordState) {
     const displayName = portalName || projectName;
@@ -205,6 +212,7 @@ const Portal = () => {
       </I18nextProvider>
     );
   }
+
   return (
     <I18nextProvider i18n={i18n}>
       <div className="seaqa-portal">
@@ -252,7 +260,7 @@ const Portal = () => {
 
 const root = createRoot(document.getElementById('wrapper'));
 root.render(
-  <PortalSettingsProvider projectUuid={projectUuid} { ...initSettings }>
+  <PortalFeaturedArticlesProvider projectUuid={projectUuid} >
     <Portal />
-  </PortalSettingsProvider>
+  </PortalFeaturedArticlesProvider>
 );

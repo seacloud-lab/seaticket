@@ -1570,6 +1570,10 @@ class PortalSettingsView(APIView):
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
+        if not check_project_admin_permission(request.user.username, project.workspace.owner):
+            error_msg = 'Permission denied.'
+            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
+
         try:
             project_settings = json.loads(project.settings) if project.settings else {}
         except Exception:

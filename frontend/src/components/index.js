@@ -60,8 +60,10 @@ import RemoveButton from './remove-btn';
 import ResizeBar from './resize-bar';
 import SearchInput, { AdminSearch } from './search-input';
 import { SectionSettings } from './settings';
+import SettingsItem from './settings-item';
 import SubDropdown from './sub-dropdown';
 import Switch from './switch';
+import SwitchSettings from './switch-settings';
 import TextInput from './text-input';
 import toaster from './toaster';
 import Tooltip from './tooltip';
@@ -76,6 +78,8 @@ export {
   MultipleTextCard,
   InfoCard,
   SectionSettings,
+  SettingsItem,
+  SwitchSettings,
   AdminSearch,
   CenteredError, CenteredLoading,
   ClickOutside,

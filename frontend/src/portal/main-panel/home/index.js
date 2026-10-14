@@ -4,7 +4,7 @@ import slugid from 'slugid';
 import { CenteredLoading, Icon, IconButton } from '@/components';
 import { DEFAULT_PROJECT_ICON, gettext, PROJECT_ICON_ALL_LIST } from '@/constants';
 import { portalAPI } from '@/portal/api';
-import { usePortalSettings } from '@/portal/hooks/settings';
+import { usePortalFeaturedArticles } from '@/portal/hooks';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { KNOWLEDGE_BASE_TYPE } from '@/project/main-panel/knowledge-base/constants';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
@@ -28,7 +28,7 @@ const PortalHome = ({ projectUuid, onHomeChatSend }) => {
   const [selfDropIndicator, setSelfDropIndicator] = useState(null);
   const [selectedFeaturedArticle, setSelectedFeaturedArticle] = useState(null);
   const cardDragPreviewRef = useRef(null);
-  const { updateHomeSetting, featuredArticles, isFeaturedArticlesLoading } = usePortalSettings();
+  const { updateHomeSetting, featuredArticles, isFeaturedArticlesLoading } = usePortalFeaturedArticles();
   const { columns = [], records = [] } = featuredArticles || {};
   const titleColumn = columns.find(column => column.name === 'title');
   const featuredArticleItems = records.map(record => ({ record, title: getCellValueByColumn(record, titleColumn) })).filter(({ title }) => title);

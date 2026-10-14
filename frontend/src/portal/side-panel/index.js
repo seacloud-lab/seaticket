@@ -5,18 +5,19 @@ import { CustomizeTabs, IconButton } from '@/components';
 import Account from '@/components/account';
 import ExternalUserAccount from '@/components/account/external-user-account';
 import { gettext } from '@/constants';
+import { PORTAL_DEFAULT_SETTINGS } from '@/project/constants';
 import { isMobile } from '@/utils/utils';
 import { PORTAL_PAGE, TICKETS_TAB, getPrimaryTabs } from '../constants';
-import { usePortalSettings } from '../hooks';
 import { getPortalLoginPath } from '../path-utils';
 import LanguageSelector from './language-selector';
 
 import './index.css';
 
-const { isExternalUser, isPortalDomain } = window.app.pageOptions;
+const { isExternalUser, isPortalDomain, portalLogo, portalName } = window.app.pageOptions;
+const logo = portalLogo || PORTAL_DEFAULT_SETTINGS.portal_logo;
+const name = portalName || PORTAL_DEFAULT_SETTINGS.portal_name;
 
 const SidePanel = ({ isEditMode, activePage, onPageChange, isAnonymous, canAccessIssues }) => {
-  const { logo, name } = usePortalSettings();
   const [isShowMobileMenu, setIsShowMobileMenu] = useState(false);
   const sideRef = useRef(null);
   const primaryTabs = getPrimaryTabs({ isAnonymous, canAccessIssues });

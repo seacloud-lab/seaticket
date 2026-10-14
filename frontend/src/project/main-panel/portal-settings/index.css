@@ -1,0 +1,17 @@
+.seaqa-project-portal-settings {
+  --portal-settings-max-width: 570px;
+  overflow-y: auto;
+  gap: 8px;
+}
+
+.seaqa-project-portal-settings .seaqa-project-portal-input-group-settings {
+  max-width: var(--portal-settings-max-width);
+}
+
+.seaqa-project-portal-settings .seaqa-project-portal-input-group-settings .seaqa-icon-btn {
+  border-left: 0;
+}
+
+.seaqa-project-portal-settings .seaqa-project-portal-input-group-settings .seaqa-icon-btn:hover {
+  border-color: var(--bs-btn-border-color) !important;
+}

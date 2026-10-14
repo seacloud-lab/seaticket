@@ -237,9 +237,9 @@ class PortalAPI {
     return this.req.post(url, { user_id_list: userIdList });
   }
 
-  getSettings(projectUuid) {
+  getSettings(projectUuid, signal) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/settings/';
-    return this.req.get(url);
+    return this.req.get(url, { signal });
   }
 
   updateSettings(projectUuid, settings) {
@@ -252,9 +252,9 @@ class PortalAPI {
     return this.req.post(url);
   }
 
-  getDomainAlias(projectUuid) {
+  getDomainAlias(projectUuid, signal) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/domain-alias/';
-    return this.req.get(url);
+    return this.req.get(url, { signal });
   }
 
   updateDomainAlias(projectUuid, data) {
@@ -262,9 +262,9 @@ class PortalAPI {
     return this.req.post(url, data);
   }
 
-  getCustomDomain(projectUuid) {
+  getCustomDomain(projectUuid, signal) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/custom-domain/';
-    return this.req.get(url);
+    return this.req.get(url, { signal });
   }
 
   updateCustomDomain(projectUuid, data) {

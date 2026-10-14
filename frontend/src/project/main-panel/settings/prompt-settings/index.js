@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Button } from 'reactstrap';
 import classnames from 'classnames';
+import { SettingsItem } from '@/components';
 import { gettext } from '@/constants';
-import SettingsItem from '../settings-item';
 import PromptDialog from './prompt-dialog';
 
 import './index.css';

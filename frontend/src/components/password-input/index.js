@@ -20,6 +20,7 @@ const PasswordInput = ({
   placeholder = '',
   onChange: onChangeValue,
   onShowChange,
+  onBlur: handleBlur
 }) => {
   const [password, setPassword] = useState(value || '');
   const [isShowPassword, setIsShowPassword] = useState(false);
@@ -52,9 +53,10 @@ const PasswordInput = ({
   }, [enableCheckStrength, password]);
 
   const onBlur = useCallback(() => {
+    handleBlur && handleBlur();
     if (!isShowChecker) return;
     setIsShowChecker(false);
-  }, [isShowChecker]);
+  }, [isShowChecker, handleBlur]);
 
   useEffect(() => {
     if (initSize) return;

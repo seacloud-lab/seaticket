@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { LanguageSelect } from '@/components';
+import { LanguageSelect, SettingsItem } from '@/components';
 import { gettext } from '@/constants';
-import SettingsItem from './settings-item';
 
 const LanguageSettings = ({
   value: oldValue = 'en',
