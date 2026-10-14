@@ -7,6 +7,7 @@ from urllib.parse import urlencode, unquote
 
 import requests
 
+from django.conf import settings as django_settings
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.utils.translation import gettext as _
@@ -93,7 +94,7 @@ def project_view(request, workspace_id, project_name, children_id = '', record_i
         'settings': project_settings,
         'is_project_admin': is_project_admin,
         'enable_general_task': ENABLE_GENERAL_TASK,
-        'enable_portal_domain': settings.ENABLE_PORTAL_DOMAIN,
+        'enable_portal_domain': django_settings.ENABLE_PORTAL_DOMAIN,
         'thought_process_enabled': THOUGHT_PROCESS_ENABLED,
         'permission': permission if permission else PERMISSION_READ,
         'llm_models': json.dumps(LLM_MODELS),

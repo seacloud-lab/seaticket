@@ -229,7 +229,7 @@ def test_password_validation_redirects_within_portal(factory, alias, real_projec
 
 
 @pytest.mark.django_db
-def test_preview_and_invitation_use_main_site_paths(factory, alias, real_project, project_creator):
+def test_preview_and_invitation_use_main_site_paths(factory, alias, real_project, project_creator, monkeypatch):
     PortalCustomDomain.objects.create(project_uuid=str(real_project.uuid), domain='support.local.test', verified=True)
     request = factory.post('/api/v1/portal/%s/preview-token/' % real_project.uuid, HTTP_HOST='ticket.example.com')
     request.user = project_creator
@@ -240,8 +240,12 @@ def test_preview_and_invitation_use_main_site_paths(factory, alias, real_project
     request = factory.get('/portals/my-brand/preview/%s/' % response.data['token'])
     assert call_portal(request).url == '/portals/my-brand/'
     assert request.session['portal_preview_project_uuid'] == str(real_project.uuid)
-    with pytest.raises(Http404):
-        portal_path_view(request, 'my-brand', 'preview/invalid/')
+    render_error = Mock(return_value=HttpResponse('invalid-preview'))
+    monkeypatch.setattr('seahub.portal.views.render_error', render_error)
+    invalid_request = factory.get('/portals/my-brand/preview/invalid/')
+    invalid_response = portal_path_view(invalid_request, 'my-brand', 'preview/invalid/')
+    assert invalid_response.status_code == 200
+    render_error.assert_called_once_with(invalid_request, 'Preview link is invalid or expired.')
 
     invitation = PortalExternalInvitation.objects.add(project_creator.username, 'external@example.com', str(real_project.uuid))
     assert invitation.get_link(request) == 'http://testserver/portals/my-brand/external/accept/%s/' % invitation.token
