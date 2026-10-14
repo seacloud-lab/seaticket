@@ -2,9 +2,7 @@ import { initReactI18next } from 'react-i18next';
 import i18n from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import Backend from 'i18next-http-backend';
-import { mediaUrl } from '../constants';
-
-const lang = window.app.pageOptions.langCode;
+import { mediaUrl, lang } from '../constants/config';
 
 i18n
   .use(Backend)
@@ -18,7 +16,6 @@ i18n
     whitelist: ['en', 'fr', 'de', 'zh-CN'],
     backend: {
       loadPath: mediaUrl + 'locales/{{ ns }}/{{ lng }}.json',
-      // loadPath: '/media/locales/{{lng}}/{{ns}}.json',
     },
     debug: false, // console log if debug: true
     interpolation: {
