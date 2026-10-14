@@ -8,7 +8,7 @@ const CustomerStatusFormatter = ({ value }) => (
   <span>{value === 'active' ? gettext('Active') : gettext('Inactive')}</span>
 );
 
-const CustomersTab = ({ customers, onEdit, onManageUsers, onDelete, viewTabs }) => {
+const CustomersTab = ({ customers, onEdit, onManageUsers, onInviteUsers, onDelete, viewTabs }) => {
   const metadataID = useMemo(() => {
     return customers.map(customer => `${customer.id}:${customer.updated_at || ''}`).join('|') || 'customers-empty';
   }, [customers]);
@@ -97,8 +97,9 @@ const CustomersTab = ({ customers, onEdit, onManageUsers, onDelete, viewTabs }) 
       { label: gettext('Delete customer'), key: 'delete_customer', callback: () => onDelete(row) },
       'Divider',
       { label: gettext('Users management'), key: 'manage_customer_users', callback: () => onManageUsers(row) },
+      { label: gettext('Invite users'), key: 'invite_customer_users', callback: () => onInviteUsers(row) },
     ];
-  }, [onDelete, onEdit, onManageUsers]);
+  }, [onDelete, onEdit, onManageUsers, onInviteUsers]);
 
   return (
     <SeaMetadata
