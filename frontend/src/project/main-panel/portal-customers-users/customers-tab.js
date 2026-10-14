@@ -94,8 +94,9 @@ const CustomersTab = ({ customers, onEdit, onManageUsers, onDelete, viewTabs }) 
     if (!row) return [];
     return [
       { label: gettext('Edit customer'), key: 'edit_customer', callback: () => onEdit(row) },
-      { label: gettext('Users management'), key: 'manage_customer_users', callback: () => onManageUsers(row) },
       { label: gettext('Delete customer'), key: 'delete_customer', callback: () => onDelete(row) },
+      'Divider',
+      { label: gettext('Users management'), key: 'manage_customer_users', callback: () => onManageUsers(row) },
     ];
   }, [onDelete, onEdit, onManageUsers]);
 
