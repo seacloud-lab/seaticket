@@ -251,8 +251,13 @@ const Ticket = ({
 
   const createMoreOptions = useCallback(() => {
     if (!ticket) return [];
-    const table = getTableByName(TICKET_TABLE_NAME) || { id_row_map: {}, key_column_map: {} };
-    const row = ticket;
+    const table = getTableByName(TICKET_TABLE_NAME, {
+      id_row_map: {},
+      key_column_map: {
+        [PREDEFINED_TICKET_COLUMN_NAME.TITLE]: { name: PREDEFINED_TICKET_COLUMN_NAME.TITLE }
+      },
+    });
+    const row = { ...ticket, _id: ticket._pk };
     let options = generatorTicketsContextMenuOptions({
       isGroupView: false,
       selectedPosition: { groupRowIndex: 0, rowIdx: 0 },
