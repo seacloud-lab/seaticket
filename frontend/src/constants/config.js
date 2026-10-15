@@ -14,7 +14,6 @@ export const faviconPath = window.app.config.faviconPath;
 export const faviconNotificationPath = window.app.config.faviconNotificationPath;
 export const loginBGPath = window.app.config.loginBGPath;
 
-
 // pageOptions
 export const server = window.app.pageOptions.server;
 export const name = window.app.pageOptions.name;
@@ -37,20 +36,15 @@ export const customNavItems = window.app.pageOptions.customNavItems;
 export const disableAddingPersonalProjects = window.app.pageOptions.disableAddingPersonalProjects;
 export const isOrgStaff = window.app.pageOptions.isOrgStaff;
 export const langList = window.app.pageOptions?.langList || [];
-
 export const trashCleanExpireDays = window.app.pageOptions.trashCleanExpireDays;
-
 export const enableShowIDInOrgWhenSearchUser = window.app.pageOptions.enableShowIDInOrgWhenSearchUser;
-
 
 // project
 export const workspaceID = window.app.pageOptions.workspaceID;
 export const projectName = window.app.pageOptions.projectName;
-
 export const isOrgContext = window.app.pageOptions.isOrgContext;
 export const orgName = window.app.pageOptions.orgName;
 export const aiCreditExceededAmount = window.app.pageOptions.aiCreditExceededAmount || 0;
-
 export const useExternalTeamAdmin = window.app.pageOptions.useExternalTeamAdmin;
 export const orgSamlConnected = window.app.pageOptions.orgSamlConnected;
 
