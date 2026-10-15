@@ -144,7 +144,7 @@ class AgentLogRunsView(APIView):
 
 
 class AgentLogCancelAllActionsView(APIView):
-    """Cancel all pending actions for the runs owned by one log item."""
+    """Cancel pending actions and failed suggestions for one log item."""
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (IsAuthenticated, )
     throttle_classes = (UserRateThrottle, )

@@ -670,7 +670,7 @@ def get_agent_log_runs(seadb_api, project_uuid, owner_source_id, owner_source_ty
 
 
 def cancel_agent_log_pending_actions(seadb_api, project_uuid, owner_source_id, owner_source_type, result_message, executed_at):
-    """Cancel pending actions for every run owned by one log item."""
+    """Cancel pending actions and failed suggestions owned by one log item."""
     runs = _query_owned_runs(seadb_api, project_uuid, owner_source_id, owner_source_type)
     if not runs:
         raise ValueError('Item not found.')
@@ -682,9 +682,11 @@ def cancel_agent_log_pending_actions(seadb_api, project_uuid, owner_source_id, o
     actions_table = SchemaTables.AGENT_ACTIONS.table_name()
     run_ids_str = ','.join(map(str, run_ids))
     sql = (
-        "SELECT `_pk`, `run_id` "
+        "SELECT `_pk`, `run_id`, `status`, `result` "
         f"FROM `{actions_table}` "
-        f"WHERE `run_id` IN ({run_ids_str}) AND `status` = '{ACTION_STATUS_PENDING}'"
+        f"WHERE `run_id` IN ({run_ids_str}) AND ("
+        f"`status` = '{ACTION_STATUS_PENDING}' OR "
+        f"(`action_type` = '{SUGGESTION_ACTION_TYPE}' AND `status` = '{ACTION_STATUS_FAILED}'))"
     )
     batch_size = 100
     last_action_id = None
@@ -703,7 +705,11 @@ def cancel_agent_log_pending_actions(seadb_api, project_uuid, owner_source_id, o
                 'pk': int(action['_pk']),
                 'row': {
                     'status': ACTION_STATUS_CANCELLED,
-                    'result': result_message,
+                    'result': (
+                        f"{action['result']}\n\n{result_message}"
+                        if action.get('status') == ACTION_STATUS_FAILED and action.get('result')
+                        else result_message
+                    ),
                     'executed_at': executed_at,
                 },
             } for action in pending_actions],
