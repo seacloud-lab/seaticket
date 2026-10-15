@@ -18,6 +18,55 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+#: frontend/src/project/main-panel/connections/constants.js
+msgid "Alias"
+msgstr "Alias"
+
+msgid "Gmail and Microsoft connections use OAuth. Other email providers require an App Password instead of your regular password. If any problem occurs, check the"
+msgstr "Gmail and Microsoft connections use OAuth. Other email providers require an App Password instead of your regular password. If any problem occurs, check the"
+
+msgid "Shared mailbox"
+msgstr "Shared mailbox"
+
+msgid "OAuth application"
+msgstr "OAuth application"
+
+msgid "Platform default uses the OAuth application configured by the server administrator. Custom application uses your own Client ID and Client secret. Either option supports personal accounts, aliases, and shared mailboxes."
+msgstr "Platform default uses the OAuth application configured by the server administrator. Custom application uses your own Client ID and Client secret. Either option supports personal accounts, aliases, and shared mailboxes."
+
+msgid "The OAuth application ID registered in Google Cloud or Microsoft Entra. This is not your email address or tenant ID."
+msgstr "The OAuth application ID registered in Google Cloud or Microsoft Entra. This is not your email address or tenant ID."
+
+msgid "The secret belonging to this Client ID. For Microsoft Entra, enter the client secret Value, not the Secret ID."
+msgstr "The secret belonging to this Client ID. For Microsoft Entra, enter the client secret Value, not the Secret ID."
+
+msgid "The Microsoft OAuth authorization endpoint. Leave blank to use the default common endpoint. For a single-tenant application, use the endpoint for your tenant."
+msgstr "The Microsoft OAuth authorization endpoint. Leave blank to use the default common endpoint. For a single-tenant application, use the endpoint for your tenant."
+
+msgid "The Microsoft endpoint for obtaining and refreshing tokens. Leave blank to use the default common endpoint. A custom endpoint must use the same tenant as the Authority URL."
+msgstr "The Microsoft endpoint for obtaining and refreshing tokens. Leave blank to use the default common endpoint. A custom endpoint must use the same tenant as the Authority URL."
+
+msgid "Register this callback URL in your OAuth application. It is read-only and must match exactly, including the protocol and path."
+msgstr "Register this callback URL in your OAuth application. It is read-only and must match exactly, including the protocol and path."
+
+msgid "Platform default"
+msgstr "Platform default"
+
+msgid "Custom application"
+msgstr "Custom application"
+
+msgid "Advanced settings"
+msgstr "Advanced settings"
+
+msgid "Hide advanced settings"
+msgstr "Hide advanced settings"
+
+msgid "OAuth callback URL"
+msgstr "OAuth callback URL"
+
+msgid "Alias and shared mailbox connections only sync messages associated with the configured From address."
+msgstr "Alias and shared mailbox connections only sync messages associated with the configured From address."
+
 #: frontend/src/components/account/external-user-account.js:92
 #: frontend/src/components/account/external-user-account.js:93
 #: frontend/src/components/account/external-user-account.js:103

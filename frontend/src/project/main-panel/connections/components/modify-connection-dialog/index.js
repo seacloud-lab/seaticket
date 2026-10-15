@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { Button, Modal, Input, ModalBody, ModalFooter, FormGroup, Label, Alert, Row } from 'reactstrap';
 import PropTypes from 'prop-types';
 import { ModalHeader } from '@/components';
+import Switch from '@/components/switch';
 import { gettext } from '@/constants';
 import { validateName } from '@/utils/validate';
 import { CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, EMAIL_SERVER_PROVIDER } from '../../constants';
@@ -36,7 +37,7 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
   const [isChanged, setChanged] = useState(false);
   const [isSubmitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [showEmailAdvancedOptions] = useState(false);
+  const [showEmailAdvancedOptions, setShowEmailAdvancedOptions] = useState(false);
 
   const type = useMemo(() => record.type, [record]);
   const columns = useMemo(() => {
@@ -51,7 +52,10 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
         };
       });
     }
-    if (type === CONNECTION_TYPE.EMAIL) return withEditReadonlyDefaults(getVisibleEmailFields(_columns, getEmailProvider(config), showEmailAdvancedOptions, config.account_type));
+    if (type === CONNECTION_TYPE.EMAIL) return withEditReadonlyDefaults(getVisibleEmailFields(_columns, getEmailProvider(config), showEmailAdvancedOptions, config.account_type, config.oauth_client_mode)).map(field => ({
+      ...field,
+      is_edit_readonly: field.is_edit_readonly || (isOAuthEmailProvider(getEmailProvider(config)) && ['server_provider', 'account_type', 'sender_email'].includes(field.key)),
+    }));
     return withEditReadonlyDefaults(_columns);
   }, [type, config, showEmailAdvancedOptions]);
 
@@ -122,7 +126,7 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
     let connectionFields = CONNECTION_FIELDS[record.type] || [];
     if (record.type === CONNECTION_TYPE.EMAIL) {
       validConfig = sanitizeEmailConfigByProvider(validConfig);
-      connectionFields = getVisibleEmailFields(connectionFields, getEmailProvider(config), showEmailAdvancedOptions, config.account_type).reduce((acc, item) => {
+      connectionFields = getVisibleEmailFields(connectionFields, getEmailProvider(config), true, config.account_type, config.oauth_client_mode).reduce((acc, item) => {
         if (item.type === CONNECTION_FIELD_TYPE.GROUP) {
           return [...acc, ...item.children];
         } else {
@@ -143,7 +147,7 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
       }
     });
     onSubmit({ name, config: validConfig }, () => setSubmitting(false));
-  }, [record, name, config, showEmailAdvancedOptions, onSubmit]);
+  }, [record, name, config, onSubmit]);
 
   const renderConnectionField = useCallback((column) => {
     const { type, key, children, is_edit_readonly, is_advanced_option } = column;
@@ -189,8 +193,18 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
           </Label>
           <Input value={name} onChange={onNameChange} autoFocus disabled={isSubmitting} />
         </FormGroup>
-        {isOAuthEmail ? basicCustomColumns.filter(column => column.key !== 'account_type').map(renderConnectionField) : basicCustomColumns.map(renderConnectionField)}
-        {false && isOAuthEmail && basicCustomColumns.filter(column => column.key === 'account_type').map(renderConnectionField)}
+        {basicCustomColumns.map(renderConnectionField)}
+        {isOAuthEmail && (
+          <div className="seaqa-project-connection-advanced-options mb-3">
+            <Switch
+              checked={showEmailAdvancedOptions}
+              onChange={() => setShowEmailAdvancedOptions(!showEmailAdvancedOptions)}
+              placeholder={gettext('Advanced settings')}
+              textPosition="right"
+              disabled={isSubmitting}
+            />
+          </div>
+        )}
         {advancedCustomColumns.map(renderConnectionField)}
         {errorMsg && (<Alert color="danger">{errorMsg}</Alert>)}
       </ModalBody>
