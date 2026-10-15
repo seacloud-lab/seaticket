@@ -2475,7 +2475,7 @@ class PortalExternalInvitationsView(APIView):
         if enable_send_email:
             raw_portal_name = portal_settings.get('portal_name')
             portal_name = raw_portal_name.strip() if isinstance(raw_portal_name, str) else ''
-            portal_name = portal_name or _('Support portal')
+            portal_name = portal_name or _('SeaTicket')
             raw_subject = portal_settings.get('welcome_email_subject')
             raw_content = portal_settings.get('welcome_email_content')
             subject = raw_subject.replace('{portal_name}', portal_name) if isinstance(raw_subject, str) else ''
@@ -2483,10 +2483,18 @@ class PortalExternalInvitationsView(APIView):
             context = {
                 'welcome_email_content': content,
                 'invitation_link': invitation_link,
+                'portal_logo': portal_settings.get('portal_logo', ''),
+                'portal_name': portal_name,
             }
             sent = False
             try:
-                sent = send_html_email_with_dj_template(email, subject, 'portal/external_welcome_email.html', context=context)
+                sent = send_html_email_with_dj_template(
+                    email,
+                    subject,
+                    'portal/external_welcome_email.html',
+                    context=context,
+                    sender_name=portal_name,
+                )
             except Exception as e:
                 logger.error(e)
                 sent = False
@@ -2512,7 +2520,9 @@ class PortalExternalInvitationsView(APIView):
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        if not get_portal_settings(project).get('enable_portal'):
+        portal_settings = get_portal_settings(project)
+
+        if not portal_settings.get('enable_portal'):
             error_msg = 'Portal is not enabled.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
@@ -2602,6 +2612,8 @@ class PortalExternalLoginSendCodeView(APIView):
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
+        portal_settings = get_portal_settings(project)
+
         if is_user_in_the_same_team(project, email):
             next_url = portal_path(request, project_uuid)
             login_url = getattr(settings, 'LOGIN_URL', '/accounts/login/')
@@ -2636,11 +2648,20 @@ class PortalExternalLoginSendCodeView(APIView):
                 PORTAL_EXTERNAL_LOGIN_CODE_TTL
             )
             cache.set(cooldown_key, timezone.now().isoformat(), PORTAL_EXTERNAL_LOGIN_SEND_COOLDOWN)
+            raw_portal_name = portal_settings.get('portal_name')
+            portal_name = raw_portal_name.strip() if isinstance(raw_portal_name, str) else ''
+            portal_name = portal_name or _('SeaTicket')
             sent = send_html_email_with_dj_template(
                 email,
                 _('Your login code'),
                 'portal/email_login_code.html',
-                context={'code': code, 'project_uuid': project_uuid}
+                context={
+                    'code': code,
+                    'project_uuid': project_uuid,
+                    'portal_logo': portal_settings.get('portal_logo', ''),
+                    'portal_name': portal_name,
+                },
+                sender_name=portal_name,
             )
             if not sent:
                 logger.warning('Failed to send portal login code: project=%s email=%s', project_uuid, email)

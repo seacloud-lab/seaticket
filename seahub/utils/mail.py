@@ -1,5 +1,7 @@
 import os
 import logging
+from email.utils import formataddr, parseaddr
+from django.conf import settings
 from django.template import loader
 from django.core.mail import EmailMessage
 
@@ -10,7 +12,7 @@ from seahub.settings import MEDIA_URL, LOGO_PATH, \
 logger = logging.getLogger(__name__)
 
 
-def send_html_email_with_dj_template(recipients, subject, dj_template, context=None):
+def send_html_email_with_dj_template(recipients, subject, dj_template, context=None, sender_name=None):
     """
 
     Arguments:
@@ -18,6 +20,7 @@ def send_html_email_with_dj_template(recipients, subject, dj_template, context=N
     - `subject`:
     - `dj_template`:
     - `context`:
+    - `sender_name`: optional display name for the configured sender address.
 
     """
 
@@ -40,7 +43,13 @@ def send_html_email_with_dj_template(recipients, subject, dj_template, context=N
     t = loader.get_template(dj_template)
     html_message = t.render(context)
 
-    mail = EmailMessage(subject=subject, body=html_message, to=[recipients])
+    from_email = None
+    if sender_name:
+        sender_email = parseaddr(settings.DEFAULT_FROM_EMAIL)[1]
+        if sender_email:
+            from_email = formataddr((sender_name, sender_email), charset='utf-8')
+
+    mail = EmailMessage(subject=subject, body=html_message, from_email=from_email, to=[recipients])
     mail.content_subtype = "html"
 
     try:

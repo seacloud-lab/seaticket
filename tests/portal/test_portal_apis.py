@@ -26,9 +26,11 @@ from seahub.portal.apis import (
     PortalCustomDomainView,
     PortalDomainAliasView,
     PortalPreviewTokenView,
+    PortalExternalLoginSendCodeView,
     SQLGeneratorOptionInvalidError,
 )
-from seahub.portal.models import PortalCustomDomain, PortalDomainAlias, PortalExternalInvitation, get_portal_tls_ask_cache_key
+from seahub.portal.models import PortalCustomDomain, PortalDomainAlias, PortalExternalInvitation, \
+    ProjectExternalUser, get_portal_tls_ask_cache_key
 from seahub.portal.utils import load_portal_preview_token
 from seahub.portal.portal_issue_types import PortalIssueTypeAPIView
 from seahub.portal.portal_issue_substates import PortalIssueSubstateAPIView
@@ -1121,8 +1123,8 @@ class TestPortalExternalInvitationsView:
 
         captured_mail = {}
 
-        def send_mail(_email, _subject, _template, context):
-            captured_mail.update({'subject': _subject, 'template': _template})
+        def send_mail(_email, _subject, _template, context, **kwargs):
+            captured_mail.update({'subject': _subject, 'template': _template, **kwargs})
             captured_context.update(context)
             return True
 
@@ -1134,12 +1136,36 @@ class TestPortalExternalInvitationsView:
         assert captured_mail == {
             'subject': 'Welcome to Acme Support',
             'template': 'portal/external_welcome_email.html',
+            'sender_name': 'Acme',
         }
         assert captured_context['welcome_email_content'] == 'Hello from Acme.'
         invitation_link = captured_context['invitation_link']
         assert invitation_link.startswith('http://x765cd.seaticket-portal.test/external/accept/')
         assert invitation_link.endswith('/')
         assert '/portal-external/accept/' not in invitation_link
+
+    def test_send_login_code_uses_portal_name_as_sender(self, factory, real_project):
+        portal_name = 'Acme Support'
+        _set_portal_settings(real_project, portal_name=portal_name)
+        email = 'external@example.com'
+        ProjectExternalUser.objects.create(
+            email=email,
+            username='external-user',
+            project_uuid=str(real_project.uuid),
+            activated=True,
+        )
+        request = factory.post(
+            f"/api/v1/portal/{real_project.uuid}/external-login/send-code/",
+            data={'email': email},
+            format='json',
+        )
+
+        with patch('seahub.portal.apis.send_html_email_with_dj_template', return_value=True) as send_mail:
+            response = PortalExternalLoginSendCodeView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert response.status_code == 200
+        assert send_mail.call_args.kwargs['sender_name'] == portal_name
+        assert send_mail.call_args.kwargs['context']['portal_name'] == portal_name
 
 
 @pytest.mark.django_db

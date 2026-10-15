@@ -1,0 +1,10 @@
+<div style="background:#f2f2f2;padding:40px 0;">
+<div style="max-width:600px; background:#fff; border: 1px solid #EEEEEE; border-radius:8px; margin:0 auto;">
+    {% if portal_logo %}
+    <img src="{{ url_base }}{{ portal_logo }}" height="24" alt="" style="display:block;width:auto;height:auto;max-width:200px;max-height:24px;margin:24px 0 16px 32px;" />
+    {% else %}
+    <img src="{{ url_base }}{{media_url}}{{logo_path}}" height="24" alt="" style="display:block;margin:24px 0 16px 32px;" />
+    {% endif %}
+    {% block email_con %}{% endblock %}
+</div>
+</div>
