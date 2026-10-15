@@ -68,10 +68,6 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
     return customColumns.filter(column => column.is_advanced_option);
   }, [customColumns]);
 
-  const isOAuthEmail = useMemo(() => {
-    return type === CONNECTION_TYPE.EMAIL && isOAuthEmailProvider(getEmailProvider(config));
-  }, [type, config]);
-
   const isValid = useMemo(() => {
     if (!name.trim()) return false;
     return customColumns.length > 0 ? customColumns.every(c => {
@@ -189,8 +185,7 @@ const ModifyConnectionDialog = ({ record, onSubmit, onToggle }) => {
           </Label>
           <Input value={name} onChange={onNameChange} autoFocus disabled={isSubmitting} />
         </FormGroup>
-        {isOAuthEmail ? basicCustomColumns.filter(column => column.key !== 'account_type').map(renderConnectionField) : basicCustomColumns.map(renderConnectionField)}
-        {false && isOAuthEmail && basicCustomColumns.filter(column => column.key === 'account_type').map(renderConnectionField)}
+        {basicCustomColumns.map(renderConnectionField)}
         {advancedCustomColumns.map(renderConnectionField)}
         {errorMsg && (<Alert color="danger">{errorMsg}</Alert>)}
       </ModalBody>

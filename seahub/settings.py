@@ -717,6 +717,13 @@ else:
 yaml_file_path = os.path.join(CONF_DIR, os.environ.get('SEAQA_CONFIG_NAME', 'seaqa_config.yaml'))
 configs = ConfigParser(yaml_file_path, 'seaqa-web')
 
+_csrf_extra_origins = configs.get('CSRF_TRUSTED_ORIGINS', [])
+if isinstance(_csrf_extra_origins, str):
+    _csrf_extra_origins = [_csrf_extra_origins]
+_csrf_extra_origins = [o for o in _csrf_extra_origins if isinstance(o, str) and o]
+if _csrf_extra_origins:
+    CSRF_TRUSTED_ORIGINS = list(CSRF_TRUSTED_ORIGINS) + _csrf_extra_origins
+
 # Available AI Models (not hidden) for user selection
 LLM_MODELS = [
     {
