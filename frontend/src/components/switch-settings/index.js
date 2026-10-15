@@ -1,12 +1,13 @@
 import React, { useCallback } from 'react';
 import classnames from 'classnames';
-import { Switch } from '@/components';
+import Switch from '../switch';
 
 const SwitchSettings = ({
   tip,
   placeholder,
   className,
   value = true,
+  textPosition = 'right',
   onChange,
 }) => {
   const onValueChange = useCallback(() => {
@@ -18,14 +19,16 @@ const SwitchSettings = ({
     <>
       <Switch
         checked={value}
-        textPosition="right"
+        textPosition={textPosition}
         className={classnames('w-100 h-6 d-flex align-items-center', className)}
         onChange={onValueChange}
         placeholder={placeholder}
       />
-      <p className="seaqa-tip-default m-0 font-size-12 line-height-20">
-        {tip}
-      </p>
+      {tip && (
+        <p className="seaqa-tip-default m-0 font-size-12 line-height-20">
+          {tip}
+        </p>
+      )}
     </>
   );
 };

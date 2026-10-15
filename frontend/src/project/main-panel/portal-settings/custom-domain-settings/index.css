@@ -1,0 +1,10 @@
+.seaqa-portal-custom-domain-input-container,
+.seaqa-portal-custom-domain-cname-container {
+  max-width: var(--portal-settings-max-width);
+}
+
+.seaqa-portal-custom-domain-cname-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

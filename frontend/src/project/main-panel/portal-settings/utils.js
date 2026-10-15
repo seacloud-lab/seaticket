@@ -1,15 +1,15 @@
-import { CHAT_EXTRA_SOURCES, EMPTY_CHAT_ALLOWED_SOURCES } from './constants';
+import { PORTAL_CHAT_EXTRA_SOURCES, PORTAL_CHAT_ALLOWED_SOURCES_DEFAULT } from '@/project/constants';
 
 export const isConnectionActive = (connection) => !!connection?.is_active;
 
 export const normalizeExtraSources = (extraSources = []) => {
   if (!Array.isArray(extraSources)) return [];
-  return CHAT_EXTRA_SOURCES.filter((source) => extraSources.includes(source));
+  return PORTAL_CHAT_EXTRA_SOURCES.filter((source) => extraSources.includes(source));
 };
 
 export const normalizeChatAllowedSources = (rawChatAllowedSources, connections = []) => {
   if (!rawChatAllowedSources || Array.isArray(rawChatAllowedSources) || typeof rawChatAllowedSources !== 'object') {
-    return EMPTY_CHAT_ALLOWED_SOURCES;
+    return PORTAL_CHAT_ALLOWED_SOURCES_DEFAULT;
   }
 
   const rawConnectionIds = Array.isArray(rawChatAllowedSources.connection_ids) ? rawChatAllowedSources.connection_ids : [];

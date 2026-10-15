@@ -1,14 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import classnames from 'classnames';
-import { CustomizeSelect, Icon, Option } from '@/components';
+import { CustomizeSelect, Icon, Option, SettingsItem } from '@/components';
 import SecondaryBtn from '@/components/btn/secondary-btn';
 import toaster from '@/components/toaster';
 import { gettext } from '@/constants';
 import { agentAPI } from '@/project/api';
 import { CONNECTION_TYPE } from '../../connections/constants';
 import { getConnectionIcon } from '../../connections/utils';
-import SettingsItem from '../settings-item';
-
 import './index.css';
 
 const { projectUuid } = window.app.pageOptions;

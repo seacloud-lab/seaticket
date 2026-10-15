@@ -3,6 +3,13 @@ export const getType = (value) => {
 };
 
 /**
+ * Check whether is boolean
+ * @param {boolean} boolean
+ * @returns boolean
+ */
+export const isBoolean = (boolean) => getType(boolean) === 'Boolean';
+
+/**
  * Check whether is number
  * @param {number} number
  * @returns boolean

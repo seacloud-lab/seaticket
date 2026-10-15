@@ -1,0 +1,9 @@
+.seaqa-portal-url-settings-container {
+  max-width: var(--portal-settings-max-width);
+}
+
+.seaqa-portal-customize-url-settings-container {
+  display: flex;
+  align-items: center;
+  max-width: var(--portal-settings-max-width);
+}

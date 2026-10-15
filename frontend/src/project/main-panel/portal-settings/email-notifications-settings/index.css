@@ -1,0 +1,11 @@
+.seaqa-portal-email-notifications-settings .seaqa-portal-email-notifications-editor-container {
+  background-color: var(--bs-body-secondary-bg);
+  border: 1px solid var(--bs-border-secondary-color);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px #0000000f;
+  padding: 20px;
+}
+
+.seaqa-portal-email-notifications-settings .seaqa-portal-email-notifications-editor-container .portal-welcome-email-content {
+  min-height: 320px;
+}

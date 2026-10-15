@@ -1,1 +1,1 @@
-export { PortalSettingsProvider, usePortalSettings } from './settings';
+export { PortalFeaturedArticlesProvider, usePortalFeaturedArticles } from './featured-articles';
