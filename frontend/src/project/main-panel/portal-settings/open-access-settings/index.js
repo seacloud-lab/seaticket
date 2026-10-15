@@ -54,7 +54,11 @@ const Main = ({
       if (isSuccess) {
         setPasswordInputVersion(version => version + 1);
         setIsEnablingPassword(false);
+        return;
       }
+      setPassword('');
+      setPasswordInputVersion(version => version + 1);
+      setIsEnablingPassword(false);
     });
   }, [allowAnonymous, isPasswordProtectionEnabled, isEnablingPassword, password, onChange]);
 

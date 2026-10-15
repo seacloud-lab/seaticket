@@ -14,6 +14,12 @@ import { isConnectionActive } from './utils';
 
 const PortalSettingsContext = React.createContext(null);
 
+const enqueueSave = (queueRef, save) => {
+  const savePromise = queueRef.current.catch(() => undefined).then(save);
+  queueRef.current = savePromise.then(() => undefined, () => undefined);
+  return savePromise;
+};
+
 export const PortalSettingsProvider = ({ projectUuid, isActive, children }) => {
   const [isSettingsLoading, setIsSettingsLoading] = useState(true);
   const [isDomainAliasSettingsLoading, setIsDomainAliasSettingsLoading] = useState(true);
@@ -26,8 +32,13 @@ export const PortalSettingsProvider = ({ projectUuid, isActive, children }) => {
   const domainAliasLoadController = useRef(null);
   const customDomainLoadController = useRef(null);
 
-  const domainAliasSaveController = useRef(null);
-  const customDomainSaveController = useRef(null);
+  const settingsRef = useRef(settings);
+  const committedSettingsRef = useRef({ ...PORTAL_DEFAULT_SETTINGS });
+  const settingsFieldVersions = useRef({});
+  const settingsSaveVersion = useRef(0);
+  const settingsSaveQueue = useRef(Promise.resolve());
+  const domainAliasSaveQueue = useRef(Promise.resolve());
+  const customDomainSaveQueue = useRef(Promise.resolve());
 
   const isActiveRef = useRef(isActive);
   isActiveRef.current = isActive;
@@ -37,7 +48,7 @@ export const PortalSettingsProvider = ({ projectUuid, isActive, children }) => {
   const connections = useMemo(() => allConnections.filter(isConnectionActive), [allConnections]);
 
   const updateSettings = useCallback((update = {}, callback) => {
-    let serverData = {};
+    const serverData = {};
     Object.keys(update).forEach(key => {
       const value = update[key];
       if (isBoolean(value)) {
@@ -46,13 +57,44 @@ export const PortalSettingsProvider = ({ projectUuid, isActive, children }) => {
         serverData[key] = value;
       }
     });
-    setSettings(currentSettings => ({ ...currentSettings, ...update }));
-    portalAPI.updateSettings(projectUuid, serverData).then(res => {
+
+    const stateUpdate = { ...update };
+    delete stateUpdate.password;
+    const saveVersion = ++settingsSaveVersion.current;
+    const fieldVersions = {};
+    Object.keys(stateUpdate).forEach(key => {
+      settingsFieldVersions.current[key] = saveVersion;
+      fieldVersions[key] = saveVersion;
+    });
+
+    settingsRef.current = { ...settingsRef.current, ...stateUpdate };
+    setSettings(settingsRef.current);
+
+    return enqueueSave(settingsSaveQueue, async () => {
+      try {
+        await portalAPI.updateSettings(projectUuid, serverData);
+      } catch (error) {
+        const restoredSettings = { ...settingsRef.current };
+        Object.keys(stateUpdate).forEach(key => {
+          if (settingsFieldVersions.current[key] !== fieldVersions[key]) return;
+          if (Object.prototype.hasOwnProperty.call(committedSettingsRef.current, key)) {
+            restoredSettings[key] = committedSettingsRef.current[key];
+          } else {
+            delete restoredSettings[key];
+          }
+        });
+        settingsRef.current = restoredSettings;
+        setSettings(restoredSettings);
+
+        const errorMessage = Utils.getErrorMsg(error);
+        toaster.danger(errorMessage);
+        callback && callback(false);
+        return false;
+      }
+
+      committedSettingsRef.current = { ...committedSettingsRef.current, ...stateUpdate };
       callback && callback(true);
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-      callback && callback(false);
+      return true;
     });
   }, [projectUuid]);
 
@@ -115,45 +157,39 @@ export const PortalSettingsProvider = ({ projectUuid, isActive, children }) => {
   }, [projectUuid]);
 
   const updateDomainAliasSettings = useCallback((update, callback) => {
-    domainAliasSaveController.current?.abort();
-    const controller = new AbortController();
-    domainAliasSaveController.current = controller;
-
-    portalAPI.updateDomainAlias(projectUuid, update, controller.signal).then(() => {
-      if (controller.signal.aborted) return;
-      callback && callback();
-      reloadDomainAliasSettings();
-      reloadCustomDomainSettings();
-    }).catch(error => {
-      if (controller.signal.aborted) return;
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-      callback && callback(false);
-    }).finally(() => {
-      if (domainAliasSaveController.current === controller) {
-        domainAliasSaveController.current = null;
+    return enqueueSave(domainAliasSaveQueue, async () => {
+      try {
+        await portalAPI.updateDomainAlias(projectUuid, update);
+      } catch (error) {
+        const errorMessage = Utils.getErrorMsg(error);
+        toaster.danger(errorMessage);
+        callback && callback(false);
+        return false;
       }
+
+      callback && callback(true);
+      if (isActiveRef.current) {
+        reloadDomainAliasSettings();
+        reloadCustomDomainSettings();
+      }
+      return true;
     });
   }, [projectUuid, reloadDomainAliasSettings, reloadCustomDomainSettings]);
 
   const updateCustomDomainSettings = useCallback((update, callback) => {
-    customDomainSaveController.current?.abort();
-    const controller = new AbortController();
-    customDomainSaveController.current = controller;
-
-    portalAPI.updateCustomDomain(projectUuid, update, controller.signal).then(() => {
-      if (controller.signal.aborted) return;
-      callback && callback();
-      reloadCustomDomainSettings();
-    }).catch((error) => {
-      if (controller.signal.aborted) return;
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-      callback && callback(false);
-    }).finally(() => {
-      if (customDomainSaveController.current === controller) {
-        customDomainSaveController.current = null;
+    return enqueueSave(customDomainSaveQueue, async () => {
+      try {
+        await portalAPI.updateCustomDomain(projectUuid, update);
+      } catch (error) {
+        const errorMessage = Utils.getErrorMsg(error);
+        toaster.danger(errorMessage);
+        callback && callback(false);
+        return false;
       }
+
+      callback && callback(true);
+      if (isActiveRef.current) reloadCustomDomainSettings();
+      return true;
     });
   }, [projectUuid, reloadCustomDomainSettings]);
 
@@ -177,7 +213,11 @@ export const PortalSettingsProvider = ({ projectUuid, isActive, children }) => {
     setIsSettingsLoading(true);
     setIsDomainAliasSettingsLoading(true);
     setIsCustomDomainSettingsLoading(true);
-    portalAPI.getSettings(projectUuid, controller.signal).then(res => {
+    settingsSaveQueue.current.then(() => {
+      if (controller.signal.aborted) return null;
+      return portalAPI.getSettings(projectUuid, controller.signal);
+    }).then(res => {
+      if (!res) return;
       if (controller.signal.aborted) return;
       const newSettings = { ...PORTAL_DEFAULT_SETTINGS, ...(res?.data || {}) };
       if (!newSettings.portal_logo) {
@@ -186,6 +226,8 @@ export const PortalSettingsProvider = ({ projectUuid, isActive, children }) => {
       if (!newSettings.portal_name) {
         newSettings.portal_name = PORTAL_DEFAULT_SETTINGS.portal_name;
       }
+      settingsRef.current = newSettings;
+      committedSettingsRef.current = { ...newSettings };
       setSettings(newSettings);
     }).catch(error => {
       if (controller.signal.aborted) return;
