@@ -1,6 +1,6 @@
 import React, { cloneElement, isValidElement, useCallback, useState } from 'react';
 
-const Row = ({ row, columns, rowHeight, onUpdate, ...params }) => {
+const Row = ({ row, columns, rowHeight, onUpdate, onRowContextMenu, ...params }) => {
   const [isActive, setActive] = useState(false);
 
   const onMouseEnter = useCallback(() => {
@@ -16,7 +16,13 @@ const Row = ({ row, columns, rowHeight, onUpdate, ...params }) => {
   }, [row, onUpdate]);
 
   return (
-    <div className="seaqa-customize-table-row" onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={{ height: rowHeight }}>
+    <div
+      className="seaqa-customize-table-row"
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onContextMenu={onRowContextMenu ? (event) => onRowContextMenu(event, row) : undefined}
+      style={{ height: rowHeight }}
+    >
       {columns.map(column => {
         const { key, width, is_custom, type, formatter } = column;
         const value = is_custom ? row['config']?.[key] : row[key];

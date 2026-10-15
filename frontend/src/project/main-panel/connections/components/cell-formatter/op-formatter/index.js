@@ -8,8 +8,9 @@ import './index.css';
 
 const WEBHOOK_SUPPORTED_TYPES = [CONNECTION_TYPE.DISCOURSE_FORUM];
 
-const OpFormatter = ({ onModify, onDelete, onMore, onManualSync, onViewLog, onConfigureWebhook, row, handleStatusActive, column }) => {
+const OpFormatter = ({ onModify, onDelete, onMore, onManualSync, onViewLog, onViewStatistics, onConfigureWebhook, row, handleStatusActive, column }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const canViewStatistics = onViewStatistics && row.type === CONNECTION_TYPE.GITHUB_ISSUE;
 
   const toggle = () => {
     setDropdownOpen(!dropdownOpen);
@@ -27,7 +28,7 @@ const OpFormatter = ({ onModify, onDelete, onMore, onManualSync, onViewLog, onCo
           )}
         </>
       )}
-      {(onMore || onManualSync || handleStatusActive || onViewLog || onConfigureWebhook) &&
+      {(onMore || onManualSync || handleStatusActive || onViewLog || canViewStatistics || onConfigureWebhook) &&
         <Dropdown isOpen={dropdownOpen} toggle={toggle} size="sm">
           <CustomizeDropdownMoreToggle isOpen={dropdownOpen} className="bg-color-deep" />
           <CustomizeDropdownMenu fixed={true}>
@@ -53,6 +54,11 @@ const OpFormatter = ({ onModify, onDelete, onMore, onManualSync, onViewLog, onCo
             {onViewLog && (
               <CustomizeDropdownItem onClick={() => onViewLog(row)}>
                 {gettext('Logs')}
+              </CustomizeDropdownItem>
+            )}
+            {canViewStatistics && (
+              <CustomizeDropdownItem onClick={() => onViewStatistics(row)}>
+                {gettext('Statistics')}
               </CustomizeDropdownItem>
             )}
             {onManualSync &&
