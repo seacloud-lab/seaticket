@@ -52,6 +52,23 @@ class TestEmailOAuthUtils:
         assert 'Mail.ReadWrite' in EMAIL_OAUTH_CONFIGS['Microsoft']['scopes']['personal']
         assert 'Mail.ReadWrite.Shared' in EMAIL_OAUTH_CONFIGS['Microsoft']['scopes'][EMAIL_ACCOUNT_TYPE_SHARED]
 
+    @pytest.mark.parametrize('provider,account_type,expected_scopes', [
+        ('Gmail', 'personal', [
+            'https://www.googleapis.com/auth/gmail.modify',
+            'https://www.googleapis.com/auth/gmail.settings.basic',
+        ]),
+        ('Gmail', 'alias', ['https://www.googleapis.com/auth/gmail.modify']),
+        ('Microsoft', 'personal', ['offline_access', 'User.Read', 'Mail.ReadWrite', 'Mail.Send']),
+        ('Microsoft', 'alias', ['offline_access', 'Mail.ReadWrite', 'Mail.Send']),
+        ('Microsoft', 'shared', ['offline_access', 'Mail.ReadWrite.Shared', 'Mail.Send.Shared']),
+    ])
+    def test_resolved_scopes_only_include_permissions_used_by_account_type(
+            self, provider, account_type, expected_scopes):
+        oauth_config = EmailOAuthUtils._get_oauth_config(provider, account_type, {
+            'oauth_client_mode': 'custom', 'client_id': 'client-id', 'client_secret': 'client-secret',
+        })
+        assert oauth_config['scopes'] == expected_scopes
+
     def test_get_oauth_session_removes_expired_transactions(self):
         now = datetime.datetime(2026, 8, 3, tzinfo=datetime.timezone.utc)
         current_timestamp = now.timestamp()
@@ -102,7 +119,7 @@ class TestEmailOAuthUtils:
         }
         assert payload['oauth_config']['authority_url'] == EMAIL_OAUTH_CONFIGS['Gmail']['authority_url']
         assert payload['oauth_config']['token_url'] == EMAIL_OAUTH_CONFIGS['Gmail']['token_url']
-        assert payload['oauth_config']['scopes'] == EMAIL_OAUTH_CONFIGS['Gmail']['scopes']['personal']
+        assert payload['oauth_config']['scopes'] == EMAIL_OAUTH_CONFIGS['Gmail']['scopes']['alias']
         assert payload['oauth_config']['authority_args'] == EMAIL_OAUTH_CONFIGS['Gmail']['authority_args']
 
     def test_shared_microsoft_allows_tenant_endpoints(self, factory):
