@@ -151,7 +151,7 @@ const Main = ({
                 <IconTooltip
                   icon="copy"
                   tip={gettext('Copy URL')}
-                  disabled={!subdomainPublicUrl}
+                  disabled={!currentPortalDomain}
                   className="mx-0 btn btn-secondary p-0"
                   hoverBackground={true}
                   size={{ btn: 38, icon: 14 }}
@@ -174,7 +174,7 @@ const Main = ({
                 <IconTooltip
                   icon="copy"
                   tip={gettext('Copy URL')}
-                  disabled={!subdomainPublicUrl}
+                  disabled={!customDomainTxtRecordName}
                   className="mx-0 btn btn-secondary p-0"
                   hoverBackground={true}
                   size={{ btn: 38, icon: 14 }}
@@ -192,7 +192,7 @@ const Main = ({
                 <IconTooltip
                   icon="copy"
                   tip={gettext('Copy URL')}
-                  disabled={!subdomainPublicUrl}
+                  disabled={!customDomainTxtRecordValue}
                   className="mx-0 btn btn-secondary p-0"
                   hoverBackground={true}
                   size={{ btn: 38, icon: 14 }}
@@ -236,9 +236,10 @@ const Main = ({
 const CustomDomainSettings = () => {
   const { domainAliasSettings, customDomainSettings, updateCustomDomainSettings, verifyCustomDomain } = usePortalSettings();
   const { custom_domain, custom_domain_verified, custom_domain_txt_record_name, custom_domain_txt_record_value, current_subdomain_domain } = customDomainSettings;
-  const { subdomain_prefix } = domainAliasSettings;
+  const { subdomain_prefix, public_url } = domainAliasSettings;
   return (
     <Main
+      subdomainPublicUrl={public_url}
       subdomainPrefix={subdomain_prefix}
       customDomain={custom_domain}
       customDomainVerified={custom_domain_verified}
