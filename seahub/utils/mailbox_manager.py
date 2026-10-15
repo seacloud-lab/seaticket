@@ -328,6 +328,12 @@ class OAuthMailboxManager(OAuthTokenClient, BaseMailboxManager):
         super().__init__(config, oauth_token, oauth_config)
         if not self._has_complete_oauth_config():
             raise MailboxConfigError('OAuth email configuration is incomplete for mailbox operations.')
+        account_type = config.get('account_type') or 'personal'
+        supported_types = ('personal', 'alias') if isinstance(self, GmailMailboxManager) else ('personal', 'alias', 'shared')
+        if account_type not in supported_types:
+            raise MailboxConfigError('Email account type is invalid')
+        if account_type == 'alias' and not config.get('sender_email'):
+            raise MailboxConfigError('Alias email sender address is required')
 
     def _auth_headers(self, extra=None):
         headers = {'Authorization': f'Bearer {self.access_token}'}
@@ -442,7 +448,7 @@ class MicrosoftMailboxManager(OAuthMailboxManager):
 
     def __init__(self, config, oauth_token=None, oauth_config=None):
         super().__init__(config, oauth_token, oauth_config)
-        if self.config.get('account_type') == 'shared' and not self.config.get('sender_email'):
+        if self.config.get('account_type') in ('alias', 'shared') and not self.config.get('sender_email'):
             raise MailboxConfigError('Shared email sender address is required.')
 
     @property

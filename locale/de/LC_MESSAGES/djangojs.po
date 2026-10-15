@@ -18,6 +18,55 @@ msgstr ""
 "X-Crowdin-File: djangojs.po\n"
 "X-Crowdin-File-ID: 6\n"
 
+#: frontend/src/project/main-panel/connections/constants.js
+msgid "Alias"
+msgstr "Alias"
+
+msgid "Gmail and Microsoft connections use OAuth. Other email providers require an App Password instead of your regular password. If any problem occurs, check the"
+msgstr "Gmail- und Microsoft-Verbindungen verwenden OAuth. Andere E-Mail-Anbieter benötigen ein App-Passwort statt Ihres normalen Passworts. Bei Problemen lesen Sie die"
+
+msgid "Shared mailbox"
+msgstr "Freigegebenes Postfach"
+
+msgid "OAuth application"
+msgstr "OAuth-Anwendung"
+
+msgid "Platform default uses the OAuth application configured by the server administrator. Custom application uses your own Client ID and Client secret. Either option supports personal accounts, aliases, and shared mailboxes."
+msgstr "Der Plattformstandard verwendet die vom Serveradministrator konfigurierte OAuth-Anwendung. Eine eigene Anwendung verwendet Ihre Client-ID und Ihr Client-Geheimnis. Beide Optionen unterstützen persönliche Konten, Aliase und freigegebene Postfächer."
+
+msgid "The OAuth application ID registered in Google Cloud or Microsoft Entra. This is not your email address or tenant ID."
+msgstr "Die in Google Cloud oder Microsoft Entra registrierte OAuth-Anwendungs-ID. Dies ist nicht Ihre E-Mail-Adresse oder Mandanten-ID."
+
+msgid "The secret belonging to this Client ID. For Microsoft Entra, enter the client secret Value, not the Secret ID."
+msgstr "Das zu dieser Client-ID gehörende Geheimnis. Geben Sie bei Microsoft Entra den Wert des Client-Geheimnisses ein, nicht dessen ID."
+
+msgid "The Microsoft OAuth authorization endpoint. Leave blank to use the default common endpoint. For a single-tenant application, use the endpoint for your tenant."
+msgstr "Der Microsoft-OAuth-Autorisierungsendpunkt. Leer lassen, um den common-Standardendpunkt zu verwenden. Verwenden Sie für eine Anwendung mit einem Mandanten dessen Endpunkt."
+
+msgid "The Microsoft endpoint for obtaining and refreshing tokens. Leave blank to use the default common endpoint. A custom endpoint must use the same tenant as the Authority URL."
+msgstr "Der Microsoft-Endpunkt zum Abrufen und Erneuern von Tokens. Leer lassen, um den common-Standardendpunkt zu verwenden. Ein eigener Endpunkt muss denselben Mandanten wie die Authority URL verwenden."
+
+msgid "Register this callback URL in your OAuth application. It is read-only and must match exactly, including the protocol and path."
+msgstr "Registrieren Sie diese Rückruf-URL in Ihrer OAuth-Anwendung. Sie ist schreibgeschützt und muss einschließlich Protokoll und Pfad exakt übereinstimmen."
+
+msgid "Platform default"
+msgstr "Plattformstandard"
+
+msgid "Custom application"
+msgstr "Eigene Anwendung"
+
+msgid "Advanced settings"
+msgstr "Erweiterte Einstellungen"
+
+msgid "Hide advanced settings"
+msgstr "Erweiterte Einstellungen ausblenden"
+
+msgid "OAuth callback URL"
+msgstr "OAuth-Rückruf-URL"
+
+msgid "Alias and shared mailbox connections only sync messages associated with the configured From address."
+msgstr "Alias- und freigegebene Postfachverbindungen synchronisieren nur Nachrichten, die mit der konfigurierten Absenderadresse verknüpft sind."
+
 #: frontend/src/components/account/external-user-account.js:92
 #: frontend/src/components/account/external-user-account.js:93
 #: frontend/src/components/account/external-user-account.js:103
@@ -7787,4 +7836,3 @@ msgstr "Name darf keinen Schrägstrich enthalten"
 #: frontend/src/utils/validate/name.js:15
 msgid "Name cannot contain backslash"
 msgstr "Name darf keinen Backslash enthalten"
-

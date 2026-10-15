@@ -18,6 +18,55 @@ msgstr ""
 "X-Crowdin-File: djangojs.po\n"
 "X-Crowdin-File-ID: 6\n"
 
+#: frontend/src/project/main-panel/connections/constants.js
+msgid "Alias"
+msgstr "别名"
+
+msgid "Gmail and Microsoft connections use OAuth. Other email providers require an App Password instead of your regular password. If any problem occurs, check the"
+msgstr "Gmail 和 Microsoft 连接使用 OAuth 授权。其他邮箱服务商需要使用应用专用密码，而非普通密码。如遇问题，请查看"
+
+msgid "Shared mailbox"
+msgstr "共享邮箱"
+
+msgid "OAuth application"
+msgstr "OAuth 应用"
+
+msgid "Platform default uses the OAuth application configured by the server administrator. Custom application uses your own Client ID and Client secret. Either option supports personal accounts, aliases, and shared mailboxes."
+msgstr "平台默认使用服务器管理员配置的 OAuth 应用；自定义应用使用您自己的 Client ID 和 Client secret。两种方式均可用于个人账户、别名和共享邮箱。"
+
+msgid "The OAuth application ID registered in Google Cloud or Microsoft Entra. This is not your email address or tenant ID."
+msgstr "在 Google Cloud 或 Microsoft Entra 中注册的 OAuth 应用 ID，不是邮箱地址或租户 ID。"
+
+msgid "The secret belonging to this Client ID. For Microsoft Entra, enter the client secret Value, not the Secret ID."
+msgstr "与该 Client ID 配套的应用密钥。Microsoft Entra 中应填写客户端密钥的 Value（值），而非 Secret ID（密钥 ID）。"
+
+msgid "The Microsoft OAuth authorization endpoint. Leave blank to use the default common endpoint. For a single-tenant application, use the endpoint for your tenant."
+msgstr "Microsoft OAuth 授权地址。留空使用默认的 common 地址；单租户应用可填写对应租户的授权地址。"
+
+msgid "The Microsoft endpoint for obtaining and refreshing tokens. Leave blank to use the default common endpoint. A custom endpoint must use the same tenant as the Authority URL."
+msgstr "Microsoft 获取和刷新令牌的地址。留空使用默认的 common 地址；自定义地址必须与 Authority URL 使用同一租户。"
+
+msgid "Register this callback URL in your OAuth application. It is read-only and must match exactly, including the protocol and path."
+msgstr "请在 OAuth 应用中注册此回调地址。地址为只读，必须完全一致，包括协议和路径。"
+
+msgid "Platform default"
+msgstr "平台默认"
+
+msgid "Custom application"
+msgstr "自定义应用"
+
+msgid "Advanced settings"
+msgstr "高级设置"
+
+msgid "Hide advanced settings"
+msgstr "隐藏高级设置"
+
+msgid "OAuth callback URL"
+msgstr "OAuth 回调地址"
+
+msgid "Alias and shared mailbox connections only sync messages associated with the configured From address."
+msgstr "别名和共享邮箱连接只同步与配置的发件地址关联的邮件。"
+
 #: frontend/src/components/account/external-user-account.js:92
 #: frontend/src/components/account/external-user-account.js:93
 #: frontend/src/components/account/external-user-account.js:103
@@ -7787,4 +7836,3 @@ msgstr "名称不能包含斜杠"
 #: frontend/src/utils/validate/name.js:15
 msgid "Name cannot contain backslash"
 msgstr "名称不能包含反斜杠"
-

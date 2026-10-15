@@ -18,6 +18,55 @@ msgstr ""
 "X-Crowdin-File: djangojs.po\n"
 "X-Crowdin-File-ID: 6\n"
 
+#: frontend/src/project/main-panel/connections/constants.js
+msgid "Alias"
+msgstr "Alias"
+
+msgid "Gmail and Microsoft connections use OAuth. Other email providers require an App Password instead of your regular password. If any problem occurs, check the"
+msgstr "Les connexions Gmail et Microsoft utilisent OAuth. Les autres fournisseurs nécessitent un mot de passe d’application plutôt que votre mot de passe habituel. En cas de problème, consultez la"
+
+msgid "Shared mailbox"
+msgstr "Boîte aux lettres partagée"
+
+msgid "OAuth application"
+msgstr "Application OAuth"
+
+msgid "Platform default uses the OAuth application configured by the server administrator. Custom application uses your own Client ID and Client secret. Either option supports personal accounts, aliases, and shared mailboxes."
+msgstr "L’option par défaut utilise l’application OAuth configurée par l’administrateur du serveur. Une application personnalisée utilise votre propre Client ID et Client secret. Les deux options prennent en charge les comptes personnels, les alias et les boîtes partagées."
+
+msgid "The OAuth application ID registered in Google Cloud or Microsoft Entra. This is not your email address or tenant ID."
+msgstr "L’identifiant de l’application OAuth enregistrée dans Google Cloud ou Microsoft Entra. Il ne s’agit pas de votre adresse e-mail ni de l’identifiant de votre locataire."
+
+msgid "The secret belonging to this Client ID. For Microsoft Entra, enter the client secret Value, not the Secret ID."
+msgstr "Le secret associé à ce Client ID. Pour Microsoft Entra, saisissez la valeur du secret client, et non son identifiant."
+
+msgid "The Microsoft OAuth authorization endpoint. Leave blank to use the default common endpoint. For a single-tenant application, use the endpoint for your tenant."
+msgstr "Le point de terminaison d’autorisation OAuth Microsoft. Laissez vide pour utiliser le point de terminaison common par défaut. Pour une application à locataire unique, utilisez celui de votre locataire."
+
+msgid "The Microsoft endpoint for obtaining and refreshing tokens. Leave blank to use the default common endpoint. A custom endpoint must use the same tenant as the Authority URL."
+msgstr "Le point de terminaison Microsoft pour obtenir et renouveler les jetons. Laissez vide pour utiliser le point de terminaison common par défaut. Un point de terminaison personnalisé doit utiliser le même locataire que l’Authority URL."
+
+msgid "Register this callback URL in your OAuth application. It is read-only and must match exactly, including the protocol and path."
+msgstr "Enregistrez cette URL de rappel dans votre application OAuth. Elle est en lecture seule et doit correspondre exactement, y compris le protocole et le chemin."
+
+msgid "Platform default"
+msgstr "Application par défaut de la plateforme"
+
+msgid "Custom application"
+msgstr "Application personnalisée"
+
+msgid "Advanced settings"
+msgstr "Paramètres avancés"
+
+msgid "Hide advanced settings"
+msgstr "Masquer les paramètres avancés"
+
+msgid "OAuth callback URL"
+msgstr "URL de rappel OAuth"
+
+msgid "Alias and shared mailbox connections only sync messages associated with the configured From address."
+msgstr "Les connexions d’alias et de boîtes partagées synchronisent uniquement les messages associés à l’adresse d’expéditeur configurée."
+
 #: frontend/src/components/account/external-user-account.js:92
 #: frontend/src/components/account/external-user-account.js:93
 #: frontend/src/components/account/external-user-account.js:103
@@ -7787,4 +7836,3 @@ msgstr "Le nom ne peut pas contenir de barre oblique (/)"
 #: frontend/src/utils/validate/name.js:15
 msgid "Name cannot contain backslash"
 msgstr "Le nom ne peut pas contenir de barre oblique inverse (\\)"
-

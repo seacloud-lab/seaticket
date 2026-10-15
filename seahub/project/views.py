@@ -105,6 +105,7 @@ def project_view(request, workspace_id, project_name, children_id = '', record_i
         'enable_general_task': ENABLE_GENERAL_TASK,
         'thought_process_enabled': THOUGHT_PROCESS_ENABLED,
         'permission': permission if permission else PERMISSION_READ,
+        'email_oauth_callback_url': get_email_oauth_callback_url(),
         'llm_models': json.dumps(LLM_MODELS),
     }
     return render(request, 'project_view_react.html', return_dict)

@@ -70,7 +70,11 @@ class TestMicrosoftMailboxManager:
         ('config', 'endpoint', 'method_name', 'destination_id'),
         [
             ({'account_type': 'personal'}, 'https://graph.microsoft.com/v1.0/me/messages',
-              'move_to_trash', 'deleteditems'),
+               'move_to_trash', 'deleteditems'),
+            ({'account_type': 'alias', 'sender_email': 'alias@example.com'},
+              'https://graph.microsoft.com/v1.0/me/messages', 'move_to_trash', 'deleteditems'),
+            ({'account_type': 'alias', 'sender_email': 'alias@example.com'},
+              'https://graph.microsoft.com/v1.0/me/messages', 'move_to_junk', 'junkemail'),
             ({'account_type': 'shared', 'sender_email': 'shared+mail@example.com'},
               'https://graph.microsoft.com/v1.0/users/shared%2Bmail%40example.com/messages',
               'move_to_trash', 'deleteditems'),

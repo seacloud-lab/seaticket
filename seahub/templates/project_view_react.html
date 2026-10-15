@@ -54,6 +54,7 @@
             thoughtProcessEnabled: {% if thought_process_enabled %} true {% else %} false {% endif %},
             workspaceID: '{{ workspace_id }}',
             projectUuid: '{{ project_uuid }}',
+            emailOAuthCallbackUrl: '{{ email_oauth_callback_url|escapejs }}',
             icon: '{{ icon|escapejs }}',
             settings: '{{ settings|escapejs }}',
             langCode: "{{LANGUAGE_CODE|escapejs}}",

@@ -43,7 +43,15 @@ MICROSOFT_EMAIL_PROVIDER = 'Microsoft'
 MICROSOFT_OAUTH_URL_PREFIX = 'https://login.microsoftonline.com/'
 GMAIL_EMAIL_PROVIDER = 'Gmail'
 EMAIL_ACCOUNT_TYPE_PERSONAL = 'personal'
+EMAIL_ACCOUNT_TYPE_ALIAS = 'alias'
 EMAIL_ACCOUNT_TYPE_SHARED = 'shared'
+EMAIL_OAUTH_CLIENT_DEFAULT = 'default'
+EMAIL_OAUTH_CLIENT_CUSTOM = 'custom'
+
+EMAIL_ACCOUNT_TYPES = {
+    GMAIL_EMAIL_PROVIDER: (EMAIL_ACCOUNT_TYPE_PERSONAL, EMAIL_ACCOUNT_TYPE_ALIAS),
+    MICROSOFT_EMAIL_PROVIDER: (EMAIL_ACCOUNT_TYPE_PERSONAL, EMAIL_ACCOUNT_TYPE_ALIAS, EMAIL_ACCOUNT_TYPE_SHARED),
+}
 
 OAUTH_EMAIL_PROVIDERS = [MICROSOFT_EMAIL_PROVIDER, GMAIL_EMAIL_PROVIDER]
 
@@ -59,9 +67,10 @@ EMAIL_OAUTH_CONFIGS = {
                 'https://www.googleapis.com/auth/gmail.send',
                 'https://www.googleapis.com/auth/gmail.settings.basic',
             ],
-            EMAIL_ACCOUNT_TYPE_SHARED: [
+            EMAIL_ACCOUNT_TYPE_ALIAS: [
                 'https://www.googleapis.com/auth/gmail.modify',
                 'https://www.googleapis.com/auth/gmail.send',
+                'https://www.googleapis.com/auth/gmail.settings.basic',
             ],
         },
         'authority_args': {'access_type': 'offline', 'prompt': 'consent'},
@@ -73,6 +82,7 @@ EMAIL_OAUTH_CONFIGS = {
         'token_url': 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
         'scopes': {
             EMAIL_ACCOUNT_TYPE_PERSONAL: ['openid', 'profile', 'email', 'offline_access', 'User.Read', 'Mail.ReadWrite', 'Mail.Send'],
+            EMAIL_ACCOUNT_TYPE_ALIAS: ['openid', 'profile', 'email', 'offline_access', 'User.Read', 'Mail.ReadWrite', 'Mail.Send'],
             EMAIL_ACCOUNT_TYPE_SHARED: ['offline_access', 'Mail.ReadWrite.Shared', 'Mail.Send.Shared'],
         },
         'authority_args': {'response_mode': 'query', 'prompt': 'consent'},

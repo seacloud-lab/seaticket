@@ -343,14 +343,17 @@ class _OAuthEmailSender(OAuthTokenClient, _EmailSenderBase):
         super().__init__(config, oauth_token, oauth_config)
         self.sender_name = config.get('sender_name', '')
         self.sender_email = config.get('sender_email')
-        self.account_type = config.get('account_type', 'personal')
+        self.account_type = config.get('account_type') or 'personal'
+        supported_types = ('personal', 'alias') if isinstance(self, GmailSender) else ('personal', 'alias', 'shared')
+        if self.account_type not in supported_types:
+            raise EmailConfigError('Email account type is invalid')
 
         if not self._has_complete_oauth_config():
             logger.error('OAuth email config is invalid. client_id: %s, token_url: %s',
                         self.client_id, self.token_url)
             raise EmailConfigError('OAuth email configuration is incomplete')
-        if self.account_type == 'shared' and not self.sender_email:
-            raise EmailConfigError('Shared email sender address is required')
+        if self.account_type in ('alias', 'shared') and not self.sender_email:
+            raise EmailConfigError('Alias or shared mailbox sender address is required')
 
     def _do_send_email(self, msg_obj):
         """Subclasses implement this to send email via their API"""
@@ -403,7 +406,7 @@ class GmailSender(_OAuthEmailSender):
     EMAIL_SENDING_ENDPOINT = 'https://gmail.googleapis.com/upload/gmail/v1/users/{principal}/messages/send?uploadType=multipart'
 
     def _sending_endpoint(self):
-        principal = self.sender_email if self.account_type == 'shared' else 'me'
+        principal = 'me'
         return self.EMAIL_SENDING_ENDPOINT.format(principal=quote(principal, safe=''))
 
     def _do_send_email(self, msg_obj):

@@ -1,13 +1,15 @@
 import React, { useCallback, useMemo, useState, useEffect, useRef } from 'react';
 import { Button, Modal, Input, ModalBody, FormGroup, Label, Row } from 'reactstrap';
+import copy from 'copy-to-clipboard';
 import PropTypes from 'prop-types';
-import { ModalHeader, Loading, toaster, Icon } from '@/components';
+import { ModalHeader, Loading, toaster, Icon, IconTooltip } from '@/components';
+import Switch from '@/components/switch';
 import { gettext } from '@/constants';
 import { connectionsAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
 import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, STEP, STEPS, EMAIL_SERVER_PROVIDER, getAvailableConnectionTypes } from '../../constants';
 import { useConnections } from '../../hooks/connections';
-import { getVisibleEmailFields, getEmailProvider, isOAuthEmailProvider, hasValidMicrosoftOAuthUrls, sanitizeEmailConfigByProvider } from '../../utils';
+import { getVisibleEmailFields, getEmailProvider, isOAuthEmailProvider, hasValidMicrosoftOAuthUrls, sanitizeEmailConfigByProvider, isEmailOAuthConfigValid } from '../../utils';
 import ConnectionConfigEditor from '../connection-config-editor';
 import { ConfluenceConfig, DiscordConfig, GithubConfig, JiraConfig, LinearConfig } from './connection-config';
 import ConnectionDialogFooter from './connection-dialog-footer';
@@ -46,7 +48,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const [isSubmitting, setSubmitting] = useState(false);
   const [githubRepositories, setGithubRepositories] = useState([]);
   const [isLoadingRepositories, setIsLoadingRepositories] = useState(false);
-  const [showEmailAdvancedOptions] = useState(false);
+  const [showEmailAdvancedOptions, setShowEmailAdvancedOptions] = useState(false);
   const [isWaitingEmailOAuth, setWaitingEmailOAuth] = useState(false);
   const [emailOAuthState, setEmailOAuthState] = useState('');
   const [emailOAuthSender, setEmailOAuthSender] = useState(null);
@@ -106,7 +108,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     const _columns = CONNECTION_FIELDS[type] || [];
     if (type === CONNECTION_TYPE.GITHUB_ISSUE) return _columns;
     if (type !== CONNECTION_TYPE.EMAIL) return _columns;
-    return getVisibleEmailFields(_columns, getEmailProvider(config), showEmailAdvancedOptions, config.account_type);
+    return getVisibleEmailFields(_columns, getEmailProvider(config), showEmailAdvancedOptions, config.account_type, config.oauth_client_mode);
   }, [type, config, showEmailAdvancedOptions]);
 
   const customColumns = useMemo(() => columns.filter(c => {
@@ -145,6 +147,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     if (isDiscord && !config.guild_id) return false;
     if (isJira && !isJiraOauthConnected) return false;
     if (isOAuthEmail && !emailOAuthState) return false;
+    if (isOAuthEmail && !isEmailOAuthConfigValid(config, CONNECTION_FIELDS[type])) return false;
     return customColumns.length > 0 ? customColumns.every(c => {
       if (c.type === CONNECTION_FIELD_TYPE.GROUP) {
         return c.children.every(child => {
@@ -254,20 +257,25 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const onConfigChange = useCallback((key, value) => {
     if (config[key] === value) return;
 
+    if (['server_provider', 'account_type', 'oauth_client_mode', 'client_id', 'client_secret', 'authority_url', 'token_url', 'sender_email', 'sender_name'].includes(key)) {
+      setEmailOAuthState('');
+      setEmailOAuthSender(null);
+    }
+
     if (key === 'server_provider') {
       const nextProvider = value || EMAIL_SERVER_PROVIDER.GENERAL;
-      setConfig({
+      setConfig(sanitizeEmailConfigByProvider({
         ...config,
         [key]: nextProvider,
         ...(isOAuthEmailProvider(nextProvider) ? { account_type: 'personal' } : { account_type: undefined }),
-      });
+      }));
       setEmailOAuthState('');
       setEmailOAuthSender(null);
       return;
     }
 
-    setConfig({ ...config, [key]: value });
-  }, [config]);
+    setConfig(type === CONNECTION_TYPE.EMAIL ? sanitizeEmailConfigByProvider({ ...config, [key]: value }) : { ...config, [key]: value });
+  }, [config, type]);
 
   const handleEmailOAuthLogin = useCallback(() => {
     let _config = { ...config };
@@ -882,7 +890,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
               </Label>
               <Input value={name} onChange={onNameChange} disabled={isSubmitting} />
             </FormGroup>
-            {isOAuthEmail ? basicCustomColumns.filter(column => column.key !== 'account_type').map(renderConnectionField) : (
+            {isOAuthEmail ? basicCustomColumns.map(renderConnectionField) : (
               isDiscord
                 ? basicCustomColumns.filter(column => column.key !== 'channel_id').map(renderConnectionField)
                 : basicCustomColumns.map(renderConnectionField)
@@ -907,8 +915,36 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
               </FormGroup>
             )}
             {isDiscord && basicCustomColumns.filter(column => column.key === 'channel_id').map(renderConnectionField)}
-            {false && isOAuthEmail && basicCustomColumns.filter(column => column.key === 'account_type').map(renderConnectionField)}
+            {isOAuthEmail && (
+              <div className="seaqa-project-connection-advanced-options mb-3">
+                <Switch
+                  checked={showEmailAdvancedOptions}
+                  onChange={() => setShowEmailAdvancedOptions(!showEmailAdvancedOptions)}
+                  placeholder={gettext('Advanced settings')}
+                  textPosition="right"
+                  disabled={isSubmitting}
+                />
+              </div>
+            )}
             {advancedCustomColumns.map(renderConnectionField)}
+            {isOAuthEmail && showEmailAdvancedOptions && config.oauth_client_mode === 'custom' && (
+              <FormGroup>
+                <Label>
+                  {gettext('OAuth callback URL')}
+                  <IconTooltip
+                    tip={gettext('Register this callback URL in your OAuth application. It is read-only and must match exactly, including the protocol and path.')}
+                    icon="question-circle-stroked"
+                    className="connection-config-tip-btn"
+                  />
+                </Label>
+                <div className="input-group">
+                  <Input value={window.app.pageOptions.emailOAuthCallbackUrl || ''} readOnly />
+                  <Button type="button" disabled={isSubmitting} onClick={() => copy(window.app.pageOptions.emailOAuthCallbackUrl || '')}>
+                    {gettext('Copy')}
+                  </Button>
+                </div>
+              </FormGroup>
+            )}
             {isOAuthEmail && (
               <FormGroup>
                 <Label>{gettext('Authorization')}</Label>
@@ -922,7 +958,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
                   </span>
                   <Button
                     color={emailOAuthSender ? 'secondary' : 'primary'}
-                    disabled={isSubmitting || isWaitingEmailOAuth || !name.trim()}
+                    disabled={isSubmitting || isWaitingEmailOAuth || !name.trim() || !isEmailOAuthConfigValid(config, CONNECTION_FIELDS[type])}
                     onClick={handleEmailOAuthLogin}
                   >
                     {gettext('Login')}
