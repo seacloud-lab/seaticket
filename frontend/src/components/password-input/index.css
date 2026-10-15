@@ -2,12 +2,3 @@
   height: 14px;
   width: 14px;
 }
-
-.password-input-group .password-op-icon {
-  margin-left: 0;
-  border-left: 0;
-}
-
-.password-input-group .password-op-icon:hover {
-  border-color: var(--bs-btn-border-color) !important;
-}
