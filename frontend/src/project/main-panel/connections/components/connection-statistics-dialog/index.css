@@ -1,0 +1,137 @@
+.connection-statistics-dialog {
+  max-width: 1100px;
+  width: calc(100% - 32px);
+}
+
+.connection-statistics-dialog .modal-title {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  font-size: 16px;
+}
+
+.connection-statistics-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.connection-statistics-title-suffix {
+  flex-shrink: 0;
+  white-space: pre;
+}
+
+.connection-statistics-content {
+  min-height: 430px;
+}
+
+.connection-statistics-content > .h-100 {
+  min-height: 430px;
+}
+
+.connection-statistics-summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 20px;
+  color: var(--bs-sf-grey-text);
+  font-size: 13px;
+}
+
+.connection-statistics-heading {
+  margin: 24px 0 16px;
+  font-size: 16px;
+  text-align: center;
+}
+
+.connection-statistics-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px 18px;
+  margin: 0;
+  padding: 0 20px;
+  list-style: none;
+  font-size: 13px;
+}
+
+.connection-statistics-legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.connection-statistics-swatch {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.connection-statistics-chart-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.connection-statistics-chart-scroll svg {
+  display: block;
+  font-size: 12px;
+}
+
+.connection-statistics-tick line {
+  stroke: #e6e6e6;
+  stroke-dasharray: 3 3;
+}
+
+.connection-statistics-baseline {
+  stroke: #b9b9b9;
+}
+
+.connection-statistics-tick text,
+.connection-statistics-month,
+.connection-statistics-axis-title {
+  fill: var(--bs-sf-grey-text, #666666);
+}
+
+.connection-statistics-value {
+  fill: var(--bs-body-color, #333333);
+  font-size: 11px;
+}
+
+.connection-statistics-bar:hover {
+  opacity: 0.8;
+}
+
+.connection-statistics-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 430px;
+  overflow-wrap: anywhere;
+}
+
+.connection-statistics-empty {
+  margin: 0 0 16px;
+  color: var(--bs-sf-grey-text);
+  text-align: center;
+}
+
+@media (max-width: 575px) {
+  .connection-statistics-dialog {
+    margin: 16px auto;
+    width: calc(100% - 16px);
+  }
+
+  .connection-statistics-dialog .modal-body {
+    padding: 16px 8px;
+  }
+
+  .connection-statistics-summary {
+    padding: 0 8px;
+  }
+}
