@@ -1,13 +1,13 @@
 .password-op-icon .seaqa-icon-svg {
-  color: var(--bs-icon-secondary-color);
   height: 14px;
   width: 14px;
 }
 
-.password-op-icon:hover .seaqa-icon-svg {
-  color: var(--bs-sf-grey-text);
+.password-input-group .password-op-icon {
+  margin-left: 0;
+  border-left: 0;
 }
 
-.password-op-icon.disabled {
-  background-color: #f8f9fa !important;
+.password-input-group .password-op-icon:hover {
+  border-color: var(--bs-btn-border-color) !important;
 }
