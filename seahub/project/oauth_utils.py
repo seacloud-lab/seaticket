@@ -66,12 +66,19 @@ class EmailOAuthUtils(CommonOAuthUtils):
                        for url in (authority_url, token_url)):
                 return None
 
+        scopes = list(config['scopes'][account_type])
+        # Platform authorization includes identity permissions. Custom personal
+        # accounts also need them to discover their sender profile automatically.
+        if client_mode == EMAIL_OAUTH_CLIENT_DEFAULT or account_type == EMAIL_ACCOUNT_TYPE_PERSONAL:
+            scopes.extend(config['identity_scopes'])
+        scopes = list(dict.fromkeys(scopes))
+
         return {
             'client_id': client_id,
             'client_secret': client_secret,
             'authority_url': authority_url,
             'token_url': token_url,
-            'scopes': list(config['scopes'][account_type]),
+            'scopes': scopes,
             'authority_args': dict(config['authority_args']),
         }
 

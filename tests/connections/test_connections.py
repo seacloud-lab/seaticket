@@ -58,11 +58,11 @@ class TestEmailOAuthUtils:
             'https://www.googleapis.com/auth/gmail.settings.basic',
         ]),
         ('Gmail', 'alias', ['https://www.googleapis.com/auth/gmail.modify']),
-        ('Microsoft', 'personal', ['offline_access', 'User.Read', 'Mail.ReadWrite', 'Mail.Send']),
+        ('Microsoft', 'personal', ['offline_access', 'Mail.ReadWrite', 'Mail.Send', 'openid', 'profile', 'email', 'User.Read']),
         ('Microsoft', 'alias', ['offline_access', 'Mail.ReadWrite', 'Mail.Send']),
         ('Microsoft', 'shared', ['offline_access', 'Mail.ReadWrite.Shared', 'Mail.Send.Shared']),
     ])
-    def test_resolved_scopes_only_include_permissions_used_by_account_type(
+    def test_custom_scopes_include_identity_permissions_only_for_personal(
             self, provider, account_type, expected_scopes):
         oauth_config = EmailOAuthUtils._get_oauth_config(provider, account_type, {
             'oauth_client_mode': 'custom', 'client_id': 'client-id', 'client_secret': 'client-secret',
@@ -230,7 +230,10 @@ class TestEmailOAuthUtils:
             payload, error = EmailOAuthUtils.build_email_oauth_config(request)
             assert error is None
             assert payload['oauth_config']['client_id'] == ('custom-id' if client_mode == 'custom' else 'platform-id')
-            assert payload['oauth_config']['scopes'] == provider_config['scopes'][account_type]
+            expected_scopes = list(provider_config['scopes'][account_type])
+            if client_mode == 'default' or account_type == 'personal':
+                expected_scopes.extend(provider_config['identity_scopes'])
+            assert payload['oauth_config']['scopes'] == list(dict.fromkeys(expected_scopes))
             assert ('sender_email' in payload['config']) == (account_type != 'personal')
             assert ('client_secret' in payload['config']) == (client_mode == 'custom')
             assert EmailOAuthUtils._get_oauth_config(provider, account_type, payload['config']) == payload['oauth_config']

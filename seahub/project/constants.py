@@ -64,12 +64,12 @@ EMAIL_OAUTH_CONFIGS = {
         'scopes': {
             EMAIL_ACCOUNT_TYPE_PERSONAL: [
                 'https://www.googleapis.com/auth/gmail.modify',
-                'https://www.googleapis.com/auth/gmail.settings.basic',
             ],
             EMAIL_ACCOUNT_TYPE_ALIAS: [
                 'https://www.googleapis.com/auth/gmail.modify',
             ],
         },
+        'identity_scopes': ['https://www.googleapis.com/auth/gmail.settings.basic'],
         'authority_args': {'access_type': 'offline', 'prompt': 'consent'},
     },
     MICROSOFT_EMAIL_PROVIDER: {
@@ -78,10 +78,11 @@ EMAIL_OAUTH_CONFIGS = {
         'authority_url': 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
         'token_url': 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
         'scopes': {
-            EMAIL_ACCOUNT_TYPE_PERSONAL: ['offline_access', 'User.Read', 'Mail.ReadWrite', 'Mail.Send'],
+            EMAIL_ACCOUNT_TYPE_PERSONAL: ['offline_access', 'Mail.ReadWrite', 'Mail.Send'],
             EMAIL_ACCOUNT_TYPE_ALIAS: ['offline_access', 'Mail.ReadWrite', 'Mail.Send'],
             EMAIL_ACCOUNT_TYPE_SHARED: ['offline_access', 'Mail.ReadWrite.Shared', 'Mail.Send.Shared'],
         },
+        'identity_scopes': ['openid', 'profile', 'email', 'User.Read'],
         'authority_args': {'response_mode': 'query', 'prompt': 'consent'},
     },
 }
