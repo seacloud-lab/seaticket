@@ -1,18 +1,20 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Button } from 'reactstrap';
+import { Button, DropdownItem } from 'reactstrap';
 import { Icon, toaster, CenteredLoading, EmptyTip, CustomizeTable } from '@/components';
+import ModalPortal from '@/components/modal-portal';
 import { gettext } from '@/constants';
+import { connectionsAPI } from '@/project/api';
 import { BAR_TYPE } from '@/project/constants';
 import { areArraysEqual } from '@/utils/array-utils';
 import dayjs from '@/utils/dayjs';
 import SelfQuery from '@/utils/self-query';
 import { Utils } from '@/utils/utils';
-import { connectionsAPI } from '../../../../api';
 import createFormatter from '../../components/cell-formatter';
 import ConfigureWebhookDialog from '../../components/configure-webhook-dialog';
 import ConnectionLogsDialog from '../../components/connection-logs-dialog';
+import ConnectionStatisticsDialog from '../../components/connection-statistics-dialog';
 import ConnectionStatusDialog from '../../components/connection-status-dialog';
-import { CONNECTION_FIELD_TYPE, CONNECTION_SYNC_STATUS } from '../../constants';
+import { CONNECTION_FIELD_TYPE, CONNECTION_SYNC_STATUS, CONNECTION_TYPE } from '../../constants';
 import { useConnections, useConnectionsPage } from '../../hooks';
 import { isConnectionSyncCompleted, isConnectionFirstSync } from '../../utils';
 
@@ -25,6 +27,9 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
   const [isShowStatusDialog, setIsShowStatusDialog] = useState(false);
   const [isShowLogDialog, setIsShowLogDialog] = useState(false);
   const [isShowWebhookDialog, setIsShowWebhookDialog] = useState(false);
+  const [statisticsConnection, setStatisticsConnection] = useState(null);
+  const [contextMenu, setContextMenu] = useState(null);
+  const contextMenuRef = useRef(null);
 
   const { isLoading, isLoadingMore, connections, reloadConnections, loadMore, handleModify, handleDelete,
     modifyConnectionIsActiveStatus, modifyLocalConnectionRecord, modifyLocalConnectionsSyncStatus,
@@ -75,6 +80,45 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
     activeRecordRef.current = null;
     setIsShowLogDialog(false);
   }, []);
+
+  const onViewStatistics = useCallback((record) => {
+    setContextMenu(null);
+    if (record.type !== CONNECTION_TYPE.GITHUB_ISSUE) return;
+    setStatisticsConnection(record);
+  }, []);
+
+  const onRowContextMenu = useCallback((event, record) => {
+    if (record.type !== CONNECTION_TYPE.GITHUB_ISSUE) {
+      setContextMenu(null);
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    setContextMenu({
+      record,
+      left: Math.max(8, Math.min(event.clientX, window.innerWidth - 208)),
+      top: Math.max(8, Math.min(event.clientY, window.innerHeight - 56)),
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!contextMenu) return;
+    const hideMenu = (event) => {
+      if (event.type === 'keydown' && event.key !== 'Escape') return;
+      if (event.type === 'mousedown' && contextMenuRef.current?.contains(event.target)) return;
+      setContextMenu(null);
+    };
+    document.addEventListener('mousedown', hideMenu);
+    document.addEventListener('keydown', hideMenu);
+    document.addEventListener('scroll', hideMenu, true);
+    window.addEventListener('resize', hideMenu);
+    return () => {
+      document.removeEventListener('mousedown', hideMenu);
+      document.removeEventListener('keydown', hideMenu);
+      document.removeEventListener('scroll', hideMenu, true);
+      window.removeEventListener('resize', hideMenu);
+    };
+  }, [contextMenu]);
 
   const onConfigureWebhook = useCallback((record) => {
     activeRecordRef.current = record;
@@ -183,6 +227,8 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
         expandRow={handleExpandRow}
         onManualSync={onManualSync}
         onViewLog={onViewLog}
+        onViewStatistics={onViewStatistics}
+        onRowContextMenu={onRowContextMenu}
         onConfigureWebhook={onConfigureWebhook}
         onUpdate={modifyConnectionIsActiveStatus}
         handleStatusActive={isProjectAdmin ? handleStatusActive : null}
@@ -190,6 +236,29 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
         rowsWillUnmount={rowsWillUnmount}
         modifyLocalRow={modifyLocalConnectionRecord}
       />
+      {contextMenu && (
+        <ModalPortal>
+          <div ref={contextMenuRef}>
+            <div
+              className="dropdown-menu connection-statistics-context-menu"
+              style={{ position: 'fixed', left: contextMenu.left, top: contextMenu.top }}
+              role="menu"
+            >
+              <DropdownItem toggle={false} onClick={() => onViewStatistics(contextMenu.record)}>
+                {gettext('Statistics')}
+              </DropdownItem>
+            </div>
+          </div>
+        </ModalPortal>
+      )}
+      {statisticsConnection && (
+        <ConnectionStatisticsDialog
+          key={statisticsConnection.id}
+          projectUuid={projectUuid}
+          connection={statisticsConnection}
+          onToggle={() => setStatisticsConnection(null)}
+        />
+      )}
       {isShowStatusDialog && (
         <ConnectionStatusDialog
           projectUuid={projectUuid}
