@@ -55,16 +55,16 @@ const Main = ({
   }, [validCustomDomain, propsCustomDomain, onChange]);
 
   const onOpenRemoveCustomDomainConfirm = useCallback(() => {
-    if (!validCustomDomain) return;
+    if (!propsCustomDomain) return;
     setIsShowRemoveCustomDomainConfirm(true);
-  }, [validCustomDomain]);
+  }, [propsCustomDomain]);
 
   const onCloseRemoveCustomDomainConfirm = useCallback(() => {
     setIsShowRemoveCustomDomainConfirm(false);
   }, []);
 
   const onRemoveCustomDomain = useCallback(() => {
-    if (!validCustomDomain) return;
+    if (!propsCustomDomain) return;
     const editVersion = customDomainEditVersion.current;
     onChange && onChange({ custom_domain: '' }, (isSuccess = true) => {
       if (!isSuccess) return;
@@ -73,7 +73,7 @@ const Main = ({
         setCustomDomain('');
       }
     });
-  }, [validCustomDomain, onChange]);
+  }, [propsCustomDomain, onChange]);
 
   const onVerifyCustomDomain = useCallback(() => {
     if (!propsCustomDomain || isVerifyingCustomDomain) {
@@ -124,7 +124,7 @@ const Main = ({
             }}
             onBlur={handleCustomDomainChange}
           />
-          {customDomain && !subdomainPublicUrl && (
+          {propsCustomDomain && (
             <IconTooltip
               icon="delete"
               tip={gettext('Remove')}
