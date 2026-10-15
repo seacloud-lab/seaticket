@@ -3,7 +3,6 @@ import logging
 import json
 import base64
 import secrets
-import datetime
 from urllib.parse import urlencode, unquote
 
 import requests
@@ -19,9 +18,7 @@ from seahub.project.models import Workspaces, Projects, ProjectConnections, Proj
     ProjectConnectionOauth
 from seahub.project.utils import check_project_admin_permission, check_project_permission, update_github_connection_installation_id, \
     get_email_oauth_callback_url, fetch_oauth_email_sender_info, EmailOAuthProfileError
-from seahub.project.linear_api import LinearAPI
-from seahub.project.jira_api import JiraAPI
-from seahub.project.oauth_utils import EmailOAuthUtils
+from seahub.project.oauth_utils import CommonOAuthUtils, EmailOAuthUtils, NotionOAuthUtils
 from seahub.base.templatetags.seahub_tags import email2nickname
 from seahub.utils import render_error
 from seahub.auth.decorators import login_required
@@ -37,17 +34,6 @@ SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
 
 logger = logging.getLogger(__name__)
-
-
-OAUTH_TOKEN_EXPIRY_BUFFER_SECONDS = 60
-
-
-def _calc_confluence_expires_at(expires_in):
-    try:
-        expires_in = int(expires_in or 3600)
-    except (TypeError, ValueError):
-        expires_in = 3600
-    return datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=max(expires_in - OAUTH_TOKEN_EXPIRY_BUFFER_SECONDS, 0))
 
 
 @login_required
@@ -399,7 +385,7 @@ def linear_oauth_callback(request):
         logger.error('Linear OAuth token missing access_token: %s', token_json)
         return render_error(request, _('Failed to authorize Linear.'))
 
-    expires_at = LinearAPI.calc_expires_in(expires_in)
+    expires_at = CommonOAuthUtils.calc_expires_at(expires_in)
     ProjectConnectionOauth.objects.upsert_token(project_uuid, ConnectionType.LINEAR.value, access_token, expires_at, refresh_token)
 
     request.session.pop('linear_oauth_state', None)
@@ -516,7 +502,7 @@ def confluence_oauth_callback(request):
         project_uuid,
         ConnectionType.CONFLUENCE.value,
         access_token,
-        _calc_confluence_expires_at(token_json.get('expires_in')),
+        CommonOAuthUtils.calc_expires_at(token_json.get('expires_in')),
         refresh_token,
     )
 
@@ -661,13 +647,6 @@ def discord_oauth_callback(request):
         </script></body></html>'''
     return HttpResponse(response_html)
 
-def _calc_jira_expires_at(expires_in):
-    try:
-        expires_in = int(expires_in or 3600)
-    except (TypeError, ValueError):
-        expires_in = 3600
-    return datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=max(expires_in - 60, 0))
-
 
 @login_required
 def jira_oauth(request):
@@ -762,7 +741,7 @@ def jira_oauth_callback(request):
         project_uuid,
         ConnectionType.JIRA_ISSUE.value,
         access_token,
-        JiraAPI.calc_expires_at(token_json.get('expires_in')),
+        CommonOAuthUtils.calc_expires_at(token_json.get('expires_in')),
         refresh_token,
     )
 
@@ -771,3 +750,143 @@ def jira_oauth_callback(request):
     request.session.pop('jira_oauth_return_to', None)
 
     return redirect(return_to)
+
+
+NOTION_VERSION = "2026-03-11"
+
+
+@login_required
+def notion_oauth(request):
+    project_uuid = request.GET.get('project_uuid', '')
+
+    if not project_uuid:
+        return render_error(request, _('Please install through the address provided by sea-ticket.'))
+
+    project = Projects.objects.get_project_by_uuid(project_uuid)
+    if not project:
+        return render_error(request, _('Please install through the address provided by sea-ticket.'))
+    workspace = project.workspace
+
+    username = request.user.username
+    if not check_project_admin_permission(username, workspace.owner):
+        return render_error(request, _('Permission denied.'))
+
+    client_id = getattr(settings, 'NOTION_CLIENT_ID', '')
+    client_secret = getattr(settings, 'NOTION_CLIENT_SECRET', '')
+    redirect_url = getattr(settings, 'NOTION_REDIRECT_URL', '')
+    if not client_id or not client_secret or not redirect_url:
+        return render_error(request, _('Notion OAuth settings are invalid.'))
+
+    state = secrets.token_urlsafe(24)
+    NotionOAuthUtils.set_oauth_session(request, {
+        'status': 'in-progress',
+        'state': state,
+        'project_uuid': project_uuid,
+        'created_at': timezone.now().timestamp(),
+        'error_msg': '',
+    })
+
+    params = {
+        'client_id': client_id,
+        'redirect_uri': redirect_url,
+        'response_type': 'code',
+        'owner': 'user',
+        'state': state,
+    }
+    authorization_url = 'https://api.notion.com/v1/oauth/authorize?' + urlencode(params)
+    return JsonResponse({'auth_url': authorization_url, 'state': state})
+
+
+@login_required
+def notion_oauth_callback(request):
+    request_state = request.GET.get('state')
+    if not request_state:
+        return render_error(request, _('Request not found'))
+
+    notion_data = NotionOAuthUtils.get_oauth_session(request)
+    if not notion_data:
+        return render_error(request, _('Request not found'))
+
+    if notion_data.get('status') == 'authorized':
+        return render(request, 'authorization_success.html')
+
+    project_uuid = notion_data.get('project_uuid')
+    if not project_uuid:
+        NotionOAuthUtils.set_oauth_failure(request, 'Project not found.')
+        return render_error(request, _('Project not found.'))
+
+    project = Projects.objects.get_project_by_uuid(project_uuid)
+    if not project:
+        NotionOAuthUtils.set_oauth_failure(request, 'Project not found.')
+        return render_error(request, _('Project not found.'))
+
+    workspace = project.workspace
+    username = request.user.username
+    if not check_project_admin_permission(username, workspace.owner):
+        NotionOAuthUtils.set_oauth_failure(request, 'Permission denied.')
+        return render_error(request, _('Permission denied.'))
+
+    client_id = getattr(settings, 'NOTION_CLIENT_ID', '')
+    client_secret = getattr(settings, 'NOTION_CLIENT_SECRET', '')
+    redirect_url = getattr(settings, 'NOTION_REDIRECT_URL', '')
+    if not client_id or not client_secret or not redirect_url:
+        error_msg = 'Notion OAuth settings are invalid.'
+        NotionOAuthUtils.set_oauth_failure(request, error_msg)
+        return render_error(request, _(error_msg))
+
+    if request_state != notion_data.get('state'):
+        error_msg = 'OAuth request is expired or has been replaced by a newer authorization.'
+        NotionOAuthUtils.set_oauth_failure(request, error_msg)
+        return render_error(request, _(error_msg))
+
+    code = request.GET.get('code')
+    if not code:
+        error_msg = 'Failed to request token'
+        NotionOAuthUtils.set_oauth_failure(request, error_msg)
+        return render_error(request, _(error_msg))
+
+    auth = base64.b64encode(f'{client_id}:{client_secret}'.encode()).decode()
+    headers = {
+        'Authorization': f'Basic {auth}',
+        'Content-Type': 'application/json',
+        'Notion-Version': NOTION_VERSION,
+    }
+    token_payload = {
+        'grant_type': 'authorization_code',
+        'code': code,
+        'redirect_uri': redirect_url,
+    }
+
+    try:
+        resp = requests.post('https://api.notion.com/v1/oauth/token', headers=headers, json=token_payload, timeout=10)
+    except Exception as e:
+        logger.error('Notion OAuth token request error: %s', e)
+        error_msg = 'Failed to request token, please check your connection configurations'
+        NotionOAuthUtils.set_oauth_failure(request, error_msg)
+        return render_error(request, _(error_msg))
+
+    if resp.status_code != 200:
+        logger.error('Notion OAuth token response invalid: %s %s', resp.status_code, resp.text)
+        error_msg = 'Failed to request token, please check your connection configurations'
+        NotionOAuthUtils.set_oauth_failure(request, error_msg)
+        return render_error(request, _(error_msg))
+
+    token_json = resp.json()
+    access_token = token_json.get('access_token')
+    refresh_token = token_json.get('refresh_token')
+    if not access_token or not refresh_token:
+        logger.error('Notion OAuth token missing access/refresh token: %s', token_json)
+        error_msg = 'Failed to request token'
+        NotionOAuthUtils.set_oauth_failure(request, error_msg)
+        return render_error(request, _(error_msg))
+
+    notion_data['status'] = 'authorized'
+    notion_data['access_token'] = access_token
+    notion_data['refresh_token'] = refresh_token
+    notion_data['expires_at'] = CommonOAuthUtils.calc_expires_at(token_json.get('expires_in')).timestamp()
+    notion_data['workspace_id'] = token_json.get('workspace_id', '')
+    notion_data['workspace_name'] = token_json.get('workspace_name', '')
+    notion_data['error_msg'] = ''
+    NotionOAuthUtils.set_oauth_session(request, notion_data)
+
+    return render(request, 'authorization_success.html')

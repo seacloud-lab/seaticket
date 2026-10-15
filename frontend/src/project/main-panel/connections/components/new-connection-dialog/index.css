@@ -227,6 +227,43 @@
   font-weight: 400;
 }
 
+.seaqa-project-notion-oauth {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 8px 8px 16px;
+  background: var(--bs-body-third-bg);
+  border-radius: 4px;
+}
+
+.seaqa-project-notion-oauth .notion-oauth-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--bs-body-color);
+}
+
+.seaqa-project-notion-oauth .notion-oauth-status .notion-status-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.seaqa-project-notion-oauth .notion-oauth-status .notion-status-icon svg path {
+  fill: var(--bs-sf-grey-text);
+}
+
+.seaqa-project-notion-oauth .notion-oauth-status.connected .notion-status-icon svg path {
+  fill: #47B881;
+}
+
+.seaqa-project-notion-oauth .btn {
+  font-weight: 400;
+  height: 26px;
+  padding: 0 8px;
+}
+
 .seaqa-project-connection-oauth-status {
   display: flex;
   align-items: center;

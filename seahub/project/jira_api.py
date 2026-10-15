@@ -1,14 +1,12 @@
-import datetime
 import logging
 
 import requests
 
 from seahub import settings
+from seahub.project.oauth_utils import CommonOAuthUtils
 
 
 logger = logging.getLogger(__name__)
-
-OAUTH_TOKEN_EXPIRY_BUFFER_SECONDS = 60
 
 
 class JiraAPI:
@@ -59,10 +57,7 @@ class JiraAPI:
         if new_refresh_token:
             self.refresh_token = new_refresh_token
 
-        expires_in = data.get('expires_in', 3600) or 3600
-        self.expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
-            seconds=max(int(expires_in) - OAUTH_TOKEN_EXPIRY_BUFFER_SECONDS, 0)
-        )
+        self.expires_at = CommonOAuthUtils.calc_expires_at(data.get('expires_in'))
         token = {
             'access_token': self.access_token,
             'refresh_token': self.refresh_token,

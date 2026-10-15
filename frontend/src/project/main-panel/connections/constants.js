@@ -413,13 +413,6 @@ export const CONNECTION_FIELDS = {
       type: CONNECTION_FIELD_TYPE.TEXT,
       is_required: true,
       is_display: true,
-    }, {
-      key: 'integration_secret',
-      name: gettext('Token'),
-      type: CONNECTION_FIELD_TYPE.PASSWORD,
-      is_required: true,
-      can_edit_multiple_times: false,
-      is_custom: true
     }
   ],
   [CONNECTION_TYPE.CONFLUENCE]: [
@@ -556,7 +549,7 @@ export const CONNECTION_TYPES = [
     type: CONNECTION_TYPE.NOTION,
     icon: 'notion',
     name: gettext('Notion'),
-    help_text: gettext('Before connecting, prepare your Notion integration token and ensure you have workspace admin/owner access, plus read permissions for target pages and databases. If any problem occurs, check the'),
+    help_text: gettext('Authorize SeaTicket with your Notion workspace, then sync pages and databases. Make sure you have access to the workspace being authorized. If any problem occurs, check the'),
     help_link: HELP_WEB_URL + 'Notion',
     sub_types: CONNECTION_SUB_TYPE_MAP.documents,
   }, {

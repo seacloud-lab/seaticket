@@ -1,9 +1,9 @@
-import datetime
 import logging
 
 import requests
 
 from seahub.settings import LINEAR_CLIENT_ID, LINEAR_CLIENT_SECRET
+from seahub.project.oauth_utils import CommonOAuthUtils
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ class LinearAPI:
         response.raise_for_status()
         data = response.json() or {}
 
-        expires_at = self.calc_expires_in(data.get("expires_in"))
+        expires_at = CommonOAuthUtils.calc_expires_at(data.get("expires_in"))
         access_token = data.get("access_token")
         refresh_token = data.get("refresh_token") or self.refresh_token
         if not access_token:
