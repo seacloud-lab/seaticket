@@ -8,7 +8,7 @@ from .apis import PortalTagsView, PortalKnowledgeBaseViewsView, PortalKnowledgeB
     PortalCustomersView, PortalCustomerView, PortalCustomerMembersView, PortalCustomerMemberView, PortalIssueViewsMoveView, PortalIssueViewsDuplicateView, \
     PortalIssuesView, PortalMyIssuesView, PortalTeamIssuesView, PortalIssueView, PortalIssueCommentsView, \
     PortalIssueCommentView, PortalIssueTrashAPIView, PortalCustomDomainView, PortalCustomDomainVerificationView, PortalDomainAliasView, \
-    PortalPreviewTokenView, PortalLogoView, PortalBackgroundImageView
+    PortalPreviewTokenView, PortalLogoView, PortalBackgroundImageView, PortalExternalLoginSendCodeView, PortalExternalLoginVerifyCodeView
 from .portal_issue_types import PortalIssueTypesAPIView, PortalIssueTypeAPIView
 from .portal_issue_substates import PortalIssueSubstatesAPIView, PortalIssueSubstateAPIView
 from .chat.apis import (
@@ -49,6 +49,8 @@ urlpatterns = [
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/customers-and-users/$', project_view, name='project_portal_customers_and_users_view'),
     
     # portal API
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/external-login/send-code/$', PortalExternalLoginSendCodeView.as_view(), name='api-v1-portal-external-login-send-code'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/external-login/verify/$', PortalExternalLoginVerifyCodeView.as_view(), name='api-v1-portal-external-login-verify'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/tags/$', PortalTagsView.as_view(), name='api-v1-portal-tags'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-base-views/$', PortalKnowledgeBaseViewsView.as_view(), name='api-v1-portal-knowledge-base-views'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-bases/$', PortalKnowledgeBaseRecordsView.as_view(), name='api-v1-portal-knowledge-bases'),
