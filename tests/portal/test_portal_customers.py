@@ -938,7 +938,7 @@ class TestPortalCustomerIssueAccess:
         _set_external_session(request, real_project.uuid, member.username)
 
         with patch('seahub.portal.files.get_portal_issue', return_value=({'_pk': 10, 'customer_id': customer_b.id}, [])), \
-                patch('seahub.portal.files.get_project_file_head_from_s3') as file_head:
+                patch('seahub.portal.files.get_project_file_metadata') as file_head:
             response = PortalFileView.as_view()(
                 request,
                 project_uuid=str(real_project.uuid),

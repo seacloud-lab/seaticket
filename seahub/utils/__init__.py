@@ -12,7 +12,6 @@ import tempfile
 import unicodedata
 from datetime import datetime
 from urllib.parse import urlparse
-import boto3
 
 from django.urls import reverse
 from django.core.mail import EmailMessage
@@ -31,24 +30,13 @@ import seahub.settings
 from seahub.settings import MEDIA_URL, LOGO_PATH, \
     MEDIA_ROOT, CUSTOM_LOGO_PATH, SITE_NAME, \
     USER_PASSWORD_MIN_LENGTH, USER_PASSWORD_STRENGTH_LEVEL, \
-    S3_HOST, S3_KEY_ID, S3_SECRET_KEY, REDIS_HOST, REDIS_PORT, REDIS_PASSWORD
+    REDIS_HOST, REDIS_PORT, REDIS_PASSWORD
 from seahub.utils.mq import get_mq
 
 _email_host = getattr(seahub.settings, 'EMAIL_HOST', '') or ''
 IS_EMAIL_CONFIGURED = bool(str(_email_host).strip())
 
 logger = logging.getLogger(__name__)
-
-try:
-    s3_client = boto3.client(
-        's3',
-        endpoint_url=S3_HOST,
-        aws_access_key_id=S3_KEY_ID,
-        aws_secret_access_key=S3_SECRET_KEY,
-    )
-except Exception as e:
-    logger.warning(e)
-    s3_client = None
 
 mq = get_mq(REDIS_HOST, REDIS_PORT, REDIS_PASSWORD)
 

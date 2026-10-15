@@ -22,8 +22,9 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.storage import (
     FileNotFound,
     gen_tmp_upload_file_path,
-    get_project_file_from_s3,
-    get_project_file_head_from_s3,
+    get_project_file,
+    get_project_file_metadata,
+    get_attachment_file_response,
     if_none_match_hit,
     upload_file_to_tmp_dir,
 )
@@ -90,7 +91,9 @@ class GetPortalUploadFileView(APIView):
             not_modified['Cache-Control'] = 'max-age=604800, private'
             return not_modified
 
-        response = FileResponse(open(tmp_upload_file_path, 'rb'))
+        response = get_attachment_file_response(
+            open(tmp_upload_file_path, 'rb'), file_path
+        )
         response['Cache-Control'] = 'max-age=604800, private'
         response['ETag'] = etag
         response['Last-Modified'] = formatdate(int(last_modified_time), usegmt=True)
@@ -122,7 +125,7 @@ class PortalFileView(APIView):
                 return api_error(status.HTTP_404_NOT_FOUND, 'File not exist')
 
         try:
-            s3_meta = get_project_file_head_from_s3(project_uuid, file_path)
+            s3_meta = get_project_file_metadata(project_uuid, file_path)
         except FileNotFound:
             return api_error(status.HTTP_404_NOT_FOUND, 'File not exist')
         except Exception as e:
@@ -136,12 +139,12 @@ class PortalFileView(APIView):
             return not_modified
 
         try:
-            file = get_project_file_from_s3(project_uuid, file_path)
+            file = get_project_file(project_uuid, file_path)
         except Exception as e:
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
-        response = FileResponse(file)
+        response = get_attachment_file_response(file, file_path)
         response['Cache-Control'] = 'max-age=604800, private'
         if etag:
             response['ETag'] = etag

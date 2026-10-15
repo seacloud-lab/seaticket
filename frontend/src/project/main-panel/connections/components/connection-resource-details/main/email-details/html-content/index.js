@@ -204,7 +204,7 @@ const HTMLContent = ({
                     title={gettext('Download')}
                     className="seaqa-email-attachment-download-btn no-hover-bg"
                     size={{ btn: 32, icon: 16 }}
-                    onClick={() => handDownload(url)}
+                    onClick={() => handDownload(`${url}?download=1`)}
                   />
                 )}
               </div>

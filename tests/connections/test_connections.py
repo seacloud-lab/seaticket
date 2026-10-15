@@ -3,6 +3,7 @@ import json
 import hmac
 import hashlib
 import os
+from io import BytesIO
 from types import SimpleNamespace
 from unittest.mock import Mock, call, patch
 
@@ -1589,10 +1590,79 @@ class TestConnectionFileView:
         request = factory.get(f"/api/v1/project/{project.uuid}/connections/{site_connection.id}/file/f.txt")
         request.user = project_creator
 
-        with patch('seahub.project.connections.get_connection_file_head_from_s3', side_effect=FileNotFound()):
+        with patch('seahub.project.connections.get_connection_file_metadata', side_effect=FileNotFound()):
             resp = ConnectionFileView.as_view()(request, project_uuid=str(project.uuid), connection_id=site_connection.id, file_path='f.txt')
 
         assert resp.status_code == 404
+
+    def test_get_download_flag_sets_attachment_disposition(self, factory, project_creator, real_project, site_connection):
+        project = real_project
+        file_path = 'email/12/report.pdf'
+        request = factory.get(
+            f"/api/v1/project/{project.uuid}/connections/{site_connection.id}/file/{file_path}?download=1"
+        )
+        request.user = project_creator
+
+        with patch('seahub.project.connections.get_connection_file_metadata', return_value={}), \
+                patch('seahub.project.connections.get_connection_file', return_value=BytesIO(b'pdf')), \
+                patch('seahub.project.connections.check_project_permission', return_value=True):
+            response = ConnectionFileView.as_view()(
+                request,
+                project_uuid=str(project.uuid),
+                connection_id=site_connection.id,
+                file_path=file_path,
+            )
+
+        assert response.status_code == 200
+        assert response['Content-Disposition'] == 'attachment; filename="report.pdf"'
+        assert response['Content-Type'] == 'application/octet-stream'
+        assert response['X-Content-Type-Options'] == 'nosniff'
+
+    def test_get_html_without_download_flag_forces_download(self, factory, project_creator, real_project, site_connection):
+        project = real_project
+        file_path = 'email/12/message.html'
+        request = factory.get(
+            f"/api/v1/project/{project.uuid}/connections/{site_connection.id}/file/{file_path}"
+        )
+        request.user = project_creator
+
+        with patch('seahub.project.connections.get_connection_file_metadata', return_value={}), \
+                patch('seahub.project.connections.get_connection_file', return_value=BytesIO(b'<script>attack()</script>')), \
+                patch('seahub.project.connections.check_project_permission', return_value=True):
+            response = ConnectionFileView.as_view()(
+                request,
+                project_uuid=str(project.uuid),
+                connection_id=site_connection.id,
+                file_path=file_path,
+            )
+
+        assert response.status_code == 200
+        assert response['Content-Disposition'] == 'attachment; filename="message.html"'
+        assert response['Content-Type'] == 'application/octet-stream'
+        assert response['X-Content-Type-Options'] == 'nosniff'
+
+    def test_get_raster_image_without_download_flag_keeps_inline_preview(self, factory, project_creator, real_project, site_connection):
+        project = real_project
+        file_path = 'email/12/image.png'
+        request = factory.get(
+            f"/api/v1/project/{project.uuid}/connections/{site_connection.id}/file/{file_path}"
+        )
+        request.user = project_creator
+
+        with patch('seahub.project.connections.get_connection_file_metadata', return_value={}), \
+                patch('seahub.project.connections.get_connection_file', return_value=BytesIO(b'png')), \
+                patch('seahub.project.connections.check_project_permission', return_value=True):
+            response = ConnectionFileView.as_view()(
+                request,
+                project_uuid=str(project.uuid),
+                connection_id=site_connection.id,
+                file_path=file_path,
+            )
+
+        assert response.status_code == 200
+        assert response['Content-Type'] == 'image/png'
+        assert 'Content-Disposition' not in response
+        assert response['X-Content-Type-Options'] == 'nosniff'
 
 
 class TestGithubWebhookView:

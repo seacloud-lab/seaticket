@@ -405,8 +405,8 @@ class TestPortalChatImageViewAnonymous:
         from seahub.portal.visitor_session import _sign_visitor_uuid
         request.COOKIES['portal_visitor_session'] = _sign_visitor_uuid(visitor['visitor_uuid'])
 
-        with patch('seahub.portal.chat.apis.get_project_file_head_from_s3', return_value={'ContentType': 'image/png'}) as head_mock, \
-                patch('seahub.portal.chat.apis.get_project_file_from_s3', return_value=BytesIO(b'png')) as file_mock:
+        with patch('seahub.portal.chat.apis.get_project_file_metadata', return_value={'ContentType': 'image/png'}) as head_mock, \
+                patch('seahub.portal.chat.apis.get_project_file', return_value=BytesIO(b'png')) as file_mock:
             resp = PortalChatImageView.as_view()(request, project_uuid=str(real_project.uuid))
 
         assert resp.status_code == 200
@@ -428,8 +428,8 @@ class TestPortalChatImageViewAnonymous:
         from seahub.portal.visitor_session import _sign_visitor_uuid
         request.COOKIES['portal_visitor_session'] = _sign_visitor_uuid(visitor['visitor_uuid'])
 
-        with patch('seahub.portal.chat.apis.get_project_file_head_from_s3', return_value={'ContentType': 'text/plain'}), \
-                patch('seahub.portal.chat.apis.get_project_file_from_s3', return_value=BytesIO(b'png')):
+        with patch('seahub.portal.chat.apis.get_project_file_metadata', return_value={'ContentType': 'text/plain'}), \
+                patch('seahub.portal.chat.apis.get_project_file', return_value=BytesIO(b'png')):
             resp = PortalChatImageView.as_view()(request, project_uuid=str(real_project.uuid))
 
         assert resp.status_code == 200

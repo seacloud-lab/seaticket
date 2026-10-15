@@ -100,6 +100,8 @@ S3_FILE_BUCKET = configs.get('S3_FILE_BUCKET', '')
 S3_WEB_CRAWL_BUCKET = configs.get('S3_WEB_CRAWL_BUCKET', '')
 S3_KEY_ID = configs.get('S3_KEY_ID', '')
 S3_SECRET_KEY = configs.get('S3_SECRET_KEY', '')
+ATTACHMENT_STORAGE_BACKEND = configs.get('ATTACHMENT_STORAGE_BACKEND', 's3').lower()
+ATTACHMENT_STORAGE_LOCAL_ROOT = configs.get('ATTACHMENT_STORAGE_LOCAL_ROOT', '/opt/seaticket/data/attachments')
 
 SEADB_USER = configs.get('SEADB_USER', '')
 SEADB_PASSWORD = configs.get('SEADB_PASSWORD', '')

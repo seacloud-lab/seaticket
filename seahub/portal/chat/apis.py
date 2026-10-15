@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 from dateutil.relativedelta import relativedelta
 from django.core.cache import cache
-from django.http import FileResponse, StreamingHttpResponse
+from django.http import StreamingHttpResponse
 from django.db.models import Count, Sum, CharField, F, Func, Value
 from django.utils import timezone
 from rest_framework.views import APIView
@@ -20,7 +20,7 @@ from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
 from seahub.utils import uuid_str_to_32_chars
-from seahub.utils.storage import upload_portal_files_to_s3
+from seahub.utils.storage import upload_portal_files
 from seahub.project.models import AIUsageStatistics
 from seahub.project.constants import AIScenario
 from seahub.project.utils import check_ai_limit, check_project_admin_permission, delete_portal_sessions, convert_cost_to_credit
@@ -55,7 +55,7 @@ from seahub.chats.utils import (
 )
 from seahub.chats.constants import AI_REPLY_TIMEOUT
 from seahub.utils.ai_client import validate_chat_input
-from seahub.utils.storage import FileNotFound, get_project_file_from_s3, get_project_file_head_from_s3
+from seahub.utils.storage import FileNotFound, get_project_file, get_project_file_metadata, get_attachment_file_response
 
 logger = logging.getLogger(__name__)
 
@@ -574,7 +574,7 @@ class PortalChatView(APIView):
 
             try:
                 record_id = f'{current_session_uuid}/{message_id}'
-                new_url_map = upload_portal_files_to_s3(project_uuid, temp_image_urls, username, 'portal-chat', record_id)
+                new_url_map = upload_portal_files(project_uuid, temp_image_urls, username, 'portal-chat', record_id)
                 permanent_image_paths = list(new_url_map.keys())
             except Exception as e:
                 logger.exception(f'Failed to upload images to S3: {e}')
@@ -764,7 +764,7 @@ class PortalChatImageView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         try:
-            get_project_file_head_from_s3(project_uuid, file_path)
+            get_project_file_metadata(project_uuid, file_path)
         except FileNotFound:
             return api_error(status.HTTP_404_NOT_FOUND, 'File not exist.')
         except Exception as e:
@@ -772,12 +772,11 @@ class PortalChatImageView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
         try:
-            file = get_project_file_from_s3(project_uuid, file_path)
+            file = get_project_file(project_uuid, file_path)
         except Exception as e:
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
-        content_type = mimetypes.guess_type(file_path)[0] or 'application/octet-stream'
-        response = FileResponse(file, content_type=content_type)
+        response = get_attachment_file_response(file, file_path)
         response['Cache-Control'] = 'private, max-age=300'
         return response

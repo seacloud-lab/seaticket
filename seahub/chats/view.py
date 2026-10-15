@@ -16,7 +16,7 @@ from seahub.utils import uuid_str_to_32_chars
 from seahub.project.models import Projects
 from seahub.project.utils import check_project_permission, check_ai_limit, delete_sessions
 from seahub.project.seadb_api import SeaDBAPI
-from seahub.utils.storage import upload_files_to_s3
+from seahub.utils.storage import upload_files
 from seahub.chats.constants import AI_REPLY_TIMEOUT
 from seahub.chats.models import ChatSessions, ChatMessages, ChatMessageThoughtProcess
 from seahub.chats.utils import get_ai_reply, gen_message_id, gen_chat_task_id, get_attachments, \
@@ -559,7 +559,7 @@ class ChatView(APIView):
                 }, session_uuid, message_id, query, attachments)
             try:
                 record_id = f'{session.session_uuid}/{message_id}'
-                new_url_map = upload_files_to_s3(project_uuid, temp_image_paths, username, 'chat', record_id)
+                new_url_map = upload_files(project_uuid, temp_image_paths, username, 'chat', record_id)
                 permanent_image_paths = list(new_url_map.keys())
             except Exception as e:
                 logger.exception(f'Failed to upload images to S3: {e}')

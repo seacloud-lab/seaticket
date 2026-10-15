@@ -28,9 +28,9 @@ from seahub.api2.utils import api_error, get_user_common_info
 from seahub.project.models import Projects
 from seahub.project.utils import replace_file_url_in_content, get_current_table_metadata, check_project_admin_permission, \
     check_project_permission, check_comment_permission
-from seahub.utils.storage import FileNotFound, upload_portal_files_to_s3, delete_file_from_s3, \
-    PORTAL_BACKGROUND_IMAGE_FILE_PATH, PORTAL_LOGO_FILE_PATH, upload_portal_background_image_file_to_s3, \
-    upload_portal_logo_file_to_s3, get_project_file_from_s3, get_project_file_head_from_s3
+from seahub.utils.storage import FileNotFound, upload_portal_files, delete_file, \
+    PORTAL_BACKGROUND_IMAGE_FILE_PATH, PORTAL_LOGO_FILE_PATH, upload_portal_background_image_file, \
+    upload_portal_logo_file, get_project_file, get_project_file_metadata, get_attachment_file_response
 from seahub.utils.hasher import AESPasswordHasher
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
@@ -127,7 +127,7 @@ class PortalLogoView(APIView):
 
         file_path = PORTAL_LOGO_FILE_PATH
         try:
-            metadata = get_project_file_head_from_s3(project_uuid, file_path)
+            metadata = get_project_file_metadata(project_uuid, file_path)
         except FileNotFound:
             return api_error(status.HTTP_404_NOT_FOUND, 'File not found.')
         except Exception as e:
@@ -136,13 +136,15 @@ class PortalLogoView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         try:
-            file = get_project_file_from_s3(project_uuid, file_path)
+            file = get_project_file(project_uuid, file_path)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        response = FileResponse(file, content_type=metadata.get('ContentType') or 'application/octet-stream')
+        response = get_attachment_file_response(
+            file, file_path, content_type=metadata.get('ContentType')
+        )
         response['Cache-Control'] = 'public, max-age=86400, immutable'
         return response
 
@@ -168,7 +170,7 @@ class PortalLogoView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            file_url = upload_portal_logo_file_to_s3(project_uuid, file)
+            file_url = upload_portal_logo_file(project_uuid, file)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -196,15 +198,17 @@ class PortalBackgroundImageView(APIView):
 
         file_path = PORTAL_BACKGROUND_IMAGE_FILE_PATH
         try:
-            metadata = get_project_file_head_from_s3(project_uuid, file_path)
-            file = get_project_file_from_s3(project_uuid, file_path)
+            metadata = get_project_file_metadata(project_uuid, file_path)
+            file = get_project_file(project_uuid, file_path)
         except FileNotFound:
             return api_error(status.HTTP_404_NOT_FOUND, 'File not found.')
         except Exception as e:
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
-        response = FileResponse(file, content_type=metadata.get('ContentType') or 'application/octet-stream')
+        response = get_attachment_file_response(
+            file, file_path, content_type=metadata.get('ContentType')
+        )
         response['Cache-Control'] = 'public, max-age=86400, immutable'
         return response
 
@@ -226,7 +230,7 @@ class PortalBackgroundImageView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         try:
-            file_url = upload_portal_background_image_file_to_s3(project_uuid, file)
+            file_url = upload_portal_background_image_file(project_uuid, file)
         except Exception as e:
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
@@ -424,7 +428,7 @@ class PortalIssuesView(APIView):
 
             if file_urls:
                 try:
-                    new_file_urls_dict = upload_portal_files_to_s3(project_uuid, file_urls, username, 'portal-issues', int(portal_issue_pk))
+                    new_file_urls_dict = upload_portal_files(project_uuid, file_urls, username, 'portal-issues', int(portal_issue_pk))
                     updated_content = replace_file_url_in_content(content, new_file_urls_dict)
                     if updated_content != content:
                         seadb_api.update_rows(project_uuid, portal_issues_table_name, [{
@@ -920,7 +924,7 @@ class PortalIssueView(APIView):
         # upload files
         if file_urls:
             try:
-                new_file_urls_dict = upload_portal_files_to_s3(project_uuid, file_urls, username, 'portal-issues', int(issue.get('_pk')))
+                new_file_urls_dict = upload_portal_files(project_uuid, file_urls, username, 'portal-issues', int(issue.get('_pk')))
                 content = replace_file_url_in_content(content, new_file_urls_dict)
             except Exception as e:
                 logger.error(e)
@@ -1126,7 +1130,7 @@ class PortalIssueCommentsView(APIView):
         # upload files
         if file_urls:
             try:
-                new_file_urls_dict = upload_portal_files_to_s3(project_uuid, file_urls, username, 'portal-issues', int(issue.get('_pk')))
+                new_file_urls_dict = upload_portal_files(project_uuid, file_urls, username, 'portal-issues', int(issue.get('_pk')))
                 content = replace_file_url_in_content(content, new_file_urls_dict)
             except Exception as e:
                 logger.error(e)
@@ -1248,7 +1252,7 @@ class PortalIssueCommentView(APIView):
          # upload files
         if file_urls:
             try:
-                new_file_urls_dict = upload_portal_files_to_s3(project_uuid, file_urls, username, 'portal-issues', int(issue.get('_pk')))
+                new_file_urls_dict = upload_portal_files(project_uuid, file_urls, username, 'portal-issues', int(issue.get('_pk')))
                 content = replace_file_url_in_content(content, new_file_urls_dict)
             except Exception as e:
                 logger.error(e)
@@ -1734,7 +1738,7 @@ class PortalSettingsView(APIView):
 
         if portal_logo == '':
             try:
-                delete_file_from_s3(project_uuid, PORTAL_LOGO_FILE_PATH)
+                delete_file(project_uuid, PORTAL_LOGO_FILE_PATH)
             except Exception as e:
                 logger.error(e)
 
@@ -1743,7 +1747,7 @@ class PortalSettingsView(APIView):
             new_background_image_url = portal_home_settings.get('portal_home_hero_section', {}).get('theme_background_image_URL')
             if old_background_image_url and not new_background_image_url:
                 try:
-                    delete_file_from_s3(project_uuid, PORTAL_BACKGROUND_IMAGE_FILE_PATH)
+                    delete_file(project_uuid, PORTAL_BACKGROUND_IMAGE_FILE_PATH)
                 except Exception as e:
                     logger.error(e)
 

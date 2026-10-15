@@ -20,7 +20,7 @@ from seahub.api2.utils import api_error
 from seahub.utils.decorators import require_org_context
 from seahub.project.models import Projects
 from seahub.project.utils import check_project_admin_permission, check_project_permission
-from seahub.utils.storage import upload_file_to_tmp_dir, delete_file_from_s3, gen_tmp_upload_file_path, if_none_match_hit, get_project_file_head_from_s3, get_project_file_from_s3, FileNotFound
+from seahub.utils.storage import upload_file_to_tmp_dir, delete_file, gen_tmp_upload_file_path, if_none_match_hit, get_project_file_metadata, get_project_file, get_attachment_file_response, FileNotFound
 from seahub.project.constants import IMAGE_EXTS
 from seahub.utils import gen_file_etag_and_modified_time
 
@@ -120,7 +120,9 @@ class GetProjectUploadFileView(APIView):
             not_modified['Cache-Control'] = 'max-age=604800, private'
             return not_modified
 
-        response = FileResponse(open(tmp_upload_file_path, 'rb'))
+        response = get_attachment_file_response(
+            open(tmp_upload_file_path, 'rb'), file_path
+        )
         response['Cache-Control'] = 'max-age=604800, private'
         response['ETag'] = etag
         response['Last-Modified'] = formatdate(int(last_modified_time), usegmt=True)
@@ -153,7 +155,7 @@ class ProjectFileAPIView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         try:
-            delete_file_from_s3(project_uuid, file_path)
+            delete_file(project_uuid, file_path)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -189,7 +191,7 @@ class GetProjectFileView(APIView):
 
         # main
         try:
-            s3_meta = get_project_file_head_from_s3(project_uuid, file_path)
+            s3_meta = get_project_file_metadata(project_uuid, file_path)
         except FileNotFound:
             error_msg = 'File not exist'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -205,13 +207,13 @@ class GetProjectFileView(APIView):
             return not_modified
 
         try:
-            file = get_project_file_from_s3(project_uuid, file_path)
+            file = get_project_file(project_uuid, file_path)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        response = FileResponse(file)
+        response = get_attachment_file_response(file, file_path)
         response['Cache-Control'] = 'max-age=604800, private'
         if etag:
             response['ETag'] = etag
