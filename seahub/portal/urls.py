@@ -2,13 +2,13 @@
 from django.urls import re_path
 
 from seahub.project.views import project_view
-from .views import portal_edit_view
+from .views import portal_edit_view, portal_path_view
 from .apis import PortalTagsView, PortalKnowledgeBaseViewsView, PortalKnowledgeBaseRecordsView, PortalKnowledgeBaseFeaturedArticlesView, PortalKnowledgeBaseRecordView, PortalIssueMetadataView, \
     PortalSettingsView, PortalExternalInvitationsView, PortalIssueViewsView, PortalIssueViewView, PortalExternalUsersView, PortalUserListView, \
     PortalCustomersView, PortalCustomerView, PortalCustomerMembersView, PortalCustomerMemberView, PortalIssueViewsMoveView, PortalIssueViewsDuplicateView, \
     PortalIssuesView, PortalMyIssuesView, PortalTeamIssuesView, PortalIssueView, PortalIssueCommentsView, \
     PortalIssueCommentView, PortalIssueTrashAPIView, PortalCustomDomainView, PortalCustomDomainVerificationView, PortalDomainAliasView, \
-    PortalPreviewTokenView, PortalLogoView, PortalBackgroundImageView
+    PortalPreviewTokenView, PortalLogoView, PortalBackgroundImageView, PortalExternalLoginSendCodeView, PortalExternalLoginVerifyCodeView
 from .portal_issue_types import PortalIssueTypesAPIView, PortalIssueTypeAPIView
 from .portal_issue_substates import PortalIssueSubstatesAPIView, PortalIssueSubstateAPIView
 from .chat.apis import (
@@ -23,6 +23,7 @@ from .files import (
 
 
 urlpatterns = [
+    re_path(r'^portals/(?P<portal_token>[^/]+)/(?P<portal_page>.*)$', portal_path_view, name='portal_path_view'),
     # portal edit page (for admins)
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/submit-issue/$', portal_edit_view, name='portal_edit_view'),
     re_path(r'^portal-edit/(?P<project_uuid>[-0-9a-f]{36})/my-issues/$', portal_edit_view, name='portal_edit_view'),
@@ -48,6 +49,8 @@ urlpatterns = [
     re_path(r'^workspace/(?P<workspace_id>\d+)/project/(?P<project_name>.*)/customers-and-users/$', project_view, name='project_portal_customers_and_users_view'),
     
     # portal API
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/external-login/send-code/$', PortalExternalLoginSendCodeView.as_view(), name='api-v1-portal-external-login-send-code'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/external-login/verify/$', PortalExternalLoginVerifyCodeView.as_view(), name='api-v1-portal-external-login-verify'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/tags/$', PortalTagsView.as_view(), name='api-v1-portal-tags'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-base-views/$', PortalKnowledgeBaseViewsView.as_view(), name='api-v1-portal-knowledge-base-views'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/knowledge-bases/$', PortalKnowledgeBaseRecordsView.as_view(), name='api-v1-portal-knowledge-bases'),

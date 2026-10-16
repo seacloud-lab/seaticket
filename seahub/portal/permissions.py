@@ -139,7 +139,7 @@ class PortalKnowledgeBasePermission(BasePermission):
         if _is_same_org_user(request, project):
             return True
 
-        if not getattr(settings, 'IS_PORTAL_MODE', False):
+        if settings.ENABLE_PORTAL_DOMAIN and not getattr(settings, 'IS_PORTAL_MODE', False):
             return False
 
         if _is_portal_preview_user(request, project_uuid):
@@ -172,7 +172,7 @@ class PortalAnonymousAccessPermission(BasePermission):
         if _is_same_org_user(request, project):
             return True
 
-        if not getattr(settings, 'IS_PORTAL_MODE', False):
+        if settings.ENABLE_PORTAL_DOMAIN and not getattr(settings, 'IS_PORTAL_MODE', False):
             return False
 
         if _is_portal_preview_user(request, project_uuid):
@@ -205,7 +205,7 @@ class PortalIssuePermission(BasePermission):
         if _is_same_org_user(request, project):
             return True
 
-        if not getattr(settings, 'IS_PORTAL_MODE', False):
+        if settings.ENABLE_PORTAL_DOMAIN and not getattr(settings, 'IS_PORTAL_MODE', False):
             return False
 
         if _is_portal_preview_user(request, project_uuid):
@@ -231,7 +231,7 @@ class PortalChatPermission(BasePermission):
         if _is_same_org_user(request, project):
             return True
 
-        if not getattr(settings, 'IS_PORTAL_MODE', False):
+        if settings.ENABLE_PORTAL_DOMAIN and not getattr(settings, 'IS_PORTAL_MODE', False):
             return False
 
         if _is_portal_preview_user(request, project_uuid):

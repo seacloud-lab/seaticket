@@ -490,7 +490,7 @@ class ProjectView(APIView):
                 seadb_api = SeaDBAPI()
                 ensure_portal_issues_seadb_table(seadb_api, project.uuid)
                 root_domain = getattr(django_settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
-                if root_domain:
+                if not django_settings.ENABLE_PORTAL_DOMAIN or root_domain:
                     PortalDomainAlias.objects.ensure_alias(project.uuid)
         except OperationalError:
             error_msg = _('Project name contains illegal characters')

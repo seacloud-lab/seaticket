@@ -15,6 +15,9 @@ const trimSlashes = (value) => String(value).replace(/^\/+|\/+$/g, '');
 
 export const getPortalBasePath = () => {
   const { projectUuid, isEditMode, isPortalDomain, portalBaseUrl } = getPageOptions();
+  if (portalBaseUrl) {
+    return ensureTrailingSlash(portalBaseUrl);
+  }
   if (isPortalDomain && !isEditMode) {
     return ensureTrailingSlash(portalBaseUrl || '/');
   }
@@ -66,7 +69,7 @@ export const getPortalAnonymousValidatePath = () => {
 
 export const getPortalLogoutPath = () => {
   const { projectUuid, isEditMode, isPortalDomain } = getPageOptions();
-  if (isPortalDomain && !isEditMode) {
+  if (!isEditMode && (isPortalDomain || getPortalBasePath().startsWith(`${getSiteRoot()}portals/`))) {
     return buildPortalPath('logout');
   }
   return `${getSiteRoot()}portal-external/logout/${projectUuid}/`;
@@ -78,8 +81,8 @@ export const getDefaultPortalPublicUrl = () => {
 };
 
 export const getPortalPublicUrl = () => {
-  const { isPortalDomain, portalBaseUrl } = getPageOptions();
-  if (isPortalDomain) {
+  const { isEditMode, isPortalDomain, portalBaseUrl } = getPageOptions();
+  if (isPortalDomain || (!isEditMode && portalBaseUrl)) {
     return `${window.location.origin}${ensureTrailingSlash(portalBaseUrl || '/')}`;
   }
   return getDefaultPortalPublicUrl();

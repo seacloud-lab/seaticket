@@ -1765,6 +1765,8 @@ class PortalCustomDomainView(APIView):
 
     @require_org_context
     def get(self, request, project_uuid):
+        if not settings.ENABLE_PORTAL_DOMAIN:
+            return api_error(status.HTTP_403_FORBIDDEN, 'Custom domains are disabled.')
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             error_msg = 'Project not found.'
@@ -1802,6 +1804,8 @@ class PortalCustomDomainView(APIView):
 
     @require_org_context
     def post(self, request, project_uuid):
+        if not settings.ENABLE_PORTAL_DOMAIN:
+            return api_error(status.HTTP_403_FORBIDDEN, 'Custom domains are disabled.')
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             error_msg = 'Project not found.'
@@ -1877,6 +1881,9 @@ class PortalPreviewTokenView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         token = signing.dumps({'project_uuid': project_uuid, 'username': username}, salt=PORTAL_PREVIEW_TOKEN_SALT)
+        if not settings.ENABLE_PORTAL_DOMAIN:
+            preview_url = request.build_absolute_uri(portal_path(request, project_uuid, 'preview', quote(token, safe='')))
+            return Response({'token': token, 'preview_url': preview_url})
         token_path = '/portal-preview/%s/' % quote(token, safe='')
         domain = get_preferred_portal_domain(project_uuid, ensure_alias=True)
         if not domain:
@@ -1907,6 +1914,14 @@ class PortalDomainAliasView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
+        if not settings.ENABLE_PORTAL_DOMAIN:
+            public_url = request.build_absolute_uri(portal_path(request, project_uuid))
+            alias = PortalDomainAlias.objects.get_by_project_uuid(project_uuid)
+            return Response({
+                'portal_service_root_domain': '',
+                'subdomain_prefix': alias.prefix,
+                'public_url': public_url,
+            })
         root_domain = getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
         alias = PortalDomainAlias.objects.get_by_project_uuid(project_uuid)
         if not root_domain:
@@ -1942,7 +1957,7 @@ class PortalDomainAliasView(APIView):
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
         root_domain = getattr(settings, 'PORTAL_SERVICE_ROOT_DOMAIN', '')
-        if not root_domain:
+        if settings.ENABLE_PORTAL_DOMAIN and not root_domain:
             error_msg = 'portal service root domain is not configured.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
@@ -1988,6 +2003,8 @@ class PortalCustomDomainVerificationView(APIView):
 
     @require_org_context
     def post(self, request, project_uuid):
+        if not settings.ENABLE_PORTAL_DOMAIN:
+            return api_error(status.HTTP_403_FORBIDDEN, 'Custom domains are disabled.')
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             error_msg = 'Project not found.'
@@ -2029,6 +2046,8 @@ class PortalCustomDomainTLSAskView(APIView):
     throttle_classes = (PortalTLSAskRateThrottle,)
 
     def get(self, request):
+        if not settings.ENABLE_PORTAL_DOMAIN:
+            return Response(status=status.HTTP_403_FORBIDDEN)
         domain = request.GET.get('domain', '')
         try:
             normalized_domain = normalize_portal_custom_domain(domain)

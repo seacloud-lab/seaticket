@@ -6,6 +6,7 @@ from django.urls import Resolver404, resolve
 from django.utils.deprecation import MiddlewareMixin
 
 from seahub.portal.models import PortalCustomDomain
+from seahub.portal.paths import get_internal_portal_path
 from seahub.portal.utils import PORTAL_DOMAIN_TYPE_SERVICE_ALIAS, get_request_project_and_portal_settings, resolve_portal_domain
 
 
@@ -14,8 +15,6 @@ PASS_THROUGH_PREFIXES = ('/accounts/', '/captcha/', '/custom-css/', '/i18n/', '/
 
 # Existing Portal APIs and file routes handled by normal URLConf.
 PORTAL_PASS_THROUGH_PREFIXES = ('/api/v1/portal/', '/file/portal/', '/file/portal-chat-image/', '/upload-file/portal/', '/portal/', '/portal-external/')
-PORTAL_ROOT_PAGES = ('submit-issue', 'my-issues', 'team-issues', 'knowledge-base', 'chat', 'login', 'anonymous-validate', 'home')
-PORTAL_DETAIL_PAGES = ('my-issues', 'team-issues', 'knowledge-base')
 
 
 def _get_project_uuid_from_origin_path(normalized_path):
@@ -29,37 +28,6 @@ def _get_project_uuid_from_origin_path(normalized_path):
         except Resolver404:
             return ''
     return match.kwargs.get('project_uuid') or ''
-
-
-def _get_internal_path_for_portal_domain(project_uuid, normalized_path):
-    site_root = getattr(settings, 'SITE_ROOT', '/')
-    site_root = site_root if site_root.endswith('/') else '%s/' % site_root
-    segments = normalized_path.strip('/').split('/') if normalized_path != '/' else []
-    if not segments:
-        return '%sportal/%s/' % (site_root, project_uuid)
-
-    if len(segments) == 1:
-        page = segments[0]
-        if page in PORTAL_ROOT_PAGES:
-            return '%sportal/%s/%s/' % (site_root, project_uuid, page)
-        if page == 'logout':
-            return '%sportal-external/logout/%s/' % (site_root, project_uuid)
-        return ''
-
-    if len(segments) == 2:
-        page, item_id = segments
-        if page in PORTAL_DETAIL_PAGES and item_id.isdigit():
-            return '%sportal/%s/%s/%s/' % (site_root, project_uuid, page, item_id)
-        if page == 'chat' and item_id:
-            return '%sportal/%s/%s/%s/' % (site_root, project_uuid, page, item_id)
-        return ''
-
-    if len(segments) == 3:
-        token = segments[2]
-        if segments[:2] == ['external', 'accept'] and token:
-            return '%sportal-external/accept/%s/%s/' % (site_root, token, project_uuid)
-
-    return ''
 
 
 class PortalDomainMiddleware(MiddlewareMixin):
@@ -105,7 +73,7 @@ class PortalDomainMiddleware(MiddlewareMixin):
         ):
             return None
 
-        internal_path = _get_internal_path_for_portal_domain(project_uuid, normalized_path)
+        internal_path = get_internal_portal_path(project_uuid, normalized_path)
         if not internal_path:
             return HttpResponseNotFound()
 
