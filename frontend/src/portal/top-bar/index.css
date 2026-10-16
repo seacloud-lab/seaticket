@@ -58,3 +58,52 @@
 .seaqa-portal-top-bar-tabs .seaqa-customize-tabs .seaqa-customize-tab.active::before {
   bottom: -13px;
 }
+
+@media (min-width: 768px) {
+  .seaqa-portal-mobile-top-bar-more-btn {
+    display: none !important;
+  }
+
+  .seaqa-portal-top-bar-mobile-menu {
+    display: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .seaqa-portal-top-bar {
+    position: relative;
+    z-index: 1042;
+  }
+
+  .seaqa-portal-top-bar-tabs {
+    display: none !important;
+  }
+
+  .seaqa-portal-mobile-top-bar-more-btn {
+    display: flex !important;
+    border: 1px solid rgba(0, 40, 100, 0.12);
+    margin-right: 12px;
+  }
+
+  .seaqa-portal-top-bar-mobile-menu {
+    position: absolute;
+    display: flex !important;
+    flex-direction: column;
+    background-color: #fff;
+    top: 57px;
+    padding: 16px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    width: 100%;
+  }
+
+  .seaqa-portal-top-bar-mobile-menu .seaqa-portal-top-bar-mobile-menu-item {
+    height: 44px;
+    line-height: 44px;
+    font-size: 16px;
+  }
+
+  .seaqa-portal-top-bar-mobile-menu .seaqa-portal-top-bar-mobile-menu-item.active {
+    color: var(--bs-orange);
+  }
+}

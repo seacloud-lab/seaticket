@@ -7,7 +7,6 @@ body {
   overflow-y: auto;
 }
 
-/* icon color */
 .seaqa-project-ticket-state-check-circle-stroked-icon {
   color: var(--ticket-close-color);
 }
@@ -36,50 +35,6 @@ body {
   display: flex;
   flex-direction: column;
   background-color: var(--bs-body-third-bg);
-}
-
-.portal-password-panel {
-  width: min(420px, 92vw);
-  margin: auto;
-  padding: 24px;
-  border-radius: 12px;
-  border: 1px solid #e6e6e6;
-  background-color: #fff;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
-}
-
-.portal-password-header {
-  margin-bottom: 16px;
-}
-
-.portal-password-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--bs-body-color);
-}
-
-.portal-password-subtitle {
-  font-size: 13px;
-  color: var(--bs-sf-grey-text);
-  margin-top: 4px;
-}
-
-.portal-password-label {
-  font-weight: 500;
-  margin-bottom: 6px;
-  display: inline-block;
-}
-
-.portal-password-error {
-  color: #d93025;
-  font-size: 13px;
-  margin-top: 8px;
-}
-
-.portal-password-actions {
-  margin-top: 16px;
-  display: flex;
-  justify-content: flex-end;
 }
 
 .seaqa-portal-sub-navigation {
@@ -132,25 +87,12 @@ body {
   border-top-left-radius: 8px;
 }
 
-
-/* Portal-mobile */
-@media (min-width: 768px) {
-  .seaqa-portal-mobile-top-bar-more-btn {
-    display: none !important;
-  }
-  .seaqa-portal-top-bar-mobile-menu {
-    display: none !important;
-  }
-}
-
 @media (max-width: 768px) {
-  /* mask */
   .modal-backdrop.edit-mode {
     width: calc(100vw - 50px);
     left: 50px;
   }
 
-  /* main panel */
   .seaqa-portal-main-panel {
     margin: 0;
     border-top-right-radius: 0px;
@@ -187,43 +129,5 @@ body {
 
   .seaqa-portal-chat-sessions-backdrop {
     z-index: 1040;
-  }
-
-  /* top bar */
-  .seaqa-portal-top-bar {
-    position: relative;
-    z-index: 1042;
-  }
-
-  .seaqa-portal-top-bar-tabs {
-    display: none !important;
-  }
-
-  .seaqa-portal-mobile-top-bar-more-btn {
-    display: flex !important;
-    border: 1px solid rgba(0, 40, 100, 0.12);
-    margin-right: 12px;
-  }
-
-  .seaqa-portal-top-bar-mobile-menu {
-    position: absolute;
-    display: flex !important;
-    flex-direction: column;
-    background-color: #fff;
-    top: 57px;
-    padding: 16px;
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
-    width: 100%;
-  }
-
-  .seaqa-portal-top-bar-mobile-menu .seaqa-portal-top-bar-mobile-menu-item {
-    height: 44px;
-    line-height: 44px;
-    font-size: 16px;
-  }
-
-  .seaqa-portal-top-bar-mobile-menu .seaqa-portal-top-bar-mobile-menu-item.active {
-    color: var(--bs-orange);
   }
 }
