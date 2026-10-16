@@ -256,7 +256,10 @@
 /* link */
 .sea-metadata-table-row-height-56-cell .sea-metadata-link-formatter,
 .sea-metadata-table-row-height-88-cell .sea-metadata-link-formatter,
-.sea-metadata-table-row-height-128-cell .sea-metadata-link-formatter {
+.sea-metadata-table-row-height-128-cell .sea-metadata-link-formatter,
+.sea-metadata-table-row-height-56-cell .sea-metadata-customer-formatter,
+.sea-metadata-table-row-height-88-cell .sea-metadata-customer-formatter,
+.sea-metadata-table-row-height-128-cell .sea-metadata-customer-formatter {
   flex-wrap: wrap;
   align-content: flex-start;
 }

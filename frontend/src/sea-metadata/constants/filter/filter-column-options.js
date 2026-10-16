@@ -57,6 +57,16 @@ const FILTER_COLUMN_OPTIONS = {
   [CellType.NUMBER]: {
     filterPredicateList: numberPredicates,
   },
+  // a customer is a single id, so only equality-style predicates are meaningful.
+  // The server's NumberOperator rejects everything outside its supported list.
+  [CellType.CUSTOMER]: {
+    filterPredicateList: [
+      FILTER_PREDICATE_TYPE.EQUAL,
+      FILTER_PREDICATE_TYPE.NOT_EQUAL,
+      FILTER_PREDICATE_TYPE.EMPTY,
+      FILTER_PREDICATE_TYPE.NOT_EMPTY,
+    ],
+  },
   [CellType.TEXT]: {
     filterPredicateList: textPredicates,
   },

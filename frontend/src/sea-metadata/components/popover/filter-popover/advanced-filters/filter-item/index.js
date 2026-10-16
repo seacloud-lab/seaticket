@@ -16,7 +16,7 @@ import {
 } from '../../../../../constants';
 import {
   isCheckboxColumn, isDateColumn, getColumnOptions as getSelectColumnOptions,
-  getTypesOptions, getColumnByKey,
+  getTypesOptions, getColumnByKey, getCustomersOptions,
 } from '../../../../../utils/column';
 import {
   getFilterByColumn, getColumnOptions, getUpdatedFilterByPredicate,
@@ -233,7 +233,7 @@ class FilterItem extends React.Component {
   };
 
   renderFilterTerm = (filterColumn) => {
-    const { filter, collaborators, readOnly, typesData, tagsData } = this.props;
+    const { filter, collaborators, readOnly, typesData, customersData, tagsData } = this.props;
     const { type } = filterColumn;
     const { filter_term, filter_predicate, filter_term_modifier } = filter;
     // predicate is empty or not empty
@@ -317,6 +317,21 @@ class FilterItem extends React.Component {
       case CellType.SINGLE_SELECT:
       case CellType.TYPE: {
         const options = type === CellType.SINGLE_SELECT ? getSelectColumnOptions(filterColumn) : getTypesOptions(typesData);
+        return (
+          <OptionSelector
+            className="border-radius-4"
+            readOnly={readOnly}
+            value={filter_term}
+            predicate={filter_predicate}
+            options={options}
+            column={filterColumn}
+            onChange={this.onFilterTermChanged}
+          />
+        );
+      }
+      case CellType.CUSTOMER: {
+        // the filter term is the customer id, matching how the column is stored
+        const options = getCustomersOptions(customersData);
         return (
           <OptionSelector
             className="border-radius-4"

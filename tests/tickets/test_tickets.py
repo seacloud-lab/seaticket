@@ -15,8 +15,12 @@ from seahub.tickets.tickets import (
     TicketTrashAPIView,
     build_ticket_data_event,
 )
+from seahub.portal.models import PortalCustomer
 from seahub.tickets.ticket_utils import (
+    compare_ticket_changes,
     filter_tickets_by_select,
+    to_optional_int,
+    validate_ticket_customer_id,
 )
 from seahub.utils.date_utils import normalize_date
 
@@ -39,6 +43,12 @@ class TestTicketDueDate:
     def test_filter_tickets_uses_normalized_query_result(self):
         due_date_key = 'k_due_date'
         seadb_api = Mock()
+        seadb_api.get_base_metadata.return_value = {
+            'tables': [{
+                'name': 'tickets',
+                'columns': [{'key': due_date_key, 'name': 'due_date'}],
+            }],
+        }
         seadb_api.query_rows.return_value = {
             'results': [{'_pk': 1, due_date_key: '2026-08-01'}],
             'metadata': [{'key': due_date_key, 'name': 'due_date'}],
@@ -47,6 +57,34 @@ class TestTicketDueDate:
         tickets, _ = filter_tickets_by_select(seadb_api, 'project-id', 'type', ['Bug'])
 
         assert tickets[0][due_date_key] == '2026-08-01'
+
+    def test_filter_tickets_selects_the_fixed_column_list(self):
+        # The selected columns are hard-coded (TICKET_DISPLAY_ALL_COLUMNS), not derived
+        # from the base's metadata, so customer_id is always in the SELECT even on a
+        # base that has not been migrated. Such a base is expected to fail the query
+        # rather than quietly drop the column -- that is the deliberate trade-off of
+        # not consulting metadata here.
+        seadb_api = Mock()
+        seadb_api.query_rows.return_value = {'results': [], 'metadata': []}
+
+        filter_tickets_by_select(seadb_api, 'project-id', 'type', ['Bug'])
+
+        sql = seadb_api.query_rows.call_args[0][1]
+        # column names are bare in the SELECT list, backticked in the WHERE clause
+        assert 'customer_id' in sql
+        assert 'due_date' in sql
+        assert '`type`' in sql
+        assert "IN ('Bug')" in sql
+
+    def test_filter_tickets_does_not_read_column_metadata(self):
+        # Guards the simplification: this path must not spend an HTTP call on
+        # metadata just to decide the column list.
+        seadb_api = Mock()
+        seadb_api.query_rows.return_value = {'results': [], 'metadata': []}
+
+        filter_tickets_by_select(seadb_api, 'project-id', 'type', ['Bug'])
+
+        seadb_api.get_base_metadata.assert_not_called()
 
 
 class TestBuildTicketDataEvent:
@@ -364,6 +402,7 @@ class TestTicketsAPIView:
         request.user = project_creator
         seadb_api = Mock()
         seadb_api.query_rows.return_value = {'results': [{'_pk': 1}]}
+        seadb_api.get_base_metadata.return_value = get_customer_base_metadata()
         with patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api):
             resp = TicketsAPIView.as_view()(request, project_uuid=project.uuid)
         assert resp.status_code == 400
@@ -378,6 +417,7 @@ class TestTicketsAPIView:
         request.user = project_creator
         seadb_api = Mock()
         seadb_api.query_rows.return_value = {'results': [{'_pk': 1}]}
+        seadb_api.get_base_metadata.return_value = get_customer_base_metadata()
         with patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api):
             resp = TicketsAPIView.as_view()(request, project_uuid=project.uuid)
         assert resp.status_code == 200
@@ -798,3 +838,242 @@ class TestTicketCommentAPIView:
         request.user = no_org_user
         resp = TicketCommentAPIView.as_view()(request, project_uuid=project.uuid, ticket_id='1', comment_id='1')
         assert resp.status_code == 403
+
+
+def get_customer_base_metadata():
+    return {
+        'tables': [{
+            'name': 'tickets',
+            'columns': [
+                {
+                    'name': 'state',
+                    'data': {
+                        'options': [
+                            {'id': '0001', 'name': 'open'},
+                            {'id': '0002', 'name': 'closed'},
+                        ],
+                    },
+                },
+                {
+                    'name': 'substate',
+                    'data': {
+                        'cascade_settings': {'0001': ['0010'], '0002': []},
+                        'options': [{'id': '0010', 'name': 'New'}],
+                    },
+                },
+            ],
+        }]
+    }
+
+
+class TestToOptionalInt:
+    @pytest.mark.parametrize('value', [None, ''])
+    def test_empty_forms_become_none(self, value):
+        assert to_optional_int(value) is None
+
+    @pytest.mark.parametrize('value,expected', [('7', 7), (7, 7)])
+    def test_numeric_forms_become_int(self, value, expected):
+        assert to_optional_int(value) == expected
+
+    @pytest.mark.parametrize('value', ['Acme', 'null'])
+    def test_non_numeric_is_returned_unchanged_so_callers_can_reject_it(self, value):
+        # 'null' is a FormData artifact this client no longer emits; it must not be
+        # silently treated as "no customer"
+        assert to_optional_int(value) == value
+
+    @pytest.mark.parametrize('value', [True, False, 1.5, 2.0])
+    def test_bool_and_float_are_not_coerced(self, value):
+        # int(True) == 1 and int(1.5) == 1 would silently resolve to a real customer
+        assert to_optional_int(value) == value
+        assert isinstance(to_optional_int(value), (bool, float))
+
+
+class TestValidateTicketCustomerId:
+    @pytest.mark.parametrize('value', [None, ''])
+    def test_empty_value_means_no_customer(self, value, real_project):
+        assert validate_ticket_customer_id(str(real_project.uuid), value) is None
+
+    def test_accepts_an_active_customer_of_the_project(self, real_project):
+        customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
+        assert validate_ticket_customer_id(str(real_project.uuid), customer.id) == customer.id
+
+    def test_rejects_a_disabled_customer(self, real_project):
+        customer = PortalCustomer.objects.create(
+            project_uuid=str(real_project.uuid), name='Acme', status=PortalCustomer.STATUS_DISABLED)
+        with pytest.raises(ValueError):
+            validate_ticket_customer_id(str(real_project.uuid), customer.id)
+
+    def test_rejects_a_customer_of_another_project(self, real_project):
+        other = PortalCustomer.objects.create(project_uuid='00000000-0000-0000-0000-000000000001', name='Acme')
+        with pytest.raises(ValueError):
+            validate_ticket_customer_id(str(real_project.uuid), other.id)
+
+    @pytest.mark.parametrize('value', ['Acme', '1.5', '{}', 'null'])
+    def test_rejects_a_non_numeric_value(self, value, real_project):
+        with pytest.raises(ValueError):
+            validate_ticket_customer_id(str(real_project.uuid), value)
+
+    def test_rejects_an_unknown_customer(self, real_project):
+        with pytest.raises(ValueError):
+            validate_ticket_customer_id(str(real_project.uuid), 12345)
+
+    @pytest.mark.parametrize('value', [True, False, 1.5])
+    def test_rejects_a_bool_or_float(self, value, real_project):
+        # both would otherwise coerce to a real customer id
+        PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='First')
+        with pytest.raises(ValueError):
+            validate_ticket_customer_id(str(real_project.uuid), value)
+
+
+class TestTicketCustomerOnCreate:
+    def _post(self, factory, project, user, data):
+        request = factory.post(f"/api/v1/projects/{project.uuid}/tickets/", data=data)
+        request.user = user
+        return request
+
+    def _seadb(self):
+        seadb_api = Mock()
+        seadb_api.insert_rows.return_value = {'pks': [1]}
+        seadb_api.get_base_metadata.return_value = get_customer_base_metadata()
+        return seadb_api
+
+    def test_post_stores_the_customer(self, factory, project_creator, real_project):
+        project = real_project
+        customer = PortalCustomer.objects.create(project_uuid=str(project.uuid), name='Acme')
+        seadb_api = self._seadb()
+        request = self._post(factory, project, project_creator, {
+            'title': 't', 'content': json.dumps({'text': 'c'}), 'tags': '[]',
+            'assignees': '[]', 'customer_id': str(customer.id),
+        })
+        with patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.tickets.tickets.check_ticket_creation_interval', return_value=True):
+            resp = TicketsAPIView.as_view()(request, project_uuid=project.uuid)
+        assert resp.status_code == 201
+        inserted_row = seadb_api.insert_rows.call_args[0][2][0]
+        assert inserted_row['customer_id'] == customer.id
+
+    def test_post_without_a_customer_stores_none(self, factory, project_creator, real_project):
+        project = real_project
+        seadb_api = self._seadb()
+        request = self._post(factory, project, project_creator, {
+            'title': 't', 'content': json.dumps({'text': 'c'}), 'tags': '[]', 'assignees': '[]',
+        })
+        with patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.tickets.tickets.check_ticket_creation_interval', return_value=True):
+            resp = TicketsAPIView.as_view()(request, project_uuid=project.uuid)
+        assert resp.status_code == 201
+        inserted_row = seadb_api.insert_rows.call_args[0][2][0]
+        assert inserted_row['customer_id'] is None
+
+    def test_post_rejects_a_customer_from_another_project(self, factory, project_creator, real_project):
+        project = real_project
+        other = PortalCustomer.objects.create(project_uuid='00000000-0000-0000-0000-000000000002', name='Acme')
+        seadb_api = self._seadb()
+        request = self._post(factory, project, project_creator, {
+            'title': 't', 'content': json.dumps({'text': 'c'}), 'tags': '[]',
+            'assignees': '[]', 'customer_id': str(other.id),
+        })
+        with patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.tickets.tickets.check_ticket_creation_interval', return_value=True):
+            resp = TicketsAPIView.as_view()(request, project_uuid=project.uuid)
+        assert resp.status_code == 400
+        seadb_api.insert_rows.assert_not_called()
+
+    def test_post_rejects_a_non_numeric_customer(self, factory, project_creator, real_project):
+        project = real_project
+        seadb_api = self._seadb()
+        request = self._post(factory, project, project_creator, {
+            'title': 't', 'content': json.dumps({'text': 'c'}), 'tags': '[]',
+            'assignees': '[]', 'customer_id': 'Acme',
+        })
+        with patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.tickets.tickets.check_ticket_creation_interval', return_value=True):
+            resp = TicketsAPIView.as_view()(request, project_uuid=project.uuid)
+        assert resp.status_code == 400
+
+
+class TestTicketCustomerOnBatchUpdate:
+    """The grid / batch-update path for customer_id.
+
+    This path shipped with a typo in the validator's name that no test covered, so
+    every grid edit touching the customer column raised a NameError -> 500. The
+    case is pinned here.
+    """
+
+    def _put(self, factory, project, user, row):
+        data = {'tickets_data': [{'row_id': '1', 'row': row}]}
+        request = factory.put(f"/api/v1/projects/{project.uuid}/tickets/", data=data, format='json')
+        request.user = user
+        return request
+
+    def _seadb(self):
+        seadb_api = Mock()
+        seadb_api.query_rows.return_value = {'results': [{'_pk': 1}]}
+        seadb_api.get_base_metadata.return_value = get_customer_base_metadata()
+        seadb_api.insert_rows.return_value = {'pks': [1]}
+        return seadb_api
+
+    def test_put_batch_sets_the_customer(self, factory, project_creator, real_project):
+        project = real_project
+        customer = PortalCustomer.objects.create(project_uuid=str(project.uuid), name='Acme')
+        seadb_api = self._seadb()
+        request = self._put(factory, project, project_creator, {'customer_id': str(customer.id)})
+        with patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api):
+            resp = TicketsAPIView.as_view()(request, project_uuid=project.uuid)
+        assert resp.status_code == 200
+        updated_row = seadb_api.update_rows.call_args[0][2][0]['row']
+        assert updated_row['customer_id'] == customer.id
+
+    def test_put_batch_rejects_an_invalid_customer(self, factory, project_creator, real_project):
+        project = real_project
+        seadb_api = self._seadb()
+        request = self._put(factory, project, project_creator, {'customer_id': 'Acme'})
+        with patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api):
+            resp = TicketsAPIView.as_view()(request, project_uuid=project.uuid)
+        assert resp.status_code == 400
+        seadb_api.update_rows.assert_not_called()
+
+
+class TestCustomerActivity:
+    def test_customer_change_is_recorded(self):
+        changes = compare_ticket_changes({'customer_id': 3}, {'customer_id': 7})
+        assert changes == [('customer_changed', 'customer_id', 3, 7)]
+
+    def test_setting_a_customer_from_none_is_recorded(self):
+        changes = compare_ticket_changes({'customer_id': None}, {'customer_id': 7})
+        assert changes == [('customer_changed', 'customer_id', None, 7)]
+
+    def test_clearing_a_customer_is_recorded(self):
+        changes = compare_ticket_changes({'customer_id': 7}, {'customer_id': None})
+        assert changes == [('customer_changed', 'customer_id', 7, None)]
+
+    def test_an_unchanged_customer_is_not_recorded(self):
+        assert compare_ticket_changes({'customer_id': 7}, {'customer_id': 7}) == []
+        assert compare_ticket_changes({'customer_id': 7}, {'customer_id': '7'}) == []
+
+    def test_an_untouched_customer_column_is_not_recorded(self):
+        # the payload also changes priority, so assert on the customer entry rather
+        # than on the whole list
+        changes = compare_ticket_changes({'customer_id': 7}, {'priority': 1})
+        assert not [change for change in changes if change[0] == 'customer_changed']
+        assert changes == [('priority_changed', 'priority', None, 1)]
+
+
+class TestTicketMetadataCustomers:
+    def test_get_returns_the_project_customers_including_disabled(self, factory, project_creator, real_project):
+        project = real_project
+        active = PortalCustomer.objects.create(project_uuid=str(project.uuid), name='Acme')
+        disabled = PortalCustomer.objects.create(
+            project_uuid=str(project.uuid), name='Old Co', status=PortalCustomer.STATUS_DISABLED)
+        PortalCustomer.objects.create(project_uuid='00000000-0000-0000-0000-000000000003', name='Elsewhere')
+
+        request = factory.get(f"/api/v1/projects/{project.uuid}/tickets/meta/")
+        request.user = project_creator
+        with patch('seahub.tickets.tickets.SeaDBAPI'), \
+                patch('seahub.tickets.tickets.get_current_table_metadata', return_value={'columns': []}):
+            resp = TicketMetadataAPIView.as_view()(request, project_uuid=project.uuid)
+
+        assert resp.status_code == 200
+        customers = resp.data['customers']['options']
+        assert {c['id'] for c in customers} == {active.id, disabled.id}
+        assert {c['name']: c['status'] for c in customers} == {'Acme': 'active', 'Old Co': 'disabled'}

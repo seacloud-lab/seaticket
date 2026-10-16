@@ -11,6 +11,7 @@ const POPUP_EDITOR_COLUMN_TYPES = [
   CellType.COLLABORATOR,
   CellType.SINGLE_SELECT,
   CellType.TYPE,
+  CellType.CUSTOMER,
   CellType.MULTIPLE_SELECT,
   CellType.LONG_TEXT,
   CellType.TAGS,

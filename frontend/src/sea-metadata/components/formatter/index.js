@@ -5,6 +5,7 @@ import CheckboxFormatter from '../cell-formatter/checkbox';
 import CollaboratorsFormatter from '../cell-formatter/collaborators';
 import CreatorFormatter from '../cell-formatter/creator';
 import CTimeFormatter from '../cell-formatter/ctime';
+import CustomerFormatter from '../cell-formatter/customer';
 import DateFormatter from '../cell-formatter/date';
 import LinkFormat from '../cell-formatter/link';
 import LongTextFormatter from '../cell-formatter/long-text';
@@ -139,6 +140,13 @@ const Formatter = ({ column, value, isSample, queryUserAPI, emptyTip, onClick, r
         <TypeFormatter value={value} className={className} { ...props }>
           <Empty type={columnType} placeholder={emptyTip} />
         </TypeFormatter>
+      );
+    }
+    case CellType.CUSTOMER: {
+      return (
+        <CustomerFormatter value={value} className={className} { ...props }>
+          <Empty type={columnType} placeholder={emptyTip} />
+        </CustomerFormatter>
       );
     }
     case CellType.TAGS: {
