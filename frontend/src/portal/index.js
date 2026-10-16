@@ -17,7 +17,7 @@ import {
   getPortalLoginPath,
   getPortalPathSegments,
 } from './path-utils';
-import SidePanel from './side-panel';
+import TopBar from './top-bar';
 
 import './index.css';
 
@@ -230,7 +230,7 @@ const Portal = () => {
           >
             {isEditMode && <LeftBar />}
             <div className="seaqa-portal-body">
-              <SidePanel
+              <TopBar
                 isEditMode={isEditMode}
                 activePage={activePage}
                 onPageChange={onPageChange}
