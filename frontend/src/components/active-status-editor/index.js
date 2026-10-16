@@ -39,7 +39,7 @@ const ActiveStatusEditor = ({ isShowDropdownIcon, currentOption, menuOptions, on
           return (
             <CustomizeDropdownItem key={`item-${value}`} onClick={() => handleClickMenuOption(option)} className="justify-content-between">
               {label}
-              <IconButton icon={value === currentOption.value ? 'check-mark-option' : ''} size={14} className="ml-2 no-hover-bg" />
+              <IconButton icon={value === currentOption.value ? 'check-mark' : ''} size={14} className="ml-2 no-hover-bg" />
             </CustomizeDropdownItem>
           );
         })}

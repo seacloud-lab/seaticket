@@ -36,7 +36,7 @@ class Option extends Component {
         <div className="seaqa-select-option-content d-flex align-items-center flex-1 text-truncate">
           {this.props.children}
         </div>
-        <IconButton icon={isSelected ? 'check-mark-option' : ''} size={14} className="seaqa-select-option-check-btn no-hover-bg" />
+        <IconButton icon={isSelected ? 'check-mark' : ''} size={14} className="seaqa-select-option-check-btn no-hover-bg" />
       </div>
     );
   }

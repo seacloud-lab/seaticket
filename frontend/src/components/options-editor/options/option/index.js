@@ -50,11 +50,11 @@ const Option = ({
               <OptionLabel option={option} />
             )}
           </div>
-          <IconButton icon={isSelected ? 'check-mark-option' : ''} className="options-editor-option-check-btn no-hover-bg" />
+          <IconButton icon={isSelected ? 'check-mark' : ''} className="options-editor-option-check-btn no-hover-bg" />
         </>
       ) : (
         <>
-          <IconButton icon={isSelected ? 'check-mark-option' : ''} className="options-editor-option-check-btn no-hover-bg mr-2" />
+          <IconButton icon={isSelected ? 'check-mark' : ''} className="options-editor-option-check-btn no-hover-bg mr-2" />
           <div className="options-editor-option-content">
             {icon && (<IconButton icon={icon} className="no-hover-bg options-editor-option-icon mr-2 ml-0" />)}
             {img && (<img src={img} alt="" className="options-editor-option-icon mr-2 ml-0"/>)}
