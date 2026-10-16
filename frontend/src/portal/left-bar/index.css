@@ -18,3 +18,7 @@
 .seaqa-portal-left-bar .seaqa-portal-left-bar-item .seaqa-icon-svg {
   color: var(--bs-sf-grey-text);
 }
+
+.seaqa-portal-left-bar .seaqa-portal-left-bar-item.edit-panel-open .seaqa-icon-svg {
+  color: var(--bs-sf-orange-light);
+}

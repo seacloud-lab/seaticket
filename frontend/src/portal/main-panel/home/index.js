@@ -19,8 +19,7 @@ import './index.css';
 const { isEditMode, portalHomeSettings } = window.app.pageOptions;
 const CARD_ORDER_MIME_TYPE = 'application/portal-home-card-order';
 
-const PortalHome = ({ projectUuid, onHomeChatSend }) => {
-  const [isEdit, setIsEdit] = useState(false);
+const PortalHome = ({ projectUuid, onHomeChatSend, isEdit, setIsEdit }) => {
   const [homePageStyle, setHomePageStyle] = useState(() => normalizeHomePageStyle(portalHomeSettings));
   const [activeCard, setActiveCard] = useState('');
   const [draggingCardId, setDraggingCardId] = useState('');
@@ -196,18 +195,6 @@ const PortalHome = ({ projectUuid, onHomeChatSend }) => {
 
   return (
     <div className={`portal-home-page${isEdit ? ' is-edit' : ''}`}>
-      {isEditMode && !isEdit && (
-        <div className="portal-home-edit-btn-wrap">
-          <IconButton
-            icon="edit"
-            className="portal-home-edit-btn"
-            onClick={() => setIsEdit(true)}
-            title={gettext('Edit')}
-            aria-label={gettext('Edit')}
-          />
-        </div>
-      )}
-
       <div className="portal-home-layout">
 
         <main className="portal-home-main">

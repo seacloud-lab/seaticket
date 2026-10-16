@@ -30,6 +30,7 @@ const {
 const Portal = () => {
   const [isLoading, setLoading] = useState(true);
   const [activePage, setActivePage] = useState(PORTAL_PAGE.HOME);
+  const [isShowEditPanel, setIsShowEditPanel] = useState(false);
   const APIRef = useRef(portalAPI);
   const [needPasswordState] = useState(!!needPassword);
   const [passwordInput, setPasswordInput] = useState('');
@@ -61,6 +62,12 @@ const Portal = () => {
     const searchParams = new URLSearchParams({ query });
     history.replaceState(null, null, `${chatPath}?${searchParams.toString()}`);
   }, []);
+
+  const onToggleEditPanel = () => {
+    setActivePage(PORTAL_PAGE.HOME);
+    setIsShowEditPanel(true);
+    history.replaceState(null, null, buildPortalPath(PORTAL_PAGE.HOME));
+  };
 
   useEffect(() => {
     const pathSegments = getPortalPathSegments();
@@ -165,6 +172,10 @@ const Portal = () => {
   }, []);
 
   useEffect(() => {
+    if (activePage !== PORTAL_PAGE.HOME) setIsShowEditPanel(false);
+  }, [activePage]);
+
+  useEffect(() => {
     const logo = portalLogo || `${mediaUrl}img/portal-logo.png`;
     const existingFavicon = document.querySelector('link[rel~="icon"]');
     if (existingFavicon) {
@@ -228,7 +239,12 @@ const Portal = () => {
             isSubscribeConnectionsSyncStatus={false}
             useNotification={false}
           >
-            {isEditMode && <LeftBar />}
+            {isEditMode && (
+              <LeftBar
+                isShowEditPanel={isShowEditPanel}
+                onToggleEditPanel={onToggleEditPanel}
+              />
+            )}
             <div className="seaqa-portal-body">
               <TopBar
                 isEditMode={isEditMode}
@@ -249,6 +265,8 @@ const Portal = () => {
                 onHomeChatSend={onHomeChatSend}
                 canAccessIssues={canAccessIssues}
                 isExternalUser={isExternalUser}
+                isShowEditPanel={isShowEditPanel}
+                setIsShowEditPanel={setIsShowEditPanel}
               />
             </div>
           </DataProvider>
