@@ -34,19 +34,34 @@ const result = {
 const props = { projectUuid: 'project-1', connection, onToggle: jest.fn() };
 
 beforeEach(() => jest.clearAllMocks());
+afterEach(() => jest.restoreAllMocks());
 
 it('loads statistics without a supported flag for the selected connection and closes the dialog', async () => {
   connectionsAPI.getConnectionStatistics.mockResolvedValue({ data: result });
   render(<ConnectionStatisticsDialog {...props} />);
   expect(screen.getByRole('status')).not.toBeNull();
   expect(await screen.findByTestId('chart')).not.toBeNull();
-  expect(connectionsAPI.getConnectionStatistics).toHaveBeenCalledWith('project-1', 7, expect.any(AbortSignal));
+  expect(connectionsAPI.getConnectionStatistics).toHaveBeenCalledWith(
+    'project-1', 7, expect.any(AbortSignal), Intl.DateTimeFormat().resolvedOptions().timeZone
+  );
   expect(screen.getByText('GitHub Support')).not.toBeNull();
   expect(screen.getByText('Total issues: 3')).not.toBeNull();
   expect(screen.getByText('2025-11 - 2026-10')).not.toBeNull();
   expect(screen.queryByText(/UTC|undefined/)).toBeNull();
   fireEvent.click(screen.getByText('Close'));
   expect(props.onToggle).toHaveBeenCalledTimes(1);
+});
+
+it('requests statistics in the browser timezone so the months match the issue list', async () => {
+  jest.spyOn(Intl, 'DateTimeFormat').mockReturnValue({
+    resolvedOptions: () => ({ timeZone: 'Asia/Shanghai' }),
+  });
+  connectionsAPI.getConnectionStatistics.mockResolvedValue({ data: result });
+  render(<ConnectionStatisticsDialog {...props} />);
+  expect(await screen.findByTestId('chart')).not.toBeNull();
+  expect(connectionsAPI.getConnectionStatistics).toHaveBeenCalledWith(
+    'project-1', 7, expect.any(AbortSignal), 'Asia/Shanghai'
+  );
 });
 
 it('shows an API error for an unsupported connection instead of a chart', async () => {
