@@ -69,7 +69,7 @@ class Paginator extends Component {
   renderDropdownItem = (curPerPage, perPage) => {
     return (
       <CustomizeDropdownItem onClick={() => this.resetPerPage(perPage)} key={perPage}>
-        <IconBtn icon={curPerPage === perPage ? 'check-mark' : ''} size={14} className="item-icon no-hover-bg" />
+        <IconBtn icon={curPerPage === perPage ? 'check-mark-option' : ''} size={14} className="item-icon no-hover-bg" />
         <span>
           {this.getPerPageText(perPage)}
         </span>

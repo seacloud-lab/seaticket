@@ -107,7 +107,7 @@ class ProjectSettingContent extends React.Component {
                     aria-label={`${gettext('Color')} ${color}`}
                     aria-selected={color === bgColor}
                   >
-                    {color === bgColor && (<Icon symbol="check-mark" className="project-setting-content-color-check" />)}
+                    {color === bgColor && (<Icon symbol="check-mark-option" className="project-setting-content-color-check" />)}
                   </span>
                 </span>
               </div>
