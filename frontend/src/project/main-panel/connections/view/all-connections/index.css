@@ -10,3 +10,9 @@
 .seaqa-project-connections-table .seaqa-customize-table-wrapper-divider {
   display: none;
 }
+
+.connection-statistics-context-menu {
+  display: block;
+  min-width: 200px;
+  z-index: 1050;
+}
