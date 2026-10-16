@@ -7,6 +7,7 @@ import datetime
 import os
 from email.utils import formatdate, make_msgid
 from urllib.parse import urlparse
+from zoneinfo import ZoneInfo
 
 from django.utils.translation import gettext as _
 from django.http import FileResponse, HttpResponseNotModified
@@ -1043,8 +1044,9 @@ class ProjectConnectionStatisticsView(APIView):
         if connection.type != ConnectionType.GITHUB_ISSUE.value:
             return api_error(status.HTTP_400_BAD_REQUEST, 'Connection type does not support statistics.')
         try:
+            user_timezone = ZoneInfo(request.GET.get('timezone') or 'UTC')
             github_seadb_api = GitHubSeaDBAPI(project_uuid)
-            statistics = github_seadb_api.get_issue_statistics(connection.id)
+            statistics = github_seadb_api.get_issue_statistics(connection.id, user_timezone)
         except Exception:
             logger.exception('Could not load statistics for connection %s', connection_id)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')

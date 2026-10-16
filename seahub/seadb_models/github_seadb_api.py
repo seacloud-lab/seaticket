@@ -13,7 +13,6 @@ logger = logging.getLogger(__name__)
 
 _COMMENTS_OMITTED_NOTICE = '[comments omitted due to content limit]'
 _MORE_COMMENTS_OMITTED_NOTICE = '[more comments omitted due to content limit]'
-ISSUE_STATISTICS_BUCKET_PAGE_SIZE = 1000
 ISSUE_STATISTICS_MONTHS = 12
 
 
@@ -61,51 +60,56 @@ class GitHubSeaDBAPI:
             return response['results']
         return []
 
-    def get_issue_statistics(self, connection_id):
-        """Count GitHub issues by creation month and type over the past 12 months."""
-        # ISOMONTH operates on UTC dates, so both filtering and labels use UTC.
+    def get_issue_statistics(self, connection_id, user_timezone=datetime.timezone.utc):
         now = timezone.now().astimezone(datetime.timezone.utc)
-        month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        range_start = month_start - relativedelta(months=ISSUE_STATISTICS_MONTHS - 1)
-        months = [
-            (range_start + relativedelta(months=index)).strftime('%Y-%m')
+        local_now = now.astimezone(user_timezone)
+        month_start = datetime.datetime(local_now.year, local_now.month, 1, tzinfo=user_timezone)
+        month_starts = [
+            month_start + relativedelta(months=index - ISSUE_STATISTICS_MONTHS + 1)
             for index in range(ISSUE_STATISTICS_MONTHS)
         ]
-        table_name = SchemaTables.GITHUB_ISSUES.table_name(connection_id)
-        counts_by_type = {None: [0] * ISSUE_STATISTICS_MONTHS}
-        month_indexes = {month: index for index, month in enumerate(months)}
-        offset = 0
+        months = [start.strftime('%Y-%m') for start in month_starts]
+        utc_month_starts = [start.astimezone(datetime.timezone.utc) for start in month_starts]
 
-        while True:
-            sql = (
-                "SELECT ISOMONTH(`created_time`) AS `month`, `issue_type`, COUNT(*) AS `count` "
-                f"FROM `{table_name}` "
-                "WHERE (`deleted` = False OR `deleted` IS NULL) "
-                "AND `created_time` >= ? AND `created_time` < ? "
-                "GROUP BY ISOMONTH(`created_time`), `issue_type` "
-                "ORDER BY `month`, `issue_type` "
-                f"LIMIT {offset}, {ISSUE_STATISTICS_BUCKET_PAGE_SIZE}"
-            )
-            result = self.seadb_api.query_rows(
-                self.base_id, sql, params=[range_start.isoformat(), now.isoformat()],
-            )
-            if result.get('success') is False:
-                raise RuntimeError('Could not query connection statistics.')
-            if offset == 0:
-                for option in _get_issue_type_options(result.get('metadata')):
-                    if option.get('name'):
-                        counts_by_type[option['name']] = [0] * ISSUE_STATISTICS_MONTHS
-            rows = result.get('results') or []
-            for row in rows:
-                month_index = month_indexes.get(row.get('month'))
-                if month_index is None:
-                    continue
-                issue_type = row.get('issue_type') or None
-                counts = counts_by_type.setdefault(issue_type, [0] * ISSUE_STATISTICS_MONTHS)
-                counts[month_index] += int(row.get('count') or 0)
-            if len(rows) < ISSUE_STATISTICS_BUCKET_PAGE_SIZE:
-                break
-            offset += ISSUE_STATISTICS_BUCKET_PAGE_SIZE
+        bucket_terms = []
+        for index in reversed(range(1, ISSUE_STATISTICS_MONTHS)):
+            bucket_terms.extend([
+                f"`created_time` >= DATEADD('{utc_month_starts[index].isoformat()}', 0, 'seconds')",
+                f"'{months[index]}'",
+            ])
+        bucket_terms.extend(['TRUE()', f"'{months[0]}'"])
+        month_bucket = f"IFS({', '.join(bucket_terms)})"
+
+        table_name = SchemaTables.GITHUB_ISSUES.table_name(connection_id)
+        sql = (
+            f"SELECT {month_bucket} AS `month`, `issue_type`, COUNT(*) AS `count` "
+            f"FROM `{table_name}` "
+            "WHERE (`deleted` = False OR `deleted` IS NULL) "
+            "AND `created_time` >= ? AND `created_time` < ? "
+            "GROUP BY `month`, `issue_type` "
+            "ORDER BY `month`, `issue_type`"
+        )
+        result = self.seadb_api.query_rows(
+            self.base_id, sql,
+            params=[utc_month_starts[0].isoformat(), now.isoformat()],
+        )
+        if result.get('success') is False:
+            raise RuntimeError('Could not query connection statistics.')
+
+        counts_by_type = {None: [0] * ISSUE_STATISTICS_MONTHS}
+        for option in _get_issue_type_options(result.get('metadata')):
+            if option.get('name'):
+                counts_by_type[option['name']] = [0] * ISSUE_STATISTICS_MONTHS
+
+        month_indexes = {month: index for index, month in enumerate(months)}
+        for row in result.get('results') or []:
+            month_index = month_indexes.get(row.get('month'))
+            if month_index is None:
+                logger.warning('Unexpected month bucket %r in GitHub issue statistics', row.get('month'))
+                continue
+            issue_type = row.get('issue_type') or None
+            counts = counts_by_type.setdefault(issue_type, [0] * ISSUE_STATISTICS_MONTHS)
+            counts[month_index] += int(row.get('count') or 0)
 
         names = sorted(
             (name for name in counts_by_type if name is not None),
