@@ -7,7 +7,7 @@ import { getPortalPublicUrl } from '../path-utils';
 
 import './index.css';
 
-const LeftBar = ({ isShowEditPanel, onToggleEditPanel }) => {
+const LeftBar = ({ isShowEditPanel, openEditPanel }) => {
   const [isOpeningPortal, setIsOpeningPortal] = useState(false);
 
   const onOpenPortal = useCallback(() => {
@@ -44,11 +44,11 @@ const LeftBar = ({ isShowEditPanel, onToggleEditPanel }) => {
       {
         icon: 'edit',
         tip: gettext('Edit'),
-        callback: onToggleEditPanel,
+        callback: openEditPanel,
         isActive: isShowEditPanel,
       },
     ];
-  }, [isShowEditPanel, isOpeningPortal, onToggleEditPanel, onOpenPortal]);
+  }, [isShowEditPanel, isOpeningPortal, openEditPanel, onOpenPortal]);
 
   return (
     <>

@@ -19,7 +19,7 @@ import './index.css';
 const { isEditMode, portalHomeSettings } = window.app.pageOptions;
 const CARD_ORDER_MIME_TYPE = 'application/portal-home-card-order';
 
-const PortalHome = ({ projectUuid, onHomeChatSend, isEdit, setIsEdit }) => {
+const PortalHome = ({ projectUuid, onHomeChatSend, isShowEditPanel, setIsShowEditPanel }) => {
   const [homePageStyle, setHomePageStyle] = useState(() => normalizeHomePageStyle(portalHomeSettings));
   const [activeCard, setActiveCard] = useState('');
   const [draggingCardId, setDraggingCardId] = useState('');
@@ -52,7 +52,7 @@ const PortalHome = ({ projectUuid, onHomeChatSend, isEdit, setIsEdit }) => {
 
   const closeEditPanel = () => {
     updateHomeSetting(JSON.stringify(homePageStyle));
-    setIsEdit(false);
+    setIsShowEditPanel(false);
     setActiveCard('');
   };
 
@@ -69,13 +69,13 @@ const PortalHome = ({ projectUuid, onHomeChatSend, isEdit, setIsEdit }) => {
         cards: [...(Array.isArray(prev['portal_home_cards_section']?.cards) ? prev['portal_home_cards_section'].cards : []), newCard],
       },
     }));
-    setIsEdit(true);
+    setIsShowEditPanel(true);
     setActiveCard(newCard.id);
   };
 
   const handleCardClick = (card) => {
     if (isEditMode) {
-      setIsEdit(true);
+      setIsShowEditPanel(true);
       setActiveCard(card.id);
       return;
     }
@@ -194,7 +194,7 @@ const PortalHome = ({ projectUuid, onHomeChatSend, isEdit, setIsEdit }) => {
   };
 
   return (
-    <div className={`portal-home-page${isEdit ? ' is-edit' : ''}`}>
+    <div className={`portal-home-page${isShowEditPanel ? ' is-edit' : ''}`}>
       <div className="portal-home-layout">
 
         <main className="portal-home-main">
@@ -301,7 +301,7 @@ const PortalHome = ({ projectUuid, onHomeChatSend, isEdit, setIsEdit }) => {
             isSupportPortal={true}
           />
         )}
-        {isEditMode && isEdit && !activeCard && (
+        {isEditMode && isShowEditPanel && !activeCard && (
           <PortalHomeEditPanel
             homePageStyle={homePageStyle}
             setHomePageStyle={setHomePageStyle}
@@ -309,7 +309,7 @@ const PortalHome = ({ projectUuid, onHomeChatSend, isEdit, setIsEdit }) => {
             onClose={closeEditPanel}
           />
         )}
-        {isEditMode && isEdit && activeCard && (
+        {isEditMode && isShowEditPanel && activeCard && (
           <PortalCardEditPanel
             homePageStyle={homePageStyle}
             activeCard={activeCard}

@@ -44,8 +44,6 @@ const MainPanel = ({ activePage, onPageChange, onHomeChatSend, isAnonymous, isEx
         return (
           <PortalHome
             { ...props }
-            isEdit={props.isShowEditPanel}
-            setIsEdit={props.setIsShowEditPanel}
             onHomeChatSend={onHomeChatSend}
           />
         );

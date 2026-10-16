@@ -63,7 +63,7 @@ const Portal = () => {
     history.replaceState(null, null, `${chatPath}?${searchParams.toString()}`);
   }, []);
 
-  const onToggleEditPanel = () => {
+  const openEditPanel = () => {
     setActivePage(PORTAL_PAGE.HOME);
     setIsShowEditPanel(true);
     history.replaceState(null, null, buildPortalPath(PORTAL_PAGE.HOME));
@@ -242,7 +242,7 @@ const Portal = () => {
             {isEditMode && (
               <LeftBar
                 isShowEditPanel={isShowEditPanel}
-                onToggleEditPanel={onToggleEditPanel}
+                openEditPanel={openEditPanel}
               />
             )}
             <div className="seaqa-portal-body">
