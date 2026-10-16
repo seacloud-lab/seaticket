@@ -19,7 +19,8 @@ const ConnectionStatisticsDialog = ({ projectUuid, connection, onToggle }) => {
     setIsLoading(true);
     setResult(null);
     setErrorMessage('');
-    connectionsAPI.getConnectionStatistics(projectUuid, connection.id, controller.signal).then(response => {
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    connectionsAPI.getConnectionStatistics(projectUuid, connection.id, controller.signal, timezone).then(response => {
       if (!controller.signal.aborted) setResult(response.data);
     }).catch(error => {
       if (!controller.signal.aborted) setErrorMessage(Utils.getErrorMsg(error));
