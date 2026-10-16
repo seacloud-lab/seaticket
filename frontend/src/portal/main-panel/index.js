@@ -41,7 +41,12 @@ const MainPanel = ({ activePage, onPageChange, onHomeChatSend, isAnonymous, isEx
       case PORTAL_PAGE.CHAT:
         return <PortalChat projectUuid={props.projectUuid} />;
       case PORTAL_PAGE.HOME:
-        return <PortalHome { ...props } onHomeChatSend={onHomeChatSend} />;
+        return (
+          <PortalHome
+            { ...props }
+            onHomeChatSend={onHomeChatSend}
+          />
+        );
       default:
         return null;
     }

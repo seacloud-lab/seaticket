@@ -21,20 +21,6 @@
   height: 100%;
 }
 
-.portal-home-page .portal-home-edit-btn-wrap {
-  position: absolute;
-  right: 32px;
-  top: 24px;
-  z-index: 2;
-}
-
-.portal-home-page .portal-home-edit-btn-wrap .portal-home-edit-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.9);
-}
-
 .portal-home-page .portal-home-main {
   flex: 1 1 auto;
   width: calc(100% - 340px);
@@ -301,11 +287,6 @@
 @media (max-width: 768px) {
   .portal-home-page .portal-home-layout {
     flex-direction: column;
-  }
-
-  .portal-home-page .portal-home-edit-btn-wrap {
-    right: 16px;
-    top: 16px;
   }
 
   .portal-home-page .portal-home-edit-panel,

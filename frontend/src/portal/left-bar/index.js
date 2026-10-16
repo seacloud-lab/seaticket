@@ -7,7 +7,7 @@ import { getPortalPublicUrl } from '../path-utils';
 
 import './index.css';
 
-const LeftBar = () => {
+const LeftBar = ({ isShowEditPanel, openEditPanel }) => {
   const [isOpeningPortal, setIsOpeningPortal] = useState(false);
 
   const onOpenPortal = useCallback(() => {
@@ -41,8 +41,14 @@ const LeftBar = () => {
         callback: onOpenPortal,
         disabled: isOpeningPortal,
       },
+      {
+        icon: 'edit',
+        tip: gettext('Edit'),
+        callback: openEditPanel,
+        isActive: isShowEditPanel,
+      },
     ];
-  }, [isOpeningPortal, onOpenPortal]);
+  }, [isShowEditPanel, isOpeningPortal, openEditPanel, onOpenPortal]);
 
   return (
     <>
@@ -51,7 +57,7 @@ const LeftBar = () => {
           return (
             <IconTooltip
               key={bar.icon}
-              className="seaqa-portal-left-bar-item d-flex justify-content-center align-items-center"
+              className={`seaqa-portal-left-bar-item d-flex justify-content-center align-items-center${bar.isActive ? ' edit-panel-open' : ''}`}
               size={{ btn: 50, icon: 20 }}
               hoverBackground={true}
               icon={bar.icon}
