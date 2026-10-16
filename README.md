@@ -28,7 +28,7 @@ From that experience, we consistently ran into the same problems:
 * Complex issues requiring significant investigation time, with solutions never captured for future use.
 * Important feedback getting lost among general support questions, leaving many inquiries unanswered.
 
-In response to these challenges, we created SeaTicket, an AI-powered unified issue management system.
+In response to these challenges, we created SeaTicket, an AI-powered support center for our community and customers.
 
 
 
