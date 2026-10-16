@@ -1,13 +1,20 @@
 # SeaTicket
 
-SeaTicket is a ticketing system and AI agent that support your community. SeaTicket’s vision is to build an AI agent that helps you resolve community support issues, so you can focus on building.
+SeaTicket is an open-source, AI-powered support center for your community and customers.
 
-SeaTicket connects email, GitHub, Discord, and other channels in one AI-native ticketing system.
+In SeaTicket, you can manage multiple support projects for different products. Each project includes the following features:
+
+* A support portal equipped with AI chat, a landing page, and issue reporting.
+* Connect email, GitHub, Discord, and other channels to the same project, unifying multi-channel support with a single knowledge base.
+* Integrate websites, Notion, and other document systems as additional knowledge bases.
+* A built-in AI agent to help you resolve support issues efficiently.
+
 
 ## What’s special about SeaTicket
 
-* SeaTicket excels at resolving community support issues from multiple channels, such as GitHub, Discord, Email, and more.
-* SeaTicket’s agent monitors new issues and other events to proactively suggest actions for those events.
+* Quickly set up a support portal with AI chat for your project.
+* SeaTicket excels at resolving support issues across multiple channels, such as GitHub, Discord, and email.
+* SeaTicket’s agent monitors new issues and events to proactively suggest actions for them.
 
 
 ## History
