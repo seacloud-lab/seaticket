@@ -323,7 +323,7 @@ class UserSelect extends React.Component {
                       >
                         <UserItem key={user.email} user={user} enableDelete={false} />
                         {selectedUsers.find(u => u.email === user.email) && (
-                          <IconButton icon="check-mark" className="collaborator-check-icon" />
+                          <IconButton icon="check-mark" className="collaborator-check-icon no-hover-bg" />
                         )}
                       </div>
                     );

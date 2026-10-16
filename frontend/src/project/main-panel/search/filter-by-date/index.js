@@ -189,7 +189,7 @@ const FilterByDate = ({ date, onChange }) => {
                   <div className="options-editor-option-content">
                     <span className="text-truncate" title={option.label}>{option.label}</span>
                   </div>
-                  <IconButton icon={isSelected ? 'check-mark-option' : ''} className="options-editor-option-check-btn no-hover-bg" />
+                  <IconButton icon={isSelected ? 'check-mark' : ''} className="options-editor-option-check-btn no-hover-bg" />
                 </div>
               );
             })}

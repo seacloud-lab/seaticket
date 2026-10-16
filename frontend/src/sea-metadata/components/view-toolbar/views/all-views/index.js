@@ -166,7 +166,7 @@ const AllViews = ({
                       {canManageView && (<IconButton icon="drag" className="sea-metadata-all-views-item-drag-btn mr-3" />)}
                       <CustomizeDropdownItemText>{view.name}</CustomizeDropdownItemText>
                     </div>
-                    <IconButton icon={view._id === viewID ? 'check-mark-option' : ''} className="no-hover-bg" />
+                    <IconButton icon={view._id === viewID ? 'check-mark' : ''} className="no-hover-bg" />
                   </div>
                 );
               })}
