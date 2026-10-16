@@ -17,9 +17,9 @@ const { isExternalUser, isPortalDomain, portalLogo, portalName } = window.app.pa
 const logo = portalLogo || PORTAL_DEFAULT_SETTINGS.portal_logo;
 const name = portalName || PORTAL_DEFAULT_SETTINGS.portal_name;
 
-const SidePanel = ({ isEditMode, activePage, onPageChange, isAnonymous, canAccessIssues }) => {
+const TopBar = ({ isEditMode, activePage, onPageChange, isAnonymous, canAccessIssues }) => {
   const [isShowMobileMenu, setIsShowMobileMenu] = useState(false);
-  const sideRef = useRef(null);
+  const topBarRef = useRef(null);
   const primaryTabs = getPrimaryTabs({ isAnonymous, canAccessIssues });
 
   const isIssuesPage = [PORTAL_PAGE.SUBMIT_ISSUE, PORTAL_PAGE.MY_ISSUES, PORTAL_PAGE.TEAM_ISSUES].includes(activePage);
@@ -44,7 +44,7 @@ const SidePanel = ({ isEditMode, activePage, onPageChange, isAnonymous, canAcces
       return;
     }
     const handleClickOutside = (event) => {
-      if (sideRef.current.contains(event.target)) return;
+      if (topBarRef.current.contains(event.target)) return;
       setIsShowMobileMenu(false);
     };
     document.addEventListener('click', handleClickOutside);
@@ -55,25 +55,25 @@ const SidePanel = ({ isEditMode, activePage, onPageChange, isAnonymous, canAcces
 
   return (
     <>
-      <div className="seaqa-portal-side-panel" ref={sideRef}>
-        <div className="seaqa-portal-side-panel-header">
-          <div className="seaqa-portal-side-panel-logo d-flex align-items-center">
+      <div className="seaqa-portal-top-bar" ref={topBarRef}>
+        <div className="seaqa-portal-top-bar-header">
+          <div className="seaqa-portal-top-bar-logo d-flex align-items-center">
             <img src={logo} alt="" />
             <h3 className="text-truncate" title={name}>{name}</h3>
           </div>
-          <div className="seaqa-portal-side-panel-tabs d-flex justify-content-center flex-1">
+          <div className="seaqa-portal-top-bar-tabs d-flex justify-content-center flex-1">
             <CustomizeTabs
               tabs={primaryTabs}
               value={activePrimaryTab}
               onChange={onPrimaryTabChange}
             />
           </div>
-          <div className="seaqa-portal-side-panel-account">
+          <div className="seaqa-portal-top-bar-account">
             {/* Mobile menu toggle button */}
             <IconButton
               icon={isShowMobileMenu ? 'close' : 'menu'}
               onClick={(e) => {e.stopPropagation(); setIsShowMobileMenu(!isShowMobileMenu); }}
-              className="seaqa-portal-mobile-side-panel-more-btn no-hover-bg"
+              className="seaqa-portal-mobile-top-bar-more-btn no-hover-bg"
               size={{ btn: 32, icon: 16 }}
             />
             <LanguageSelector />
@@ -92,10 +92,10 @@ const SidePanel = ({ isEditMode, activePage, onPageChange, isAnonymous, canAcces
           </div>
         </div>
         {isShowMobileMenu && (
-          <div className="seaqa-portal-side-panel-mobile-menu">
+          <div className="seaqa-portal-top-bar-mobile-menu">
             {primaryTabs.map((tab) => (
               <div
-                className={classnames('seaqa-portal-side-panel-mobile-menu-item', { 'active': tab.value === activePrimaryTab })}
+                className={classnames('seaqa-portal-top-bar-mobile-menu-item', { 'active': tab.value === activePrimaryTab })}
                 key={tab.value}
                 onClick={() => onPrimaryTabChange(tab.value)}
               >
@@ -110,4 +110,4 @@ const SidePanel = ({ isEditMode, activePage, onPageChange, isAnonymous, canAcces
   );
 };
 
-export default SidePanel;
+export default TopBar;

@@ -1,4 +1,4 @@
-.seaqa-portal-side-panel {
+.seaqa-portal-top-bar {
   width: 100%;
   min-width: 0;
   height: auto;
@@ -8,7 +8,7 @@
   flex-direction: column;
 }
 
-.seaqa-portal-side-panel-header {
+.seaqa-portal-top-bar-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -17,14 +17,14 @@
   overflow: visible;
 }
 
-.seaqa-portal-side-panel-logo {
+.seaqa-portal-top-bar-logo {
   display: flex;
   align-items: center;
   overflow: hidden;
   width: 200px;
 }
 
-.seaqa-portal-side-panel-logo img {
+.seaqa-portal-top-bar-logo img {
   width: 24px;
   height: 24px;
   object-fit: cover;
@@ -33,28 +33,28 @@
    margin-right: 8px;
 }
 
-.seaqa-portal-side-panel-account {
+.seaqa-portal-top-bar-account {
   width: 200px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
 }
 
-.seaqa-portal-side-panel-header h3 {
+.seaqa-portal-top-bar-header h3 {
   margin: 0;
   font-size: 16px;
   font-weight: 500;
   flex: 1;
 }
 
-.seaqa-portal-side-panel-tabs .seaqa-customize-tabs {
+.seaqa-portal-top-bar-tabs .seaqa-customize-tabs {
   gap: 32px;
 }
 
-.seaqa-portal-side-panel-tabs .seaqa-customize-tabs .seaqa-customize-tab {
+.seaqa-portal-top-bar-tabs .seaqa-customize-tabs .seaqa-customize-tab {
   font-size: 16px;
 }
 
-.seaqa-portal-side-panel-tabs .seaqa-customize-tabs .seaqa-customize-tab.active::before {
+.seaqa-portal-top-bar-tabs .seaqa-customize-tabs .seaqa-customize-tab.active::before {
   bottom: -13px;
 }
