@@ -74,7 +74,7 @@ const LanguageSelector = () => {
                   onClick={() => onLanguageChange(language.langCode)}
                 >
                   <span className="text-truncate">{language.langName}</span>
-                  {isSelected && <Icon symbol="check-mark" />}
+                  {isSelected && <Icon symbol="check-mark-option" />}
                 </button>
               );
             })}
