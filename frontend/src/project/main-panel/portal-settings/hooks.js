@@ -87,8 +87,7 @@ export const PortalSettingsProvider = ({ projectUuid, isActive, children }) => {
         setSettings(restoredSettings);
 
         const errorMessage = Utils.getErrorMsg(error);
-        toaster.danger(errorMessage);
-        callback && callback(false);
+        callback && callback(false, errorMessage);
         return false;
       }
 
@@ -177,8 +176,7 @@ export const PortalSettingsProvider = ({ projectUuid, isActive, children }) => {
         await portalAPI.updateCustomDomain(projectUuid, update);
       } catch (error) {
         const errorMessage = Utils.getErrorMsg(error);
-        toaster.danger(errorMessage);
-        callback && callback(false);
+        callback && callback(false, errorMessage);
         return false;
       }
 

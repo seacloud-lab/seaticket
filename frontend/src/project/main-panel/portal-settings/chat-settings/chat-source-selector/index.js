@@ -1,11 +1,11 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Popover, PopoverBody } from 'reactstrap';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
-import { Icon, Switch } from '@/components';
-import SearchInput from '@/components/search-input';
+import { Switch, SearchInput, CustomizePopover, SaveStatus } from '@/components';
+import SelectTrigger from '@/components/customize-select/select-trigger';
 import { gettext } from '@/constants';
 import { DOCUMENT_CONNECTION_TYPE_MAP, ISSUE_CONNECTION_TYPE_MAP, TASK_CONNECTION_TYPE_MAP } from '@/project/main-panel/connections/constants';
+import ObjectUtils from '@/utils/object-utils';
 import { normalizeChatAllowedSources } from '../../utils';
 
 import './index.css';
@@ -17,13 +17,14 @@ const EXTRA_SOURCE_ID_MAP = {
   ticket: TICKET_SOURCE_ID,
 };
 
-const getSelectedSourceIds = (value) => {
-  const selectedSourceIds = new Set((value?.connection_ids || []).map(String));
+const getSelectedSourceIds = (value = {}) => {
+  const { connection_ids, extra_sources } = value;
+  let selectedSourceIds = [...connection_ids];
 
-  (value?.extra_sources || []).forEach((source) => {
+  (extra_sources || []).forEach((source) => {
     const sourceId = EXTRA_SOURCE_ID_MAP[source];
     if (sourceId) {
-      selectedSourceIds.add(sourceId);
+      selectedSourceIds.push(sourceId);
     }
   });
 
@@ -74,21 +75,26 @@ const PortalChatSourceItem = ({ source, selected, disabled, onToggle }) => {
   );
 };
 
-const PortalChatSourceSelector = ({ connections, disabled, onChange, ...props }) => {
+const PortalChatSourceSelector = ({ connections, disabled, value: oldValue, onChange }) => {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
-  const targetIdRef = useRef(`portal-chat-source-selector-${Math.random().toString(36).slice(2, 10)}`);
-  const popoverRef = useRef(null);
+  const [value, setValue] = useState([]);
 
-  const sources = [
-    ...connections,
-    { id: KNOWLEDGE_BASE_SOURCE_ID, key: KNOWLEDGE_BASE_SOURCE_ID, name: gettext('Knowledge Base') },
-    { id: TICKET_SOURCE_ID, key: TICKET_SOURCE_ID, name: gettext('Ticket') },
-  ];
+  const targetRef = useRef(null);
 
-  const value = useMemo(() => normalizeChatAllowedSources(props.value, connections), [props, connections]);
-  const selectedSourceIds = getSelectedSourceIds(value);
-  const selectedCount = selectedSourceIds.size;
+  const sources = useMemo(() => (
+    [
+      ...connections,
+      { id: KNOWLEDGE_BASE_SOURCE_ID, key: KNOWLEDGE_BASE_SOURCE_ID, name: gettext('Knowledge Base') },
+      { id: TICKET_SOURCE_ID, key: TICKET_SOURCE_ID, name: gettext('Ticket') },
+    ]
+  ), [connections]);
+
+  const isValidChanged = useMemo(() => {
+    const newValue = getNextValue(value, connections);
+    if (ObjectUtils.isSameObject(newValue, oldValue)) return false;
+    return true;
+  }, [value, connections, oldValue]);
 
   const filteredSources = !searchValue
     ? sources
@@ -114,79 +120,38 @@ const PortalChatSourceSelector = ({ connections, disabled, onChange, ...props })
     { key: 'others', title: gettext('Other'), items: sections.others },
   ].filter((section) => section.items.length > 0);
 
-  const closePopover = () => {
+  const closePopover = useCallback((callback) => {
     setIsPopoverOpen(false);
     setSearchValue('');
-  };
+    if (!isValidChanged) return;
+    const newValue = getNextValue(value, connections);
+    onChange(newValue, callback);
+  }, [value, connections, isValidChanged, onChange]);
 
-  const togglePopover = () => {
-    if (disabled) return;
-    if (isPopoverOpen) {
-      closePopover();
-      return;
-    }
+  const openPopover = () => {
+    if (disabled || isPopoverOpen) return;
     setIsPopoverOpen(true);
   };
 
-  const updateValue = (nextSelectedSourceIds) => {
-    onChange(getNextValue(nextSelectedSourceIds, connections));
-  };
-
-  const toggleSource = (sourceId) => {
-    const nextSelectedSourceIds = new Set(selectedSourceIds);
-    const normalizedSourceId = String(sourceId);
-
-    if (nextSelectedSourceIds.has(normalizedSourceId)) {
-      nextSelectedSourceIds.delete(normalizedSourceId);
+  const toggleSource = useCallback((sourceId) => {
+    const sourceIdIndex = value.findIndex(v => v === sourceId);
+    let newValue = value.slice(0);
+    if (sourceIdIndex > -1) {
+      newValue.splice(sourceIdIndex, 1);
     } else {
-      nextSelectedSourceIds.add(normalizedSourceId);
+      newValue.push(sourceId);
     }
-
-    updateValue(nextSelectedSourceIds);
-  };
+    setValue(newValue);
+  }, [value]);
 
   const selectAll = () => {
-    updateValue(new Set(sources.map((source) => String(source.id))));
+    const newValue = connections.map(connection => connection.id);
+    setValue([...newValue, KNOWLEDGE_BASE_SOURCE_ID, TICKET_SOURCE_ID]);
   };
 
   const clearAll = () => {
-    updateValue(new Set());
+    setValue([]);
   };
-
-  const onTriggerKeyDown = (event) => {
-    if (disabled) return;
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      togglePopover();
-    }
-  };
-
-  useEffect(() => {
-    if (!isPopoverOpen) return undefined;
-
-    const handleMouseDown = (event) => {
-      const targetElement = document.getElementById(targetIdRef.current);
-      if (targetElement?.contains(event.target) || popoverRef.current?.contains(event.target)) {
-        return;
-      }
-      setIsPopoverOpen(false);
-      setSearchValue('');
-    };
-
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        setIsPopoverOpen(false);
-        setSearchValue('');
-      }
-    };
-
-    document.addEventListener('mousedown', handleMouseDown, true);
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('mousedown', handleMouseDown, true);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isPopoverOpen]);
 
   useEffect(() => {
     if (disabled && isPopoverOpen) {
@@ -195,82 +160,89 @@ const PortalChatSourceSelector = ({ connections, disabled, onChange, ...props })
     }
   }, [disabled, isPopoverOpen]);
 
+  useEffect(() => {
+    const normalizeSources = normalizeChatAllowedSources(oldValue, connections);
+    const value = getSelectedSourceIds(normalizeSources);
+    setValue(value);
+  }, [oldValue, connections]);
+
+  const selectedCount = value.length;
+
   return (
-    <div className="portal-chat-source-selector">
-      <div
-        id={targetIdRef.current}
-        className="portal-chat-source-trigger"
-        role="button"
-        tabIndex={disabled ? -1 : 0}
-        onClick={togglePopover}
-        onKeyDown={onTriggerKeyDown}
-      >
-        <div className={classNames('portal-chat-source-toggle', {
-          'active': isPopoverOpen && selectedCount > 0,
-          'highlighted': selectedCount > 0,
-          'disabled': disabled,
-        })}>
-          <div className="portal-chat-source-label">
-            {selectedCount > 0 ? `${selectedCount} ${gettext('Sources')}` : gettext('Sources')}
-          </div>
-          <Icon symbol="arrow-down" />
-        </div>
-      </div>
-      <Popover
-        placement="bottom-start"
-        isOpen={isPopoverOpen && !disabled}
-        target={targetIdRef.current}
-        hideArrow={true}
-        fade={false}
-        className="portal-chat-source-popover"
-      >
-        <PopoverBody className="portal-chat-source-popover-body">
-          <div ref={popoverRef} className="portal-chat-source-popover-content">
-            <div className="portal-chat-source-search">
-              <SearchInput
-                autoFocus={true}
-                isShowSearchIcon={false}
-                placeholder={gettext('Search')}
-                value={searchValue}
-                size={28}
-                onChange={setSearchValue}
-                onClear={() => setSearchValue('')}
-                isShowClearIcon={true}
-              />
-            </div>
-            <div className={classNames('portal-chat-source-list', { 'empty': sectionList.length === 0 })}>
-              {sectionList.length === 0 && (
-                <div className="portal-chat-source-empty">{gettext('No sources found')}</div>
-              )}
-              {sectionList.map((section) => (
-                <div className="portal-chat-source-section" key={section.key}>
-                  <div className="portal-chat-source-section-title">{section.title}</div>
-                  {section.items.map((source) => (
-                    <PortalChatSourceItem
-                      key={String(source.id)}
-                      source={source}
-                      selected={selectedSourceIds.has(String(source.id))}
-                      disabled={disabled}
-                      onToggle={toggleSource}
-                    />
-                  ))}
-                </div>
-              ))}
-            </div>
-            {!searchValue && (
-              <div className="portal-chat-source-actions">
-                <button type="button" className="portal-chat-source-action" onClick={clearAll}>
-                  {gettext('Clear all')}
-                </button>
-                <button type="button" className="portal-chat-source-action" onClick={selectAll}>
-                  {gettext('Select all')}
-                </button>
-              </div>
+    <SaveStatus isValidChanged={isValidChanged} callback={closePopover}>
+      {({ callback }) => (
+        <>
+          <SelectTrigger
+            innerRef={targetRef}
+            disabled={disabled}
+            focus={isPopoverOpen}
+            highlight={selectedCount > 0}
+            hasBorder={false}
+            selectedValue={(
+              <span className="selected-option-show">
+                {selectedCount > 0 ? `${selectedCount} ${gettext('Sources')}` : gettext('Sources')}
+              </span>
             )}
-          </div>
-        </PopoverBody>
-      </Popover>
-    </div>
+            onClick={openPopover}
+          />
+          {isPopoverOpen && (
+            <CustomizePopover
+              placement="bottom-start"
+              isOpen={isPopoverOpen && !disabled}
+              target={targetRef}
+              hideArrow={true}
+              fade={false}
+              className="portal-chat-source-popover"
+              containerClassName="portal-chat-source-popover-content"
+              hidePopover={callback}
+              hidePopoverWithEsc={callback}
+            >
+              <div className="portal-chat-source-search">
+                <SearchInput
+                  autoFocus={true}
+                  isShowSearchIcon={false}
+                  placeholder={gettext('Search')}
+                  value={searchValue}
+                  size={28}
+                  onChange={setSearchValue}
+                  onClear={() => setSearchValue('')}
+                  isShowClearIcon={true}
+                />
+              </div>
+              <div className={classNames('portal-chat-source-list', { 'empty': sectionList.length === 0 })}>
+                {sectionList.length === 0 && (
+                  <div className="portal-chat-source-empty">{gettext('No sources found')}</div>
+                )}
+                {sectionList.map((section) => (
+                  <div className="portal-chat-source-section" key={section.key}>
+                    <div className="portal-chat-source-section-title">{section.title}</div>
+                    {section.items.map((source) => (
+                      <PortalChatSourceItem
+                        key={String(source.id)}
+                        source={source}
+                        selected={value.includes(source.id)}
+                        disabled={disabled}
+                        onToggle={toggleSource}
+                      />
+                    ))}
+                  </div>
+                ))}
+              </div>
+              {!searchValue && (
+                <div className="portal-chat-source-actions">
+                  <button type="button" className="portal-chat-source-action" onClick={clearAll}>
+                    {gettext('Clear all')}
+                  </button>
+                  <button type="button" className="portal-chat-source-action" onClick={selectAll}>
+                    {gettext('Select all')}
+                  </button>
+                </div>
+              )}
+            </CustomizePopover>
+          )}
+        </>
+      )}
+    </SaveStatus>
   );
 };
 
