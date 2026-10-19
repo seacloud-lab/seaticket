@@ -4,6 +4,8 @@ import i18n from '@/_i18n/i18n-seafile-editor';
 import { CenteredLoading } from '@/components';
 import { name, username, avatarURL } from '@/constants';
 import User from '@/models/user';
+import { normalizeHomePageStyle } from '@/portal/main-panel/home/utils';
+import SettingPanel from '@/portal/setting-panel';
 import { DataProvider } from '@/project/hooks';
 import { portalAPI } from './api';
 import { PORTAL_PAGE } from './constants';
@@ -15,14 +17,23 @@ import TopBar from './top-bar';
 import './portal.css';
 
 const {
-  projectUuid, isEditMode, projectName, isAnonymous, workspaceID, isExternalUser, isPreviewUser, canAccessIssues,
+  projectUuid, isEditMode, projectName, portalName, portalLogo, isAnonymous, workspaceID, isExternalUser, isPreviewUser, canAccessIssues, portalHomeSettings,
 } = window.app.pageOptions;
 
 const Portal = () => {
   const [isLoading, setLoading] = useState(true);
   const [activePage, setActivePage] = useState(PORTAL_PAGE.HOME);
   const [isShowEditPanel, setIsShowEditPanel] = useState(false);
+  const [currentPortalName, setCurrentPortalName] = useState(portalName);
+  const [currentPortalLogo, setCurrentPortalLogo] = useState(portalLogo);
+  const [homePageStyle, setHomePageStyle] = useState(() => normalizeHomePageStyle(portalHomeSettings));
+  const [activeCard, setActiveCard] = useState('');
+
   const APIRef = useRef(portalAPI);
+
+  const updateHomeSetting = useCallback((newSetting) => {
+    return portalAPI.updateSettings(projectUuid, { 'portal_home_settings': newSetting });
+  }, []);
 
   const user = useMemo(() => new User({ avatar_url: avatarURL, name, email: username }), []);
 
@@ -53,7 +64,14 @@ const Portal = () => {
   const openEditPanel = () => {
     setActivePage(PORTAL_PAGE.HOME);
     setIsShowEditPanel(true);
+    setActiveCard('');
     history.replaceState(null, null, buildPortalPath(PORTAL_PAGE.HOME));
+  };
+
+  const closeEditPanel = () => {
+    updateHomeSetting(JSON.stringify(homePageStyle));
+    setIsShowEditPanel(false);
+    setActiveCard('');
   };
 
   useEffect(() => {
@@ -104,13 +122,9 @@ const Portal = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    if (activePage !== PORTAL_PAGE.HOME) setIsShowEditPanel(false);
-  }, [activePage]);
-
   return (
     <I18nextProvider i18n={i18n}>
-      <div className="seaqa-portal">
+      <div className={`seaqa-portal${isShowEditPanel ? ' has-settings' : ''}`}>
         {isLoading ? (
           <CenteredLoading />
         ) : (
@@ -132,6 +146,8 @@ const Portal = () => {
                 isAnonymous={isAnonymous}
                 isExternalUser={isExternalUser}
                 canAccessIssues={canAccessIssues}
+                portalName={currentPortalName}
+                portalLogo={currentPortalLogo}
               />
               <MainPanel
                 isEditMode={isEditMode}
@@ -144,10 +160,29 @@ const Portal = () => {
                 onHomeChatSend={onHomeChatSend}
                 canAccessIssues={canAccessIssues}
                 isExternalUser={isExternalUser}
-                isShowEditPanel={isShowEditPanel}
+                updateHomeSetting={updateHomeSetting}
                 setIsShowEditPanel={setIsShowEditPanel}
+                homePageStyle={homePageStyle}
+                setHomePageStyle={setHomePageStyle}
+                activeCard={activeCard}
+                setActiveCard={setActiveCard}
               />
             </div>
+            {isEditMode && isShowEditPanel && (
+              <SettingPanel
+                homePageStyle={homePageStyle}
+                activeCard={activeCard}
+                setActiveCard={setActiveCard}
+                setHomePageStyle={setHomePageStyle}
+                updateHomeSetting={updateHomeSetting}
+                portalName={currentPortalName}
+                portalLogo={currentPortalLogo}
+                setPortalName={setCurrentPortalName}
+                setPortalLogo={setCurrentPortalLogo}
+                onClose={closeEditPanel}
+                activePage={activePage}
+              />
+            )}
           </DataProvider>
         )}
       </div>

@@ -13,14 +13,14 @@ import LanguageSelector from './language-selector';
 
 import './index.css';
 
-const { isExternalUser, isPortalDomain, portalLogo, portalName } = window.app.pageOptions;
-const logo = portalLogo || PORTAL_DEFAULT_SETTINGS.portal_logo;
-const name = portalName || PORTAL_DEFAULT_SETTINGS.portal_name;
+const { isExternalUser, isPortalDomain } = window.app.pageOptions;
 
-const TopBar = ({ isEditMode, activePage, onPageChange, isAnonymous, canAccessIssues }) => {
+const TopBar = ({ isEditMode, activePage, onPageChange, isAnonymous, canAccessIssues, portalName, portalLogo }) => {
   const [isShowMobileMenu, setIsShowMobileMenu] = useState(false);
   const topBarRef = useRef(null);
   const primaryTabs = getPrimaryTabs({ isAnonymous, canAccessIssues });
+  const logo = portalLogo || PORTAL_DEFAULT_SETTINGS.portal_logo;
+  const name = portalName || PORTAL_DEFAULT_SETTINGS.portal_name;
 
   const isIssuesPage = [PORTAL_PAGE.SUBMIT_ISSUE, PORTAL_PAGE.MY_ISSUES, PORTAL_PAGE.TEAM_ISSUES].includes(activePage);
   const activePrimaryTab = isIssuesPage ? TICKETS_TAB : activePage;

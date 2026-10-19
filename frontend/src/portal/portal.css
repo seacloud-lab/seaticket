@@ -24,13 +24,15 @@ body {
 
 .seaqa-portal {
   display: flex;
+  align-items: stretch;
   height: 100vh;
   width: 100%;
   background-color: #fff;
+  overflow: hidden;
 }
 
 .seaqa-portal-body {
-  flex: 1;
+  flex: 1 1 0;
   min-width: 0;
   display: flex;
   flex-direction: column;

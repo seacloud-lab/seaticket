@@ -1,6 +1,5 @@
 import React, { useCallback, useContext, useEffect, useRef, useState, useMemo } from 'react';
 import { toaster } from '@/components';
-import { gettext } from '@/constants';
 import { portalAPI } from '@/portal/api';
 import {
   PORTAL_DEFAULT_SETTINGS,
@@ -98,22 +97,6 @@ export const PortalSettingsProvider = ({ projectUuid, isActive, children }) => {
       return true;
     });
   }, [projectUuid]);
-
-  const updateLogo = useCallback((file, callback) => {
-    return portalAPI.uploadPortalLogo(projectUuid, file).then(res => {
-      const newLogo = res.data?.file_url || res.data?.url || '';
-      if (!newLogo) throw new Error(gettext('Error'));
-      return updateSettings({ portal_logo: newLogo }).then(isSuccess => {
-        callback && callback(isSuccess ? newLogo : false);
-        return isSuccess;
-      });
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-      callback && callback(false);
-      return false;
-    });
-  }, [projectUuid, updateSettings]);
 
   const reloadDomainAliasSettings = useCallback((callback) => {
     if (!isActiveRef.current) return;
@@ -273,8 +256,6 @@ export const PortalSettingsProvider = ({ projectUuid, isActive, children }) => {
 
       settings,
       updateSettings,
-      updateLogo,
-
       domainAliasSettings,
       updateDomainAliasSettings,
       createPreviewToken,

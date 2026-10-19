@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { Button, Label, Input } from 'reactstrap';
-import { IconButton } from '@/components';
 import { DEFAULT_PROJECT_ICON, gettext, PROJECT_ICON_ALL_LIST } from '@/constants';
 import CardSelectIconPanel from './card-select-icon-panel';
 
-import './card-edit-panel.css';
+import './card-content-settings.css';
 
 const DEFAULT_CARD = {
   title: '',
@@ -13,7 +12,7 @@ const DEFAULT_CARD = {
   icon: DEFAULT_PROJECT_ICON,
 };
 
-const PortalHomeCardEditPanel = ({ homePageStyle = {}, activeCard, setActiveCard, setHomePageStyle, onClose }) => {
+const CardContentSettings = ({ homePageStyle = {}, activeCard, setActiveCard, setHomePageStyle }) => {
   const cardsSection = homePageStyle['portal_home_cards_section'] || {};
   const cards = Array.isArray(cardsSection.cards) ? cardsSection.cards : [];
   const cardStyle = cards.find(card => card.id === activeCard) || DEFAULT_CARD;
@@ -66,21 +65,11 @@ const PortalHomeCardEditPanel = ({ homePageStyle = {}, activeCard, setActiveCard
 
   return (
     <>
-      <aside className="portal-home-edit-panel-card" aria-label={gettext('Edit panel')}>
-        <div className="portal-home-edit-panel-header">
-          <div className="portal-home-edit-panel-title">{gettext('Card settings')}</div>
-          <IconButton
-            icon="close"
-            onClick={onClose}
-            title={gettext('Close')}
-            aria-label={gettext('Close')}
-          />
-        </div>
-
-        <div className="portal-home-edit-panel-section">
+      <aside className="portal-card-content-settings" aria-label={gettext('Edit panel')}>
+        <div className="portal-setting-section">
           <Label>{gettext('Card title')}</Label>
           <Input
-            className="portal-home-edit-panel-input"
+            className="portal-setting-input"
             type="text"
             value={title}
             onChange={(e) => updateCardStyle({ title: e.target.value })}
@@ -88,10 +77,10 @@ const PortalHomeCardEditPanel = ({ homePageStyle = {}, activeCard, setActiveCard
           />
         </div>
 
-        <div className="portal-home-edit-panel-section">
+        <div className="portal-setting-section">
           <Label>{gettext('Card description')}</Label>
           <Input
-            className="portal-home-edit-panel-input"
+            className="portal-setting-input"
             type="textarea"
             rows={5}
             value={description}
@@ -101,10 +90,10 @@ const PortalHomeCardEditPanel = ({ homePageStyle = {}, activeCard, setActiveCard
           />
         </div>
 
-        <div className="portal-home-edit-panel-section">
+        <div className="portal-setting-section">
           <Label>{gettext('Card link')}</Label>
           <Input
-            className="portal-home-edit-panel-input"
+            className="portal-setting-input"
             type="text"
             value={link}
             onChange={(e) => updateCardStyle({ link: e.target.value })}
@@ -112,7 +101,7 @@ const PortalHomeCardEditPanel = ({ homePageStyle = {}, activeCard, setActiveCard
           />
         </div>
 
-        <div className="portal-home-edit-panel-section">
+        <div className="portal-setting-section">
           <Label>{gettext('Card icon')}</Label>
           <div
             className="portal-home-card-icon-selector mt-1"
@@ -148,4 +137,4 @@ const PortalHomeCardEditPanel = ({ homePageStyle = {}, activeCard, setActiveCard
   );
 };
 
-export default PortalHomeCardEditPanel;
+export default CardContentSettings;

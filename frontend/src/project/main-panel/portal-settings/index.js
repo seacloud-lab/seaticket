@@ -1,7 +1,6 @@
 import React from 'react';
 import { CenteredLoading } from '@/components';
 import TopBar from '../top-bar';
-import BasicSettings from './basic-settings';
 import ChatSettings from './chat-settings';
 import CustomDomainSettings from './custom-domain-settings';
 import CustomUrlSettings from './custom-url-settings';
@@ -24,7 +23,6 @@ const PortalSettings = ({ title }) => {
         <CenteredLoading />
       ) : (
         <div className="seaqa-project-settings-body seaqa-project-portal-settings p-4 d-flex flex-column flex-1 w-100">
-          <BasicSettings />
           <OpenAccessSettings />
           {enablePortalDomain ? (
             <>

@@ -4,30 +4,26 @@ import slugid from 'slugid';
 import { CenteredLoading, Icon, IconButton } from '@/components';
 import { DEFAULT_PROJECT_ICON, gettext, PROJECT_ICON_ALL_LIST } from '@/constants';
 import { portalAPI } from '@/portal/api';
-import { usePortalFeaturedArticles } from '@/portal/hooks';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { KNOWLEDGE_BASE_TYPE } from '@/project/main-panel/knowledge-base/constants';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { isMobile } from '@/utils/utils';
-import PortalCardEditPanel from './card-edit-panel';
 import PortalHomeChatInput from './chat-input';
-import PortalHomeEditPanel from './edit-panel';
-import { CARD_LAYOUT_OPTIONS, DEFAULT_NEW_CARD, getSafeCardLink, normalizeHomePageStyle } from './utils';
+import { CARD_LAYOUT_OPTIONS, DEFAULT_NEW_CARD, getSafeCardLink } from './utils';
 
 import './index.css';
 
-const { isEditMode, portalHomeSettings } = window.app.pageOptions;
+const { isEditMode } = window.app.pageOptions;
 const CARD_ORDER_MIME_TYPE = 'application/portal-home-card-order';
 
-const PortalHome = ({ projectUuid, onHomeChatSend, isShowEditPanel, setIsShowEditPanel }) => {
-  const [homePageStyle, setHomePageStyle] = useState(() => normalizeHomePageStyle(portalHomeSettings));
-  const [activeCard, setActiveCard] = useState('');
+const PortalHome = ({ projectUuid, onHomeChatSend, homePageStyle, setHomePageStyle, activeCard, setActiveCard, setIsShowEditPanel, updateHomeSetting }) => {
   const [draggingCardId, setDraggingCardId] = useState('');
   const [dragOverCardId, setDragOverCardId] = useState('');
   const [selfDropIndicator, setSelfDropIndicator] = useState(null);
   const [selectedFeaturedArticle, setSelectedFeaturedArticle] = useState(null);
+  const [featuredArticles, setFeaturedArticles] = useState(null);
+  const [isFeaturedArticlesLoading, setIsFeaturedArticlesLoading] = useState(true);
   const cardDragPreviewRef = useRef(null);
-  const { updateHomeSetting, featuredArticles, isFeaturedArticlesLoading } = usePortalFeaturedArticles();
   const { columns = [], records = [] } = featuredArticles || {};
   const titleColumn = columns.find(column => column.name === 'title');
   const featuredArticleItems = records.map(record => ({ record, title: getCellValueByColumn(record, titleColumn) })).filter(({ title }) => title);
@@ -45,16 +41,20 @@ const PortalHome = ({ projectUuid, onHomeChatSend, isShowEditPanel, setIsShowEdi
     : { backgroundColor: background_color };
 
   useEffect(() => {
+    portalAPI.listFeaturedArticles(projectUuid).then((res) => {
+      setFeaturedArticles(res.data || { columns: [], records: [] });
+    }).catch(() => {
+      setFeaturedArticles({ columns: [], records: [] });
+    }).finally(() => {
+      setIsFeaturedArticlesLoading(false);
+    });
+  }, [projectUuid]);
+
+  useEffect(() => {
     return () => {
       cardDragPreviewRef.current?.remove();
     };
   }, []);
-
-  const closeEditPanel = () => {
-    updateHomeSetting(JSON.stringify(homePageStyle));
-    setIsShowEditPanel(false);
-    setActiveCard('');
-  };
 
   const addCard = () => {
     const newCard = {
@@ -194,10 +194,17 @@ const PortalHome = ({ projectUuid, onHomeChatSend, isShowEditPanel, setIsShowEdi
   };
 
   return (
-    <div className={`portal-home-page${isShowEditPanel ? ' is-edit' : ''}`}>
+    <div className="portal-home-page">
       <div className="portal-home-layout">
 
-        <main className="portal-home-main">
+        <main
+          className="portal-home-main"
+          onClick={(event) => {
+            if (isEditMode && !event.target.closest('.portal-home-card')) {
+              setActiveCard('');
+            }
+          }}
+        >
           <section className="portal-home-hero" style={heroStyle}>
             <div className="portal-home-hero-content">
               <h1 className="portal-home-title" style={{ fontSize: `${title_size}px` }}>{title_text}</h1>
@@ -299,23 +306,6 @@ const PortalHome = ({ projectUuid, onHomeChatSend, isShowEditPanel, setIsShowEdi
             getKB={(projectUuid, knowledgeID) => portalAPI.getKBRecord(projectUuid, knowledgeID)}
             onToggle={() => setSelectedFeaturedArticle(null)}
             isSupportPortal={true}
-          />
-        )}
-        {isEditMode && isShowEditPanel && !activeCard && (
-          <PortalHomeEditPanel
-            homePageStyle={homePageStyle}
-            setHomePageStyle={setHomePageStyle}
-            updateHomeSetting={updateHomeSetting}
-            onClose={closeEditPanel}
-          />
-        )}
-        {isEditMode && isShowEditPanel && activeCard && (
-          <PortalCardEditPanel
-            homePageStyle={homePageStyle}
-            activeCard={activeCard}
-            setActiveCard={setActiveCard}
-            setHomePageStyle={setHomePageStyle}
-            onClose={closeEditPanel}
           />
         )}
       </div>
