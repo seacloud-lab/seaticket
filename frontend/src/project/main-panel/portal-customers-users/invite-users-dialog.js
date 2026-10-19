@@ -7,13 +7,17 @@ import InviteUsersPage from '@/portal/main-panel/user-management/invite-users-pa
 import '@/portal/main-panel/user-management/index.css';
 
 const InviteUsersDialog = ({ customers, customerId, invitations, isSubmitting, onInvite, onCopy, onRevoke, onClose }) => {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [selectedCustomerId, setSelectedCustomerId] = useState(customerId || '');
 
   const invite = () => {
     const inviteEmail = email.trim();
-    if (!inviteEmail || isSubmitting) return;
-    onInvite(inviteEmail, selectedCustomerId || null, () => setEmail(''));
+    if (!inviteEmail || !name.trim() || isSubmitting) return;
+    onInvite(inviteEmail, selectedCustomerId || null, name.trim(), () => {
+      setName('');
+      setEmail('');
+    });
   };
 
   return (
@@ -22,11 +26,13 @@ const InviteUsersDialog = ({ customers, customerId, invitations, isSubmitting, o
       <ModalBody>
         <InviteUsersPage
           invitations={invitations}
+          name={name}
           email={email}
           selectedCustomerId={selectedCustomerId}
           customers={customers}
           isInModal={true}
           isSubmitting={isSubmitting}
+          onNameChange={setName}
           onEmailChange={setEmail}
           onCustomerChange={setSelectedCustomerId}
           onInvite={invite}

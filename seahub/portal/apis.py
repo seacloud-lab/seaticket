@@ -2267,6 +2267,7 @@ class PortalCustomerMembersView(APIView):
                 {
                     'id': member.id,
                     'email': member.email,
+                    'name': member.name,
                     'username': member.username,
                     'activated': member.activated,
                 }
@@ -2426,6 +2427,13 @@ class PortalExternalInvitationsView(APIView):
         if not is_valid_email(email):
             return api_error(status.HTTP_400_BAD_REQUEST, 'email invalid.')
 
+        raw_name = request.data.get('name')
+        name = raw_name.strip() if isinstance(raw_name, str) else ''
+        if not name:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Name not provided.')
+        if len(name) > 255:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'name invalid.')
+
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
             error_msg = 'Project not found.'
@@ -2474,6 +2482,7 @@ class PortalExternalInvitationsView(APIView):
                         email=email,
                         username=gen_user_virtual_id(),
                         project_uuid=str(project.uuid),
+                        name=name,
                         activated=False,
                     )
                     created_external_user = True
@@ -2534,6 +2543,10 @@ class PortalExternalInvitationsView(APIView):
                 error_msg = 'Internal Server Error'
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
+        if name and external_user.name != name:
+            external_user.name = name
+            external_user.save(update_fields=['name'])
+
         return Response({'success': True})
 
     @require_org_context
@@ -2585,6 +2598,7 @@ class PortalExternalUsersView(APIView):
                 users.append({
                     'username': it.username,
                     'email': it.email,
+                    'name': it.name,
                     'activated': bool(getattr(it, 'activated', False)),
                     'customer_id': it.customer_id,
                     'customer_name': customer_names.get(it.customer_id, ''),

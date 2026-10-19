@@ -162,6 +162,7 @@ class ProjectExternalUserManager(models.Manager):
 
 class ProjectExternalUser(models.Model):
     email = models.CharField(max_length=255, db_index=True)
+    name = models.CharField(max_length=255)
     username = models.CharField(max_length=255, db_index=True)
     project_uuid = models.CharField(max_length=36, db_index=True)
     customer_id = models.BigIntegerField(null=True, blank=True)

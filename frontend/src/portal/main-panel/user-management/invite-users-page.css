@@ -6,12 +6,12 @@
 
 .portal-invite-users-labels {
   display: grid;
-  grid-template-columns: 50% 50%;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto;
 }
 
 .portal-invite-users-controls {
   display: grid;
-  grid-template-columns: 50% minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto;
 }
 
 .portal-invite-users-labels {

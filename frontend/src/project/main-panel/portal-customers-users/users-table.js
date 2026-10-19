@@ -21,7 +21,7 @@ const CustomerFormatter = ({ value, row, onCustomerClick }) => {
 
 const UsersTable = ({ users, onDeleteUser, onCustomerClick, viewTabs }) => {
   const metadataID = useMemo(() => {
-    return users.map(user => `${user.email}:${user.activated ? '1' : '0'}:${user.customer_id || ''}`).join('|') || 'users-empty';
+    return users.map(user => `${user.name || ''}:${user.email}:${user.activated ? '1' : '0'}:${user.customer_id || ''}`).join('|') || 'users-empty';
   }, [users]);
 
   const api = useMemo(() => ({
@@ -37,7 +37,7 @@ const UsersTable = ({ users, onDeleteUser, onCustomerClick, viewTabs }) => {
           _id: 'users',
           type: 'table',
           name: gettext('Users'),
-          columns_keys: ['user', 'customer', 'status'],
+          columns_keys: ['name', 'user', 'customer', 'status'],
           sorts: context.localStorage?.getItem('sorts') || [],
         },
       },
@@ -53,19 +53,28 @@ const UsersTable = ({ users, onDeleteUser, onCustomerClick, viewTabs }) => {
         rows: users.map(user => ({
           ...user,
           _pk: user.email,
+          name: user.name || '',
           user: user.email,
           customer: user.customer_name || '',
           status: user.activated,
         })),
         columns: [
           {
-            key: 'user',
-            name: 'user',
-            display_name: gettext('User'),
+            key: 'name',
+            name: 'name',
+            display_name: gettext('Name'),
             type: CellType.TEXT,
-            width: 320,
+            width: 220,
             frozen: true,
             is_name_column: true,
+            editable: false,
+          },
+          {
+            key: 'user',
+            name: 'user',
+            display_name: gettext('Email'),
+            type: CellType.TEXT,
+            width: 320,
             editable: false,
           },
           {

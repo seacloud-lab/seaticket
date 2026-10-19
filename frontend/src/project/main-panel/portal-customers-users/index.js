@@ -192,9 +192,9 @@ const PortalCustomersUsers = ({ title }) => {
       .finally(() => setSubmitting(false));
   }, [closeCustomerMembers, customerMembers, customerToManage, loadCustomerMembers, loadCustomers, loadUsers, projectUuid, showError]);
 
-  const inviteUser = useCallback((email, customerId, onSuccess) => {
+  const inviteUser = useCallback((email, customerId, name, onSuccess) => {
     setSubmitting(true);
-    portalAPI.createExternalInvitation(projectUuid, email, customerId).then(() => {
+    portalAPI.createExternalInvitation(projectUuid, email, customerId, name).then(() => {
       toaster.success(gettext('Link generated'));
       onSuccess();
       loadInvitations();

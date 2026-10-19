@@ -1124,7 +1124,7 @@ class TestPortalExternalInvitationsView:
         )
         request = factory.post(
             f"/api/v1/portal/{project.uuid}/external-invitations/",
-            data={'email': 'external@example.com'},
+            data={'email': 'external@example.com', 'name': 'External User'},
             format='json'
         )
         request.user = project_creator

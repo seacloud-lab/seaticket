@@ -36,8 +36,10 @@ const getSelectableUsers = (users, excludedUsers, searchValue) => {
   const excludedEmails = new Set(excludedUsers.map(user => user.email));
   return users
     .filter(user => !excludedEmails.has(user.email))
-    .filter(user => !normalizedSearchValue || user.email.toLowerCase().includes(normalizedSearchValue))
-    .map(user => ({ ...user, name: user.email, nickname: user.email }));
+    .filter(user => !normalizedSearchValue
+      || user.email.toLowerCase().includes(normalizedSearchValue)
+      || (user.name || '').toLowerCase().includes(normalizedSearchValue))
+    .map(user => ({ ...user, name: user.name || user.email, nickname: user.name || user.email }));
 };
 
 const CustomerStatusFormatter = ({ value }) => (
@@ -73,6 +75,7 @@ const CustomerMemberOperationsFormatter = ({ row, isRowActive, onDelete }) => {
 
 const UserManagement = ({ projectUuid }) => {
   const [activeTab, setActiveTab] = useState(Tabs.CUSTOMERS);
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [isSubmitting, setSubmitting] = useState(false);
   const [invitations, setInvitations] = useState([]);
@@ -123,19 +126,20 @@ const UserManagement = ({ projectUuid }) => {
 
   const inviteUser = useCallback(() => {
     const inviteEmail = email.trim();
-    if (!inviteEmail) return;
+    if (!inviteEmail || !name.trim()) return;
     setSubmitting(true);
-    portalAPI.createExternalInvitation(projectUuid, inviteEmail, selectedInviteCustomerId || null).then(() => {
+    portalAPI.createExternalInvitation(projectUuid, inviteEmail, selectedInviteCustomerId || null, name.trim()).then(() => {
       toaster.success(gettext('Link generated'));
       loadInvites();
       loadUsers();
+      setName('');
       setEmail('');
     }).catch((error) => {
       const serverDetail = error.response?.data?.detail;
       const serverMsg = error.response?.data?.error_msg;
       toaster.danger(serverDetail || serverMsg || gettext('Failed to generate invitation link'));
     }).finally(() => setSubmitting(false));
-  }, [email, selectedInviteCustomerId, projectUuid, loadInvites, loadUsers]);
+  }, [email, name, selectedInviteCustomerId, projectUuid, loadInvites, loadUsers]);
 
   const closeCreateCustomer = useCallback(() => {
     setCreatingCustomer(false);
@@ -479,10 +483,12 @@ const UserManagement = ({ projectUuid }) => {
         {activeTab === Tabs.INVITE_USERS && (
           <InviteUsersPage
             invitations={invitations}
+            name={name}
             email={email}
             selectedCustomerId={selectedInviteCustomerId}
             customers={activeCustomers}
             isSubmitting={isSubmitting}
+            onNameChange={setName}
             onEmailChange={setEmail}
             onCustomerChange={setSelectedInviteCustomerId}
             onInvite={inviteUser}

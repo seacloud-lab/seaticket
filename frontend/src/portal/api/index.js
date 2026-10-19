@@ -130,9 +130,9 @@ class PortalAPI {
     return this.req.get(url);
   }
 
-  createExternalInvitation(projectUuid, email, customerId = null) {
+  createExternalInvitation(projectUuid, email, customerId = null, name) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/external-invitations/';
-    const data = { email, customer_id: customerId };
+    const data = { email, customer_id: customerId, name };
     return this.req.post(url, data);
   }
 
