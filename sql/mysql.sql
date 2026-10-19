@@ -726,6 +726,7 @@ CREATE TABLE `project_issues_statistics` (
 CREATE TABLE `project_external_users` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `email` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL,
   `username` varchar(255) NOT NULL,
   `project_uuid` char(36) NOT NULL,
   `customer_id` bigint(20) DEFAULT NULL,

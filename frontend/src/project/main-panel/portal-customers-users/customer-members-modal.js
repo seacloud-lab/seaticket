@@ -46,8 +46,10 @@ const CustomerMembersModal = ({ customer, members, users, isLoading, isSubmittin
     const existingEmails = new Set(newMembers.map(member => member.email));
     return Promise.resolve({ data: { users: selectableUsers
       .filter(user => !existingEmails.has(user.email))
-      .filter(user => !query || user.email.toLowerCase().includes(query))
-      .map(user => ({ ...user, name: user.email, nickname: user.email })) } });
+      .filter(user => !query
+        || user.email.toLowerCase().includes(query)
+        || (user.name || '').toLowerCase().includes(query))
+      .map(user => ({ ...user, name: user.name || '', nickname: user.name || '' })) } });
   }, [newMembers, selectableUsers]);
 
   const handlePopoverToggle = (isOpen) => {

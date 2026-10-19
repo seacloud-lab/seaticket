@@ -34,16 +34,32 @@ const InviteCustomerSelect = ({ selectedCustomerId, customers, onChange, isInMod
 };
 
 const InviteUsersPage = ({
-  invitations, email, selectedCustomerId, customers, isSubmitting,
-  onEmailChange, onCustomerChange, onInvite, onCopy, onRevoke, isInModal = false,
+  invitations, name, email, selectedCustomerId, customers, isSubmitting,
+  onNameChange, onEmailChange, onCustomerChange, onInvite, onCopy, onRevoke, isInModal = false,
 }) => (
   <div className="portal-invite-users-page">
     <div className="portal-invite-users-form">
       <div className="portal-invite-users-labels">
-        <span>{gettext('Invite users')}</span>
+        <span>{gettext('Name')}</span>
+        <span className="pl-2">{gettext('Email')}</span>
         <span className="pl-2">{gettext('Customer')}</span>
+        <span aria-hidden="true" />
       </div>
       <div className="portal-invite-users-controls">
+        <label className="portal-invite-users-field" htmlFor="portal-invite-user-name">
+          <Input
+            id="portal-invite-user-name"
+            className="portal-user-management-input"
+            name="name"
+            value={name}
+            maxLength={255}
+            required
+            aria-required="true"
+            aria-label={gettext('Name')}
+            placeholder={gettext('Name')}
+            onChange={(event) => onNameChange(event.target.value)}
+          />
+        </label>
         <label className="portal-invite-users-field" htmlFor="portal-invite-user-email">
           <Input
             id="portal-invite-user-email"
@@ -51,6 +67,7 @@ const InviteUsersPage = ({
             name="email"
             type="email"
             value={email}
+            aria-label={gettext('Email')}
             onChange={(event) => onEmailChange(event.target.value)}
             placeholder={gettext('Enter email to invite')}
           />
@@ -63,7 +80,7 @@ const InviteUsersPage = ({
             onChange={onCustomerChange}
           />
         </label>
-        <Button color="primary" disabled={isSubmitting || !email.trim()} onClick={onInvite} className={isSubmitting ? 'btn-loading' : ''}>
+        <Button color="primary" disabled={isSubmitting || !email.trim() || !name.trim()} onClick={onInvite} className={isSubmitting ? 'btn-loading' : ''}>
           {gettext('Invite')}
         </Button>
       </div>

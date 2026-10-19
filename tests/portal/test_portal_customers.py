@@ -431,7 +431,7 @@ class TestPortalCustomersView:
         )
         request = factory.post(
             f'/api/v1/portal/{real_project.uuid}/external-invitations/',
-            data={'email': member.email, 'customer_id': customer.id},
+            data={'email': member.email, 'name': 'Member', 'customer_id': customer.id},
             format='json',
         )
         request.user = project_creator
@@ -467,9 +467,9 @@ class TestPortalCustomersView:
             activated=False,
         )
         for data in (
-            {'email': member.email},
-            {'email': member.email, 'customer_id': customer.id},
-            {'email': member.email, 'customer_id': another_customer.id},
+            {'email': member.email, 'name': 'Member'},
+            {'email': member.email, 'name': 'Member', 'customer_id': customer.id},
+            {'email': member.email, 'name': 'Member', 'customer_id': another_customer.id},
         ):
             request = factory.post(
                 f'/api/v1/portal/{real_project.uuid}/external-invitations/',
@@ -487,13 +487,152 @@ class TestPortalCustomersView:
             project_uuid=str(real_project.uuid),
         ).exists()
 
+    def _invite(self, factory, project_creator, project_uuid, data, email_sent=True):
+        request = factory.post(
+            f'/api/v1/portal/{project_uuid}/external-invitations/',
+            data=data,
+            format='json',
+        )
+        request.user = project_creator
+        with patch('seahub.portal.apis.IS_EMAIL_CONFIGURED', True), \
+                patch.object(PortalExternalInvitation, 'get_link', return_value='https://portal.test/invite'), \
+                patch('seahub.portal.apis.send_html_email_with_dj_template', return_value=email_sent):
+            return PortalExternalInvitationsView.as_view()(request, project_uuid=str(project_uuid))
+
+    def test_invitation_persists_name_for_new_external_user(self, factory, project_creator, real_project):
+        project_uuid = str(real_project.uuid)
+
+        response = self._invite(factory, project_creator, project_uuid, {
+            'email': 'new-user@example.com',
+            'name': '  Jane Doe  ',
+        })
+
+        assert response.status_code == 200
+        external_user = ProjectExternalUser.objects.get(email='new-user@example.com', project_uuid=project_uuid)
+        assert external_user.name == 'Jane Doe'
+
+    def test_invitation_requires_name(self, factory, project_creator, real_project):
+        project_uuid = str(real_project.uuid)
+
+        for data in (
+            {'email': 'new-user@example.com'},
+            {'email': 'new-user@example.com', 'name': ''},
+            {'email': 'new-user@example.com', 'name': '   '},
+        ):
+            response = self._invite(factory, project_creator, project_uuid, data)
+
+            assert response.status_code == 400
+            assert response.data['error_msg'] == 'Name not provided.'
+            assert not PortalExternalInvitation.objects.filter(
+                email='new-user@example.com',
+                project_uuid=project_uuid,
+            ).exists()
+            assert not ProjectExternalUser.objects.filter(
+                email='new-user@example.com',
+                project_uuid=project_uuid,
+            ).exists()
+
+    def test_invitation_updates_name_on_reinvite(self, factory, project_creator, real_project):
+        project_uuid = str(real_project.uuid)
+        ProjectExternalUser.objects.create(
+            email='member@example.com',
+            username='member',
+            project_uuid=project_uuid,
+            activated=False,
+        )
+
+        response = self._invite(factory, project_creator, project_uuid, {
+            'email': 'member@example.com',
+            'name': 'Jane Doe',
+        })
+
+        assert response.status_code == 200
+        member = ProjectExternalUser.objects.get(email='member@example.com', project_uuid=project_uuid)
+        assert member.name == 'Jane Doe'
+
+    def test_invitation_requires_name_on_reinvite(self, factory, project_creator, real_project):
+        project_uuid = str(real_project.uuid)
+        ProjectExternalUser.objects.create(
+            email='member@example.com',
+            username='member',
+            project_uuid=project_uuid,
+            name='Jane',
+            activated=False,
+        )
+
+        response = self._invite(factory, project_creator, project_uuid, {'email': 'member@example.com'})
+
+        assert response.status_code == 400
+        assert response.data['error_msg'] == 'Name not provided.'
+        member = ProjectExternalUser.objects.get(email='member@example.com', project_uuid=project_uuid)
+        assert member.name == 'Jane'
+
+    def test_failed_welcome_email_does_not_rename_existing_external_user(
+        self, factory, project_creator, real_project,
+    ):
+        project_uuid = str(real_project.uuid)
+        ProjectExternalUser.objects.create(
+            email='member@example.com',
+            username='member',
+            project_uuid=project_uuid,
+            name='Jane',
+            activated=False,
+        )
+
+        response = self._invite(
+            factory, project_creator, project_uuid,
+            {'email': 'member@example.com', 'name': 'Jane Doe'},
+            email_sent=False,
+        )
+
+        assert response.status_code == 500
+        assert not PortalExternalInvitation.objects.filter(
+            email='member@example.com',
+            project_uuid=project_uuid,
+        ).exists()
+        member = ProjectExternalUser.objects.get(email='member@example.com', project_uuid=project_uuid)
+        assert member.name == 'Jane'
+
+    def test_invitation_rejects_overlong_name(self, factory, project_creator, real_project):
+        project_uuid = str(real_project.uuid)
+
+        response = self._invite(factory, project_creator, project_uuid, {
+            'email': 'new-user@example.com',
+            'name': 'a' * 256,
+        })
+
+        assert response.status_code == 400
+        assert not PortalExternalInvitation.objects.filter(
+            email='new-user@example.com',
+            project_uuid=project_uuid,
+        ).exists()
+        assert not ProjectExternalUser.objects.filter(
+            email='new-user@example.com',
+            project_uuid=project_uuid,
+        ).exists()
+
+    def test_invitation_rejects_non_string_name(self, factory, project_creator, real_project):
+        project_uuid = str(real_project.uuid)
+
+        response = self._invite(factory, project_creator, project_uuid, {
+            'email': 'new-user@example.com',
+            'name': ['Jane Doe'],
+        })
+
+        assert response.status_code == 400
+        assert response.data['error_msg'] == 'Name not provided.'
+        assert not ProjectExternalUser.objects.filter(
+            email='new-user@example.com',
+            project_uuid=project_uuid,
+        ).exists()
+
     def test_invitation_does_not_send_email_when_external_user_creation_fails(
         self, factory, project_creator, real_project
     ):
         email = 'new-user@example.com'
         request = factory.post(
             f'/api/v1/portal/{real_project.uuid}/external-invitations/',
-            data={'email': email},
+            data={'email': email, 'name': 'New User'},
             format='json',
         )
         request.user = project_creator
@@ -521,7 +660,7 @@ class TestPortalCustomersView:
         real_project.save(update_fields=['settings'])
         request = factory.post(
             f'/api/v1/portal/{real_project.uuid}/external-invitations/',
-            data={'email': email},
+            data={'email': email, 'name': 'New User'},
             format='json',
         )
         request.user = project_creator
@@ -555,7 +694,7 @@ class TestPortalCustomersView:
         real_project.save(update_fields=['settings'])
         request = factory.post(
             f'/api/v1/portal/{real_project.uuid}/external-invitations/',
-            data={'email': email, 'customer_id': customer.id},
+            data={'email': email, 'name': 'New User', 'customer_id': customer.id},
             format='json',
         )
         request.user = project_creator
@@ -658,6 +797,51 @@ class TestPortalCustomersView:
         assert login_response.status_code == 200
         send_mail.assert_not_called()
 
+    def test_external_users_list_returns_name(self, factory, project_creator, real_project):
+        project_uuid = str(real_project.uuid)
+        ProjectExternalUser.objects.create(
+            email='named@example.com',
+            username='named-user',
+            project_uuid=project_uuid,
+            name='Jane Doe',
+            activated=True,
+        )
+        ProjectExternalUser.objects.create(
+            email='unnamed@example.com',
+            username='unnamed-user',
+            project_uuid=project_uuid,
+            activated=False,
+        )
+        request = factory.get(f'/api/v1/portal/{project_uuid}/external-users/')
+        request.user = project_creator
+
+        response = PortalExternalUsersView.as_view()(request, project_uuid=project_uuid)
+
+        assert response.status_code == 200
+        names_by_email = {user['email']: user['name'] for user in response.data['users']}
+        assert names_by_email == {'named@example.com': 'Jane Doe', 'unnamed@example.com': ''}
+
+    def test_customer_members_returns_name(self, factory, project_creator, real_project):
+        project_uuid = str(real_project.uuid)
+        customer = PortalCustomer.objects.create(project_uuid=project_uuid, name='Acme')
+        ProjectExternalUser.objects.create(
+            email='member@example.com',
+            username='member',
+            project_uuid=project_uuid,
+            name='Jane Doe',
+            customer_id=customer.id,
+            activated=True,
+        )
+        request = factory.get(f'/api/v1/portal/{project_uuid}/customers/{customer.id}/members/')
+        request.user = project_creator
+
+        response = PortalCustomerMembersView.as_view()(
+            request, project_uuid=project_uuid, customer_id=customer.id
+        )
+
+        assert response.status_code == 200
+        assert [member['name'] for member in response.data['members']] == ['Jane Doe']
+
     def test_external_users_list_includes_inactive_customer_members(self, factory, project_creator, real_project):
         customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
         ProjectExternalUser.objects.create(
@@ -676,6 +860,7 @@ class TestPortalCustomersView:
         assert response.data['users'] == [{
             'username': 'inactive-user',
             'email': 'inactive@example.com',
+            'name': '',
             'activated': False,
             'customer_id': customer.id,
             'customer_name': 'Acme',
