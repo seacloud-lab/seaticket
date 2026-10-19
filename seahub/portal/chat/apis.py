@@ -798,12 +798,12 @@ class PortalAdminKnowledgeGapsView(APIView):
     throttle_classes = (UserRateThrottle,)
 
     @portal_endpoint
-    def post(self, request, project_uuid):
+    def get(self, request, project_uuid):
         try:
             try:
-                start = int(request.POST.get('start', 0))
-                limit = int(request.POST.get('limit', 1000))
-                view_config = json.loads(request.POST.get('config', '{}'))
+                start = int(request.GET.get('start', 0))
+                limit = int(request.GET.get('limit', 1000))
+                view_config = json.loads(request.GET.get('config', '{}'))
             except (TypeError, ValueError):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'start, limit or config invalid')
             if start < 0 or limit < 1:

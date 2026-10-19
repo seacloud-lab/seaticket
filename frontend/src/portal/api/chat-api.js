@@ -200,13 +200,14 @@ class ChatAPI {
 
   listAdminKnowledgeGaps(projectUuid, { start = 0, limit = 1000, sorts } = {}) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/admin/knowledge-gaps/';
-    let form = new FormData();
-    form.append('start', start);
-    form.append('limit', limit);
-    form.append('config', JSON.stringify({
-      sorts: sorts || []
-    }));
-    return this._sendPostRequest(url, form);
+    const params = {
+      start,
+      limit,
+      config: JSON.stringify({
+        sorts: sorts || [],
+      }),
+    };
+    return this.req.get(url, { params });
   }
 
   updateAdminKnowledgeGapStatus(projectUuid, gapId, gapStatus) {
