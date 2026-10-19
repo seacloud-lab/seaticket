@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { EmptyTip, IconButton } from '@/components';
 import { gettext, mediaUrl } from '@/constants';
 import { PORTAL_PAGE } from '@/portal/constants';
@@ -21,6 +21,10 @@ const SETTING_TABS = [
 const SettingPanel = ({ homePageStyle, activeCard, setActiveCard, setHomePageStyle, updateHomeSetting, portalName, portalLogo,
   activePage, setPortalName, setPortalLogo, onClose, }) => {
   const [activeTab, setActiveTab] = useState(SETTING_TABS[0].value);
+
+  useEffect(() => {
+    if (activeCard) setActiveTab(SETTING_TAB.CONTENT);
+  }, [activeCard]);
 
   return (
     <div className="seaqa-portal-settings">
