@@ -69,6 +69,24 @@ def _get_session_or_error(session_uuid, username):
     return session, None
 
 
+def _reject_portal_chat_usage_limit(status_code, message, project_uuid, session_uuid, query, username):
+    logger.warning(
+        'Portal chat rejected: project=%s session=%s reason=%s',
+        project_uuid, session_uuid, message,
+    )
+    try:
+        message_id = gen_portal_message_id(session_uuid)
+    except Exception as e:
+        logger.exception(f'Failure to generate message id: {e}')
+        return api_error(status_code, message)
+
+    build_portal_message_result(
+        {'ai_reply': message, 'sources': []},
+        project_uuid, session_uuid, message_id, query, username,
+    )
+    return api_error(status_code, message)
+
+
 def _get_portal_chat_usage(project_uuid, start_date, end_date):
     """Return Portal Chat usage and users for an inclusive date range."""
     usage = AIUsageStatistics.objects.filter(
@@ -515,23 +533,6 @@ class PortalChatView(APIView):
             stream = stream_from_request
 
         portal_settings = get_portal_chat_settings(request.project)
-        if request.identity['is_external_user']:
-            rate_limit_error = check_external_chat_rate_limit(project_uuid, request.identity['username'])
-            if rate_limit_error:
-                return rate_limit_error
-
-        visitor_uuid = request.identity.get('visitor_uuid', '')
-        ip = ''
-        if request.identity['is_anonymous']:
-            ip = get_remote_ip(request)
-            rate_limit_error = check_anonymous_chat_rate_limit(visitor_uuid, ip)
-            if rate_limit_error:
-                return rate_limit_error
-
-        project_credit_used = get_project_portal_chat_credit_used(project_uuid)
-        if project_credit_used >= portal_settings['daily_chat_credit_limit']:
-            return api_error(status.HTTP_429_TOO_MANY_REQUESTS, 'Portal chat daily quota exceeded.')
-
         username = request.identity['username']
 
         session, error = _get_session_or_error(session_uuid, username)
@@ -540,10 +541,39 @@ class PortalChatView(APIView):
 
         current_session_uuid = session.session_uuid
 
+        if request.identity['is_external_user']:
+            rate_limit_message = check_external_chat_rate_limit(project_uuid, username)
+            if rate_limit_message:
+                return _reject_portal_chat_usage_limit(
+                    status.HTTP_429_TOO_MANY_REQUESTS, rate_limit_message,
+                    project_uuid, current_session_uuid, query, username,
+                )
+
+        visitor_uuid = request.identity.get('visitor_uuid', '')
+        ip = ''
+        if request.identity['is_anonymous']:
+            ip = get_remote_ip(request)
+            rate_limit_message = check_anonymous_chat_rate_limit(visitor_uuid, ip)
+            if rate_limit_message:
+                return _reject_portal_chat_usage_limit(
+                    status.HTTP_429_TOO_MANY_REQUESTS, rate_limit_message,
+                    project_uuid, current_session_uuid, query, username,
+                )
+
+        project_credit_used = get_project_portal_chat_credit_used(project_uuid)
+        if project_credit_used >= portal_settings['daily_chat_credit_limit']:
+            return _reject_portal_chat_usage_limit(
+                status.HTTP_429_TOO_MANY_REQUESTS, 'Portal chat daily quota exceeded.',
+                project_uuid, current_session_uuid, query, username,
+            )
+
         # Check AI quota of org
         org_id = getattr(getattr(request.project, 'workspace', None), 'org_id', -1) or -1
         if check_ai_limit(org_id):
-            return api_error(status.HTTP_402_PAYMENT_REQUIRED, 'AI credit not enough.')
+            return _reject_portal_chat_usage_limit(
+                status.HTTP_402_PAYMENT_REQUIRED, 'AI credit not enough.',
+                project_uuid, current_session_uuid, query, username,
+            )
 
         project_prompt = ''
         if request.project.settings:

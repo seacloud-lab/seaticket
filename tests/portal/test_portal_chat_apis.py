@@ -17,7 +17,12 @@ from seahub.portal.chat.apis import (
     PortalChatView,
     PortalChatSessionTitleView,
 )
-from seahub.portal.chat.utils import encode_portal_chat_image_token, rewrite_portal_chat_image_urls
+from seahub.portal.chat.constants import PORTAL_ANON_CHAT_SESSION_DAILY_LIMIT
+from seahub.portal.chat.utils import (
+    encode_portal_chat_image_token,
+    mark_anonymous_chat_rate_limit,
+    rewrite_portal_chat_image_urls,
+)
 from seahub.portal.visitor_session import create_visitor_session
 from seahub.portal.models import PortalChatSessions, PortalChatMessages
 from seahub.project.constants import AIScenario
@@ -329,6 +334,100 @@ class TestPortalChatViewAnonymous:
         assert chat_params['portal_chat_prompt'] == 'Answer only product support questions.'
         assert chat_params['is_external_portal'] is True
         assert chat_params['scenario'] == AIScenario.PORTAL_CHAT.value
+
+    def _post_anonymous_chat(self, factory, real_project, session, query, ip=None):
+        request = factory.post(
+            f'/api/v1/portal/{real_project.uuid}/chat/',
+            data=json.dumps({
+                'query': query,
+                'session_uuid': session.session_uuid,
+                'stream': True,
+            }),
+            content_type='application/json',
+            HTTP_X_FORWARDED_FOR=ip or '127.0.0.1',
+        )
+        from seahub.portal.visitor_session import _sign_visitor_uuid
+        request.COOKIES['portal_visitor_session'] = _sign_visitor_uuid(session.username)
+        return request
+
+    def _assert_usage_limit_rejection(self, session, query, resp, status_code, error_msg, mock_get_ai_reply):
+        assert resp.status_code == status_code
+        assert resp.data['error_msg'] == error_msg
+        messages = PortalChatMessages.objects.filter(
+            session_uuid=session.session_uuid
+        ).order_by('created_at')
+        assert messages.count() == 2
+        assert messages[0].role == 'user'
+        assert messages[0].content == query
+        assert messages[1].role == 'assistant'
+        assert messages[1].content == error_msg
+        mock_get_ai_reply.assert_not_called()
+
+    def test_daily_quota_exceeded_records_rejection(self, factory, real_project):
+        _set_portal_settings(
+            real_project, allow_anonymous=True, enable_password_protection=False,
+            daily_chat_credit_limit=1,
+        )
+        visitor = create_visitor_session()
+        session = PortalChatSessions.objects.create_session(
+            project_uuid=str(real_project.uuid), session_name='quota', username=visitor['visitor_uuid']
+        )
+        AIUsageStatistics.objects.create(
+            date=timezone.localdate(),
+            project_uuid=uuid_str_to_32_chars(str(real_project.uuid)),
+            owner='owner',
+            model='test-model',
+            scenario=AIScenario.PORTAL_CHAT.value,
+            cost=0.02,
+        )
+        query = 'what is the quota'
+        request = self._post_anonymous_chat(factory, real_project, session, query)
+
+        with patch('seahub.portal.chat.apis.get_ai_reply') as mock_get_ai_reply:
+            resp = PortalChatView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        self._assert_usage_limit_rejection(
+            session, query, resp, 429, 'Portal chat daily quota exceeded.', mock_get_ai_reply,
+        )
+
+    def test_anonymous_daily_limit_records_rejection(self, factory, real_project):
+        _set_portal_settings(real_project, allow_anonymous=True, enable_password_protection=False)
+        visitor = create_visitor_session()
+        session = PortalChatSessions.objects.create_session(
+            project_uuid=str(real_project.uuid), session_name='limit', username=visitor['visitor_uuid']
+        )
+        ip = f'anon-{visitor["visitor_uuid"]}'
+        for _ in range(PORTAL_ANON_CHAT_SESSION_DAILY_LIMIT):
+            mark_anonymous_chat_rate_limit(visitor['visitor_uuid'], ip)
+        query = 'one more question'
+        request = self._post_anonymous_chat(factory, real_project, session, query, ip=ip)
+
+        with patch('seahub.portal.chat.apis.get_ai_reply') as mock_get_ai_reply:
+            resp = PortalChatView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        self._assert_usage_limit_rejection(
+            session, query, resp, 429,
+            'Anonymous chat daily limit exceeded. Please try again tomorrow or log in.',
+            mock_get_ai_reply,
+        )
+
+    def test_org_ai_credit_exhausted_records_rejection(self, factory, real_project):
+        _set_portal_settings(real_project, allow_anonymous=True, enable_password_protection=False)
+        visitor = create_visitor_session()
+        session = PortalChatSessions.objects.create_session(
+            project_uuid=str(real_project.uuid), session_name='credit', username=visitor['visitor_uuid']
+        )
+        query = 'need more credit'
+        request = self._post_anonymous_chat(factory, real_project, session, query)
+
+        with patch('seahub.portal.chat.apis.check_ai_limit', return_value=True), \
+                patch('seahub.portal.chat.apis.get_ai_reply') as mock_get_ai_reply:
+            resp = PortalChatView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        self._assert_usage_limit_rejection(
+            session, query, resp, 402, 'AI credit not enough.', mock_get_ai_reply,
+        )
+
 
 @pytest.mark.usefixtures('portal_mode_settings')
 class TestPortalChatImageRewriteAnonymous:
