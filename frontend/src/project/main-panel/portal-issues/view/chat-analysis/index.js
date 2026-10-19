@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { gettext, PERMISSION_TYPES } from '@/constants';
 import { chatAPI } from '@/portal/api/chat-api';
 import { useData } from '@/project/hooks';
@@ -31,6 +31,12 @@ const settings = {
 };
 
 const formatTokenCount = (count) => Utils.formatSize({ bytes: count, precision: 0 }).replace('B', '');
+
+const getSortsKey = (viewID) => {
+  if (viewID === 'user_usage') return 'user_usage_sorts';
+  if (viewID === 'knowledge_gaps') return 'knowledge_gaps_sorts';
+  return 'sorts';
+};
 
 const AnalysisSidePanel = ({ row, ...props }) => {
   if (row?._panel === 'knowledge_gap') {
@@ -180,6 +186,7 @@ const ChatAnalysis = ({
         key: 'gap_status',
         type: CellType.SINGLE_SELECT,
         editable: true,
+        is_required: true,
         width: 140,
         data: {
           options: KNOWLEDGE_GAP_STATUS_OPTIONS,
@@ -200,17 +207,11 @@ const ChatAnalysis = ({
     ];
   }, []);
 
-  const getColumns = (viewID) => {
+  const getColumns = useCallback((viewID) => {
     if (viewID === 'user_usage') return userUsageColumns;
     if (viewID === 'knowledge_gaps') return knowledgeGapColumns;
     return columns;
-  };
-
-  const getSortsKey = (viewID) => {
-    if (viewID === 'user_usage') return 'user_usage_sorts';
-    if (viewID === 'knowledge_gaps') return 'knowledge_gaps_sorts';
-    return 'sorts';
-  };
+  }, [columns, userUsageColumns, knowledgeGapColumns]);
 
   const api = useMemo(() => ({
     getMetadata: (...params) => getMetadata(PORTAL_CHAT_TABLE_NAME, params[0], () => {
@@ -333,10 +334,12 @@ const ChatAnalysis = ({
     },
 
     modifyRow: (rowId, rowUpdate) => {
-      if (!rowUpdate || !rowUpdate.gap_status) {
-        return Promise.resolve({ data: { row: rowUpdate } });
+      const gapStatus = rowUpdate && rowUpdate.gap_status;
+      const isValidStatus = KNOWLEDGE_GAP_STATUS_OPTIONS.some(option => option.id === gapStatus);
+      if (!isValidStatus) {
+        return Promise.reject(new Error('gap_status invalid.'));
       }
-      return chatAPI.updateAdminKnowledgeGapStatus(projectUuid, rowId, rowUpdate.gap_status).then(() => {
+      return chatAPI.updateAdminKnowledgeGapStatus(projectUuid, rowId, gapStatus).then(() => {
         modifyLocalRow(PORTAL_CHAT_TABLE_NAME, rowId, rowUpdate);
         return { data: { row: rowUpdate } };
       });
@@ -349,7 +352,7 @@ const ChatAnalysis = ({
       });
       resolve({ data: { success: true } });
     }),
-  }), [projectUuid, viewsData, columns, userUsageColumns, knowledgeGapColumns, getMetadata, modifyLocalRow]);
+  }), [projectUuid, viewsData, getColumns, getMetadata, modifyLocalRow]);
 
   const t = useMemo(() => {
     return {
