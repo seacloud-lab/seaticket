@@ -14,10 +14,8 @@ from django.db.models import Sum, Value
 from django.db.models.functions import Coalesce
 from django.http import StreamingHttpResponse
 from django.utils import timezone
-from rest_framework import status
 from rest_framework.response import Response
 
-from seahub.api2.utils import api_error
 from seahub.project.constants import AIScenario
 from seahub.project.constants import IMAGE_EXTS
 from seahub.project.models import AIUsageStatistics
@@ -83,11 +81,11 @@ def _get_external_project_rate_limit_key(project_uuid):
 def check_external_chat_rate_limit(project_uuid, username):
     user_key = _get_external_user_rate_limit_key(project_uuid, username)
     if _get_cached_counter(user_key) >= PORTAL_EXTERNAL_CHAT_USER_RATE_LIMIT:
-        return api_error(status.HTTP_429_TOO_MANY_REQUESTS, 'Too many requests, please try again later.')
+        return 'Too many requests, please try again later.'
 
     project_key = _get_external_project_rate_limit_key(project_uuid)
     if _get_cached_counter(project_key) >= PORTAL_EXTERNAL_CHAT_PROJECT_RATE_LIMIT:
-        return api_error(status.HTTP_429_TOO_MANY_REQUESTS, 'Too many requests, please try again later.')
+        return 'Too many requests, please try again later.'
 
     return None
 
@@ -129,17 +127,11 @@ def check_anonymous_chat_rate_limit(visitor_uuid, ip):
 
     session_key = _get_anon_session_rate_limit_key(visitor_uuid, today_str)
     if _get_cached_counter(session_key) >= PORTAL_ANON_CHAT_SESSION_DAILY_LIMIT:
-        return api_error(
-            status.HTTP_429_TOO_MANY_REQUESTS,
-            'Anonymous chat daily limit exceeded. Please try again tomorrow or log in.'
-        )
+        return 'Anonymous chat daily limit exceeded. Please try again tomorrow or log in.'
 
     ip_key = _get_anon_ip_rate_limit_key(ip, today_str)
     if _get_cached_counter(ip_key) >= PORTAL_ANON_CHAT_IP_DAILY_LIMIT:
-        return api_error(
-            status.HTTP_429_TOO_MANY_REQUESTS,
-            'Too many requests from this IP. Please try again tomorrow.'
-        )
+        return 'Too many requests from this IP. Please try again tomorrow.'
 
     return None
 
