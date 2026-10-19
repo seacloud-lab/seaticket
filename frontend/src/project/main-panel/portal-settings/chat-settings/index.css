@@ -6,18 +6,21 @@
 }
 
 .seaqa-portal-chat-limit-row {
-  display: grid;
-  grid-template-columns: minmax(180px, 1fr) 100px minmax(140px, auto);
+  width: fit-content;
+  max-width: var(--portal-settings-max-width);
+  display: flex;
   align-items: center;
   gap: 12px;
 }
 
-@media (max-width: 700px) {
-  .seaqa-portal-chat-limit-row {
-    grid-template-columns: 1fr 100px;
-  }
+.seaqa-portal-chat-limit-row .seaqa-portal-chat-limit-title {
+  width: 300px;
+}
 
-  .seaqa-portal-chat-limit-row > span {
-    grid-column: 1 / -1;
-  }
+.seaqa-portal-chat-limit-row .seaqa-portal-chat-limit-input {
+  width: 100px;
+}
+
+.seaqa-portal-chat-limit-row .seaqa-portal-chat-limit-unit {
+  flex: 1;
 }

@@ -6,4 +6,5 @@
   display: flex;
   align-items: center;
   max-width: var(--portal-settings-max-width);
+  width: 100%;
 }
