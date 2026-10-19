@@ -22,7 +22,7 @@ from seahub.project.constants import AIScenario
 from seahub.project.constants import IMAGE_EXTS
 from seahub.project.models import AIUsageStatistics
 from seahub.project.utils import convert_cost_to_credit
-from seahub.portal.models import PortalChatMessages, ProjectExternalUser
+from seahub.portal.models import PortalChatMessages, PortalChatAnalysis, ProjectExternalUser
 from seahub.utils import normalize_cache_key, uuid_str_to_32_chars
 from seahub.chats.utils import strip_content_details_from_attachments
 from seahub.chats.constants import CHAT_IMAGE_MAX_COUNT
@@ -352,13 +352,18 @@ def build_portal_message_result(ai_result, project_uuid, session_uuid, message_i
     try:
         user_message = PortalChatMessages.objects.create_message(
             session_uuid, message_id, 'user', query, attachments=stripped_attachments,
-            evaluation=user_evaluation,
-            evaluated_at=timezone.now() if user_evaluation else None,
         )
         ai_reply_message = PortalChatMessages.objects.create_message(
             session_uuid, message_id, 'assistant', ai_result['ai_reply'],
             sources=ai_result.get('sources') or [],
         )
+        if user_evaluation and message_id:
+            PortalChatAnalysis.objects.upsert(
+                session_uuid,
+                message_id,
+                evaluation=user_evaluation,
+                evaluated_at=timezone.now(),
+            )
         ai_result.update({
             'user_message_id': user_message.id,
             'ai_reply_message_id': ai_reply_message.id

@@ -45,7 +45,7 @@ from seahub.portal.chat.utils import (
     rewrite_portal_chat_admin_image_urls,
 )
 from seahub.portal.chat.constants import PORTAL_CHAT_ADMIN_IMAGE_TOKEN_TYPE
-from seahub.portal.models import PortalChatSessions, PortalChatMessages
+from seahub.portal.models import PortalChatSessions, PortalChatMessages, PortalChatAnalysis
 from seahub.chats.utils import (
     build_ai_images_payload,
     build_image_attachments,
@@ -826,8 +826,7 @@ class PortalAdminKnowledgeGapsView(APIView):
             username_query = PortalChatSessions.objects.filter(
                 session_uuid=OuterRef('session_uuid'),
             ).values('username')[:1]
-            gaps = PortalChatMessages.objects.filter(
-                role='user',
+            gaps = PortalChatAnalysis.objects.filter(
                 evaluation='knowledge_gap',
                 session_uuid__in=session_uuids,
             ).annotate(
@@ -850,22 +849,21 @@ class PortalAdminKnowledgeGapView(APIView):
         if gap_status not in KNOWLEDGE_GAP_STATUSES:
             return api_error(status.HTTP_400_BAD_REQUEST, 'gap_status invalid.')
 
-        message = PortalChatMessages.objects.filter(
+        analysis = PortalChatAnalysis.objects.filter(
             id=gap_id,
-            role='user',
             evaluation='knowledge_gap',
         ).first()
-        if not message:
+        if not analysis:
             return api_error(status.HTTP_404_NOT_FOUND, 'Knowledge gap not found.')
         session = PortalChatSessions.objects.filter(
             project_uuid=project_uuid,
-            session_uuid=message.session_uuid,
+            session_uuid=analysis.session_uuid,
         ).first()
         if not session:
             return api_error(status.HTTP_404_NOT_FOUND, 'Knowledge gap not found.')
 
-        message.gap_status = gap_status
-        message.save(update_fields=['gap_status', 'updated_at'])
+        analysis.gap_status = gap_status
+        analysis.save(update_fields=['gap_status', 'updated_at'])
         return Response({'success': True})
 
 
@@ -880,20 +878,27 @@ def _serialize_knowledge_gaps(request, project_uuid, gaps):
         for session in PortalChatSessions.objects.filter(session_uuid__in=session_uuids)
     }
     message_ids = {gap.message_id for gap in gaps if gap.message_id}
+    users = {}
     assistants = {}
     if message_ids:
-        for assistant in PortalChatMessages.objects.filter(
-            role='assistant',
+        for message in PortalChatMessages.objects.filter(
             session_uuid__in=session_uuids,
             message_id__in=message_ids,
+            role__in=('user', 'assistant'),
         ):
-            assistants[(assistant.session_uuid, assistant.message_id)] = assistant
+            key = (message.session_uuid, message.message_id)
+            if message.role == 'user':
+                users[key] = message
+            else:
+                assistants[key] = message
 
     admin_username = request.user.username
     results = []
     for gap in gaps:
         session = sessions.get(gap.session_uuid)
-        assistant = assistants.get((gap.session_uuid, gap.message_id))
+        key = (gap.session_uuid, gap.message_id)
+        user_message = users.get(key)
+        assistant = assistants.get(key)
         answer = assistant.content if assistant else ''
         if answer and session:
             answer = rewrite_portal_chat_admin_image_urls(
@@ -910,7 +915,7 @@ def _serialize_knowledge_gaps(request, project_uuid, gaps):
             'username': session.username if session else '',
             'session_uuid': gap.session_uuid,
             'session_name': session.session_name if session else '',
-            'question': gap.content,
+            'question': user_message.content if user_message else '',
             'answer': answer,
         })
     return results
