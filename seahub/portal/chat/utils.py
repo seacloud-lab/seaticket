@@ -28,14 +28,9 @@ from seahub.chats.constants import CHAT_IMAGE_MAX_COUNT
 logger = logging.getLogger(__name__)
 
 from .constants import (
-    PORTAL_EXTERNAL_CHAT_USER_RATE_LIMIT,
     PORTAL_EXTERNAL_CHAT_USER_RATE_WINDOW,
-    PORTAL_EXTERNAL_CHAT_PROJECT_RATE_LIMIT,
-    PORTAL_EXTERNAL_CHAT_PROJECT_RATE_WINDOW,
-    PORTAL_ANON_CHAT_SESSION_DAILY_LIMIT,
-    PORTAL_ANON_CHAT_IP_DAILY_LIMIT,
     PORTAL_ANON_CHAT_DAILY_TTL,
-    PORTAL_CHAT_DAILY_CREDIT_LIMIT_DEFAULT,
+    PORTAL_CHAT_LIMIT_DEFAULTS,
     PORTAL_CHAT_ADMIN_IMAGE_TOKEN_TYPE,
     PORTAL_CHAT_IMAGE_TOKEN_AUDIENCE,
     PORTAL_CHAT_IMAGE_TOKEN_TTL,
@@ -74,17 +69,10 @@ def _get_external_user_rate_limit_key(project_uuid, username):
     return _get_counter_cache_key('portal_ext_chat_user_', project_uuid, username)
 
 
-def _get_external_project_rate_limit_key(project_uuid):
-    return _get_counter_cache_key('portal_ext_chat_project_', project_uuid)
-
-
-def check_external_chat_rate_limit(project_uuid, username):
+def check_external_chat_rate_limit(project_uuid, username, chat_settings=None):
+    chat_settings = chat_settings or PORTAL_CHAT_LIMIT_DEFAULTS
     user_key = _get_external_user_rate_limit_key(project_uuid, username)
-    if _get_cached_counter(user_key) >= PORTAL_EXTERNAL_CHAT_USER_RATE_LIMIT:
-        return 'Too many requests, please try again later.'
-
-    project_key = _get_external_project_rate_limit_key(project_uuid)
-    if _get_cached_counter(project_key) >= PORTAL_EXTERNAL_CHAT_PROJECT_RATE_LIMIT:
+    if _get_cached_counter(user_key) >= chat_settings['external_chat_user_rate_limit']:
         return 'Too many requests, please try again later.'
 
     return None
@@ -94,10 +82,6 @@ def mark_external_chat_rate_limit(project_uuid, username):
     _increase_cached_counter(
         _get_external_user_rate_limit_key(project_uuid, username),
         PORTAL_EXTERNAL_CHAT_USER_RATE_WINDOW
-    )
-    _increase_cached_counter(
-        _get_external_project_rate_limit_key(project_uuid),
-        PORTAL_EXTERNAL_CHAT_PROJECT_RATE_WINDOW
     )
 
 
@@ -122,15 +106,16 @@ def _get_anon_ip_rate_limit_key(ip, date_str):
     return _get_counter_cache_key('portal_anon_chat_ip_daily_', ip, date_str)
 
 
-def check_anonymous_chat_rate_limit(visitor_uuid, ip):
+def check_anonymous_chat_rate_limit(visitor_uuid, ip, chat_settings=None):
+    chat_settings = chat_settings or PORTAL_CHAT_LIMIT_DEFAULTS
     today_str = timezone.localdate().strftime('%Y%m%d')
 
     session_key = _get_anon_session_rate_limit_key(visitor_uuid, today_str)
-    if _get_cached_counter(session_key) >= PORTAL_ANON_CHAT_SESSION_DAILY_LIMIT:
+    if _get_cached_counter(session_key) >= chat_settings['anonymous_chat_session_daily_limit']:
         return 'Anonymous chat daily limit exceeded. Please try again tomorrow or log in.'
 
     ip_key = _get_anon_ip_rate_limit_key(ip, today_str)
-    if _get_cached_counter(ip_key) >= PORTAL_ANON_CHAT_IP_DAILY_LIMIT:
+    if _get_cached_counter(ip_key) >= chat_settings['anonymous_chat_ip_daily_limit']:
         return 'Too many requests from this IP. Please try again tomorrow.'
 
     return None
@@ -160,13 +145,14 @@ def get_portal_chat_settings(project):
     chat_allowed_sources = portal_settings.get('chat_allowed_sources')
     if not isinstance(chat_allowed_sources, dict):
         chat_allowed_sources = {}
-    daily_chat_credit_limit = portal_settings.get('daily_chat_credit_limit', PORTAL_CHAT_DAILY_CREDIT_LIMIT_DEFAULT)
-    try:
-        daily_chat_credit_limit = int(daily_chat_credit_limit)
-    except (TypeError, ValueError):
-        daily_chat_credit_limit = PORTAL_CHAT_DAILY_CREDIT_LIMIT_DEFAULT
-    if daily_chat_credit_limit < 0:
-        daily_chat_credit_limit = PORTAL_CHAT_DAILY_CREDIT_LIMIT_DEFAULT
+    chat_limits = {}
+    for key, default in PORTAL_CHAT_LIMIT_DEFAULTS.items():
+        value = portal_settings.get(key, default)
+        try:
+            value = int(value)
+        except (TypeError, ValueError):
+            value = default
+        chat_limits[key] = value if value >= 0 else default
     chat_prompt = portal_settings.get('chat_prompt', '')
     if not isinstance(chat_prompt, str):
         chat_prompt = ''
@@ -175,8 +161,8 @@ def get_portal_chat_settings(project):
             'connection_ids': chat_allowed_sources.get('connection_ids') or [],
             'extra_sources': chat_allowed_sources.get('extra_sources') or [],
         },
-        'daily_chat_credit_limit': daily_chat_credit_limit,
         'chat_prompt': chat_prompt,
+        **chat_limits,
     }
 
 

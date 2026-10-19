@@ -542,7 +542,7 @@ class PortalChatView(APIView):
         current_session_uuid = session.session_uuid
 
         if request.identity['is_external_user']:
-            rate_limit_message = check_external_chat_rate_limit(project_uuid, username)
+            rate_limit_message = check_external_chat_rate_limit(project_uuid, username, portal_settings)
             if rate_limit_message:
                 return _reject_portal_chat_usage_limit(
                     status.HTTP_429_TOO_MANY_REQUESTS, rate_limit_message,
@@ -553,7 +553,7 @@ class PortalChatView(APIView):
         ip = ''
         if request.identity['is_anonymous']:
             ip = get_remote_ip(request)
-            rate_limit_message = check_anonymous_chat_rate_limit(visitor_uuid, ip)
+            rate_limit_message = check_anonymous_chat_rate_limit(visitor_uuid, ip, portal_settings)
             if rate_limit_message:
                 return _reject_portal_chat_usage_limit(
                     status.HTTP_429_TOO_MANY_REQUESTS, rate_limit_message,
