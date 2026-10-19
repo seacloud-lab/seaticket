@@ -57,17 +57,17 @@ const Main = ({ connections, settings, onChange }) => {
           {gettext('Configure the request and credit limits for portal chat. The time periods are fixed.')}
         </p>
         <ChatLimitInput
+          label={gettext('Credit limit')}
+          name="daily_chat_credit_limit"
+          unit={gettext('credit / day')}
+          value={settings.daily_chat_credit_limit}
+          onSave={onChange}
+        />
+        <ChatLimitInput
           label={gettext('External user')}
           name="external_chat_user_rate_limit"
           unit={gettext('requests / 10 minutes')}
           value={settings.external_chat_user_rate_limit}
-          onSave={onChange}
-        />
-        <ChatLimitInput
-          label={gettext('All external users in this project')}
-          name="external_chat_project_rate_limit"
-          unit={gettext('requests / hour')}
-          value={settings.external_chat_project_rate_limit}
           onSave={onChange}
         />
         <ChatLimitInput
@@ -82,13 +82,6 @@ const Main = ({ connections, settings, onChange }) => {
           name="anonymous_chat_ip_daily_limit"
           unit={gettext('requests / day')}
           value={settings.anonymous_chat_ip_daily_limit}
-          onSave={onChange}
-        />
-        <ChatLimitInput
-          label={gettext('Project credit')}
-          name="daily_chat_credit_limit"
-          unit={gettext('Credit / day')}
-          value={settings.daily_chat_credit_limit}
           onSave={onChange}
         />
       </div>

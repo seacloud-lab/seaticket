@@ -1606,7 +1606,6 @@ class PortalSettingsView(APIView):
             'enable_password_protection': enable_password_protection,
             'chat_allowed_sources': chat_allowed_sources,
             'external_chat_user_rate_limit': chat_settings['external_chat_user_rate_limit'],
-            'external_chat_project_rate_limit': chat_settings['external_chat_project_rate_limit'],
             'anonymous_chat_session_daily_limit': chat_settings['anonymous_chat_session_daily_limit'],
             'anonymous_chat_ip_daily_limit': chat_settings['anonymous_chat_ip_daily_limit'],
             'daily_chat_credit_limit': chat_settings['daily_chat_credit_limit'],
@@ -1631,7 +1630,6 @@ class PortalSettingsView(APIView):
         raw_enable_password_protection = request.data.get('enable_password_protection')
         chat_limit_fields = (
             'external_chat_user_rate_limit',
-            'external_chat_project_rate_limit',
             'anonymous_chat_session_daily_limit',
             'anonymous_chat_ip_daily_limit',
             'daily_chat_credit_limit',

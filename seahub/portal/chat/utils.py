@@ -29,7 +29,6 @@ logger = logging.getLogger(__name__)
 
 from .constants import (
     PORTAL_EXTERNAL_CHAT_USER_RATE_WINDOW,
-    PORTAL_EXTERNAL_CHAT_PROJECT_RATE_WINDOW,
     PORTAL_ANON_CHAT_DAILY_TTL,
     PORTAL_CHAT_LIMIT_DEFAULTS,
     PORTAL_CHAT_ADMIN_IMAGE_TOKEN_TYPE,
@@ -70,18 +69,10 @@ def _get_external_user_rate_limit_key(project_uuid, username):
     return _get_counter_cache_key('portal_ext_chat_user_', project_uuid, username)
 
 
-def _get_external_project_rate_limit_key(project_uuid):
-    return _get_counter_cache_key('portal_ext_chat_project_', project_uuid)
-
-
 def check_external_chat_rate_limit(project_uuid, username, chat_settings=None):
     chat_settings = chat_settings or PORTAL_CHAT_LIMIT_DEFAULTS
     user_key = _get_external_user_rate_limit_key(project_uuid, username)
     if _get_cached_counter(user_key) >= chat_settings['external_chat_user_rate_limit']:
-        return 'Too many requests, please try again later.'
-
-    project_key = _get_external_project_rate_limit_key(project_uuid)
-    if _get_cached_counter(project_key) >= chat_settings['external_chat_project_rate_limit']:
         return 'Too many requests, please try again later.'
 
     return None
@@ -91,10 +82,6 @@ def mark_external_chat_rate_limit(project_uuid, username):
     _increase_cached_counter(
         _get_external_user_rate_limit_key(project_uuid, username),
         PORTAL_EXTERNAL_CHAT_USER_RATE_WINDOW
-    )
-    _increase_cached_counter(
-        _get_external_project_rate_limit_key(project_uuid),
-        PORTAL_EXTERNAL_CHAT_PROJECT_RATE_WINDOW
     )
 
 

@@ -454,7 +454,6 @@ class TestPortalSettingsView:
         assert resp.status_code == 200
         assert resp.data['allow_anonymous'] is True
         assert resp.data['external_chat_user_rate_limit'] == 20
-        assert resp.data['external_chat_project_rate_limit'] == 100
         assert resp.data['anonymous_chat_session_daily_limit'] == 20
         assert resp.data['anonymous_chat_ip_daily_limit'] == 50
         assert resp.data['daily_chat_credit_limit'] == 50
@@ -463,7 +462,6 @@ class TestPortalSettingsView:
         settings_dict = json.loads(real_project.settings) if real_project.settings else {}
         settings_dict['portal'] = {
             'external_chat_user_rate_limit': 5,
-            'external_chat_project_rate_limit': 40,
             'anonymous_chat_session_daily_limit': 3,
             'anonymous_chat_ip_daily_limit': 10,
             'daily_chat_credit_limit': 12,
@@ -477,7 +475,6 @@ class TestPortalSettingsView:
 
         assert resp.status_code == 200
         assert resp.data['external_chat_user_rate_limit'] == 5
-        assert resp.data['external_chat_project_rate_limit'] == 40
         assert resp.data['anonymous_chat_session_daily_limit'] == 3
         assert resp.data['anonymous_chat_ip_daily_limit'] == 10
         assert resp.data['daily_chat_credit_limit'] == 12
@@ -542,7 +539,6 @@ class TestPortalSettingsView:
 
     @pytest.mark.parametrize('field', [
         'external_chat_user_rate_limit',
-        'external_chat_project_rate_limit',
         'anonymous_chat_session_daily_limit',
         'anonymous_chat_ip_daily_limit',
         'daily_chat_credit_limit',
@@ -562,7 +558,6 @@ class TestPortalSettingsView:
     def test_post_updates_chat_limits(self, factory, project_creator, real_project):
         data = {
             'external_chat_user_rate_limit': 5,
-            'external_chat_project_rate_limit': 40,
             'anonymous_chat_session_daily_limit': 3,
             'anonymous_chat_ip_daily_limit': 10,
             'daily_chat_credit_limit': 12,

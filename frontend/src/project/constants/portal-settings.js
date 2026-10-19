@@ -17,7 +17,6 @@ export const PORTAL_DEFAULT_SETTINGS = {
 
   chat_allowed_sources: PORTAL_CHAT_ALLOWED_SOURCES_DEFAULT,
   external_chat_user_rate_limit: 20,
-  external_chat_project_rate_limit: 100,
   anonymous_chat_session_daily_limit: 20,
   anonymous_chat_ip_daily_limit: 50,
 
