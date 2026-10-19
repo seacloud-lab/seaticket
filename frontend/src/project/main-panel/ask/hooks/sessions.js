@@ -10,6 +10,23 @@ import { useAskPage } from './page-type';
 
 const SessionsContext = React.createContext(null);
 
+const dispatchStreamReply = (sessionId, res, callback) => {
+  if (res.ok) {
+    eventBus.dispatch(EVENT_BUS_TYPE.AI_STREAM_REPLY, sessionId, { res }, callback);
+    return;
+  }
+  res.json().then((data) => {
+    const errorMessage = data && data.error_msg;
+    eventBus.dispatch(EVENT_BUS_TYPE.AI_STREAM_REPLY, sessionId, {
+      error: { message: errorMessage || gettext('Error') },
+    }, callback);
+  }).catch(() => {
+    eventBus.dispatch(EVENT_BUS_TYPE.AI_STREAM_REPLY, sessionId, {
+      error: { message: gettext('Error') },
+    }, callback);
+  });
+};
+
 export const SessionsProvider = ({ projectUuid, api, children }) => {
   const [isLoading, setLoading] = useState(true);
   const [sessions, setSessions] = useState([]);
@@ -138,7 +155,7 @@ export const SessionsProvider = ({ projectUuid, api, children }) => {
     };
 
     api.sendChatMessageByStream(params, options).then((res) => {
-      eventBus.dispatch(EVENT_BUS_TYPE.AI_STREAM_REPLY, sessionId, { res }, callback);
+      dispatchStreamReply(sessionId, res, callback);
     }).catch(error => {
       eventBus.dispatch(EVENT_BUS_TYPE.AI_STREAM_REPLY, sessionId, { error }, callback);
     });
@@ -198,7 +215,7 @@ export const SessionsProvider = ({ projectUuid, api, children }) => {
 
     if (isStream) {
       api.getChatMessageByStream(projectUuid, sessionId, streamed_length, options).then(res => {
-        eventBus.dispatch(EVENT_BUS_TYPE.AI_STREAM_REPLY, sessionId, { res }, callback);
+        dispatchStreamReply(sessionId, res, callback);
       }).catch(error => {
         eventBus.dispatch(EVENT_BUS_TYPE.AI_STREAM_REPLY, sessionId, { error }, callback);
       });

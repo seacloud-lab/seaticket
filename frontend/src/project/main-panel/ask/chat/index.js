@@ -306,12 +306,7 @@ const Chat = ({ sessionId, projectUuid, settings, projectName, workspaceID, allo
       }
 
       if (!res.ok) {
-        res.json().then((data) => {
-          const errorMessage = data && data.error_msg;
-          _onError(newChatHistories, errorMessage ? { message: errorMessage } : null);
-        }).catch(() => {
-          _onError(newChatHistories);
-        });
+        _onError(newChatHistories);
         return;
       }
 
