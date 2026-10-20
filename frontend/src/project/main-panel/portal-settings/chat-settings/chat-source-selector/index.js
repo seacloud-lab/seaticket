@@ -90,11 +90,7 @@ const PortalChatSourceSelector = ({ connections, disabled, value: oldValue, onCh
     ]
   ), [connections]);
 
-  const isValidChanged = useMemo(() => {
-    const newValue = getNextValue(value, connections);
-    if (ObjectUtils.isSameObject(newValue, oldValue)) return false;
-    return true;
-  }, [value, connections, oldValue]);
+  const newValue = useMemo(() => getNextValue(value, connections), [value, connections]);
 
   const filteredSources = !searchValue
     ? sources
@@ -120,13 +116,15 @@ const PortalChatSourceSelector = ({ connections, disabled, value: oldValue, onCh
     { key: 'others', title: gettext('Other'), items: sections.others },
   ].filter((section) => section.items.length > 0);
 
-  const closePopover = useCallback((callback) => {
+  const closePopover = useCallback(() => {
     setIsPopoverOpen(false);
     setSearchValue('');
-    if (!isValidChanged) return;
-    const newValue = getNextValue(value, connections);
+  }, []);
+
+  const handleChange = useCallback((callback) => {
+    closePopover();
     onChange(newValue, callback);
-  }, [value, connections, isValidChanged, onChange]);
+  }, [newValue, onChange, closePopover]);
 
   const openPopover = () => {
     if (disabled || isPopoverOpen) return;
@@ -169,7 +167,7 @@ const PortalChatSourceSelector = ({ connections, disabled, value: oldValue, onCh
   const selectedCount = value.length;
 
   return (
-    <SaveStatus isValidChanged={isValidChanged} callback={closePopover}>
+    <SaveStatus callback={handleChange}>
       {({ callback }) => (
         <>
           <SelectTrigger
@@ -194,8 +192,8 @@ const PortalChatSourceSelector = ({ connections, disabled, value: oldValue, onCh
               fade={false}
               className="portal-chat-source-popover"
               containerClassName="portal-chat-source-popover-content"
-              hidePopover={callback}
-              hidePopoverWithEsc={callback}
+              hidePopover={ObjectUtils.isSameObject(newValue, oldValue) ? closePopover : callback}
+              hidePopoverWithEsc={ObjectUtils.isSameObject(newValue, oldValue) ? closePopover : callback}
             >
               <div className="portal-chat-source-search">
                 <SearchInput

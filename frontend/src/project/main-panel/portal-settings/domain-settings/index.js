@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FormGroup, Label, InputGroup, Input } from 'reactstrap';
 import copy from 'copy-to-clipboard';
 import { SettingsItem, toaster, IconTooltip, SaveStatus } from '@/components';
@@ -20,12 +20,6 @@ const Main = ({
   const subdomainPrefixEditVersion = useRef(0);
   const subdomainPrefixSyncedVersion = useRef(0);
 
-  const isValidChanged = useMemo(() => {
-    const validSubdomainPrefix = subdomainPrefix.trim();
-    if (validSubdomainPrefix === propsSubdomainPrefix) return false;
-    return true;
-  }, [subdomainPrefix, propsSubdomainPrefix]);
-
   const onCopyUrl = useCallback((value) => {
     if (!value) return;
     copy(value);
@@ -46,12 +40,6 @@ const Main = ({
 
   const handleCustomSubdomainPrefixChange = useCallback((callback) => {
     const validSubdomainPrefix = subdomainPrefix.trim();
-    if (validSubdomainPrefix === propsSubdomainPrefix) {
-      if (validSubdomainPrefix !== subdomainPrefix) {
-        setSubdomainPrefix(validSubdomainPrefix);
-      }
-      return;
-    }
     const editVersion = subdomainPrefixEditVersion.current;
     onChange && onChange({ subdomain_prefix: validSubdomainPrefix }, (isSuccess = true, errorMessage) => {
       if (isSuccess && subdomainPrefixEditVersion.current === editVersion) {
@@ -59,7 +47,7 @@ const Main = ({
       }
       callback && callback(isSuccess, errorMessage);
     });
-  }, [subdomainPrefix, propsSubdomainPrefix, onChange]);
+  }, [subdomainPrefix, onChange]);
 
   useEffect(() => {
     if (subdomainPrefixEditVersion.current !== subdomainPrefixSyncedVersion.current) return;
@@ -106,7 +94,7 @@ const Main = ({
       {domainAliasRoot ? (
         <FormGroup className="mb-4">
           <Label>{gettext('Customize the prefix:')}</Label>
-          <SaveStatus isValidChanged={isValidChanged} callback={handleCustomSubdomainPrefixChange}>
+          <SaveStatus callback={handleCustomSubdomainPrefixChange}>
             {({ callback }) => (
               <div className="seaqa-portal-customize-url-settings-container gap-2">
                 <Input
@@ -119,7 +107,7 @@ const Main = ({
                   placeholder={gettext('my-brand')}
                   spellCheck={false}
                   autoComplete="off"
-                  onBlur={callback}
+                  onBlur={subdomainPrefix.trim() === propsSubdomainPrefix ? undefined : callback}
                 />
                 <Input
                   type="text"

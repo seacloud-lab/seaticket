@@ -43,14 +43,8 @@ const Main = ({
     ? gettext('Custom domain allows you to serve your portal from a domain other than {domain}.').replace('{domain}', currentPortalDomain)
     : gettext('Custom domain allows you to serve your portal from a domain other than your current portal domain.'),
   [currentPortalDomain]);
-  const isValidDomainChanged = useMemo(() => {
-    if (!validCustomDomain) return false;
-    if (validCustomDomain === propsCustomDomain) return false;
-    return true;
-  }, [validCustomDomain, propsCustomDomain]);
 
   const handleCustomDomainChange = useCallback((callback) => {
-    if (!isValidDomainChanged) return;
     const editVersion = customDomainEditVersion.current;
     onChange && onChange({ custom_domain: validCustomDomain }, (isSuccess = true, errorMessage) => {
       if (isSuccess && customDomainEditVersion.current === editVersion) {
@@ -58,7 +52,7 @@ const Main = ({
       }
       callback && callback(isSuccess, errorMessage);
     });
-  }, [isValidDomainChanged, validCustomDomain, onChange]);
+  }, [validCustomDomain, onChange]);
 
   const onOpenRemoveCustomDomainConfirm = useCallback(() => {
     if (!propsCustomDomain) return;
@@ -72,9 +66,13 @@ const Main = ({
   const onRemoveCustomDomain = useCallback(() => {
     if (!propsCustomDomain) return;
     const editVersion = customDomainEditVersion.current;
-    statusSaveRef.current.setStatus(SAVE_STATUS_TYPE.SAVING);
+    const submissionSequence = statusSaveRef.current.startSubmission();
     onChange && onChange({ custom_domain: '' }, (isSuccess = true, errorMessage) => {
-      statusSaveRef.current.setStatus(isSuccess ? SAVE_STATUS_TYPE.SAVED : SAVE_STATUS_TYPE.SAVE_ERROR, isSuccess ? '' : errorMessage);
+      statusSaveRef.current.setSubmissionStatus(
+        submissionSequence,
+        isSuccess ? SAVE_STATUS_TYPE.SAVED : SAVE_STATUS_TYPE.SAVE_ERROR,
+        isSuccess ? '' : errorMessage
+      );
       if (!isSuccess) return;
       if (customDomainEditVersion.current === editVersion) {
         customDomainSyncedVersion.current = editVersion;
@@ -118,7 +116,7 @@ const Main = ({
     <SettingsItem title={gettext('Custom domain')} className="seaqa-portal-custom-domain-settings">
       <FormGroup className={propsCustomDomain ? 'mb-2' : 'mb-4'}>
         <Label className="seaqa-tip-default font-size-12 line-height-20 mb-4">{customDomainHint}</Label>
-        <SaveStatus callback={handleCustomDomainChange} isValidChanged={isValidDomainChanged} ref={statusSaveRef}>
+        <SaveStatus callback={handleCustomDomainChange} ref={statusSaveRef}>
           {({ callback }) => (
             <InputGroup className="seaqa-project-portal-input-group-settings">
               <Input
@@ -132,7 +130,7 @@ const Main = ({
                   customDomainEditVersion.current += 1;
                   setCustomDomain(event.target.value);
                 }}
-                onBlur={callback}
+                onBlur={validCustomDomain === propsCustomDomain ? undefined : callback}
               />
               {propsCustomDomain && (
                 <IconTooltip

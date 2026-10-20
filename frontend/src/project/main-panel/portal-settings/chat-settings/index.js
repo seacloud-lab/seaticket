@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FormGroup, Input, Label } from 'reactstrap';
 import { SaveStatus, SettingsItem } from '@/components';
 import { gettext } from '@/constants';
@@ -10,15 +10,6 @@ import './index.css';
 const ChatLimitInput = ({ label, name, unit, value, onSave }) => {
   const [draftValue, setDraftValue] = useState(String(value));
 
-  const isValidChanged = useMemo(() => {
-    const parsedValue = Number(draftValue);
-    if (!Number.isInteger(parsedValue) || parsedValue < 0) {
-      return false;
-    }
-    if (parsedValue === value) return false;
-    return true;
-  }, [draftValue, value]);
-
   useEffect(() => {
     setDraftValue(String(value));
   }, [value]);
@@ -27,14 +18,14 @@ const ChatLimitInput = ({ label, name, unit, value, onSave }) => {
     const parsedValue = Number(draftValue);
     if (!Number.isInteger(parsedValue) || parsedValue < 0) {
       setDraftValue(String(value));
-      callback && callback();
+      callback && callback(false, gettext('%s is invalid and has been automatically reset to the last valid value.').replace('%s', label));
       return;
     }
-    if (parsedValue !== value) onSave({ [name]: parsedValue }, callback);
+    onSave({ [name]: parsedValue }, callback);
   };
 
   return (
-    <SaveStatus isValidChanged={isValidChanged} callback={handleBlur}>
+    <SaveStatus callback={handleBlur}>
       {({ callback }) => (
         <div className="seaqa-portal-chat-limit-row">
           <div className="seaqa-portal-chat-limit-title">{label}</div>
@@ -44,7 +35,7 @@ const ChatLimitInput = ({ label, name, unit, value, onSave }) => {
             min="0"
             value={draftValue}
             onChange={event => setDraftValue(event.target.value)}
-            onBlur={callback}
+            onBlur={Number(draftValue) === value ? undefined : callback}
           />
           <span className="seaqa-tip-default font-size-12 seaqa-portal-chat-limit-unit">{unit}</span>
         </div>

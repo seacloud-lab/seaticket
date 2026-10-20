@@ -1,4 +1,4 @@
-import React, { forwardRef, cloneElement, isValidElement, useCallback, useEffect, useRef, useState, useImperativeHandle } from 'react';
+import React, { forwardRef, cloneElement, isValidElement, useCallback, useRef, useState, useImperativeHandle } from 'react';
 import classnames from 'classnames';
 import IconTooltip from '@/components/icon-tooltip';
 import { gettext } from '@/constants';
@@ -7,10 +7,13 @@ import { SAVE_STATUS_TYPE, SAVE_STATUS } from './constants';
 
 import './index.css';
 
-const SaveStatus = forwardRef(({ isValidChanged = true, className, children, callback }, ref) => {
+const SaveStatus = forwardRef(({ className, children, callback }, ref) => {
   const [status, setStatus] = useState('');
   const [tip, setTip] = useState('');
-  const previousIsValidChanged = useRef(isValidChanged);
+  const submissionSequence = useRef(0);
+  const latestSubmissionSequence = useRef(0);
+  const pendingSubmissions = useRef(new Set());
+  const latestSubmissionResult = useRef(null);
 
   const updateStatus = useCallback((nextStatus, nextTip) => {
     const statusConfig = SAVE_STATUS[nextStatus];
@@ -23,29 +26,63 @@ const SaveStatus = forwardRef(({ isValidChanged = true, className, children, cal
     setTip(nextTip || '');
   }, []);
 
-  useEffect(() => {
-    const wasValidChanged = previousIsValidChanged.current;
-    previousIsValidChanged.current = isValidChanged;
-    if (wasValidChanged && !isValidChanged && status === SAVE_STATUS_TYPE.SAVE_ERROR) {
-      updateStatus('');
-    }
-  }, [isValidChanged, status, updateStatus]);
+  const startSubmission = useCallback(() => {
+    const sequence = ++submissionSequence.current;
+    latestSubmissionSequence.current = sequence;
+    latestSubmissionResult.current = null;
+    pendingSubmissions.current.add(sequence);
+    updateStatus(SAVE_STATUS_TYPE.SAVING);
+    return sequence;
+  }, [updateStatus]);
 
-  const handleCallback = useCallback((update) => {
-    if (isValidChanged) updateStatus(SAVE_STATUS_TYPE.SAVING);
+  const completeSubmission = useCallback((sequence, nextStatus, nextTip) => {
+    if (!pendingSubmissions.current.delete(sequence)) return;
+
+    if (sequence === latestSubmissionSequence.current) {
+      latestSubmissionResult.current = { status: nextStatus, tip: nextTip };
+    }
+
+    if (pendingSubmissions.current.size > 0) {
+      updateStatus(SAVE_STATUS_TYPE.SAVING);
+      return;
+    }
+
+    const result = latestSubmissionResult.current;
+    if (!result) return;
+    updateStatus(result.status, result.tip);
+  }, [updateStatus]);
+
+  const handleCallback = useCallback((...props) => {
+    const sequence = startSubmission();
     callback && callback((isSuccess, tip) => {
-      if (isSuccess === undefined) {
-        updateStatus('');
-        return;
+      let nextStatus = '';
+      let nextTip = tip;
+      if (isSuccess !== undefined) {
+        nextStatus = isSuccess ? SAVE_STATUS_TYPE.SAVED : SAVE_STATUS_TYPE.SAVE_ERROR;
+        nextTip = isSuccess ? gettext('Saved') : tip;
       }
-      const nextStatus = isSuccess ? SAVE_STATUS_TYPE.SAVED : SAVE_STATUS_TYPE.SAVE_ERROR;
-      updateStatus(nextStatus, isSuccess ? gettext('Saved') : tip);
-    }, update);
-  }, [isValidChanged, callback, updateStatus]);
+
+      completeSubmission(sequence, nextStatus, nextTip);
+    }, ...props);
+  }, [callback, completeSubmission, startSubmission]);
+
+  const setImperativeStatus = useCallback((nextStatus, nextTip) => {
+    submissionSequence.current += 1;
+    latestSubmissionSequence.current = submissionSequence.current;
+    latestSubmissionResult.current = null;
+    pendingSubmissions.current.clear();
+    updateStatus(nextStatus, nextTip);
+  }, [updateStatus]);
+
+  const setSubmissionStatus = useCallback((sequence, nextStatus, nextTip) => {
+    completeSubmission(sequence, nextStatus, nextTip);
+  }, [completeSubmission]);
 
   useImperativeHandle(ref, () => ({
-    setStatus: updateStatus,
-  }), [updateStatus]);
+    setStatus: setImperativeStatus,
+    startSubmission,
+    setSubmissionStatus,
+  }), [setImperativeStatus, startSubmission, setSubmissionStatus]);
 
   const { icon, className: iconClassName } = SAVE_STATUS[status] || {};
 
