@@ -1970,7 +1970,7 @@ class PortalDomainAliasView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         try:
-            prefix = request.data.get('subdomain_prefix') or ''
+            prefix = request.data.get('subdomain_prefix', '')
             normalized_prefix = validate_portal_subdomain_prefix_available(prefix)
         except ValueError as e:
             error_msg = str(e) or 'subdomain_prefix invalid.'

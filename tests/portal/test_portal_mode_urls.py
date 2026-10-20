@@ -7,11 +7,15 @@ from seahub.portal.apis import PortalExternalLoginSendCodeView, PortalExternalLo
 
 PORTAL_URLCONF = 'seahub.portal_site_urls'
 PORTAL_DOMAIN_MIDDLEWARE = 'seahub.portal.middleware.PortalDomainMiddleware'
+PORTAL_HOST_MIDDLEWARE = 'seahub.portal.host_middleware.PortalHostValidationMiddleware'
 CSRF_MIDDLEWARE = 'django.middleware.csrf.CsrfViewMiddleware'
 
 
 def test_portal_domain_middleware_matches_runtime_mode(settings):
     assert (PORTAL_DOMAIN_MIDDLEWARE in settings.MIDDLEWARE) is bool(settings.IS_PORTAL_MODE)
+    assert (PORTAL_HOST_MIDDLEWARE in settings.MIDDLEWARE) is bool(settings.IS_PORTAL_MODE)
+    if settings.IS_PORTAL_MODE:
+        assert settings.MIDDLEWARE[0] == PORTAL_HOST_MIDDLEWARE
     assert CSRF_MIDDLEWARE in settings.MIDDLEWARE
 
 
