@@ -1,0 +1,89 @@
+.seaqa-portal-settings {
+  flex: 0 0 340px;
+  position: relative;
+  width: 340px;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--bs-body-bg);
+  border-left: 1px solid var(--bs-border-secondary-color);
+}
+
+.seaqa-portal-settings-header {
+  display: flex;
+  flex: 0 0 56px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--bs-border-secondary-color);
+}
+
+.seaqa-portal-settings-title {
+  color: var(--bs-body-color);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.seaqa-portal-settings-tabs {
+  display: flex;
+  flex: 0 0 40px;
+  align-items: stretch;
+  gap: 24px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--bs-border-secondary-color);
+}
+
+.seaqa-portal-settings-tab {
+  position: relative;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.seaqa-portal-settings-tab.active {
+  color: var(--bs-sf-orange);
+  font-weight: 500;
+}
+
+.seaqa-portal-settings-tab.active::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background-color: var(--bs-sf-orange-light);
+  content: '';
+}
+
+.seaqa-portal-settings-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.seaqa-portal-settings-content .portal-home-content-settings,
+.seaqa-portal-settings-content .portal-appearance-settings,
+.seaqa-portal-settings-content .portal-card-content-settings {
+  box-sizing: border-box;
+  flex: 0 0 100%;
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+  height: auto;
+  border-left: 0;
+  overflow: visible;
+}
+
+.seaqa-portal-settings-content .portal-card-icon-selection {
+  top: 96px;
+  height: calc(100% - 96px);
+}
+
+@media (max-width: 768px) {
+  .seaqa-portal-settings {
+    flex-basis: clamp(180px, 40vw, 340px);
+    width: clamp(180px, 40vw, 340px);
+  }
+}

@@ -1,0 +1,89 @@
+.portal-card-icon-selection {
+  position: absolute;
+  top: 96px;
+  right: 0;
+  z-index: 3;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: calc(100% - 96px);
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  background: var(--bs-body-bg);
+  border-left: 1px solid var(--bs-border-secondary-color);
+}
+
+.portal-card-icon-selection .portal-card-icon-selection-header {
+  position: relative;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--bs-border-secondary-color);
+}
+
+.portal-card-icon-selection .portal-card-icon-selection-header-left {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+}
+
+.portal-card-icon-selection .portal-card-icon-selection-title {
+  color: var(--bs-body-color);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.portal-card-icon-selection .portal-card-icon-selection-header-center {
+  flex: 1 1 auto;
+}
+
+.portal-card-icon-selection .portal-card-icon-selection-header-right {
+  width: 20px;
+  flex: 0 0 20px;
+}
+
+.portal-card-icon-selection > .select-project-icon-content {
+  min-height: 0;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+
+.portal-card-icon-selection .select-project-icon-content-categories,
+.portal-card-icon-selection .select-project-icon-content-empty {
+  min-height: 0;
+  height: auto;
+  flex: 1 1 auto;
+  padding-bottom: 16px;
+}
+
+.portal-card-icon-selection .select-project-icon-content-list {
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+}
+
+.portal-card-icon-selection .select-project-icon-content-footer {
+  flex: 0 0 auto;
+  gap: 8px;
+  margin-top: 0px;
+  border-top: none;
+}
+
+.portal-card-icon-selection .select-project-icon-content-footer .btn {
+  height: 38px;
+  width: 50%;
+}
+
+.portal-card-icon-selection .select-project-icon-content .select-project-icon-content-search {
+  margin-bottom: 8px;
+}
+
+@media (max-width: 768px) {
+  .portal-card-icon-selection {
+    width: 100%;
+    min-width: 0;
+  }
+}

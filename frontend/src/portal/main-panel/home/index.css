@@ -23,7 +23,7 @@
 
 .portal-home-page .portal-home-main {
   flex: 1 1 auto;
-  width: calc(100% - 340px);
+  width: 100%;
   min-width: 0;
   min-height: 0;
   overflow-y: auto;
@@ -32,10 +32,6 @@
   border: 1px solid #fff;
   border-radius: 8px;
   background: #ffffff;
-}
-
-.portal-home-page:not(.is-edit) .portal-home-main {
-  width: 100%;
 }
 
 .portal-home-page .portal-home-hero {
@@ -289,7 +285,6 @@
     flex-direction: column;
   }
 
-  .portal-home-page .portal-home-edit-panel,
   .portal-home-page .portal-home-main {
     width: 100%;
     min-width: 0;
@@ -299,12 +294,6 @@
   .portal-home-page .portal-home-main {
     margin: 8px;
     width: calc(100% - 16px) !important;
-  }
-
-  .portal-home-page .portal-home-edit-panel-card {
-    width: 100%;
-    min-width: 0;
-    flex: 1 1 auto;
   }
 
   .portal-home-page .portal-home-hero {

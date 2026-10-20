@@ -1,11 +1,10 @@
 import React, { useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { gettext, mediaUrl } from '@/constants';
-import { PortalFeaturedArticlesProvider } from './hooks';
 import PasswordPanel from './password-panel';
 import Portal from './portal';
 
-const { projectUuid, needPassword, csrfToken, projectName, portalName, portalLogo } = window.app.pageOptions;
+const { needPassword, csrfToken, projectName, portalName, portalLogo } = window.app.pageOptions;
 
 const PortalEntry = () => {
   useEffect(() => {
@@ -22,11 +21,7 @@ const PortalEntry = () => {
     return <PasswordPanel displayName={portalName || projectName} csrfToken={csrfToken} />;
   }
 
-  return (
-    <PortalFeaturedArticlesProvider projectUuid={projectUuid}>
-      <Portal />
-    </PortalFeaturedArticlesProvider>
-  );
+  return <Portal />;
 };
 
 const root = createRoot(document.getElementById('wrapper'));
