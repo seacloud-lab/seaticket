@@ -904,8 +904,8 @@ DISCORD_CLIENT_SECRET = configs.get('DISCORD_CLIENT_SECRET', '')
 DISCORD_BOT_TOKEN = configs.get('DISCORD_BOT_TOKEN', '')
 DISCORD_REDIRECT_URL = configs.get('DISCORD_REDIRECT_URL', '')
 
-# Portal domain access; disable to use /portals/<token>/ on the main site.
-ENABLE_PORTAL_DOMAIN = configs.get('ENABLE_PORTAL_DOMAIN', True)
+# Single-server deployments use /portals/<token>/ on the main site by default.
+ENABLE_PORTAL_DOMAIN = configs.get('ENABLE_PORTAL_DOMAIN', False)
 PORTAL_SERVICE_ROOT_DOMAIN = configs.get('PORTAL_SERVICE_ROOT_DOMAIN', '')
 
 JIRA_CLIENT_ID = configs.get('JIRA_CLIENT_ID', '')
