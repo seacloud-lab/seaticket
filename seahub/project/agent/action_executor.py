@@ -758,13 +758,12 @@ class AgentActionExecutor:
             )
 
         try:
-            issue_data = ctx['github_api'].update_issue(
+            applied_labels = ctx['github_api'].add_issue_labels(
                 ctx['owner'],
                 ctx['repo'],
                 ctx['issue_number'],
-                labels=final_labels,
+                final_labels,
             )
-            applied_labels = issue_data.get('labels') or final_labels
         except requests.HTTPError as e:
             status_code = getattr(e.response, 'status_code', None)
             if status_code == 422:
@@ -781,12 +780,16 @@ class AgentActionExecutor:
             return self._failed_execution(f'Failed to update labels for GitHub issue {ctx["record_id"]}: {e}')
 
         try:
-            github_seadb_api = GitHubSeaDBAPI(project_uuid, seadb_api=seadb_api)
-            github_seadb_api.update_issue_record(
+            seadb_api.update_rows(
                 project_uuid,
-                ctx['connection_id'],
-                ctx['record_id'],
-                issue_data,
+                SchemaTables.GITHUB_ISSUES.table_name(ctx['connection_id']),
+                [{
+                    'pk': ctx['record_id'],
+                    'row': {
+                        SchemaTables.GITHUB_ISSUES.column.labels.name: applied_labels,
+                        SchemaTables.GITHUB_ISSUES.column.record_modified_time.name: timezone.now().isoformat(),
+                    },
+                }],
             )
         except Exception as e:
             logger.warning(f'Failed to update SeaDB for GitHub issue {ctx["record_id"]}: {e}')

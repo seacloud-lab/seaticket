@@ -120,6 +120,18 @@ class GitHubAPI:
             'updated_time': issue_data.get('updated_at', ''),
         }
 
+    def add_issue_labels(self, owner, repo, issue_number, labels):
+        """Add labels without replacing labels already on the issue."""
+        url = f"{self.base_url}/repos/{owner}/{repo}/issues/{issue_number}/labels"
+        response = requests.post(
+            url,
+            headers=self.headers,
+            json={'labels': labels},
+            timeout=self.timeout,
+        )
+        response.raise_for_status()
+        return [item.get('name') for item in response.json() if item.get('name')]
+
     def add_comment(self, owner, repo, issue_number, body):
         url = f"{self.base_url}/repos/{owner}/{repo}/issues/{issue_number}/comments"
         payload = {'body': body}
