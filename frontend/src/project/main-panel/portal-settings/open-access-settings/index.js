@@ -1,6 +1,6 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { FormGroup, Label } from 'reactstrap';
-import { PasswordInput, SettingsItem, SwitchSettings, toaster, SaveStatus } from '@/components';
+import { PasswordInput, SettingsItem, SwitchSettings, SaveStatus } from '@/components';
 import { gettext } from '@/constants';
 import { usePortalSettings } from '../hooks';
 
@@ -17,15 +17,6 @@ const Main = ({
   const [isEnablingPassword, setIsEnablingPassword] = useState(false);
 
   const isPasswordProtectionEnabled = enablePassword || isEnablingPassword;
-
-  const isValidPasswordChanged = useMemo(() => {
-    if (!(allowAnonymous && isPasswordProtectionEnabled)) return false;
-    if (!password && !isEnablingPassword) return false;
-    if (!password || password.length < 8) {
-      return false;
-    }
-    return true;
-  }, [allowAnonymous, isEnablingPassword, isPasswordProtectionEnabled, password]);
 
   const handleEnablePassword = useCallback((newValue, callback) => {
     if (newValue) {
@@ -58,10 +49,12 @@ const Main = ({
   }, [onChange]);
 
   const handlePasswordChange = useCallback((callback) => {
-    if (!(allowAnonymous && isPasswordProtectionEnabled)) return;
-    if (!password && !isEnablingPassword) return;
+    if (!password && !isEnablingPassword) {
+      callback && callback(false, gettext('Password is invalid'));
+      return;
+    }
     if (!password || password.length < 8) {
-      toaster.danger(gettext('Password must be at least 8 characters'), { duration: 2, hasCloseButton: false });
+      callback && callback(false, gettext('Password must be at least 8 characters'));
       return;
     }
     onChange({ enable_password_protection: true, password }, (isSuccess = true, errorMessage) => {
@@ -75,7 +68,7 @@ const Main = ({
       setPasswordInputVersion(version => version + 1);
       setIsEnablingPassword(false);
     });
-  }, [allowAnonymous, isPasswordProtectionEnabled, isEnablingPassword, password, onChange]);
+  }, [isEnablingPassword, password, onChange]);
 
   return (
     <SettingsItem title={gettext('Open access')} className="seaqa-portal-open-access-settings">
@@ -99,13 +92,13 @@ const Main = ({
           )}
         </SaveStatus>
       )}
-      {allowAnonymous && isPasswordProtectionEnabled && (
-        <FormGroup className="mb-4">
-          <Label>
-            {gettext('Password (at least 8 characters)')}
-          </Label>
-          <SaveStatus isValidChanged={isValidPasswordChanged} callback={handlePasswordChange}>
-            {({ callback }) => (
+      {allowAnonymous && (
+        <SaveStatus className="w-100" callback={handlePasswordChange}>
+          {({ callback }) => isPasswordProtectionEnabled && (
+            <FormGroup className="mb-4 flex-fill">
+              <Label>
+                {gettext('Password (at least 8 characters)')}
+              </Label>
               <PasswordInput
                 key={passwordInputVersion}
                 value={password}
@@ -114,11 +107,11 @@ const Main = ({
                 enableCheckStrength={false}
                 placeholder={gettext('Enter password')}
                 className="seaqa-portal-password-settings"
-                onBlur={callback}
+                onBlur={password === props?.password ? undefined : callback}
               />
-            )}
-          </SaveStatus>
-        </FormGroup>
+            </FormGroup>
+          )}
+        </SaveStatus>
       )}
     </SettingsItem>
   );

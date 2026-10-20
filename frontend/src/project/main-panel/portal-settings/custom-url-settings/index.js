@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { FormGroup, Input, InputGroup, Label } from 'reactstrap';
 import copy from 'copy-to-clipboard';
 import { SettingsItem, toaster, SaveStatus, IconTooltip } from '@/components';
@@ -12,12 +12,7 @@ const CustomUrlSettings = () => {
   const [token, setToken] = useState(savedToken);
   const [isSaving, setIsSaving] = useState(false);
   const [isOpeningPreview, setIsOpeningPreview] = useState(false);
-
-  const isValidChanged = useMemo(() => {
-    if (token === savedToken) return false;
-    if (!token.trim()) return false;
-    return true;
-  }, [token, savedToken]);
+  const tokenEditVersion = useRef(0);
 
   const hasUnsavedToken = token !== savedToken;
   const canCopy = !!publicUrl && !hasUnsavedToken && !isSaving;
@@ -25,13 +20,18 @@ const CustomUrlSettings = () => {
 
   const onSave = (callback) => {
     const validValue = token.trim();
-    if (!isValidChanged) {
-      if (!validValue) setToken(savedToken);
+    if (!validValue) {
+      setToken(savedToken);
+      callback && callback(false, gettext('%s is invalid and has been automatically reset to the last valid value.').replace('%s', 'Subdomain prefix'));
       return;
     }
+    const editVersion = tokenEditVersion.current;
     setIsSaving(true);
     setToken(validValue);
-    updateDomainAliasSettings({ subdomain_prefix: validValue }, (isSuccess, errorMessage) => {
+    updateDomainAliasSettings({ subdomain_prefix: validValue }, (isSuccess, errorMessage, savedSettings) => {
+      if (isSuccess && tokenEditVersion.current === editVersion && savedSettings?.subdomain_prefix) {
+        setToken(savedSettings.subdomain_prefix);
+      }
       const tip = errorMessage === 'subdomain_prefix already in use.' ? gettext('This URL is already in use.') : errorMessage;
       callback && callback(isSuccess, tip);
       setIsSaving(false);
@@ -58,17 +58,20 @@ const CustomUrlSettings = () => {
     <SettingsItem title={gettext('Custom URL')} className="seaqa-portal-custom-url-settings">
       <FormGroup className="mb-4">
         <Label>{gettext('Portal URL')}</Label>
-        <SaveStatus callback={onSave} isValidChanged={isValidChanged}>
+        <SaveStatus callback={onSave}>
           {({ callback }) => (
             <InputGroup className="seaqa-project-portal-input-group-settings">
               <Input value={urlPrefix} disabled readOnly />
               <Input
                 type="text"
                 value={token}
-                onChange={event => setToken(event.target.value)}
+                onChange={event => {
+                  tokenEditVersion.current += 1;
+                  setToken(event.target.value);
+                }}
                 spellCheck={false}
                 autoComplete="off"
-                onBlur={callback}
+                onBlur={token.trim() === savedToken ? undefined : callback}
               />
               <IconTooltip
                 icon="copy"
