@@ -800,6 +800,24 @@ class TestPortalSettingsView:
 @pytest.mark.django_db
 class TestPortalDomainAliasView:
 
+    @pytest.mark.parametrize('prefix', [123, 0, False, [], {}])
+    def test_post_rejects_non_string_prefix_without_resetting_alias(self, factory, project_creator, real_project, settings, prefix):
+        settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
+        alias = PortalDomainAlias.objects.create(project_uuid=str(real_project.uuid), prefix='my-brand')
+        request = factory.post(
+            f'/api/v1/portal/{real_project.uuid}/domain-alias/',
+            data={'subdomain_prefix': prefix},
+            format='json',
+        )
+        request.user = project_creator
+
+        response = PortalDomainAliasView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert response.status_code == 400
+        assert response.data['error_msg'] == 'Portal subdomain is invalid.'
+        alias.refresh_from_db()
+        assert alias.prefix == 'my-brand'
+
     def test_get_returns_default_alias(self, factory, project_creator, real_project, settings):
         settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'
         project = real_project
@@ -901,6 +919,26 @@ class TestPortalPreviewTokenView:
 
 @pytest.mark.django_db
 class TestPortalCustomDomainView:
+
+    @pytest.mark.parametrize('domain', [123, 0, False, [], {}])
+    def test_post_rejects_non_string_domain_without_removing_binding(self, factory, project_creator, real_project, domain):
+        binding = PortalCustomDomain.objects.create(
+            project_uuid=str(real_project.uuid), domain='support.example.com', verified=True,
+        )
+        request = factory.post(
+            f'/api/v1/portal/{real_project.uuid}/custom-domain/',
+            data={'custom_domain': domain},
+            format='json',
+        )
+        request.user = project_creator
+
+        response = PortalCustomDomainView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert response.status_code == 400
+        assert response.data['error_msg'] == 'Custom domain is invalid.'
+        binding.refresh_from_db()
+        assert binding.domain == 'support.example.com'
+        assert binding.verified is True
 
     def test_get_success(self, factory, project_creator, real_project, settings):
         settings.PORTAL_SERVICE_ROOT_DOMAIN = 'seaticket-portal.test'

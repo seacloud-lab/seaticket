@@ -17,6 +17,8 @@ PORTAL_CUSTOM_DOMAIN_DNS_RESOLVERS = ('8.8.8.8', '1.1.1.1')
 
 
 def normalize_portal_custom_domain(domain, check_reserved=True):
+    if domain is not None and not isinstance(domain, str):
+        raise ValueError('Custom domain is invalid.')
     domain = (domain or '').strip().lower()
     if not domain:
         return ''
@@ -32,7 +34,7 @@ def normalize_portal_custom_domain(domain, check_reserved=True):
 
     try:
         domain = domain.encode('idna').decode('ascii')
-    except Exception as error:
+    except UnicodeError as error:
         raise ValueError('Custom domain is invalid.') from error
 
     if ':' in domain:
@@ -49,7 +51,7 @@ def normalize_portal_custom_domain(domain, check_reserved=True):
         raise ValueError('Custom domain is invalid.')
 
     for label in labels:
-        if not HOST_LABEL_RE.match(label):
+        if not HOST_LABEL_RE.fullmatch(label):
             raise ValueError('Custom domain is invalid.')
 
     if check_reserved:
@@ -73,15 +75,16 @@ def normalize_portal_custom_domain(domain, check_reserved=True):
 
 
 def normalize_portal_subdomain_prefix(prefix):
-    prefix = prefix.strip().lower()
+    if prefix is not None and not isinstance(prefix, str):
+        raise ValueError('Portal subdomain is invalid.')
+    prefix = (prefix or '').strip().lower()
     if not prefix:
         return ''
 
     try:
         prefix = prefix.encode('idna').decode('ascii')
-    except Exception as error:
-        logger.error(error)
-        raise ValueError('Portal subdomain is invalid.')
+    except UnicodeError as error:
+        raise ValueError('Portal subdomain is invalid.') from error
 
     if len(prefix) < PORTAL_SUBDOMAIN_PREFIX_MIN_LENGTH:
         raise ValueError('Portal subdomain is too short.')
@@ -89,7 +92,7 @@ def normalize_portal_subdomain_prefix(prefix):
     if len(prefix) > PORTAL_SUBDOMAIN_PREFIX_MAX_LENGTH:
         raise ValueError('Portal subdomain is too long.')
 
-    if not HOST_LABEL_RE.match(prefix):
+    if not HOST_LABEL_RE.fullmatch(prefix):
         raise ValueError('Portal subdomain is invalid.')
 
     return prefix

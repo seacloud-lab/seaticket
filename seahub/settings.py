@@ -126,6 +126,7 @@ IS_PORTAL_MODE = SEAQA_APP_MODE == 'portal'
 
 # Order is important
 MIDDLEWARE = [
+    *(['seahub.portal.host_middleware.PortalHostValidationMiddleware'] if IS_PORTAL_MODE else []),
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
