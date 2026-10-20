@@ -3,12 +3,9 @@ import { gettext } from '@/constants';
 import SeaMetadata from '@/sea-metadata';
 import { CellType, VIEW_TOOL } from '@/sea-metadata/constants';
 import context from '@/sea-metadata/context';
+import { STATUS_OPTIONS } from './constants';
 
-const CustomerStatusFormatter = ({ value }) => (
-  <span>{value === 'active' ? gettext('Active') : gettext('Inactive')}</span>
-);
-
-const CustomersTab = ({ customers, onEdit, onManageUsers, onInviteUsers, onDelete, viewTabs }) => {
+const CustomersTables = ({ customers, onEdit, onManageUsers, onInviteUsers, onDelete, viewTabs }) => {
   const metadataID = useMemo(() => {
     return customers.map(customer => `${customer.id}:${customer.updated_at || ''}`).join('|') || 'customers-empty';
   }, [customers]);
@@ -42,6 +39,7 @@ const CustomersTab = ({ customers, onEdit, onManageUsers, onInviteUsers, onDelet
         rows: customers.map(customer => ({
           ...customer,
           _pk: customer.id,
+          status: customer.status === 'active' ? '1' : '0',
         })),
         columns: [
           {
@@ -66,10 +64,12 @@ const CustomersTab = ({ customers, onEdit, onManageUsers, onInviteUsers, onDelet
             key: 'status',
             name: 'status',
             display_name: gettext('Status'),
-            type: CellType.TEXT,
+            type: CellType.SINGLE_SELECT,
+            data: {
+              options: STATUS_OPTIONS,
+            },
             width: 180,
             editable: false,
-            formatter: <CustomerStatusFormatter />,
           },
           {
             key: 'updated_at',
@@ -132,4 +132,4 @@ const CustomersTab = ({ customers, onEdit, onManageUsers, onInviteUsers, onDelet
   );
 };
 
-export default CustomersTab;
+export default CustomersTables;

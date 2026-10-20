@@ -3,10 +3,7 @@ import { gettext } from '@/constants';
 import SeaMetadata from '@/sea-metadata';
 import { CellType, VIEW_TOOL } from '@/sea-metadata/constants';
 import context from '@/sea-metadata/context';
-
-const UserStatusFormatter = ({ value }) => (
-  <span>{value ? gettext('Active') : gettext('Inactive')}</span>
-);
+import { STATUS_OPTIONS } from './constants';
 
 const CustomerFormatter = ({ value, row, onCustomerClick }) => {
   if (!value || !row?.customer_id) return null;
@@ -56,7 +53,7 @@ const UsersTable = ({ users, onDeleteUser, onCustomerClick, viewTabs }) => {
           name: user.name || '',
           user: user.email,
           customer: user.customer_name || '',
-          status: user.activated,
+          status: user.activated ? '1' : '0',
         })),
         columns: [
           {
@@ -90,10 +87,12 @@ const UsersTable = ({ users, onDeleteUser, onCustomerClick, viewTabs }) => {
             key: 'status',
             name: 'status',
             display_name: gettext('Status'),
-            type: CellType.TEXT,
+            type: CellType.SINGLE_SELECT,
+            data: {
+              options: STATUS_OPTIONS,
+            },
             width: 180,
             editable: false,
-            formatter: <UserStatusFormatter />,
           },
         ],
         has_more: false,
