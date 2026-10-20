@@ -67,6 +67,20 @@ class GitHubSeaDBAPI:
             return response['results']
         return []
 
+    def update_labels(self, project_uuid, connection_id, record_pk, applied_labels):
+        now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
+        table_name = SchemaTables.GITHUB_ISSUES.table_name(connection_id)
+        update_row = {
+            'pk': int(record_pk),
+            'row': {
+                SchemaTables.GITHUB_ISSUES.column.labels.name: applied_labels,
+                SchemaTables.GITHUB_ISSUES.column.record_modified_time.name: now_datetime,
+            }
+        }
+
+        self.seadb_api.update_rows(project_uuid, table_name, [update_row])
+        return True
+    
     def update_issue_record(self, project_uuid, connection_id, record_pk, issue_data):
         now_datetime = datetime.datetime.now(datetime.UTC).isoformat()
         table_name = SchemaTables.GITHUB_ISSUES.table_name(connection_id)
