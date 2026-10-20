@@ -92,13 +92,13 @@ const Main = ({
           )}
         </SaveStatus>
       )}
-      {allowAnonymous && (
-        <SaveStatus className="w-100" callback={handlePasswordChange}>
-          {({ callback }) => isPasswordProtectionEnabled && (
-            <FormGroup className="mb-4 flex-fill">
-              <Label>
-                {gettext('Password (at least 8 characters)')}
-              </Label>
+      {allowAnonymous && isPasswordProtectionEnabled && (
+        <FormGroup className="mb-4 flex-fill">
+          <Label>
+            {gettext('Password (at least 8 characters)')}
+          </Label>
+          <SaveStatus className="w-100" callback={handlePasswordChange}>
+            {({ callback }) => (
               <PasswordInput
                 key={passwordInputVersion}
                 value={password}
@@ -109,9 +109,9 @@ const Main = ({
                 className="seaqa-portal-password-settings"
                 onBlur={password === props?.password ? undefined : callback}
               />
-            </FormGroup>
-          )}
-        </SaveStatus>
+            )}
+          </SaveStatus>
+        </FormGroup>
       )}
     </SettingsItem>
   );
