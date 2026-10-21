@@ -3,9 +3,10 @@ import { SketchPicker } from 'react-color';
 import { Icon, toaster } from '@/components';
 import { gettext } from '@/constants';
 import { COLOR_PRESETS } from '@/portal/setting-panel/header-background-utils';
-import { isHexColor } from '@/utils/color-utils';
 
 import './index.css';
+
+const isHexColor = (color = '') => /^#[0-9a-fA-F]{6}$/.test(color);
 
 const PortalColorEditor = ({ color, isSelected = false, onChange }) => {
   const [showColorPicker, setShowColorPicker] = useState(false);

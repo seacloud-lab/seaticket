@@ -1747,7 +1747,7 @@ class PortalSettingsView(APIView):
             portal_settings['portal_logo'] = portal_logo
         if portal_theme_color is not None:
             portal_settings['portal_theme_color'] = portal_theme_color
-        elif portal_home_settings is not None and not portal_settings.get('portal_theme_color'):
+        elif not portal_settings.get('portal_theme_color'):
             legacy_theme_color = old_home_settings.get('portal_theme_color') if isinstance(old_home_settings, dict) else None
             if legacy_theme_color:
                 portal_settings['portal_theme_color'] = legacy_theme_color
