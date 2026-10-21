@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { EmptyTip, IconButton } from '@/components';
 import { gettext, mediaUrl } from '@/constants';
 import { PORTAL_PAGE } from '@/portal/constants';
-import AppearanceSettings from './appearance-settings';
-import CardContentSettings from './card-content-settings';
-import HomeContentSettings from './home-content-settings';
+import AppearanceSettings from '@/portal/setting-panel/appearance-settings';
+import CardContentSettings from '@/portal/setting-panel/card-content-settings';
+import HomeContentSettings from '@/portal/setting-panel/home-content-settings';
 
 import './index.css';
 

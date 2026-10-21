@@ -1,9 +1,9 @@
 import React, { useCallback } from 'react';
-import HeaderBackground from './header-background';
-import PortalIdentity from './portal-identity';
-import ThemeColor from './theme-color';
+import HeaderBackground from '@/portal/setting-panel/header-background';
+import PortalIdentity from '@/portal/setting-panel/portal-identity';
+import ThemeColor from '@/portal/setting-panel/theme-color';
 
-import './appearance-settings.css';
+import './index.css';
 
 const AppearanceSettings = ({ homePageStyle = {}, setHomePageStyle, updateHomeSetting, portalName, portalLogo, portalThemeColor, setPortalName, setPortalLogo, setPortalThemeColor }) => {
   const updateHomePageStyle = useCallback((patch) => {

@@ -3,7 +3,7 @@ import { Label, Input } from 'reactstrap';
 import { CustomizeSelect } from '@/components';
 import { gettext } from '@/constants';
 
-import './home-content-settings.css';
+import './index.css';
 
 const TITLE_SIZE_OPTIONS = [32, 40, 48, 56, 64, 72].map((size) => ({
   value: size,

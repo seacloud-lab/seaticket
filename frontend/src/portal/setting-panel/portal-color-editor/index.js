@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { SketchPicker } from 'react-color';
 import { Icon, toaster } from '@/components';
 import { gettext } from '@/constants';
+import { COLOR_PRESETS } from '@/portal/setting-panel/header-background-utils';
 import { isHexColor } from '@/utils/color-utils';
-import { COLOR_PRESETS } from '../header-background-utils';
 
 import './index.css';
 

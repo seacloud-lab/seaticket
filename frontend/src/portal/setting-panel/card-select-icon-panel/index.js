@@ -3,7 +3,7 @@ import { IconButton } from '@/components';
 import { gettext } from '@/constants';
 import SelectProjectIconContent from '@/home/components/select-project-icon-content';
 
-import './card-select-icon-panel.css';
+import './index.css';
 
 const CardSelectIconPanel = ({ currentIcon, onPrevious, onSubmit }) => {
   return (

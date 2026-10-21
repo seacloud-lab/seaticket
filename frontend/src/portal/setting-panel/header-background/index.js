@@ -3,11 +3,11 @@ import { Icon, toaster, UploadFile, Switch } from '@/components';
 import { gettext } from '@/constants';
 import { portalAPI } from '@/portal/api';
 import { getAutoBackgroundColor } from '@/portal/color-utils';
+import { BACKGROUND_IMAGE_TYPES, MAX_BACKGROUND_IMAGE_SIZE } from '@/portal/setting-panel/header-background-utils';
 import PortalColorEditor from '@/portal/setting-panel/portal-color-editor';
 import { Utils } from '@/utils/utils';
-import { BACKGROUND_IMAGE_TYPES, MAX_BACKGROUND_IMAGE_SIZE } from './header-background-utils';
 
-import './header-background.css';
+import './index.css';
 
 const { projectUuid } = window.app.pageOptions;
 

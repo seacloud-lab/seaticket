@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Button, Label, Input } from 'reactstrap';
 import { DEFAULT_PROJECT_ICON, gettext, PROJECT_ICON_ALL_LIST } from '@/constants';
-import CardSelectIconPanel from './card-select-icon-panel';
+import CardSelectIconPanel from '@/portal/setting-panel/card-select-icon-panel';
 
-import './card-content-settings.css';
+import './index.css';
 
 const DEFAULT_CARD = {
   title: '',

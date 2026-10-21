@@ -5,7 +5,7 @@ import { gettext, mediaUrl } from '@/constants';
 import { portalAPI } from '@/portal/api';
 import { Utils } from '@/utils/utils';
 
-import './portal-identity.css';
+import './index.css';
 
 const { projectUuid } = window.app.pageOptions;
 const MAX_LOGO_SIZE = 5 * 1024 * 1024;

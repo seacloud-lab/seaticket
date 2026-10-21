@@ -5,7 +5,7 @@ import { portalAPI } from '@/portal/api';
 import PortalColorEditor from '@/portal/setting-panel/portal-color-editor';
 import { Utils } from '@/utils/utils';
 
-import './theme-color.css';
+import './index.css';
 
 const { projectUuid } = window.app.pageOptions;
 
