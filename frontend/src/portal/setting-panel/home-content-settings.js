@@ -64,7 +64,7 @@ const HomeContentSettings = ({ homePageStyle = {}, setHomePageStyle, updateHomeS
         />
       </div>
 
-      <div className="portal-setting-section">
+      <div className="portal-setting-section mt-3">
         <Label>{gettext('Title size')}</Label>
         <CustomizeSelect
           value={title_size || TITLE_SIZE_OPTIONS[0].value}
@@ -74,7 +74,7 @@ const HomeContentSettings = ({ homePageStyle = {}, setHomePageStyle, updateHomeS
         />
       </div>
 
-      <div className="portal-setting-section">
+      <div className="portal-setting-section mt-3">
         <Label>{gettext('Chat placeholder')}</Label>
         <Input
           className="portal-setting-input"
@@ -85,7 +85,7 @@ const HomeContentSettings = ({ homePageStyle = {}, setHomePageStyle, updateHomeS
         />
       </div>
 
-      <div className="portal-setting-section">
+      <div className="portal-setting-section mt-3">
         <Label>{gettext('Card layout')}</Label>
         <CustomizeSelect
           value={card_layout || CARD_LAYOUT_OPTIONS[0].value}

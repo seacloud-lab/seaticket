@@ -17,7 +17,7 @@ import TopBar from './top-bar';
 import './portal.css';
 
 const {
-  projectUuid, isEditMode, projectName, portalName, portalLogo, isAnonymous, workspaceID, isExternalUser, isPreviewUser, canAccessIssues, portalHomeSettings,
+  projectUuid, isEditMode, projectName, portalName, portalLogo, portalThemeColor: initialPortalThemeColor, isAnonymous, workspaceID, isExternalUser, isPreviewUser, canAccessIssues, portalHomeSettings,
 } = window.app.pageOptions;
 
 const Portal = () => {
@@ -26,6 +26,7 @@ const Portal = () => {
   const [isShowEditPanel, setIsShowEditPanel] = useState(false);
   const [currentPortalName, setCurrentPortalName] = useState(portalName);
   const [currentPortalLogo, setCurrentPortalLogo] = useState(portalLogo);
+  const [portalThemeColor, setPortalThemeColor] = useState(initialPortalThemeColor || '#ff8000');
   const [homePageStyle, setHomePageStyle] = useState(() => normalizeHomePageStyle(portalHomeSettings));
   const [activeCard, setActiveCard] = useState('');
 
@@ -36,6 +37,11 @@ const Portal = () => {
   }, []);
 
   const user = useMemo(() => new User({ avatar_url: avatarURL, name, email: username }), []);
+  const portalThemeStyle = {
+    '--bs-sf-orange': portalThemeColor,
+    '--bs-sf-orange-light': portalThemeColor,
+    '--bs-primary': portalThemeColor,
+  };
 
   const onPageChange = useCallback((page) => {
     const targetPage = !isExternalUser && page === PORTAL_PAGE.TEAM_ISSUES ? PORTAL_PAGE.MY_ISSUES : page;
@@ -138,7 +144,7 @@ const Portal = () => {
             useNotification={false}
           >
             {isEditMode && <LeftBar isShowEditPanel={isShowEditPanel} openEditPanel={openEditPanel} />}
-            <div className="seaqa-portal-body">
+            <div className="seaqa-portal-body" style={portalThemeStyle}>
               <TopBar
                 isEditMode={isEditMode}
                 activePage={activePage}
@@ -160,6 +166,7 @@ const Portal = () => {
                 onHomeChatSend={onHomeChatSend}
                 canAccessIssues={canAccessIssues}
                 isExternalUser={isExternalUser}
+                portalThemeColor={portalThemeColor}
                 updateHomeSetting={updateHomeSetting}
                 setIsShowEditPanel={setIsShowEditPanel}
                 homePageStyle={homePageStyle}
@@ -177,8 +184,10 @@ const Portal = () => {
                 updateHomeSetting={updateHomeSetting}
                 portalName={currentPortalName}
                 portalLogo={currentPortalLogo}
+                portalThemeColor={portalThemeColor}
                 setPortalName={setCurrentPortalName}
                 setPortalLogo={setCurrentPortalLogo}
+                setPortalThemeColor={setPortalThemeColor}
                 onClose={closeEditPanel}
                 activePage={activePage}
               />

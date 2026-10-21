@@ -1585,6 +1585,10 @@ class PortalSettingsView(APIView):
         portal_home_settings = portal_settings.get('portal_home_settings', {})
         portal_name = portal_settings.get('portal_name', '')
         portal_logo = portal_settings.get('portal_logo', '')
+        portal_theme_color = portal_settings.get('portal_theme_color')
+        if not portal_theme_color and isinstance(portal_home_settings, dict):
+            portal_theme_color = portal_home_settings.get('portal_theme_color')
+        portal_theme_color = portal_theme_color or '#ff8000'
         if not isinstance(portal_home_settings, dict):
             portal_home_settings = {}
 
@@ -1602,6 +1606,7 @@ class PortalSettingsView(APIView):
         return Response({
             'portal_name': portal_name,
             'portal_logo': portal_logo,
+            'portal_theme_color': portal_theme_color,
             'allow_anonymous': allow_anonymous,
             'enable_password_protection': enable_password_protection,
             'chat_allowed_sources': chat_allowed_sources,
@@ -1638,6 +1643,7 @@ class PortalSettingsView(APIView):
         password = request.data.get('password', '')
         portal_name = request.data.get('portal_name')
         portal_logo = request.data.get('portal_logo')
+        portal_theme_color = request.data.get('portal_theme_color')
         portal_home_settings = request.data.get('portal_home_settings')
         chat_allowed_sources = request.data.get('chat_allowed_sources')
         raw_enable_send_email = request.data.get('enable_send_email')
@@ -1710,6 +1716,11 @@ class PortalSettingsView(APIView):
                 error_msg = 'portal_home_settings invalid.'
                 return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
+        if portal_theme_color is not None and (
+            not isinstance(portal_theme_color, str) or not re.fullmatch(r'#[0-9a-fA-F]{6}', portal_theme_color)
+        ):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'portal_theme_color invalid.')
+
         try:
             project_settings = json.loads(project.settings) if project.settings else {}
         except Exception:
@@ -1734,6 +1745,17 @@ class PortalSettingsView(APIView):
             portal_settings['portal_name'] = portal_name
         if portal_logo is not None:
             portal_settings['portal_logo'] = portal_logo
+        if portal_theme_color is not None:
+            portal_settings['portal_theme_color'] = portal_theme_color
+        elif portal_home_settings is not None and not portal_settings.get('portal_theme_color'):
+            legacy_theme_color = old_home_settings.get('portal_theme_color') if isinstance(old_home_settings, dict) else None
+            if legacy_theme_color:
+                portal_settings['portal_theme_color'] = legacy_theme_color
+        stored_home_settings = portal_settings.get('portal_home_settings', {})
+        if isinstance(stored_home_settings, dict):
+            stored_home_settings.pop('portal_theme_color', None)
+        if portal_home_settings is not None:
+            portal_home_settings.pop('portal_theme_color', None)
         if portal_home_settings is not None:
             portal_settings['portal_home_settings'] = portal_home_settings
 

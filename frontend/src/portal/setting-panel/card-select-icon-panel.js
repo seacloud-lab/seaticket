@@ -7,9 +7,9 @@ import './card-select-icon-panel.css';
 
 const CardSelectIconPanel = ({ currentIcon, onPrevious, onSubmit }) => {
   return (
-    <aside className="portal-card-icon-selection">
-      <div className="portal-setting-header portal-card-icon-selection-header">
-        <div className="portal-card-icon-selection-header-left">
+    <aside className="portal-card-icon-selection d-flex flex-column">
+      <div className="portal-setting-header portal-card-icon-selection-header d-flex align-items-center justify-content-between pb-2">
+        <div className="portal-card-icon-selection-header-left d-flex align-items-center">
           <IconButton
             icon="arrow-left"
             onClick={onPrevious}

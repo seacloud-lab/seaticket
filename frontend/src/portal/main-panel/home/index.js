@@ -4,6 +4,7 @@ import slugid from 'slugid';
 import { CenteredLoading, Icon, IconButton } from '@/components';
 import { DEFAULT_PROJECT_ICON, gettext, PROJECT_ICON_ALL_LIST } from '@/constants';
 import { portalAPI } from '@/portal/api';
+import { getAutoBackgroundColor } from '@/portal/color-utils';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { KNOWLEDGE_BASE_TYPE } from '@/project/main-panel/knowledge-base/constants';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
@@ -16,7 +17,7 @@ import './index.css';
 const { isEditMode } = window.app.pageOptions;
 const CARD_ORDER_MIME_TYPE = 'application/portal-home-card-order';
 
-const PortalHome = ({ projectUuid, onHomeChatSend, homePageStyle, setHomePageStyle, activeCard, setActiveCard, setIsShowEditPanel, updateHomeSetting }) => {
+const PortalHome = ({ projectUuid, onHomeChatSend, homePageStyle, setHomePageStyle, activeCard, setActiveCard, setIsShowEditPanel, updateHomeSetting, portalThemeColor }) => {
   const [draggingCardId, setDraggingCardId] = useState('');
   const [dragOverCardId, setDragOverCardId] = useState('');
   const [selfDropIndicator, setSelfDropIndicator] = useState(null);
@@ -30,15 +31,17 @@ const PortalHome = ({ projectUuid, onHomeChatSend, homePageStyle, setHomePageSty
 
   const heroSection = homePageStyle['portal_home_hero_section'];
   const cardsSection = homePageStyle['portal_home_cards_section'];
-  const { title_text, description_text, title_size, background_color, theme_type, theme_background_image_URL } = heroSection;
+  const { title_text, description_text, title_size, background_color, theme_type, theme_background_image_URL, match_theme_color } = heroSection;
   const { card_layout, cards } = cardsSection;
   const validCards = Array.isArray(cards) ? cards.filter(Boolean) : [];
   const draggingCardIndex = validCards.findIndex(card => card.id === draggingCardId);
   const cardColumnCount = isMobile ? 1 : (CARD_LAYOUT_OPTIONS.includes(Number(card_layout)) ? Number(card_layout) : 3);
 
-  const heroStyle = theme_type === 'image' && theme_background_image_URL
-    ? { backgroundImage: `url(${theme_background_image_URL})` }
-    : { backgroundColor: background_color };
+  const heroStyle = match_theme_color
+    ? { backgroundColor: getAutoBackgroundColor(portalThemeColor) }
+    : theme_type === 'image' && theme_background_image_URL
+      ? { backgroundImage: `url(${theme_background_image_URL})` }
+      : { backgroundColor: background_color };
 
   useEffect(() => {
     portalAPI.listFeaturedArticles(projectUuid).then((res) => {
@@ -244,7 +247,7 @@ const PortalHome = ({ projectUuid, onHomeChatSend, homePageStyle, setHomePageSty
                     className={classnames('project-icon project-icon-style', {
                       [PROJECT_ICON_ALL_LIST.includes(card.icon) ? card.icon : DEFAULT_PROJECT_ICON]: true,
                     })}
-                    style={{ color: '#FF8000' }}
+                    style={{ color: 'var(--bs-sf-orange)' }}
                   />
                 </div>
                 <div className="portal-home-card-body">

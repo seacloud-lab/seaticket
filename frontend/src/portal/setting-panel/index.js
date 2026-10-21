@@ -18,8 +18,8 @@ const SETTING_TABS = [
   { value: SETTING_TAB.CONTENT, label: gettext('Content') },
 ];
 
-const SettingPanel = ({ homePageStyle, activeCard, setActiveCard, setHomePageStyle, updateHomeSetting, portalName, portalLogo,
-  activePage, setPortalName, setPortalLogo, onClose, }) => {
+const SettingPanel = ({ homePageStyle, activeCard, setActiveCard, setHomePageStyle, updateHomeSetting, portalName, portalLogo, portalThemeColor,
+  activePage, setPortalName, setPortalLogo, setPortalThemeColor, onClose, }) => {
   const [activeTab, setActiveTab] = useState(SETTING_TABS[0].value);
 
   useEffect(() => {
@@ -27,8 +27,8 @@ const SettingPanel = ({ homePageStyle, activeCard, setActiveCard, setHomePageSty
   }, [activeCard]);
 
   return (
-    <div className="seaqa-portal-settings">
-      <div className="seaqa-portal-settings-header">
+    <div className="seaqa-portal-settings d-flex flex-column position-relative">
+      <div className="seaqa-portal-settings-header d-flex align-items-center justify-content-between">
         <div className="seaqa-portal-settings-title">{gettext('Customize panel')}</div>
         <IconButton
           icon="close"
@@ -37,7 +37,7 @@ const SettingPanel = ({ homePageStyle, activeCard, setActiveCard, setHomePageSty
           aria-label={gettext('Close')}
         />
       </div>
-      <div className="seaqa-portal-settings-tabs" role="tablist">
+      <div className="seaqa-portal-settings-tabs d-flex align-items-stretch" role="tablist">
         {SETTING_TABS.map(tab => (
           <button
             className={`seaqa-portal-settings-tab${activeTab === tab.value ? ' active' : ''}`}
@@ -59,8 +59,10 @@ const SettingPanel = ({ homePageStyle, activeCard, setActiveCard, setHomePageSty
             updateHomeSetting={updateHomeSetting}
             portalName={portalName}
             portalLogo={portalLogo}
+            portalThemeColor={portalThemeColor}
             setPortalName={setPortalName}
             setPortalLogo={setPortalLogo}
+            setPortalThemeColor={setPortalThemeColor}
           />
         )}
         {activePage === PORTAL_PAGE.HOME && activeTab === SETTING_TAB.CONTENT && activeCard && (

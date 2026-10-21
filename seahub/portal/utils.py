@@ -195,6 +195,10 @@ def get_portal_settings(project):
     portal_settings = project_settings.get('portal', {})
     streaming_response = bool(project_settings.get('streaming_response', True))
     enable_send_email = portal_settings.get('enable_send_email', True)
+    portal_home_settings = portal_settings.get('portal_home_settings', {})
+    portal_theme_color = portal_settings.get('portal_theme_color')
+    if not portal_theme_color and isinstance(portal_home_settings, dict):
+        portal_theme_color = portal_home_settings.get('portal_theme_color')
     return {
         'enable_portal': bool(portal_settings.get('enable_portal', False)),
         'allow_anonymous': bool(portal_settings.get('allow_anonymous', False)),
@@ -203,7 +207,8 @@ def get_portal_settings(project):
         'streaming_response': streaming_response,
         'portal_name': portal_settings.get('portal_name', ''),
         'portal_logo': portal_settings.get('portal_logo', ''),
-        'portal_home_settings': portal_settings.get('portal_home_settings', {}),
+        'portal_theme_color': portal_theme_color or '#ff8000',
+        'portal_home_settings': portal_home_settings,
         'enable_send_email': bool(enable_send_email),
         'welcome_email_subject': portal_settings.get('welcome_email_subject') or PORTAL_WELCOME_EMAIL_SUBJECT,
         'welcome_email_content': portal_settings.get('welcome_email_content') or PORTAL_WELCOME_EMAIL_CONTENT,

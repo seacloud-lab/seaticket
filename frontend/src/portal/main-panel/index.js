@@ -10,7 +10,7 @@ import SubmitIssue from './submit-issue';
 
 import './index.css';
 
-const MainPanel = ({ activePage, onPageChange, onHomeChatSend, isAnonymous, isExternalUser, ...props }) => {
+const MainPanel = ({ activePage, onPageChange, onHomeChatSend, isAnonymous, isExternalUser, portalThemeColor, ...props }) => {
 
   const { isLoading: isMetadataLoading } = useMetadata();
   const { isLoading: isTagsDataLoading } = useTags();
@@ -45,6 +45,7 @@ const MainPanel = ({ activePage, onPageChange, onHomeChatSend, isAnonymous, isEx
           <PortalHome
             { ...props }
             onHomeChatSend={onHomeChatSend}
+            portalThemeColor={portalThemeColor}
           />
         );
       default:
