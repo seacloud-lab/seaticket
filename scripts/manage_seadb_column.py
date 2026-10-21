@@ -114,11 +114,10 @@ class ColumnManager:
     def is_this_table(self, seadb_table_name, table_name):
         return seadb_table_name == table_name
     
-    def add_seadb_column(self, table_name, column_name, column_type, column_data_name, need_add_index=False,
-                         base_name=TEMPLATE_NAME):
+    def add_seadb_column(self, table_name, column_name, column_type, column_data_name, need_add_index=False):
         column_data = self.get_column_data(column_data_name, column_type)
 
-        template_base_info = self.seadb_api.get_base_metadata(base_name)
+        template_base_info = self.seadb_api.get_base_metadata(TEMPLATE_NAME)
 
         tables = template_base_info.get('tables')
         try:
@@ -132,19 +131,19 @@ class ColumnManager:
                     }
                     if column_data:
                         mapped_column['column_data'] = column_data
-                    self.seadb_api.add_column(base_name, table_id, mapped_column)
+                    self.seadb_api.add_column(TEMPLATE_NAME, table_id, mapped_column)
                     if need_add_index:
                         self.seadb_api.create_column_index(
-                            base_name,
+                            TEMPLATE_NAME,
                             table_id,
                             [
                                 column_name,
                             ]
                         )
-
-                    logger.info('Successfully add column %s for project %s table %s', column_name, base_name, seadb_table_name)
+                    
+                    logger.info('Successfully add column %s for project %s table %s', column_name, TEMPLATE_NAME, seadb_table_name)
         except Exception as e:
-            logger.error("project_uuid:%s fail to add column %s for table %s, error: %s", base_name, column_name, table_name, str(e))
+            logger.error("template base:%s fail to add column %s for table %s, error: %s", TEMPLATE_NAME, column_name, table_name, str(e))
 
     def delete_seadb_column(self, table_name, column_name):
         template_info = self.seadb_api.get_base_metadata(TEMPLATE_NAME)
