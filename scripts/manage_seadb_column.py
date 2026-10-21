@@ -166,7 +166,7 @@ class ColumnManager:
             logger.error("project_uuid:%s fail to add column %s for table %s, error: %s", TEMPLATE_NAME, column_name, table_name, str(e))
 
     def update_seadb_column_format(self, table_name, column_name, column_format):
-        template_info = self.seadb_api.get_template_info(TEMPLATE_NAME)
+        template_info = self.seadb_api.get_base_metadata(TEMPLATE_NAME)
         tables = template_info.get('tables')
 
         try:
