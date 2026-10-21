@@ -17,7 +17,7 @@ const INIT_WIDTH = 400;
 
 const Main = forwardRef(({
   projectUuid, projectName, workspaceID, resizable = true,
-  session, emptyTip, children, placeholder,
+  session, emptyTip, children, placeholder, displayOperations,
   onToggle, getMessages, sendMessage: sendMessageAPI, uploadChatImage,
 }, ref) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -152,6 +152,7 @@ const Main = forwardRef(({
                   projectUuid={projectUuid}
                   projectName={projectName}
                   workspaceID={workspaceID}
+                  displayOperations={displayOperations}
                 />
               );
             })}

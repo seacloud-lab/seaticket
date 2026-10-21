@@ -108,13 +108,12 @@ const RegenerateChatPanel = ({
     }).then((res) => {
       const suggestions = res.data?.suggestions || [];
       setMessages(prev => [...prev, { role: 'assistant', suggestions }]);
+      const ai_reply = suggestions.length === 0 ? gettext('No suggestions were generated.') : {
+        [CHAT_MESSAGE_TYPE.SUGGESTIONS]: suggestions,
+      };
       return {
         data: {
-          results: {
-            ai_reply: {
-              [CHAT_MESSAGE_TYPE.SUGGESTIONS]: suggestions,
-            }
-          }
+          results: { ai_reply }
         }
       };
     }).catch(error => {
@@ -134,6 +133,7 @@ const RegenerateChatPanel = ({
         workspaceID={workspaceID}
         resizable={false}
         emptyTip={gettext('Describe how the suggestions should change.')}
+        displayOperations={false}
         onToggle={requestClose}
         getMessages={getMessages}
         sendMessage={sendMessage}
