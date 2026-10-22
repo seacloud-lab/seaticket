@@ -134,8 +134,8 @@ def test_s3_backend_receives_configuration_through_constructor():
     }
 
 
-def test_seahub_backend_factory_loads_local_configuration(monkeypatch, tmp_path):
-    monkeypatch.setattr('seahub.utils.attachment_backend.ATTACHMENT_STORAGE_BACKEND', 'local')
+def test_seahub_backend_factory_loads_disk_configuration(monkeypatch, tmp_path):
+    monkeypatch.setattr('seahub.utils.attachment_backend.ATTACHMENT_STORAGE_BACKEND', 'disk')
     monkeypatch.setattr('seahub.utils.attachment_backend.ATTACHMENT_STORAGE_LOCAL_ROOT', str(tmp_path))
     monkeypatch.setattr('seahub.utils.attachment_backend._backend', None)
 
@@ -155,8 +155,8 @@ def test_seahub_s3_backend_receives_configuration_through_constructor():
     }
 
 
-def test_backend_factory_loads_local_configuration(monkeypatch, tmp_path):
-    monkeypatch.setattr('seaqa_io.utils.attachment_backend.ATTACHMENT_STORAGE_BACKEND', 'local')
+def test_backend_factory_loads_disk_configuration(monkeypatch, tmp_path):
+    monkeypatch.setattr('seaqa_io.utils.attachment_backend.ATTACHMENT_STORAGE_BACKEND', 'disk')
     monkeypatch.setattr('seaqa_io.utils.attachment_backend.ATTACHMENT_STORAGE_LOCAL_ROOT', str(tmp_path))
     monkeypatch.setattr('seaqa_io.utils.attachment_backend._backend', None)
 
@@ -164,3 +164,12 @@ def test_backend_factory_loads_local_configuration(monkeypatch, tmp_path):
 
     assert isinstance(backend, LocalBackend)
     assert backend.root == tmp_path.resolve()
+
+
+@pytest.mark.parametrize('factory', [get_backend, get_seahub_backend])
+def test_backend_factory_rejects_local_configuration(monkeypatch, factory):
+    monkeypatch.setattr(factory.__module__ + '.ATTACHMENT_STORAGE_BACKEND', 'local')
+    monkeypatch.setattr(factory.__module__ + '._backend', None)
+
+    with pytest.raises(ValueError, match='Unsupported ATTACHMENT_STORAGE_BACKEND: local'):
+        factory()
