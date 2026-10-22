@@ -85,11 +85,11 @@ SEAQA_IO_TASK_TIMEOUT = configs.get('SEAQA_IO_TASK_TIMEOUT', 3600)
 
 TEMP_EXPORT_VIEW_DIR = configs.get('TEMP_EXPORT_VIEW_DIR', '/tmp/seaqa-io/export-view-to-excel/')
 
-SEAQA_MYSQL_DB_HOST = configs.get('SEAQA_MYSQL_DB_HOST', 'localhost')
-SEAQA_MYSQL_DB_PORT = configs.get('SEAQA_MYSQL_DB_PORT', 3306)
-SEAQA_MYSQL_DB_USER = configs.get('SEAQA_MYSQL_DB_USER', 'seaqa')
-SEAQA_MYSQL_DB_PASSWORD = configs.get('SEAQA_MYSQL_DB_PASSWORD', '')
-SEAQA_MYSQL_SEAQA_DB_NAME = configs.get('SEAQA_MYSQL_SEAQA_DB_NAME', 'sea_qa')
+MYSQL_DB_HOST = configs.get('MYSQL_DB_HOST', 'localhost')
+MYSQL_DB_PORT = configs.get('MYSQL_DB_PORT', 3306)
+MYSQL_DB_USER = configs.get('MYSQL_DB_USER', 'seaticket')
+MYSQL_DB_PASSWORD = configs.get('MYSQL_DB_PASSWORD', '')
+MYSQL_DB_NAME = configs.get('MYSQL_DB_NAME', 'seaticket_db')
 
 REDIS_HOST = configs.get('REDIS_HOST', 'redis')
 REDIS_PORT = configs.get('REDIS_PORT', 6379)
