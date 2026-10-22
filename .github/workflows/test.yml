@@ -7,11 +7,11 @@ env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
   REDIS_HOST: localhost
-  SEAQA_MYSQL_DB_HOST: 127.0.0.1
-  SEAQA_MYSQL_DB_PORT: 3306
-  SEAQA_MYSQL_DB_USER: root
-  SEAQA_MYSQL_DB_PASSWORD: root
-  SEAQA_MYSQL_SEAQA_DB_NAME: sea_qa
+  MYSQL_DB_HOST: 127.0.0.1
+  MYSQL_DB_PORT: 3306
+  MYSQL_DB_USER: root
+  MYSQL_DB_PASSWORD: root
+  MYSQL_DB_NAME: sea_qa
 
 permissions:
   contents: read

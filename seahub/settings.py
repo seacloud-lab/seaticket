@@ -27,8 +27,8 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',  # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'sea_qa',
-        'USER': 'root',
+        'NAME': 'seaticket_db',
+        'USER': 'seaticket',
         'PASSWORD': 'root',
         'HOST': '127.0.0.1',
         'PORT': '3306',
@@ -739,11 +739,11 @@ JWT_PRIVATE_KEY = configs.get('JWT_PRIVATE_KEY')
 if 'default' in DATABASES and 'mysql' in DATABASES['default'].get('ENGINE', ''):
     ## For dtable_db
     _rewrite_db_env_key_map = {
-        'HOST': 'SEAQA_MYSQL_DB_HOST',
-        'PORT': 'SEAQA_MYSQL_DB_PORT',
-        'USER': 'SEAQA_MYSQL_DB_USER',
-        'PASSWORD': 'SEAQA_MYSQL_DB_PASSWORD',
-        'NAME': 'SEAQA_MYSQL_SEAQA_DB_NAME'
+        'HOST': 'MYSQL_DB_HOST',
+        'PORT': 'MYSQL_DB_PORT',
+        'USER': 'MYSQL_DB_USER',
+        'PASSWORD': 'MYSQL_DB_PASSWORD',
+        'NAME': 'MYSQL_DB_NAME'
     }
 
     for db_key, env_key in _rewrite_db_env_key_map.items():
