@@ -21,7 +21,7 @@ const Page = ({ toggleBar, type }) => {
     uploadFile: (...params) => ticketsAPI.uploadFile(projectUuid, ...params)
   } }), []);
   const props = useMemo(() => ({
-    projectUuid, projectName, workspaceID, permission, isAdmin: isProjectAdmin, toggleBar
+    projectUuid, projectName, workspaceID, permission, isAdmin: isProjectAdmin, toggleBar, showCustomer: true
   }), [toggleBar]);
 
   const { isLoading, pageSlugId, togglePageSlugId, onRefresh } = usePortalIssuesPage();

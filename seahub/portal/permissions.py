@@ -90,14 +90,14 @@ def _is_portal_password_verified(request, project_uuid, portal_settings):
     return bool(verified_token and encoded_password and verified_token == encoded_password)
 
 
-def _is_same_org_user(request, project):
+def is_same_org_user(request, project):
     user = getattr(request, 'user', None)
     return bool(user and getattr(user, 'is_authenticated', False) and check_same_org_permission(user, project.workspace))
 
 
 def can_access_portal_issue(request, project, issue):
     project_uuid = str(project.uuid)
-    if _is_same_org_user(request, project) or _is_portal_preview_user(request, project_uuid):
+    if is_same_org_user(request, project) or _is_portal_preview_user(request, project_uuid):
         return True
 
     external_user = get_request_external_user(request, project_uuid)
@@ -136,7 +136,7 @@ class PortalKnowledgeBasePermission(BasePermission):
         if not enable_portal:
             return False
 
-        if _is_same_org_user(request, project):
+        if is_same_org_user(request, project):
             return True
 
         if settings.ENABLE_PORTAL_DOMAIN and not getattr(settings, 'IS_PORTAL_MODE', False):
@@ -169,7 +169,7 @@ class PortalAnonymousAccessPermission(BasePermission):
         if not enable_portal:
             return False
 
-        if _is_same_org_user(request, project):
+        if is_same_org_user(request, project):
             return True
 
         if settings.ENABLE_PORTAL_DOMAIN and not getattr(settings, 'IS_PORTAL_MODE', False):
@@ -202,7 +202,7 @@ class PortalIssuePermission(BasePermission):
         if not enable_portal:
             return False
 
-        if _is_same_org_user(request, project):
+        if is_same_org_user(request, project):
             return True
 
         if settings.ENABLE_PORTAL_DOMAIN and not getattr(settings, 'IS_PORTAL_MODE', False):
@@ -228,7 +228,7 @@ class PortalChatPermission(BasePermission):
         if not enable_portal:
             return False
 
-        if _is_same_org_user(request, project):
+        if is_same_org_user(request, project):
             return True
 
         if settings.ENABLE_PORTAL_DOMAIN and not getattr(settings, 'IS_PORTAL_MODE', False):

@@ -1,5 +1,6 @@
 import json
 from io import BytesIO
+from types import SimpleNamespace
 from unittest.mock import Mock, MagicMock, patch
 
 import pytest
@@ -1667,6 +1668,49 @@ class TestPortalIssueViewPut:
         portal_update = seadb_api.update_rows.call_args_list[-1]
         portal_rows = portal_update[0][2]
         assert any(r['row'].get('linked_ticket') is None for r in portal_rows)
+
+
+@pytest.mark.django_db
+class TestPortalIssueViewCustomer:
+
+    def _get(self, factory, project):
+        return factory.get(f"/api/v1/portal/{project.uuid}/issues/1/")
+
+    def test_internal_user_gets_customer_id(self, factory, real_project, project_creator):
+        request = self._get(factory, real_project)
+        request.user = project_creator
+        issue = {'_pk': 1, 'customer_id': 7}
+        columns = [{'name': 'customer_id', 'key': 'customer_id', 'type': 'int64'}]
+
+        with patch('seahub.portal.permissions.PortalIssuePermission.has_permission', return_value=True), \
+                patch('seahub.portal.apis.get_portal_issue', return_value=(issue, [])), \
+                patch('seahub.portal.apis.can_access_portal_issue', return_value=True), \
+                patch('seahub.portal.apis.list_portal_issue_comments_records', return_value=(issue, columns, '')), \
+                patch('seahub.portal.apis.convert_select_field_names_to_option_ids'), \
+                patch('seahub.portal.apis.is_same_org_user', return_value=True):
+            resp = PortalIssueView.as_view()(request, project_uuid=str(real_project.uuid), issue_id=1)
+
+        assert resp.status_code == 200
+        assert resp.data['issue']['customer_id'] == 7
+        assert any(column.get('name') == 'customer_id' for column in resp.data['columns'])
+
+    def test_external_user_does_not_get_customer_id(self, factory, real_project):
+        request = self._get(factory, real_project)
+        request.user = SimpleNamespace(is_authenticated=False, is_active=False, username='external@example.com')
+        issue = {'_pk': 1, 'customer_id': 7}
+        columns = [{'name': 'customer_id', 'key': 'customer_id', 'type': 'int64'}]
+
+        with patch('seahub.portal.permissions.PortalIssuePermission.has_permission', return_value=True), \
+                patch('seahub.portal.apis.get_portal_issue', return_value=(issue, [])), \
+                patch('seahub.portal.apis.can_access_portal_issue', return_value=True), \
+                patch('seahub.portal.apis.list_portal_issue_comments_records', return_value=(issue, columns, '')), \
+                patch('seahub.portal.apis.convert_select_field_names_to_option_ids'), \
+                patch('seahub.portal.apis.is_same_org_user', return_value=False):
+            resp = PortalIssueView.as_view()(request, project_uuid=str(real_project.uuid), issue_id=1)
+
+        assert resp.status_code == 200
+        assert 'customer_id' not in resp.data['issue']
+        assert all(column.get('name') != 'customer_id' for column in resp.data['columns'])
 
 
 @pytest.mark.django_db

@@ -8,6 +8,20 @@ import { OptionsData, Option } from '../models';
 
 const PortalIssuesMetadataContext = React.createContext(null);
 
+const appendOptions = (data, options) => {
+  if (Array.isArray(options) && options.length > 0) {
+    options.forEach(option => {
+      const newOption = option instanceof Option ? option : new Option(option);
+      data.rows.push(newOption);
+      data.row_ids.push(newOption._id);
+      data.id_row_map[newOption._id] = newOption;
+    });
+  }
+  return data;
+};
+
+const buildOptionsData = (options) => appendOptions(new OptionsData({}), options);
+
 export const PortalIssuesMetadataProvider = ({
   projectUuid,
   enablePortal,
@@ -18,6 +32,7 @@ export const PortalIssuesMetadataProvider = ({
   const [substatesData, setSubstatesData] = useState(new OptionsData());
   const [typesData, setTypesData] = useState(new OptionsData());
   const [statesData, setStatesData] = useState(new OptionsData());
+  const [customersData, setCustomersData] = useState(new OptionsData());
 
   // type
   const applyCreateTypes = useCallback((newTypes, isReload = false) => {
@@ -243,10 +258,11 @@ export const PortalIssuesMetadataProvider = ({
       return;
     }
     portalAPI.getPortalIssueMetadata(projectUuid).then(res => {
-      const { states, substates, types } = res?.data || {};
+      const { states, substates, types, customers } = res?.data || {};
       initSubStates(substates?.options, substates?.cascade_settings);
       applyCreateTypes(types?.options);
       applyCreateStates(states?.options);
+      setCustomersData(buildOptionsData(customers?.options));
       setLoading(false);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
@@ -269,6 +285,7 @@ export const PortalIssuesMetadataProvider = ({
 
       statesData,
       substatesData,
+      customersData,
       createSubstate,
       modifySubstate,
       deleteSubstate,
