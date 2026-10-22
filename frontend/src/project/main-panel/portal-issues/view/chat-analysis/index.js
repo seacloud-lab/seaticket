@@ -7,7 +7,12 @@ import SeaMetadata, { CellType, VIEW_TOOL, EVENT_BUS_TYPE } from '@/sea-metadata
 import { VIEW_TYPE, STATISTIC_TYPE } from '@/sea-metadata/constants';
 import context from '@/sea-metadata/context';
 import { Utils } from '@/utils/utils';
-import { PORTAL_CHAT_TABLE_NAME } from '../../constants';
+import {
+  PORTAL_CHAT_TABLE_NAME,
+  PORTAL_CHAT_STATISTICS_TABLE_NAME,
+  PORTAL_CHAT_USER_USAGE_TABLE_NAME,
+  PORTAL_CHAT_KNOWLEDGE_GAPS_TABLE_NAME,
+} from '../../constants';
 import SidePanelKnowledgeGap from './side-panel-knowledge-gap';
 
 const KNOWLEDGE_GAP_STATUS_OPTIONS = [
@@ -36,6 +41,13 @@ const getSortsKey = (viewID) => {
   if (viewID === 'user_usage') return 'user_usage_sorts';
   if (viewID === 'knowledge_gaps') return 'knowledge_gaps_sorts';
   return 'sorts';
+};
+
+const getTableName = (viewID) => {
+  if (viewID === 'statistics') return PORTAL_CHAT_STATISTICS_TABLE_NAME;
+  if (viewID === 'user_usage') return PORTAL_CHAT_USER_USAGE_TABLE_NAME;
+  if (viewID === 'knowledge_gaps') return PORTAL_CHAT_KNOWLEDGE_GAPS_TABLE_NAME;
+  return PORTAL_CHAT_TABLE_NAME;
 };
 
 const AnalysisSidePanel = ({ row, ...props }) => {
@@ -214,7 +226,7 @@ const ChatAnalysis = ({
   }, [columns, userUsageColumns, knowledgeGapColumns]);
 
   const api = useMemo(() => ({
-    getMetadata: (...params) => getMetadata(PORTAL_CHAT_TABLE_NAME, params[0], () => {
+    getMetadata: (...params) => getMetadata(getTableName(params[0].view_id), params[0], () => {
       const { view_id = 'open', start = 0, limit = 1000 } = params[0];
       if (view_id === 'all_chat') {
         const sorts = context.localStorage.getItem('sorts') || [];
@@ -340,7 +352,7 @@ const ChatAnalysis = ({
         return Promise.reject(new Error('gap_status invalid.'));
       }
       return chatAPI.updateAdminKnowledgeGapStatus(projectUuid, rowId, gapStatus).then(() => {
-        modifyLocalRow(PORTAL_CHAT_TABLE_NAME, rowId, rowUpdate);
+        modifyLocalRow(PORTAL_CHAT_KNOWLEDGE_GAPS_TABLE_NAME, rowId, rowUpdate);
         return { data: { row: rowUpdate } };
       });
     },
