@@ -1,0 +1,1 @@
+"use strict";(globalThis.webpackChunkseaqa_web=globalThis.webpackChunkseaqa_web||[]).push([[424],{97114(e,a,r){r(45744);var n=r(95694),s=r(1489),b=r(71628);(0,n.H)(document.getElementById("down-icon-wrapper")).render((0,b.jsx)(b.Fragment,{children:(0,b.jsx)(s.A,{symbol:"arrow-down-b"})}))}},e=>{e.O(0,[223],(()=>{return a=97114,e(e.s=a);var a}));e.O()}]);
