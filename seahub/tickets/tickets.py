@@ -39,6 +39,7 @@ from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     send_ticket_update_msg, compare_ticket_changes, record_ticket_activities, get_ticket_activities, \
     build_linked_record_titles_map, build_linked_records_info_for_keys, \
     check_ticket_link_changes, sync_links_in_connection, TicketLinkValidationError, \
+    TicketCustomerNotFound, \
     get_column_from_columns_by_name, get_option_id_by_name, send_data_update_msg, \
     build_tag_id_to_name_map, validate_linked_connection_records, \
     build_linked_github_issue_state_map, \
@@ -283,10 +284,16 @@ class TicketsAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        try:
-            customer_id = validate_ticket_customer_id(project_uuid, request.POST.get('customer_id'))
-        except ValueError as e:
-            return api_error(status.HTTP_400_BAD_REQUEST, str(e))
+        customer_id = request.POST.get('customer_id')
+        if customer_id in (None, ''):
+            customer_id = None
+        else:
+            try:
+                customer_id = validate_ticket_customer_id(project_uuid, customer_id)
+            except TicketCustomerNotFound as e:
+                return api_error(status.HTTP_404_NOT_FOUND, str(e))
+            except ValueError as e:
+                return api_error(status.HTTP_400_BAD_REQUEST, str(e))
 
         type_name = request.POST.get('type')
         ticket_state = request.POST.get('state') or 'open'
@@ -594,11 +601,17 @@ class TicketsAPIView(APIView):
                         return api_error(status.HTTP_400_BAD_REQUEST, 'due_date invalid.')
                 updated_row[SchemaTables.TICKETS.column.due_date.name] = due_date
             if 'customer_id' in row_data:
-                try:
-                    updated_row[SchemaTables.TICKETS.column.customer_id.name] = validate_ticket_customer_id(
-                        project_uuid, row_data.get('customer_id'))
-                except ValueError as e:
-                    return api_error(status.HTTP_400_BAD_REQUEST, str(e))
+                customer_id = row_data.get('customer_id')
+                if customer_id in (None, ''):
+                    updated_row[SchemaTables.TICKETS.column.customer_id.name] = None
+                else:
+                    try:
+                        updated_row[SchemaTables.TICKETS.column.customer_id.name] = validate_ticket_customer_id(
+                            project_uuid, customer_id)
+                    except TicketCustomerNotFound as e:
+                        return api_error(status.HTTP_404_NOT_FOUND, str(e))
+                    except ValueError as e:
+                        return api_error(status.HTTP_400_BAD_REQUEST, str(e))
             for key, value in row_data.items():
                 if key in ('substate', 'tags', 'type', '_pk', 'modified_time', 'content', 'state', 'linked_connection_records', 'due_date', 'customer_id'):
                     continue
@@ -1005,10 +1018,16 @@ class TicketAPIView(APIView):
 
         is_update_customer_id = 'customer_id' in request.data
         if is_update_customer_id:
-            try:
-                customer_id = validate_ticket_customer_id(project_uuid, request.data.get('customer_id'))
-            except ValueError as e:
-                return api_error(status.HTTP_400_BAD_REQUEST, str(e))
+            customer_id = request.data.get('customer_id')
+            if customer_id in (None, ''):
+                customer_id = None
+            else:
+                try:
+                    customer_id = validate_ticket_customer_id(project_uuid, customer_id)
+                except TicketCustomerNotFound as e:
+                    return api_error(status.HTTP_404_NOT_FOUND, str(e))
+                except ValueError as e:
+                    return api_error(status.HTTP_400_BAD_REQUEST, str(e))
 
         is_update_tags = 'tags' in request.data
         tags = request.data.get('tags')
@@ -2069,7 +2088,7 @@ class TicketMetadataAPIView(APIView):
             select_option_metadata['customers'] = {
                 'options': [
                     {'id': customer.id, 'name': customer.name, 'status': customer.status}
-                    for customer in PortalCustomer.objects.filter(project_uuid=project_uuid).order_by('name', 'id')
+                    for customer in PortalCustomer.objects.filter(project_uuid=project_uuid)
                 ]
             }
         except Exception as e:

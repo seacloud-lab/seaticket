@@ -19,7 +19,7 @@ from seahub.portal.models import PortalCustomer
 from seahub.tickets.ticket_utils import (
     compare_ticket_changes,
     filter_tickets_by_select,
-    to_optional_int,
+    TicketCustomerNotFound,
     validate_ticket_customer_id,
 )
 from seahub.utils.date_utils import normalize_date
@@ -866,32 +866,11 @@ def get_customer_base_metadata():
     }
 
 
-class TestToOptionalInt:
-    @pytest.mark.parametrize('value', [None, ''])
-    def test_empty_forms_become_none(self, value):
-        assert to_optional_int(value) is None
-
-    @pytest.mark.parametrize('value,expected', [('7', 7), (7, 7)])
-    def test_numeric_forms_become_int(self, value, expected):
-        assert to_optional_int(value) == expected
-
-    @pytest.mark.parametrize('value', ['Acme', 'null'])
-    def test_non_numeric_is_returned_unchanged_so_callers_can_reject_it(self, value):
-        # 'null' is a FormData artifact this client no longer emits; it must not be
-        # silently treated as "no customer"
-        assert to_optional_int(value) == value
-
-    @pytest.mark.parametrize('value', [True, False, 1.5, 2.0])
-    def test_bool_and_float_are_not_coerced(self, value):
-        # int(True) == 1 and int(1.5) == 1 would silently resolve to a real customer
-        assert to_optional_int(value) == value
-        assert isinstance(to_optional_int(value), (bool, float))
-
-
 class TestValidateTicketCustomerId:
     @pytest.mark.parametrize('value', [None, ''])
-    def test_empty_value_means_no_customer(self, value, real_project):
-        assert validate_ticket_customer_id(str(real_project.uuid), value) is None
+    def test_rejects_an_empty_value(self, value, real_project):
+        with pytest.raises(ValueError):
+            validate_ticket_customer_id(str(real_project.uuid), value)
 
     def test_accepts_an_active_customer_of_the_project(self, real_project):
         customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
@@ -900,12 +879,12 @@ class TestValidateTicketCustomerId:
     def test_rejects_a_disabled_customer(self, real_project):
         customer = PortalCustomer.objects.create(
             project_uuid=str(real_project.uuid), name='Acme', status=PortalCustomer.STATUS_DISABLED)
-        with pytest.raises(ValueError):
+        with pytest.raises(TicketCustomerNotFound):
             validate_ticket_customer_id(str(real_project.uuid), customer.id)
 
     def test_rejects_a_customer_of_another_project(self, real_project):
         other = PortalCustomer.objects.create(project_uuid='00000000-0000-0000-0000-000000000001', name='Acme')
-        with pytest.raises(ValueError):
+        with pytest.raises(TicketCustomerNotFound):
             validate_ticket_customer_id(str(real_project.uuid), other.id)
 
     @pytest.mark.parametrize('value', ['Acme', '1.5', '{}', 'null'])
@@ -914,7 +893,7 @@ class TestValidateTicketCustomerId:
             validate_ticket_customer_id(str(real_project.uuid), value)
 
     def test_rejects_an_unknown_customer(self, real_project):
-        with pytest.raises(ValueError):
+        with pytest.raises(TicketCustomerNotFound):
             validate_ticket_customer_id(str(real_project.uuid), 12345)
 
     @pytest.mark.parametrize('value', [True, False, 1.5])
@@ -976,7 +955,7 @@ class TestTicketCustomerOnCreate:
         with patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api), \
                 patch('seahub.tickets.tickets.check_ticket_creation_interval', return_value=True):
             resp = TicketsAPIView.as_view()(request, project_uuid=project.uuid)
-        assert resp.status_code == 400
+        assert resp.status_code == 404
         seadb_api.insert_rows.assert_not_called()
 
     def test_post_rejects_a_non_numeric_customer(self, factory, project_creator, real_project):
@@ -1032,6 +1011,26 @@ class TestTicketCustomerOnBatchUpdate:
             resp = TicketsAPIView.as_view()(request, project_uuid=project.uuid)
         assert resp.status_code == 400
         seadb_api.update_rows.assert_not_called()
+
+    def test_put_batch_returns_404_for_an_unknown_customer(self, factory, project_creator, real_project):
+        project = real_project
+        seadb_api = self._seadb()
+        request = self._put(factory, project, project_creator, {'customer_id': '12345'})
+        with patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api):
+            resp = TicketsAPIView.as_view()(request, project_uuid=project.uuid)
+        assert resp.status_code == 404
+        seadb_api.update_rows.assert_not_called()
+
+    def test_put_batch_clears_the_customer(self, factory, project_creator, real_project):
+        # the validator rejects empties; the call site handles clearing
+        project = real_project
+        seadb_api = self._seadb()
+        request = self._put(factory, project, project_creator, {'customer_id': ''})
+        with patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api):
+            resp = TicketsAPIView.as_view()(request, project_uuid=project.uuid)
+        assert resp.status_code == 200
+        updated_row = seadb_api.update_rows.call_args[0][2][0]['row']
+        assert updated_row['customer_id'] is None
 
 
 class TestCustomerActivity:

@@ -25,6 +25,11 @@ class TicketLinkValidationError(Exception):
     pass
 
 
+class TicketCustomerNotFound(Exception):
+    """Customer not found."""
+    pass
+
+
 @dataclass
 class TicketLinkSyncPlan:
     """Ticket link sync plan"""
@@ -608,40 +613,13 @@ def check_ticket_comment_creation_interval(seadb_api, project_uuid, username, ti
 
     return True
 
-def to_optional_int(value):
-    """Normalize an optional integer field, which may arrive from a request body or
-    from SeaDB as a string. Empty values (`None` / `''`) become None; anything else
-    that is not a whole number is returned unchanged so callers can reject it.
-
-    `bool` and floats are deliberately not coerced: `bool` is a subclass of `int`
-    and `int(1.5)` truncates, so either would silently resolve to a real customer
-    id instead of failing validation.
-
-    The string 'null' is NOT treated as empty -- it is a multipart FormData
-    artifact (JSON.stringify(null)) that this client no longer emits, so it is left
-    for the caller to reject rather than silently clearing the field.
-    """
-    if value in (None, ''):
-        return None
-    if isinstance(value, bool) or isinstance(value, float):
-        return value
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return value
-
-
 def validate_ticket_customer_id(project_uuid, customer_id):
-    """Validate a ticket's customer_id against this project's active customers.
-
-    Returns the customer id as int, or None when the value is empty (the caller
-    treats None as "no customer"). Raises ValueError for an unusable value.
-    """
-    customer_id = to_optional_int(customer_id)
-    if customer_id is None:
-        return None
-    # `bool` passes isinstance(x, int), so it is excluded explicitly
-    if isinstance(customer_id, bool) or not isinstance(customer_id, int):
+    # int(True) == 1 and int(1.5) == 1 would silently match a real customer
+    if isinstance(customer_id, bool) or isinstance(customer_id, float):
+        raise ValueError('customer_id invalid.')
+    try:
+        customer_id = int(customer_id)
+    except (TypeError, ValueError):
         raise ValueError('customer_id invalid.')
     is_active_customer = PortalCustomer.objects.filter(
         id=customer_id,
@@ -649,7 +627,7 @@ def validate_ticket_customer_id(project_uuid, customer_id):
         status=PortalCustomer.STATUS_ACTIVE,
     ).exists()
     if not is_active_customer:
-        raise ValueError('customer_id invalid.')
+        raise TicketCustomerNotFound('Customer not found.')
     return customer_id
 
 def get_ticket(seadb_api, project_uuid, ticket_id):
@@ -1146,8 +1124,15 @@ def compare_ticket_changes(old_ticket, new_data):
 
     # customer changed
     if 'customer_id' in new_data:
-        old_customer_id = to_optional_int(old_ticket.get('customer_id'))
-        new_customer_id = to_optional_int(new_data['customer_id'])
+        old_customer_id = old_ticket.get('customer_id') or None
+        new_customer_id = new_data['customer_id']
+        if new_customer_id in (None, ''):
+            new_customer_id = None
+        else:
+            try:
+                new_customer_id = int(new_customer_id)
+            except (TypeError, ValueError):
+                pass
         if old_customer_id != new_customer_id:
             changes.append(('customer_changed', 'customer_id', old_customer_id, new_customer_id))
 
