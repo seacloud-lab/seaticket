@@ -5,6 +5,7 @@ class Option extends BaseOption {
     super(object);
     delete this.tickets_count;
     this.issues_count = object.issues_count || 0;
+    this.status = object.status || '';
   }
 }
 

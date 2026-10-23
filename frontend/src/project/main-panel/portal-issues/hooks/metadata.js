@@ -1,7 +1,8 @@
-import React, { useContext, useEffect, useState, useCallback } from 'react';
+import React, { useContext, useEffect, useState, useCallback, useRef } from 'react';
 import deepCopy from 'deep-copy';
 import { toaster } from '@/components';
 import { portalAPI } from '@/portal/api';
+import { shouldReload } from '@/project/utils';
 import { Utils } from '@/utils/utils';
 import { PREDEFINED_PORTAL_ISSUE_SUBSTATE_OPTION } from '../constants';
 import { OptionsData, Option } from '../models';
@@ -33,6 +34,8 @@ export const PortalIssuesMetadataProvider = ({
   const [typesData, setTypesData] = useState(new OptionsData());
   const [statesData, setStatesData] = useState(new OptionsData());
   const [customersData, setCustomersData] = useState(new OptionsData());
+
+  const lastLoadTime = useRef(0);
 
   // type
   const applyCreateTypes = useCallback((newTypes, isReload = false) => {
@@ -252,6 +255,89 @@ export const PortalIssuesMetadataProvider = ({
     setStatesData(newData);
   }, [statesData]);
 
+  // customer
+  const applyCreateCustomers = useCallback((newCustomers) => {
+    let newData = deepCopy(customersData);
+    appendOptions(newData, newCustomers);
+    setCustomersData(newData);
+  }, [customersData]);
+
+  const applyDeleteCustomers = useCallback((customerIDs) => {
+    if (!Array.isArray(customerIDs) || customerIDs.length === 0) return;
+    const ids = customerIDs.map(String);
+    setCustomersData(prevData => {
+      const newData = {
+        ...prevData,
+        rows: prevData.rows.filter(row => !ids.includes(String(row._id))),
+        row_ids: prevData.row_ids.filter(id => !ids.includes(String(id))),
+        id_row_map: { ...prevData.id_row_map },
+      };
+      ids.forEach(id => {
+        if (newData.id_row_map[id]) {
+          delete newData.id_row_map[id];
+        }
+      });
+      return newData;
+    });
+  }, []);
+
+  const applyModifyCustomers = useCallback((update = {}) => {
+    if (Object.keys(update).length === 0) return;
+    let newData = deepCopy(customersData);
+    Object.keys(update).forEach(customerID => {
+      const rowIndex = newData.row_ids.findIndex(rID => rID === customerID);
+      if (rowIndex > -1) {
+        let newRow = newData.id_row_map[customerID];
+        newRow = newRow._update(update[customerID]);
+        newData.rows[rowIndex] = newRow;
+        newData.id_row_map[customerID] = newRow;
+      }
+    });
+    setCustomersData(newData);
+  }, [customersData]);
+
+  const createCustomer = useCallback((customer) => {
+    return portalAPI.createCustomer(projectUuid, customer).then(res => {
+      applyCreateCustomers([res.data.customer]);
+      return res;
+    });
+  }, [projectUuid, applyCreateCustomers]);
+
+  const modifyCustomer = useCallback((customerID, update) => {
+    return portalAPI.updateCustomer(projectUuid, customerID, update).then(res => {
+      applyModifyCustomers({ [String(customerID)]: res.data?.customer || update });
+      return res;
+    });
+  }, [projectUuid, applyModifyCustomers]);
+
+  const deleteCustomer = useCallback((customerID) => {
+    return portalAPI.deleteCustomer(projectUuid, customerID).then(res => {
+      applyDeleteCustomers([String(customerID)]);
+      return res;
+    });
+  }, [projectUuid, applyDeleteCustomers]);
+
+  const loadCustomers = useCallback((callback) => {
+    if (!enablePortal) {
+      callback && callback();
+      return;
+    }
+    if (lastLoadTime.current && shouldReload(lastLoadTime.current)) {
+      portalAPI.listCustomers(projectUuid).then(res => {
+        const customers = Array.isArray(res.data?.customers) ? res.data.customers : [];
+        setCustomersData(buildOptionsData(customers));
+        lastLoadTime.current = Date.now();
+        callback && callback();
+      }).catch(error => {
+        const errorMessage = Utils.getErrorMsg(error);
+        toaster.danger(errorMessage);
+        callback && callback();
+      });
+      return;
+    }
+    callback && callback();
+  }, [enablePortal, projectUuid]);
+
   useEffect(() => {
     if (!enablePortal) {
       setLoading(false);
@@ -263,6 +349,7 @@ export const PortalIssuesMetadataProvider = ({
       applyCreateTypes(types?.options);
       applyCreateStates(states?.options);
       setCustomersData(buildOptionsData(customers?.options));
+      lastLoadTime.current = Date.now();
       setLoading(false);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
@@ -286,6 +373,10 @@ export const PortalIssuesMetadataProvider = ({
       statesData,
       substatesData,
       customersData,
+      createCustomer,
+      modifyCustomer,
+      deleteCustomer,
+      loadCustomers,
       createSubstate,
       modifySubstate,
       deleteSubstate,
