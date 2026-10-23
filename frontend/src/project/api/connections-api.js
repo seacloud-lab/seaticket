@@ -182,6 +182,11 @@ class ConnectionsAPI {
     return this.req.get(url);
   }
 
+  getConnectionStatistics(projectUuid, connectionID, signal, timezone) {
+    const url = this.server + '/api/v1/project/' + projectUuid + '/connections/' + connectionID + '/statistics/';
+    return this.req.get(url, { params: { timezone }, signal });
+  }
+
   queryConnectionsStatus(projectUuid, connectionIds) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/connections/query-status/';
     const params = {
