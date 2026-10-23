@@ -18,6 +18,7 @@ export const MetadataProvider = forwardRef(({
   api,
   tagsData,
   typesData,
+  customersData,
   localStorageNamePrefix,
   createContextMenuOptions,
   cascadeUpdateCells,
@@ -294,6 +295,11 @@ export const MetadataProvider = forwardRef(({
 
   useEffect(() => {
     if (isLoading) return;
+    storeRef.current.customersData = customersData;
+  }, [isLoading, customersData]);
+
+  useEffect(() => {
+    if (isLoading) return;
     storeRef.current.collaborators = [...collaborators, ...Object.values(collaboratorsCache)];
   }, [isLoading, collaborators, collaboratorsCache]);
 
@@ -312,7 +318,7 @@ export const MetadataProvider = forwardRef(({
     context.re_set({
       localStorageName: `${localStorageNamePrefix}-${viewID}`,
     });
-    storeRef.current = new Store({ viewId: viewID, typesData, tagsData, columnOrderRules, columnWidthRules, notDisplayColumns, dataDidMount });
+    storeRef.current = new Store({ viewId: viewID, typesData, tagsData, customersData, columnOrderRules, columnWidthRules, notDisplayColumns, dataDidMount });
     storeRef.current.initStartIndex();
     storeRef.current.load(PER_LOAD_NUMBER).then(() => {
       if (!isCancelled) {

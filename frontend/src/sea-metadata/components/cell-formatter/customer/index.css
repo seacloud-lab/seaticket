@@ -1,0 +1,8 @@
+/* A customer is displayed with the same chip as a linked record. The styles are
+   imported rather than copied so the two columns cannot drift apart. */
+@import url('../link/index.css');
+@import url('../link/link-item/index.css');
+
+.customer-formatter .customer-item {
+  cursor: default;
+}

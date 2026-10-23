@@ -3,12 +3,12 @@ import { CellType, DEFAULT_DATE_FORMAT } from '../../constants';
 import {
   getDateDisplayString, getNumberDisplayString, getLongtextDisplayString, getOptionDisplayName, getCollaboratorsName, getColumnOptionNamesByIds,
   getColumnOptionIdsByNames, getTagsDisplayString, getColumnOptions,
-  getTypeDisplayString,
+  getTypeDisplayString, getCustomerDisplayString,
 } from '../column';
 import DateUtils from '../date';
 import { getCellValueByColumn } from './core';
 
-export const getCellValueDisplayString = (row, column, { collaborators = [], tagsData, typesData } = {}) => {
+export const getCellValueDisplayString = (row, column, { collaborators = [], tagsData, typesData, customersData } = {}) => {
   if (!row) return '';
   const { type, data } = column;
   const cellValue = getCellValueByColumn(row, column, { tagsData });
@@ -47,6 +47,9 @@ export const getCellValueDisplayString = (row, column, { collaborators = [], tag
     }
     case CellType.TYPE: {
       return getTypeDisplayString(typesData, cellValue);
+    }
+    case CellType.CUSTOMER: {
+      return getCustomerDisplayString(customersData, cellValue);
     }
     case CellType.TAGS: {
       return getTagsDisplayString(tagsData, cellValue);

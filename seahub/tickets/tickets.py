@@ -39,12 +39,15 @@ from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     send_ticket_update_msg, compare_ticket_changes, record_ticket_activities, get_ticket_activities, \
     build_linked_record_titles_map, build_linked_records_info_for_keys, \
     check_ticket_link_changes, sync_links_in_connection, TicketLinkValidationError, \
+    TicketCustomerNotFound, \
     get_column_from_columns_by_name, get_option_id_by_name, send_data_update_msg, \
     build_tag_id_to_name_map, validate_linked_connection_records, \
     build_linked_github_issue_state_map, \
     collect_open_linked_github_issues_for_tickets, close_linked_github_issues, \
-    build_ticket_close_payloads_from_client, validate_ticket_state_substate_relation
+    build_ticket_close_payloads_from_client, validate_ticket_state_substate_relation, \
+    validate_ticket_customer_id
 from seahub.notifications.signal_handler import MSG_TYPE_TICKET_COMMENTED, MSG_TYPE_TICKET_ASSIGNEE_ADDED
+from seahub.portal.models import PortalCustomer
 from seahub.tickets.signals import ticket_assignees_added, ticket_commented
 from seahub.utils.decorators import require_org_context
 from seahub.seadb_models.utils import get_connection_table_name
@@ -281,6 +284,17 @@ class TicketsAPIView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
+        customer_id = request.POST.get('customer_id')
+        if customer_id in (None, ''):
+            customer_id = None
+        else:
+            try:
+                customer_id = validate_ticket_customer_id(project_uuid, customer_id)
+            except TicketCustomerNotFound as e:
+                return api_error(status.HTTP_404_NOT_FOUND, str(e))
+            except ValueError as e:
+                return api_error(status.HTTP_400_BAD_REQUEST, str(e))
+
         type_name = request.POST.get('type')
         ticket_state = request.POST.get('state') or 'open'
         requested_substate = request.POST.get('substate')
@@ -362,6 +376,7 @@ class TicketsAPIView(APIView):
                 SchemaTables.TICKETS.column.modified_time.name: now_datetime,
                 SchemaTables.TICKETS.column.deleted.name: False,
                 SchemaTables.TICKETS.column.due_date.name: stored_due_date,
+                SchemaTables.TICKETS.column.customer_id.name: customer_id,
             }
             if linked_connection_records is not None:
                 # keep stored value as list[str]
@@ -486,7 +501,7 @@ class TicketsAPIView(APIView):
             ticket_ids = ticket_id_to_row.keys()
             ticket_ids_str = ','.join(ticket_ids)
             sql = f"""
-            SELECT `_pk`, `assignees`, `title`, `state`, `substate`, `type`, `tags`, `priority`, `due_date`, `linked_connection_records`
+            SELECT `_pk`, `assignees`, `title`, `state`, `substate`, `type`, `tags`, `priority`, `due_date`, `linked_connection_records`, `customer_id`
             FROM `tickets`
             WHERE `_pk` IN ({ticket_ids_str})
             """
@@ -585,8 +600,20 @@ class TicketsAPIView(APIView):
                     except (TypeError, ValueError):
                         return api_error(status.HTTP_400_BAD_REQUEST, 'due_date invalid.')
                 updated_row[SchemaTables.TICKETS.column.due_date.name] = due_date
+            if 'customer_id' in row_data:
+                customer_id = row_data.get('customer_id')
+                if customer_id in (None, ''):
+                    updated_row[SchemaTables.TICKETS.column.customer_id.name] = None
+                else:
+                    try:
+                        updated_row[SchemaTables.TICKETS.column.customer_id.name] = validate_ticket_customer_id(
+                            project_uuid, customer_id)
+                    except TicketCustomerNotFound as e:
+                        return api_error(status.HTTP_404_NOT_FOUND, str(e))
+                    except ValueError as e:
+                        return api_error(status.HTTP_400_BAD_REQUEST, str(e))
             for key, value in row_data.items():
-                if key in ('substate', 'tags', 'type', '_pk', 'modified_time', 'content', 'state', 'linked_connection_records', 'due_date'):
+                if key in ('substate', 'tags', 'type', '_pk', 'modified_time', 'content', 'state', 'linked_connection_records', 'due_date', 'customer_id'):
                     continue
                 updated_row[key] = value
 
@@ -989,6 +1016,19 @@ class TicketAPIView(APIView):
                     return api_error(status.HTTP_400_BAD_REQUEST, 'due_date invalid.')
             stored_due_date = due_date or ''
 
+        is_update_customer_id = 'customer_id' in request.data
+        if is_update_customer_id:
+            customer_id = request.data.get('customer_id')
+            if customer_id in (None, ''):
+                customer_id = None
+            else:
+                try:
+                    customer_id = validate_ticket_customer_id(project_uuid, customer_id)
+                except TicketCustomerNotFound as e:
+                    return api_error(status.HTTP_404_NOT_FOUND, str(e))
+                except ValueError as e:
+                    return api_error(status.HTTP_400_BAD_REQUEST, str(e))
+
         is_update_tags = 'tags' in request.data
         tags = request.data.get('tags')
         if is_update_tags and tags is not None:
@@ -1088,6 +1128,8 @@ class TicketAPIView(APIView):
                 update_row[SchemaTables.TICKETS.column.due_date.name] = stored_due_date
             if is_update_linked_connection_records:
                 update_row[SchemaTables.TICKETS.column.linked_connection_records.name] = new_linked_connection_records
+            if is_update_customer_id:
+                update_row[SchemaTables.TICKETS.column.customer_id.name] = customer_id
             if not is_update_participants:
                 participants = ticket.get(SchemaTables.TICKETS.column.participants.name) or []
                 if username not in participants:
@@ -2039,6 +2081,16 @@ class TicketMetadataAPIView(APIView):
                 if return_name:
                     column_data = column.get('data', {}) or {}
                     select_option_metadata[return_name] = column_data
+            # customers are owned by the portal app, not by a ticket column, so they
+            # are read from the model. Disabled customers are included: tickets that
+            # already reference one must still render it. Served here rather than via
+            # PortalCustomersView so project members, not just admins, can read it.
+            select_option_metadata['customers'] = {
+                'options': [
+                    {'id': customer.id, 'name': customer.name, 'status': customer.status}
+                    for customer in PortalCustomer.objects.filter(project_uuid=project_uuid)
+                ]
+            }
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

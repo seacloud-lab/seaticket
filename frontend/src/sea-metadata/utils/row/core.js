@@ -15,6 +15,20 @@ const isTableRows = (rows) => (
   Array.isArray(rows) && typeof rows[0] === 'object'
 );
 
+/**
+ * A customer cell holds a customer id, or nothing at all: null, undefined and ''
+ * all mean "no customer".
+ *
+ * The string 'null' is deliberately NOT treated as empty. It is a multipart
+ * FormData artifact (JSON.stringify(null)) that this client no longer emits, and
+ * treating it as empty would silently hide a bad value instead of surfacing it.
+ * @param {any} value
+ * @returns bool
+ */
+const isEmptyCustomerId = (value) => (
+  value === null || value === undefined || value === ''
+);
+
 const updateTableRowsWithRowsData = (tables, tableId, rowsData = []) => {
   let table = getTableById(tables, tableId);
   let idRowDataMap = {};
@@ -76,6 +90,11 @@ const convertRowToNameValue = (rowUpdate, { data, typesData, tagsData }) => {
         const option = getRowById(typesData, cellValue);
         cellValue = option.name;
       }
+    } else if (type === CellType.CUSTOMER) {
+      // the cell value is the customer id itself; the server stores it as an
+      // int64 and maps an empty value to NULL. It is sent as a string because
+      // the option editors hold string values.
+      cellValue = isEmptyCustomerId(cellValue) ? '' : String(cellValue);
     } else if (type === CellType.TAGS) {
       if (Array.isArray(cellValue) && cellValue.length > 0) {
         cellValue = cellValue.map(tagID => Number(tagID));
@@ -125,6 +144,8 @@ const convertRowToKeyValue = (rowUpdate, { data, typesData, tagsData }) => {
         const option = getRowById(typesData, cellValue);
         cellValue = option._id;
       }
+    } else if (type === CellType.CUSTOMER) {
+      cellValue = isEmptyCustomerId(cellValue) ? '' : String(cellValue);
     } else if (type === CellType.MULTIPLE_SELECT) {
       if (Array.isArray(cellValue) && cellValue.length > 0) {
         cellValue = getColumnOptionIdsByNames(column, cellValue);
@@ -145,6 +166,7 @@ const convertRowsToKeyValue = (rowsUpdate, { data, typesData, tagsData }) => {
 export {
   isTableRows,
   updateTableRowsWithRowsData,
+  isEmptyCustomerId,
   getRowById,
   getRowsByIds,
   getRowIdFromRow,

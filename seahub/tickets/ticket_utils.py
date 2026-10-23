@@ -17,10 +17,16 @@ from seahub.project.utils import get_current_table_metadata
 from seahub.project.constants import ConnectionType
 from seahub.seadb_models.utils import get_connection_table_name
 from seahub.portal.portal_utils import get_portal_issue
+from seahub.portal.models import PortalCustomer
 from seahub.seadb_models.models import SchemaTables
 
 class TicketLinkValidationError(Exception):
     """Ticket link validation error"""
+    pass
+
+
+class TicketCustomerNotFound(Exception):
+    """Customer not found."""
     pass
 
 
@@ -607,8 +613,25 @@ def check_ticket_comment_creation_interval(seadb_api, project_uuid, username, ti
 
     return True
 
+def validate_ticket_customer_id(project_uuid, customer_id):
+    # int(True) == 1 and int(1.5) == 1 would silently match a real customer
+    if isinstance(customer_id, bool) or isinstance(customer_id, float):
+        raise ValueError('customer_id invalid.')
+    try:
+        customer_id = int(customer_id)
+    except (TypeError, ValueError):
+        raise ValueError('customer_id invalid.')
+    is_active_customer = PortalCustomer.objects.filter(
+        id=customer_id,
+        project_uuid=project_uuid,
+        status=PortalCustomer.STATUS_ACTIVE,
+    ).exists()
+    if not is_active_customer:
+        raise TicketCustomerNotFound('Customer not found.')
+    return customer_id
+
 def get_ticket(seadb_api, project_uuid, ticket_id):
-    sql = f"SELECT `_pk`, `title`, `content`, `state`, `substate`, `type`, `tags`, `assignees`, `participants`, `linked_connection_records`, `priority`, `creator`, `created_time`, `modified_time`, `due_date` FROM `{TABLE_TICKETS}` WHERE `_pk` = {ticket_id} AND (`deleted` = False OR `deleted` IS NULL)"
+    sql = f"SELECT `_pk`, `title`, `content`, `state`, `substate`, `type`, `tags`, `assignees`, `participants`, `linked_connection_records`, `priority`, `creator`, `created_time`, `modified_time`, `due_date`, `customer_id` FROM `{TABLE_TICKETS}` WHERE `_pk` = {ticket_id} AND (`deleted` = False OR `deleted` IS NULL)"
     res = seadb_api.query_rows(project_uuid, sql)
     rows = res.get('results')
     return rows[0] if rows else None, res.get('metadata')
@@ -1098,6 +1121,20 @@ def compare_ticket_changes(old_ticket, new_data):
     # priority changed
     if 'priority' in new_data and new_data['priority'] != old_ticket.get('priority'):
         changes.append(('priority_changed', 'priority', old_ticket.get('priority'), new_data['priority']))
+
+    # customer changed
+    if 'customer_id' in new_data:
+        old_customer_id = old_ticket.get('customer_id') or None
+        new_customer_id = new_data['customer_id']
+        if new_customer_id in (None, ''):
+            new_customer_id = None
+        else:
+            try:
+                new_customer_id = int(new_customer_id)
+            except (TypeError, ValueError):
+                pass
+        if old_customer_id != new_customer_id:
+            changes.append(('customer_changed', 'customer_id', old_customer_id, new_customer_id))
 
     # tags changed
     if 'tags' in new_data:
