@@ -6,7 +6,10 @@ import { CONNECTION_FIELD_TYPE } from '../../constants';
 const Editor = ({ api, column, row, readonly, canModifyPassword = true, onChange }) => {
   const { key, type, placeholder, default_value, options, can_edit_multiple_times = true, } = column;
 
-  const value = row[key] !== undefined ? row[key] : (default_value || '');
+  let value = row[key] !== undefined ? row[key] : (default_value || '');
+  if (column.is_path_list && Array.isArray(value)) {
+    value = value.join('\n');
+  }
 
   switch (type) {
     case CONNECTION_FIELD_TYPE.PASSWORD: {
@@ -56,6 +59,18 @@ const Editor = ({ api, column, row, readonly, canModifyPassword = true, onChange
           isInModal={true}
           searchable={true}
           onChange={(newValue, newValueOption) => onChange(key, newValueOption)}
+        />
+      );
+    }
+    case CONNECTION_FIELD_TYPE.LONG_TEXT: {
+      return (
+        <Input
+          type="textarea"
+          rows={4}
+          placeholder={placeholder}
+          value={value}
+          disabled={readonly}
+          onChange={(e) => onChange(key, e.target.value)}
         />
       );
     }
