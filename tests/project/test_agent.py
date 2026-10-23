@@ -739,7 +739,7 @@ def test_email_reply_default_lookup_failure_does_not_hide_suggestions():
     logger.exception.assert_called_once()
 
 
-def test_cancel_agent_log_pending_actions_cancels_only_pending_actions():
+def test_cancel_agent_log_pending_actions_selects_pending_actions_and_failed_suggestions():
     seadb_api = Mock()
     seadb_api.query_rows.side_effect = [
         {'results': [{
@@ -793,6 +793,7 @@ def test_cancel_agent_log_pending_actions_cancels_only_pending_actions():
     }]}
     pending_actions_sql = seadb_api.query_rows.call_args_list[1].args[1]
     assert "`status` = 'pending'" in pending_actions_sql
+    assert "OR (`action_type` = 'suggestion' AND `status` = 'failed')" in pending_actions_sql
     assert '`run_id` IN (7)' in pending_actions_sql
     assert seadb_api.update_rows.call_args_list[0].args[2] == [
         {
@@ -861,6 +862,66 @@ def limited_seadb():
     connection.close()
 
 
+@pytest.mark.parametrize('num_failed', [1, 101, 201])
+def test_mark_log_done_cancels_failed_suggestions_and_preserves_diagnostics(limited_seadb, num_failed):
+    api, connection = limited_seadb
+    actions_table = SchemaTables.AGENT_ACTIONS.table_name()
+    runs_table = SchemaTables.AGENT_RUNS.table_name()
+    error = 'Email thread #1842 is already linked to ticket #1069.'
+    original_time = '2026-10-03T05:31:06.678102Z'
+    connection.execute(f"UPDATE `{runs_table}` SET `suggestions_status` = 'resolved'")
+    connection.execute(
+        f"UPDATE `{runs_table}` SET `suggestions_status` = 'failed' WHERE `_pk` IN ({'7,8' if num_failed > 1 else '8'})",
+    )
+    connection.executemany(
+        f'INSERT INTO `{actions_table}` '
+        '(`_pk`, `run_id`, `action_type`, `status`, `result`, `executed_at`) VALUES (?, ?, ?, ?, ?, ?)',
+        [(index, 7 + index % 2, 'suggestion', 'failed', error, original_time)
+         for index in range(1, num_failed + 1)]
+        + [(num_failed + 1, 7, 'analysis', 'failed', 'Analysis error', original_time),
+           (num_failed + 2, 7, 'prelude', 'failed', 'Prelude error', original_time),
+           (num_failed + 3, 7, 'suggestion', 'executed', 'Created ticket', original_time),
+           (num_failed + 4, 7, 'suggestion', 'cancelled', 'Previously cancelled', original_time)],
+    )
+    # Actions on other logs must not be cancelled.
+    connection.execute(
+        f'INSERT INTO `{actions_table}` (`_pk`, `run_id`, `action_type`, `status`) VALUES (?, ?, ?, ?)',
+        [num_failed + 5, 99, 'suggestion', 'failed'],
+    )
+
+    result = cancel_agent_log_pending_actions(
+        api, 'project-1', '42', 'ticket', 'Cancelled by Alice', '2026-10-23T00:00:00Z',
+    )
+
+    assert all(run['suggestions_status'] in ('resolved', 'none') for run in result['runs'])
+    assert [run['status'] for run in result['runs']] == ['completed', 'failed']
+    assert result['runs'][1]['error_message'] == 'Agent error'
+    for run in result['runs']:
+        for action in run['actions']:
+            if action['id'] <= num_failed:
+                assert action['status'] == 'cancelled'
+                assert action['result'] == error
+                assert action['executed_at'] == original_time
+    assert [tuple(row) for row in connection.execute(
+        f'SELECT `status`, `result`, `executed_at` FROM `{actions_table}` '
+        'WHERE `_pk` > ? ORDER BY `_pk`', [num_failed],
+    )] == [
+        ('failed', 'Analysis error', original_time),
+        ('failed', 'Prelude error', original_time),
+        ('executed', 'Created ticket', original_time),
+        ('cancelled', 'Previously cancelled', original_time),
+        ('failed', None, None),
+    ]
+    assert list_agent_logs(api, 'project-1')['logs'][0]['status'] == 'processed'
+    assert get_agent_log_runs(api, 'project-1', '42', 'ticket') == result
+
+    api.update_rows.reset_mock()
+    assert cancel_agent_log_pending_actions(
+        api, 'project-1', '42', 'ticket', 'Cancelled by Alice', '2026-10-24T00:00:00Z',
+    ) == result
+    api.update_rows.assert_not_called()
+
+
 @pytest.mark.parametrize('num_pending', [101, 201, 1000])
 @pytest.mark.parametrize('split_runs', [False, True])
 @pytest.mark.parametrize('remaining_status', [None, 'executing', 'failed'])
@@ -889,16 +950,17 @@ def test_cancel_all_pending_suggestions_across_batches(limited_seadb, num_pendin
     runs = result['runs']
     assert runs[0]['suggestions_status'] == 'resolved'
     assert runs[1]['suggestions_status'] == (
-        'pending' if remaining_status == 'executing' else remaining_status or ('resolved' if split_runs else 'none')
+        'pending' if remaining_status == 'executing' else ('resolved' if remaining_status or split_runs else 'none')
     )
     assert runs[1]['status'] == 'failed'
     assert runs[1]['error_message'] == 'Agent error'
-    assert len([action for run in runs for action in run['actions'] if action['status'] == 'cancelled']) == num_pending
+    num_cancelled = num_pending + (remaining_status == 'failed')
+    assert len([action for run in runs for action in run['actions'] if action['status'] == 'cancelled']) == num_cancelled
     assert get_agent_log_runs(api, 'project-1', '42', 'ticket') == result
     logs = list_agent_logs(api, 'project-1')['logs']
-    assert logs[0]['status'] == ('' if remaining_status else 'processed')
+    assert logs[0]['status'] == ('' if remaining_status == 'executing' else 'processed')
     action_updates = [call for call in api.update_rows.call_args_list if call.args[1] == actions_table]
-    assert len(action_updates) == (num_pending + 99) // 100
+    assert len(action_updates) == (num_cancelled + 99) // 100
     assert all(len(call.args[2]) <= 100 for call in action_updates)
     cancellation_queries = [call.args[1] for call in api.query_rows.call_args_list
                             if "`status` = 'pending'" in call.args[1]]
