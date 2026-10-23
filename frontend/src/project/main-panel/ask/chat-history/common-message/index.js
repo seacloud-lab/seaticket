@@ -5,6 +5,7 @@ import { Attachments } from '../../components';
 import { CHAT_MESSAGE_TYPE } from '../../constants';
 import { useDocuments } from '../../hooks';
 import MessageOperations from '../message-operations';
+import SuggestionMessage from '../suggestion-message';
 import ThoughtProcess from '../thought-process';
 
 import './index.css';
@@ -33,6 +34,7 @@ const CommonMessage = ({
           workspaceID={workspaceID}
         />
         {message[CHAT_MESSAGE_TYPE.TEXT] && (<>{message[CHAT_MESSAGE_TYPE.TEXT]}</>)}
+        {message[CHAT_MESSAGE_TYPE.SUGGESTIONS] && (<SuggestionMessage suggestions={message[CHAT_MESSAGE_TYPE.SUGGESTIONS]} />)}
         <AIReply
           ref={markdownMessageRef}
           messageId={chatId}

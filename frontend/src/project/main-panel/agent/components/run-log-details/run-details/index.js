@@ -98,7 +98,6 @@ const RunDetail = ({
   }, []);
 
   const handleShowStatistics = useCallback((e) => {
-    e.stopPropagation();
     setShowStatisticsDialog(true);
   }, []);
 
@@ -107,9 +106,7 @@ const RunDetail = ({
   }, []);
 
   const handleShowThoughtProcess = useCallback((e) => {
-    e.stopPropagation();
     setShowThoughtProcessDialog(true);
-    setDropdownOpen(false);
   }, []);
 
   const handleCloseThoughtProcess = useCallback(() => {
@@ -117,8 +114,6 @@ const RunDetail = ({
   }, []);
 
   const handleChatToRefine = useCallback((e) => {
-    e.stopPropagation();
-    setDropdownOpen(false);
     onChatToRefine && onChatToRefine(run);
   }, [onChatToRefine, run]);
 

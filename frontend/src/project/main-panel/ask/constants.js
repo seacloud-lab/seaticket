@@ -15,6 +15,7 @@ export const CHAT_MESSAGE_TYPE = {
   SOURCES: 'sources',
   THOUGHT_PROCESS: 'thought_process',
   ATTACHMENTS: 'attachments',
+  SUGGESTIONS: 'suggestions',
 };
 
 export const ASK_PAGE_SLUG_ID = {
