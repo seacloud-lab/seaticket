@@ -1,5 +1,8 @@
 from seahub.settings import *
 
+# Existing portal tests use domain mode; path-mode tests override this setting.
+ENABLE_PORTAL_DOMAIN = True
+
 # no cache for testing
 # CACHES = {
 #     'default': {
