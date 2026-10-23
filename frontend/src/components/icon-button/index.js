@@ -3,6 +3,7 @@ import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { isNumber, isObject } from '@/utils/type-detection';
 import Icon from '../icon';
+import Loading from '../loading';
 
 const IconButton = React.forwardRef(({
   children,
@@ -28,6 +29,8 @@ const IconButton = React.forwardRef(({
     return { ...propsIconStyle };
   }, [size, icon, propsIconStyle]);
 
+  const IconComponent = icon === 'loading' ? Loading : Icon;
+
   return (
     <div
       className={classnames('seaqa-icon-btn', className, { 'disabled': disabled })}
@@ -36,7 +39,7 @@ const IconButton = React.forwardRef(({
       ref={ref}
     >
       {children}
-      {icon && (<Icon symbol={icon} className={iconClassName} style={iconStyle} />)}
+      {icon && (<IconComponent symbol={icon} className={iconClassName} style={iconStyle} />)}
     </div>
   );
 });
