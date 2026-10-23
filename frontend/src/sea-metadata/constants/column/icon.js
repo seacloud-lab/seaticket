@@ -14,7 +14,7 @@ const COLUMNS_ICON_CONFIG = {
   [CellType.LONG_TEXT]: 'long-text',
   [CellType.SINGLE_SELECT]: 'single-select',
   [CellType.TYPE]: 'single-select',
-  [CellType.CUSTOMER]: 'single-select',
+  [CellType.CUSTOMER]: 'link',
   [CellType.MULTIPLE_SELECT]: 'multiple-select',
   [CellType.NUMBER]: 'number',
   [CellType.RATE]: 'rate',
