@@ -5,6 +5,7 @@ class Issue extends Ticket {
   constructor(object) {
     super(object);
     this.linked_ticket = object.linked_ticket || null;
+    this.customer_id = object.customer_id || '';
     delete this['linked_connection_records'];
   }
 }

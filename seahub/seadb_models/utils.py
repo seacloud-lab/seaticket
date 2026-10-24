@@ -14,6 +14,20 @@ logger = logging.getLogger(__name__)
 
 PORTAL_ISSUE_INTERNAL_COLUMN_NAMES = {'customer_id'}
 
+
+def strip_portal_issue_internal_columns(records, columns):
+    """Remove internal columns from records and column metadata before an external response."""
+    for record in records or []:
+        if not isinstance(record, dict):
+            continue
+        for name in PORTAL_ISSUE_INTERNAL_COLUMN_NAMES:
+            record.pop(name, None)
+    return [
+        column for column in (columns or [])
+        if column.get('name') not in PORTAL_ISSUE_INTERNAL_COLUMN_NAMES
+    ]
+
+
 CONNECTION_TYPE_TO_SCHEMA_TABLE = {
     ConnectionType.GITHUB_ISSUE.value: SchemaTables.GITHUB_ISSUES,
     ConnectionType.DISCOURSE_FORUM.value: SchemaTables.DISCOURSE_TOPICS,
@@ -447,7 +461,8 @@ def list_portal_issues_view_records(seadb_api, project_uuid, view, username, sta
         name = column['name']
         if name in PORTAL_ISSUE_DISPLAY_ALL_COLUMNS + list(PORTAL_ISSUE_INTERNAL_COLUMN_NAMES):
             display_columns.append(column)
-    result_columns = [column for column in display_columns if column.get('name') not in PORTAL_ISSUE_INTERNAL_COLUMN_NAMES]
+    # contains internal columns; external-view callers must strip them before responding
+    result_columns = display_columns
     try:
         sql = view_data_2_sql('portal_issues', display_columns, view_copy, username, start, limit, result_columns)
     except SQLGeneratorOptionInvalidError as e:
@@ -522,7 +537,7 @@ def list_connection_view_records_with_columns(seadb_api, project_uuid, connectio
 def list_portal_issue_comments_records(seadb_api, project_uuid, _pk):
     issues_table_name = SchemaTables.PORTAL_ISSUES.table_name()
     comments_table_name = SchemaTables.PORTAL_ISSUE_COMMENTS.table_name()
-    issue_query_fields = ', '.join(PORTAL_ISSUE_DISPLAY_ALL_COLUMNS)
+    issue_query_fields = ', '.join(PORTAL_ISSUE_DISPLAY_ALL_COLUMNS + list(PORTAL_ISSUE_INTERNAL_COLUMN_NAMES))
     issues_sql = f"SELECT {issue_query_fields} FROM `{issues_table_name}` WHERE _pk = {_pk} AND (`deleted` = False OR `deleted` IS NULL)"
     try:
         from seahub.tickets.ticket_utils import get_ticket_title

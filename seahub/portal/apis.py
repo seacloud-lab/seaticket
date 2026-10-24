@@ -35,14 +35,15 @@ from seahub.utils.hasher import AESPasswordHasher
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
 from seahub.project.constants import DataEventType, PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_TIMEOUT, PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_PREFIX, KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS
-from seahub.seadb_models.utils import list_knowledge_base_records, list_my_portal_issues, list_portal_issues_view_records, list_trash_portal_issues, list_portal_issue_comments_records, list_portal_issues_view_records
+from seahub.seadb_models.utils import list_knowledge_base_records, list_my_portal_issues, list_portal_issues_view_records, list_trash_portal_issues, list_portal_issue_comments_records, list_portal_issues_view_records, strip_portal_issue_internal_columns
 from seahub.tickets.ticket_utils import check_ticket_creation_interval, get_column_from_columns_by_name, \
     build_linked_ticket_titles_map, TABLE_TICKETS, get_ticket, sync_links_in_connection,\
     convert_select_field_names_to_option_ids, check_ticket_link_changes, TicketLinkValidationError
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.utils.decorators import require_org_context
 from seahub.portal.permissions import PortalKnowledgeBasePermission, PortalIssuePermission, PortalAnonymousAccessPermission, \
-    can_access_portal_issue, check_portal_issue_permission, get_request_external_user, get_request_portal_customer
+    can_access_portal_issue, check_portal_issue_permission, get_request_external_user, get_request_portal_customer, \
+    is_same_org_user
 from seahub.portal.models import PortalCustomer, ProjectExternalUser, PortalCustomDomain, PortalDomainAlias, get_portal_tls_ask_cache_key,\
     PORTAL_TLS_ASK_CACHE_TIMEOUT, get_preferred_portal_domain, get_service_portal_domain
 from seahub.portal.utils import PORTAL_EXTERNAL_LOGIN_CODE_TTL, PORTAL_EXTERNAL_LOGIN_SEND_COOLDOWN, PORTAL_EXTERNAL_LOGIN_VERIFY_FAIL_LIMIT, \
@@ -780,6 +781,7 @@ class PortalTeamIssuesView(APIView):
             issues, columns = list_portal_issues_view_records(
                 SeaDBAPI(), project_uuid, view_config, request.user.username, start, limit
             )
+            columns = strip_portal_issue_internal_columns(issues, columns)
         except SQLGeneratorOptionInvalidError as e:
             logger.error(e)
             return Response({
@@ -814,6 +816,8 @@ class PortalIssueView(APIView):
                 error_msg = 'Issue not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
             convert_select_field_names_to_option_ids(columns, issue)
+            if not is_same_org_user(request, project):
+                columns = strip_portal_issue_internal_columns([issue], columns)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'
@@ -1534,6 +1538,9 @@ class PortalIssueMetadataView(APIView):
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
         seadb_api = SeaDBAPI()
         try:
             portal_issues_table_name = SchemaTables.PORTAL_ISSUES.table_name()
@@ -1551,6 +1558,13 @@ class PortalIssueMetadataView(APIView):
                 if return_name:
                     column_data = column.get('data', {}) or {}
                     select_option_metadata[return_name] = column_data
+            if is_same_org_user(request, project):
+                select_option_metadata['customers'] = {
+                    'options': [
+                        {'id': customer.id, 'name': customer.name, 'status': customer.status}
+                        for customer in PortalCustomer.objects.filter(project_uuid=project_uuid)
+                    ]
+                }
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

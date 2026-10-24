@@ -51,6 +51,7 @@ const Issues = ({
   const {
     typesData, createType,
     substatesData, createSubstate,
+    customersData,
   } = usePortalIssuesMetadata();
   const { tagsData, createTag } = useTags();
   const {
@@ -364,6 +365,7 @@ const Issues = ({
         createTag={createTag}
         typesData={typesData}
         createType={createType}
+        customersData={customersData}
         toggleAllTypes={() => togglePageSlugId(PORTAL_ISSUE_PAGE_SLUG_ID.TYPES)}
         substatesData={substatesData}
         createSubstate={createSubstate}

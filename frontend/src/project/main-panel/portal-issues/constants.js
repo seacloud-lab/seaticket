@@ -45,7 +45,8 @@ export const PORTAL_ISSUE_CHILDREN_PAGE_SLUG_ID = {
 
 export const PREDEFINED_PORTAL_ISSUE_COLUMN_NAME = {
   ...PREDEFINED_TICKET_COLUMN_NAME,
-  LINKED_TICKET: 'linked_ticket'
+  LINKED_TICKET: 'linked_ticket',
+  CUSTOMER_ID: 'customer_id',
 };
 
 export const PORTAL_ISSUE_PREDEFINED_COLUMN_CONFIG = {
@@ -60,7 +61,12 @@ export const PORTAL_ISSUE_PREDEFINED_COLUMN_CONFIG = {
       linked_table: TICKET_TABLE_NAME,
     },
     editable: false,
-  }
+  },
+  [PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.CUSTOMER_ID]: {
+    type: CellType.CUSTOMER,
+    display_name: gettext('Customer'),
+    editable: false,
+  },
 };
 
 export const PORTAL_ISSUE_NOT_DISPLAY_COLUMNS = [
@@ -78,13 +84,14 @@ export const PORTAL_ISSUE_COLUMNS_ORDER_CONFIG = {
   'substate': 5,
   'tags': 6,
   'linked_ticket': 7,
-  'content': 8,
-  'ai_summary': 9,
-  'ai_processed_time': 10,
-  'creator': 11,
-  'created_time': 12,
-  'modified_time': 13,
-  'closed_time': 14,
+  'customer_id': 8,
+  'content': 9,
+  'ai_summary': 10,
+  'ai_processed_time': 11,
+  'creator': 12,
+  'created_time': 13,
+  'modified_time': 14,
+  'closed_time': 15,
 };
 
 export const PORTAL_ISSUE_COLUMNS_WIDTH_CONFIG = {
@@ -95,6 +102,7 @@ export const PORTAL_ISSUE_COLUMNS_WIDTH_CONFIG = {
   'substate': 120,
   'tags': 200,
   'linked_ticket': 200,
+  'customer_id': 200,
   'content': 400,
   'ai_summary': 200,
   'ai_processed_time': 200,

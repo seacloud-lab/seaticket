@@ -3,6 +3,7 @@ import { Button } from 'reactstrap';
 import { CommonOperationConfirmationDialog, Icon, toaster } from '@/components';
 import { gettext } from '@/constants';
 import { portalAPI } from '@/portal/api';
+import { usePortalIssuesMetadata } from '@/project/hooks';
 import { Utils } from '@/utils/utils';
 import TopBar from '../top-bar';
 import CustomerMembersModal from './customer-members-modal';
@@ -21,6 +22,12 @@ const Tabs = {
 
 const PortalCustomersUsers = ({ title }) => {
   const { projectUuid } = window.app.pageOptions;
+  const {
+    createCustomer: createCustomerData,
+    modifyCustomer: modifyCustomerData,
+    deleteCustomer: deleteCustomerData,
+    loadCustomers: loadCustomersData,
+  } = usePortalIssuesMetadata();
   const [activeTab, setActiveTab] = useState(Tabs.CUSTOMERS);
   const [customers, setCustomers] = useState([]);
   const [users, setUsers] = useState([]);
@@ -40,7 +47,7 @@ const PortalCustomersUsers = ({ title }) => {
     toaster.danger(error.response?.data?.detail || error.response?.data?.error_msg || Utils.getErrorMsg(error) || fallback);
   }, []);
 
-  const loadCustomers = useCallback(() => {
+  const loadCustomerList = useCallback(() => {
     return portalAPI.listCustomers(projectUuid).then((res) => {
       setCustomers(res.data?.customers || []);
     }).catch((error) => showError(error, gettext('Failed to load customers')));
@@ -59,10 +66,11 @@ const PortalCustomersUsers = ({ title }) => {
   }, [projectUuid, showError]);
 
   useEffect(() => {
-    loadCustomers();
+    loadCustomerList();
     loadUsers();
     loadInvitations();
-  }, [loadCustomers, loadInvitations, loadUsers]);
+    loadCustomersData();
+  }, [loadCustomerList, loadCustomersData, loadInvitations, loadUsers]);
 
   useEffect(() => {
     return () => {
@@ -73,30 +81,31 @@ const PortalCustomersUsers = ({ title }) => {
   const closeCustomerModal = useCallback(() => setCustomerToEdit(null), []);
 
   const saveCustomer = useCallback((name, emailDomain) => {
+    const data = { name, email_domain: emailDomain };
     const request = customerToEdit?.id
-      ? portalAPI.updateCustomer(projectUuid, customerToEdit.id, { name, email_domain: emailDomain })
-      : portalAPI.createCustomer(projectUuid, { name, email_domain: emailDomain });
+      ? modifyCustomerData(customerToEdit.id, data)
+      : createCustomerData(data);
     setSubmitting(true);
     request.then(() => {
       toaster.success(customerToEdit?.id ? gettext('Customer updated') : gettext('Customer created'));
       closeCustomerModal();
-      loadCustomers();
+      loadCustomerList();
     }).catch((error) => showError(error, customerToEdit?.id ? gettext('Failed to update customer') : gettext('Failed to create customer')))
       .finally(() => setSubmitting(false));
-  }, [closeCustomerModal, customerToEdit, loadCustomers, projectUuid, showError]);
+  }, [closeCustomerModal, customerToEdit, createCustomerData, modifyCustomerData, loadCustomerList, showError]);
 
   const deleteCustomer = useCallback(() => {
     if (!customerToDelete) return;
     setSubmitting(true);
-    portalAPI.deleteCustomer(projectUuid, customerToDelete.id).then(() => {
+    deleteCustomerData(customerToDelete.id).then(() => {
       toaster.success(gettext('Customer deleted'));
       setCustomerToDelete(null);
-      loadCustomers();
+      loadCustomerList();
       loadUsers();
       loadInvitations();
     }).catch((error) => showError(error, gettext('Failed to delete customer')))
       .finally(() => setSubmitting(false));
-  }, [customerToDelete, loadCustomers, loadInvitations, loadUsers, projectUuid, showError]);
+  }, [customerToDelete, deleteCustomerData, loadCustomerList, loadInvitations, loadUsers, showError]);
 
   const closeCustomerMembers = useCallback(() => {
     customerMembersRequestRef.current += 1;
@@ -169,7 +178,7 @@ const PortalCustomersUsers = ({ title }) => {
       failedMembers.forEach((item) => {
         toaster.danger(`${item.email}: ${item.error_msg}`, { duration: 3 });
       });
-      loadCustomers();
+      loadCustomerList();
       loadUsers();
       if (failedMembers.length > 0) {
         loadCustomerMembers(customerToManage.id, requestId).catch((refreshError) => {
@@ -190,7 +199,7 @@ const PortalCustomersUsers = ({ title }) => {
       });
     })
       .finally(() => setSubmitting(false));
-  }, [closeCustomerMembers, customerMembers, customerToManage, loadCustomerMembers, loadCustomers, loadUsers, projectUuid, showError]);
+  }, [closeCustomerMembers, customerMembers, customerToManage, loadCustomerList, loadCustomerMembers, loadUsers, projectUuid, showError]);
 
   const inviteUser = useCallback((email, customerId, name, onSuccess) => {
     setSubmitting(true);
@@ -209,12 +218,12 @@ const PortalCustomersUsers = ({ title }) => {
     portalAPI.deleteExternalUser(projectUuid, userOperation.user.email).then(() => {
       toaster.success(gettext('User deleted'));
       setUserOperation(null);
-      loadCustomers();
+      loadCustomerList();
       loadUsers();
       loadInvitations();
     }).catch((error) => showError(error, gettext('Delete failed')))
       .finally(() => setSubmitting(false));
-  }, [loadCustomers, loadInvitations, loadUsers, projectUuid, showError, userOperation]);
+  }, [loadCustomerList, loadInvitations, loadUsers, projectUuid, showError, userOperation]);
 
   const revokeInvitation = useCallback((token) => {
     portalAPI.revokeExternalInvitation(projectUuid, token).then(() => {

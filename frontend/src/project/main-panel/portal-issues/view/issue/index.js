@@ -15,7 +15,7 @@ import CreateTicketDialog from '@/project/main-panel/connections/components/crea
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
 import { Comment, KeyboardShortcuts, UploadFilesButton } from '@/project/main-panel/tickets/components';
 import {
-  TypeSettings, PrioritySettings,
+  CustomerSettings, TypeSettings, PrioritySettings,
   StateSettings, SubStateSettings, LinkSettings,
 } from '@/project/main-panel/tickets/components/ticket-settings';
 import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
@@ -40,6 +40,7 @@ import '@/project/main-panel/tickets/view/ticket/index.css';
 
 const Issue = ({
   editorAPI, projectUuid, issueID, permission, isAdmin, projectName, workspaceID, isBuiltInView,
+  showCustomer = false,
   canEditAllIssues = permission === PERMISSION_TYPES.READ_WRITE,
   canChatWithAI = false,
   isMobile = false,
@@ -436,7 +437,7 @@ const Issue = ({
     );
   }
 
-  const { id, state, title, type, tags, priority, substate, linked_ticket } = issue;
+  const { id, state, title, type, tags, priority, substate, linked_ticket, customer_id } = issue;
   const typeOption = getRowById(typesData, type);
   const stateOption = PORTAL_ISSUE_STATE_CONFIG[state];
 
@@ -568,6 +569,13 @@ const Issue = ({
             <SubStateSettings isReadonly={isBuiltInView || !editable} state={state} substate={substate} useMetadataContext={usePortalIssuesMetadata} onChange={onSubstateChange} />
             <TypeSettings id="type-editor-popover" isReadonly={isBuiltInView || !editable} value={type} useMetadataContext={usePortalIssuesMetadata} onChange={onTypeChange} />
             <LinkSettings value={[linked_ticket]} linkedRecords={linkedRecords} />
+            {showCustomer && (
+              <CustomerSettings
+                isReadonly={true}
+                value={customer_id}
+                useMetadataContext={usePortalIssuesMetadata}
+              />
+            )}
           </div>
         )}
       </div>
