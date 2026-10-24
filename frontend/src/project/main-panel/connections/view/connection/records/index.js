@@ -54,6 +54,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     getMetadata, modifyRow, modifyRows, deleteRows, modifyRowLink, insertRowByLink,
   } = useData();
   const { tagsData, createTag } = useTags();
+  const { customersData } = useMetadata();
 
   const connection = useMemo(() => connections.find(c => c.id === connectionID), [connections, connectionID]);
 
@@ -671,6 +672,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
         columnOrderRules={CONNECTION_COLUMNS_ORDER_CONFIG[connection?.type]}
         typesData={typesData}
         tagsData={tagsData}
+        customersData={customersData}
         createTag={createTag}
         expandRow={handleExpandRow}
         cascadeUpdateCells={connection?.type === CONNECTION_TYPE.GITHUB_ISSUE ? cascadeUpdate : () => {}}
