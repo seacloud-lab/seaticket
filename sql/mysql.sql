@@ -787,11 +787,29 @@ CREATE TABLE `portal_chat_messages` (
   `role` VARCHAR(20) NOT NULL,
   `content` LONGTEXT,
   `attachments` LONGTEXT DEFAULT NULL,
+  `sources` LONGTEXT DEFAULT NULL,
   `created_at` DATETIME(6) NOT NULL,
   `updated_at` DATETIME(6),
   `as_context` TINYINT(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`),
   KEY `idx_portal_chat_msg_session_created` (`session_uuid`, `created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `portal_chat_analysis` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `session_uuid` VARCHAR(36) NOT NULL,
+  `message_id` VARCHAR(4) NOT NULL,
+  `evaluated_at` DATETIME(6) DEFAULT NULL,
+  `evaluation` VARCHAR(20) DEFAULT NULL,
+  `evaluation_reason` TEXT DEFAULT NULL,
+  `normalized_question` TEXT DEFAULT NULL,
+  `gap_suggestion` TEXT DEFAULT NULL,
+  `gap_status` VARCHAR(16) DEFAULT NULL,
+  `created_at` DATETIME(6) NOT NULL,
+  `updated_at` DATETIME(6) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_portal_chat_analysis_turn` (`session_uuid`, `message_id`),
+  KEY `idx_portal_chat_analysis_evaluation` (`evaluation`, `gap_status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 

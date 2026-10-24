@@ -20,7 +20,7 @@ from seahub.project.constants import AIScenario
 from seahub.project.constants import IMAGE_EXTS
 from seahub.project.models import AIUsageStatistics
 from seahub.project.utils import convert_cost_to_credit
-from seahub.portal.models import PortalChatMessages, ProjectExternalUser
+from seahub.portal.models import PortalChatMessages, PortalChatAnalysis, ProjectExternalUser
 from seahub.utils import normalize_cache_key, uuid_str_to_32_chars
 from seahub.chats.utils import strip_content_details_from_attachments
 from seahub.chats.constants import CHAT_IMAGE_MAX_COUNT
@@ -316,7 +316,7 @@ def rewrite_portal_chat_admin_image_urls(project_uuid, value, session_uuid, mess
     return pattern.sub(replace, value)
 
 
-def build_portal_message_result(ai_result, project_uuid, session_uuid, message_id, query, username, attachments=None):
+def build_portal_message_result(ai_result, project_uuid, session_uuid, message_id, query, username, attachments=None, user_evaluation=None):
     if 'ai_reply' not in ai_result:
         ai_result['ai_reply'] = ai_result.get('answer', '')
 
@@ -332,12 +332,22 @@ def build_portal_message_result(ai_result, project_uuid, session_uuid, message_i
             session_uuid, message_id, 'user', query, attachments=stripped_attachments,
         )
         ai_reply_message = PortalChatMessages.objects.create_message(
-            session_uuid, message_id, 'assistant', ai_result['ai_reply']
+            session_uuid, message_id, 'assistant', ai_result['ai_reply'],
+            sources=ai_result.get('sources') or [],
         )
+        if user_evaluation and message_id:
+            PortalChatAnalysis.objects.upsert(
+                session_uuid,
+                message_id,
+                evaluation=user_evaluation,
+                evaluated_at=timezone.now(),
+            )
         ai_result.update({
             'user_message_id': user_message.id,
             'ai_reply_message_id': ai_reply_message.id
         })
+        ai_result.pop('sources', None)
+        ai_result.pop('thought_process', None)
     except Exception as e:
         logger.warning(f'Failure to record portal messages to db: {e}')
 
@@ -347,9 +357,10 @@ def build_portal_message_result(ai_result, project_uuid, session_uuid, message_i
     return ai_result
 
 
-def build_portal_chat_error_response(stream, ai_result, project_uuid, session_uuid, message_id, query, username, attachments=None):
+def build_portal_chat_error_response(stream, ai_result, project_uuid, session_uuid, message_id, query, username, attachments=None, user_evaluation=None):
     result = build_portal_message_result(
         ai_result, project_uuid, session_uuid, message_id, query, username, attachments,
+        user_evaluation=user_evaluation,
     )
     if not stream:
         return Response(result)

@@ -484,7 +484,9 @@ class PortalChatSessions(models.Model):
 
 class PortalChatMessagesManager(models.Manager):
 
-    def create_message(self, session_uuid, message_id, role, content, as_context=True, attachments=[]):
+    def create_message(self, session_uuid, message_id, role, content, as_context=True, attachments=[], sources=None):
+        if sources is not None and not isinstance(sources, str):
+            sources = json.dumps(sources)
         message = self.model(
             session_uuid=session_uuid,
             message_id=message_id,
@@ -492,6 +494,7 @@ class PortalChatMessagesManager(models.Manager):
             content=content,
             as_context=as_context,
             attachments=json.dumps(attachments),
+            sources=sources,
         )
         message.save()
         return message
@@ -516,6 +519,7 @@ class PortalChatMessages(models.Model):
     role = models.CharField(max_length=20)
     content = models.TextField(null=True)
     attachments = models.TextField(null=True)
+    sources = models.TextField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     as_context = models.BooleanField(default=True)
@@ -546,6 +550,45 @@ class PortalChatMessages(models.Model):
             'updated_at': self.updated_at,
             'as_context': self.as_context,
         }
+
+
+class PortalChatAnalysisManager(models.Manager):
+
+    def upsert(self, session_uuid, message_id, **fields):
+        analysis, created = self.get_or_create(
+            session_uuid=session_uuid,
+            message_id=message_id,
+            defaults=fields,
+        )
+        if created:
+            return analysis
+        for key, value in fields.items():
+            setattr(analysis, key, value)
+        analysis.save()
+        return analysis
+
+
+class PortalChatAnalysis(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    session_uuid = models.CharField(max_length=36)
+    message_id = models.CharField(max_length=4)
+    evaluated_at = models.DateTimeField(null=True)
+    evaluation = models.CharField(max_length=20, null=True)
+    evaluation_reason = models.TextField(null=True)
+    normalized_question = models.TextField(null=True)
+    gap_suggestion = models.TextField(null=True)
+    gap_status = models.CharField(max_length=16, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
+
+    objects = PortalChatAnalysisManager()
+
+    class Meta:
+        db_table = 'portal_chat_analysis'
+        unique_together = (('session_uuid', 'message_id'),)
+        indexes = [
+            models.Index(fields=['evaluation', 'gap_status'], name='idx_portal_chat_analysis_eval'),
+        ]
 
 
 class PortalIssueView(object):

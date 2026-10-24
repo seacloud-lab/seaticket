@@ -6,8 +6,8 @@ from datetime import datetime, timedelta
 
 from dateutil.relativedelta import relativedelta
 from django.core.cache import cache
-from django.http import StreamingHttpResponse
-from django.db.models import Count, Sum, CharField, F, Func, Value
+from django.http import StreamingHttpResponse, FileResponse
+from django.db.models import Count, Sum, CharField, F, Func, Value, OuterRef, Subquery
 from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
@@ -45,7 +45,7 @@ from seahub.portal.chat.utils import (
     rewrite_portal_chat_admin_image_urls,
 )
 from seahub.portal.chat.constants import PORTAL_CHAT_ADMIN_IMAGE_TOKEN_TYPE
-from seahub.portal.models import PortalChatSessions, PortalChatMessages
+from seahub.portal.models import PortalChatSessions, PortalChatMessages, PortalChatAnalysis
 from seahub.chats.utils import (
     build_ai_images_payload,
     build_image_attachments,
@@ -668,7 +668,7 @@ class PortalChatView(APIView):
             return build_portal_chat_error_response(stream, {
                 'ai_reply': validation['reason'],
                 'sources': [],
-            }, project_uuid, current_session_uuid, message_id, query, username, attachments)
+            }, project_uuid, current_session_uuid, message_id, query, username, attachments, user_evaluation='off_topic')
         if clear_context:
             PortalChatMessages.objects.clear_context(current_session_uuid)
 
@@ -810,3 +810,142 @@ class PortalChatImageView(APIView):
         response = get_attachment_file_response(file, file_path)
         response['Cache-Control'] = 'private, max-age=300'
         return response
+
+
+KNOWLEDGE_GAP_STATUSES = ('open', 'resolved', 'dismissed')
+KNOWLEDGE_GAP_SORT_COLUMNS = {
+    'normalized_question',
+    'gap_status',
+    'gap_suggestion',
+    'created_at',
+    'username',
+}
+
+
+class PortalAdminKnowledgeGapsView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (PortalAdminPermission,)
+    throttle_classes = (UserRateThrottle,)
+
+    @portal_endpoint
+    def get(self, request, project_uuid):
+        try:
+            try:
+                start = int(request.GET.get('start', 0))
+                limit = int(request.GET.get('limit', 1000))
+                view_config = json.loads(request.GET.get('config', '{}'))
+            except (TypeError, ValueError):
+                return api_error(status.HTTP_400_BAD_REQUEST, 'start, limit or config invalid')
+            if start < 0 or limit < 1:
+                return api_error(status.HTTP_400_BAD_REQUEST, 'start or limit invalid')
+
+            sorts = view_config.get('sorts') or [{'column_key': 'created_at', 'sort_type': 'down'}]
+            order_by = []
+            for item in sorts:
+                column_key = item.get('column_key')
+                if column_key not in KNOWLEDGE_GAP_SORT_COLUMNS:
+                    continue
+                prefix = '-' if item.get('sort_type') == 'down' else ''
+                order_by.append(f'{prefix}{column_key}')
+            if not order_by:
+                order_by = ['-created_at']
+
+            session_uuids = PortalChatSessions.objects.filter(
+                project_uuid=project_uuid,
+            ).values('session_uuid')
+            username_query = PortalChatSessions.objects.filter(
+                session_uuid=OuterRef('session_uuid'),
+            ).values('username')[:1]
+            gaps = PortalChatAnalysis.objects.filter(
+                evaluation='knowledge_gap',
+                session_uuid__in=session_uuids,
+            ).annotate(
+                username=Subquery(username_query),
+            ).order_by(*order_by)[start:start + limit]
+            return Response({'gaps': _serialize_knowledge_gaps(request, project_uuid, gaps)})
+        except Exception as e:
+            logger.error(e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+
+class PortalAdminKnowledgeGapView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (PortalAdminPermission,)
+    throttle_classes = (UserRateThrottle,)
+
+    @portal_endpoint
+    def put(self, request, project_uuid, gap_id):
+        gap_status = request.data.get('gap_status')
+        if gap_status not in KNOWLEDGE_GAP_STATUSES:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'gap_status invalid.')
+
+        analysis = PortalChatAnalysis.objects.filter(
+            id=gap_id,
+            evaluation='knowledge_gap',
+        ).first()
+        if not analysis:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Knowledge gap not found.')
+        session = PortalChatSessions.objects.filter(
+            project_uuid=project_uuid,
+            session_uuid=analysis.session_uuid,
+        ).first()
+        if not session:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Knowledge gap not found.')
+
+        analysis.gap_status = gap_status
+        analysis.save(update_fields=['gap_status', 'updated_at'])
+        return Response({'success': True})
+
+
+def _serialize_knowledge_gaps(request, project_uuid, gaps):
+    gaps = list(gaps)
+    if not gaps:
+        return []
+
+    session_uuids = {gap.session_uuid for gap in gaps}
+    sessions = {
+        session.session_uuid: session
+        for session in PortalChatSessions.objects.filter(session_uuid__in=session_uuids)
+    }
+    message_ids = {gap.message_id for gap in gaps if gap.message_id}
+    users = {}
+    assistants = {}
+    if message_ids:
+        for message in PortalChatMessages.objects.filter(
+            session_uuid__in=session_uuids,
+            message_id__in=message_ids,
+            role__in=('user', 'assistant'),
+        ):
+            key = (message.session_uuid, message.message_id)
+            if message.role == 'user':
+                users[key] = message
+            else:
+                assistants[key] = message
+
+    admin_username = request.user.username
+    results = []
+    for gap in gaps:
+        session = sessions.get(gap.session_uuid)
+        key = (gap.session_uuid, gap.message_id)
+        user_message = users.get(key)
+        assistant = assistants.get(key)
+        answer = assistant.content if assistant else ''
+        if answer and session:
+            answer = rewrite_portal_chat_admin_image_urls(
+                project_uuid, answer, gap.session_uuid, gap.message_id,
+                admin_username, session.username,
+            )
+        results.append({
+            'id': gap.id,
+            'normalized_question': gap.normalized_question,
+            'gap_suggestion': gap.gap_suggestion,
+            'evaluation_reason': gap.evaluation_reason,
+            'gap_status': gap.gap_status,
+            'created_at': gap.created_at.isoformat() if gap.created_at else None,
+            'username': session.username if session else '',
+            'session_uuid': gap.session_uuid,
+            'session_name': session.session_name if session else '',
+            'question': user_message.content if user_message else '',
+            'answer': answer,
+        })
+    return results

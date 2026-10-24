@@ -198,6 +198,23 @@ class ChatAPI {
     return this.req.get(url);
   }
 
+  listAdminKnowledgeGaps(projectUuid, { start = 0, limit = 1000, sorts } = {}) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/admin/knowledge-gaps/';
+    const params = {
+      start,
+      limit,
+      config: JSON.stringify({
+        sorts: sorts || [],
+      }),
+    };
+    return this.req.get(url, { params });
+  }
+
+  updateAdminKnowledgeGapStatus(projectUuid, gapId, gapStatus) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/admin/knowledge-gaps/' + gapId + '/';
+    return this.req.put(url, { gap_status: gapStatus });
+  }
+
   getAdminChatUserUsage(projectUuid, { start = 0, limit = 1000, sorts } = {}) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/admin/chat/user-usage/';
     let form = new FormData();
