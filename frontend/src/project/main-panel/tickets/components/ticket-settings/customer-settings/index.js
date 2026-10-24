@@ -49,7 +49,7 @@ const CustomerSettings = ({
     onChange(customer);
   }, [onChange]);
 
-  const customerOption = getRowById(customersData, value);
+  const customerOption = getRowById(customersData, currentId);
 
   return (
     <>
@@ -80,7 +80,8 @@ const CustomerSettings = ({
           target={editorRef}
           sameWidthWithTarget={240}
           isMultiple={false}
-          value={value}
+          // the editor compares option values with `===`, and options are strings
+          value={currentId}
           placeholder={gettext('Search customer')}
           emptyTip={gettext('No customers')}
           options={options}

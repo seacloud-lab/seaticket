@@ -50,7 +50,7 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_ticket, \
     check_ticket_link_changes, sync_links_in_connection, TicketLinkValidationError, \
-    record_create_task_activities
+    record_create_task_activities, validate_ticket_customer_id, TicketCustomerNotFound
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES, send_connection_data_event
 from seahub.settings import GITHUB_WEBHOOK_SECRET
 from seahub.project.github_issues_api import GitHubAPI, GitHubAppNotInstalled
@@ -1371,6 +1371,19 @@ class ProjectConnectionRecordView(APIView):
             update_row['row']['tags'] = row_data.get('tags')
             update_row['row']['record_modified_time'] = datetime.datetime.now(datetime.UTC).isoformat()
 
+        if project_connection.type == ConnectionType.EMAIL.value and 'customer_id' in row_data:
+            customer_id = row_data.get('customer_id')
+            if customer_id in (None, ''):
+                update_row['row']['customer_id'] = None
+            else:
+                try:
+                    update_row['row']['customer_id'] = validate_ticket_customer_id(project_uuid, customer_id)
+                except TicketCustomerNotFound as e:
+                    return api_error(status.HTTP_404_NOT_FOUND, str(e))
+                except ValueError as e:
+                    return api_error(status.HTTP_400_BAD_REQUEST, str(e))
+            update_row['row']['record_modified_time'] = datetime.datetime.now(datetime.UTC).isoformat()
+
         if 'linked_ticket' in row_data and project_connection.type in LINKED_TICKET_SUPPORT_TYPES:
             linked_ticket = row_data.get('linked_ticket')
             update_row['row']['linked_ticket'] = linked_ticket
@@ -1836,6 +1849,19 @@ class ProjectConnectionRecordsView(APIView):
 
             if project_connection.type == ConnectionType.EMAIL.value and 'tags' in row_data:
                 update_row['row']['tags'] = row_data.get('tags')
+                update_row['row']['record_modified_time'] = datetime.datetime.now(datetime.UTC).isoformat()
+
+            if project_connection.type == ConnectionType.EMAIL.value and 'customer_id' in row_data:
+                customer_id = row_data.get('customer_id')
+                if customer_id in (None, ''):
+                    update_row['row']['customer_id'] = None
+                else:
+                    try:
+                        update_row['row']['customer_id'] = validate_ticket_customer_id(project_uuid, customer_id)
+                    except TicketCustomerNotFound as e:
+                        return api_error(status.HTTP_404_NOT_FOUND, str(e))
+                    except ValueError as e:
+                        return api_error(status.HTTP_400_BAD_REQUEST, str(e))
                 update_row['row']['record_modified_time'] = datetime.datetime.now(datetime.UTC).isoformat()
 
             if update_row['row']:

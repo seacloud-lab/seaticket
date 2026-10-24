@@ -677,6 +677,7 @@ export const CONNECTION_PREDEFINED_COLUMN_NAME = {
   TOPIC_ID: 'topic_id',
   RESOLVED: 'resolved',
   LINKED_TICKET: 'linked_ticket',
+  CUSTOMER_ID: 'customer_id',
   TAGS: 'tags',
   PAGE_ID: 'page_id',
   SIZE: 'size',
@@ -917,6 +918,13 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       editable: true,
       modify_data_able: true,
     },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.CUSTOMER_ID]: {
+      display_name: gettext('Customer'),
+      type: CellType.CUSTOMER,
+      editable: true,
+      // customers are managed in the support portal, never created from a cell
+      modify_data_able: false,
+    },
     ...CONNECTION_PREDEFINED_COLUMN,
   },
   [CONNECTION_TYPE.NOTION]: {
@@ -1099,6 +1107,7 @@ export const CONNECTION_COLUMNS_WIDTH_CONFIG = {
   'unread': 33,
   'is_replied': 33,
   'title': 400,
+  'customer_id': 200,
 };
 
 export const CONNECTION_COLUMNS_ORDER_CONFIG = {
@@ -1106,6 +1115,7 @@ export const CONNECTION_COLUMNS_ORDER_CONFIG = {
     'unread': 1,
     'is_replied': 2,
     'title': 3,
+    'customer_id': 4,
   },
 };
 

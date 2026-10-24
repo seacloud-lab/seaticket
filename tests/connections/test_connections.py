@@ -29,6 +29,7 @@ from seahub.project.oauth_utils import EmailOAuthUtils
 from seahub.project.utils import get_email_oauth_callback_url
 from seahub.project.agent import AgentActionConfirmView
 from seahub.project.models import ProjectConnectionOauth
+from seahub.portal.models import PortalCustomer
 from seahub.project.constants import ConnectionType, EMAIL_ACCOUNT_TYPE_SHARED, EMAIL_OAUTH_CONFIGS
 from seahub.utils.storage import FileNotFound
 from seahub.settings import GITHUB_WEBHOOK_SECRET
@@ -1967,3 +1968,124 @@ class TestProjectConnectionRecordUpdate:
             f"UPDATE `email_{connection.id}` SET unread = ? WHERE thread_id IN (?)",
             params=[True, 10],
         )
+
+
+class TestProjectConnectionRecordCustomer:
+
+    def _put(self, factory, project_creator, project, connection, data):
+        request = factory.put(
+            f"/api/v1/project/{project.uuid}/connections/{connection.id}/records/10/",
+            data=data,
+            format='json'
+        )
+        request.user = project_creator
+
+        seadb = Mock()
+
+        with patch('seahub.project.connections.SeaDBAPI', return_value=seadb):
+            resp = ProjectConnectionRecordView.as_view()(
+                request, project_uuid=project.uuid, connection_id=str(connection.id), record_id='10')
+
+        return resp, seadb
+
+    def _put_batch(self, factory, project_creator, project, connection, rows):
+        request = factory.put(
+            f"/api/v1/project/{project.uuid}/connections/{connection.id}/records/",
+            data={'records_data': rows},
+            format='json'
+        )
+        request.user = project_creator
+
+        seadb = Mock()
+
+        with patch('seahub.project.connections.SeaDBAPI', return_value=seadb):
+            resp = ProjectConnectionRecordsView.as_view()(
+                request, project_uuid=project.uuid, connection_id=str(connection.id))
+
+        return resp, seadb
+
+    def test_put_stores_the_customer(self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        connection = connection_factory(connection_type='email')
+        customer = PortalCustomer.objects.create(project_uuid=str(project.uuid), name='Acme')
+
+        resp, seadb = self._put(factory, project_creator, project, connection, {'customer_id': str(customer.id)})
+
+        assert resp.status_code == 200
+        row = seadb.update_rows.call_args[0][2][0]
+        assert row['pk'] == 10
+        assert row['row']['customer_id'] == customer.id
+
+    def test_put_clears_the_customer(self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        connection = connection_factory(connection_type='email')
+
+        resp, seadb = self._put(factory, project_creator, project, connection, {'customer_id': ''})
+
+        assert resp.status_code == 200
+        assert seadb.update_rows.call_args[0][2][0]['row']['customer_id'] is None
+
+    def test_put_returns_404_for_an_unknown_customer(self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        connection = connection_factory(connection_type='email')
+
+        resp, seadb = self._put(factory, project_creator, project, connection, {'customer_id': '12345'})
+
+        assert resp.status_code == 404
+        seadb.update_rows.assert_not_called()
+
+    def test_put_returns_404_for_a_disabled_customer(self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        connection = connection_factory(connection_type='email')
+        customer = PortalCustomer.objects.create(
+            project_uuid=str(project.uuid), name='Acme', status=PortalCustomer.STATUS_DISABLED)
+
+        resp, seadb = self._put(factory, project_creator, project, connection, {'customer_id': str(customer.id)})
+
+        assert resp.status_code == 404
+        seadb.update_rows.assert_not_called()
+
+    def test_put_returns_404_for_a_customer_of_another_project(
+            self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        connection = connection_factory(connection_type='email')
+        other = PortalCustomer.objects.create(project_uuid='00000000-0000-0000-0000-000000000001', name='Acme')
+
+        resp, seadb = self._put(factory, project_creator, project, connection, {'customer_id': str(other.id)})
+
+        assert resp.status_code == 404
+        seadb.update_rows.assert_not_called()
+
+    def test_put_returns_400_for_a_non_numeric_customer(
+            self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        connection = connection_factory(connection_type='email')
+
+        resp, seadb = self._put(factory, project_creator, project, connection, {'customer_id': 'Acme'})
+
+        assert resp.status_code == 400
+        seadb.update_rows.assert_not_called()
+
+    def test_put_batch_stores_the_customer(self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        connection = connection_factory(connection_type='email')
+        customer = PortalCustomer.objects.create(project_uuid=str(project.uuid), name='Acme')
+
+        resp, seadb = self._put_batch(
+            factory, project_creator, project, connection,
+            [{'row_id': '10', 'row': {'customer_id': str(customer.id)}}])
+
+        assert resp.status_code == 200
+        assert seadb.update_rows.call_args[0][2][0]['row']['customer_id'] == customer.id
+
+    def test_put_batch_returns_404_for_an_unknown_customer(
+            self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        connection = connection_factory(connection_type='email')
+
+        resp, seadb = self._put_batch(
+            factory, project_creator, project, connection,
+            [{'row_id': '10', 'row': {'customer_id': '12345'}}])
+
+        assert resp.status_code == 404
+        seadb.update_rows.assert_not_called()
