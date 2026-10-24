@@ -174,7 +174,7 @@
   height: 48px;
   flex: 0 0 48px;
   border-radius: 12px;
-  background: #fff3e3;
+  background: color-mix(in srgb, var(--bs-sf-orange) 8%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;

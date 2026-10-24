@@ -1,0 +1,26 @@
+.portal-appearance-settings .portal-appearance-theme-color-item {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.portal-appearance-settings .portal-appearance-theme-color {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+}
+
+.portal-appearance-settings .portal-appearance-theme-color-check {
+  width: 12px;
+  height: 12px;
+  color: var(--bs-white);
+}
+
+.portal-appearance-settings .portal-appearance-custom-color-title {
+  color: var(--bs-sf-grey-text);
+  font-size: 13px;
+  line-height: 22px;
+}

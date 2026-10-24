@@ -50,6 +50,7 @@ const DEFAULT_HOME_PAGE_STYLE = {
     theme_type: 'color',
     background_color: '#f8f1e3',
     theme_background_image_URL: '',
+    match_theme_color: false,
   },
   'portal_home_cards_section': {
     card_layout: 3,

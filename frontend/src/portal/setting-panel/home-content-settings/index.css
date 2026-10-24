@@ -1,0 +1,10 @@
+.portal-home-content-settings {
+  flex: 0 0 340px;
+  width: 340px;
+  min-width: 340px;
+  height: 100%;
+  padding: 16px;
+  overflow-y: auto;
+  background: var(--bs-body-bg);
+  border-left: 1px solid var(--bs-border-secondary-color);
+}

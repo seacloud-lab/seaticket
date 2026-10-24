@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Button, Label, Input } from 'reactstrap';
 import { DEFAULT_PROJECT_ICON, gettext, PROJECT_ICON_ALL_LIST } from '@/constants';
-import CardSelectIconPanel from './card-select-icon-panel';
+import CardSelectIconPanel from '@/portal/setting-panel/card-select-icon-panel';
 
-import './card-content-settings.css';
+import './index.css';
 
 const DEFAULT_CARD = {
   title: '',
@@ -77,7 +77,7 @@ const CardContentSettings = ({ homePageStyle = {}, activeCard, setActiveCard, se
           />
         </div>
 
-        <div className="portal-setting-section">
+        <div className="portal-setting-section mt-3">
           <Label>{gettext('Card description')}</Label>
           <Input
             className="portal-setting-input"
@@ -90,7 +90,7 @@ const CardContentSettings = ({ homePageStyle = {}, activeCard, setActiveCard, se
           />
         </div>
 
-        <div className="portal-setting-section">
+        <div className="portal-setting-section mt-3">
           <Label>{gettext('Card link')}</Label>
           <Input
             className="portal-setting-input"
@@ -101,10 +101,10 @@ const CardContentSettings = ({ homePageStyle = {}, activeCard, setActiveCard, se
           />
         </div>
 
-        <div className="portal-setting-section">
+        <div className="portal-setting-section mt-3">
           <Label>{gettext('Card icon')}</Label>
           <div
-            className="portal-home-card-icon-selector mt-1"
+            className="portal-home-card-icon-selector mt-1 d-flex align-items-center justify-content-center"
             onClick={() => setIsIconPopoverOpen(true)}
             role="button"
             tabIndex={0}

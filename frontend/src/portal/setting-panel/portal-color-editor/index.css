@@ -1,0 +1,47 @@
+.portal-appearance-settings .portal-appearance-color-preview-wrap {
+  gap: 8px;
+  width: 284px;
+  height: 38px;
+  box-sizing: border-box;
+  padding: 8px;
+  border: 1px solid #0028641f;
+  border-radius: 4px;
+}
+
+.portal-appearance-settings .portal-appearance-color-preview-wrap.selected {
+  border-color: var(--bs-sf-orange-light);
+}
+
+.portal-appearance-settings .portal-appearance-color-editor-indicator {
+  flex: 0 0 18px;
+  margin-left: auto;
+  border-color: var(--bs-sf-orange-light);
+  background-color: var(--bs-sf-orange-light);
+  color: var(--bs-white);
+}
+
+.portal-appearance-settings .portal-appearance-color-editor-indicator svg {
+  width: 9px;
+  height: 9px;
+}
+
+.portal-appearance-settings .portal-appearance-color-preview {
+  display: block;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  padding: 0;
+  border: 0.6px solid #EAEAEA;
+  border-radius: 2.4px;
+  cursor: pointer;
+}
+
+.portal-appearance-settings .portal-appearance-color-input {
+  width: 180px;
+  height: 24px;
+  padding: 0 6px;
+}
+
+.portal-appearance-settings .portal-appearance-color-picker {
+  margin-top: 12px;
+}

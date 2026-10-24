@@ -31,6 +31,43 @@ body {
   overflow: hidden;
 }
 
+/* Support portal support custom theme color(bs-sf-orange) */
+.seaqa-portal .btn-primary {
+  --bs-btn-bg: var(--bs-sf-orange);
+  --bs-btn-border-color: var(--bs-sf-orange);
+  --bs-btn-hover-bg: var(--bs-sf-orange);
+  --bs-btn-hover-border-color: var(--bs-sf-orange);
+  --bs-btn-active-bg: var(--bs-sf-orange);
+  --bs-btn-active-border-color: var(--bs-sf-orange);
+  --bs-btn-disabled-bg: var(--bs-sf-orange);
+  --bs-btn-disabled-border-color: var(--bs-sf-orange);
+}
+
+.seaqa-portal .btn-outline-primary {
+  --bs-btn-color: var(--bs-sf-orange);
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: var(--bs-sf-orange);
+  --bs-btn-hover-color: var(--bs-body-color);
+  --bs-btn-hover-bg: var(--bs-sf-orange);
+  --bs-btn-hover-border-color: var(--bs-sf-orange);
+  --bs-btn-active-color: var(--bs-body-color);
+  --bs-btn-active-bg: var(--bs-sf-orange);
+  --bs-btn-active-border-color: var(--bs-sf-orange);
+  --bs-btn-disabled-color: var(--bs-sf-orange);
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: var(--bs-sf-orange);
+}
+
+.seaqa-portal .btn-check:checked+.btn,
+.seaqa-portal .btn.active,
+.seaqa-portal .btn-primary:active,
+.seaqa-portal .btn-primary:hover,
+.seaqa-portal .btn:first-child:active,
+.seaqa-portal :not(.btn-check)+.btn:active {
+  background-color: var(--bs-sf-orange);
+  border-color: var(--bs-sf-orange);
+}
+
 .seaqa-portal-body {
   flex: 1 1 0;
   min-width: 0;

@@ -1,0 +1,25 @@
+.portal-card-content-settings {
+  flex: 0 0 340px;
+  width: 340px;
+  min-width: 340px;
+  height: 100%;
+  padding: 16px;
+  overflow-y: auto;
+  background: var(--bs-body-bg);
+  border-left: 1px solid var(--bs-border-secondary-color);
+}
+
+.portal-card-content-settings .portal-home-card-icon-selector {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--bs-sf-orange) 8%, var(--bs-body-bg));
+  cursor: pointer;
+}
+
+.portal-card-content-settings .portal-home-card-icon-selector .project-icon-style {
+  width: 24px;
+  height: 24px;
+  color: var(--bs-sf-orange-light);
+  font-size: 24px;
+}

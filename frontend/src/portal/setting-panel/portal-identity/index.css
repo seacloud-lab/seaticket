@@ -1,0 +1,75 @@
+.portal-appearance-settings .form-label {
+  color: var(--bs-sf-grey-text);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 22px;
+}
+
+.portal-appearance-logo {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.portal-appearance-logo img,
+.portal-appearance-logo-change-button {
+  width: 64px;
+  height: 64px;
+}
+
+.portal-appearance-logo-change-button {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: none;
+  margin: 0;
+  background: rgba(var(--bs-black-rgb), 0.3);
+}
+
+.portal-appearance-logo-change-button .seaqa-icon-svg,
+.portal-appearance-logo-change-button:hover .seaqa-icon-svg {
+  width: 20px;
+  height: 20px;
+  color: var(--bs-white);
+}
+
+.portal-appearance-logo:hover .portal-appearance-logo-change-button {
+  display: flex;
+}
+
+.portal-appearance-logo-popover .popover {
+  width: 300px;
+  max-width: 300px;
+  height: 294px;
+}
+
+.portal-appearance-logo-popover .popover .popover-inner {
+  height: 100%;
+}
+
+.portal-appearance-logo-popover-content {
+  width: 100%;
+  height: 292px;
+  padding: 32px;
+}
+
+.portal-appearance-logo-preview {
+  width: 128px;
+  height: 128px;
+  border-radius: 16px;
+}
+
+.portal-appearance-logo-popover .seaqa-tip-default {
+  width: 100%;
+  font-size: 12px;
+  text-align: center;
+}
+
+.portal-appearance-logo-upload-button {
+  height: 32px;
+  margin-top: 10px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
