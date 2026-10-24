@@ -670,7 +670,10 @@ def get_agent_log_runs(seadb_api, project_uuid, owner_source_id, owner_source_ty
 
 
 def cancel_agent_log_pending_actions(seadb_api, project_uuid, owner_source_id, owner_source_type, result_message, executed_at):
-    """Cancel pending actions for every run owned by one log item."""
+    """Cancel pending actions and failed suggestions owned by one log item.
+
+    Keep failed suggestions' results and execution times for diagnosis.
+    """
     runs = _query_owned_runs(seadb_api, project_uuid, owner_source_id, owner_source_type)
     if not runs:
         raise ValueError('Item not found.')
@@ -682,19 +685,21 @@ def cancel_agent_log_pending_actions(seadb_api, project_uuid, owner_source_id, o
     actions_table = SchemaTables.AGENT_ACTIONS.table_name()
     run_ids_str = ','.join(map(str, run_ids))
     sql = (
-        "SELECT `_pk`, `run_id` "
+        "SELECT `_pk`, `run_id`, `status` "
         f"FROM `{actions_table}` "
-        f"WHERE `run_id` IN ({run_ids_str}) AND `status` = '{ACTION_STATUS_PENDING}'"
+        f"WHERE `run_id` IN ({run_ids_str}) AND ("
+        f"`status` = '{ACTION_STATUS_PENDING}' OR "
+        f"(`action_type` = '{SUGGESTION_ACTION_TYPE}' AND `status` = '{ACTION_STATUS_FAILED}'))"
     )
     batch_size = 100
     last_action_id = None
     updated_run_ids = set()
     while True:
         cursor_filter = f' AND `_pk` > {last_action_id}' if last_action_id is not None else ''
-        pending_actions = seadb_api.query_rows(
+        cancellable_actions = seadb_api.query_rows(
             project_uuid, f'{sql}{cursor_filter} ORDER BY `_pk` ASC LIMIT 0, {batch_size}',
         ).get('results', [])
-        if not pending_actions:
+        if not cancellable_actions:
             break
         seadb_api.update_rows(
             project_uuid,
@@ -703,14 +708,16 @@ def cancel_agent_log_pending_actions(seadb_api, project_uuid, owner_source_id, o
                 'pk': int(action['_pk']),
                 'row': {
                     'status': ACTION_STATUS_CANCELLED,
-                    'result': result_message,
-                    'executed_at': executed_at,
+                    **({
+                        'result': result_message,
+                        'executed_at': executed_at,
+                    } if action.get('status') != ACTION_STATUS_FAILED else {}),
                 },
-            } for action in pending_actions],
+            } for action in cancellable_actions],
         )
-        updated_run_ids.update(int(action['run_id']) for action in pending_actions)
-        last_action_id = max(int(action['_pk']) for action in pending_actions)
-        if len(pending_actions) < batch_size:
+        updated_run_ids.update(int(action['run_id']) for action in cancellable_actions)
+        last_action_id = max(int(action['_pk']) for action in cancellable_actions)
+        if len(cancellable_actions) < batch_size:
             break
 
     for run_id in sorted(updated_run_ids):
