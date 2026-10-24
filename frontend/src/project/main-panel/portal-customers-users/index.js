@@ -8,7 +8,7 @@ import TopBar from '../top-bar';
 import CustomerMembersModal from './customer-members-modal';
 import CustomerModal from './customer-modal';
 import CustomerUsersTabs from './customer-users-tabs';
-import CustomersTab from './customers-tab';
+import CustomersTables from './customers-tables';
 import InviteUsersDialog from './invite-users-dialog';
 import UsersTab from './users-tab';
 
@@ -250,7 +250,7 @@ const PortalCustomersUsers = ({ title }) => {
       <div className="portal-customers-users-page">
         <div className="portal-customers-users-content" role="tabpanel">
           {activeTab === Tabs.CUSTOMERS ? (
-            <CustomersTab
+            <CustomersTables
               customers={customers}
               onEdit={setCustomerToEdit}
               onManageUsers={manageUsers}
