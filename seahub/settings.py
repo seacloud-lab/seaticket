@@ -629,9 +629,9 @@ d = os.path.dirname
 # custom navigation settings
 CUSTOM_NAV_ITEMS = []
 
-SEAQA_INDEXER_INNER_SERVER_URL = 'http://seaqa-indexer:8888'
-SEAQA_AI_INNER_SERVER_URL = 'http://seaqa-ai:8887'
-SEAQA_EVENTS_INNER_SERVER_URL = 'http://seaqa-events:6001'
+SEAQA_INDEXER_INNER_SERVER_URL = 'http://seaticket-indexer:8888'
+SEAQA_AI_INNER_SERVER_URL = 'http://seaticket-ai:8887'
+SEAQA_EVENTS_INNER_SERVER_URL = 'http://seaticket-events:6001'
 SEAQA_IO_LOCAL_SERVER_URL = 'http://127.0.0.1:6002'
 ATTACHMENT_CONTENT_MAX_SIZE = 20000
 ATTACHMENT_ISSUE_MAX_COMMENTS = 50

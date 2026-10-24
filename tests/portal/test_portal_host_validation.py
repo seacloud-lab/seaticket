@@ -66,7 +66,7 @@ def test_invalid_host_returns_400_without_reaching_common_middleware(host, caplo
     '127.0.0.1:80',
     '[::1]',
     '[2001:db8::1]:443',
-    'seaqa-web-portal',
+    'seaticket-portal',
 ])
 @override_settings(ALLOWED_HOSTS=['*'])
 def test_valid_public_and_internal_hosts_pass_through(host):
@@ -88,7 +88,7 @@ def test_host_validation_preserves_allowed_hosts_restriction():
 @override_settings(ALLOWED_HOSTS=['*'], USE_X_FORWARDED_HOST=True)
 def test_invalid_forwarded_host_is_included_in_rejection_log(caplog):
     request = RequestFactory().get(
-        '/', HTTP_HOST='seaqa-web-portal', HTTP_X_FORWARDED_HOST='_mta-sts.example.com',
+        '/', HTTP_HOST='seaticket-portal', HTTP_X_FORWARDED_HOST='_mta-sts.example.com',
     )
 
     with caplog.at_level(logging.WARNING):
