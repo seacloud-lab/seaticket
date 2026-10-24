@@ -7,7 +7,7 @@ class TestStripPortalIssueInternalColumns:
         records = [{'_pk': 1, 'customer_id': 7}, {'_pk': 2}]
         columns = [
             {'name': '_pk', 'key': '_pk'},
-            {'name': 'customer_id', 'key': 'customer_id'},
+            {'name': 'customer_id', 'key': '9dK2'},
         ]
 
         filtered_columns = strip_portal_issue_internal_columns(records, columns)

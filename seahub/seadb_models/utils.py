@@ -25,7 +25,6 @@ def strip_portal_issue_internal_columns(records, columns):
     return [
         column for column in (columns or [])
         if column.get('name') not in PORTAL_ISSUE_INTERNAL_COLUMN_NAMES
-        and column.get('key') not in PORTAL_ISSUE_INTERNAL_COLUMN_NAMES
     ]
 
 
