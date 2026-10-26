@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: seaqa-web\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-26 11:27+0800\n"
-"PO-Revision-Date: 2026-10-26 03:46\n"
+"PO-Revision-Date: 2026-10-26 09:22\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr\n"
@@ -998,7 +998,7 @@ msgstr "Lien de %(normalized_source_id)s au ticket #%(related_ticket)s mais éch
 #: seahub/project/agent/action_executor.py:1275
 #, python-format
 msgid "Record linked to ticket #%(related_ticket)s."
-msgstr "Lien de %(normalized_source_id)s au ticket #%(related_ticket)s."
+msgstr "Lien de au ticket #%(related_ticket)s."
 
 #: seahub/project/agent/action_executor.py:1301
 #, python-format

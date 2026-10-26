@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: seaqa-web\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-26 11:27+0800\n"
-"PO-Revision-Date: 2026-10-26 03:58\n"
+"PO-Revision-Date: 2026-10-26 09:17\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Language: zh\n"
@@ -3386,15 +3386,15 @@ msgstr "重新生成对话"
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/regenerate-chat-panel/index.js:167
 msgid "Describe how the suggestions should change."
-msgstr "描述建议如何改变"
+msgstr "描述建议如何改变。"
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/regenerate-chat-panel/index.js:184
 msgid "No suggestions were generated."
-msgstr "没有生成建议"
+msgstr "没有生成建议。"
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/regenerate-chat-panel/index.js:197
 msgid "Generating suggestions..."
-msgstr "正在生成建议..."
+msgstr "正在生成建议……"
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/regenerate-chat-panel/index.js:205
 msgid "Tell the agent how to adjust the suggestions"
@@ -3402,7 +3402,7 @@ msgstr "告诉智能体如何调整建议"
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/regenerate-chat-panel/index.js:226
 msgid "Applying..."
-msgstr "正在应用中..."
+msgstr "正在应用中……"
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/regenerate-chat-panel/index.js:226
 msgid "Apply this version"
@@ -3414,7 +3414,7 @@ msgstr "丢弃草稿建议？"
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/regenerate-chat-panel/index.js:238
 msgid "Unapplied suggestions will be lost."
-msgstr "未应用的建议将丢失丢失"
+msgstr "未应用的建议将丢失丢失。"
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/regenerate-chat-panel/index.js:239
 #: frontend/src/project/main-panel/agent/components/run-log-details/run-details/action/suggestion-action/index.js:267
@@ -3613,7 +3613,7 @@ msgstr "草稿"
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/suggestion-detail-panel/index.js:119
 msgid "Approving..."
-msgstr "正在审批..."
+msgstr "正在审批……"
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/suggestion-detail-panel/normal-detail/index.js:24
 msgid "Edit content..."
@@ -5660,7 +5660,7 @@ msgstr "更改令牌将使旧门户URL不可用。"
 
 #: frontend/src/project/main-panel/portal-settings/custom-url-settings/index.js:116
 msgid "Save the URL before copying."
-msgstr "在复制之前保存 URL"
+msgstr "在复制之前保存 URL。"
 
 #: frontend/src/project/main-panel/portal-settings/custom-url-settings/index.js:121
 msgid "Saving..."

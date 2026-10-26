@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: seaqa-web\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-26 11:27+0800\n"
-"PO-Revision-Date: 2026-10-26 03:58\n"
+"PO-Revision-Date: 2026-10-26 09:17\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Language: zh\n"
@@ -899,7 +899,7 @@ msgstr "Discourse 主题 #%(topic_pk)s 回复 #%(post_number)s 已发布。"
 #: seahub/project/agent/action_executor.py:859
 #, python-format
 msgid "Failed to get GitHub issue context for %(source_id)s."
-msgstr "获取 GitHub 工单上下文失败：%(source_id)s"
+msgstr "获取 GitHub 工单上下文失败：%(source_id)s 。"
 
 #: seahub/project/agent/action_executor.py:659
 #, python-format
@@ -1075,12 +1075,12 @@ msgstr "保存 Discord 回复失败：响应中没有消息 ID。"
 #: seahub/project/agent/action_executor.py:1527
 #, python-format
 msgid "Discord reply was posted, but failed to save local record for thread #%(record_id)s."
-msgstr "Discord 回复已发布，但保存本地记录失败。"
+msgstr "Discord 回复已发布 #%(record_id)s，但保存本地记录失败。"
 
 #: seahub/project/agent/action_executor.py:1533
 #, python-format
 msgid "Reply posted to Discord thread #%(record_id)s."
-msgstr "Discord 回复已发布。"
+msgstr "Discord 回复 #%(record_id)s 已发布。"
 
 #: seahub/project/agent/action_executor.py:1545
 msgid "Cannot send reply email: empty content."
@@ -1130,7 +1130,7 @@ msgstr "保存回复邮件失败。"
 #: seahub/project/agent/action_executor.py:1672
 #, python-format
 msgid "Reply email sent for thread #%(thread_id)s (email record ID: %(reply_pk)s)."
-msgstr "回复邮件已发送。"
+msgstr "回复邮件 #%(thread_id)s  已发送（邮件记录 ID：%(reply_pk)s)）。"
 
 #: seahub/project/agent/action_executor.py:1692
 #: seahub/project/agent/action_executor.py:1794
@@ -1189,12 +1189,12 @@ msgstr "工单 #%(ticket_pk)s 已从 Discord 线程 #%(thread_pk)s 创建。"
 #: seahub/project/agent/action_executor.py:1995
 #, python-format
 msgid "Ticket #%(ticket_id)s not found"
-msgstr "工单 #%(ticket_id)s 不存在。"
+msgstr "工单 #%(ticket_id)s 不存在"
 
 #: seahub/project/agent/action_executor.py:1963
 #, python-format
 msgid "Ticket #%(ticket_id)s has no assignees"
-msgstr "工单 #%(ticket_id)s 没有分配的负责人。"
+msgstr "工单 #%(ticket_id)s 没有分配的负责人"
 
 #: seahub/project/agent/action_executor.py:1982
 #, python-format
@@ -1204,7 +1204,7 @@ msgstr "已向 %(count)s 个负责人发送通知。"
 #: seahub/project/agent/action_executor.py:1999
 #, python-format
 msgid "Ticket #%(ticket_id)s is already closed"
-msgstr "工单 #%(ticket_id)s 已关闭。"
+msgstr "工单 #%(ticket_id)s 已关闭"
 
 #: seahub/project/agent/action_executor.py:2013
 #, python-format
