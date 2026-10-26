@@ -394,18 +394,26 @@ class OAuthMailboxManager(OAuthTokenClient, BaseMailboxManager):
 class GmailMailboxManager(OAuthMailboxManager):
     """Gmail API mailbox manager."""
 
-    SEARCH_ENDPOINT = 'https://gmail.googleapis.com/gmail/v1/users/me/messages'
-    TRASH_ENDPOINT = 'https://gmail.googleapis.com/gmail/v1/users/me/messages/{gmail_id}/trash'
-    MODIFY_ENDPOINT = 'https://gmail.googleapis.com/gmail/v1/users/me/messages/{gmail_id}/modify'
+    GMAIL_ENDPOINT = 'https://gmail.googleapis.com/gmail/v1/users/{principal}/messages'
 
     _TRASH_LABEL = 'TRASH'
     _JUNK_LABEL = 'SPAM'
+
+    def __init__(self, config, oauth_token=None, oauth_config=None):
+        super().__init__(config, oauth_token, oauth_config)
+        if self.config.get('account_type') == 'shared' and not self.config.get('sender_email'):
+            raise MailboxConfigError('Shared email sender address is required.')
+
+    @property
+    def messages_endpoint(self):
+        principal = self.config['sender_email'] if self.config.get('account_type') == 'shared' else 'me'
+        return self.GMAIL_ENDPOINT.format(principal=quote(principal, safe=''))
 
     def _find_provider_message_id(self, message_id):
         # Escape quotes for Gmail search query syntax.
         safe_message_id = message_id.replace('"', '\\"')
         search_resp = requests.get(
-            self.SEARCH_ENDPOINT,
+            self.messages_endpoint,
             params={'q': f'rfc822msgid:"{safe_message_id}"'},
             headers=self._auth_headers(),
         )
@@ -415,7 +423,7 @@ class GmailMailboxManager(OAuthMailboxManager):
 
     def _do_move_to_trash(self, provider_message_id):
         trash_resp = requests.post(
-            self.TRASH_ENDPOINT.format(gmail_id=provider_message_id),
+            f'{self.messages_endpoint}/{provider_message_id}/trash',
             headers=self._auth_headers(),
         )
         _check_and_raise_error(trash_resp)
@@ -424,7 +432,7 @@ class GmailMailboxManager(OAuthMailboxManager):
         # Gmail has no dedicated "move to spam" call; applying the SPAM label
         # (and removing INBOX) is the documented equivalent.
         modify_resp = requests.post(
-            self.MODIFY_ENDPOINT.format(gmail_id=provider_message_id),
+            f'{self.messages_endpoint}/{provider_message_id}/modify',
             json={'addLabelIds': ['SPAM'], 'removeLabelIds': ['INBOX']},
             headers=self._auth_headers({'Content-Type': 'application/json'}),
         )
