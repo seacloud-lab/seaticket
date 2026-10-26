@@ -364,6 +364,9 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const handleSubmit = useCallback(() => {
     setSubmitting(true);
     let _config = { ...config };
+    if (typeof _config.exclude_paths === 'string') {
+      _config.exclude_paths = _config.exclude_paths.split(/\r?\n/).map(path => path.trim()).filter(Boolean);
+    }
     if (type === CONNECTION_TYPE.EMAIL) {
       _config = sanitizeEmailConfigByProvider(_config);
       if (isOAuthEmailProvider(_config.server_provider)) {
