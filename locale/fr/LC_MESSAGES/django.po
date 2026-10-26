@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: seaqa-web\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-09 14:37+0800\n"
-"PO-Revision-Date: 2026-10-09 07:15\n"
+"POT-Creation-Date: 2026-10-26 11:27+0800\n"
+"PO-Revision-Date: 2026-10-26 03:46\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr\n"
@@ -62,8 +62,9 @@ msgid "Group not found."
 msgstr "Groupe non trouvé."
 
 #: seahub/api2/endpoints/admin/group_projects.py:90
-#: seahub/api2/endpoints/org_admin/groups.py:722 seahub/project/views.py:238
-#: seahub/project/views.py:243
+#: seahub/api2/endpoints/org_admin/groups.py:722 seahub/project/views.py:230
+#: seahub/project/views.py:235 seahub/project/views.py:838
+#: seahub/project/views.py:843
 msgid "Project not found."
 msgstr "Projet non trouvé."
 
@@ -206,8 +207,8 @@ msgid "%(ext)s is an invalid file extension. Authorized extensions are : %(valid
 msgstr "%(ext)s est une extension de fichier invalide. Les extensions autorisées sont : %(valid_exts_list)s"
 
 #: seahub/api2/endpoints/org_admin/settings.py:91
-#: seahub/api2/endpoints/user_avatar.py:43 seahub/portal/apis.py:140
-#: seahub/portal/apis.py:201 seahub/utils/error_msg.py:13
+#: seahub/api2/endpoints/user_avatar.py:43 seahub/portal/apis.py:161
+#: seahub/portal/apis.py:224 seahub/utils/error_msg.py:13
 #, python-format
 msgid "Your file is too big (%(size)s), the maximum allowed size is %(max_valid_size)s"
 msgstr "Votre fichier est trop volumineux (%(size)s), la taille maximale autorisée est %(max_valid_size)s"
@@ -221,14 +222,14 @@ msgstr "L'utilisateur %s existe déjà."
 
 #: seahub/api2/endpoints/org_admin/users.py:580
 #: seahub/api2/endpoints/org_admin/users.py:622 seahub/auth/forms.py:135
-#: seahub/portal/apis.py:2383
+#: seahub/portal/apis.py:2513
 msgid "Failed to send email, email service is not properly configured, please contact administrator."
 msgstr "Échec de l'envoi de l'e-mail, le service de messagerie n'est pas correctement configuré, veuillez contacter l'administrateur."
 
-#: seahub/api2/endpoints/project.py:189 seahub/portal/views.py:69
-#: seahub/portal/views.py:164 seahub/portal/views.py:178
-#: seahub/portal/views.py:195 seahub/portal/views.py:310
-#: seahub/project/views.py:70
+#: seahub/api2/endpoints/project.py:189 seahub/portal/views.py:95
+#: seahub/portal/views.py:191 seahub/portal/views.py:205
+#: seahub/portal/views.py:222 seahub/portal/views.py:338
+#: seahub/project/views.py:57
 msgid "This project does not exist"
 msgstr "Ce projet n'existe pas"
 
@@ -495,8 +496,9 @@ msgstr "Seul le personnel du groupe peut supprimer des membres"
 msgid "Can not remove myself"
 msgstr "Impossible de me supprimer moi-même"
 
-#: seahub/group/views.py:98 seahub/portal/views.py:182
-#: seahub/portal/views.py:316 seahub/project/views.py:87
+#: seahub/group/views.py:98 seahub/portal/views.py:209
+#: seahub/portal/views.py:344 seahub/project/views.py:74
+#: seahub/project/views.py:78
 msgid "Permission denied"
 msgstr "Permission refusée"
 
@@ -525,7 +527,7 @@ msgstr "%(user)s vous a invité à rejoindre %(site_name)s."
 #: seahub/invitations/templates/invitations/invitation_email.html:9
 #: seahub/invitations/templates/invitations/invitation_revoke_email.html:9
 #: seahub/templates/organizations/user_activation_email.html:9
-#: seahub/templates/portal/external_invitation_email.html:6
+#: seahub/templates/portal/external_invitation_email.html:7
 #: seahub/templates/profile/update_contact_email.html:9
 #: seahub/templates/registration/activation_email.html:9
 #: seahub/templates/registration/password_reset_email.html:9
@@ -596,26 +598,26 @@ msgid "Passwords don't match"
 msgstr "Les mots de passe ne correspondent pas"
 
 #: seahub/invitations/views.py:22 seahub/invitations/views.py:32
-#: seahub/invitations/views.py:59 seahub/portal/views.py:253
-#: seahub/portal/views.py:258 seahub/portal/views.py:272
-#: seahub/portal/views.py:276 seahub/portal/views.py:278
-#: seahub/portal/views.py:294
+#: seahub/invitations/views.py:59 seahub/portal/views.py:281
+#: seahub/portal/views.py:286 seahub/portal/views.py:300
+#: seahub/portal/views.py:304 seahub/portal/views.py:306
+#: seahub/portal/views.py:322
 msgid "Invitation link is invalid or expired."
 msgstr "Le lien d'invitation est invalide ou a expiré."
 
-#: seahub/knowledge_base/knowledge_base.py:176 seahub/portal/apis.py:277
-#: seahub/portal/apis.py:688 seahub/portal/apis.py:766
-#: seahub/portal/apis.py:1395 seahub/project/connections.py:696
-#: seahub/tickets/tickets.py:187
+#: seahub/knowledge_base/knowledge_base.py:176 seahub/portal/apis.py:300
+#: seahub/portal/apis.py:711 seahub/portal/apis.py:790
+#: seahub/portal/apis.py:1431 seahub/project/connections.py:727
+#: seahub/tickets/tickets.py:190
 msgid "There are errors with the filters. Please correct them."
 msgstr "Il y a des erreurs avec les filtres. Veuillez les corriger."
 
-#: seahub/knowledge_base/models.py:89 seahub/project/constants.py:348
-#: seahub/project/constants.py:367 seahub/project/constants.py:386
-#: seahub/project/constants.py:405 seahub/project/constants.py:424
-#: seahub/project/constants.py:443 seahub/project/constants.py:462
-#: seahub/project/constants.py:481 seahub/project/constants.py:500
-#: seahub/project/constants.py:519
+#: seahub/knowledge_base/models.py:89 seahub/project/constants.py:355
+#: seahub/project/constants.py:374 seahub/project/constants.py:393
+#: seahub/project/constants.py:412 seahub/project/constants.py:431
+#: seahub/project/constants.py:450 seahub/project/constants.py:469
+#: seahub/project/constants.py:488 seahub/project/constants.py:507
+#: seahub/project/constants.py:526
 msgid "All"
 msgstr "Tout"
 
@@ -718,48 +720,45 @@ msgid "Failed to send email"
 msgstr "Échec de l'envoi de l'e-mail"
 
 #: seahub/organizations/views.py:372 seahub/profile/views.py:212
-#: seahub/utils/__init__.py:89
+#: seahub/utils/__init__.py:77
 msgid "Internal Server Error"
 msgstr "Erreur interne du serveur"
 
-#: seahub/portal/apis.py:2378
+#: seahub/portal/apis.py:2508
 msgid "The user is already a member of your team. Cannot invite the user to the portal."
 msgstr "L'utilisateur est déjà membre de votre équipe. Impossible d'inviter l'utilisateur sur le portail."
 
-#: seahub/portal/apis.py:2424
-msgid "Support portal"
-msgstr "Portail d'assistance"
-
-#: seahub/portal/apis.py:2562 seahub/templates/portal_login.html:43
+#: seahub/portal/apis.py:2710 seahub/templates/portal_login.html:58
 msgid "If the email is eligible, a login code has been sent."
 msgstr "Si l'e-mail est éligible, un code de connexion a été envoyé."
 
-#: seahub/portal/apis.py:2587 seahub/templates/portal/email_login_code.html:4
+#: seahub/portal/apis.py:2738 seahub/templates/portal/email_login_code.html:5
 msgid "Your login code"
 msgstr "Votre code de connexion"
 
-#: seahub/portal/views.py:76 seahub/portal/views.py:166
-#: seahub/portal/views.py:180 seahub/portal/views.py:201
-#: seahub/portal/views.py:264 seahub/portal/views.py:324
-#: seahub/project/views.py:92
+#: seahub/portal/views.py:102 seahub/portal/views.py:193
+#: seahub/portal/views.py:207 seahub/portal/views.py:228
+#: seahub/portal/views.py:292 seahub/portal/views.py:352
+#: seahub/project/views.py:83
 msgid "Portal is not enabled"
 msgstr "Le portail n'est pas activé"
 
-#: seahub/portal/views.py:173
+#: seahub/portal/views.py:200
 msgid "Preview link is invalid or expired."
 msgstr "Le lien de prévisualisation est invalide ou a expiré."
 
-#: seahub/portal/views.py:238 seahub/portal/views.py:243
+#: seahub/portal/views.py:266 seahub/portal/views.py:271
 msgid "Password invalid"
 msgstr "Mot de passe invalide"
 
 #: seahub/profile/forms.py:24 seahub/profile/views.py:164
-#: seahub/profile/views.py:169 seahub/project/views.py:127
-#: seahub/project/views.py:159 seahub/project/views.py:249
-#: seahub/project/views.py:327 seahub/project/views.py:371
-#: seahub/project/views.py:427 seahub/project/views.py:482
-#: seahub/project/views.py:547 seahub/project/views.py:608
-#: seahub/project/views.py:687 seahub/project/views.py:731
+#: seahub/profile/views.py:169 seahub/project/views.py:119
+#: seahub/project/views.py:151 seahub/project/views.py:241
+#: seahub/project/views.py:335 seahub/project/views.py:379
+#: seahub/project/views.py:435 seahub/project/views.py:490
+#: seahub/project/views.py:555 seahub/project/views.py:616
+#: seahub/project/views.py:688 seahub/project/views.py:732
+#: seahub/project/views.py:794 seahub/project/views.py:849
 msgid "Permission denied."
 msgstr "Permission refusée."
 
@@ -803,77 +802,507 @@ msgstr "Retour à SeaTicket"
 msgid "Contact email has been updated."
 msgstr "L'e-mail de contact a été mis à jour."
 
-#: seahub/project/views.py:118 seahub/project/views.py:122
-#: seahub/project/views.py:150 seahub/project/views.py:154
-#: seahub/project/views.py:318 seahub/project/views.py:322
-#: seahub/project/views.py:362 seahub/project/views.py:366
-#: seahub/project/views.py:418 seahub/project/views.py:422
-#: seahub/project/views.py:473 seahub/project/views.py:477
-#: seahub/project/views.py:538 seahub/project/views.py:542
-#: seahub/project/views.py:599 seahub/project/views.py:603
-#: seahub/project/views.py:678 seahub/project/views.py:682
-#: seahub/project/views.py:722 seahub/project/views.py:726
+#: seahub/project/agent/action_executor.py:95
+#: seahub/project/agent/action_executor.py:110
+#: seahub/project/agent/action_executor.py:125
+msgid "Success"
+msgstr "Succès"
+
+#: seahub/project/agent/action_executor.py:103
+#: seahub/project/agent/action_executor.py:110
+msgid "Action execution failed."
+msgstr "Échec de l'exécution de l'action."
+
+#: seahub/project/agent/action_executor.py:176
+#, python-format
+msgid "Invalid ticket source_id: %(source_id)s"
+msgstr "ID de source de ticket invalide : %(source_id)s"
+
+#: seahub/project/agent/action_executor.py:197
+#: seahub/project/agent/action_executor.py:229
+#: seahub/project/agent/action_executor.py:253
+#: seahub/project/agent/action_executor.py:294
+#: seahub/project/agent/action_executor.py:318
+#: seahub/project/agent/action_executor.py:349
+#, python-format
+msgid "Unknown tool_name: %(tool_name)s"
+msgstr "Nom doutil inconnu : %(tool_name)s"
+
+#: seahub/project/agent/action_executor.py:450
+#, python-format
+msgid "Unsupported source_type: %(source_type)s"
+msgstr "Type de source non supporté : %(source_type)s"
+
+#: seahub/project/agent/action_executor.py:469
+msgid "Cannot create Portal issue reply: empty content."
+msgstr "Impossible de créer une réponse de problème Portal : contenu vide."
+
+#: seahub/project/agent/action_executor.py:474
+#: seahub/project/agent/action_executor.py:1207
+#: seahub/project/agent/action_executor.py:1293
+#, python-format
+msgid "Invalid Portal issue source_id: %(source_id)s"
+msgstr "ID de source de problème Portal invalide : %(source_id)s"
+
+#: seahub/project/agent/action_executor.py:479
+#: seahub/project/agent/action_executor.py:1298
+#, python-format
+msgid "Portal issue #%(issue_id)s not found."
+msgstr "Problème Portal #%(issue_id)s non trouvé."
+
+#: seahub/project/agent/action_executor.py:514
+#, python-format
+msgid "Failed to create reply for Portal issue #%(issue_id)s: %(error)s"
+msgstr "Échec de la création de la réponse de problème Portal #%(issue_id)s : %(error)s"
+
+#: seahub/project/agent/action_executor.py:521
+#, python-format
+msgid "Reply #%(comment_id)s added to Portal issue #%(issue_id)s."
+msgstr "Réponse #%(comment_id)s ajoutée au problème Portal #%(issue_id)s."
+
+#: seahub/project/agent/action_executor.py:530
+msgid "Cannot create Discourse reply: empty content."
+msgstr "Impossible de créer une réponse de problème Discourse : contenu vide."
+
+#: seahub/project/agent/action_executor.py:534
+#: seahub/project/agent/action_executor.py:1213
+#: seahub/project/agent/action_executor.py:1352
+#: seahub/project/agent/action_executor.py:1475
+#: seahub/project/agent/action_executor.py:1549
+#: seahub/project/agent/action_executor.py:1681
+#: seahub/project/agent/action_executor.py:1783
+#: seahub/project/agent/action_executor.py:1841
+#: seahub/project/agent/action_executor.py:1899
+#, python-format
+msgid "Invalid source_id format: %(source_id)s"
+msgstr "Format de source de problème Discourse invalide : %(source_id)s"
+
+#: seahub/project/agent/action_executor.py:545
+#, python-format
+msgid "Discourse topic %(source_id)s has no topic_id."
+msgstr "Sujetème %(source_id)s n'a pas d'ID de sujet."
+
+#: seahub/project/agent/action_executor.py:552
+msgid "Discourse connection config is invalid."
+msgstr "Configuration de connexion de problème Discourse invalide."
+
+#: seahub/project/agent/action_executor.py:559
+msgid "Discourse connection config is missing required fields (url, api_key)."
+msgstr "Configuration de connexion de problème Discourse manque des champs requis (url, api_key)."
+
+#: seahub/project/agent/action_executor.py:568
+#, python-format
+msgid "Failed to post reply to Discourse #%(topic_pk)s: %(error)s"
+msgstr "Échec de la publication de la réponse de problème Discourse #%(topic_pk)s : %(error)s"
+
+#: seahub/project/agent/action_executor.py:584
+#, python-format
+msgid "Reply #%(post_number)s posted to Discourse topic #%(topic_pk)s."
+msgstr "Réponse #%(post_number)s publiée dans le sujetème #%(topic_pk)s."
+
+#: seahub/project/agent/action_executor.py:654
+#: seahub/project/agent/action_executor.py:772
+#: seahub/project/agent/action_executor.py:859
+#, python-format
+msgid "Failed to get GitHub issue context for %(source_id)s."
+msgstr "Échec de la récupération du contexte de problème GitHub %(source_id)s."
+
+#: seahub/project/agent/action_executor.py:659
+#, python-format
+msgid "Reply content is empty for GitHub issue %(record_id)s."
+msgstr "Contenu de la réponse de problème GitHub %(record_id)s vide."
+
+#: seahub/project/agent/action_executor.py:676
+#, python-format
+msgid "Failed to add comment to GitHub issue %(record_id)s: %(error)s"
+msgstr "Échec de l'ajout d'un commentaire au problème GitHub %(record_id)s : %(error)s"
+
+#: seahub/project/agent/action_executor.py:713
+#, python-format
+msgid "Comment added to GitHub issue %(record_id)s (comment ID: %(comment_id)s)."
+msgstr "Commentaire #%(comment_id)s ajouté au problème GitHub %(record_id)s."
+
+#: seahub/project/agent/action_executor.py:785
+#, python-format
+msgid "Cannot determine suggested labels for GitHub issue %(record_id)s."
+msgstr "Impossible de déterminer les étiquettes suggérées pour le problème GitHub %(record_id)s."
+
+#: seahub/project/agent/action_executor.py:796
+msgid "No valid labels were found in this suggestion. Please refresh repository labels and try again."
+msgstr "Aucune étiquette valide n'a été trouvée dans cette suggestion. Veuillez actual à jour les étiquettes du dépôt et réessayer."
+
+#: seahub/project/agent/action_executor.py:815
+#, python-format
+msgid "GitHub rejected labels %(final_labels)s (422). Some labels may not exist in the repository. Please sync labels and try again."
+msgstr "GitHub a rejeté les étiquettes %(final_labels)s (422). Quelques étiquettes peuvent ne pas pas exister dans le dépôt. Veuillez synchroniser les étiquettes et réessayer."
+
+#: seahub/project/agent/action_executor.py:823
+#: seahub/project/agent/action_executor.py:831
+#, python-format
+msgid "Failed to update labels for GitHub issue %(record_id)s: %(error)s"
+msgstr "Échec de la mise à jour des étiquettes pour le problème GitHub %(record_id)s : %(error)s"
+
+#: seahub/project/agent/action_executor.py:849
+#, python-format
+msgid "Labels updated for GitHub issue #%(record_id)s: %(labels)s."
+msgstr "Mises à jour des étiquettes %(labels)s pour le problème GitHub #%(record_id)s."
+
+#: seahub/project/agent/action_executor.py:872
+#: seahub/project/agent/action_executor.py:883
+#, python-format
+msgid "Cannot determine suggested issue type for GitHub issue %(record_id)s."
+msgstr "Impossible de déterminer le type de problème suggéré pour le problème GitHub %(record_id)s."
+
+#: seahub/project/agent/action_executor.py:933
+#, python-format
+msgid "GitHub rejected issue type \"%(github_issue_type)s\" (422). The type may not be defined in the organization. Please configure issue types in GitHub or choose an existing one."
+msgstr "GitHub a rejeté le type de problème \"%(github_issue_type)s\" (422). Le type peut ne pas pas être défini dans l'organisme. Veuillez configurer les types de problème dans GitHub ou choisir un type existant."
+
+#: seahub/project/agent/action_executor.py:941
+#: seahub/project/agent/action_executor.py:949
+#, python-format
+msgid "Failed to update issue_type for GitHub issue %(record_id)s: %(error)s"
+msgstr "Échec de la mise à jour du type de problème pour le problème GitHub %(record_id)s : %(error)s"
+
+#: seahub/project/agent/action_executor.py:967
+#, python-format
+msgid "Issue type updated to \"%(new_type)s\" for GitHub issue #%(record_id)s."
+msgstr "Mise à jour du type de problème \"%(new_type)s\" pour le problème GitHub #%(record_id)s."
+
+#: seahub/project/agent/action_executor.py:1132
+#: seahub/project/agent/action_executor.py:1162
+#, python-format
+msgid "Failed to create ticket: %(error)s"
+msgstr "Échec de la création de ticket : %(error)s"
+
+#: seahub/project/agent/action_executor.py:1192
+#: seahub/project/agent/action_executor.py:1194
+msgid "related_ticket must be a positive integer."
+msgstr "Le ticket associé doit être un entier positif."
+
+#: seahub/project/agent/action_executor.py:1199
+#, python-format
+msgid "Ticket #%(related_ticket)s not found."
+msgstr "Ticket #%(related_ticket)s non trouvé."
+
+#: seahub/project/agent/action_executor.py:1229
+#, python-format
+msgid "Failed to link this record to ticket #%(related_ticket)s: %(error)s"
+msgstr "Échec de la liaison de ce enregistrement au ticket #%(related_ticket)s : %(error)s"
+
+#: seahub/project/agent/action_executor.py:1260
+#, python-format
+msgid "Linked record %(normalized_source_id)s to ticket #%(related_ticket)s but failed to update linked_connection_records: %(error)s"
+msgstr "Lien de %(normalized_source_id)s au ticket #%(related_ticket)s mais échec de la mise à jour des connexions liées : %(error)s"
+
+#: seahub/project/agent/action_executor.py:1275
+#, python-format
+msgid "Record linked to ticket #%(related_ticket)s."
+msgstr "Lien de %(normalized_source_id)s au ticket #%(related_ticket)s."
+
+#: seahub/project/agent/action_executor.py:1301
+#, python-format
+msgid "Portal issue #%(issue_id)s is already linked to ticket #%(linked_ticket)s."
+msgstr "Problème Portal #%(issue_id)s est déjà lié au ticket #%(linked_ticket)s."
+
+#: seahub/project/agent/action_executor.py:1340
+#, python-format
+msgid "Ticket #%(ticket_pk)s created from Portal issue #%(issue_id)s."
+msgstr "Ticket #%(ticket_pk)s créé à partir du problème Portal #%(issue_id)s."
+
+#: seahub/project/agent/action_executor.py:1361
+#, python-format
+msgid "GitHub issue %(source_id)s not found in SeaDB."
+msgstr "Problème GitHub %(source_id)s non trouvé dans SeaDB."
+
+#: seahub/project/agent/action_executor.py:1368
+#, python-format
+msgid "GitHub issue #%(record_id)s is already linked to ticket #%(linked_ticket)s."
+msgstr "Problème GitHub #%(record_id)s est déjà lié au ticket #%(linked_ticket)s."
+
+#: seahub/project/agent/action_executor.py:1404
+#, python-format
+msgid "Ticket #%(ticket_pk)s created from GitHub issue #%(record_id)s."
+msgstr "Ticket #%(ticket_pk)s créé à partir du problème GitHub #%(record_id)s."
+
+#: seahub/project/agent/action_executor.py:1424
+#, python-format
+msgid "Email connection %(connection_id)s not found."
+msgstr "Connexion email %(connection_id)s non trouvé."
+
+#: seahub/project/agent/action_executor.py:1431
+#, python-format
+msgid "Email thread #%(thread_id)s not found in SeaDB."
+msgstr "Fils email #%(thread_id)s non trouvé dans SeaDB."
+
+#: seahub/project/agent/action_executor.py:1435
+#, python-format
+msgid "No emails found for thread #%(thread_id)s."
+msgstr "Aucun email trouvé pour le fils email #%(thread_id)s."
+
+#: seahub/project/agent/action_executor.py:1442
+#, python-format
+msgid "Discourse connection %(connection_id)s not found."
+msgstr "Connexion Discourse %(connection_id)s non trouvé."
+
+#: seahub/project/agent/action_executor.py:1449
+#, python-format
+msgid "Discourse topic #%(topic_pk)s not found in SeaDB."
+msgstr "Sujet Discourse #%(topic_pk)s non trouvé dans SeaDB."
+
+#: seahub/project/agent/action_executor.py:1459
+#, python-format
+msgid "Discord connection %(connection_id)s not found."
+msgstr "Connexion Discord %(connection_id)s non trouvé."
+
+#: seahub/project/agent/action_executor.py:1464
+#, python-format
+msgid "Discord thread #%(thread_pk)s not found in SeaDB."
+msgstr "Fils Discord #%(thread_pk)s non trouvé dans SeaDB."
+
+#: seahub/project/agent/action_executor.py:1471
+msgid "Cannot create Discord reply: empty content."
+msgstr "Impossible de créer une réponse Discord : contenu vide."
+
+#: seahub/project/agent/action_executor.py:1486
+#, python-format
+msgid "Discord thread %(source_id)s has no thread_id."
+msgstr "Fils Discord %(source_id)s n'a pas d'ID de fil."
+
+#: seahub/project/agent/action_executor.py:1495
+#, python-format
+msgid "Failed to post reply to Discord thread #%(record_id)s: %(error)s"
+msgstr "Échec de la publication de la réponse Discord dans le fil #%(record_id)s : %(error)s"
+
+#: seahub/project/agent/action_executor.py:1503
+msgid "Failed to save Discord reply: response has no message id."
+msgstr "Échec de la sauvegarde de la réponse Discord : la réponse n'a pas d'ID de message."
+
+#: seahub/project/agent/action_executor.py:1527
+#, python-format
+msgid "Discord reply was posted, but failed to save local record for thread #%(record_id)s."
+msgstr "La réponse Discord a été publiée, mais échec de la sauvegarde de l'enregistrement local pour le fil #%(record_id)s."
+
+#: seahub/project/agent/action_executor.py:1533
+#, python-format
+msgid "Reply posted to Discord thread #%(record_id)s."
+msgstr "La réponse Discord a été publiée dans le fil #%(record_id)s."
+
+#: seahub/project/agent/action_executor.py:1545
+msgid "Cannot send reply email: empty content."
+msgstr "Impossible d'envoyer une réponse email : contenu vide."
+
+#: seahub/project/agent/action_executor.py:1561
+#: seahub/project/agent/action_executor.py:1597
+#: seahub/project/agent/action_executor.py:1633
+#: seahub/project/agent/action_executor.py:1702
+#: seahub/project/agent/action_executor.py:1738
+msgid "Email connection config is invalid."
+msgstr "La configuration de la connexion email est invalide."
+
+#: seahub/project/agent/action_executor.py:1566
+#, python-format
+msgid "No inbound email found for thread %(source_id)s."
+msgstr "Aucun email entrant trouvé pour le fils email %(source_id)s."
+
+#: seahub/project/agent/action_executor.py:1578
+#, python-format
+msgid "Failed to resolve recipient for thread %(source_id)s."
+msgstr "Échec de la résolution du destinataire pour le fils email %(source_id)s."
+
+#: seahub/project/agent/action_executor.py:1584
+#, python-format
+msgid "Cannot determine subject for thread %(source_id)s."
+msgstr "Impossible de déterminer le sujet pour le fils email %(source_id)s."
+
+#: seahub/project/agent/action_executor.py:1592
+#, python-format
+msgid "Cannot determine reply target for thread %(source_id)s."
+msgstr "Impossible de déterminer la cible de la réponse pour le fils email %(source_id)s."
+
+#: seahub/project/agent/action_executor.py:1619
+#: seahub/project/agent/action_executor.py:1709
+msgid "Email OAuth authorization is required."
+msgstr "L'autorisation OAuth email est requise."
+
+#: seahub/project/agent/action_executor.py:1636
+msgid "Failed to send email."
+msgstr "Échec de l'envoi de l'email."
+
+#: seahub/project/agent/action_executor.py:1669
+msgid "Failed to save reply email."
+msgstr "Échec de la sauvegarde de la réponse email."
+
+#: seahub/project/agent/action_executor.py:1672
+#, python-format
+msgid "Reply email sent for thread #%(thread_id)s (email record ID: %(reply_pk)s)."
+msgstr "La réponse email a été envoyée pour le fils email #%(thread_id)s (ID de l'enregistrement email : %(reply_pk)s)."
+
+#: seahub/project/agent/action_executor.py:1692
+#: seahub/project/agent/action_executor.py:1794
+#, python-format
+msgid "Email thread #%(thread_id)s is already linked to ticket #%(linked_ticket)s."
+msgstr "Fils email #%(thread_id)s est déjà lié à la ticket #%(linked_ticket)s."
+
+#: seahub/project/agent/action_executor.py:1731
+#, python-format
+msgid "No inbound message id found for thread %(source_id)s."
+msgstr "Aucun ID entrant trouvé pour le fils email %(source_id)s."
+
+#: seahub/project/agent/action_executor.py:1744
+msgid "Failed to move the email to the spam folder."
+msgstr "Échec de la migration de l'email vers la boîte de spambes."
+
+#: seahub/project/agent/action_executor.py:1753
+msgid "Failed to move the email to the spam folder: no matching remote message was moved."
+msgstr "Échec de la migration de l'email vers la boîte de spambes : aucun message correspondant n'a été trouvé."
+
+#: seahub/project/agent/action_executor.py:1774
+msgid "Email moved to spam but failed to update local records."
+msgstr "Email déplacé vers la boîte de spambes, mais échec de la mise à jour des enregistrements locaux."
+
+#: seahub/project/agent/action_executor.py:1777
+#, python-format
+msgid "Email thread #%(thread_id)s moved to the spam folder."
+msgstr "Fils email #%(thread_id)s a été déplacé vers la boîte de spambes."
+
+#: seahub/project/agent/action_executor.py:1831
+#, python-format
+msgid "Ticket #%(ticket_pk)s created from email thread #%(thread_id)s."
+msgstr "Ticket #%(ticket_pk)s a été créé à partir du fils email #%(thread_id)s."
+
+#: seahub/project/agent/action_executor.py:1852
+#, python-format
+msgid "Discourse topic #%(topic_pk)s is already linked to ticket #%(linked_ticket)s."
+msgstr "Sujet Discourse #%(topic_pk)s est déjà lié à la ticket #%(linked_ticket)s."
+
+#: seahub/project/agent/action_executor.py:1889
+#, python-format
+msgid "Ticket #%(ticket_pk)s created from discourse topic #%(topic_pk)s."
+msgstr "Ticket #%(ticket_pk)s a été créé à partir du sujet Discourse #%(topic_pk)s."
+
+#: seahub/project/agent/action_executor.py:1910
+#, python-format
+msgid "Discord thread #%(thread_pk)s is already linked to ticket #%(linked_ticket)s."
+msgstr "Fil Discord #%(thread_pk)s est déjà lié à la ticket #%(linked_ticket)s."
+
+#: seahub/project/agent/action_executor.py:1947
+#, python-format
+msgid "Ticket #%(ticket_pk)s created from discord thread #%(thread_pk)s."
+msgstr "Ticket #%(ticket_pk)s a été créé à partir du fils Discord #%(thread_pk)s."
+
+#: seahub/project/agent/action_executor.py:1958
+#: seahub/project/agent/action_executor.py:1995
+#, python-format
+msgid "Ticket #%(ticket_id)s not found"
+msgstr "Ticket #%(ticket_id)s non trouvé"
+
+#: seahub/project/agent/action_executor.py:1963
+#, python-format
+msgid "Ticket #%(ticket_id)s has no assignees"
+msgstr "Ticket #%(ticket_id)s n'a pas d'affecté"
+
+#: seahub/project/agent/action_executor.py:1982
+#, python-format
+msgid "Notification sent to %(count)s assignee(s)."
+msgstr "Notification envoyée à %(count)s affecté(s)"
+
+#: seahub/project/agent/action_executor.py:1999
+#, python-format
+msgid "Ticket #%(ticket_id)s is already closed"
+msgstr "Ticket #%(ticket_id)s est déjà fermé"
+
+#: seahub/project/agent/action_executor.py:2013
+#, python-format
+msgid "Failed to close linked GitHub issues: %(error)s"
+msgstr "Échec de la fermeture des issues GitHub liés : %(error)s"
+
+#: seahub/project/agent/action_executor.py:2041
+#, python-format
+msgid "Ticket #%(ticket_id)s closed."
+msgstr "Ticket #%(ticket_id)s a été fermé"
+
+#: seahub/project/views.py:110 seahub/project/views.py:114
+#: seahub/project/views.py:142 seahub/project/views.py:146
+#: seahub/project/views.py:326 seahub/project/views.py:330
+#: seahub/project/views.py:370 seahub/project/views.py:374
+#: seahub/project/views.py:426 seahub/project/views.py:430
+#: seahub/project/views.py:481 seahub/project/views.py:485
+#: seahub/project/views.py:546 seahub/project/views.py:550
+#: seahub/project/views.py:607 seahub/project/views.py:611
+#: seahub/project/views.py:679 seahub/project/views.py:683
+#: seahub/project/views.py:723 seahub/project/views.py:727
+#: seahub/project/views.py:785 seahub/project/views.py:789
 msgid "Please install through the address provided by sea-ticket."
 msgstr "Veuillez installer via l'adresse fournie par sea-ticket."
 
-#: seahub/project/views.py:226 seahub/project/views.py:230
+#: seahub/project/views.py:218 seahub/project/views.py:222
+#: seahub/project/views.py:826 seahub/project/views.py:830
 msgid "Request not found"
 msgstr "Requête non trouvée"
 
-#: seahub/project/views.py:330 seahub/project/views.py:374
+#: seahub/project/views.py:252
+msgid "The email provider rejected the authorization."
+msgstr "Le fournisseur d'e-mail a refusé l'autorisation."
+
+#: seahub/project/views.py:338 seahub/project/views.py:382
 msgid "Linear OAuth settings are invalid."
 msgstr "Les paramètres OAuth linéaires sont invalides."
 
-#: seahub/project/views.py:359
+#: seahub/project/views.py:367
 msgid "Invalid Linear OAuth state."
 msgstr "État OAuth linéaire invalide."
 
-#: seahub/project/views.py:388 seahub/project/views.py:392
-#: seahub/project/views.py:400
+#: seahub/project/views.py:396 seahub/project/views.py:400
+#: seahub/project/views.py:408
 msgid "Failed to authorize Linear."
 msgstr "Échec de l'autorisation de Linear."
 
-#: seahub/project/views.py:433 seahub/project/views.py:488
+#: seahub/project/views.py:441 seahub/project/views.py:496
 msgid "Confluence OAuth settings are invalid."
 msgstr "Les paramètres OAuth Confluence sont invalides."
 
-#: seahub/project/views.py:470
+#: seahub/project/views.py:478
 msgid "Invalid Confluence OAuth state."
 msgstr "État OAuth Confluence invalide."
 
-#: seahub/project/views.py:502 seahub/project/views.py:506
-#: seahub/project/views.py:513
+#: seahub/project/views.py:510 seahub/project/views.py:514
+#: seahub/project/views.py:521
 msgid "Failed to authorize Confluence."
 msgstr "Échec de l'autorisation de Confluence."
 
-#: seahub/project/views.py:550 seahub/project/views.py:611
+#: seahub/project/views.py:558 seahub/project/views.py:619
 msgid "Discord OAuth settings are invalid."
 msgstr "Les paramètres OAuth de Discord sont invalides."
 
-#: seahub/project/views.py:593
+#: seahub/project/views.py:601
 msgid "Invalid Discord OAuth state."
 msgstr "État OAuth de Discord invalide."
 
-#: seahub/project/views.py:596
+#: seahub/project/views.py:604
 msgid "Discord server information was not returned."
 msgstr "Les informations du serveur Discord n'ont pas été renvoyées."
 
-#: seahub/project/views.py:626 seahub/project/views.py:630
+#: seahub/project/views.py:634 seahub/project/views.py:638
 msgid "Failed to authorize Discord."
 msgstr "Échec de l'autorisation Discord."
 
-#: seahub/project/views.py:690 seahub/project/views.py:734
+#: seahub/project/views.py:691 seahub/project/views.py:735
 msgid "Jira OAuth settings are invalid."
 msgstr "Les paramètres OAuth de Jira sont invalides."
 
-#: seahub/project/views.py:719
+#: seahub/project/views.py:720
 msgid "Invalid Jira OAuth state."
 msgstr "État OAuth de Jira invalide."
 
-#: seahub/project/views.py:748 seahub/project/views.py:752
-#: seahub/project/views.py:759
+#: seahub/project/views.py:749 seahub/project/views.py:753
+#: seahub/project/views.py:760
 msgid "Failed to authorize Jira."
 msgstr "Échec de l'autorisation Jira."
+
+#: seahub/project/views.py:800
+msgid "Notion OAuth settings are invalid."
+msgstr "Les paramètres OAuth de Notion sont invalides."
 
 #: seahub/saml/utils.py:49
 msgid "SAML login relevant settings invalid."
@@ -987,10 +1416,14 @@ msgid "No"
 msgstr "Non"
 
 #: seahub/templates/email_base.html:9
+#: seahub/templates/portal/email_login_code.html:12
+#: seahub/templates/portal/external_invitation_email.html:18
 msgid "Thanks for using our site!"
 msgstr "Merci d'utiliser notre site !"
 
 #: seahub/templates/email_base.html:13
+#: seahub/templates/portal/email_login_code.html:16
+#: seahub/templates/portal/external_invitation_email.html:22
 #, python-format
 msgid "The %(site_name)s team"
 msgstr "L'équipe %(site_name)s"
@@ -1066,15 +1499,15 @@ msgstr "Confidentialité"
 msgid "Terms"
 msgstr "Conditions"
 
-#: seahub/templates/portal/email_login_code.html:6
+#: seahub/templates/portal/email_login_code.html:7
 msgid "Enter this code on the portal login page to complete login."
 msgstr "Entrez ce code sur la page de connexion du portail pour terminer la connexion."
 
-#: seahub/templates/portal/email_login_code.html:8
+#: seahub/templates/portal/email_login_code.html:9
 msgid "The code is valid for 10 minutes."
 msgstr "Le code est valide pendant 10 minutes."
 
-#: seahub/templates/portal/external_invitation_email.html:9
+#: seahub/templates/portal/external_invitation_email.html:10
 #, python-format
 msgid "%(inviter_name)s invited you to the support portal. Please click the link below to start:"
 msgstr "%(inviter_name)s vous a invité sur le portail d'assistance. Veuillez cliquer sur le lien ci-dessous pour commencer :"
@@ -1108,28 +1541,30 @@ msgstr "Continuer"
 msgid "Login"
 msgstr "Connexion"
 
-#: seahub/templates/portal_login.html:42
+#: seahub/templates/portal_login.html:57
 #, python-format
 msgid "Resend in %(sec)ss"
 msgstr "Renvoyer dans %(sec)ss"
 
-#: seahub/templates/portal_login.html:89 seahub/templates/portal_login.html:137
+#: seahub/templates/portal_login.html:104
+#: seahub/templates/portal_login.html:152
 msgid "Email is required"
 msgstr "L'e-mail est requis"
 
-#: seahub/templates/portal_login.html:99 seahub/templates/portal_login.html:148
+#: seahub/templates/portal_login.html:114
+#: seahub/templates/portal_login.html:163
 msgid "Send failed"
 msgstr "Échec de l'envoi"
 
-#: seahub/templates/portal_login.html:125
+#: seahub/templates/portal_login.html:140
 msgid "Resend login code"
 msgstr "Renvoyer le code de connexion"
 
-#: seahub/templates/portal_login.html:156
+#: seahub/templates/portal_login.html:171
 msgid "Email and code are required"
 msgstr "L'e-mail et le code sont requis"
 
-#: seahub/templates/portal_login.html:166
+#: seahub/templates/portal_login.html:181
 msgid "Verify failed"
 msgstr "La vérification a échoué"
 
@@ -1560,7 +1995,7 @@ msgstr "Vous êtes sur le point de désactiver l'authentification à deux facteu
 msgid "Disable"
 msgstr "Désactiver"
 
-#: seahub/utils/__init__.py:75
+#: seahub/utils/__init__.py:63
 msgid "Permission error"
 msgstr "Erreur de permission"
 

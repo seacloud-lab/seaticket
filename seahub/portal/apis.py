@@ -2552,7 +2552,7 @@ class PortalExternalInvitationsView(APIView):
         if enable_send_email:
             raw_portal_name = portal_settings.get('portal_name')
             portal_name = raw_portal_name.strip() if isinstance(raw_portal_name, str) else ''
-            portal_name = portal_name or _('SeaTicket')
+            portal_name = portal_name or 'SeaTicket'
             raw_subject = portal_settings.get('welcome_email_subject')
             raw_content = portal_settings.get('welcome_email_content')
             subject = raw_subject.replace('{portal_name}', portal_name) if isinstance(raw_subject, str) else ''
@@ -2732,7 +2732,7 @@ class PortalExternalLoginSendCodeView(APIView):
             cache.set(cooldown_key, timezone.now().isoformat(), PORTAL_EXTERNAL_LOGIN_SEND_COOLDOWN)
             raw_portal_name = portal_settings.get('portal_name')
             portal_name = raw_portal_name.strip() if isinstance(raw_portal_name, str) else ''
-            portal_name = portal_name or _('SeaTicket')
+            portal_name = portal_name or 'SeaTicket'
             sent = send_html_email_with_dj_template(
                 email,
                 _('Your login code'),

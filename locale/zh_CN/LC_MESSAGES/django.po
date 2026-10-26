@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: seaqa-web\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-09 14:37+0800\n"
-"PO-Revision-Date: 2026-10-10 07:53\n"
+"POT-Creation-Date: 2026-10-26 11:27+0800\n"
+"PO-Revision-Date: 2026-10-26 03:58\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Language: zh\n"
@@ -62,8 +62,9 @@ msgid "Group not found."
 msgstr "未找到群组。"
 
 #: seahub/api2/endpoints/admin/group_projects.py:90
-#: seahub/api2/endpoints/org_admin/groups.py:722 seahub/project/views.py:238
-#: seahub/project/views.py:243
+#: seahub/api2/endpoints/org_admin/groups.py:722 seahub/project/views.py:230
+#: seahub/project/views.py:235 seahub/project/views.py:838
+#: seahub/project/views.py:843
 msgid "Project not found."
 msgstr "未找到项目。"
 
@@ -206,8 +207,8 @@ msgid "%(ext)s is an invalid file extension. Authorized extensions are : %(valid
 msgstr "%(ext)s 是一个无效文件扩展名，允许的文件扩展名为：%(valid_exts_list)s"
 
 #: seahub/api2/endpoints/org_admin/settings.py:91
-#: seahub/api2/endpoints/user_avatar.py:43 seahub/portal/apis.py:140
-#: seahub/portal/apis.py:201 seahub/utils/error_msg.py:13
+#: seahub/api2/endpoints/user_avatar.py:43 seahub/portal/apis.py:161
+#: seahub/portal/apis.py:224 seahub/utils/error_msg.py:13
 #, python-format
 msgid "Your file is too big (%(size)s), the maximum allowed size is %(max_valid_size)s"
 msgstr "文件过大 (%(size)s)，最大允许文件大小为 %(max_valid_size)s"
@@ -221,14 +222,14 @@ msgstr "用户 %s 已存在。"
 
 #: seahub/api2/endpoints/org_admin/users.py:580
 #: seahub/api2/endpoints/org_admin/users.py:622 seahub/auth/forms.py:135
-#: seahub/portal/apis.py:2383
+#: seahub/portal/apis.py:2513
 msgid "Failed to send email, email service is not properly configured, please contact administrator."
 msgstr "邮件发送失败，邮箱服务未正确配置，请联系管理员。"
 
-#: seahub/api2/endpoints/project.py:189 seahub/portal/views.py:69
-#: seahub/portal/views.py:164 seahub/portal/views.py:178
-#: seahub/portal/views.py:195 seahub/portal/views.py:310
-#: seahub/project/views.py:70
+#: seahub/api2/endpoints/project.py:189 seahub/portal/views.py:95
+#: seahub/portal/views.py:191 seahub/portal/views.py:205
+#: seahub/portal/views.py:222 seahub/portal/views.py:338
+#: seahub/project/views.py:57
 msgid "This project does not exist"
 msgstr "项目不存在"
 
@@ -491,8 +492,9 @@ msgstr "只有群组管理员可以删除成员"
 msgid "Can not remove myself"
 msgstr "无法删除自己"
 
-#: seahub/group/views.py:98 seahub/portal/views.py:182
-#: seahub/portal/views.py:316 seahub/project/views.py:87
+#: seahub/group/views.py:98 seahub/portal/views.py:209
+#: seahub/portal/views.py:344 seahub/project/views.py:74
+#: seahub/project/views.py:78
 msgid "Permission denied"
 msgstr "没有权限"
 
@@ -521,7 +523,7 @@ msgstr "%(user)s 邀请你加入 %(site_name)s。"
 #: seahub/invitations/templates/invitations/invitation_email.html:9
 #: seahub/invitations/templates/invitations/invitation_revoke_email.html:9
 #: seahub/templates/organizations/user_activation_email.html:9
-#: seahub/templates/portal/external_invitation_email.html:6
+#: seahub/templates/portal/external_invitation_email.html:7
 #: seahub/templates/profile/update_contact_email.html:9
 #: seahub/templates/registration/activation_email.html:9
 #: seahub/templates/registration/password_reset_email.html:9
@@ -592,26 +594,26 @@ msgid "Passwords don't match"
 msgstr "两次输入的密码不一致"
 
 #: seahub/invitations/views.py:22 seahub/invitations/views.py:32
-#: seahub/invitations/views.py:59 seahub/portal/views.py:253
-#: seahub/portal/views.py:258 seahub/portal/views.py:272
-#: seahub/portal/views.py:276 seahub/portal/views.py:278
-#: seahub/portal/views.py:294
+#: seahub/invitations/views.py:59 seahub/portal/views.py:281
+#: seahub/portal/views.py:286 seahub/portal/views.py:300
+#: seahub/portal/views.py:304 seahub/portal/views.py:306
+#: seahub/portal/views.py:322
 msgid "Invitation link is invalid or expired."
 msgstr "邀请链接无效或已过期。"
 
-#: seahub/knowledge_base/knowledge_base.py:176 seahub/portal/apis.py:277
-#: seahub/portal/apis.py:688 seahub/portal/apis.py:766
-#: seahub/portal/apis.py:1395 seahub/project/connections.py:696
-#: seahub/tickets/tickets.py:187
+#: seahub/knowledge_base/knowledge_base.py:176 seahub/portal/apis.py:300
+#: seahub/portal/apis.py:711 seahub/portal/apis.py:790
+#: seahub/portal/apis.py:1431 seahub/project/connections.py:727
+#: seahub/tickets/tickets.py:190
 msgid "There are errors with the filters. Please correct them."
 msgstr "筛选器存在错误。请更正。"
 
-#: seahub/knowledge_base/models.py:89 seahub/project/constants.py:348
-#: seahub/project/constants.py:367 seahub/project/constants.py:386
-#: seahub/project/constants.py:405 seahub/project/constants.py:424
-#: seahub/project/constants.py:443 seahub/project/constants.py:462
-#: seahub/project/constants.py:481 seahub/project/constants.py:500
-#: seahub/project/constants.py:519
+#: seahub/knowledge_base/models.py:89 seahub/project/constants.py:355
+#: seahub/project/constants.py:374 seahub/project/constants.py:393
+#: seahub/project/constants.py:412 seahub/project/constants.py:431
+#: seahub/project/constants.py:450 seahub/project/constants.py:469
+#: seahub/project/constants.py:488 seahub/project/constants.py:507
+#: seahub/project/constants.py:526
 msgid "All"
 msgstr "全部"
 
@@ -712,48 +714,45 @@ msgid "Failed to send email"
 msgstr "发送邮件失败"
 
 #: seahub/organizations/views.py:372 seahub/profile/views.py:212
-#: seahub/utils/__init__.py:89
+#: seahub/utils/__init__.py:77
 msgid "Internal Server Error"
 msgstr "服务器内部错误"
 
-#: seahub/portal/apis.py:2378
+#: seahub/portal/apis.py:2508
 msgid "The user is already a member of your team. Cannot invite the user to the portal."
 msgstr "该用户已是你团队的成员。无法邀请该用户加入门户。"
 
-#: seahub/portal/apis.py:2424
-msgid "Support portal"
-msgstr "支持门户"
-
-#: seahub/portal/apis.py:2562 seahub/templates/portal_login.html:43
+#: seahub/portal/apis.py:2710 seahub/templates/portal_login.html:58
 msgid "If the email is eligible, a login code has been sent."
 msgstr "如果邮箱符合条件，登录码已发送。"
 
-#: seahub/portal/apis.py:2587 seahub/templates/portal/email_login_code.html:4
+#: seahub/portal/apis.py:2738 seahub/templates/portal/email_login_code.html:5
 msgid "Your login code"
 msgstr "你的登录码"
 
-#: seahub/portal/views.py:76 seahub/portal/views.py:166
-#: seahub/portal/views.py:180 seahub/portal/views.py:201
-#: seahub/portal/views.py:264 seahub/portal/views.py:324
-#: seahub/project/views.py:92
+#: seahub/portal/views.py:102 seahub/portal/views.py:193
+#: seahub/portal/views.py:207 seahub/portal/views.py:228
+#: seahub/portal/views.py:292 seahub/portal/views.py:352
+#: seahub/project/views.py:83
 msgid "Portal is not enabled"
 msgstr "门户未启用"
 
-#: seahub/portal/views.py:173
+#: seahub/portal/views.py:200
 msgid "Preview link is invalid or expired."
 msgstr "预览链接无效或已过期。"
 
-#: seahub/portal/views.py:238 seahub/portal/views.py:243
+#: seahub/portal/views.py:266 seahub/portal/views.py:271
 msgid "Password invalid"
 msgstr "密码无效"
 
 #: seahub/profile/forms.py:24 seahub/profile/views.py:164
-#: seahub/profile/views.py:169 seahub/project/views.py:127
-#: seahub/project/views.py:159 seahub/project/views.py:249
-#: seahub/project/views.py:327 seahub/project/views.py:371
-#: seahub/project/views.py:427 seahub/project/views.py:482
-#: seahub/project/views.py:547 seahub/project/views.py:608
-#: seahub/project/views.py:687 seahub/project/views.py:731
+#: seahub/profile/views.py:169 seahub/project/views.py:119
+#: seahub/project/views.py:151 seahub/project/views.py:241
+#: seahub/project/views.py:335 seahub/project/views.py:379
+#: seahub/project/views.py:435 seahub/project/views.py:490
+#: seahub/project/views.py:555 seahub/project/views.py:616
+#: seahub/project/views.py:688 seahub/project/views.py:732
+#: seahub/project/views.py:794 seahub/project/views.py:849
 msgid "Permission denied."
 msgstr "没有权限。"
 
@@ -797,77 +796,507 @@ msgstr "返回 SeaTicket"
 msgid "Contact email has been updated."
 msgstr "联系邮箱已更新。"
 
-#: seahub/project/views.py:118 seahub/project/views.py:122
-#: seahub/project/views.py:150 seahub/project/views.py:154
-#: seahub/project/views.py:318 seahub/project/views.py:322
-#: seahub/project/views.py:362 seahub/project/views.py:366
-#: seahub/project/views.py:418 seahub/project/views.py:422
-#: seahub/project/views.py:473 seahub/project/views.py:477
-#: seahub/project/views.py:538 seahub/project/views.py:542
-#: seahub/project/views.py:599 seahub/project/views.py:603
-#: seahub/project/views.py:678 seahub/project/views.py:682
-#: seahub/project/views.py:722 seahub/project/views.py:726
+#: seahub/project/agent/action_executor.py:95
+#: seahub/project/agent/action_executor.py:110
+#: seahub/project/agent/action_executor.py:125
+msgid "Success"
+msgstr "成功"
+
+#: seahub/project/agent/action_executor.py:103
+#: seahub/project/agent/action_executor.py:110
+msgid "Action execution failed."
+msgstr "操作执行失败。"
+
+#: seahub/project/agent/action_executor.py:176
+#, python-format
+msgid "Invalid ticket source_id: %(source_id)s"
+msgstr "无效的工单来源ID：%(source_id)s"
+
+#: seahub/project/agent/action_executor.py:197
+#: seahub/project/agent/action_executor.py:229
+#: seahub/project/agent/action_executor.py:253
+#: seahub/project/agent/action_executor.py:294
+#: seahub/project/agent/action_executor.py:318
+#: seahub/project/agent/action_executor.py:349
+#, python-format
+msgid "Unknown tool_name: %(tool_name)s"
+msgstr "未知的工具名称：%(tool_name)s"
+
+#: seahub/project/agent/action_executor.py:450
+#, python-format
+msgid "Unsupported source_type: %(source_type)s"
+msgstr "不支持的来源类型：%(source_type)s"
+
+#: seahub/project/agent/action_executor.py:469
+msgid "Cannot create Portal issue reply: empty content."
+msgstr "无法创建门户工单回复：内容为空。"
+
+#: seahub/project/agent/action_executor.py:474
+#: seahub/project/agent/action_executor.py:1207
+#: seahub/project/agent/action_executor.py:1293
+#, python-format
+msgid "Invalid Portal issue source_id: %(source_id)s"
+msgstr "无效的门户工单来源ID：%(source_id)s"
+
+#: seahub/project/agent/action_executor.py:479
+#: seahub/project/agent/action_executor.py:1298
+#, python-format
+msgid "Portal issue #%(issue_id)s not found."
+msgstr "门户工单 #%(issue_id)s 不存在。"
+
+#: seahub/project/agent/action_executor.py:514
+#, python-format
+msgid "Failed to create reply for Portal issue #%(issue_id)s: %(error)s"
+msgstr "创建门户工单回复失败：%(issue_id)s 错误：%(error)s"
+
+#: seahub/project/agent/action_executor.py:521
+#, python-format
+msgid "Reply #%(comment_id)s added to Portal issue #%(issue_id)s."
+msgstr "门户工单回复 #%(comment_id)s 已添加到门户工单 #%(issue_id)s。"
+
+#: seahub/project/agent/action_executor.py:530
+msgid "Cannot create Discourse reply: empty content."
+msgstr "无法创建 Discourse 回复：内容为空。"
+
+#: seahub/project/agent/action_executor.py:534
+#: seahub/project/agent/action_executor.py:1213
+#: seahub/project/agent/action_executor.py:1352
+#: seahub/project/agent/action_executor.py:1475
+#: seahub/project/agent/action_executor.py:1549
+#: seahub/project/agent/action_executor.py:1681
+#: seahub/project/agent/action_executor.py:1783
+#: seahub/project/agent/action_executor.py:1841
+#: seahub/project/agent/action_executor.py:1899
+#, python-format
+msgid "Invalid source_id format: %(source_id)s"
+msgstr "无效的来源ID格式：%(source_id)s"
+
+#: seahub/project/agent/action_executor.py:545
+#, python-format
+msgid "Discourse topic %(source_id)s has no topic_id."
+msgstr "Discourse 主题 %(source_id)s 没有 topic_id。"
+
+#: seahub/project/agent/action_executor.py:552
+msgid "Discourse connection config is invalid."
+msgstr "Discourse 连接配置无效。"
+
+#: seahub/project/agent/action_executor.py:559
+msgid "Discourse connection config is missing required fields (url, api_key)."
+msgstr "Discourse 连接配置缺少必填字段（URL、API密钥）。"
+
+#: seahub/project/agent/action_executor.py:568
+#, python-format
+msgid "Failed to post reply to Discourse #%(topic_pk)s: %(error)s"
+msgstr "Discourse #%(topic_pk)s 回复失败：%(error)s"
+
+#: seahub/project/agent/action_executor.py:584
+#, python-format
+msgid "Reply #%(post_number)s posted to Discourse topic #%(topic_pk)s."
+msgstr "Discourse 主题 #%(topic_pk)s 回复 #%(post_number)s 已发布。"
+
+#: seahub/project/agent/action_executor.py:654
+#: seahub/project/agent/action_executor.py:772
+#: seahub/project/agent/action_executor.py:859
+#, python-format
+msgid "Failed to get GitHub issue context for %(source_id)s."
+msgstr "获取 GitHub 工单上下文失败：%(source_id)s"
+
+#: seahub/project/agent/action_executor.py:659
+#, python-format
+msgid "Reply content is empty for GitHub issue %(record_id)s."
+msgstr "GitHub 工单 %(record_id)s 回复内容为空。"
+
+#: seahub/project/agent/action_executor.py:676
+#, python-format
+msgid "Failed to add comment to GitHub issue %(record_id)s: %(error)s"
+msgstr "添加 GitHub 工单评论失败：%(record_id)s 错误：%(error)s"
+
+#: seahub/project/agent/action_executor.py:713
+#, python-format
+msgid "Comment added to GitHub issue %(record_id)s (comment ID: %(comment_id)s)."
+msgstr "GitHub 工单 %(record_id)s 评论 #%(comment_id)s 已添加。"
+
+#: seahub/project/agent/action_executor.py:785
+#, python-format
+msgid "Cannot determine suggested labels for GitHub issue %(record_id)s."
+msgstr "无法确定 GitHub 工单 %(record_id)s 建议标签。"
+
+#: seahub/project/agent/action_executor.py:796
+msgid "No valid labels were found in this suggestion. Please refresh repository labels and try again."
+msgstr "建议标签中没有有效标签。请刷新仓库标签并重试。"
+
+#: seahub/project/agent/action_executor.py:815
+#, python-format
+msgid "GitHub rejected labels %(final_labels)s (422). Some labels may not exist in the repository. Please sync labels and try again."
+msgstr "GitHub 拒绝标签 %(final_labels)s （422）。一些标签可能不存在于仓库中。请同步标签并重试。"
+
+#: seahub/project/agent/action_executor.py:823
+#: seahub/project/agent/action_executor.py:831
+#, python-format
+msgid "Failed to update labels for GitHub issue %(record_id)s: %(error)s"
+msgstr "更新 GitHub 工单标签失败：%(record_id)s 错误：%(error)s"
+
+#: seahub/project/agent/action_executor.py:849
+#, python-format
+msgid "Labels updated for GitHub issue #%(record_id)s: %(labels)s."
+msgstr "GitHub 工单 #%(record_id)s 标签已更新为 %(labels)s。"
+
+#: seahub/project/agent/action_executor.py:872
+#: seahub/project/agent/action_executor.py:883
+#, python-format
+msgid "Cannot determine suggested issue type for GitHub issue %(record_id)s."
+msgstr "无法确定 GitHub 工单 %(record_id)s 建议工单类型。"
+
+#: seahub/project/agent/action_executor.py:933
+#, python-format
+msgid "GitHub rejected issue type \"%(github_issue_type)s\" (422). The type may not be defined in the organization. Please configure issue types in GitHub or choose an existing one."
+msgstr "GitHub 拒绝工单类型 \"%(github_issue_type)s\" （422）。该类型可能未在组织中定义。请在 GitHub 中配置工单类型或选择已存在的类型。"
+
+#: seahub/project/agent/action_executor.py:941
+#: seahub/project/agent/action_executor.py:949
+#, python-format
+msgid "Failed to update issue_type for GitHub issue %(record_id)s: %(error)s"
+msgstr "更新 GitHub 工单工单类型失败：%(record_id)s 错误：%(error)s"
+
+#: seahub/project/agent/action_executor.py:967
+#, python-format
+msgid "Issue type updated to \"%(new_type)s\" for GitHub issue #%(record_id)s."
+msgstr "GitHub 工单 #%(record_id)s 工单类型已更新为 \"%(new_type)s\"。"
+
+#: seahub/project/agent/action_executor.py:1132
+#: seahub/project/agent/action_executor.py:1162
+#, python-format
+msgid "Failed to create ticket: %(error)s"
+msgstr "创建工单失败：%(error)s"
+
+#: seahub/project/agent/action_executor.py:1192
+#: seahub/project/agent/action_executor.py:1194
+msgid "related_ticket must be a positive integer."
+msgstr "关联工单必须是正整数。"
+
+#: seahub/project/agent/action_executor.py:1199
+#, python-format
+msgid "Ticket #%(related_ticket)s not found."
+msgstr "工单 #%(related_ticket)s 不存在。"
+
+#: seahub/project/agent/action_executor.py:1229
+#, python-format
+msgid "Failed to link this record to ticket #%(related_ticket)s: %(error)s"
+msgstr "将此记录链接到工单 #%(related_ticket)s 失败：%(error)s"
+
+#: seahub/project/agent/action_executor.py:1260
+#, python-format
+msgid "Linked record %(normalized_source_id)s to ticket #%(related_ticket)s but failed to update linked_connection_records: %(error)s"
+msgstr "将记录 %(normalized_source_id)s 链接到工单 #%(related_ticket)s 但更新链接连接记录失败：%(error)s"
+
+#: seahub/project/agent/action_executor.py:1275
+#, python-format
+msgid "Record linked to ticket #%(related_ticket)s."
+msgstr "记录已链接到工单 #%(related_ticket)s。"
+
+#: seahub/project/agent/action_executor.py:1301
+#, python-format
+msgid "Portal issue #%(issue_id)s is already linked to ticket #%(linked_ticket)s."
+msgstr "门户工单 #%(issue_id)s 已链接到工单 #%(linked_ticket)s。"
+
+#: seahub/project/agent/action_executor.py:1340
+#, python-format
+msgid "Ticket #%(ticket_pk)s created from Portal issue #%(issue_id)s."
+msgstr "工单 #%(ticket_pk)s 已从门户工单 #%(issue_id)s 创建。"
+
+#: seahub/project/agent/action_executor.py:1361
+#, python-format
+msgid "GitHub issue %(source_id)s not found in SeaDB."
+msgstr "GitHub 工单 %(source_id)s 不存在。"
+
+#: seahub/project/agent/action_executor.py:1368
+#, python-format
+msgid "GitHub issue #%(record_id)s is already linked to ticket #%(linked_ticket)s."
+msgstr "GitHub 工单 #%(record_id)s 已链接到工单 #%(linked_ticket)s。"
+
+#: seahub/project/agent/action_executor.py:1404
+#, python-format
+msgid "Ticket #%(ticket_pk)s created from GitHub issue #%(record_id)s."
+msgstr "工单 #%(ticket_pk)s 已从 GitHub 工单 #%(record_id)s 创建。"
+
+#: seahub/project/agent/action_executor.py:1424
+#, python-format
+msgid "Email connection %(connection_id)s not found."
+msgstr "邮件连接 %(connection_id)s 不存在。"
+
+#: seahub/project/agent/action_executor.py:1431
+#, python-format
+msgid "Email thread #%(thread_id)s not found in SeaDB."
+msgstr "邮件线程 #%(thread_id)s 不存在。"
+
+#: seahub/project/agent/action_executor.py:1435
+#, python-format
+msgid "No emails found for thread #%(thread_id)s."
+msgstr "邮件线程 #%(thread_id)s 不存在。"
+
+#: seahub/project/agent/action_executor.py:1442
+#, python-format
+msgid "Discourse connection %(connection_id)s not found."
+msgstr "Discourse 连接 %(connection_id)s 不存在。"
+
+#: seahub/project/agent/action_executor.py:1449
+#, python-format
+msgid "Discourse topic #%(topic_pk)s not found in SeaDB."
+msgstr "Discourse 主题 %(topic_pk)s 不存在。"
+
+#: seahub/project/agent/action_executor.py:1459
+#, python-format
+msgid "Discord connection %(connection_id)s not found."
+msgstr "Discord 连接 %(connection_id)s 不存在。"
+
+#: seahub/project/agent/action_executor.py:1464
+#, python-format
+msgid "Discord thread #%(thread_pk)s not found in SeaDB."
+msgstr "Discord 线程 %(thread_pk)s 不存在。"
+
+#: seahub/project/agent/action_executor.py:1471
+msgid "Cannot create Discord reply: empty content."
+msgstr "创建 Discord 回复失败：内容为空。"
+
+#: seahub/project/agent/action_executor.py:1486
+#, python-format
+msgid "Discord thread %(source_id)s has no thread_id."
+msgstr "Discord 线程 %(source_id)s 不存在。"
+
+#: seahub/project/agent/action_executor.py:1495
+#, python-format
+msgid "Failed to post reply to Discord thread #%(record_id)s: %(error)s"
+msgstr "在 Discord 线程 #%(record_id)s 发布回复失败：%(error)s"
+
+#: seahub/project/agent/action_executor.py:1503
+msgid "Failed to save Discord reply: response has no message id."
+msgstr "保存 Discord 回复失败：响应中没有消息 ID。"
+
+#: seahub/project/agent/action_executor.py:1527
+#, python-format
+msgid "Discord reply was posted, but failed to save local record for thread #%(record_id)s."
+msgstr "Discord 回复已发布，但保存本地记录失败。"
+
+#: seahub/project/agent/action_executor.py:1533
+#, python-format
+msgid "Reply posted to Discord thread #%(record_id)s."
+msgstr "Discord 回复已发布。"
+
+#: seahub/project/agent/action_executor.py:1545
+msgid "Cannot send reply email: empty content."
+msgstr "发送回复邮件失败：内容为空。"
+
+#: seahub/project/agent/action_executor.py:1561
+#: seahub/project/agent/action_executor.py:1597
+#: seahub/project/agent/action_executor.py:1633
+#: seahub/project/agent/action_executor.py:1702
+#: seahub/project/agent/action_executor.py:1738
+msgid "Email connection config is invalid."
+msgstr "邮件连接配置无效。"
+
+#: seahub/project/agent/action_executor.py:1566
+#, python-format
+msgid "No inbound email found for thread %(source_id)s."
+msgstr "邮件线程 %(source_id)s 不存在。"
+
+#: seahub/project/agent/action_executor.py:1578
+#, python-format
+msgid "Failed to resolve recipient for thread %(source_id)s."
+msgstr "邮件线程 %(source_id)s 不存在。"
+
+#: seahub/project/agent/action_executor.py:1584
+#, python-format
+msgid "Cannot determine subject for thread %(source_id)s."
+msgstr "无法确定线程 %(source_id)s 的主题。"
+
+#: seahub/project/agent/action_executor.py:1592
+#, python-format
+msgid "Cannot determine reply target for thread %(source_id)s."
+msgstr "邮件线程 %(source_id)s 不存在。"
+
+#: seahub/project/agent/action_executor.py:1619
+#: seahub/project/agent/action_executor.py:1709
+msgid "Email OAuth authorization is required."
+msgstr "邮件 OAuth 授权是必填项。"
+
+#: seahub/project/agent/action_executor.py:1636
+msgid "Failed to send email."
+msgstr "发送邮件失败。"
+
+#: seahub/project/agent/action_executor.py:1669
+msgid "Failed to save reply email."
+msgstr "保存回复邮件失败。"
+
+#: seahub/project/agent/action_executor.py:1672
+#, python-format
+msgid "Reply email sent for thread #%(thread_id)s (email record ID: %(reply_pk)s)."
+msgstr "回复邮件已发送。"
+
+#: seahub/project/agent/action_executor.py:1692
+#: seahub/project/agent/action_executor.py:1794
+#, python-format
+msgid "Email thread #%(thread_id)s is already linked to ticket #%(linked_ticket)s."
+msgstr "邮件线程 #%(thread_id)s 已关联到工单 #%(linked_ticket)s。"
+
+#: seahub/project/agent/action_executor.py:1731
+#, python-format
+msgid "No inbound message id found for thread %(source_id)s."
+msgstr "邮件线程 %(source_id)s 不存在。"
+
+#: seahub/project/agent/action_executor.py:1744
+msgid "Failed to move the email to the spam folder."
+msgstr "将邮件移动到垃圾邮件文件夹失败。"
+
+#: seahub/project/agent/action_executor.py:1753
+msgid "Failed to move the email to the spam folder: no matching remote message was moved."
+msgstr "将邮件移动到垃圾邮件文件夹失败：没有匹配的远程消息。"
+
+#: seahub/project/agent/action_executor.py:1774
+msgid "Email moved to spam but failed to update local records."
+msgstr "将邮件移动到垃圾邮件文件夹成功，但更新本地记录失败。"
+
+#: seahub/project/agent/action_executor.py:1777
+#, python-format
+msgid "Email thread #%(thread_id)s moved to the spam folder."
+msgstr "邮件线程 #%(thread_id)s 已移动到垃圾邮件文件夹。"
+
+#: seahub/project/agent/action_executor.py:1831
+#, python-format
+msgid "Ticket #%(ticket_pk)s created from email thread #%(thread_id)s."
+msgstr "工单 #%(ticket_pk)s 已从邮件线程 #%(thread_id)s 创建。"
+
+#: seahub/project/agent/action_executor.py:1852
+#, python-format
+msgid "Discourse topic #%(topic_pk)s is already linked to ticket #%(linked_ticket)s."
+msgstr "Discourse 主题 #%(topic_pk)s 已关联到工单 #%(linked_ticket)s。"
+
+#: seahub/project/agent/action_executor.py:1889
+#, python-format
+msgid "Ticket #%(ticket_pk)s created from discourse topic #%(topic_pk)s."
+msgstr "工单 #%(ticket_pk)s 已从 Discourse 主题 #%(topic_pk)s 创建。"
+
+#: seahub/project/agent/action_executor.py:1910
+#, python-format
+msgid "Discord thread #%(thread_pk)s is already linked to ticket #%(linked_ticket)s."
+msgstr "Discord 线程 #%(thread_pk)s 已关联到工单 #%(linked_ticket)s。"
+
+#: seahub/project/agent/action_executor.py:1947
+#, python-format
+msgid "Ticket #%(ticket_pk)s created from discord thread #%(thread_pk)s."
+msgstr "工单 #%(ticket_pk)s 已从 Discord 线程 #%(thread_pk)s 创建。"
+
+#: seahub/project/agent/action_executor.py:1958
+#: seahub/project/agent/action_executor.py:1995
+#, python-format
+msgid "Ticket #%(ticket_id)s not found"
+msgstr "工单 #%(ticket_id)s 不存在。"
+
+#: seahub/project/agent/action_executor.py:1963
+#, python-format
+msgid "Ticket #%(ticket_id)s has no assignees"
+msgstr "工单 #%(ticket_id)s 没有分配的负责人。"
+
+#: seahub/project/agent/action_executor.py:1982
+#, python-format
+msgid "Notification sent to %(count)s assignee(s)."
+msgstr "已向 %(count)s 个负责人发送通知。"
+
+#: seahub/project/agent/action_executor.py:1999
+#, python-format
+msgid "Ticket #%(ticket_id)s is already closed"
+msgstr "工单 #%(ticket_id)s 已关闭。"
+
+#: seahub/project/agent/action_executor.py:2013
+#, python-format
+msgid "Failed to close linked GitHub issues: %(error)s"
+msgstr "关闭关联的 GitHub 问题失败：%(error)s"
+
+#: seahub/project/agent/action_executor.py:2041
+#, python-format
+msgid "Ticket #%(ticket_id)s closed."
+msgstr "工单 #%(ticket_id)s 已关闭。"
+
+#: seahub/project/views.py:110 seahub/project/views.py:114
+#: seahub/project/views.py:142 seahub/project/views.py:146
+#: seahub/project/views.py:326 seahub/project/views.py:330
+#: seahub/project/views.py:370 seahub/project/views.py:374
+#: seahub/project/views.py:426 seahub/project/views.py:430
+#: seahub/project/views.py:481 seahub/project/views.py:485
+#: seahub/project/views.py:546 seahub/project/views.py:550
+#: seahub/project/views.py:607 seahub/project/views.py:611
+#: seahub/project/views.py:679 seahub/project/views.py:683
+#: seahub/project/views.py:723 seahub/project/views.py:727
+#: seahub/project/views.py:785 seahub/project/views.py:789
 msgid "Please install through the address provided by sea-ticket."
 msgstr "请通过 sea-ticket 提供的地址安装。"
 
-#: seahub/project/views.py:226 seahub/project/views.py:230
+#: seahub/project/views.py:218 seahub/project/views.py:222
+#: seahub/project/views.py:826 seahub/project/views.py:830
 msgid "Request not found"
 msgstr "请求未找到"
 
-#: seahub/project/views.py:330 seahub/project/views.py:374
+#: seahub/project/views.py:252
+msgid "The email provider rejected the authorization."
+msgstr "邮箱提供程序拒绝授权。"
+
+#: seahub/project/views.py:338 seahub/project/views.py:382
 msgid "Linear OAuth settings are invalid."
 msgstr "Linear OAuth 设置无效。"
 
-#: seahub/project/views.py:359
+#: seahub/project/views.py:367
 msgid "Invalid Linear OAuth state."
 msgstr "Linear OAuth 状态无效。"
 
-#: seahub/project/views.py:388 seahub/project/views.py:392
-#: seahub/project/views.py:400
+#: seahub/project/views.py:396 seahub/project/views.py:400
+#: seahub/project/views.py:408
 msgid "Failed to authorize Linear."
 msgstr "Linear 授权失败。"
 
-#: seahub/project/views.py:433 seahub/project/views.py:488
+#: seahub/project/views.py:441 seahub/project/views.py:496
 msgid "Confluence OAuth settings are invalid."
 msgstr "Confluence OAuth 设置无效。"
 
-#: seahub/project/views.py:470
+#: seahub/project/views.py:478
 msgid "Invalid Confluence OAuth state."
 msgstr "Confluence OAuth 状态无效。"
 
-#: seahub/project/views.py:502 seahub/project/views.py:506
-#: seahub/project/views.py:513
+#: seahub/project/views.py:510 seahub/project/views.py:514
+#: seahub/project/views.py:521
 msgid "Failed to authorize Confluence."
 msgstr "Confluence 授权失败。"
 
-#: seahub/project/views.py:550 seahub/project/views.py:611
+#: seahub/project/views.py:558 seahub/project/views.py:619
 msgid "Discord OAuth settings are invalid."
 msgstr "Discord OAuth 设置无效。"
 
-#: seahub/project/views.py:593
+#: seahub/project/views.py:601
 msgid "Invalid Discord OAuth state."
 msgstr "Discord OAuth 状态无效。"
 
-#: seahub/project/views.py:596
+#: seahub/project/views.py:604
 msgid "Discord server information was not returned."
 msgstr "未返回 Discord 服务器信息。"
 
-#: seahub/project/views.py:626 seahub/project/views.py:630
+#: seahub/project/views.py:634 seahub/project/views.py:638
 msgid "Failed to authorize Discord."
 msgstr "授权 Discord 失败。"
 
-#: seahub/project/views.py:690 seahub/project/views.py:734
+#: seahub/project/views.py:691 seahub/project/views.py:735
 msgid "Jira OAuth settings are invalid."
 msgstr "Jira OAuth 设置无效。"
 
-#: seahub/project/views.py:719
+#: seahub/project/views.py:720
 msgid "Invalid Jira OAuth state."
 msgstr "Jira OAuth 状态无效。"
 
-#: seahub/project/views.py:748 seahub/project/views.py:752
-#: seahub/project/views.py:759
+#: seahub/project/views.py:749 seahub/project/views.py:753
+#: seahub/project/views.py:760
 msgid "Failed to authorize Jira."
 msgstr "授权 Jira 失败。"
+
+#: seahub/project/views.py:800
+msgid "Notion OAuth settings are invalid."
+msgstr "Notion OAuth 设置无效。"
 
 #: seahub/saml/utils.py:49
 msgid "SAML login relevant settings invalid."
@@ -981,10 +1410,14 @@ msgid "No"
 msgstr "取消"
 
 #: seahub/templates/email_base.html:9
+#: seahub/templates/portal/email_login_code.html:12
+#: seahub/templates/portal/external_invitation_email.html:18
 msgid "Thanks for using our site!"
 msgstr "感谢使用！"
 
 #: seahub/templates/email_base.html:13
+#: seahub/templates/portal/email_login_code.html:16
+#: seahub/templates/portal/external_invitation_email.html:22
 #, python-format
 msgid "The %(site_name)s team"
 msgstr "%(site_name)s 团队"
@@ -1060,15 +1493,15 @@ msgstr "隐私"
 msgid "Terms"
 msgstr "条款"
 
-#: seahub/templates/portal/email_login_code.html:6
+#: seahub/templates/portal/email_login_code.html:7
 msgid "Enter this code on the portal login page to complete login."
 msgstr "在门户登录页面输入此代码以完成登录。"
 
-#: seahub/templates/portal/email_login_code.html:8
+#: seahub/templates/portal/email_login_code.html:9
 msgid "The code is valid for 10 minutes."
 msgstr "该代码有效期为10分钟。"
 
-#: seahub/templates/portal/external_invitation_email.html:9
+#: seahub/templates/portal/external_invitation_email.html:10
 #, python-format
 msgid "%(inviter_name)s invited you to the support portal. Please click the link below to start:"
 msgstr "%(inviter_name)s 邀请你加入支持门户。请点击下方链接开始："
@@ -1102,28 +1535,30 @@ msgstr "继续"
 msgid "Login"
 msgstr "登录"
 
-#: seahub/templates/portal_login.html:42
+#: seahub/templates/portal_login.html:57
 #, python-format
 msgid "Resend in %(sec)ss"
 msgstr "%(sec)s秒后重新发送"
 
-#: seahub/templates/portal_login.html:89 seahub/templates/portal_login.html:137
+#: seahub/templates/portal_login.html:104
+#: seahub/templates/portal_login.html:152
 msgid "Email is required"
 msgstr "需要邮箱"
 
-#: seahub/templates/portal_login.html:99 seahub/templates/portal_login.html:148
+#: seahub/templates/portal_login.html:114
+#: seahub/templates/portal_login.html:163
 msgid "Send failed"
 msgstr "发送失败"
 
-#: seahub/templates/portal_login.html:125
+#: seahub/templates/portal_login.html:140
 msgid "Resend login code"
 msgstr "重新发送登录码"
 
-#: seahub/templates/portal_login.html:156
+#: seahub/templates/portal_login.html:171
 msgid "Email and code are required"
 msgstr "需要邮箱和代码"
 
-#: seahub/templates/portal_login.html:166
+#: seahub/templates/portal_login.html:181
 msgid "Verify failed"
 msgstr "验证失败"
 
@@ -1550,7 +1985,7 @@ msgstr "你即将禁用双因素认证。这会影响你的账户安全，确定
 msgid "Disable"
 msgstr "禁用"
 
-#: seahub/utils/__init__.py:75
+#: seahub/utils/__init__.py:63
 msgid "Permission error"
 msgstr "权限错误"
 
