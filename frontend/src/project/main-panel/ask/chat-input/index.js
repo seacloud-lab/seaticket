@@ -92,11 +92,12 @@ const ChatInput = forwardRef(({
   projectUuid,
   allowedAttachmentSources = DEFAULT_ALLOWED_ATTACHMENT_SOURCES,
   canSelectModel = true,
-  clearContext,
+  clearContext = false,
   sendMessage,
-  resetClearContext,
+  resetClearContext = () => {},
   enableSkills = true,
   skillCommands = [],
+  placeholder = '',
   api,
 }, ref) => {
   const chatAPI = api || defaultChatAPI;
@@ -566,7 +567,7 @@ const ChatInput = forwardRef(({
               onMouseUp={onMouseUp}
               onPaste={onPaste}
               onChange={onValueChange}
-              placeholder={gettext('What problem do you want to solve?')}
+              placeholder={placeholder || gettext('What problem do you want to solve?')}
               tabIndex={-1}
               rows={1}
               disabled={disabled}

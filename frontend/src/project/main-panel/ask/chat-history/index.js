@@ -15,9 +15,10 @@ const ChatHistory = ({ chat, settings, projectUuid, projectName, workspaceID, di
     if (!displayOperations) return false;
     if (isUserSpeak) return false;
     if (type === CHAT_MESSAGE_TYPE.TIP) return false;
+    if (message[CHAT_MESSAGE_TYPE.SUGGESTIONS]) return false;
     if (chatId === 'typing') return false;
     return true;
-  }, [displayOperations, chatId, isUserSpeak, type]);
+  }, [displayOperations, chatId, isUserSpeak, type, message]);
 
   if (Object.keys(message).length === 0) return null;
 
