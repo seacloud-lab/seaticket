@@ -54,7 +54,7 @@ const CustomerSettings = ({
   return (
     <>
       <div className={classnames('seaqa-settings-item', className)}>
-        <CustomizeLabel icon="single-select">
+        <CustomizeLabel icon="link">
           {gettext('Customer')}
         </CustomizeLabel>
         <div className={classnames('ticket-customer-formatter', { 'valid': customerOption, 'cursor-pointer': !isReadonly })} onClick={openEditor} ref={editorRef}>
