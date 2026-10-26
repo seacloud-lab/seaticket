@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import StatisticsChart, { getSeriesColor } from './chart';
+import StatisticsChart from './chart';
+import { getSeriesColor, TOTAL_COLOR } from './utils';
 
 jest.mock('@/constants', () => ({ gettext: text => text }));
 
@@ -51,9 +52,36 @@ it('renders all months and a zero baseline when no series are available', () => 
 });
 
 it('keeps colors stable regardless of series order', () => {
-  expect(getSeriesColor('Bug')).toBe('#377eb8');
-  expect(getSeriesColor('Feature')).toBe('#4b9e46');
-  expect(getSeriesColor('Question')).toBe('#ed8732');
-  expect(getSeriesColor(null)).toBe('#999999');
+  expect(getSeriesColor('Bug')).toBe('#5889ff');
+  expect(getSeriesColor('Feature')).toBe('#ffd154');
+  expect(getSeriesColor('Question')).toBe('#5d7092');
+  expect(getSeriesColor(null)).toBe('#54d6a3');
   expect(getSeriesColor('Security')).toBe(getSeriesColor('security'));
+});
+
+it('renders a blue monthly total chart with rotated month labels and count labels', () => {
+  const totals = [{ issue_type: 'Issue total', counts: [45, 62, 38, 76, 55, 81, 49, 92, 68, 41, 59, 73] }];
+  const { container } = render(<StatisticsChart months={months} series={totals} isTotal={true} />);
+  expect(screen.getByRole('img').getAttribute('aria-label')).toBe('Monthly issue count');
+  expect(screen.getByText('Issue total')).not.toBeNull();
+  expect(container.querySelectorAll('rect')).toHaveLength(12);
+  container.querySelectorAll('rect').forEach(bar => expect(bar.getAttribute('fill')).toBe(TOTAL_COLOR));
+  container.querySelectorAll('.connection-statistics-month').forEach(label => {
+    expect(label.getAttribute('transform')).toContain('rotate(45)');
+  });
+  expect(container.querySelectorAll('.connection-statistics-value')).toHaveLength(12);
+});
+
+it('expands the grouped chart for many issue types instead of overlapping bars and labels', () => {
+  const manySeries = Array.from({ length: 16 }, (_, index) => ({
+    issue_type: `Type ${index}`,
+    counts: months.map(() => index + 1),
+  }));
+  const { container } = render(<StatisticsChart months={months} series={manySeries} />);
+  expect(container.querySelectorAll('rect')).toHaveLength(192);
+  expect(Number(screen.getByRole('img').getAttribute('width'))).toBeGreaterThan(3000);
+  container.querySelectorAll('rect').forEach(bar => {
+    expect(Number(bar.getAttribute('width'))).toBeGreaterThan(0);
+    expect(Number(bar.getAttribute('height'))).toBeGreaterThan(0);
+  });
 });
