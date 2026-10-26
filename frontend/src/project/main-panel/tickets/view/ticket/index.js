@@ -707,7 +707,6 @@ const Ticket = ({
           <StateSettings isReadonly={!editable} state={state} substate={substate} useMetadataContext={useMetadata} onChange={onStateChange} />
           <SubStateSettings isReadonly={!editable} state={state} substate={substate} useMetadataContext={useMetadata} onChange={onSubstateChange} />
           <TypeSettings id="type-editor-popover" isReadonly={!editable} value={type} useMetadataContext={useMetadata} onChange={onTypeChange} />
-          <CustomerSettings id="customer-editor-popover" isReadonly={!editable} value={customer_id} useMetadataContext={useMetadata} onChange={onCustomerChange} />
           <DueDateSettings isReadonly={!editable} value={due_date} onChange={onDueDateChange} />
           <CollaboratorsSettings
             isReadonly={!editable}
@@ -718,6 +717,7 @@ const Ticket = ({
             onChange={onParticipantsChange}
           />
           <LinkSettings value={linked_connection_records} linkedRecords={linkedRecords} />
+          <CustomerSettings id="customer-editor-popover" isReadonly={!editable} value={customer_id} useMetadataContext={useMetadata} onChange={onCustomerChange} />
         </div>
       </div>
       {isShowKeyboardShortcuts && (
