@@ -92,7 +92,7 @@ class AgentActionExecutor:
         return {
             'success': True,
             'status': 'executed',
-            'result': result or 'Success',
+            'result': result or _('Success'),
         }
 
     @staticmethod
@@ -100,14 +100,14 @@ class AgentActionExecutor:
         return {
             'success': False,
             'status': 'failed',
-            'result': result or 'Action execution failed.',
+            'result': result or _('Action execution failed.'),
         }
 
     @staticmethod
     def normalize_execution_result(execution):
         if isinstance(execution, dict):
             success = bool(execution.get('success'))
-            result = execution.get('result') or ('Success' if success else 'Action execution failed.')
+            result = execution.get('result') or (_('Success') if success else _('Action execution failed.'))
             return {
                 'success': success,
                 'status': 'executed' if success else 'failed',
@@ -122,7 +122,7 @@ class AgentActionExecutor:
         return {
             'success': True,
             'status': 'executed',
-            'result': 'Success',
+            'result': _('Success'),
         }
 
     @staticmethod
@@ -173,7 +173,7 @@ class AgentActionExecutor:
             ticket_id = int(source_id)
         except (ValueError, TypeError):
             logger.error('Invalid ticket source_id: %r', source_id)
-            return self._failed_execution(f'Invalid ticket source_id: {source_id}')
+            return self._failed_execution(_('Invalid ticket source_id: %(source_id)s') % {'source_id': source_id})
 
         if tool_name == 'suggest_notify_assignee':
             return self._execute_notify_assignee(
@@ -194,7 +194,7 @@ class AgentActionExecutor:
                 linked_github_issues_to_close=linked_github_issues_to_close,
             )
         logger.warning('Unknown ticket tool_name: %r', tool_name)
-        return self._failed_execution(f'Unknown tool_name: {tool_name}')
+        return self._failed_execution(_('Unknown tool_name: %(tool_name)s') % {'tool_name': tool_name})
 
     def _execute_github_issue_action(
         self,
@@ -226,7 +226,7 @@ class AgentActionExecutor:
         if tool_name == 'suggest_link_existing_ticket':
             return self._execute_link_existing_ticket(seadb_api, project, project_uuid, ConnectionType.GITHUB_ISSUE.value, source_id, suggestion_payload, request=request)
         logger.warning('Unknown github_issue tool_name: %r', tool_name)
-        return self._failed_execution(f'Unknown tool_name: {tool_name}')
+        return self._failed_execution(_('Unknown tool_name: %(tool_name)s') % {'tool_name': tool_name})
 
     def _execute_discourse_topic_action(
         self,
@@ -250,7 +250,7 @@ class AgentActionExecutor:
         if tool_name == 'suggest_link_existing_ticket':
             return self._execute_link_existing_ticket(seadb_api, project, project_uuid, ConnectionType.DISCOURSE_FORUM.value, source_id, suggestion_payload, request=request)
         logger.warning('Unknown discourse_topic tool_name: %r', tool_name)
-        return self._failed_execution(f'Unknown tool_name: {tool_name}')
+        return self._failed_execution(_('Unknown tool_name: %(tool_name)s') % {'tool_name': tool_name})
 
     def _execute_portal_issue_action(
         self,
@@ -291,7 +291,7 @@ class AgentActionExecutor:
                 request=request,
             )
         logger.warning('Unknown portal_issue tool_name: %r', tool_name)
-        return self._failed_execution(f'Unknown tool_name: {tool_name}')
+        return self._failed_execution(_('Unknown tool_name: %(tool_name)s') % {'tool_name': tool_name})
 
     def _execute_email_action(
         self,
@@ -315,7 +315,7 @@ class AgentActionExecutor:
         if tool_name == 'suggest_link_existing_ticket':
             return self._execute_link_existing_ticket(seadb_api, project, project_uuid, ConnectionType.EMAIL.value, source_id, suggestion_payload, request=request)
         logger.warning('Unknown email tool_name: %r', tool_name)
-        return self._failed_execution(f'Unknown tool_name: {tool_name}')
+        return self._failed_execution(_('Unknown tool_name: %(tool_name)s') % {'tool_name': tool_name})
 
     def _execute_discord_action(
         self,
@@ -346,7 +346,7 @@ class AgentActionExecutor:
         if tool_name == 'suggest_link_existing_ticket':
             return self._execute_link_existing_ticket(seadb_api, project, project_uuid, ConnectionType.DISCORD.value, source_id, suggestion_payload, request=request)
         logger.warning('Unknown discord tool_name: %r', tool_name)
-        return self._failed_execution(f'Unknown tool_name: {tool_name}')
+        return self._failed_execution(_('Unknown tool_name: %(tool_name)s') % {'tool_name': tool_name})
 
     def execute_action(
         self,
@@ -447,7 +447,9 @@ class AgentActionExecutor:
             )
         else:
             logger.warning('Unknown source_type %r for action %s', source_type, action_id)
-            execution = self._failed_execution(f'Unsupported source_type: {source_type}')
+            execution = self._failed_execution(_('Unsupported source_type: %(source_type)s') % {
+                'source_type': source_type,
+            })
 
         return self.normalize_execution_result(execution)
 
@@ -464,15 +466,17 @@ class AgentActionExecutor:
     ):
         reply_content = (reply_content or '').strip()
         if not reply_content:
-            return self._failed_execution('Cannot create Portal issue reply: empty content.')
+            return self._failed_execution(_('Cannot create Portal issue reply: empty content.'))
 
         issue_id = self._parse_portal_issue_id(source_id)
         if issue_id is None:
-            return self._failed_execution(f'Invalid Portal issue source_id: {source_id}')
+            return self._failed_execution(
+                _('Invalid Portal issue source_id: %(source_id)s') % {'source_id': source_id}
+            )
 
-        issue, _ = get_portal_issue(seadb_api, project_uuid, issue_id)
+        issue, _comments = get_portal_issue(seadb_api, project_uuid, issue_id)
         if not issue:
-            return self._failed_execution(f'Portal issue #{issue_id} not found.')
+            return self._failed_execution(_('Portal issue #%(issue_id)s not found.') % {'issue_id': issue_id})
 
         now = timezone.now().isoformat()
         comment_row = {
@@ -506,20 +510,28 @@ class AgentActionExecutor:
             )
         except Exception as e:
             logger.error('Failed to create reply for Portal issue #%s: %s', issue_id, e)
-            return self._failed_execution(f'Failed to create reply for Portal issue #{issue_id}: {e}')
+            return self._failed_execution(
+                _('Failed to create reply for Portal issue #%(issue_id)s: %(error)s') % {
+                    'issue_id': issue_id,
+                    'error': e,
+                }
+            )
 
         return self._successful_execution(
-            f'Reply #{comment_pks[0]} added to Portal issue #{issue_id}.'
+            _('Reply #%(comment_id)s added to Portal issue #%(issue_id)s.') % {
+                'comment_id': comment_pks[0],
+                'issue_id': issue_id,
+            }
         )
 
     def _execute_discourse_suggest_reply(self, seadb_api, project, project_uuid, source_id, reply_content, username):
         reply_content = (reply_content or '').strip()
         if not reply_content:
-            return self._failed_execution('Cannot create Discourse reply: empty content.')
+            return self._failed_execution(_('Cannot create Discourse reply: empty content.'))
 
         connection_id, topic_pk = self._parse_connection_source_id(source_id, ConnectionType.DISCOURSE_FORUM.value)
         if connection_id is None or topic_pk is None:
-            return self._failed_execution(f'Invalid source_id format: {source_id}')
+            return self._failed_execution(_('Invalid source_id format: %(source_id)s') % {'source_id': source_id})
 
         project_connection, topic, _replies, error = self._get_discourse_topic_context(
             seadb_api, project_uuid, connection_id, topic_pk
@@ -529,20 +541,22 @@ class AgentActionExecutor:
 
         topic_id = topic.get('topic_id')
         if not topic_id:
-            return self._failed_execution(f'Discourse topic {source_id} has no topic_id.')
+            return self._failed_execution(
+                _('Discourse topic %(source_id)s has no topic_id.') % {'source_id': source_id}
+            )
 
         try:
             config = decrypt_config(json.loads(project_connection.config))
         except Exception as e:
             logger.error(f'Invalid discourse connection config for {project_connection.id}: {e}')
-            return self._failed_execution('Discourse connection config is invalid.')
+            return self._failed_execution(_('Discourse connection config is invalid.'))
 
         discourse_url = config.get('url', '').rstrip('/')
         api_key = config.get('api_key', '')
         api_username = config.get('api_username', '')
 
         if not discourse_url or not api_key:
-            return self._failed_execution('Discourse connection config is missing required fields (url, api_key).')
+            return self._failed_execution(_('Discourse connection config is missing required fields (url, api_key).'))
 
         try:
             discourse_api = DiscourseForumAPI(discourse_url, api_key, api_username)
@@ -550,7 +564,9 @@ class AgentActionExecutor:
             post_number = result.get('post_number', 0)
         except DiscourseForumAPIException as e:
             logger.error(f'Failed to create Discourse reply for topic #{topic_pk}: {e}')
-            return self._failed_execution(f'Failed to post reply to Discourse #{topic_pk}: {e}')
+            return self._failed_execution(
+                _('Failed to post reply to Discourse #%(topic_pk)s: %(error)s') % {'topic_pk': topic_pk, 'error': e}
+            )
 
         discourse_seadb_api = DiscourseSeaDBAPI(project_uuid, seadb_api=seadb_api)
         reply_data = {
@@ -564,7 +580,12 @@ class AgentActionExecutor:
         except Exception as e:
             logger.error(f'Failed to save Discourse reply to SeaDB for topic #{topic_pk}: {e}')
 
-        return self._successful_execution(f'Reply #{post_number} posted to Discourse topic #{topic_pk}.')
+        return self._successful_execution(
+            _('Reply #%(post_number)s posted to Discourse topic #%(topic_pk)s.') % {
+                'post_number': post_number,
+                'topic_pk': topic_pk,
+            }
+        )
 
     def _get_github_issue_context(self, seadb_api, project_uuid, source_id):
         try:
@@ -629,10 +650,14 @@ class AgentActionExecutor:
         """Post a reply suggestion as a GitHub comment."""
         ctx = self._get_github_issue_context(seadb_api, project_uuid, source_id)
         if not ctx:
-            return self._failed_execution(f'Failed to get GitHub issue context for {source_id}.')
+            return self._failed_execution(
+                _('Failed to get GitHub issue context for %(source_id)s.') % {'source_id': source_id}
+            )
 
         if not reply_content:
-            return self._failed_execution(f'Reply content is empty for GitHub issue {ctx["record_id"]}.')
+            return self._failed_execution(
+                _('Reply content is empty for GitHub issue %(record_id)s.') % {'record_id': ctx["record_id"]}
+            )
 
         try:
             result = ctx['github_api'].add_comment(
@@ -647,7 +672,12 @@ class AgentActionExecutor:
             logger.info(f'Added reply comment #{comment_id} to GitHub issue {ctx["record_id"]}')
         except Exception as e:
             logger.error(f'Failed to add comment to GitHub issue {ctx["record_id"]}: {e}')
-            return self._failed_execution(f'Failed to add comment to GitHub issue {ctx["record_id"]}: {e}')
+            return self._failed_execution(
+                _('Failed to add comment to GitHub issue %(record_id)s: %(error)s') % {
+                    'record_id': ctx["record_id"],
+                    'error': e,
+                }
+            )
 
         now_datetime = timezone.now().isoformat()
 
@@ -680,7 +710,10 @@ class AgentActionExecutor:
             logger.warning(f'Failed to insert comment into SeaDB GithubIssueCommentsTable: {e}')
 
         return self._successful_execution(
-            f'Comment added to GitHub issue {ctx["record_id"]} (comment ID: {comment_id}).'
+            _('Comment added to GitHub issue %(record_id)s (comment ID: %(comment_id)s).') % {
+                'record_id': ctx["record_id"],
+                'comment_id': comment_id,
+            }
         )
 
     @staticmethod
@@ -735,7 +768,9 @@ class AgentActionExecutor:
     ):
         ctx = self._get_github_issue_context(seadb_api, project_uuid, source_id)
         if not ctx:
-            return self._failed_execution(f'Failed to get GitHub issue context for {source_id}.')
+            return self._failed_execution(
+                _('Failed to get GitHub issue context for %(source_id)s.') % {'source_id': source_id}
+            )
 
         suggestion_payload = self._parse_suggestion_payload(suggestion_payload)
         raw_labels = suggestion_payload.get('suggested_labels')
@@ -746,7 +781,11 @@ class AgentActionExecutor:
                 ctx['record_id'],
                 suggestion_payload,
             )
-            return self._failed_execution(f'Cannot determine suggested labels for GitHub issue {ctx["record_id"]}.')
+            return self._failed_execution(
+                _('Cannot determine suggested labels for GitHub issue %(record_id)s.') % {
+                    'record_id': ctx["record_id"],
+                }
+            )
 
         available = collect_github_issue_label_options(
             seadb_api, project_uuid, [ctx['connection_id']]
@@ -754,7 +793,7 @@ class AgentActionExecutor:
         final_labels = self._filter_labels_by_options(labels, available)
         if not final_labels:
             return self._failed_execution(
-                'No valid labels were found in this suggestion. Please refresh repository labels and try again.'
+                _('No valid labels were found in this suggestion. Please refresh repository labels and try again.')
             )
 
         try:
@@ -772,13 +811,28 @@ class AgentActionExecutor:
                     'GitHub rejected labels %r for issue %s (422).', final_labels, ctx['record_id']
                 )
                 return self._failed_execution(
-                    f'GitHub rejected labels {final_labels} (422). Some labels may not exist in the repository. Please sync labels and try again.'
+                    _(
+                        'GitHub rejected labels %(final_labels)s (422). Some labels may not exist in the '
+                        'repository. Please sync labels and try again.'
+                    ) % {
+                        'final_labels': final_labels,
+                    }
                 )
             logger.error(f'Failed to update labels for GitHub issue {ctx["record_id"]}: {e}')
-            return self._failed_execution(f'Failed to update labels for GitHub issue {ctx["record_id"]}: {e}')
+            return self._failed_execution(
+                _('Failed to update labels for GitHub issue %(record_id)s: %(error)s') % {
+                    'record_id': ctx["record_id"],
+                    'error': e,
+                }
+            )
         except Exception as e:
             logger.error(f'Failed to update labels for GitHub issue {ctx["record_id"]}: {e}')
-            return self._failed_execution(f'Failed to update labels for GitHub issue {ctx["record_id"]}: {e}')
+            return self._failed_execution(
+                _('Failed to update labels for GitHub issue %(record_id)s: %(error)s') % {
+                    'record_id': ctx["record_id"],
+                    'error': e,
+                }
+            )
 
         try:
             github_seadb_api = GitHubSeaDBAPI(project_uuid, seadb_api=seadb_api)
@@ -792,13 +846,18 @@ class AgentActionExecutor:
             logger.warning(f'Failed to update SeaDB for GitHub issue {ctx["record_id"]}: {e}')
 
         return self._successful_execution(
-            f'Labels updated for GitHub issue #{ctx["record_id"]}: {json.dumps(applied_labels, ensure_ascii=False)}.'
+            _('Labels updated for GitHub issue #%(record_id)s: %(labels)s.') % {
+                'record_id': ctx["record_id"],
+                'labels': json.dumps(applied_labels, ensure_ascii=False),
+            }
         )
 
     def _execute_github_suggest_modify_type(self, seadb_api, project, project_uuid, source_id, suggestion_payload=None):
         ctx = self._get_github_issue_context(seadb_api, project_uuid, source_id)
         if not ctx:
-            return self._failed_execution(f'Failed to get GitHub issue context for {source_id}.')
+            return self._failed_execution(
+                _('Failed to get GitHub issue context for %(source_id)s.') % {'source_id': source_id}
+            )
 
         suggestion_payload = self._parse_suggestion_payload(suggestion_payload)
         raw_suggested_type = suggestion_payload.get('suggested_type')
@@ -810,7 +869,9 @@ class AgentActionExecutor:
                 suggestion_payload,
             )
             return self._failed_execution(
-                f'Cannot determine suggested issue type for GitHub issue {ctx["record_id"]}.'
+                _('Cannot determine suggested issue type for GitHub issue %(record_id)s.') % {
+                    'record_id': ctx["record_id"],
+                }
             )
 
         suggested_type = suggested_type.capitalize()
@@ -819,7 +880,9 @@ class AgentActionExecutor:
                 f'Unsupported suggested_type "{suggested_type}" for GitHub issue {ctx["record_id"]}'
             )
             return self._failed_execution(
-                f'Cannot determine suggested issue type for GitHub issue {ctx["record_id"]}.'
+                _('Cannot determine suggested issue type for GitHub issue %(record_id)s.') % {
+                    'record_id': ctx["record_id"],
+                }
             )
 
         try:
@@ -866,15 +929,28 @@ class AgentActionExecutor:
                     f'The type may not exist in the organization.'
                 )
                 return self._failed_execution(
-                    f'GitHub rejected issue type "{github_issue_type}" (422). '
-                    f'The type may not be defined in the organization. '
-                    f'Please configure issue types in GitHub or choose an existing one.'
+                    _(
+                        'GitHub rejected issue type "%(github_issue_type)s" (422). The type may not be defined in '
+                        'the organization. Please configure issue types in GitHub or choose an existing one.'
+                    ) % {
+                        'github_issue_type': github_issue_type,
+                    }
                 )
             logger.error(f'Failed to update issue_type for GitHub issue {ctx["record_id"]}: {e}')
-            return self._failed_execution(f'Failed to update issue_type for GitHub issue {ctx["record_id"]}: {e}')
+            return self._failed_execution(
+                _('Failed to update issue_type for GitHub issue %(record_id)s: %(error)s') % {
+                    'record_id': ctx["record_id"],
+                    'error': e,
+                }
+            )
         except Exception as e:
             logger.error(f'Failed to update issue_type for GitHub issue {ctx["record_id"]}: {e}')
-            return self._failed_execution(f'Failed to update issue_type for GitHub issue {ctx["record_id"]}: {e}')
+            return self._failed_execution(
+                _('Failed to update issue_type for GitHub issue %(record_id)s: %(error)s') % {
+                    'record_id': ctx["record_id"],
+                    'error': e,
+                }
+            )
 
         try:
             github_seadb_api = GitHubSeaDBAPI(project_uuid, seadb_api=seadb_api)
@@ -888,7 +964,10 @@ class AgentActionExecutor:
             logger.warning(f'Failed to update SeaDB for GitHub issue {ctx["record_id"]}: {e}')
 
         return self._successful_execution(
-            f'Issue type updated to "{new_type}" for GitHub issue #{ctx["record_id"]}.'
+            _('Issue type updated to "%(new_type)s" for GitHub issue #%(record_id)s.') % {
+                'new_type': new_type,
+                'record_id': ctx["record_id"],
+            }
         )
 
     @staticmethod
@@ -1050,7 +1129,7 @@ class AgentActionExecutor:
                     ticket_substate = substate_options[0].get('name') or ''
         except Exception as e:
             logger.error(f'Failed to resolve ticket select options for source_id {source_id}: {e}')
-            return None, f'Failed to create ticket: {e}'
+            return None, _('Failed to create ticket: %(error)s') % {'error': e}
 
         now = timezone.now().isoformat()
 
@@ -1080,7 +1159,7 @@ class AgentActionExecutor:
             ticket_pk = pks[0]
         except Exception as e:
             logger.error(f'Failed to insert ticket for source_id {source_id}: {e}')
-            return None, f'Failed to create ticket: {e}'
+            return None, _('Failed to create ticket: %(error)s') % {'error': e}
 
         ticket = {
             'ticket_pk': ticket_pk,
@@ -1110,24 +1189,28 @@ class AgentActionExecutor:
         try:
             related_ticket = int(raw_related_ticket)
         except (TypeError, ValueError):
-            return self._failed_execution('related_ticket must be a positive integer.')
+            return self._failed_execution(_('related_ticket must be a positive integer.'))
         if related_ticket <= 0:
-            return self._failed_execution('related_ticket must be a positive integer.')
+            return self._failed_execution(_('related_ticket must be a positive integer.'))
 
-        ticket, _ = get_ticket(seadb_api, project_uuid, related_ticket)
+        ticket, _columns = get_ticket(seadb_api, project_uuid, related_ticket)
         if not ticket:
-            return self._failed_execution(f'Ticket #{related_ticket} not found.')
+            return self._failed_execution(
+                _('Ticket #%(related_ticket)s not found.') % {'related_ticket': related_ticket}
+            )
 
         normalized_source_id = str(source_id)
         if source_type == ExtraSourceType.PORTAL_ISSUE.value:
             record_id = self._parse_portal_issue_id(source_id)
             if record_id is None:
-                return self._failed_execution(f'Invalid Portal issue source_id: {source_id}')
+                return self._failed_execution(
+                    _('Invalid Portal issue source_id: %(source_id)s') % {'source_id': source_id}
+                )
             normalized_source_id = f'portal_{record_id}'
         else:
             connection_id, record_id = self._parse_connection_source_id(source_id, source_type)
             if connection_id is None or record_id is None:
-                return self._failed_execution(f'Invalid source_id format: {source_id}')
+                return self._failed_execution(_('Invalid source_id format: %(source_id)s') % {'source_id': source_id})
 
         try:
             sync_plan, connections = check_ticket_link_changes(
@@ -1142,7 +1225,12 @@ class AgentActionExecutor:
             sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections)
         except Exception as e:
             logger.error('Failed to link record %s to ticket #%s: %s', normalized_source_id, related_ticket, e)
-            return self._failed_execution(f'Failed to link this record to ticket #{related_ticket}: {e}')
+            return self._failed_execution(
+                _('Failed to link this record to ticket #%(related_ticket)s: %(error)s') % {
+                    'related_ticket': related_ticket,
+                    'error': e,
+                }
+            )
 
         linked_source_ids = ticket.get(SchemaTables.TICKETS.column.linked_connection_records.name) or []
         linked_source_ids = [
@@ -1167,7 +1255,16 @@ class AgentActionExecutor:
                     'Linked record %s to ticket #%s but failed to update linked_connection_records: %s',
                     normalized_source_id, related_ticket, e
                 )
-                return self._failed_execution(f'Linked record {normalized_source_id} to ticket #{related_ticket} but failed to update linked_connection_records: {e}')
+                return self._failed_execution(
+                    _(
+                        'Linked record %(normalized_source_id)s to ticket #%(related_ticket)s but failed to update '
+                        'linked_connection_records: %(error)s'
+                    ) % {
+                        'normalized_source_id': normalized_source_id,
+                        'related_ticket': related_ticket,
+                        'error': e,
+                    }
+                )
 
         ticket_info = {
             'ticket_pk': related_ticket,
@@ -1175,7 +1272,7 @@ class AgentActionExecutor:
             'ticket_url': build_ticket_related_url(request, project, related_ticket),
         }
         return self._successful_execution(json.dumps({
-            'message': f'Record linked to ticket #{related_ticket}.',
+            'message': _('Record linked to ticket #%(related_ticket)s.') % {'related_ticket': related_ticket},
             'ticket': ticket_info,
         }, ensure_ascii=False))
 
@@ -1192,14 +1289,19 @@ class AgentActionExecutor:
     ):
         issue_id = self._parse_portal_issue_id(source_id)
         if issue_id is None:
-            return self._failed_execution(f'Invalid Portal issue source_id: {source_id}')
+            return self._failed_execution(
+                _('Invalid Portal issue source_id: %(source_id)s') % {'source_id': source_id}
+            )
 
-        issue, _ = get_portal_issue(seadb_api, project_uuid, issue_id)
+        issue, _comments = get_portal_issue(seadb_api, project_uuid, issue_id)
         if not issue:
-            return self._failed_execution(f'Portal issue #{issue_id} not found.')
+            return self._failed_execution(_('Portal issue #%(issue_id)s not found.') % {'issue_id': issue_id})
         if issue.get('linked_ticket'):
             return self._failed_execution(
-                f'Portal issue #{issue_id} is already linked to ticket #{issue["linked_ticket"]}.'
+                _('Portal issue #%(issue_id)s is already linked to ticket #%(linked_ticket)s.') % {
+                    'issue_id': issue_id,
+                    'linked_ticket': issue["linked_ticket"],
+                }
             )
 
         portal_link_key = f'portal_{issue_id}'
@@ -1235,7 +1337,10 @@ class AgentActionExecutor:
 
         logger.info('Created ticket #%s from Portal issue #%s', ticket_pk, issue_id)
         return self._ticket_created_execution(
-            f'Ticket #{ticket_pk} created from Portal issue #{issue_id}.',
+            _('Ticket #%(ticket_pk)s created from Portal issue #%(issue_id)s.') % {
+                'ticket_pk': ticket_pk,
+                'issue_id': issue_id,
+            },
             ticket,
         )
 
@@ -1244,7 +1349,7 @@ class AgentActionExecutor:
     ):
         connection_id, record_id = self._parse_connection_source_id(source_id, ConnectionType.GITHUB_ISSUE.value)
         if connection_id is None or record_id is None:
-            return self._failed_execution(f'Invalid source_id format: {source_id}')
+            return self._failed_execution(_('Invalid source_id format: %(source_id)s') % {'source_id': source_id})
 
         issues_table = SchemaTables.GITHUB_ISSUES.table_name(connection_id)
         sql = "SELECT `_pk`, `title`, `content`, `linked_ticket` " \
@@ -1252,12 +1357,19 @@ class AgentActionExecutor:
         result = seadb_api.query_rows(project_uuid, sql)
         issues = result.get('results', [])
         if not issues:
-            return self._failed_execution(f'GitHub issue {source_id} not found in SeaDB.')
+            return self._failed_execution(
+                _('GitHub issue %(source_id)s not found in SeaDB.') % {'source_id': source_id}
+            )
         issue = issues[0]
 
         linked_ticket = issue.get('linked_ticket')
         if linked_ticket:
-            return self._failed_execution(f'GitHub issue #{record_id} is already linked to ticket #{linked_ticket}.')
+            return self._failed_execution(
+                _('GitHub issue #%(record_id)s is already linked to ticket #%(linked_ticket)s.') % {
+                    'record_id': record_id,
+                    'linked_ticket': linked_ticket,
+                }
+            )
 
         title = issue.get('title', '')
 
@@ -1289,7 +1401,10 @@ class AgentActionExecutor:
 
         logger.info(f'Created ticket #{ticket_pk} from GitHub issue {source_id}')
         return self._ticket_created_execution(
-            f'Ticket #{ticket_pk} created from GitHub issue #{record_id}.',
+            _('Ticket #%(ticket_pk)s created from GitHub issue #%(record_id)s.') % {
+                'ticket_pk': ticket_pk,
+                'record_id': record_id,
+            },
             ticket,
         )
 
@@ -1306,28 +1421,32 @@ class AgentActionExecutor:
     def _get_email_thread_context(self, seadb_api, project_uuid, connection_id, thread_id):
         project_connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
         if not project_connection or project_connection.type != ConnectionType.EMAIL.value:
-            return None, None, None, f'Email connection {connection_id} not found.'
+            return None, None, None, _('Email connection %(connection_id)s not found.') % {
+                'connection_id': connection_id,
+            }
 
         email_seadb_api = EmailSeaDBAPI(project_uuid, seadb_api=seadb_api)
         thread = email_seadb_api.get_thread_by_pk(connection_id, thread_id)
         if not thread:
-            return None, None, None, f'Email thread #{thread_id} not found in SeaDB.'
+            return None, None, None, _('Email thread #%(thread_id)s not found in SeaDB.') % {'thread_id': thread_id}
 
         emails = email_seadb_api.get_emails_by_thread_id(connection_id, thread_id)
         if not emails:
-            return None, None, None, f'No emails found for thread #{thread_id}.'
+            return None, None, None, _('No emails found for thread #%(thread_id)s.') % {'thread_id': thread_id}
 
         return project_connection, thread, emails, None
 
     def _get_discourse_topic_context(self, seadb_api, project_uuid, connection_id, topic_pk):
         project_connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
         if not project_connection or project_connection.type != ConnectionType.DISCOURSE_FORUM.value:
-            return None, None, None, f'Discourse connection {connection_id} not found.'
+            return None, None, None, _('Discourse connection %(connection_id)s not found.') % {
+                'connection_id': connection_id,
+            }
 
         discourse_seadb_api = DiscourseSeaDBAPI(project_uuid, seadb_api=seadb_api)
         topic = discourse_seadb_api.get_topic_by_pk(connection_id, topic_pk)
         if not topic:
-            return None, None, None, f'Discourse topic #{topic_pk} not found in SeaDB.'
+            return None, None, None, _('Discourse topic #%(topic_pk)s not found in SeaDB.') % {'topic_pk': topic_pk}
 
         topic_id = topic.get('topic_id')
         replies = discourse_seadb_api.get_replies_by_topic_id(connection_id, topic_id) if topic_id else []
@@ -1337,23 +1456,23 @@ class AgentActionExecutor:
     def _get_discord_thread_context(self, seadb_api, project_uuid, connection_id, thread_pk):
         project_connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
         if not project_connection or project_connection.type != ConnectionType.DISCORD.value:
-            return None, None, f'Discord connection {connection_id} not found.'
+            return None, None, _('Discord connection %(connection_id)s not found.') % {'connection_id': connection_id}
 
         discord_seadb_api = DiscordSeaDBAPI(project_uuid, seadb_api=seadb_api)
         thread = discord_seadb_api.get_thread_by_pk(connection_id, thread_pk)
         if not thread:
-            return None, None, f'Discord thread #{thread_pk} not found in SeaDB.'
+            return None, None, _('Discord thread #%(thread_pk)s not found in SeaDB.') % {'thread_pk': thread_pk}
 
         return project_connection, thread, None
 
     def _execute_discord_suggest_reply(self, seadb_api, project_uuid, source_id, reply_content):
         reply_content = (reply_content or '').strip()
         if not reply_content:
-            return self._failed_execution('Cannot create Discord reply: empty content.')
+            return self._failed_execution(_('Cannot create Discord reply: empty content.'))
 
         connection_id, record_id = self._parse_connection_source_id(source_id, ConnectionType.DISCORD.value)
         if connection_id is None or record_id is None:
-            return self._failed_execution(f'Invalid source_id format: {source_id}')
+            return self._failed_execution(_('Invalid source_id format: %(source_id)s') % {'source_id': source_id})
 
         project_connection, thread, error = self._get_discord_thread_context(
             seadb_api, project_uuid, connection_id, record_id
@@ -1363,18 +1482,25 @@ class AgentActionExecutor:
 
         thread_id = (thread.get('thread_id') or '').strip()
         if not thread_id:
-            return self._failed_execution(f'Discord thread {source_id} has no thread_id.')
+            return self._failed_execution(
+                _('Discord thread %(source_id)s has no thread_id.') % {'source_id': source_id}
+            )
 
         try:
             discord_api = DiscordAPI(DISCORD_BOT_TOKEN)
             message = discord_api.create_message(thread_id, reply_content)
         except requests.exceptions.RequestException as e:
             logger.error('Failed to create Discord reply for thread %s: %s', source_id, e)
-            return self._failed_execution(f'Failed to post reply to Discord thread #{record_id}: {e}')
+            return self._failed_execution(
+                _('Failed to post reply to Discord thread #%(record_id)s: %(error)s') % {
+                    'record_id': record_id,
+                    'error': e,
+                }
+            )
 
         message_id = str(message.get('id') or '').strip()
         if not message_id:
-            return self._failed_execution('Failed to save Discord reply: response has no message id.')
+            return self._failed_execution(_('Failed to save Discord reply: response has no message id.'))
 
         author = ((message.get('author') or {}).get('username') or '').strip()
         created_time = message.get('timestamp') or timezone.now().isoformat()
@@ -1398,11 +1524,13 @@ class AgentActionExecutor:
                 e,
             )
             return self._failed_execution(
-                f'Discord reply was posted, but failed to save local record for thread #{record_id}.'
+                _('Discord reply was posted, but failed to save local record for thread #%(record_id)s.') % {
+                    'record_id': record_id,
+                }
             )
 
         return self._successful_execution(
-            f'Reply posted to Discord thread #{record_id}.'
+            _('Reply posted to Discord thread #%(record_id)s.') % {'record_id': record_id}
         )
 
     def _execute_email_suggest_reply(self, seadb_api, project_uuid, source_id, reply_content):
@@ -1414,11 +1542,11 @@ class AgentActionExecutor:
             content = (reply_content or '').strip()
             is_html = False
         if not content:
-            return self._failed_execution('Cannot send reply email: empty content.')
+            return self._failed_execution(_('Cannot send reply email: empty content.'))
 
         connection_id, thread_id = self._parse_connection_source_id(source_id, ConnectionType.EMAIL.value)
         if connection_id is None or thread_id is None:
-            return self._failed_execution(f'Invalid source_id format: {source_id}')
+            return self._failed_execution(_('Invalid source_id format: %(source_id)s') % {'source_id': source_id})
 
         project_connection, _thread, emails, error = self._get_email_thread_context(
             seadb_api, project_uuid, connection_id, thread_id
@@ -1430,11 +1558,13 @@ class AgentActionExecutor:
             config = decrypt_config(json.loads(project_connection.config))
         except Exception as e:
             logger.error(f'Invalid email connection config for {project_connection.id}: {e}')
-            return self._failed_execution('Email connection config is invalid.')
+            return self._failed_execution(_('Email connection config is invalid.'))
 
         target_email = self._latest_inbound_email(emails)
         if not target_email:
-            return self._failed_execution(f'No inbound email found for thread {source_id}.')
+            return self._failed_execution(
+                _('No inbound email found for thread %(source_id)s.') % {'source_id': source_id}
+            )
 
         default_to = self.default_reply_to_from_emails(emails)
         to_emails = (draft.get('to') if draft else None) or default_to
@@ -1444,21 +1574,27 @@ class AgentActionExecutor:
                 'Failed to resolve recipient for thread %s: email_from=%r (email pk=%s)',
                 source_id, target_email.get('email_from'), target_email.get('_pk'),
             )
-            return self._failed_execution(f'Failed to resolve recipient for thread {source_id}.')
+            return self._failed_execution(
+                _('Failed to resolve recipient for thread %(source_id)s.') % {'source_id': source_id}
+            )
 
         subject = target_email.get('title') or ''
         if not subject:
-            return self._failed_execution(f'Cannot determine subject for thread {source_id}.')
+            return self._failed_execution(
+                _('Cannot determine subject for thread %(source_id)s.') % {'source_id': source_id}
+            )
         if not subject.lower().startswith('re:'):
             subject = f'Re: {subject}'
 
         target_message_id = target_email.get('message_id')
         if not target_message_id:
-            return self._failed_execution(f'Cannot determine reply target for thread {source_id}.')
+            return self._failed_execution(
+                _('Cannot determine reply target for thread %(source_id)s.') % {'source_id': source_id}
+            )
 
         sender_email = config.get('sender_email') or config.get('username')
         if not sender_email:
-            return self._failed_execution('Email connection config is invalid.')
+            return self._failed_execution(_('Email connection config is invalid.'))
 
         domain = sender_email.split('@')[1] if '@' in sender_email else None
         message_id = make_msgid(domain=domain)
@@ -1480,7 +1616,7 @@ class AgentActionExecutor:
             if config.get('server_provider') in ('Gmail', 'Microsoft'):
                 oauth_record = ProjectConnectionOauth.objects.get_by_connection_id(project_uuid, project_connection.id)
                 if not oauth_record:
-                    return self._failed_execution('Email OAuth authorization is required.')
+                    return self._failed_execution(_('Email OAuth authorization is required.'))
                 oauth_token = {
                     'access_token': oauth_record.access_token,
                     'refresh_token': oauth_record.refresh_token,
@@ -1494,10 +1630,10 @@ class AgentActionExecutor:
             send_res = toggle_send_email(config, send_info, oauth_token, oauth_config)
         except EmailConfigError as e:
             logger.error('Email config error for connection %s: %s', project_connection.id, e)
-            return self._failed_execution('Email connection config is invalid.')
+            return self._failed_execution(_('Email connection config is invalid.'))
         except EmailSendError as e:
             logger.error('Reply email failed for connection %s thread %s: %s', project_connection.id, source_id, e)
-            return self._failed_execution('Failed to send email.')
+            return self._failed_execution(_('Failed to send email.'))
 
         if send_res.get('oauth_updated'):
             oauth_token = send_res['oauth_token']
@@ -1530,14 +1666,19 @@ class AgentActionExecutor:
             )
         except Exception as e:
             logger.error('Save reply email failed for connection %s thread %s: %s', project_connection.id, source_id, e)
-            return self._failed_execution('Failed to save reply email.')
+            return self._failed_execution(_('Failed to save reply email.'))
 
-        return self._successful_execution(f'Reply email sent for thread #{thread_id} (email record ID: {reply_pk}).')
+        return self._successful_execution(
+            _('Reply email sent for thread #%(thread_id)s (email record ID: %(reply_pk)s).') % {
+                'thread_id': thread_id,
+                'reply_pk': reply_pk,
+            }
+        )
 
     def _execute_email_move_to_spam(self, seadb_api, project_uuid, source_id):
         connection_id, thread_id = self._parse_connection_source_id(source_id, ConnectionType.EMAIL.value)
         if connection_id is None or thread_id is None:
-            return self._failed_execution(f'Invalid source_id format: {source_id}')
+            return self._failed_execution(_('Invalid source_id format: %(source_id)s') % {'source_id': source_id})
 
         project_connection, thread, emails, error = self._get_email_thread_context(
             seadb_api, project_uuid, connection_id, thread_id
@@ -1548,21 +1689,24 @@ class AgentActionExecutor:
         linked_ticket = thread.get('linked_ticket')
         if linked_ticket:
             return self._failed_execution(
-                f'Email thread #{thread_id} is already linked to ticket #{linked_ticket}.'
+                _('Email thread #%(thread_id)s is already linked to ticket #%(linked_ticket)s.') % {
+                    'thread_id': thread_id,
+                    'linked_ticket': linked_ticket,
+                }
             )
 
         try:
             config = decrypt_config(json.loads(project_connection.config))
         except Exception as e:
             logger.error(f'Invalid email connection config for {project_connection.id}: {e}')
-            return self._failed_execution('Email connection config is invalid.')
+            return self._failed_execution(_('Email connection config is invalid.'))
 
         oauth_token = None
         oauth_config = None
         if config.get('server_provider') in ('Gmail', 'Microsoft'):
             oauth_record = ProjectConnectionOauth.objects.get_by_connection_id(project_uuid, project_connection.id)
             if not oauth_record:
-                return self._failed_execution('Email OAuth authorization is required.')
+                return self._failed_execution(_('Email OAuth authorization is required.'))
             oauth_token = {
                 'access_token': oauth_record.access_token,
                 'refresh_token': oauth_record.refresh_token,
@@ -1583,19 +1727,21 @@ class AgentActionExecutor:
                 inbound_message_ids.append(message_id)
         inbound_message_ids = list(dict.fromkeys(inbound_message_ids))
         if not inbound_message_ids:
-            return self._failed_execution(f'No inbound message id found for thread {source_id}.')
+            return self._failed_execution(
+                _('No inbound message id found for thread %(source_id)s.') % {'source_id': source_id}
+            )
 
         try:
             move_result = move_emails_to_junk(config, inbound_message_ids, oauth_token, oauth_config)
         except MailboxConfigError as e:
             logger.error('Mailbox config error for connection %s: %s', project_connection.id, e)
-            return self._failed_execution('Email connection config is invalid.')
+            return self._failed_execution(_('Email connection config is invalid.'))
         except MailboxOperationError as e:
             logger.error(
                 'Move to spam failed for connection %s thread %s: %s',
                 project_connection.id, source_id, e
             )
-            return self._failed_execution('Failed to move the email to the spam folder.')
+            return self._failed_execution(_('Failed to move the email to the spam folder.'))
 
         moved_count = int((move_result or {}).get('moved_count') or 0)
         if moved_count <= 0:
@@ -1604,7 +1750,7 @@ class AgentActionExecutor:
                 project_connection.id, source_id, inbound_message_ids
             )
             return self._failed_execution(
-                'Failed to move the email to the spam folder: no matching remote message was moved.'
+                _('Failed to move the email to the spam folder: no matching remote message was moved.')
             )
 
         if (move_result or {}).get('oauth_updated'):
@@ -1625,16 +1771,16 @@ class AgentActionExecutor:
                 'Moved email to spam but failed to soft-delete thread %s for connection %s: %s',
                 source_id, project_connection.id, e
             )
-            return self._failed_execution('Email moved to spam but failed to update local records.')
+            return self._failed_execution(_('Email moved to spam but failed to update local records.'))
 
         return self._successful_execution(
-            f'Email thread #{thread_id} moved to the spam folder.'
+            _('Email thread #%(thread_id)s moved to the spam folder.') % {'thread_id': thread_id}
         )
 
     def _execute_email_create_ticket(self, seadb_api, project, project_uuid, source_id, suggestion_content, username, request=None, auto_executed=False):
         connection_id, thread_id = self._parse_connection_source_id(source_id, ConnectionType.EMAIL.value)
         if connection_id is None or thread_id is None:
-            return self._failed_execution(f'Invalid source_id format: {source_id}')
+            return self._failed_execution(_('Invalid source_id format: %(source_id)s') % {'source_id': source_id})
 
         project_connection, thread, emails, error = self._get_email_thread_context(
             seadb_api, project_uuid, connection_id, thread_id
@@ -1644,7 +1790,12 @@ class AgentActionExecutor:
 
         linked_ticket = thread.get('linked_ticket')
         if linked_ticket:
-            return self._failed_execution(f'Email thread #{thread_id} is already linked to ticket #{linked_ticket}.')
+            return self._failed_execution(
+                _('Email thread #%(thread_id)s is already linked to ticket #%(linked_ticket)s.') % {
+                    'thread_id': thread_id,
+                    'linked_ticket': linked_ticket,
+                }
+            )
 
         thread_table = SchemaTables.THREAD.table_name(project_connection.id)
         thread_id = thread.get('_pk')
@@ -1677,14 +1828,17 @@ class AgentActionExecutor:
 
         logger.info(f'Created ticket #{ticket_pk} from email thread {source_id}')
         return self._ticket_created_execution(
-            f'Ticket #{ticket_pk} created from email thread #{thread_id}.',
+            _('Ticket #%(ticket_pk)s created from email thread #%(thread_id)s.') % {
+                'ticket_pk': ticket_pk,
+                'thread_id': thread_id,
+            },
             ticket,
         )
 
     def _execute_discourse_create_ticket(self, seadb_api, project, project_uuid, source_id, suggestion_content, username, request=None, auto_executed=False):
         connection_id, topic_pk = self._parse_connection_source_id(source_id, ConnectionType.DISCOURSE_FORUM.value)
         if connection_id is None or topic_pk is None:
-            return self._failed_execution(f'Invalid source_id format: {source_id}')
+            return self._failed_execution(_('Invalid source_id format: %(source_id)s') % {'source_id': source_id})
 
         project_connection, topic, replies, error = self._get_discourse_topic_context(
             seadb_api, project_uuid, connection_id, topic_pk
@@ -1694,7 +1848,12 @@ class AgentActionExecutor:
 
         linked_ticket = topic.get('linked_ticket')
         if linked_ticket:
-            return self._failed_execution(f'Discourse topic #{topic_pk} is already linked to ticket #{linked_ticket}.')
+            return self._failed_execution(
+                _('Discourse topic #%(topic_pk)s is already linked to ticket #%(linked_ticket)s.') % {
+                    'topic_pk': topic_pk,
+                    'linked_ticket': linked_ticket,
+                }
+            )
 
         topic_table = SchemaTables.DISCOURSE_TOPICS.table_name(project_connection.id)
         topic_pk = topic.get('_pk')
@@ -1727,14 +1886,17 @@ class AgentActionExecutor:
 
         logger.info(f'Created ticket #{ticket_pk} from discourse topic {source_id}')
         return self._ticket_created_execution(
-            f'Ticket #{ticket_pk} created from discourse topic #{topic_pk}.',
+            _('Ticket #%(ticket_pk)s created from discourse topic #%(topic_pk)s.') % {
+                'ticket_pk': ticket_pk,
+                'topic_pk': topic_pk,
+            },
             ticket,
         )
 
     def _execute_discord_create_ticket(self, seadb_api, project, project_uuid, source_id, suggestion_content, username, request=None, auto_executed=False):
         connection_id, thread_pk = self._parse_connection_source_id(source_id, ConnectionType.DISCORD.value)
         if connection_id is None or thread_pk is None:
-            return self._failed_execution(f'Invalid source_id format: {source_id}')
+            return self._failed_execution(_('Invalid source_id format: %(source_id)s') % {'source_id': source_id})
 
         project_connection, thread, error = self._get_discord_thread_context(
             seadb_api, project_uuid, connection_id, thread_pk
@@ -1744,7 +1906,12 @@ class AgentActionExecutor:
 
         linked_ticket = thread.get('linked_ticket')
         if linked_ticket:
-            return self._failed_execution(f'Discord thread #{thread_pk} is already linked to ticket #{linked_ticket}.')
+            return self._failed_execution(
+                _('Discord thread #%(thread_pk)s is already linked to ticket #%(linked_ticket)s.') % {
+                    'thread_pk': thread_pk,
+                    'linked_ticket': linked_ticket,
+                }
+            )
 
         thread_table = SchemaTables.DISCORD_THREADS.table_name(project_connection.id)
         thread_pk = thread.get('_pk')
@@ -1777,20 +1944,23 @@ class AgentActionExecutor:
 
         logger.info(f'Created ticket #{ticket_pk} from discord thread {source_id}')
         return self._ticket_created_execution(
-            f'Ticket #{ticket_pk} created from discord thread #{thread_pk}.',
+            _('Ticket #%(ticket_pk)s created from discord thread #%(thread_pk)s.') % {
+                'ticket_pk': ticket_pk,
+                'thread_pk': thread_pk,
+            },
             ticket,
         )
 
     def _execute_notify_assignee(self, seadb_api, project, project_uuid, ticket_id, message, operator, *, auto_executed=False):
-        ticket, _ = get_ticket(seadb_api, project_uuid, ticket_id)
+        ticket, _columns = get_ticket(seadb_api, project_uuid, ticket_id)
         if not ticket:
             logger.warning(f'Ticket {ticket_id} not found in project {project_uuid}')
-            return self._failed_execution(f'Ticket #{ticket_id} not found')
+            return self._failed_execution(_('Ticket #%(ticket_id)s not found') % {'ticket_id': ticket_id})
 
         assignees = ticket.get(SchemaTables.TICKETS.column.assignees.name) or []
         if not assignees:
             logger.info(f'Ticket #{ticket_id} has no assignees, skip notify.')
-            return self._failed_execution(f'Ticket #{ticket_id} has no assignees')
+            return self._failed_execution(_('Ticket #%(ticket_id)s has no assignees') % {'ticket_id': ticket_id})
 
         notify_from_user = AUTO_NOTIFY_SENDER if auto_executed else operator
 
@@ -1809,7 +1979,7 @@ class AgentActionExecutor:
             project_icon=project.icon,
         )
 
-        return self._successful_execution(f'Notification sent to {len(assignees)} assignee(s).')
+        return self._successful_execution(_('Notification sent to %(count)s assignee(s).') % {'count': len(assignees)})
 
     def _execute_close_ticket(
         self,
@@ -1820,13 +1990,13 @@ class AgentActionExecutor:
         *,
         linked_github_issues_to_close=None,
     ):
-        ticket, _ = get_ticket(seadb_api, project_uuid, ticket_id)
+        ticket, _columns = get_ticket(seadb_api, project_uuid, ticket_id)
         if not ticket:
-            return self._failed_execution(f'Ticket #{ticket_id} not found')
+            return self._failed_execution(_('Ticket #%(ticket_id)s not found') % {'ticket_id': ticket_id})
 
         state_name = (ticket.get(SchemaTables.TICKETS.column.state.name) or '').lower()
         if state_name == 'closed':
-            return self._failed_execution(f'Ticket #{ticket_id} is already closed')
+            return self._failed_execution(_('Ticket #%(ticket_id)s is already closed') % {'ticket_id': ticket_id})
 
         substate = ticket.get(SchemaTables.TICKETS.column.substate.name)
         close_candidates = [{'ticket_id': int(ticket_id), 'substate': substate}]
@@ -1840,7 +2010,7 @@ class AgentActionExecutor:
             close_linked_github_issues(seadb_api, project_uuid, ticket_close_payloads)
         except Exception as e:
             logger.exception('Failed to close linked GitHub issues for ticket #%s: %s', ticket_id, e)
-            return self._failed_execution(f'Failed to close linked GitHub issues: {e}')
+            return self._failed_execution(_('Failed to close linked GitHub issues: %(error)s') % {'error': e})
 
         now = timezone.now().isoformat()
         participants = ticket.get(SchemaTables.TICKETS.column.participants.name) or []
@@ -1868,4 +2038,4 @@ class AgentActionExecutor:
             operator,
             changes,
         )
-        return self._successful_execution(f'Ticket #{ticket_id} closed.')
+        return self._successful_execution(_('Ticket #%(ticket_id)s closed.') % {'ticket_id': ticket_id})
