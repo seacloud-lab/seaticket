@@ -4,6 +4,7 @@ import logging
 import os
 import re
 import time
+from datetime import timezone as datetime_timezone
 from urllib.parse import quote, unquote
 
 import jwt
@@ -86,7 +87,8 @@ def mark_external_chat_rate_limit(project_uuid, username):
 
 
 def get_project_portal_chat_credit_used(project_uuid):
-    today = timezone.localdate()
+    # Match the UTC date used by the usage statistics worker.
+    today = timezone.now().astimezone(datetime_timezone.utc).date()
     total_cost = AIUsageStatistics.objects.filter(
         date=today,
         project_uuid=uuid_str_to_32_chars(project_uuid),

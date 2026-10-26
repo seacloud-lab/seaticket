@@ -1,6 +1,7 @@
 import json
 from io import BytesIO
 from datetime import date, datetime, timedelta
+from datetime import timezone as datetime_timezone
 from unittest.mock import Mock, patch
 
 import pytest
@@ -364,7 +365,9 @@ class TestPortalChatViewAnonymous:
         assert messages[1].content == error_msg
         mock_get_ai_reply.assert_not_called()
 
-    def test_daily_quota_exceeded_records_rejection(self, factory, real_project):
+    @pytest.mark.parametrize('cost', [0.01, 0.02])
+    @pytest.mark.parametrize('hour, minute', [(15, 59), (16, 0), (23, 59)])
+    def test_daily_quota_exceeded_records_rejection(self, factory, real_project, cost, hour, minute):
         _set_portal_settings(
             real_project, allow_anonymous=True, enable_password_protection=False,
             daily_chat_credit_limit=1,
@@ -374,22 +377,60 @@ class TestPortalChatViewAnonymous:
             project_uuid=str(real_project.uuid), session_name='quota', username=visitor['visitor_uuid']
         )
         AIUsageStatistics.objects.create(
-            date=timezone.localdate(),
+            date=date(2026, 10, 25),
             project_uuid=uuid_str_to_32_chars(str(real_project.uuid)),
             owner='owner',
             model='test-model',
             scenario=AIScenario.PORTAL_CHAT.value,
-            cost=0.02,
+            cost=cost,
         )
         query = 'what is the quota'
         request = self._post_anonymous_chat(factory, real_project, session, query)
 
-        with patch('seahub.portal.chat.apis.get_ai_reply') as mock_get_ai_reply:
+        now = datetime(2026, 10, 25, hour, minute, tzinfo=datetime_timezone.utc)
+        with timezone.override('Asia/Shanghai'), \
+                patch('seahub.portal.chat.utils.timezone.now', return_value=now), \
+                patch('seahub.portal.chat.apis.get_ai_reply') as mock_get_ai_reply:
             resp = PortalChatView.as_view()(request, project_uuid=str(real_project.uuid))
 
         self._assert_usage_limit_rejection(
             session, query, resp, 429, 'Portal chat daily quota exceeded.', mock_get_ai_reply,
         )
+
+    @pytest.mark.parametrize('now, cost', [
+        (datetime(2026, 10, 25, 23, 59, tzinfo=datetime_timezone.utc), 0.005),
+        (datetime(2026, 10, 26, 0, 0, tzinfo=datetime_timezone.utc), 0.02),
+    ])
+    def test_daily_quota_allows_chat_below_limit_or_after_utc_midnight(self, factory, real_project, now, cost):
+        _set_portal_settings(
+            real_project, allow_anonymous=True, enable_password_protection=False,
+            daily_chat_credit_limit=1,
+        )
+        visitor = create_visitor_session()
+        session = PortalChatSessions.objects.create_session(
+            project_uuid=str(real_project.uuid), session_name='quota', username=visitor['visitor_uuid']
+        )
+        AIUsageStatistics.objects.create(
+            date=date(2026, 10, 25),
+            project_uuid=uuid_str_to_32_chars(str(real_project.uuid)),
+            owner='owner',
+            model='test-model',
+            scenario=AIScenario.PORTAL_CHAT.value,
+            cost=cost,
+        )
+        request = self._post_anonymous_chat(factory, real_project, session, 'hello', stream=False)
+
+        with timezone.override('Asia/Shanghai'), \
+                patch('seahub.portal.chat.utils.timezone.now', return_value=now), \
+                patch('seahub.portal.chat.apis.check_ai_limit', return_value=False), \
+                patch('seahub.portal.chat.apis.validate_chat_input', return_value={'valid': True, 'reason': ''}), \
+                patch('seahub.portal.chat.apis.get_ai_reply', return_value={'ai_reply': 'ok', 'sources': []}) as mock_get_ai_reply:
+            resp = PortalChatView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert resp.status_code == 200
+        assert resp.data['ai_reply'] == 'ok'
+        mock_get_ai_reply.assert_called_once()
+        assert PortalChatMessages.objects.filter(session_uuid=session.session_uuid).count() == 2
 
     def test_anonymous_daily_limit_records_rejection(self, factory, real_project):
         _set_portal_settings(real_project, allow_anonymous=True, enable_password_protection=False)
