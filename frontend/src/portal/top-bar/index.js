@@ -61,7 +61,7 @@ const TopBar = ({ isEditMode, activePage, onPageChange, isAnonymous, canAccessIs
             <img src={logo} alt="" />
             <h3 className="text-truncate" title={name}>{name}</h3>
           </div>
-          <div className="seaqa-portal-top-bar-tabs d-flex justify-content-center flex-1">
+          <div className="seaqa-portal-top-bar-tabs d-flex justify-content-center">
             <CustomizeTabs
               tabs={primaryTabs}
               value={activePrimaryTab}
