@@ -96,7 +96,7 @@ const UsersTable = ({ users, onDeleteUser, onCustomerClick, viewTabs }) => {
           },
         ],
         has_more: false,
-        error_msg: users.length === 0 ? gettext('No user') : '',
+        error_msg: users.length === 0 ? gettext('No users') : '',
       },
     }),
   }), [onCustomerClick, users]);
