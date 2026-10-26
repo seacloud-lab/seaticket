@@ -1616,6 +1616,10 @@ class PortalSettingsView(APIView):
         welcome_email_subject = portal_settings.get('welcome_email_subject') or PORTAL_WELCOME_EMAIL_SUBJECT
         welcome_email_content = portal_settings.get('welcome_email_content') or PORTAL_WELCOME_EMAIL_CONTENT
         chat_settings = get_portal_chat_settings(project)
+        password = portal_settings.get('password', '')
+        if password:
+            cryptor = AESPasswordHasher()
+            password = cryptor.decode(password)
 
         return Response({
             'portal_name': portal_name,
@@ -1623,6 +1627,7 @@ class PortalSettingsView(APIView):
             'portal_theme_color': portal_theme_color,
             'allow_anonymous': allow_anonymous,
             'enable_password_protection': enable_password_protection,
+            'password': password,
             'chat_allowed_sources': chat_allowed_sources,
             'external_chat_user_rate_limit': chat_settings['external_chat_user_rate_limit'],
             'anonymous_chat_session_daily_limit': chat_settings['anonymous_chat_session_daily_limit'],

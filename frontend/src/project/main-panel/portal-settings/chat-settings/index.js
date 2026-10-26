@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FormGroup, Input, Label } from 'reactstrap';
-import { SettingsItem } from '@/components';
+import { SaveStatus, SettingsItem } from '@/components';
 import { gettext } from '@/constants';
 import { usePortalSettings } from '../hooks';
 import PortalChatSourceSelector from './chat-source-selector';
@@ -14,27 +14,33 @@ const ChatLimitInput = ({ label, name, unit, value, onSave }) => {
     setDraftValue(String(value));
   }, [value]);
 
-  const handleBlur = () => {
+  const handleBlur = (callback) => {
     const parsedValue = Number(draftValue);
     if (!Number.isInteger(parsedValue) || parsedValue < 0) {
       setDraftValue(String(value));
+      callback && callback(false, gettext('%s is invalid and has been automatically reset to the last valid value.').replace('%s', label));
       return;
     }
-    if (parsedValue !== value) onSave({ [name]: parsedValue });
+    onSave({ [name]: parsedValue }, callback);
   };
 
   return (
-    <div className="seaqa-portal-chat-limit-row">
-      <Label className="mb-0">{label}</Label>
-      <Input
-        type="number"
-        min="0"
-        value={draftValue}
-        onChange={event => setDraftValue(event.target.value)}
-        onBlur={handleBlur}
-      />
-      <span className="seaqa-tip-default font-size-12">{unit}</span>
-    </div>
+    <SaveStatus callback={handleBlur}>
+      {({ callback }) => (
+        <div className="seaqa-portal-chat-limit-row">
+          <div className="seaqa-portal-chat-limit-title">{label}</div>
+          <Input
+            type="number"
+            className="seaqa-portal-chat-limit-input"
+            min="0"
+            value={draftValue}
+            onChange={event => setDraftValue(event.target.value)}
+            onBlur={Number(draftValue) === value ? undefined : callback}
+          />
+          <span className="seaqa-tip-default font-size-12 seaqa-portal-chat-limit-unit">{unit}</span>
+        </div>
+      )}
+    </SaveStatus>
   );
 };
 
@@ -49,11 +55,11 @@ const Main = ({ connections, settings, onChange }) => {
           <PortalChatSourceSelector
             connections={connections}
             value={settings.chat_allowed_sources}
-            onChange={(value) => onChange({ chat_allowed_sources: value })}
+            onChange={(value, callback) => onChange({ chat_allowed_sources: value }, callback)}
           />
         </FormGroup>
       </SettingsItem>
-      <SettingsItem title={gettext('Chat limits')} className="seaqa-portal-chat-limits-settings">
+      <SettingsItem title={gettext('Chat limits')} className="seaqa-portal-chat-limits-settings mb-4">
         <div className="seaqa-portal-chat-limits">
           <p className="seaqa-tip-default font-size-12 line-height-20">
             {gettext('Configure the request and credit limits for portal chat. The time periods are fixed.')}
