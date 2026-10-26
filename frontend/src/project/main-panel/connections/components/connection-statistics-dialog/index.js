@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Button, Modal, ModalBody } from 'reactstrap';
 import { CenteredLoading, Icon, ModalHeader } from '@/components';
 import { gettext } from '@/constants';
 import { connectionsAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
 import StatisticsChart from './chart';
+import StatisticsPieChart from './pie-chart';
 
 import './index.css';
 
@@ -13,6 +14,12 @@ const ConnectionStatisticsDialog = ({ projectUuid, connection, onToggle }) => {
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
+  const monthlyTotals = useMemo(() => [{
+    issue_type: gettext('Issue total'),
+    counts: (result?.months || []).map((month, index) =>
+      result.series.reduce((total, item) => total + (item.counts[index] || 0), 0)
+    ),
+  }], [result]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -46,23 +53,28 @@ const ConnectionStatisticsDialog = ({ projectUuid, connection, onToggle }) => {
   } else {
     content = (
       <>
-        <div className="connection-statistics-summary">
-          <span>{result.months[0]} - {result.months[result.months.length - 1]}</span>
-          <span>{gettext('Total issues: {count}').replace('{count}', result.total.toLocaleString())}</span>
-        </div>
-        <h6 className="connection-statistics-heading">{gettext('Monthly issues by type')}</h6>
         {result.total === 0 && <div className="connection-statistics-empty">{gettext('No issues in the past 12 months.')}</div>}
-        <StatisticsChart months={result.months} series={result.series} />
+        <div className="connection-statistics-grid">
+          <section className="connection-statistics-panel">
+            <h3>{gettext('{name} issue types').replace('{name}', connection.name)}</h3>
+            <StatisticsPieChart series={result.series} />
+          </section>
+          <section className="connection-statistics-panel">
+            <h3>{gettext('{name} monthly issue count').replace('{name}', connection.name)}</h3>
+            <StatisticsChart months={result.months} series={monthlyTotals} isTotal={true} />
+          </section>
+          <section className="connection-statistics-panel connection-statistics-panel-wide">
+            <h3>{gettext('{name} issues by type').replace('{name}', connection.name)}</h3>
+            <StatisticsChart months={result.months} series={result.series} />
+          </section>
+        </div>
       </>
     );
   }
 
   return (
     <Modal isOpen={true} toggle={onToggle} className="connection-statistics-dialog">
-      <ModalHeader toggle={onToggle}>
-        <span className="connection-statistics-title" title={connection.name}>{connection.name}</span>
-        <span className="connection-statistics-title-suffix"> / {gettext('Statistics')}</span>
-      </ModalHeader>
+      <ModalHeader toggle={onToggle}>{gettext('Statistics')}</ModalHeader>
       <ModalBody>
         <div className="connection-statistics-content">{content}</div>
       </ModalBody>

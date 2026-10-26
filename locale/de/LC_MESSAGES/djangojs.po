@@ -7966,3 +7966,38 @@ msgstr "Name darf keinen Schrägstrich enthalten"
 msgid "Name cannot contain backslash"
 msgstr "Name darf keinen Backslash enthalten"
 
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/index.js
+msgid "{name} issue types"
+msgstr "Problemtypen von {name}"
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/index.js
+msgid "{name} monthly issue count"
+msgstr "Monatliche Problemanzahl von {name}"
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/index.js
+msgid "{name} issues by type"
+msgstr "Probleme von {name} nach Typ"
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/index.js
+msgid "Issue total"
+msgstr "Probleme insgesamt"
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/pie-chart.js
+msgid "Issue types"
+msgstr "Problemtypen"
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/chart.js
+msgid "Monthly issue count"
+msgstr "Monatliche Problemanzahl"
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/chart.js
+msgid "Monthly issues by type"
+msgstr "Monatliche Probleme nach Typ"
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/legend.js
+msgid "Unclassified"
+msgstr "Nicht klassifiziert"
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/index.js
+msgid "No issues in the past 12 months."
+msgstr "Keine Probleme in den letzten 12 Monaten."

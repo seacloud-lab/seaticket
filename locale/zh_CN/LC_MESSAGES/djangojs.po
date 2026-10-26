@@ -7966,3 +7966,38 @@ msgstr "名称不能包含斜杠"
 msgid "Name cannot contain backslash"
 msgstr "名称不能包含反斜杠"
 
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/index.js
+msgid "{name} issue types"
+msgstr "{name} 类型图"
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/index.js
+msgid "{name} monthly issue count"
+msgstr "{name} 问题个数按月统计图"
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/index.js
+msgid "{name} issues by type"
+msgstr "{name} 不同类型问题数量"
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/index.js
+msgid "Issue total"
+msgstr "问题总数"
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/pie-chart.js
+msgid "Issue types"
+msgstr "问题类型"
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/chart.js
+msgid "Monthly issue count"
+msgstr "每月问题数量"
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/chart.js
+msgid "Monthly issues by type"
+msgstr "每月各类型问题数量"
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/legend.js
+msgid "Unclassified"
+msgstr "未分类"
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/index.js
+msgid "No issues in the past 12 months."
+msgstr "过去 12 个月没有问题。"
