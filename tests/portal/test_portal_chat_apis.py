@@ -4,6 +4,7 @@ from datetime import date, datetime, timedelta
 from unittest.mock import Mock, patch
 
 import pytest
+from django.db import connection
 from django.utils import timezone
 
 from seahub.portal.chat.apis import (
@@ -1108,7 +1109,7 @@ class TestPortalAdminChatAPIs:
             f'/api/v1/portal/{real_project.uuid}/admin/chat/statistics/',
         )
         with patch('seahub.portal.chat.apis.timezone.localdate', return_value=today), \
-                patch('django.db.models.query.QuerySet.annotate', side_effect=RuntimeError('timezone conversion unavailable')):
+                patch.object(connection.ops, 'datetime_cast_date_sql', side_effect=RuntimeError('timezone conversion unavailable')):
             response = PortalAdminChatStatisticsView.as_view()(
                 request,
                 project_uuid=str(real_project.uuid),
@@ -1149,6 +1150,80 @@ class TestPortalAdminChatAPIs:
         assert response.data['daily_session_counts'][-1] == {
             'date': '2026-03-31', 'count': 0,
         }
+
+    @pytest.mark.parametrize('today, start_date', [
+        (date(2026, 3, 1), date(2026, 2, 2)),
+        (date(2026, 3, 31), date(2026, 3, 1)),
+    ])
+    def test_statistics_include_daily_credit_used_for_last_month(
+            self, factory, real_project, project_creator, today, start_date):
+        common_data = {
+            'project_uuid': uuid_str_to_32_chars(str(real_project.uuid)),
+            'owner': 'customer@example.com',
+            'org_id': real_project.workspace.org_id,
+            'model': 'gpt-4',
+            'scenario': AIScenario.PORTAL_CHAT.value,
+        }
+        usage_data = [
+            {'date': start_date, 'cost': 0.125},
+            {'date': start_date, 'cost': 0.25, 'model': 'another-model', 'owner': 'another@example.com'},
+            {'date': today, 'cost': 0.005},
+            {'date': start_date - timedelta(days=1), 'cost': 9},
+            {'date': today + timedelta(days=1), 'cost': 9},
+            {'date': today, 'cost': 9, 'scenario': AIScenario.CHAT.value},
+            {'date': today, 'cost': 9, 'project_uuid': 'other-project'},
+        ]
+        for usage in usage_data:
+            AIUsageStatistics.objects.create(**{**common_data, **usage})
+
+        request = self._admin_request(
+            factory, real_project, project_creator,
+            f'/api/v1/portal/{real_project.uuid}/admin/chat/statistics/',
+        )
+        with patch('seahub.portal.chat.apis.timezone.localdate', return_value=today):
+            response = PortalAdminChatStatisticsView.as_view()(
+                request, project_uuid=str(real_project.uuid),
+            )
+
+        assert response.status_code == 200
+        daily_credit_used = response.data['daily_credit_used']
+        assert [item['date'] for item in daily_credit_used] == [
+            item['date'] for item in response.data['daily_session_counts']
+        ]
+        assert len(daily_credit_used) == (today - start_date).days + 1
+        assert daily_credit_used[0] == {
+            'date': start_date.isoformat(), 'credit_used': pytest.approx(37.5),
+        }
+        assert daily_credit_used[-1] == {
+            'date': today.isoformat(), 'credit_used': pytest.approx(0.5),
+        }
+        assert all(item['credit_used'] == 0 for item in daily_credit_used[1:-1])
+
+    def test_statistics_daily_credit_used_is_zero_without_usage(self, factory, real_project, project_creator):
+        today = date(2026, 3, 1)
+        request = self._admin_request(
+            factory, real_project, project_creator,
+            f'/api/v1/portal/{real_project.uuid}/admin/chat/statistics/',
+        )
+        with patch('seahub.portal.chat.apis.timezone.localdate', return_value=today):
+            response = PortalAdminChatStatisticsView.as_view()(
+                request, project_uuid=str(real_project.uuid),
+            )
+
+        assert response.status_code == 200
+        assert len(response.data['daily_credit_used']) == 28
+        assert all(item['credit_used'] == 0 for item in response.data['daily_credit_used'])
+
+    def test_statistics_reject_non_admin(self, factory, real_project, auth_user):
+        request = self._admin_request(
+            factory, real_project, auth_user,
+            f'/api/v1/portal/{real_project.uuid}/admin/chat/statistics/',
+        )
+        response = PortalAdminChatStatisticsView.as_view()(
+            request, project_uuid=str(real_project.uuid),
+        )
+
+        assert response.status_code == 403
 
     def test_admin_chat_apis_reject_non_admin(self, factory, real_project, auth_user):
         request = self._admin_request(

@@ -5505,6 +5505,10 @@ msgstr ""
 msgid "Daily conversations in the past month"
 msgstr ""
 
+#: frontend/src/project/main-panel/portal-issues/view/chat-analysis/index.js:225
+msgid "Daily credit used in the past month"
+msgstr ""
+
 #: frontend/src/project/main-panel/portal-issues/view/chat-analysis/index.js:259
 msgid "chat"
 msgstr ""

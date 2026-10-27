@@ -5413,6 +5413,10 @@ msgstr "par rapport au mois dernier"
 msgid "Daily conversations in the past month"
 msgstr "Conversations quotidiennes du mois dernier"
 
+#: frontend/src/project/main-panel/portal-issues/view/chat-analysis/index.js:225
+msgid "Daily credit used in the past month"
+msgstr "Crédits utilisés quotidiennement au cours du mois dernier"
+
 #: frontend/src/project/main-panel/portal-issues/view/chat-analysis/index.js:259
 msgid "chat"
 msgstr "chat"
