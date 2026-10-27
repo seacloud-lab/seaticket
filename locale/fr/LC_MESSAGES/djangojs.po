@@ -7970,3 +7970,38 @@ msgstr "Le nom ne peut pas contenir de barre oblique (/)"
 msgid "Name cannot contain backslash"
 msgstr "Le nom ne peut pas contenir de barre oblique inverse (\\)"
 
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/index.js
+msgid "{name} issue types"
+msgstr "Types de problèmes de {name}"
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/index.js
+msgid "{name} monthly issue count"
+msgstr "Nombre mensuel de problèmes de {name}"
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/index.js
+msgid "{name} issues by type"
+msgstr "Problèmes de {name} par type"
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/index.js
+msgid "Issue total"
+msgstr "Total des problèmes"
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/pie-chart.js
+msgid "Issue types"
+msgstr "Types de problèmes"
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/chart.js
+msgid "Monthly issue count"
+msgstr "Nombre mensuel de problèmes"
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/chart.js
+msgid "Monthly issues by type"
+msgstr "Problèmes mensuels par type"
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/legend.js
+msgid "Unclassified"
+msgstr "Non classé"
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/index.js
+msgid "No issues in the past 12 months."
+msgstr "Aucun problème au cours des 12 derniers mois."

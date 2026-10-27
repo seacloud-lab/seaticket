@@ -8104,3 +8104,39 @@ msgstr ""
 #: frontend/src/utils/validate/name.js:15
 msgid "Name cannot contain backslash"
 msgstr ""
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/index.js
+msgid "{name} issue types"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/index.js
+msgid "{name} monthly issue count"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/index.js
+msgid "{name} issues by type"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/index.js
+msgid "Issue total"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/pie-chart.js
+msgid "Issue types"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/chart.js
+msgid "Monthly issue count"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/chart.js
+msgid "Monthly issues by type"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/legend.js
+msgid "Unclassified"
+msgstr ""
+
+#: frontend/src/project/main-panel/connections/components/connection-statistics-dialog/index.js
+msgid "No issues in the past 12 months."
+msgstr ""

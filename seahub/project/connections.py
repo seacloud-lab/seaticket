@@ -7,6 +7,7 @@ import datetime
 import os
 from email.utils import formatdate, make_msgid
 from urllib.parse import urlparse
+from zoneinfo import ZoneInfo
 
 from django.utils.translation import gettext as _
 from django.http import FileResponse, HttpResponseNotModified
@@ -1022,6 +1023,35 @@ class ProjectConnectionLogView(APIView):
         return Response({
             'last_sync_log': last_sync_log,
         })
+
+
+class ProjectConnectionStatisticsView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def get(self, request, project_uuid, connection_id):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            return api_error(status.HTTP_404_NOT_FOUND, f'Project {project_uuid} not found.')
+        if not check_project_permission(request.user.username, project.workspace.owner):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+        connection = ProjectConnections.objects.get_connection_in_project_by_id(
+            project_uuid, connection_id,
+        )
+        if not connection:
+            return api_error(status.HTTP_404_NOT_FOUND, f'Connection {connection_id} not found.')
+        if connection.type != ConnectionType.GITHUB_ISSUE.value:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Connection type does not support statistics.')
+        try:
+            user_timezone = ZoneInfo(request.GET.get('timezone') or 'UTC')
+            github_seadb_api = GitHubSeaDBAPI(project_uuid)
+            statistics = github_seadb_api.get_issue_statistics(connection.id, user_timezone)
+        except Exception:
+            logger.exception('Could not load statistics for connection %s', connection_id)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+        return Response(statistics)
 
 
 class ProjectConnectionsStatusView(APIView):

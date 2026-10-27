@@ -1,0 +1,231 @@
+.connection-statistics-dialog {
+  max-width: 1520px;
+  width: calc(100% - 48px);
+  margin: 28px auto;
+}
+
+.connection-statistics-dialog .modal-content {
+  max-height: calc(100vh - 56px);
+  max-height: calc(100dvh - 56px);
+}
+
+.connection-statistics-dialog .modal-header {
+  flex-shrink: 0;
+}
+
+.connection-statistics-dialog .modal-title {
+  font-size: 18px;
+}
+
+.connection-statistics-dialog .modal-body {
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.connection-statistics-content,
+.connection-statistics-content > .h-100 {
+  min-height: 400px;
+}
+
+.connection-statistics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.connection-statistics-panel {
+  min-width: 0;
+  padding: 24px 20px 16px;
+  border: 1px solid var(--bs-border-color, #ededed);
+  border-radius: 8px;
+}
+
+.connection-statistics-panel h3 {
+  margin: 0 0 20px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.connection-statistics-panel-wide {
+  grid-column: 1 / -1;
+}
+
+.connection-statistics-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px 20px;
+  min-height: 20px;
+  margin: 0 0 8px;
+  padding: 0 16px 0 0;
+  list-style: none;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.connection-statistics-legend li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.connection-statistics-swatch {
+  width: 22px;
+  height: 7px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.connection-statistics-chart-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.connection-statistics-chart-scroll svg {
+  display: block;
+  font-size: 12px;
+}
+
+.connection-statistics-tick line {
+  stroke: var(--bs-border-color, #ededed);
+  stroke-dasharray: 3 3;
+}
+
+.connection-statistics-baseline {
+  stroke: #c9c9c9;
+}
+
+.connection-statistics-tick text,
+.connection-statistics-month,
+.connection-statistics-value {
+  fill: var(--bs-sf-grey-text, #888888);
+}
+
+.connection-statistics-value {
+  font-size: 11px;
+}
+
+.connection-statistics-bar:hover,
+.connection-statistics-slice:hover {
+  opacity: 0.8;
+}
+
+.connection-statistics-pie-layout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 308px;
+}
+
+.connection-statistics-pie-layout svg {
+  display: block;
+  width: min(100%, 300px);
+  min-width: 0;
+  flex: 0 1 300px;
+  aspect-ratio: 1;
+}
+
+.connection-statistics-pie-layout .connection-statistics-legend {
+  flex-direction: column;
+  justify-content: flex-start;
+  flex: 0 1 140px;
+  gap: 10px;
+  max-height: 280px;
+  margin: 0;
+  padding: 8px 0;
+  overflow-y: auto;
+  flex-wrap: nowrap;
+}
+
+.connection-statistics-pie-layout .connection-statistics-legend li {
+  flex-shrink: 0;
+}
+
+.connection-statistics-slice {
+  stroke: var(--bs-body-bg, #ffffff);
+  stroke-width: 2px;
+}
+
+.connection-statistics-percentage {
+  fill: #ffffff;
+  stroke: #737373;
+  stroke-width: 1.5px;
+  paint-order: stroke;
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.connection-statistics-pie-empty {
+  fill: var(--bs-border-color, #ededed);
+}
+
+.connection-statistics-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 400px;
+  overflow-wrap: anywhere;
+}
+
+.connection-statistics-empty {
+  margin: 0 0 16px;
+  color: var(--bs-sf-grey-text);
+  text-align: center;
+}
+
+@media (max-width: 991px) {
+  .connection-statistics-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 575px) {
+  .connection-statistics-dialog {
+    margin: 12px auto;
+    width: calc(100% - 16px);
+  }
+
+  .connection-statistics-dialog .modal-content {
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
+  }
+
+  .connection-statistics-dialog .modal-body {
+    padding: 12px;
+  }
+
+  .connection-statistics-grid {
+    gap: 12px;
+  }
+
+  .connection-statistics-panel {
+    padding: 16px 12px 12px;
+  }
+
+  .connection-statistics-pie-layout {
+    flex-direction: column;
+    gap: 8px;
+    min-height: 0;
+  }
+
+  .connection-statistics-pie-layout svg {
+    width: min(100%, 260px);
+    flex-basis: auto;
+  }
+
+  .connection-statistics-pie-layout .connection-statistics-legend {
+    flex-direction: row;
+    flex-wrap: wrap;
+    flex-basis: auto;
+    max-height: none;
+    padding: 0 0 12px;
+  }
+}
