@@ -3,12 +3,12 @@ import time
 import mimetypes
 import json
 from datetime import datetime, timedelta
+from datetime import timezone as datetime_timezone
 
 from dateutil.relativedelta import relativedelta
 from django.core.cache import cache
 from django.http import StreamingHttpResponse
 from django.db.models import Count, Sum, CharField, F, Func, Value
-from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
 from seahub.portal.permissions import PortalChatPermission, PortalAdminPermission
@@ -35,6 +35,7 @@ from seahub.portal.chat.utils import (
     gen_portal_chat_task_id,
     gen_portal_message_id,
     get_portal_chat_settings,
+    get_portal_chat_utc_date,
     get_project_portal_chat_credit_used,
     is_portal_chat_proxy_image_file_path,
     mark_anonymous_chat_rate_limit,
@@ -88,7 +89,7 @@ def _reject_portal_chat_usage_limit(status_code, message, project_uuid, session_
 
 
 def _get_portal_chat_usage(project_uuid, start_date, end_date):
-    """Return Portal Chat usage and users for an inclusive date range."""
+    """Return Portal Chat usage and users for an inclusive UTC date range."""
     usage = AIUsageStatistics.objects.filter(
         project_uuid=uuid_str_to_32_chars(project_uuid),
         scenario=AIScenario.PORTAL_CHAT.value,
@@ -98,8 +99,8 @@ def _get_portal_chat_usage(project_uuid, start_date, end_date):
         output_tokens=Sum('output_tokens', default=0),
         total_cost=Sum('cost', default=0),
     )
-    start_time = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))
-    end_time = timezone.make_aware(datetime.combine(end_date + timedelta(days=1), datetime.min.time()))
+    start_time = datetime.combine(start_date, datetime.min.time(), tzinfo=datetime_timezone.utc)
+    end_time = datetime.combine(end_date + timedelta(days=1), datetime.min.time(), tzinfo=datetime_timezone.utc)
     user_count = PortalChatSessions.objects.filter(
         project_uuid=project_uuid,
         created_at__gte=start_time,
@@ -347,6 +348,8 @@ class PortalAdminChatSessionsView(APIView):
 
 
 class PortalAdminChatStatisticsView(APIView):
+    """Portal Chat statistics grouped by UTC dates and months."""
+
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (PortalAdminPermission,)
     throttle_classes = (UserRateThrottle,)
@@ -355,16 +358,18 @@ class PortalAdminChatStatisticsView(APIView):
     def get(self, request, project_uuid):
         try:
 
-            today = timezone.localdate()
+            today = get_portal_chat_utc_date()
             start_date = today - relativedelta(months=1) + timedelta(days=1)
-            start_time = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))
+            start_time = datetime.combine(start_date, datetime.min.time(), tzinfo=datetime_timezone.utc)
+            end_time = datetime.combine(today + timedelta(days=1), datetime.min.time(), tzinfo=datetime_timezone.utc)
             session_created_times = PortalChatSessions.objects.filter(
                 project_uuid=project_uuid,
                 created_at__gte=start_time,
+                created_at__lt=end_time,
             ).values_list('created_at', flat=True)
             session_counts_by_date = {}
             for created_at in session_created_times:
-                date = timezone.localtime(created_at).date()
+                date = created_at.astimezone(datetime_timezone.utc).date()
                 session_counts_by_date[date] = session_counts_by_date.get(date, 0) + 1
             daily_session_counts = [
                 {
@@ -420,7 +425,7 @@ class PortalAdminChatStatisticsView(APIView):
 
 
 class PortalAdminChatUserUsageView(APIView):
-    """Per-user usage of portal chat sessions created in the past three months."""
+    """Per-user usage of sessions created in the current and previous two UTC months."""
 
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (PortalAdminPermission,)
@@ -447,11 +452,11 @@ class PortalAdminChatUserUsageView(APIView):
                 for s in sorts
             ]
 
-            today = timezone.localdate()
+            today = get_portal_chat_utc_date()
             month_start = today.replace(day=1) - relativedelta(months=2)
             next_month_start = today.replace(day=1) + relativedelta(months=1)
-            start_time = timezone.make_aware(datetime.combine(month_start, datetime.min.time()))
-            end_time = timezone.make_aware(datetime.combine(next_month_start, datetime.min.time()))
+            start_time = datetime.combine(month_start, datetime.min.time(), tzinfo=datetime_timezone.utc)
+            end_time = datetime.combine(next_month_start, datetime.min.time(), tzinfo=datetime_timezone.utc)
 
             users = (
                 PortalChatSessions.objects
