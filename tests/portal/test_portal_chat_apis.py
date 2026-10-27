@@ -341,13 +341,13 @@ class TestPortalChatViewAnonymous:
         assert chat_params['is_external_portal'] is True
         assert chat_params['scenario'] == AIScenario.PORTAL_CHAT.value
 
-    def _post_anonymous_chat(self, factory, real_project, session, query, ip=None):
+    def _post_anonymous_chat(self, factory, real_project, session, query, ip=None, stream=True):
         request = factory.post(
             f'/api/v1/portal/{real_project.uuid}/chat/',
             data=json.dumps({
                 'query': query,
                 'session_uuid': session.session_uuid,
-                'stream': True,
+                'stream': stream,
             }),
             content_type='application/json',
             HTTP_X_FORWARDED_FOR=ip or '127.0.0.1',
@@ -1147,6 +1147,12 @@ class TestPortalAdminChatAPIs:
             username='customer@example.com',
         )
         PortalChatSessions.objects.filter(id=session.id).update(created_at=_utc_midnight(date(2026, 2, 2)))
+        AIUsageStatistics.objects.create(
+            date=date(2026, 2, 2),
+            project_uuid=uuid_str_to_32_chars(str(real_project.uuid)),
+            owner='customer@example.com', model='test-model',
+            scenario=AIScenario.PORTAL_CHAT.value, cost=0.25,
+        )
 
         request = self._admin_request(
             factory,
@@ -1156,7 +1162,8 @@ class TestPortalAdminChatAPIs:
         )
 
         with patch('seahub.portal.chat.utils.timezone.now', return_value=_utc_midnight(today)), \
-                patch('django.db.models.query.QuerySet.annotate', side_effect=RuntimeError('timezone conversion unavailable')):
+                patch.object(connection.ops, 'datetime_cast_date_sql', side_effect=RuntimeError('timezone conversion unavailable')), \
+                patch.object(connection.ops, 'datetime_trunc_sql', side_effect=RuntimeError('timezone conversion unavailable')):
             response = PortalAdminChatStatisticsView.as_view()(
                 request,
                 project_uuid=str(real_project.uuid),
@@ -1165,6 +1172,9 @@ class TestPortalAdminChatAPIs:
         assert response.status_code == 200
         assert response.data['daily_session_counts'][0] == {
             'date': '2026-02-02', 'count': 1,
+        }
+        assert response.data['daily_credit_used'][0] == {
+            'date': '2026-02-02', 'credit_used': 25,
         }
 
     def test_statistics_exclude_month_end_date_outside_last_month(self, factory, real_project, project_creator):
@@ -1227,7 +1237,7 @@ class TestPortalAdminChatAPIs:
             factory, real_project, project_creator,
             f'/api/v1/portal/{real_project.uuid}/admin/chat/statistics/',
         )
-        with patch('seahub.portal.chat.apis.timezone.localdate', return_value=today):
+        with patch('seahub.portal.chat.utils.timezone.now', return_value=_utc_midnight(today)):
             response = PortalAdminChatStatisticsView.as_view()(
                 request, project_uuid=str(real_project.uuid),
             )
@@ -1258,7 +1268,7 @@ class TestPortalAdminChatAPIs:
             factory, real_project, project_creator,
             f'/api/v1/portal/{real_project.uuid}/admin/chat/statistics/',
         )
-        with patch('seahub.portal.chat.apis.timezone.localdate', return_value=today):
+        with patch('seahub.portal.chat.utils.timezone.now', return_value=_utc_midnight(today)):
             response = PortalAdminChatStatisticsView.as_view()(
                 request, project_uuid=str(real_project.uuid),
             )
