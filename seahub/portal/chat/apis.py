@@ -386,7 +386,7 @@ class PortalAdminChatStatisticsView(APIView):
             daily_credit_used = [
                 {
                     'date': (start_date + timedelta(days=offset)).isoformat(),
-                    'credit_used': credits_by_date.get(start_date + timedelta(days=offset), 0),
+                    'credit_used': round(credits_by_date.get(start_date + timedelta(days=offset), 0), 0),
                 }
                 for offset in range((today - start_date).days + 1)
             ]

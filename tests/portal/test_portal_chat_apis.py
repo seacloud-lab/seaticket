@@ -1167,6 +1167,8 @@ class TestPortalAdminChatAPIs:
         usage_data = [
             {'date': start_date, 'cost': 0.125},
             {'date': start_date, 'cost': 0.25, 'model': 'another-model', 'owner': 'another@example.com'},
+            {'date': start_date + timedelta(days=1), 'cost': 0.012},
+            {'date': start_date + timedelta(days=2), 'cost': 0.018},
             {'date': today, 'cost': 0.005},
             {'date': start_date - timedelta(days=1), 'cost': 9},
             {'date': today + timedelta(days=1), 'cost': 9},
@@ -1192,12 +1194,18 @@ class TestPortalAdminChatAPIs:
         ]
         assert len(daily_credit_used) == (today - start_date).days + 1
         assert daily_credit_used[0] == {
-            'date': start_date.isoformat(), 'credit_used': pytest.approx(37.5),
+            'date': start_date.isoformat(), 'credit_used': 38,
+        }
+        assert daily_credit_used[1] == {
+            'date': (start_date + timedelta(days=1)).isoformat(), 'credit_used': 1,
+        }
+        assert daily_credit_used[2] == {
+            'date': (start_date + timedelta(days=2)).isoformat(), 'credit_used': 2,
         }
         assert daily_credit_used[-1] == {
-            'date': today.isoformat(), 'credit_used': pytest.approx(0.5),
+            'date': today.isoformat(), 'credit_used': 0,
         }
-        assert all(item['credit_used'] == 0 for item in daily_credit_used[1:-1])
+        assert all(item['credit_used'] == 0 for item in daily_credit_used[3:-1])
 
     def test_statistics_daily_credit_used_is_zero_without_usage(self, factory, real_project, project_creator):
         today = date(2026, 3, 1)
