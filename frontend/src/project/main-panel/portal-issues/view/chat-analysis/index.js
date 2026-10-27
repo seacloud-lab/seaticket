@@ -166,6 +166,7 @@ const ChatAnalysis = ({
       return chatAPI.getAdminChatStatistics(projectUuid).then(res => {
         const {
           daily_session_counts,
+          daily_credit_used,
           current = {},
           change_percent: changePercent = {},
         } = res.data;
@@ -216,6 +217,15 @@ const ChatAnalysis = ({
                 summary_type: 'count',
                 summary_column_key: 'count',
                 value: daily_session_counts || [],
+                type: STATISTIC_TYPE.LINE,
+              },
+              {
+                _pk: 6,
+                name: gettext('Daily credit used in the past month'),
+                column_key: 'date',
+                summary_type: 'count',
+                summary_column_key: 'credit_used',
+                value: daily_credit_used || [],
                 type: STATISTIC_TYPE.LINE,
               }
             ],

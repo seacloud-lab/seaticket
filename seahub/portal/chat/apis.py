@@ -374,6 +374,23 @@ class PortalAdminChatStatisticsView(APIView):
                 for offset in range((today - start_date).days + 1)
             ]
 
+            daily_costs = AIUsageStatistics.objects.filter(
+                project_uuid=uuid_str_to_32_chars(project_uuid),
+                scenario=AIScenario.PORTAL_CHAT.value,
+                date__range=(start_date, today),
+            ).values('date').annotate(total_cost=Sum('cost'))
+            credits_by_date = {
+                usage['date']: convert_cost_to_credit(usage['total_cost'] or 0)
+                for usage in daily_costs
+            }
+            daily_credit_used = [
+                {
+                    'date': (start_date + timedelta(days=offset)).isoformat(),
+                    'credit_used': credits_by_date.get(start_date + timedelta(days=offset), 0),
+                }
+                for offset in range((today - start_date).days + 1)
+            ]
+
             current_month_start = today.replace(day=1)
             previous_month_end = today - relativedelta(months=1)
             previous_month_start = previous_month_end.replace(day=1)
@@ -393,6 +410,7 @@ class PortalAdminChatStatisticsView(APIView):
 
             return Response({
                 'daily_session_counts': daily_session_counts,
+                'daily_credit_used': daily_credit_used,
                 'current': current_month,
                 'change_percent': change_percent,
             })
