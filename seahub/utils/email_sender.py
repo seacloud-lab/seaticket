@@ -15,6 +15,7 @@ from email.utils import formataddr, parseaddr, formatdate, make_msgid
 
 import requests
 
+from seahub.utils.email_address import normalize_email_domain
 from seahub.utils.email_oauth import (
     OAuthTokenClient,
     EmailAuthProviderError,  # noqa: F401  (re-exported for backward compatibility)
@@ -22,6 +23,11 @@ from seahub.utils.email_oauth import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _format_email_address(address_text):
+    name, address = parseaddr(address_text)
+    return formataddr((name, normalize_email_domain(address)))
 
 
 class EmailConfigError(Exception):
@@ -67,13 +73,14 @@ class _EmailSenderBase:
             logger.warning('Email message invalid. message: %s, html_message: %s', msg, html_msg)
             raise EmailConfigError('Email message invalid')
 
-        send_to = [formataddr(parseaddr(to)) for to in send_to]
-        copy_to = [formataddr(parseaddr(to)) for to in copy_to]
-        bcc_to = [formataddr(parseaddr(to)) for to in bcc_to]
+        send_to = [_format_email_address(to) for to in send_to]
+        copy_to = [_format_email_address(to) for to in copy_to]
+        bcc_to = [_format_email_address(to) for to in bcc_to]
+        reply_to = _format_email_address(reply_to) if reply_to else ''
 
         msg_obj = MIMEMultipart()
         msg_obj['Subject'] = subject
-        msg_obj['From'] = formataddr((self.sender_name, sender_email))
+        msg_obj['From'] = formataddr((self.sender_name, normalize_email_domain(sender_email)))
         msg_obj['To'] = ",".join(send_to)
         msg_obj['Cc'] = ",".join(copy_to)
         msg_obj['Reply-to'] = reply_to
@@ -128,7 +135,7 @@ class SMTPEmailSender(_EmailSenderBase):
         self.smtp_user = smtp_user
         self.smtp_password = smtp_password
         self.sender_name = sender_name
-        self.sender_email = sender_email or smtp_user
+        self.sender_email = normalize_email_domain(sender_email or smtp_user)
         # IMAP config for saving sent emails
         self.imap_host = imap_host
         self.imap_port = imap_port or 993
@@ -180,7 +187,7 @@ class SMTPEmailSender(_EmailSenderBase):
         try:
             receivers = send_to + copy_to + bcc_to
             # Convert to email addresses only for sendmail
-            receiver_emails = [parseaddr(r)[1] for r in receivers]
+            receiver_emails = [normalize_email_domain(parseaddr(r)[1]) for r in receivers]
             smtp.sendmail(self.sender_email, receiver_emails, msg_obj.as_string())
             # Get message_id from the sent message
             message_id = msg_obj.get('Message-ID', '')
@@ -342,7 +349,8 @@ class _OAuthEmailSender(OAuthTokenClient, _EmailSenderBase):
     def __init__(self, config, oauth_token=None, oauth_config=None):
         super().__init__(config, oauth_token, oauth_config)
         self.sender_name = config.get('sender_name', '')
-        self.sender_email = config.get('sender_email')
+        sender_email = config.get('sender_email')
+        self.sender_email = normalize_email_domain(sender_email) if sender_email else sender_email
         self.account_type = config.get('account_type', 'personal')
 
         if not self._has_complete_oauth_config():

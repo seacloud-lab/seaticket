@@ -694,6 +694,22 @@ def test_email_reply_defaults_are_batched_by_connection_and_target():
     email_api.return_value.get_emails_by_thread_ids.assert_called_once_with(3, [9, 10])
 
 
+def test_email_reply_defaults_decode_names_for_agent_log_display():
+    action = {'tool_name': 'suggest_reply', 'target_item_type': 'email', 'target_item_id': '3_9'}
+    encoded_russian_name = (
+        '=?utf-8?b?0JjQstCw0L0g0KLQtdGB0YLQvtCy?= <sender@example.invalid>'
+    )
+    with patch('seahub.project.agent.utils.ProjectConnections.objects.get_connection_in_project_by_id',
+               return_value=Mock(type='email')), \
+            patch('seahub.project.agent.utils.EmailSeaDBAPI') as email_api:
+        email_api.return_value.get_emails_by_thread_ids.return_value = {
+            9: [{'email_from': encoded_russian_name, 'is_sender': False}],
+        }
+        populate_email_reply_defaults(Mock(), 'project-1', [action])
+
+    assert action['default_reply_to'] == ['Иван Тестов <sender@example.invalid>']
+
+
 @pytest.mark.parametrize('connection', [None, Mock(type='github_issue')])
 def test_email_reply_defaults_require_an_email_connection_in_the_project(connection):
     action = {'tool_name': 'suggest_reply', 'target_item_type': 'email', 'target_item_id': '3_9'}

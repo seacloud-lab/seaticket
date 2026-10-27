@@ -5,6 +5,8 @@ import logging
 import requests
 import json
 from urllib.parse import quote, urlparse, unquote
+from email.header import decode_header, make_header
+from email.headerregistry import Address
 from email.utils import getaddresses, formataddr
 
 from seahub.settings import SERVICE_URL, SEAQA_WEB_SERVICE_URL, ENABLE_GENERAL_TASK, PERSONAL_PROJECT_LIMIT, GROUP_PROJECT_LIMIT, FREE_ORG_PROJECT_LIMIT
@@ -29,6 +31,7 @@ from seahub.group.models import Group, GroupUser
 from seahub.group.utils import get_user_groups
 from seahub.api2.utils import api_error, get_user_common_info
 from seahub.utils import normalize_cache_key, uuid_str_to_32_chars, get_service_url
+from seahub.utils.email_address import normalize_email_domain
 from seahub.utils.timeutils import get_month_date_range
 from seahub.utils.ai_client import rank_related_records
 from seahub.utils.storage import delete_record_attachments
@@ -579,14 +582,14 @@ def extract_email_addresses(address_text):
     if not address_text:
         return []
 
-    address_text = str(address_text).replace(';', ',')
+    address_text = str(address_text)
     addresses = []
     seen_emails = set()
     for name, email in getaddresses([address_text]):
         email = email.strip()
         if email and email.lower() not in seen_emails:
             seen_emails.add(email.lower())
-            addresses.append(formataddr((name, email)))
+            addresses.append(formataddr((name, normalize_email_domain(email))))
 
     for m in _ADDR_WITH_NAME_RE.finditer(address_text):
         display = m.group(1).strip().strip('"')
@@ -598,6 +601,28 @@ def extract_email_addresses(address_text):
             escaped = display.replace('\\', '\\\\').replace('"', '\\"')
             addresses.append('"%s" <%s>' % (escaped, email))
         else:
+            addresses.append(email)
+    return addresses
+
+
+def extract_email_addresses_to_display(address_text):
+    """Parse mail addresses and decode display names for UI presentation."""
+    if not address_text:
+        return []
+
+    addresses = []
+    for name, email in getaddresses([str(address_text)]):
+        email = email.strip()
+        if not email:
+            continue
+
+        try:
+            display_name = str(make_header(decode_header(name))) if name else ''
+        except (LookupError, UnicodeError, ValueError):
+            display_name = name
+        try:
+            addresses.append(str(Address(display_name=display_name, addr_spec=email)))
+        except ValueError:
             addresses.append(email)
     return addresses
 

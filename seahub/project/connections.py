@@ -26,7 +26,8 @@ from seahub.utils import uuid_str_to_32_chars, gen_file_etag_and_modified_time
 from seahub.project.models import Projects, ProjectConnections, decrypt_config, \
     ConnectionsViews, ProjectGithubAppInstallation, ProjectConnectionOauth
 from seahub.project.utils import check_project_admin_permission, check_project_permission, \
-    extract_email_addresses, is_oauth_email_provider, create_connection, get_connection_related_users
+    extract_email_addresses, is_oauth_email_provider, create_connection, \
+    get_connection_related_users
 from seahub.utils.indexer import add_connection_sync_task, manual_sync_connection
 from seahub.utils.webhook import update_github_issue_by_webhook, update_discourse_topic_by_webhook
 from seahub.utils.storage import get_attachment_file_response, get_connection_file, FileNotFound
