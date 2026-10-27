@@ -7,7 +7,7 @@ from django.core.signing import BadSignature
 from seahub.project.agent.action_executor import AgentActionExecutor
 from seahub.project.constants import ConnectionType
 from seahub.project.models import ProjectConnections
-from seahub.project.utils import get_current_table_metadata
+from seahub.project.utils import extract_email_addresses_to_display, get_current_table_metadata
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.models import SchemaTables
 from seahub.tickets.ticket_utils import get_ticket
@@ -40,6 +40,11 @@ def populate_email_reply_defaults(seadb_api, project_uuid, actions):
             emails_by_thread = email_api.get_emails_by_thread_ids(connection_id, list(targets))
             for thread_id, target_actions in targets.items():
                 default_to = AgentActionExecutor.default_reply_to_from_emails(emails_by_thread.get(thread_id, []))
+                default_to = [
+                    display_address
+                    for address in default_to
+                    for display_address in extract_email_addresses_to_display(address)
+                ]
                 for action in target_actions:
                     action['default_reply_to'] = default_to
         except Exception:

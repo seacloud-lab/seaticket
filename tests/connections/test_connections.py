@@ -26,7 +26,7 @@ from seahub.project.connections import (
 )
 from seahub.project.views import email_oauth, email_oauth_callback
 from seahub.project.oauth_utils import EmailOAuthUtils
-from seahub.project.utils import get_email_oauth_callback_url
+from seahub.project.utils import extract_email_addresses_to_display, get_email_oauth_callback_url
 from seahub.project.agent import AgentActionConfirmView
 from seahub.project.models import ProjectConnectionOauth
 from seahub.portal.models import PortalCustomer
@@ -1466,6 +1466,71 @@ class TestProjectConfluenceOauthStatusView:
 
 
 class TestProjectConnectionRecordView:
+
+    def test_email_address_display_decodes_names_and_quotes_special_characters(self):
+        addresses = ', '.join([
+            '=?utf-8?b?0JjQstCw0L0g0KLQtdGB0YLQvtCy?= <sender@example.invalid>',
+            '"Recipient [Sales]" <recipient@example.invalid>',
+            '"Comma, Recipient" <copy@example.invalid>',
+            '"Sales; Europe" <sales@example.invalid>',
+        ])
+
+        assert extract_email_addresses_to_display(addresses) == [
+            'Иван Тестов <sender@example.invalid>',
+            '"Recipient [Sales]" <recipient@example.invalid>',
+            '"Comma, Recipient" <copy@example.invalid>',
+            '"Sales; Europe" <sales@example.invalid>',
+        ]
+
+    def test_get_email_record_returns_display_addresses_from_details_helper(
+            self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        connection = connection_factory(connection_type='email')
+        record = {'emails': [{
+            'email_from': 'Иван Тестов <sender@example.invalid>',
+            'email_to': '"Recipient [Sales]" <recipient@example.invalid>',
+            'cc': '"Comma, Recipient" <copy@example.invalid>',
+        }]}
+        request = factory.get(
+            f"/api/v1/project/{project.uuid}/connections/{connection.id}/records/1/")
+        request.user = project_creator
+
+        with patch('seahub.project.connections.SeaDBAPI', return_value=Mock()), \
+                patch('seahub.project.connections.list_email_record_details',
+                      return_value=(record, [], '')):
+            response = ProjectConnectionRecordView.as_view()(
+                request, project_uuid=project.uuid, connection_id=str(connection.id), record_id='1')
+
+        assert response.status_code == 200
+        assert response.data['record']['emails'][0] == {
+            'email_from': 'Иван Тестов <sender@example.invalid>',
+            'email_to': '"Recipient [Sales]" <recipient@example.invalid>',
+            'cc': '"Comma, Recipient" <copy@example.invalid>',
+        }
+
+    def test_list_email_record_details_decodes_addresses_without_mutating_query_results(self):
+        from seahub.seadb_models.utils import list_email_record_details
+
+        original_email_row = {
+            'email_from': '=?utf-8?b?0JjQstCw0L0g0KLQtdGB0YLQvtCy?= <sender@example.invalid>',
+            'email_to': '"Recipient [Sales]" <recipient@example.invalid>',
+            'cc': '"Comma, Recipient" <copy@example.invalid>',
+        }
+        seadb_api = Mock()
+        seadb_api.query_rows.return_value = {'results': [original_email_row]}
+
+        with patch('seahub.seadb_models.utils.get_email_record_by_pk',
+                   return_value=({'title': 'Thread'}, [], '')):
+            record, _, _ = list_email_record_details(seadb_api, 'project-uuid', 1, 2)
+
+        assert record['emails'][0] == {
+            'email_from': 'Иван Тестов <sender@example.invalid>',
+            'email_to': '"Recipient [Sales]" <recipient@example.invalid>',
+            'cc': '"Comma, Recipient" <copy@example.invalid>',
+        }
+        assert original_email_row['email_from'] == (
+            '=?utf-8?b?0JjQstCw0L0g0KLQtdGB0YLQvtCy?= <sender@example.invalid>'
+        )
 
     def test_get_type_invalid(self, factory, project_creator, real_project, connection_factory, site_connection):
         project = real_project

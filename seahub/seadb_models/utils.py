@@ -888,7 +888,14 @@ def list_email_record_details(seadb_api, project_uuid, connection_id, _pk):
         ORDER BY modified_time ASC, _pk ASC
         """
         email_res = seadb_api.query_rows(project_uuid, email_sql)
-        email_record = email_res.get('results', [])
+        from seahub.project.utils import extract_email_addresses_to_display
+
+        email_record = [dict(email) for email in email_res.get('results', [])]
+        for email in email_record:
+            for field in ('email_from', 'email_to', 'cc'):
+                value = email.get(field)
+                if value:
+                    email[field] = ', '.join(extract_email_addresses_to_display(value)) or value
         thread_record['emails'] = email_record
     except Exception as e:
         logger.error(f'SeaDB query error for email details {email_table_name}: {e}')
