@@ -11,6 +11,7 @@ import CustomerModal from './customer-modal';
 import CustomerUsersTabs from './customer-users-tabs';
 import CustomersTables from './customers-tables';
 import InviteUsersDialog from './invite-users-dialog';
+import UserModal from './user-modal';
 import UsersTab from './users-tab';
 
 import './index.css';
@@ -38,6 +39,7 @@ const PortalCustomersUsers = ({ title }) => {
   const [customerToManage, setCustomerToManage] = useState(null);
   const [customerMembers, setCustomerMembers] = useState([]);
   const [isLoadingCustomerMembers, setLoadingCustomerMembers] = useState(false);
+  const [userToEdit, setUserToEdit] = useState(null);
   const [userOperation, setUserOperation] = useState(null);
   const [isInviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [inviteCustomerId, setInviteCustomerId] = useState('');
@@ -225,6 +227,17 @@ const PortalCustomersUsers = ({ title }) => {
       .finally(() => setSubmitting(false));
   }, [loadCustomerList, loadInvitations, loadUsers, projectUuid, showError, userOperation]);
 
+  const saveUser = useCallback((name, activated) => {
+    if (!userToEdit || isSubmitting) return;
+    setSubmitting(true);
+    portalAPI.updateExternalUser(projectUuid, userToEdit.email, { name, activated }).then(() => {
+      toaster.success(gettext('User updated'));
+      setUserToEdit(null);
+      loadUsers();
+    }).catch((error) => showError(error, gettext('Failed to update user')))
+      .finally(() => setSubmitting(false));
+  }, [isSubmitting, loadUsers, projectUuid, showError, userToEdit]);
+
   const revokeInvitation = useCallback((token) => {
     portalAPI.revokeExternalInvitation(projectUuid, token).then(() => {
       toaster.success(gettext('Invitation deleted'));
@@ -276,6 +289,7 @@ const PortalCustomersUsers = ({ title }) => {
             />
           ) : (
             <UsersTab
+              onEditUser={setUserToEdit}
               onDeleteUser={(user) => setUserOperation({ user })}
               onCustomerClick={openCustomerUsers}
               users={users}
@@ -309,6 +323,15 @@ const PortalCustomersUsers = ({ title }) => {
           isSubmitting={isSubmitting}
           onClose={closeCustomerModal}
           onSubmit={saveCustomer}
+        />
+      )}
+      {userToEdit && (
+        <UserModal
+          key={userToEdit.email}
+          user={userToEdit}
+          isSubmitting={isSubmitting}
+          onClose={() => setUserToEdit(null)}
+          onSubmit={saveUser}
         />
       )}
       {customerToManage && (

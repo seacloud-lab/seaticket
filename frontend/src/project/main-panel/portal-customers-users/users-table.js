@@ -16,7 +16,7 @@ const CustomerFormatter = ({ value, row, onCustomerClick }) => {
   );
 };
 
-const UsersTable = ({ users, onDeleteUser, onCustomerClick, viewTabs }) => {
+const UsersTable = ({ users, onEditUser, onDeleteUser, onCustomerClick, viewTabs }) => {
   const metadataID = useMemo(() => {
     return users.map(user => `${user.name || ''}:${user.email}:${user.activated ? '1' : '0'}:${user.customer_id || ''}`).join('|') || 'users-empty';
   }, [users]);
@@ -108,12 +108,11 @@ const UsersTable = ({ users, onDeleteUser, onCustomerClick, viewTabs }) => {
       : selectedRowIds.length === 1 ? table?.id_row_map?.[selectedRowIds[0]] : null;
     if (!row) return [];
 
-    return [{
-      label: gettext('Delete user'),
-      key: 'delete_user',
-      callback: () => onDeleteUser(row),
-    }];
-  }, [onDeleteUser]);
+    return [
+      { label: gettext('Edit user'), key: 'edit_user', callback: () => onEditUser(row) },
+      { label: gettext('Delete user'), key: 'delete_user', callback: () => onDeleteUser(row) },
+    ];
+  }, [onDeleteUser, onEditUser]);
 
   return (
     <SeaMetadata
