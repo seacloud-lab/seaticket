@@ -2563,6 +2563,19 @@ msgstr ""
 msgid "Failed to update customer"
 msgstr ""
 
+#: frontend/src/project/main-panel/portal-customers-users/user-modal.js
+#: frontend/src/project/main-panel/portal-customers-users/users-table.js
+msgid "Edit user"
+msgstr ""
+
+#: frontend/src/project/main-panel/portal-customers-users/index.js
+msgid "User updated"
+msgstr ""
+
+#: frontend/src/project/main-panel/portal-customers-users/index.js
+msgid "Failed to update user"
+msgstr ""
+
 #: frontend/src/portal/main-panel/user-management.js:259
 #: frontend/src/portal/main-panel/user-management.js:265
 #: frontend/src/project/main-panel/portal-customers-users/index.js:224

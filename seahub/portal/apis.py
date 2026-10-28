@@ -2654,6 +2654,41 @@ class PortalExternalUsersView(APIView):
         return Response({'users': users})
 
     @require_org_context
+    def put(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
+        if not check_project_admin_permission(request.user.username, project.workspace.owner):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        email = request.data.get('email')
+        if not isinstance(email, str):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'email invalid.')
+        email = normalize_external_login_email(email)
+        if not is_valid_email(email):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'email invalid.')
+
+        external_user = ProjectExternalUser.objects.filter(project_uuid=project_uuid, email=email).first()
+        if not external_user:
+            return api_error(status.HTTP_404_NOT_FOUND, 'External user not found.')
+
+        name = request.data.get('name', external_user.name)
+        if not isinstance(name, str) or not name.strip() or len(name.strip()) > 255:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'name invalid.')
+        activated = request.data.get('activated', external_user.activated)
+        if not isinstance(activated, bool):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'activated invalid.')
+
+        external_user.name = name.strip()
+        external_user.activated = activated
+        try:
+            external_user.save(update_fields=['name', 'activated'])
+        except Exception:
+            logger.exception('Failed to update portal external user: project=%s', project_uuid)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+        return Response({'success': True})
+
+    @require_org_context
     def delete(self, request, project_uuid):
         email = request.data.get('email')
         if not email:
