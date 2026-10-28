@@ -358,7 +358,7 @@ def list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limi
         'filter_term': '0001' if ticket_state == 'open' else '0002',
     })
     basic_filters.append({
-        'column_name': 'participants',
+        'column_name': 'assignees',
         'filter_predicate': 'include_me',
     })
 
