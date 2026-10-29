@@ -4,7 +4,8 @@ import { IconButton, ResizeBar } from '@/components';
 import { gettext } from '@/constants';
 import { isFunction } from '@/utils/type-detection';
 import { isValidEmail } from '@/utils/validate';
-import { getSuggestionTitle, parseEmailReplySuggestion, getEmailReplyDefaultTo } from '../../../utils';
+import { parseEmailReplySuggestion, getEmailReplyDefaultTo } from '../../../utils';
+import SuggestionTitle from '../suggestion-title';
 import Detail from './detail';
 
 import './index.css';
@@ -20,10 +21,6 @@ const SuggestionDetailPanel = ({
   const [value, setValue] = useState(suggestionDetail?.action?.suggestion_content || '');
   const [isSaving, setIsSaving] = useState(false);
 
-  const title = useMemo(
-    () => getSuggestionTitle(suggestionDetail?.action) || suggestionDetail?.action?.result || '',
-    [suggestionDetail?.action]
-  );
   const isEdit = useMemo(() => suggestionDetail?.mode === 'edit', [suggestionDetail?.mode]);
   const initValue = useMemo(
     () => suggestionDetail?.action?.suggestion_content || '',
@@ -97,7 +94,11 @@ const SuggestionDetailPanel = ({
   return (
     <div className="seaqa-agent-tool-suggestion-panel" ref={ref}>
       <div className="seaqa-agent-tool-suggestion-panel-header">
-        <span className="seaqa-agent-tool-suggestion-panel-title text-truncate" title={title}>{title}</span>
+        <SuggestionTitle
+          action={suggestionDetail?.action}
+          fallback={suggestionDetail?.action?.result || ''}
+          className="seaqa-agent-tool-suggestion-panel-title text-truncate"
+        />
         <IconButton icon="close" className="flex-shrink-0" onClick={onClose}/>
       </div>
       <div className="seaqa-agent-tool-suggestion-panel-body">

@@ -4,8 +4,9 @@ import { CommonOperationConfirmationDialog, IconButton, ResizeBar, toaster } fro
 import { gettext } from '@/constants';
 import { agentAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
-import { getEmailReplyDefaultTo, getSuggestionTitle } from '../../../utils';
+import { getEmailReplyDefaultTo } from '../../../utils';
 import SuggestionPreview from '../run-details/action/suggestion-action/suggestion-preview';
+import SuggestionTitle from '../suggestion-title';
 
 import './index.css';
 
@@ -16,14 +17,15 @@ const MAX_WIDTH = 720;
 const WIDTH_STORAGE_KEY = 'project_agent_regenerate_chat_panel_width';
 
 const DraftSuggestionCard = ({ action }) => {
-  const title = useMemo(() => getSuggestionTitle(action), [action]);
   const defaultReplyTo = useMemo(() => getEmailReplyDefaultTo(action), [action]);
   const hasContent = !!action?.suggestion_content;
   return (
     <div className="seaqa-agent-regenerate-draft-card">
-      {title && (
-        <div className="seaqa-agent-regenerate-draft-title text-truncate" title={title}>{title}</div>
-      )}
+      <SuggestionTitle
+        action={action}
+        as="div"
+        className="seaqa-agent-regenerate-draft-title text-truncate"
+      />
       {hasContent && (
         <SuggestionPreview
           type={action.tool_name}

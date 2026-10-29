@@ -10,6 +10,7 @@ import { removeTextHTMLMark } from '@/utils/remove-text-mark';
 import { ACTION_STATUS, SUGGESTION_TOOL_NAME_MAP } from '../../../../../constants';
 import { parseSuggestionActionResult, getAgentResource, getSuggestionTitle, parseEmailReplySuggestion, getEmailReplyDefaultTo } from '../../../../../utils';
 import RunLogTitle from '../../../../resource-title';
+import SuggestionTitle from '../../../suggestion-title';
 import SuggestionPreview from './suggestion-preview';
 
 import './index.css';
@@ -212,7 +213,7 @@ const SuggestionAction = ({
           <Icon symbol={renderSuggestionIcon()} />
           {suggestionTitle && (
             <div className="seaqa-agent-action-suggestion-text-container">
-              <span className="text-truncate seaqa-agent-action-suggestion-text" title={suggestionTitle}>{suggestionTitle}</span>
+              <SuggestionTitle action={action} className="text-truncate seaqa-agent-action-suggestion-text" />
               {!isCancelled && (<>{renderSuggestionReasonTooltip()}</>)}
             </div>
           )}
