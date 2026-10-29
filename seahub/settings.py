@@ -778,8 +778,7 @@ if 'default' in CACHES and CACHES['default'].get('LOCATION') and CACHES['default
             raise ValueError(f"Invalid redis port: {REDIS_PORT}")
         REDIS_PASSWORD = configs.get('REDIS_PASSWORD', REDIS_PASSWORD)
 
-        CACHES['default']['LOCATION'] = f'redis://{(REDIS_PASSWORD + "@") if REDIS_PASSWORD else ""}{REDIS_HOST}:{REDIS_PORT}'
-
+        CACHES['default']['LOCATION'] = f'redis://{(":" + REDIS_PASSWORD + "@") if REDIS_PASSWORD else ""}{REDIS_HOST}:{REDIS_PORT}'
         if REDIS_PASSWORD:
             try:
                 del CACHES['default']['OPTIONS']['PASSWORD']
