@@ -169,6 +169,14 @@ const normalizeSuggestionLabels = (labels) => {
     });
 };
 
+export const getRelatedTicketId = (action) => {
+  if (action?.tool_name !== 'suggest_link_existing_ticket') return null;
+  const payload = parseSuggestionPayload(action.suggestion_payload);
+  const relatedTicket = Number(payload.related_ticket);
+  if (!Number.isInteger(relatedTicket) || relatedTicket <= 0) return null;
+  return relatedTicket;
+};
+
 export const getSuggestionTitle = (action) => {
   if (!action) return '';
   const payload = parseSuggestionPayload(action.suggestion_payload);
@@ -180,8 +188,8 @@ export const getSuggestionTitle = (action) => {
     case 'suggest_create_ticket':
       return gettext('Create an internal ticket from this record');
     case 'suggest_link_existing_ticket': {
-      const relatedTicket = Number(payload.related_ticket);
-      if (Number.isInteger(relatedTicket) && relatedTicket > 0) {
+      const relatedTicket = getRelatedTicketId(action);
+      if (relatedTicket) {
         return gettext('Link this record to an existing internal ticket #%(ticket)s')
           .replace('%(ticket)s', String(relatedTicket));
       }
