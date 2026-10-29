@@ -146,12 +146,8 @@ const Item = ({
   }, [projectUuid, detail, connection_id, handleReplyEmailSuccess]);
 
   const renderReply = useCallback(() => {
-    const sendTime = dayjs(detail.modified_time, 'YYYY-MM-DD HH:mm');
-    let tip = gettext('On {day}, {date_year}, at {time}, {email_from} wrote:');
-    tip = tip.replace('{day}', sendTime.format('ddd'))
-      .replace('{date_year}', sendTime.format('ll'))
-      .replace('{time}', sendTime.format('LT'))
-      .replace('{email_from}', sender);
+    const sendTime = dayjs(detail.modified_time, 'YYYY-MM-DD HH:mm').locale('en');
+    const tip = `On ${sendTime.format('ddd')}, ${sendTime.format('ll')}, at ${sendTime.format('LT')}, ${sender} wrote:`;
 
     let initValue = '';
     if (isHTMLContent) {
