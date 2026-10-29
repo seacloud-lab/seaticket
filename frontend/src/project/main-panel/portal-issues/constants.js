@@ -115,5 +115,8 @@ export const PORTAL_ISSUE_COLUMNS_WIDTH_CONFIG = {
 export const PORTAL_ISSUE_TABLE_NAME = 'portal_issues';
 
 export const PORTAL_CHAT_TABLE_NAME = 'portal_chat';
+export const PORTAL_CHAT_STATISTICS_TABLE_NAME = 'portal_chat_statistics';
+export const PORTAL_CHAT_USER_USAGE_TABLE_NAME = 'portal_chat_user_usage';
+export const PORTAL_CHAT_KNOWLEDGE_GAPS_TABLE_NAME = 'portal_chat_knowledge_gaps';
 
 export const PORTAL_ISSUE_TYPE = 'portal_issue';

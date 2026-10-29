@@ -14,7 +14,7 @@ from seahub.seadb_models.utils import get_current_table_metadata
 from seahub.project.models import Projects, DeletedProjects, AIUsageStatistics, Workspaces, \
     AdditionalCredits, encrypt_config
 from seahub.chats.models import ChatSessions, ChatMessages, ChatMessageThoughtProcess
-from seahub.portal.models import PortalChatSessions, PortalChatMessages
+from seahub.portal.models import PortalChatSessions, PortalChatMessages, PortalChatAnalysis
 from django.db.models import Sum, Value
 from django.db.models.functions import Coalesce
 from django.core.cache import cache
@@ -409,6 +409,7 @@ def delete_portal_sessions(session_uuids):
             except Exception as e:
                 logger.warning('clean s3 portal chat images for session %s error: %s', session_uuid, e)
 
+        PortalChatAnalysis.objects.filter(session_uuid__in=session_uuids).delete()
         PortalChatMessages.objects.filter(session_uuid__in=session_uuids).delete()
         PortalChatSessions.objects.filter(session_uuid__in=session_uuids).delete()
     except Exception as e:
