@@ -115,6 +115,30 @@ class PortalAPI {
     return this._sendPostRequest(url, form);
   }
 
+  listMyEmails(projectUuid, { start = 0, limit = 1000 } = {}) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/my-emails/';
+    return this.req.get(url, { params: { start, limit } });
+  }
+
+  getPortalEmailThread(projectUuid, connectionId, threadId) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/emails/' + connectionId + '/' + threadId + '/';
+    return this.req.get(url);
+  }
+
+  zipPortalEmailAttachments(projectUuid, connectionId, threadId, emailId) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/emails/' + connectionId + '/' + threadId + '/' + emailId + '/zip-attachments/';
+    return this.req.post(url);
+  }
+
+  getPortalEmailAttachmentsZipStatus(projectUuid, connectionId, threadId, emailId, taskId) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/emails/' + connectionId + '/' + threadId + '/' + emailId + '/zip-attachments/status/';
+    return this.req.get(url, { params: { task_id: taskId } });
+  }
+
+  getPortalEmailAttachmentsZipDownloadURL(projectUuid, connectionId, threadId, emailId) {
+    return this.server + '/api/v1/portal/' + projectUuid + '/emails/' + connectionId + '/' + threadId + '/' + emailId + '/zip-attachments/download/';
+  }
+
   listTags(projectUuid) {
     let url = this.server + '/api/v1/portal/' + projectUuid + '/tags/';
     return this.req.get(url);

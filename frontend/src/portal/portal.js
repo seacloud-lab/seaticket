@@ -17,7 +17,7 @@ import TopBar from './top-bar';
 import './portal.css';
 
 const {
-  projectUuid, isEditMode, projectName, portalName, portalLogo, portalThemeColor: initialPortalThemeColor, isAnonymous, workspaceID, isExternalUser, isPreviewUser, canAccessIssues, portalHomeSettings,
+  projectUuid, isEditMode, projectName, portalName, portalLogo, portalThemeColor: initialPortalThemeColor, isAnonymous, workspaceID, isExternalUser, isPreviewUser, canAccessIssues, canAccessEmails, portalHomeSettings,
 } = window.app.pageOptions;
 
 const Portal = () => {
@@ -55,6 +55,11 @@ const Portal = () => {
       history.replaceState(null, null, buildPortalPath(PORTAL_PAGE.HOME));
       return;
     }
+    if (page === PORTAL_PAGE.EMAILS && (!canAccessEmails || isEditMode)) {
+      setActivePage(PORTAL_PAGE.HOME);
+      history.replaceState(null, null, buildPortalPath(PORTAL_PAGE.HOME));
+      return;
+    }
     if (page === PORTAL_PAGE.KNOWLEDGE_BASE) return;
     setActivePage(targetPage);
     history.replaceState(null, null, buildPortalPath(targetPage));
@@ -88,13 +93,20 @@ const Portal = () => {
         const isRestrictedPage = [PORTAL_PAGE.SUBMIT_ISSUE, PORTAL_PAGE.MY_ISSUES, PORTAL_PAGE.TEAM_ISSUES].includes(pageKey);
         if ((isAnonymous || !canAccessIssues) && isRestrictedPage) {
           setActivePage(PORTAL_PAGE.HOME);
+        } else if (pageKey === PORTAL_PAGE.EMAILS) {
+          if (canAccessEmails) {
+            setActivePage(PORTAL_PAGE.EMAILS);
+          } else {
+            setActivePage(PORTAL_PAGE.HOME);
+            history.replaceState(null, null, buildPortalPath(PORTAL_PAGE.HOME));
+          }
         } else if (!isExternalUser && pageKey === PORTAL_PAGE.TEAM_ISSUES) {
           setActivePage(PORTAL_PAGE.MY_ISSUES);
           history.replaceState(null, null, buildPortalPath(PORTAL_PAGE.MY_ISSUES));
         } else if (pageKey === PORTAL_PAGE.KNOWLEDGE_BASE) {
           setActivePage(PORTAL_PAGE.HOME);
         } else {
-          setActivePage(pageKey);
+          setActivePage(pageKey === PORTAL_PAGE.EMAILS ? PORTAL_PAGE.EMAILS : pageKey);
         }
       } else {
         setActivePage(PORTAL_PAGE.HOME);
@@ -152,6 +164,7 @@ const Portal = () => {
                 isAnonymous={isAnonymous}
                 isExternalUser={isExternalUser}
                 canAccessIssues={canAccessIssues}
+                canAccessEmails={canAccessEmails}
                 portalName={currentPortalName}
                 portalLogo={currentPortalLogo}
               />
@@ -165,6 +178,7 @@ const Portal = () => {
                 onPageChange={onPageChange}
                 onHomeChatSend={onHomeChatSend}
                 canAccessIssues={canAccessIssues}
+                canAccessEmails={canAccessEmails}
                 isExternalUser={isExternalUser}
                 portalThemeColor={portalThemeColor}
                 updateHomeSetting={updateHomeSetting}

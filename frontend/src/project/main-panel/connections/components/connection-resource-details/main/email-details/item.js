@@ -16,7 +16,7 @@ import './index.css';
 const Item = ({
   isLast, isExpand,
   detail, projectUuid, connection_id, setIsLastExpanded, recordId, permission,
-  handleReplyEmailSuccess, onUnreadChange
+  handleReplyEmailSuccess, onUnreadChange, isPortal = false, threadId,
 }) => {
   const [isExpanded, setIsExpanded] = useState(isExpand);
   const [isShowReply, setIsShowReply] = useState(false);
@@ -191,12 +191,13 @@ const Item = ({
   const onLinkClick = useCallback((link) => {
     if (!link || !isString(link)) return;
     if (link.startsWith('mailto:')) {
+      if (isPortal) return;
       const email = link.slice(7);
       openReplyByEmail(email);
       return;
     }
     window.open(link, '_blank', 'noopener,noreferrer');
-  }, [openReplyByEmail]);
+  }, [openReplyByEmail, isPortal]);
 
   useEffect(() => {
     if (!isExpanded || isShowReply) return;
@@ -251,7 +252,7 @@ const Item = ({
               <div className="email-record-info-to">
                 {gettext('To')}: {emailTo}
               </div>
-              {!isReadonly && !isShowReply && (
+              {!isReadonly && !isPortal && !isShowReply && (
                 <IconTextBtn icon="reply" color="default" text={gettext('Reply')} className="h-5" onClick={openReply} />
               )}
             </div>
@@ -281,17 +282,19 @@ const Item = ({
             <div className="email-record-info-to">
               {gettext('To')}: {emailTo}
             </div>
-            <IconTooltip
-              className={classnames('email-record-read-status-wrapper', { disabled: isReadonly || isUpdatingUnread })}
-              placement="bottom"
-              icon=""
-              hoverBackground={true}
-              tip={isUnread ? gettext('Mark Read') : gettext('Mark unread')}
-              onClick={toggleUnread}
-            >
-              <div className={classnames('read-status', { unread: isUnread })}/>
-            </IconTooltip>
-            {!isReadonly && !isShowReply && (
+            {!isReadonly && !isPortal && (
+              <IconTooltip
+                className={classnames('email-record-read-status-wrapper', { disabled: isReadonly || isUpdatingUnread })}
+                placement="bottom"
+                icon=""
+                hoverBackground={true}
+                tip={isUnread ? gettext('Mark Read') : gettext('Mark unread')}
+                onClick={toggleUnread}
+              >
+                <div className={classnames('read-status', { unread: isUnread })}/>
+              </IconTooltip>
+            )}
+            {!isReadonly && !isPortal && !isShowReply && (
               <IconTextBtn icon="reply" color="default" text={gettext('Reply')} className="h-5" onClick={openReply} />
             )}
           </div>
@@ -303,11 +306,13 @@ const Item = ({
             projectUuid={projectUuid}
             connectionId={connection_id}
             recordId={detail._pk}
+            threadId={threadId}
+            isPortal={isPortal}
             detail={detail}
             value={detailContent}
             isReadonly={isReadonly}
             className="email-content-detail"
-            openReplyByEmail={openReplyByEmail}
+            openReplyByEmail={isPortal ? () => {} : openReplyByEmail}
           />
         ) : (
           <CustomizeMarkdownViewer value={detailContent} onLinkClick={onLinkClick} />

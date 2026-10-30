@@ -2,13 +2,13 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { parseAndCleanHTML } from '@seafile/sea-email-editor/dist/utils/dom';
 import { IconButton, IconTextBtn, toaster } from '@/components';
 import { gettext, server, siteRoot } from '@/constants';
+import { portalAPI } from '@/portal/api';
 import { connectionsAPI } from '@/project/api';
 import { generatorConnectionAssetURLPrefix } from '@/project/main-panel/connections/utils';
 import { downloadFile } from '@/utils/download';
 import { isString } from '@/utils/type-detection';
 import { Utils } from '@/utils/utils';
 import { isValidEmail, isValidUrl } from '@/utils/validate';
-
 import './index.css';
 
 const HTMLContent = ({
@@ -20,6 +20,8 @@ const HTMLContent = ({
   detail,
   isReadonly,
   openReplyByEmail,
+  isPortal = false,
+  threadId,
 }) => {
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
 
@@ -28,11 +30,20 @@ const HTMLContent = ({
   const isUnmounted = useRef(false);
   const imageTimersRef = useRef([]);
 
-  const assetURLPrefix = useMemo(() => generatorConnectionAssetURLPrefix(projectUuid, connectionId), [projectUuid, connectionId]);
+  const assetURLPrefix = useMemo(() => isPortal
+    ? `${siteRoot}api/v1/portal/${projectUuid}/emails/${connectionId}/${threadId}/${recordId}/attachments/`
+    : generatorConnectionAssetURLPrefix(projectUuid, connectionId), [isPortal, projectUuid, connectionId, threadId, recordId]);
+  const assetFilePrefix = isPortal ? '' : `${detail._pk}/`;
   const content = useMemo(() => {
     const HTMLContentBody = parseAndCleanHTML(value);
     return HTMLContentBody.innerHTML;
   }, [value]);
+  const attachments = useMemo(() => Array.isArray(detail.attachments) ? detail.attachments : [], [detail.attachments]);
+  const getAttachmentURL = useCallback((attachmentName, download = false) => {
+    if (!attachmentName) return '';
+    const url = `${assetURLPrefix}${assetFilePrefix}${encodeURIComponent(attachmentName)}`;
+    return download ? `${url}?download=1` : url;
+  }, [assetURLPrefix, assetFilePrefix]);
 
   const handDownload = useCallback((url) => {
     downloadFile(url);
@@ -41,6 +52,36 @@ const HTMLContent = ({
   const handDownloadAll = useCallback(() => {
     if (isDownloadingAll) return;
     setIsDownloadingAll(true);
+    if (isPortal) {
+      portalAPI.zipPortalEmailAttachments(projectUuid, connectionId, threadId, recordId).then((res) => {
+        if (isUnmounted.current) return;
+        const taskId = res.data.task_id;
+        const pollTaskStatus = () => {
+          if (isUnmounted.current) return;
+          portalAPI.getPortalEmailAttachmentsZipStatus(projectUuid, connectionId, threadId, recordId, taskId).then((statusResponse) => {
+            if (isUnmounted.current) return;
+            if (statusResponse.data?.is_finished) {
+              downloadAllTimer.current = null;
+              downloadFile(portalAPI.getPortalEmailAttachmentsZipDownloadURL(projectUuid, connectionId, threadId, recordId));
+              setIsDownloadingAll(false);
+              return;
+            }
+            downloadAllTimer.current = setTimeout(pollTaskStatus, 1000);
+          }).catch((error) => {
+            downloadAllTimer.current = null;
+            if (isUnmounted.current) return;
+            setIsDownloadingAll(false);
+            toaster.danger(Utils.getErrorMsg(error));
+          });
+        };
+        downloadAllTimer.current = setTimeout(pollTaskStatus, 1000);
+      }).catch((error) => {
+        if (isUnmounted.current) return;
+        setIsDownloadingAll(false);
+        toaster.danger(Utils.getErrorMsg(error));
+      });
+      return;
+    }
     connectionsAPI.zipEmailAttachments(projectUuid, connectionId, recordId).then(res => {
       if (isUnmounted.current) return;
       const taskId = res.data.task_id;
@@ -79,7 +120,7 @@ const HTMLContent = ({
         }
       }
     });
-  }, [isDownloadingAll, projectUuid, connectionId, recordId]);
+  }, [isDownloadingAll, projectUuid, connectionId, recordId, threadId, isPortal]);
 
   const handleClick = useCallback((event) => {
     const target = event.target;
@@ -103,7 +144,7 @@ const HTMLContent = ({
         const originalSrc = img.getAttribute('src');
         if (originalSrc && !originalSrc.startsWith('data:image') && !img.hasAttribute('sea-data-processed') && !isValidUrl(originalSrc)) {
           img.setAttribute('sea-data-processed', 'true');
-          const newSrc = `${assetURLPrefix}${detail._pk}/${originalSrc}`;
+          const newSrc = `${assetURLPrefix}${assetFilePrefix}${originalSrc}`;
           img.removeAttribute('src');
           const timer = setTimeout(() => {
             if (isUnmounted.current) return;
@@ -148,7 +189,7 @@ const HTMLContent = ({
       imgObserver.disconnect();
       linkObserver.disconnect();
     };
-  }, [assetURLPrefix, detail._pk]);
+  }, [assetURLPrefix, assetFilePrefix]);
 
   useEffect(() => {
     return () => {
@@ -161,7 +202,6 @@ const HTMLContent = ({
     };
   }, []);
 
-  const attachments = Array.isArray(detail.attachments) ? detail.attachments : [];
   const downloadAllTip = gettext('{download} all {n} attachments')
     .replace('{download}', isDownloadingAll ? gettext('Downloading') : gettext('Download'))
     .replace('{n}', attachments.length);
@@ -173,9 +213,10 @@ const HTMLContent = ({
         <div className="seaqa-email-attachments">
           {attachments.map((attachment, index) => {
             const attachmentName = isString(attachment) ? attachment : '';
-            const url = attachmentName ? `${assetURLPrefix}${detail._pk}/${attachmentName}` : '';
-            const Tag = isReadonly ? 'span' : 'a';
-            const canDownload = !isReadonly && Boolean(url);
+            const url = getAttachmentURL(attachmentName);
+            const downloadUrl = getAttachmentURL(attachmentName, true);
+            const Tag = isReadonly && !isPortal ? 'span' : 'a';
+            const canDownload = (!isReadonly || isPortal) && Boolean(url);
             return (
               <div className="seaqa-email-attachment" key={index}>
                 <div className="seaqa-email-attachment-icon">
@@ -189,9 +230,8 @@ const HTMLContent = ({
                 <div className="seaqa-email-attachment-info">
                   <Tag
                     className="seaqa-email-attachment-name"
-                    href={canDownload ? url : undefined}
-                    target={canDownload ? '_blank' : undefined}
-                    rel={canDownload ? 'noopener noreferrer' : undefined}
+                    href={canDownload ? downloadUrl : undefined}
+                    download={canDownload ? attachmentName : undefined}
                   >
                     {attachmentName || gettext('Unnamed attachment')}
                   </Tag>
@@ -204,7 +244,7 @@ const HTMLContent = ({
                     title={gettext('Download')}
                     className="seaqa-email-attachment-download-btn no-hover-bg"
                     size={{ btn: 32, icon: 16 }}
-                    onClick={() => handDownload(`${url}?download=1`)}
+                    onClick={() => handDownload(downloadUrl)}
                   />
                 )}
               </div>
@@ -212,7 +252,7 @@ const HTMLContent = ({
           })}
         </div>
       )}
-      {!isReadonly && attachments.length > 1 && (
+      {(!isReadonly || isPortal) && attachments.length > 1 && (
         <IconTextBtn
           icon={isDownloadingAll ? '' : 'download'}
           className="seaqa-email-attachments-download-btn"

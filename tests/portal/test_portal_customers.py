@@ -1,17 +1,21 @@
 import json
+from io import BytesIO
 from datetime import datetime, timezone
 from unittest.mock import Mock, patch
 
 import pytest
 import pytz
 from django.contrib.auth.models import AnonymousUser
+from django.core.cache import cache
 
 from seahub.portal.apis import PortalCustomerMemberView, PortalCustomerMembersView, PortalCustomerView, PortalCustomersView, PortalExternalInvitationsView, \
     PortalExternalLoginSendCodeView, PortalExternalUsersView, PortalIssueCommentsView, PortalIssueView, PortalIssuesView, PortalMyIssuesView, \
-    PortalTeamIssuesView
+    PortalTeamIssuesView, PortalMyEmailsView, PortalEmailThreadView, PortalEmailAttachmentView, \
+    PortalEmailAttachmentsZipView, PortalEmailAttachmentsZipStatusView, PortalEmailAttachmentsZipDownloadView
 from seahub.portal.files import PortalFileView
 from seahub.portal.models import PortalCustomer, PortalExternalInvitation, ProjectExternalUser
 from seahub.portal.views import portal_external_invitation_accept_view
+from seahub.project.models import ProjectConnections
 from seahub.project.view_utils import view_data_2_sql
 from seahub.seadb_models.utils import list_my_portal_issues
 
@@ -873,6 +877,254 @@ class TestPortalCustomerIssueAccess:
     @pytest.fixture(autouse=True)
     def enable_portal_mode(self, settings, real_project):
         settings.IS_PORTAL_MODE = True
+
+    def test_my_emails_lists_only_customer_threads(self, factory, real_project):
+        customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
+        member = self._create_external_member(real_project, customer)
+        connection = ProjectConnections(
+            project_uuid=real_project.uuid,
+            name='Support mailbox',
+            type='email',
+            config='{}',
+            modifier=member.username,
+            status='{}',
+        )
+        connection.save()
+        request = factory.get(f'/api/v1/portal/{real_project.uuid}/my-emails/')
+        request.user = _external_request_user()
+        _set_external_session(request, real_project.uuid, member.username)
+        seadb_api = Mock()
+        thread_table = f'email_thread_{connection.id}'
+        seadb_api.query_rows.return_value = {'results': [{
+            f'{thread_table}._pk': 11,
+            f'{thread_table}.title': 'A question',
+            f'{thread_table}.modified_time': '2026-01-01',
+            f'{thread_table}.unread': True,
+            f'{thread_table}.is_replied': True,
+            'tickets._pk': 23,
+            'tickets.state': '0001',
+            'tickets.assignees': ['assignee@example.com'],
+            'tickets.due_date': '2026-02-01',
+        }]}
+
+        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.portal.apis.get_user_common_info', return_value={
+                    'email': 'assignee@example.com', 'name': 'Assignee Nickname', 'avatar_url': '/avatar.png',
+                }):
+            response = PortalMyEmailsView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert response.status_code == 200
+        assert response.data['records'][0]['connection_id'] == connection.id
+        assert response.data['records'][0]['_pk'] == 11
+        assert response.data['records'][0]['modified_time'] == '2026-01-01'
+        assert response.data['records'][0]['ticket_pk'] == 23
+        assert response.data['records'][0]['state'] == '0001'
+        assert response.data['records'][0]['assignees'] == [{
+            'email': 'assignee@example.com', 'name': 'Assignee Nickname', 'avatar_url': '/avatar.png',
+        }]
+        assert response.data['records'][0]['due_date'] == '2026-02-01'
+        sql = seadb_api.query_rows.call_args.args[1]
+        assert f'email_thread.`customer_id` = {customer.id}' in sql
+        assert 'LEFT JOIN `tickets` AS ticket ON ticket.`_pk` = email_thread.`linked_ticket`' in sql
+        assert 'email_thread.`modified_time` AS' not in sql
+        assert 'ticket.`state` AS' not in sql
+        assert 'ticket.`assignees` AS' not in sql
+        assert 'ticket.`due_date` AS' not in sql
+
+    def test_my_emails_rejects_member_without_customer(self, factory, real_project):
+        member = ProjectExternalUser.objects.create(
+            email='unassigned@example.com', username='unassigned', project_uuid=str(real_project.uuid), activated=True,
+        )
+        request = factory.get(f'/api/v1/portal/{real_project.uuid}/my-emails/')
+        request.user = _external_request_user()
+        _set_external_session(request, real_project.uuid, member.username)
+
+        with patch('seahub.portal.apis.SeaDBAPI') as seadb_api:
+            response = PortalMyEmailsView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert response.status_code == 403
+        seadb_api.assert_not_called()
+
+    def test_email_thread_detail_returns_only_customer_safe_fields(self, factory, real_project):
+        customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
+        member = self._create_external_member(real_project, customer)
+        connection = ProjectConnections(
+            project_uuid=real_project.uuid,
+            name='Support mailbox',
+            type='email',
+            config='{}',
+            modifier=member.username,
+            status='{}',
+        )
+        connection.save()
+        request = factory.get(f'/api/v1/portal/{real_project.uuid}/emails/{connection.id}/10/')
+        request.user = _external_request_user()
+        _set_external_session(request, real_project.uuid, member.username)
+        seadb_api = Mock()
+        seadb_api.query_rows.return_value = {'results': [{'_pk': 10}]}
+        record = {'_pk': 10, 'title': 'Question', 'customer_id': customer.id, 'emails': []}
+        columns = [{'name': 'customer_id'}, {'name': 'title'}]
+
+        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.portal.apis.list_email_record_details', return_value=(record, columns, '')):
+            response = PortalEmailThreadView.as_view()(
+                request, project_uuid=str(real_project.uuid), connection_id=connection.id, thread_id=10,
+            )
+
+        assert response.status_code == 200
+        assert 'customer_id' not in response.data['record']
+        assert all(column['name'] != 'customer_id' for column in response.data['columns'])
+        assert response.data['record']['emails'] == []
+
+    def test_email_thread_detail_is_customer_scoped(self, factory, real_project):
+        customer_a = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
+        customer_b = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Beta')
+        member = self._create_external_member(real_project, customer_a)
+        connection = ProjectConnections(
+            project_uuid=real_project.uuid,
+            name='Support mailbox',
+            type='email',
+            config='{}',
+            modifier=member.username,
+            status='{}',
+        )
+        connection.save()
+        request = factory.get(f'/api/v1/portal/{real_project.uuid}/emails/{connection.id}/10/')
+        request.user = _external_request_user()
+        _set_external_session(request, real_project.uuid, member.username)
+        seadb_api = Mock()
+        seadb_api.query_rows.return_value = {'results': []}
+
+        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.portal.apis.list_email_record_details') as get_details:
+            response = PortalEmailThreadView.as_view()(
+                request, project_uuid=str(real_project.uuid), connection_id=connection.id, thread_id=10,
+            )
+
+        assert customer_b.id != customer_a.id
+        assert response.status_code == 404
+        get_details.assert_not_called()
+
+    @pytest.mark.parametrize('download', [False, True])
+    def test_email_attachment_download_flag(self, factory, real_project, download):
+        customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
+        member = self._create_external_member(real_project, customer)
+        connection = ProjectConnections(
+            project_uuid=real_project.uuid,
+            name='Support mailbox',
+            type='email',
+            config='{}',
+            modifier=member.username,
+            status='{}',
+        )
+        connection.save()
+        query = '?download=1' if download else ''
+        request = factory.get(
+            f'/api/v1/portal/{real_project.uuid}/emails/{connection.id}/10/20/attachments/image.png{query}'
+        )
+        request.user = _external_request_user()
+        _set_external_session(request, real_project.uuid, member.username)
+        seadb_api = Mock()
+        seadb_api.query_rows.side_effect = [
+            {'results': [{'_pk': 10}]},
+            {'results': [{'_pk': 20}]},
+        ]
+
+        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.portal.apis.get_connection_file_metadata', return_value={}), \
+                patch('seahub.portal.apis.get_connection_file', return_value=BytesIO(b'image')) as get_file:
+            response = PortalEmailAttachmentView.as_view()(
+                request,
+                project_uuid=str(real_project.uuid),
+                connection_id=connection.id,
+                thread_id=10,
+                email_id=20,
+                file_path='image.png',
+            )
+
+        assert response.status_code == 200
+        if download:
+            assert response['Content-Disposition'].startswith('attachment')
+        else:
+            assert 'Content-Disposition' not in response
+        assert get_file.called
+
+    def test_portal_zip_task_is_bound_to_customer_email(self, factory, real_project):
+        customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
+        member = self._create_external_member(real_project, customer)
+        connection = ProjectConnections(
+            project_uuid=real_project.uuid,
+            name='Support mailbox',
+            type='email',
+            config='{}',
+            modifier=member.username,
+            status='{}',
+        )
+        connection.save()
+        request = factory.post(f'/api/v1/portal/{real_project.uuid}/emails/{connection.id}/10/20/zip-attachments/')
+        request.user = _external_request_user()
+        _set_external_session(request, real_project.uuid, member.username)
+        seadb_api = Mock()
+        seadb_api.query_rows.side_effect = [
+            {'results': [{'_pk': 10}]},
+            {'results': [{'_pk': 20, 'attachments': ['image.png']}]},
+        ]
+
+        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.portal.apis.zip_email_attachments', return_value='task-1') as zip_attachments, \
+                patch('seahub.portal.apis.cache.set') as cache_set:
+            response = PortalEmailAttachmentsZipView.as_view()(
+                request,
+                project_uuid=str(real_project.uuid),
+                connection_id=connection.id,
+                thread_id=10,
+                email_id=20,
+            )
+
+        assert response.status_code == 200
+        assert response.data['task_id'] == 'task-1'
+        assert zip_attachments.call_args.args[0] == {
+            'project_uuid': str(real_project.uuid), 'connection_id': str(connection.id), 'pk': 20,
+        }
+        assert cache_set.call_args.args[1] == {
+            'project_uuid': str(real_project.uuid), 'customer_id': customer.id,
+            'connection_id': connection.id, 'thread_id': 10, 'email_id': 20,
+        }
+
+    def test_portal_zip_download_revalidates_customer_email(self, factory, real_project):
+        customer_a = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
+        customer_b = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Beta')
+        member = self._create_external_member(real_project, customer_a)
+        connection = ProjectConnections(
+            project_uuid=real_project.uuid,
+            name='Support mailbox',
+            type='email',
+            config='{}',
+            modifier=member.username,
+            status='{}',
+        )
+        connection.save()
+        request = factory.get(
+            f'/api/v1/portal/{real_project.uuid}/emails/{connection.id}/10/20/zip-attachments/download/'
+        )
+        request.user = _external_request_user()
+        _set_external_session(request, real_project.uuid, member.username)
+        seadb_api = Mock()
+        seadb_api.query_rows.return_value = {'results': []}
+
+        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.portal.apis.get_connection_file') as get_file:
+            response = PortalEmailAttachmentsZipDownloadView.as_view()(
+                request,
+                project_uuid=str(real_project.uuid),
+                connection_id=connection.id,
+                thread_id=10,
+                email_id=20,
+            )
+
+        assert customer_b.id != customer_a.id
+        assert response.status_code == 404
+        get_file.assert_not_called()
 
     def _create_external_member(self, project, customer, username='external-user'):
         return ProjectExternalUser.objects.create(

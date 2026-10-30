@@ -89,7 +89,7 @@ def portal_accounts_login_view(request):
     return auth_views.login(request, template_name='registration/login.html')
 
 
-def portal_view(request, project_uuid, children_id=None, session_uuid=None, issue_id=None):
+def portal_view(request, project_uuid, children_id=None, session_uuid=None, issue_id=None, connection_id=None, thread_id=None):
     project, portal_settings = get_request_project_and_portal_settings(request, project_uuid)
     if not project:
         return render_error(request, _('This project does not exist'))
@@ -122,13 +122,16 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
 
     is_anonymous = allow_anonymous and (not has_ticket_access)
     can_access_issues = not is_anonymous
+    can_access_emails = False
     if is_external_user:
         external_user = ProjectExternalUser.objects.filter(project_uuid=project_uuid, username=ext_username, activated=True).first()
-        can_access_issues = bool(external_user and external_user.customer_id and PortalCustomer.objects.filter(
+        active_customer = PortalCustomer.objects.filter(
             id=external_user.customer_id,
             project_uuid=project_uuid,
             status=PortalCustomer.STATUS_ACTIVE,
-        ).exists())
+        ).first() if external_user and external_user.customer_id else None
+        can_access_issues = bool(active_customer)
+        can_access_emails = bool(active_customer)
 
     if has_ticket_access:
         if preview_username:
@@ -153,6 +156,7 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
         'is_external_user': is_external_user,
         'is_preview_user': bool(preview_username),
         'can_access_issues': can_access_issues,
+        'can_access_emails': can_access_emails,
         'username': username,
         'portal': {
             'allow_anonymous': allow_anonymous,
@@ -332,7 +336,7 @@ def portal_external_invitation_accept_view(request, token, project_uuid):
 
 
 @login_required
-def portal_edit_view(request, project_uuid, page=None, children_id=None, session_uuid=None):
+def portal_edit_view(request, project_uuid, page=None, children_id=None, session_uuid=None, connection_id=None, thread_id=None):
     project, portal_settings = get_request_project_and_portal_settings(request, project_uuid)
     if not project:
         return render_error(request, _('This project does not exist'))
@@ -366,6 +370,7 @@ def portal_edit_view(request, project_uuid, page=None, children_id=None, session
         'username': request.user.username,
         'is_external_user': False,
         'can_access_issues': True,
+        'can_access_emails': False,
         'portal': {
             'streaming_response': streaming_response,
             'portal_name': portal_settings.get('portal_name', ''),
