@@ -460,19 +460,19 @@ ALLOWED_HOSTS = ['*']
 CSRF_TRUSTED_ORIGINS = [] if IS_PORTAL_MODE else ["https://*", "http://*"]
 
 # Logging
-LOG_LEVEL = os.environ.get('SEAQA_LOG_LEVEL', '"INFO"')
-SEAQA_LOG_COMPONENT = 'seaqa-web-portal' if IS_PORTAL_MODE else 'seaqa-web'
-SEAQA_LOGS_HANDLERS = ['console'] if os.environ.get('SEAQA_LOG_TO_STDOUT', 'false') == 'true' else ['file']
+LOG_LEVEL = os.environ.get('SEATICKET_LOG_LEVEL', '"INFO"')
+SEATICKET_LOG_COMPONENT = 'seaticket-portal' if IS_PORTAL_MODE else 'seaticket'
+SEAQA_LOGS_HANDLERS = ['console'] if os.environ.get('SEATICKET_LOG_TO_STDOUT', 'false') == 'true' else ['file']
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
         'standard': {
-            'format': f'[{SEAQA_LOG_COMPONENT}] [%(asctime)s] [%(levelname)s] %(filename)s[line:%(lineno)s] %(message)s',
+            'format': f'[{SEATICKET_LOG_COMPONENT}] [%(asctime)s] [%(levelname)s] %(filename)s[line:%(lineno)s] %(message)s',
             'datefmt': '%Y-%m-%d %H:%M:%S'
         },
         'file': {
-            'format': f'[{SEAQA_LOG_COMPONENT}] [%(asctime)s] [%(levelname)s] %(filename)s[line:%(lineno)s] %(message)s',
+            'format': f'[{SEATICKET_LOG_COMPONENT}] [%(asctime)s] [%(levelname)s] %(filename)s[line:%(lineno)s] %(message)s',
             'datefmt': '%Y-%m-%d %H:%M:%S'
         }
     },
@@ -483,7 +483,7 @@ LOGGING = {
         },
         'file': {
             'class': 'logging.FileHandler',
-            'filename': os.path.join(LOG_DIR, f'{SEAQA_LOG_COMPONENT}.log'),
+            'filename': os.path.join(LOG_DIR, f'{SEATICKET_LOG_COMPONENT}.log'),
             'formatter': 'file'
         },
     },
@@ -717,8 +717,8 @@ else:
     del seaqa_web_settings
 
 # config in yaml & env
-yaml_file_path = os.path.join(CONF_DIR, os.environ.get('SEAQA_CONFIG_NAME', 'seaqa_config.yaml'))
-configs = ConfigParser(yaml_file_path, 'seaqa-web')
+yaml_file_path = os.path.join(CONF_DIR, os.environ.get('SEATICKET_CONFIG_NAME', 'seaticket_config.yaml'))
+configs = ConfigParser(yaml_file_path, 'seaticket')
 
 # Available AI Models (not hidden) for user selection
 LLM_MODELS = [

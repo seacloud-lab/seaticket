@@ -40,9 +40,9 @@ class LogConfigurator(object):
     def _rotating_config(self):
         logging.root.setLevel(self._level)
 
-        if os.environ.get('SEAQA_LOG_TO_STDOUT', 'false') == 'true':
+        if os.environ.get('SEATICKET_LOG_TO_STDOUT', 'false') == 'true':
             # logs to stdout
-            stdout_formatter = logging.Formatter(get_format(component='seaqa-io'), datefmt="%Y-%m-%d %H:%M:%S")
+            stdout_formatter = logging.Formatter(get_format(component='seaticket-io'), datefmt="%Y-%m-%d %H:%M:%S")
             stdout_handler = logging.StreamHandler()
             stdout_handler.setFormatter(stdout_formatter)
             logging.root.addHandler(stdout_handler)
@@ -57,8 +57,8 @@ class LogConfigurator(object):
 
     def _basic_config(self):
         # Log to stdout. Mainly for development.
-        if os.environ.get('SEAQA_LOG_TO_STDOUT', 'false') == 'true':
-            component = 'seaqa-io'
+        if os.environ.get('SEATICKET_LOG_TO_STDOUT', 'false') == 'true':
+            component = 'seaticket-io'
         else:
             component = None
         kw = {
@@ -83,9 +83,9 @@ def setup_logger(logname, fmt=None, level=None, propagate=None):
         level = logging.INFO
     logger.setLevel(level)
 
-    if os.environ.get('SEAQA_LOG_TO_STDOUT', 'false') == 'true':
+    if os.environ.get('SEATICKET_LOG_TO_STDOUT', 'false') == 'true':
         # logs to stdout
-        logger_component_name = logname
+        logger_component_name = 'seaticket-io'
         stdout_handler = logging.StreamHandler()
         stdout_handler.setLevel(level)
         if not fmt:
@@ -100,7 +100,7 @@ def setup_logger(logname, fmt=None, level=None, propagate=None):
     else:
         # logs to file
         logdir = os.path.join(os.environ.get('LOG_DIR', ''))
-        log_file = os.path.join(logdir, f"seaqa-io.log")
+        log_file = os.path.join(logdir, f"seaticket-io.log")
         handler = handlers.TimedRotatingFileHandler(log_file, when='MIDNIGHT', interval=1, backupCount=7)
         handler.setLevel(level)
         if not fmt:
