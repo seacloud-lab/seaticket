@@ -265,3 +265,4 @@ const ConnectionResourceDetails = ({
 };
 
 export default ConnectionResourceDetails;
+export { default as EmailThreadDetails } from './email-details';

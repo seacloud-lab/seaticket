@@ -2,7 +2,9 @@
 import datetime
 import logging
 import json
+import os
 import re
+from email.utils import formatdate
 from urllib.parse import quote
 
 from dateutil.relativedelta import relativedelta
@@ -17,7 +19,7 @@ from django.utils.translation import gettext as _
 from django.utils import timezone
 from django.core.cache import cache
 from django.core import signing
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponseNotModified
 from django.db import IntegrityError, transaction
 from django.db.models import Count
 from django.template.defaultfilters import filesizeformat
@@ -25,23 +27,26 @@ from django.template.defaultfilters import filesizeformat
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle, PortalTLSAskRateThrottle
 from seahub.api2.utils import api_error, get_user_common_info
-from seahub.project.models import Projects
+from seahub.project.models import Projects, ProjectConnections
 from seahub.project.utils import replace_file_url_in_content, get_current_table_metadata, check_project_admin_permission, \
     check_project_permission, check_comment_permission
 from seahub.utils.storage import FileNotFound, upload_portal_files, delete_file, \
     PORTAL_BACKGROUND_IMAGE_FILE_PATH, PORTAL_LOGO_FILE_PATH, upload_portal_background_image_file, \
-    upload_portal_logo_file, get_project_file, get_project_file_metadata, get_attachment_file_response
+    upload_portal_logo_file, get_project_file, get_project_file_metadata, get_attachment_file_response, \
+    get_connection_file, get_connection_file_metadata, is_safe_inline_attachment, if_none_match_hit
+from seahub.utils import gen_file_etag_and_modified_time, uuid_str_to_32_chars
+from seahub.utils.io import query_io_task_status, zip_email_attachments
 from seahub.utils.hasher import AESPasswordHasher
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.project.view_utils import SQLGeneratorOptionInvalidError
-from seahub.project.constants import DataEventType, PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_TIMEOUT, PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_PREFIX, KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS
-from seahub.seadb_models.utils import list_knowledge_base_records, list_my_portal_issues, list_portal_issues_view_records, list_trash_portal_issues, list_portal_issue_comments_records, list_portal_issues_view_records, strip_portal_issue_internal_columns
+from seahub.project.constants import DataEventType, PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_TIMEOUT, PORTAL_ISSUE_DEFAULT_SUBSTATE_CACHE_PREFIX, KNOWLEDGE_BASE_DISPLAY_ALL_COLUMNS, ConnectionType, EMAIL_ATTACHMENT_TEMP_DIR, EMAIL_ATTACHMENTS_ZIP_NAME
+from seahub.seadb_models.utils import list_knowledge_base_records, list_my_portal_issues, list_portal_issues_view_records, list_trash_portal_issues, list_portal_issue_comments_records, list_portal_issues_view_records, strip_portal_issue_internal_columns, list_email_record_details
 from seahub.tickets.ticket_utils import check_ticket_creation_interval, get_column_from_columns_by_name, \
     build_linked_ticket_titles_map, TABLE_TICKETS, get_ticket, sync_links_in_connection,\
     convert_select_field_names_to_option_ids, check_ticket_link_changes, TicketLinkValidationError
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.utils.decorators import require_org_context
-from seahub.portal.permissions import PortalKnowledgeBasePermission, PortalIssuePermission, PortalAnonymousAccessPermission, \
+from seahub.portal.permissions import PortalKnowledgeBasePermission, PortalIssuePermission, PortalEmailPermission, PortalAnonymousAccessPermission, \
     can_access_portal_issue, check_portal_issue_permission, get_request_external_user, get_request_portal_customer, \
     is_same_org_user
 from seahub.portal.models import PortalCustomer, ProjectExternalUser, PortalCustomDomain, PortalDomainAlias, get_portal_tls_ask_cache_key,\
@@ -723,6 +728,353 @@ class PortalMyIssuesView(APIView):
             'records': issues,
             'columns': columns,
         })
+
+
+class PortalMyEmailsView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (PortalEmailPermission,)
+    throttle_classes = (UserRateThrottle,)
+
+    def get(self, request, project_uuid):
+        try:
+            start = int(request.GET.get('start', 0))
+            limit = int(request.GET.get('limit', 1000))
+        except (TypeError, ValueError):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'pagination invalid.')
+        if start < 0 or limit < 1 or limit > 1000:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'pagination invalid.')
+
+        customer = get_request_portal_customer(request, str(project_uuid))
+        email_connections = ProjectConnections.objects.filter(
+            project_uuid=project_uuid,
+            type=ConnectionType.EMAIL.value,
+            deleted=False,
+        ).only('id')
+
+        seadb_api = SeaDBAPI()
+        records = []
+        fetch_limit = start + limit + 1
+        try:
+            for connection in email_connections:
+                table_name = SchemaTables.THREAD.table_name(connection.id)
+                sql = (
+                    f"SELECT email_thread.`_pk`, email_thread.`title`, email_thread.`modified_time`, "
+                    f"email_thread.`unread`, email_thread.`is_replied`, "
+                    f"ticket.`_pk`, ticket.`state`, ticket.`assignees`, ticket.`due_date` "
+                    f"FROM `{table_name}` AS email_thread "
+                    f"LEFT JOIN `tickets` AS ticket ON ticket.`_pk` = email_thread.`linked_ticket` "
+                    f"AND (ticket.`deleted` = false OR ticket.`deleted` IS NULL) "
+                    f"WHERE email_thread.`customer_id` = {int(customer.id)} "
+                    f"AND (email_thread.`deleted` = false OR email_thread.`deleted` IS NULL) "
+                    f"ORDER BY email_thread.`modified_time` DESC, email_thread.`_pk` DESC LIMIT {fetch_limit}"
+                )
+                for record in seadb_api.query_rows(project_uuid, sql).get('results', []):
+                    normalized_record = {}
+                    for field in ('_pk', 'title', 'modified_time', 'unread', 'is_replied'):
+                        normalized_record[field] = record.get(f'{table_name}.{field}', record.get(field))
+                    for field in ('_pk', 'state', 'assignees', 'due_date'):
+                        value = record.get(f'tickets.{field}')
+                        if value is None:
+                            value = record.get(f'ticket.{field}', record.get(field) if field != '_pk' else None)
+                        normalized_record['ticket_pk' if field == '_pk' else field] = value
+                    normalized_record['connection_id'] = connection.id
+                    records.append(normalized_record)
+        except Exception as e:
+            logger.error('Failed to list portal emails for customer %s: %s', customer.id, e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        records.sort(key=lambda record: (str(record.get('modified_time') or ''), int(record.get('_pk') or 0)), reverse=True)
+        page_records = records[start:start + limit]
+        assignees_by_email = {}
+        for record in page_records:
+            assignees = []
+            for email in record.get('assignees') or []:
+                if not isinstance(email, str) or not email:
+                    continue
+                if email not in assignees_by_email:
+                    try:
+                        user = get_user_common_info(email, include_contact_email=False) or {}
+                        assignees_by_email[email] = {
+                            'email': email,
+                            'name': user.get('name') or email,
+                            'avatar_url': user.get('avatar_url', ''),
+                        }
+                    except Exception as e:
+                        logger.warning('Failed to resolve ticket assignee %s: %s', email, e)
+                        assignees_by_email[email] = {'email': email, 'name': email, 'avatar_url': ''}
+                assignees.append(assignees_by_email[email])
+            record['assignees'] = assignees
+        return Response({
+            'records': page_records,
+            'has_more': len(records) > start + limit,
+        })
+
+
+class PortalEmailThreadView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (PortalEmailPermission,)
+    throttle_classes = (UserRateThrottle,)
+
+    def get(self, request, project_uuid, connection_id, thread_id):
+        try:
+            connection_id = int(connection_id)
+            thread_id = int(thread_id)
+        except (TypeError, ValueError):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Email thread id invalid.')
+
+        connection = ProjectConnections.objects.filter(
+            project_uuid=project_uuid,
+            id=connection_id,
+            type=ConnectionType.EMAIL.value,
+            deleted=False,
+        ).first()
+        if not connection:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Email thread not found.')
+
+        customer = get_request_portal_customer(request, str(project_uuid))
+        seadb_api = SeaDBAPI()
+        table_name = SchemaTables.THREAD.table_name(connection_id)
+        try:
+            thread_rows = seadb_api.query_rows(
+                project_uuid,
+                f"SELECT `_pk` FROM `{table_name}` WHERE `_pk` = {thread_id} "
+                f"AND `customer_id` = {int(customer.id)} AND (`deleted` = false OR `deleted` IS NULL)",
+            ).get('results', [])
+            if not thread_rows:
+                return api_error(status.HTTP_404_NOT_FOUND, 'Email thread not found.')
+
+            record, columns, _linked_ticket_title = list_email_record_details(
+                seadb_api, project_uuid, connection_id, thread_id
+            )
+            record.pop('customer_id', None)
+            visible_columns = [column for column in columns or [] if column.get('name') != 'customer_id']
+            return Response({'record': record, 'columns': visible_columns})
+        except Exception as e:
+            logger.error('Failed to load portal email thread %s: %s', thread_id, e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+
+class PortalEmailAttachmentView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (PortalEmailPermission,)
+    throttle_classes = (UserRateThrottle,)
+
+    def get(self, request, project_uuid, connection_id, thread_id, email_id, file_path):
+        try:
+            connection_id = int(connection_id)
+            thread_id = int(thread_id)
+            email_id = int(email_id)
+        except (TypeError, ValueError):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Email attachment id invalid.')
+
+        connection = ProjectConnections.objects.filter(
+            project_uuid=project_uuid,
+            id=connection_id,
+            type=ConnectionType.EMAIL.value,
+            deleted=False,
+        ).first()
+        if not connection:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Email attachment not found.')
+
+        customer = get_request_portal_customer(request, str(project_uuid))
+        seadb_api = SeaDBAPI()
+        thread_table = SchemaTables.THREAD.table_name(connection_id)
+        email_table = SchemaTables.EMAIL.table_name(connection_id)
+        try:
+            thread_rows = seadb_api.query_rows(
+                project_uuid,
+                f"SELECT `_pk` FROM `{thread_table}` WHERE `_pk` = {thread_id} "
+                f"AND `customer_id` = {int(customer.id)} AND (`deleted` = false OR `deleted` IS NULL)",
+            ).get('results', [])
+            email_rows = seadb_api.query_rows(
+                project_uuid,
+                f"SELECT `_pk` FROM `{email_table}` WHERE `_pk` = {email_id} "
+                f"AND `thread_id` = {thread_id} AND (`deleted` = false OR `deleted` IS NULL)",
+            ).get('results', [])
+            if not thread_rows or not email_rows:
+                return api_error(status.HTTP_404_NOT_FOUND, 'Email attachment not found.')
+            if '/' in file_path or '\\' in file_path or file_path in ('.', '..'):
+                return api_error(status.HTTP_404_NOT_FOUND, 'Email attachment not found.')
+
+            authorized_file_path = f'{email_id}/{file_path}'
+            file_metadata = get_connection_file_metadata(project_uuid, str(connection_id), authorized_file_path)
+            file = get_connection_file(project_uuid, str(connection_id), authorized_file_path)
+        except FileNotFound:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Email attachment not found.')
+        except Exception as e:
+            logger.error('Failed to load portal email attachment: %s', e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        etag = file_metadata.get('ETag')
+        is_download = request.query_params.get('download') == '1'
+        if etag and not is_download and is_safe_inline_attachment(file_path) and if_none_match_hit(request, etag):
+            response = HttpResponseNotModified()
+        else:
+            response = get_attachment_file_response(file, file_path, force_download=is_download)
+        response['Cache-Control'] = 'max-age=3600, private'
+        if etag:
+            response['ETag'] = etag
+        return response
+
+
+def _get_portal_email_export_context(request, project_uuid, connection_id, thread_id, email_id):
+    connection = ProjectConnections.objects.filter(
+        project_uuid=project_uuid,
+        id=connection_id,
+        type=ConnectionType.EMAIL.value,
+        deleted=False,
+    ).first()
+    if not connection:
+        return None, None, None
+
+    customer = get_request_portal_customer(request, str(project_uuid))
+    seadb_api = SeaDBAPI()
+    thread_table = SchemaTables.THREAD.table_name(connection_id)
+    email_table = SchemaTables.EMAIL.table_name(connection_id)
+    thread_rows = seadb_api.query_rows(
+        project_uuid,
+        f"SELECT `_pk` FROM `{thread_table}` WHERE `_pk` = {thread_id} "
+        f"AND `customer_id` = {int(customer.id)} AND (`deleted` = false OR `deleted` IS NULL)",
+    ).get('results', [])
+    if not thread_rows:
+        return connection, customer, None
+
+    email_rows = seadb_api.query_rows(
+        project_uuid,
+        f"SELECT `_pk`, `attachments` FROM `{email_table}` WHERE `_pk` = {email_id} "
+        f"AND `thread_id` = {thread_id} AND (`deleted` = false OR `deleted` IS NULL)",
+    ).get('results', [])
+    if not email_rows:
+        return connection, customer, None
+    return connection, customer, email_rows[0]
+
+
+class PortalEmailAttachmentsZipView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (PortalEmailPermission,)
+    throttle_classes = (UserRateThrottle,)
+
+    def post(self, request, project_uuid, connection_id, thread_id, email_id):
+        try:
+            connection_id, thread_id, email_id = map(int, (connection_id, thread_id, email_id))
+            _connection, _customer, email = _get_portal_email_export_context(
+                request, project_uuid, connection_id, thread_id, email_id
+            )
+            if not email:
+                return api_error(status.HTTP_404_NOT_FOUND, 'Email not found.')
+            if not email.get('attachments'):
+                return api_error(status.HTTP_404_NOT_FOUND, 'attachments not exist')
+            task_id = zip_email_attachments({
+                'project_uuid': str(project_uuid),
+                'connection_id': str(connection_id),
+                'pk': email_id,
+            })
+            cache.set(
+                f'portal_email_zip_task:{task_id}',
+                {
+                    'project_uuid': str(project_uuid),
+                    'customer_id': _customer.id,
+                    'connection_id': connection_id,
+                    'thread_id': thread_id,
+                    'email_id': email_id,
+                },
+                3600,
+            )
+            return Response({'task_id': task_id})
+        except (TypeError, ValueError):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Email attachment id invalid.')
+        except Exception as e:
+            logger.exception('Failed to start Portal email attachment ZIP task: %s', e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+
+class PortalEmailAttachmentsZipStatusView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (PortalEmailPermission,)
+    throttle_classes = (UserRateThrottle,)
+
+    def get(self, request, project_uuid, connection_id, thread_id, email_id):
+        try:
+            task_id = request.query_params.get('task_id', '')
+            task_context = cache.get(f'portal_email_zip_task:{task_id}') if task_id else None
+            if not task_context or task_context['project_uuid'] != str(project_uuid):
+                return api_error(status.HTTP_404_NOT_FOUND, 'task_id not found.')
+
+            connection_id, thread_id, email_id = map(int, (connection_id, thread_id, email_id))
+            expected_context = (connection_id, thread_id, email_id)
+            actual_context = tuple(task_context[key] for key in ('connection_id', 'thread_id', 'email_id'))
+            if expected_context != actual_context:
+                return api_error(status.HTTP_404_NOT_FOUND, 'task_id not found.')
+
+            _connection, customer, email = _get_portal_email_export_context(
+                request, project_uuid, connection_id, thread_id, email_id
+            )
+            if not email or customer.id != task_context['customer_id']:
+                return api_error(status.HTTP_404_NOT_FOUND, 'Email not found.')
+
+            response = query_io_task_status(task_id)
+            try:
+                result = response.json()
+            except Exception:
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+            if response.status_code >= 400:
+                return api_error(response.status_code, result.get('error_msg'))
+            if result.get('is_finished') and result.get('success') is False:
+                return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, result.get('error_msg') or 'Failed to create email attachment ZIP.')
+            return Response(result)
+        except (TypeError, ValueError):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Email attachment id invalid.')
+        except Exception as e:
+            logger.exception('Failed to query Portal email attachment ZIP task: %s', e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+
+class PortalEmailAttachmentsZipDownloadView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (PortalEmailPermission,)
+    throttle_classes = (UserRateThrottle,)
+
+    def get(self, request, project_uuid, connection_id, thread_id, email_id):
+        try:
+            connection_id, thread_id, email_id = map(int, (connection_id, thread_id, email_id))
+            _connection, _customer, email = _get_portal_email_export_context(
+                request, project_uuid, connection_id, thread_id, email_id
+            )
+            if not email or not email.get('attachments'):
+                return api_error(status.HTTP_404_NOT_FOUND, 'Email attachments not found.')
+
+            normalized_project_uuid = uuid_str_to_32_chars(project_uuid)
+            local_zip_path = os.path.join(
+                EMAIL_ATTACHMENT_TEMP_DIR,
+                normalized_project_uuid,
+                str(connection_id),
+                str(email_id),
+                EMAIL_ATTACHMENTS_ZIP_NAME,
+            )
+            if not os.path.isfile(local_zip_path):
+                return api_error(status.HTTP_404_NOT_FOUND, 'File not exist.')
+
+            etag, last_modified_time = gen_file_etag_and_modified_time(local_zip_path)
+            if if_none_match_hit(request, etag):
+                response = HttpResponseNotModified()
+                response['Cache-Control'] = 'max-age=3600, private'
+                return response
+
+            response = FileResponse(
+                open(local_zip_path, 'rb'),
+                content_type='application/zip',
+                as_attachment=True,
+                filename=EMAIL_ATTACHMENTS_ZIP_NAME,
+            )
+            response['Cache-Control'] = 'max-age=3600, private'
+            response['ETag'] = etag
+            response['Last-Modified'] = formatdate(int(last_modified_time), usegmt=True)
+            return response
+        except (TypeError, ValueError):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Email attachment id invalid.')
+        except Exception as e:
+            logger.exception('Failed to download Portal email attachment ZIP: %s', e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
 
 class PortalTeamIssuesView(APIView):

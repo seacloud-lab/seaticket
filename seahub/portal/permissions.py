@@ -217,6 +217,24 @@ class PortalIssuePermission(BasePermission):
         return False
 
 
+class PortalEmailPermission(BasePermission):
+    def has_permission(self, request, view):
+        project, portal_settings = _get_project_and_settings(request, view)
+        if not project or not portal_settings.get('enable_portal', False):
+            return False
+
+        project_uuid = str(project.uuid)
+        if is_same_org_user(request, project):
+            return False
+        if settings.ENABLE_PORTAL_DOMAIN and not getattr(settings, 'IS_PORTAL_MODE', False):
+            return False
+
+        return bool(
+            get_request_external_user(request, project_uuid)
+            and get_request_portal_customer(request, project_uuid)
+        )
+
+
 class PortalChatPermission(BasePermission):
     def has_permission(self, request, view):
         project, portal_settings = _get_project_and_settings(request, view)
