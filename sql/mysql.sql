@@ -732,6 +732,7 @@ CREATE TABLE `project_external_users` (
   `customer_id` bigint(20) DEFAULT NULL,
   `created_at` datetime(6) NOT NULL,
   `activated` TINYINT(1) NOT NULL DEFAULT 0,
+  `is_disabled` TINYINT(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `project_external_project_uuid_users_email_uniq` (`project_uuid`,`email`),
   KEY `project_external_users_email_idx` (`email`),

@@ -32,6 +32,7 @@ def get_request_external_user(request, project_uuid):
             project_uuid=project_uuid,
             username=ext_username,
             activated=True,
+            is_disabled=False,
         ).first()
 
     request._portal_external_user_project_uuid = project_uuid

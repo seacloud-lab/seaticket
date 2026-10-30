@@ -39,11 +39,15 @@ const PortalCustomersUsers = ({ title }) => {
   const [customerToManage, setCustomerToManage] = useState(null);
   const [customerMembers, setCustomerMembers] = useState([]);
   const [isLoadingCustomerMembers, setLoadingCustomerMembers] = useState(false);
-  const [userToEdit, setUserToEdit] = useState(null);
+  const [userEditor, setUserEditor] = useState(null);
+  const [isUserSubmitting, setUserSubmitting] = useState(false);
   const [userOperation, setUserOperation] = useState(null);
   const [isInviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [inviteCustomerId, setInviteCustomerId] = useState('');
   const customerMembersRequestRef = useRef(0);
+  const userEditorRef = useRef(null);
+  const userEditorIdRef = useRef(0);
+  const isMountedRef = useRef(true);
 
   const showError = useCallback((error, fallback) => {
     toaster.danger(error.response?.data?.detail || error.response?.data?.error_msg || Utils.getErrorMsg(error) || fallback);
@@ -75,8 +79,11 @@ const PortalCustomersUsers = ({ title }) => {
   }, [loadCustomerList, loadCustomersData, loadInvitations, loadUsers]);
 
   useEffect(() => {
+    isMountedRef.current = true;
     return () => {
       customerMembersRequestRef.current += 1;
+      userEditorRef.current = null;
+      isMountedRef.current = false;
     };
   }, []);
 
@@ -227,16 +234,39 @@ const PortalCustomersUsers = ({ title }) => {
       .finally(() => setSubmitting(false));
   }, [loadCustomerList, loadInvitations, loadUsers, projectUuid, showError, userOperation]);
 
-  const saveUser = useCallback((name, activated) => {
-    if (!userToEdit || isSubmitting) return;
-    setSubmitting(true);
-    portalAPI.updateExternalUser(projectUuid, userToEdit.email, { name, activated }).then(() => {
-      toaster.success(gettext('User updated'));
-      setUserToEdit(null);
+  const openUserEditor = useCallback((user) => {
+    const editor = { id: ++userEditorIdRef.current, user, isSubmitting: false };
+    userEditorRef.current = editor;
+    setUserEditor(editor);
+    setUserSubmitting(false);
+  }, []);
+
+  const closeUserEditor = useCallback(() => {
+    userEditorRef.current = null;
+    setUserEditor(null);
+    setUserSubmitting(false);
+  }, []);
+
+  const saveUser = useCallback((name, isDisabled) => {
+    const editor = userEditorRef.current;
+    if (!editor || editor.isSubmitting) return;
+    editor.isSubmitting = true;
+    setUserSubmitting(true);
+    portalAPI.updateExternalUser(projectUuid, editor.user.email, { name, is_disabled: isDisabled }).then(() => {
+      if (!isMountedRef.current) return;
       loadUsers();
-    }).catch((error) => showError(error, gettext('Failed to update user')))
-      .finally(() => setSubmitting(false));
-  }, [isSubmitting, loadUsers, projectUuid, showError, userToEdit]);
+      if (userEditorRef.current !== editor) return;
+      toaster.success(gettext('User updated'));
+      closeUserEditor();
+    }).catch((error) => {
+      if (userEditorRef.current !== editor) return;
+      showError(error, gettext('Failed to update user'));
+    }).finally(() => {
+      if (userEditorRef.current !== editor) return;
+      editor.isSubmitting = false;
+      setUserSubmitting(false);
+    });
+  }, [closeUserEditor, loadUsers, projectUuid, showError]);
 
   const revokeInvitation = useCallback((token) => {
     portalAPI.revokeExternalInvitation(projectUuid, token).then(() => {
@@ -289,7 +319,7 @@ const PortalCustomersUsers = ({ title }) => {
             />
           ) : (
             <UsersTab
-              onEditUser={setUserToEdit}
+              onEditUser={openUserEditor}
               onDeleteUser={(user) => setUserOperation({ user })}
               onCustomerClick={openCustomerUsers}
               users={users}
@@ -325,12 +355,12 @@ const PortalCustomersUsers = ({ title }) => {
           onSubmit={saveCustomer}
         />
       )}
-      {userToEdit && (
+      {userEditor && (
         <UserModal
-          key={userToEdit.email}
-          user={userToEdit}
-          isSubmitting={isSubmitting}
-          onClose={() => setUserToEdit(null)}
+          key={userEditor.id}
+          user={userEditor.user}
+          isSubmitting={isUserSubmitting}
+          onClose={closeUserEditor}
           onSubmit={saveUser}
         />
       )}
