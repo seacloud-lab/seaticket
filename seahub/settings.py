@@ -460,19 +460,19 @@ ALLOWED_HOSTS = ['*']
 CSRF_TRUSTED_ORIGINS = [] if IS_PORTAL_MODE else ["https://*", "http://*"]
 
 # Logging
-LOG_LEVEL = os.environ.get('SEAQA_LOG_LEVEL', '"INFO"')
-SEAQA_LOG_COMPONENT = 'seaqa-web-portal' if IS_PORTAL_MODE else 'seaqa-web'
-SEAQA_LOGS_HANDLERS = ['console'] if os.environ.get('SEAQA_LOG_TO_STDOUT', 'false') == 'true' else ['file']
+LOG_LEVEL = os.environ.get('SEATICKET_LOG_LEVEL', '"INFO"')
+SEATICKET_LOG_COMPONENT = 'seaticket-portal' if IS_PORTAL_MODE else 'seaticket'
+SEAQA_LOGS_HANDLERS = ['console'] if os.environ.get('SEATICKET_LOG_TO_STDOUT', 'false') == 'true' else ['file']
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
         'standard': {
-            'format': f'[{SEAQA_LOG_COMPONENT}] [%(asctime)s] [%(levelname)s] %(filename)s[line:%(lineno)s] %(message)s',
+            'format': f'[{SEATICKET_LOG_COMPONENT}] [%(asctime)s] [%(levelname)s] %(filename)s[line:%(lineno)s] %(message)s',
             'datefmt': '%Y-%m-%d %H:%M:%S'
         },
         'file': {
-            'format': f'[{SEAQA_LOG_COMPONENT}] [%(asctime)s] [%(levelname)s] %(filename)s[line:%(lineno)s] %(message)s',
+            'format': f'[{SEATICKET_LOG_COMPONENT}] [%(asctime)s] [%(levelname)s] %(filename)s[line:%(lineno)s] %(message)s',
             'datefmt': '%Y-%m-%d %H:%M:%S'
         }
     },
@@ -483,7 +483,7 @@ LOGGING = {
         },
         'file': {
             'class': 'logging.FileHandler',
-            'filename': os.path.join(LOG_DIR, f'{SEAQA_LOG_COMPONENT}.log'),
+            'filename': os.path.join(LOG_DIR, f'{SEATICKET_LOG_COMPONENT}.log'),
             'formatter': 'file'
         },
     },
@@ -703,22 +703,22 @@ else:
     load_local_settings(seahub.local_settings)
     del seahub.local_settings
 
-# Load seahub_settings.py in server release
+# Load seaticket_settings.py in server release
 try:
     if os.path.exists(CONF_DIR):
         sys.path.insert(0, CONF_DIR)
-    import seaqa_web_settings
+    import seaticket_settings
 except ImportError:
     pass
 else:
     INSTALLED_APPS.append('gunicorn')
 
-    load_local_settings(seaqa_web_settings)
-    del seaqa_web_settings
+    load_local_settings(seaticket_settings)
+    del seaticket_settings
 
 # config in yaml & env
-yaml_file_path = os.path.join(CONF_DIR, os.environ.get('SEAQA_CONFIG_NAME', 'seaqa_config.yaml'))
-configs = ConfigParser(yaml_file_path, 'seaqa-web')
+yaml_file_path = os.path.join(CONF_DIR, os.environ.get('SEATICKET_CONFIG_NAME', 'seaticket_config.yaml'))
+configs = ConfigParser(yaml_file_path, 'seaticket')
 
 # Available AI Models (not hidden) for user selection
 LLM_MODELS = [

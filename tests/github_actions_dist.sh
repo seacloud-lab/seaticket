@@ -16,15 +16,15 @@ echo $GITHUB_BRANCH
 # write conf
 mkdir -p /tmp/conf
 export CONF_PATH=/tmp/conf
-export SEAQA_CONFIG_NAME=seaqa_config.yaml
+export SEATICKET_CONFIG_NAME=seaticket_config.yaml
 
-cat >/tmp/conf/seaqa_config.yaml <<EOF
+cat >/tmp/conf/seaticket_config.yaml <<EOF
 global:
   SEADB_SERVER_URL: http://172.19.0.2:8888
   SEAQA_AI_INNER_SERVER_URL: http://127.0.0.1:8887
   SEAQA_INDEXER_INNER_SERVER_URL: http://127.0.0.1:8888
 
-seaqa-web:
+seaticket:
   SEAQA_EVENTS_INNER_SERVER_URL: http://127.0.0.1:6001
   SECRET_KEY: 6j)&*03yrz(%tam!amw@57ofxl$#e%wya9znt=$ktr2pgc!qfp
 
