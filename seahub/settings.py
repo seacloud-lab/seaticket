@@ -703,18 +703,18 @@ else:
     load_local_settings(seahub.local_settings)
     del seahub.local_settings
 
-# Load seahub_settings.py in server release
+# Load seaticket_settings.py in server release
 try:
     if os.path.exists(CONF_DIR):
         sys.path.insert(0, CONF_DIR)
-    import seaqa_web_settings
+    import seaticket_settings
 except ImportError:
     pass
 else:
     INSTALLED_APPS.append('gunicorn')
 
-    load_local_settings(seaqa_web_settings)
-    del seaqa_web_settings
+    load_local_settings(seaticket_settings)
+    del seaticket_settings
 
 # config in yaml & env
 yaml_file_path = os.path.join(CONF_DIR, os.environ.get('SEATICKET_CONFIG_NAME', 'seaticket_config.yaml'))

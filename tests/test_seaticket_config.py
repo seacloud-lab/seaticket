@@ -1,9 +1,11 @@
+import ast
 import importlib.util
 import logging
 from pathlib import Path
+import sys
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -17,6 +19,38 @@ def load_module(name, relative_path):
 
 
 class SeaticketConfigTests(unittest.TestCase):
+    def test_custom_settings_load_only_new_module_name(self):
+        tree = ast.parse((PROJECT_ROOT / 'seahub/settings.py').read_text())
+        settings_loader = next(
+            node for node in tree.body
+            if isinstance(node, ast.Try) and any(
+                isinstance(child, ast.Import) and any(
+                    alias.name == 'seaticket_settings' for alias in child.names
+                )
+                for child in node.body
+            )
+        )
+        program = compile(ast.Module(body=[settings_loader], type_ignores=[]), 'settings', 'exec')
+        with tempfile.TemporaryDirectory() as directory:
+            old_settings = Path(directory) / 'seaqa_web_settings.py'
+            old_settings.write_text('raise RuntimeError("Old settings must not be imported")\n')
+            for has_new_settings in (False, True):
+                if has_new_settings:
+                    (Path(directory) / 'seaticket_settings.py').write_text('DEBUG = True\n')
+                loader = Mock()
+                namespace = {
+                    'os': __import__('os'), 'sys': sys, 'CONF_DIR': directory,
+                    'INSTALLED_APPS': [], 'load_local_settings': loader,
+                }
+                with patch.object(sys, 'path', list(sys.path)):
+                    with patch.dict(sys.modules):
+                        sys.modules.pop('seaticket_settings', None)
+                        exec(program, namespace)
+                self.assertEqual(loader.call_count, int(has_new_settings))
+                if has_new_settings:
+                    self.assertTrue(loader.call_args.args[0].DEBUG)
+                    self.assertIn('gunicorn', namespace['INSTALLED_APPS'])
+
     def test_web_section_overrides_global_without_reading_old_section(self):
         config_parser = load_module('seaticket_config_parser', 'seahub/config_parser.py')
         with tempfile.TemporaryDirectory() as directory:
