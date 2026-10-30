@@ -167,8 +167,18 @@ class ProjectExternalUser(models.Model):
     project_uuid = models.CharField(max_length=36, db_index=True)
     customer_id = models.BigIntegerField(null=True, blank=True)
     activated = models.BooleanField(default=False)
+    is_disabled = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     objects = ProjectExternalUserManager()
+
+    def activate(self):
+        """Activate while the caller holds this user's row lock."""
+        if self.is_disabled:
+            return False
+        if not self.activated:
+            self.activated = True
+            self.save(update_fields=['activated'])
+        return True
 
     class Meta:
         unique_together = (('email', 'project_uuid'),)

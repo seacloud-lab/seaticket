@@ -2543,6 +2543,14 @@ msgstr "更新客户失败"
 msgid "Edit user"
 msgstr "编辑用户"
 
+#: frontend/src/project/main-panel/portal-customers-users/user-modal.js
+msgid "Disable user"
+msgstr "禁用用户"
+
+#: frontend/src/project/main-panel/portal-customers-users/users-table.js
+msgid "Disabled by admin"
+msgstr "管理员禁用"
+
 #: frontend/src/project/main-panel/portal-customers-users/index.js
 msgid "User updated"
 msgstr "用户已更新"

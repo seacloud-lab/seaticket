@@ -63,7 +63,7 @@ def _get_external_session_user(request, project_uuid):
     if not (ext_username and ext_project == project_uuid):
         return '', False
     ext_is_valid = ProjectExternalUser.objects.filter(
-        project_uuid=project_uuid, username=ext_username, activated=True
+        project_uuid=project_uuid, username=ext_username, activated=True, is_disabled=False
     ).exists()
     return ext_username, ext_is_valid
 
@@ -123,7 +123,9 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
     is_anonymous = allow_anonymous and (not has_ticket_access)
     can_access_issues = not is_anonymous
     if is_external_user:
-        external_user = ProjectExternalUser.objects.filter(project_uuid=project_uuid, username=ext_username, activated=True).first()
+        external_user = ProjectExternalUser.objects.filter(
+            project_uuid=project_uuid, username=ext_username, activated=True, is_disabled=False
+        ).first()
         can_access_issues = bool(external_user and external_user.customer_id and PortalCustomer.objects.filter(
             id=external_user.customer_id,
             project_uuid=project_uuid,
@@ -299,8 +301,8 @@ def portal_external_invitation_accept_view(request, token, project_uuid):
                 if not customer:
                     return render_error(request, _('Invitation link is invalid or expired.'))
 
-            ext_user = ProjectExternalUser.objects.filter(email=invitation.email, project_uuid=project_uuid).first()
-            if not ext_user:
+            ext_user = ProjectExternalUser.objects.select_for_update().filter(email=invitation.email, project_uuid=project_uuid).first()
+            if not ext_user or ext_user.is_disabled:
                 return render_error(request, _('Invitation link is invalid or expired.'))
             if customer and ext_user.customer_id not in (None, customer.id):
                 return render_error(request, _('Invitation link is invalid or expired.'))
@@ -309,9 +311,8 @@ def portal_external_invitation_accept_view(request, token, project_uuid):
             if customer and not ext_user.customer_id:
                 ext_user.customer_id = customer.id
                 update_fields.append('customer_id')
-            if not ext_user.activated:
-                ext_user.activated = True
-                update_fields.append('activated')
+            if not ext_user.activate():
+                return render_error(request, _('Invitation link is invalid or expired.'))
             if update_fields:
                 ext_user.save(update_fields=update_fields)
 

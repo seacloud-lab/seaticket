@@ -2543,6 +2543,14 @@ msgstr "Kunde konnte nicht aktualisiert werden"
 msgid "Edit user"
 msgstr "Benutzer bearbeiten"
 
+#: frontend/src/project/main-panel/portal-customers-users/user-modal.js
+msgid "Disable user"
+msgstr "Benutzer deaktivieren"
+
+#: frontend/src/project/main-panel/portal-customers-users/users-table.js
+msgid "Disabled by admin"
+msgstr "Vom Administrator deaktiviert"
+
 #: frontend/src/project/main-panel/portal-customers-users/index.js
 msgid "User updated"
 msgstr "Benutzer aktualisiert"

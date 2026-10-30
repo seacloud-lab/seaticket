@@ -2543,6 +2543,14 @@ msgstr "Échec de la mise à jour du client"
 msgid "Edit user"
 msgstr "Modifier l'utilisateur"
 
+#: frontend/src/project/main-panel/portal-customers-users/user-modal.js
+msgid "Disable user"
+msgstr "Désactiver l'utilisateur"
+
+#: frontend/src/project/main-panel/portal-customers-users/users-table.js
+msgid "Disabled by admin"
+msgstr "Désactivé par l'administrateur"
+
 #: frontend/src/project/main-panel/portal-customers-users/index.js
 msgid "User updated"
 msgstr "Utilisateur mis à jour"
