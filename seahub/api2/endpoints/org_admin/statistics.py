@@ -19,6 +19,7 @@ from seahub.project.db_utils import query_ai_statistics_overview, query_ai_stati
 from seahub.project.models import Projects
 from seahub.group.utils import group_id_to_name
 from seahub.base.templatetags.seahub_tags import email2nickname
+from seahub.utils.timeutils import get_utc_date
 
 logger = logging.getLogger(__name__)
 
@@ -329,8 +330,8 @@ class OrgAdminAIStatisticsOverviewView(APIView):
         end_date = datetime.date(last_month_date.year, last_month_date.month, same_day)
         return [last_month_date.isoformat(), end_date.isoformat()]
 
-    def _get_monthly_credits(self, org_id, months_count=6):
-        current_month_start = self._get_month_start(datetime.date.today())
+    def _get_monthly_credits(self, org_id, months_count=6, today=None):
+        current_month_start = self._get_month_start(today or get_utc_date())
         results = []
         for offset in range(months_count - 1, -1, -1):
             month_start = self._add_months(current_month_start, -offset)
@@ -342,8 +343,8 @@ class OrgAdminAIStatisticsOverviewView(APIView):
         return {'results': results, 'count': len(results)}
 
     @staticmethod
-    def _get_daily_credits_current_month(org_id):
-        today = datetime.date.today()
+    def _get_daily_credits_current_month(org_id, today=None):
+        today = today or get_utc_date()
         month_start = datetime.date(today.year, today.month, 1)
         query_set = query_ai_statistics_detail('date', [month_start, today], {'org_id': org_id})
 
@@ -367,7 +368,7 @@ class OrgAdminAIStatisticsOverviewView(APIView):
         if not request.user.org or request.user.org.org_id != org_id:
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
-        today = datetime.date.today()
+        today = get_utc_date()
         current_month_range = self._get_month_range(today)
         group_by = request.GET.get('group_by')
 
@@ -378,9 +379,9 @@ class OrgAdminAIStatisticsOverviewView(APIView):
             if group_by == 'scenario':
                 return Response(self._get_scenario_percentages(current_month_range, org_id))
             if group_by == 'month':
-                return Response(self._get_monthly_credits(org_id))
+                return Response(self._get_monthly_credits(org_id, today=today))
             if group_by == 'date':
-                return Response(self._get_daily_credits_current_month(org_id))
+                return Response(self._get_daily_credits_current_month(org_id, today=today))
 
             if today.month == 1:
                 last_month_date = datetime.date(today.year - 1, 12, 1)

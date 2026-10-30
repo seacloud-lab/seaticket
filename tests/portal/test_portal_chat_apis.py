@@ -1,6 +1,7 @@
 import json
 from io import BytesIO
 from datetime import date, datetime, timedelta
+from datetime import timezone as datetime_timezone
 from unittest.mock import Mock, patch
 
 import pytest
@@ -38,6 +39,10 @@ def _set_portal_settings(project, **kwargs):
     settings_dict['portal'] = portal
     project.settings = json.dumps(settings_dict)
     project.save(update_fields=['settings'])
+
+
+def _utc_midnight(day):
+    return datetime.combine(day, datetime.min.time(), tzinfo=datetime_timezone.utc)
 
 
 @pytest.fixture
@@ -336,13 +341,13 @@ class TestPortalChatViewAnonymous:
         assert chat_params['is_external_portal'] is True
         assert chat_params['scenario'] == AIScenario.PORTAL_CHAT.value
 
-    def _post_anonymous_chat(self, factory, real_project, session, query, ip=None):
+    def _post_anonymous_chat(self, factory, real_project, session, query, ip=None, stream=True):
         request = factory.post(
             f'/api/v1/portal/{real_project.uuid}/chat/',
             data=json.dumps({
                 'query': query,
                 'session_uuid': session.session_uuid,
-                'stream': True,
+                'stream': stream,
             }),
             content_type='application/json',
             HTTP_X_FORWARDED_FOR=ip or '127.0.0.1',
@@ -364,7 +369,9 @@ class TestPortalChatViewAnonymous:
         assert messages[1].content == error_msg
         mock_get_ai_reply.assert_not_called()
 
-    def test_daily_quota_exceeded_records_rejection(self, factory, real_project):
+    @pytest.mark.parametrize('cost', [0.01, 0.02])
+    @pytest.mark.parametrize('hour, minute', [(15, 59), (16, 0), (23, 59)])
+    def test_daily_quota_exceeded_records_rejection(self, factory, real_project, cost, hour, minute):
         _set_portal_settings(
             real_project, allow_anonymous=True, enable_password_protection=False,
             daily_chat_credit_limit=1,
@@ -374,22 +381,60 @@ class TestPortalChatViewAnonymous:
             project_uuid=str(real_project.uuid), session_name='quota', username=visitor['visitor_uuid']
         )
         AIUsageStatistics.objects.create(
-            date=timezone.localdate(),
+            date=date(2026, 10, 25),
             project_uuid=uuid_str_to_32_chars(str(real_project.uuid)),
             owner='owner',
             model='test-model',
             scenario=AIScenario.PORTAL_CHAT.value,
-            cost=0.02,
+            cost=cost,
         )
         query = 'what is the quota'
         request = self._post_anonymous_chat(factory, real_project, session, query)
 
-        with patch('seahub.portal.chat.apis.get_ai_reply') as mock_get_ai_reply:
+        now = datetime(2026, 10, 25, hour, minute, tzinfo=datetime_timezone.utc)
+        with timezone.override('Asia/Shanghai'), \
+                patch('seahub.portal.chat.utils.timezone.now', return_value=now), \
+                patch('seahub.portal.chat.apis.get_ai_reply') as mock_get_ai_reply:
             resp = PortalChatView.as_view()(request, project_uuid=str(real_project.uuid))
 
         self._assert_usage_limit_rejection(
             session, query, resp, 429, 'Portal chat daily quota exceeded.', mock_get_ai_reply,
         )
+
+    @pytest.mark.parametrize('now, cost', [
+        (datetime(2026, 10, 25, 23, 59, tzinfo=datetime_timezone.utc), 0.005),
+        (datetime(2026, 10, 26, 0, 0, tzinfo=datetime_timezone.utc), 0.02),
+    ])
+    def test_daily_quota_allows_chat_below_limit_or_after_utc_midnight(self, factory, real_project, now, cost):
+        _set_portal_settings(
+            real_project, allow_anonymous=True, enable_password_protection=False,
+            daily_chat_credit_limit=1,
+        )
+        visitor = create_visitor_session()
+        session = PortalChatSessions.objects.create_session(
+            project_uuid=str(real_project.uuid), session_name='quota', username=visitor['visitor_uuid']
+        )
+        AIUsageStatistics.objects.create(
+            date=date(2026, 10, 25),
+            project_uuid=uuid_str_to_32_chars(str(real_project.uuid)),
+            owner='owner',
+            model='test-model',
+            scenario=AIScenario.PORTAL_CHAT.value,
+            cost=cost,
+        )
+        request = self._post_anonymous_chat(factory, real_project, session, 'hello', stream=False)
+
+        with timezone.override('Asia/Shanghai'), \
+                patch('seahub.portal.chat.utils.timezone.now', return_value=now), \
+                patch('seahub.portal.chat.apis.check_ai_limit', return_value=False), \
+                patch('seahub.portal.chat.apis.validate_chat_input', return_value={'valid': True, 'reason': ''}), \
+                patch('seahub.portal.chat.apis.get_ai_reply', return_value={'ai_reply': 'ok', 'sources': []}) as mock_get_ai_reply:
+            resp = PortalChatView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert resp.status_code == 200
+        assert resp.data['ai_reply'] == 'ok'
+        mock_get_ai_reply.assert_called_once()
+        assert PortalChatMessages.objects.filter(session_uuid=session.session_uuid).count() == 2
 
     def test_anonymous_daily_limit_records_rejection(self, factory, real_project):
         _set_portal_settings(real_project, allow_anonymous=True, enable_password_protection=False)
@@ -690,6 +735,15 @@ class TestPortalAdminChatAPIs:
         request.user = user
         return request
 
+    def _create_usage_session(self, project_uuid, username, created_at):
+        session = PortalChatSessions.objects.create_session(
+            project_uuid=project_uuid, session_name='UTC boundary', username=username,
+        )
+        PortalChatSessions.objects.filter(id=session.id).update(
+            created_at=created_at, input_tokens=10, output_tokens=5, credit_used=0.25,
+        )
+        return session
+
     def test_list_sessions_is_paginated(self, factory, real_project, project_creator):
         for index in range(3):
             PortalChatSessions.objects.create_session(
@@ -737,7 +791,7 @@ class TestPortalAdminChatAPIs:
                 project_uuid=project_uuid, session_name='s', username=username,
             )
             PortalChatSessions.objects.filter(id=session.id).update(
-                created_at=timezone.make_aware(created),
+                created_at=timezone.make_aware(created, datetime_timezone.utc),
                 input_tokens=input_tokens,
                 output_tokens=output_tokens,
                 credit_used=credit_used,
@@ -760,7 +814,7 @@ class TestPortalAdminChatAPIs:
             f'/api/v1/portal/{project_uuid}/admin/chat/user-usage/',
             data={'start': 0, 'limit': 1000},
         )
-        with patch('seahub.portal.chat.apis.timezone.localdate', return_value=today):
+        with patch('seahub.portal.chat.utils.timezone.now', return_value=_utc_midnight(today)):
             response = PortalAdminChatUserUsageView.as_view()(request, project_uuid=project_uuid)
 
         assert response.status_code == 200
@@ -792,7 +846,7 @@ class TestPortalAdminChatAPIs:
                 project_uuid=project_uuid, session_name='s', username=username,
             )
             PortalChatSessions.objects.filter(id=session.id).update(
-                created_at=timezone.make_aware(datetime(2026, 3, 5)), input_tokens=tokens,
+                created_at=datetime(2026, 3, 5, tzinfo=datetime_timezone.utc), input_tokens=tokens,
             )
 
         def _post(start, limit):
@@ -805,7 +859,7 @@ class TestPortalAdminChatAPIs:
                     'config': json.dumps({'sorts': [{'column_key': 'input_tokens', 'sort_type': 'up'}]}),
                 },
             )
-            with patch('seahub.portal.chat.apis.timezone.localdate', return_value=today):
+            with patch('seahub.portal.chat.utils.timezone.now', return_value=_utc_midnight(today)):
                 return PortalAdminChatUserUsageView.as_view()(request, project_uuid=project_uuid)
 
         response = _post(0, 1000)
@@ -882,7 +936,7 @@ class TestPortalAdminChatAPIs:
             username='customer@example.com',
         )
         PortalChatSessions.objects.filter(id=session.id).update(
-            created_at=timezone.make_aware(datetime(2026, 3, 21, 23, 59, 59, 999999))
+            created_at=datetime(2026, 3, 21, 23, 59, 59, 999999, tzinfo=datetime_timezone.utc)
         )
 
         request = self._admin_request(
@@ -891,7 +945,7 @@ class TestPortalAdminChatAPIs:
             project_creator,
             f'/api/v1/portal/{real_project.uuid}/admin/chat/statistics/',
         )
-        with patch('seahub.portal.chat.apis.timezone.localdate', return_value=today):
+        with patch('seahub.portal.chat.utils.timezone.now', return_value=_utc_midnight(today)):
             response = PortalAdminChatStatisticsView.as_view()(
                 request,
                 project_uuid=str(real_project.uuid),
@@ -925,13 +979,13 @@ class TestPortalAdminChatAPIs:
             username='previous@example.com',
         )
         PortalChatSessions.objects.filter(id=current_user.id).update(
-            created_at=timezone.make_aware(datetime(2026, 3, 5))
+            created_at=datetime(2026, 3, 5, tzinfo=datetime_timezone.utc)
         )
         PortalChatSessions.objects.filter(id=current_user_second_session.id).update(
-            created_at=timezone.make_aware(datetime(2026, 3, 21, 23, 59, 59, 999999))
+            created_at=datetime(2026, 3, 21, 23, 59, 59, 999999, tzinfo=datetime_timezone.utc)
         )
         PortalChatSessions.objects.filter(id=previous_user.id).update(
-            created_at=timezone.make_aware(datetime(2026, 2, 10))
+            created_at=datetime(2026, 2, 10, tzinfo=datetime_timezone.utc)
         )
 
         common_data = {
@@ -970,7 +1024,7 @@ class TestPortalAdminChatAPIs:
             project_creator,
             f'/api/v1/portal/{real_project.uuid}/admin/chat/statistics/',
         )
-        with patch('seahub.portal.chat.apis.timezone.localdate', return_value=today):
+        with patch('seahub.portal.chat.utils.timezone.now', return_value=_utc_midnight(today)):
             response = PortalAdminChatStatisticsView.as_view()(
                 request,
                 project_uuid=str(real_project.uuid),
@@ -998,7 +1052,7 @@ class TestPortalAdminChatAPIs:
             username='current@example.com',
         )
         PortalChatSessions.objects.filter(id=session.id).update(
-            created_at=timezone.make_aware(datetime(2026, 3, 1))
+            created_at=datetime(2026, 3, 1, tzinfo=datetime_timezone.utc)
         )
         AIUsageStatistics.objects.create(
             date=today,
@@ -1019,7 +1073,7 @@ class TestPortalAdminChatAPIs:
             project_creator,
             f'/api/v1/portal/{real_project.uuid}/admin/chat/statistics/',
         )
-        with patch('seahub.portal.chat.apis.timezone.localdate', return_value=today):
+        with patch('seahub.portal.chat.utils.timezone.now', return_value=_utc_midnight(today)):
             response = PortalAdminChatStatisticsView.as_view()(
                 request,
                 project_uuid=str(real_project.uuid),
@@ -1057,15 +1111,9 @@ class TestPortalAdminChatAPIs:
         )
         PortalChatSessions.objects.filter(
             id__in=[recent_session.id, another_recent_session.id]
-        ).update(created_at=timezone.make_aware(
-            datetime.combine(date(2026, 2, 2), datetime.min.time())
-        ))
-        PortalChatSessions.objects.filter(id=old_session.id).update(created_at=timezone.make_aware(
-            datetime.combine(date(2026, 2, 1), datetime.min.time())
-        ))
-        PortalChatSessions.objects.filter(id=other_project_session.id).update(created_at=timezone.make_aware(
-            datetime.combine(today, datetime.min.time())
-        ))
+        ).update(created_at=_utc_midnight(date(2026, 2, 2)))
+        PortalChatSessions.objects.filter(id=old_session.id).update(created_at=_utc_midnight(date(2026, 2, 1)))
+        PortalChatSessions.objects.filter(id=other_project_session.id).update(created_at=_utc_midnight(today))
 
         request = self._admin_request(
             factory,
@@ -1073,7 +1121,7 @@ class TestPortalAdminChatAPIs:
             project_creator,
             f'/api/v1/portal/{real_project.uuid}/admin/chat/statistics/',
         )
-        with patch('seahub.portal.chat.apis.timezone.localdate', return_value=today):
+        with patch('seahub.portal.chat.utils.timezone.now', return_value=_utc_midnight(today)):
             response = PortalAdminChatStatisticsView.as_view()(
                 request,
                 project_uuid=str(real_project.uuid),
@@ -1098,9 +1146,13 @@ class TestPortalAdminChatAPIs:
             session_name='recent session',
             username='customer@example.com',
         )
-        PortalChatSessions.objects.filter(id=session.id).update(created_at=timezone.make_aware(
-            datetime.combine(date(2026, 2, 2), datetime.min.time())
-        ))
+        PortalChatSessions.objects.filter(id=session.id).update(created_at=_utc_midnight(date(2026, 2, 2)))
+        AIUsageStatistics.objects.create(
+            date=date(2026, 2, 2),
+            project_uuid=uuid_str_to_32_chars(str(real_project.uuid)),
+            owner='customer@example.com', model='test-model',
+            scenario=AIScenario.PORTAL_CHAT.value, cost=0.25,
+        )
 
         request = self._admin_request(
             factory,
@@ -1108,8 +1160,10 @@ class TestPortalAdminChatAPIs:
             project_creator,
             f'/api/v1/portal/{real_project.uuid}/admin/chat/statistics/',
         )
-        with patch('seahub.portal.chat.apis.timezone.localdate', return_value=today), \
-                patch.object(connection.ops, 'datetime_cast_date_sql', side_effect=RuntimeError('timezone conversion unavailable')):
+
+        with patch('seahub.portal.chat.utils.timezone.now', return_value=_utc_midnight(today)), \
+                patch.object(connection.ops, 'datetime_cast_date_sql', side_effect=RuntimeError('timezone conversion unavailable')), \
+                patch.object(connection.ops, 'datetime_trunc_sql', side_effect=RuntimeError('timezone conversion unavailable')):
             response = PortalAdminChatStatisticsView.as_view()(
                 request,
                 project_uuid=str(real_project.uuid),
@@ -1119,6 +1173,9 @@ class TestPortalAdminChatAPIs:
         assert response.data['daily_session_counts'][0] == {
             'date': '2026-02-02', 'count': 1,
         }
+        assert response.data['daily_credit_used'][0] == {
+            'date': '2026-02-02', 'credit_used': 25,
+        }
 
     def test_statistics_exclude_month_end_date_outside_last_month(self, factory, real_project, project_creator):
         today = date(2026, 3, 31)
@@ -1127,9 +1184,7 @@ class TestPortalAdminChatAPIs:
             session_name='old session',
             username='customer@example.com',
         )
-        PortalChatSessions.objects.filter(id=session.id).update(created_at=timezone.make_aware(
-            datetime.combine(date(2026, 2, 28), datetime.min.time())
-        ))
+        PortalChatSessions.objects.filter(id=session.id).update(created_at=_utc_midnight(date(2026, 2, 28)))
 
         request = self._admin_request(
             factory,
@@ -1137,7 +1192,7 @@ class TestPortalAdminChatAPIs:
             project_creator,
             f'/api/v1/portal/{real_project.uuid}/admin/chat/statistics/',
         )
-        with patch('seahub.portal.chat.apis.timezone.localdate', return_value=today):
+        with patch('seahub.portal.chat.utils.timezone.now', return_value=_utc_midnight(today)):
             response = PortalAdminChatStatisticsView.as_view()(
                 request,
                 project_uuid=str(real_project.uuid),
@@ -1182,7 +1237,7 @@ class TestPortalAdminChatAPIs:
             factory, real_project, project_creator,
             f'/api/v1/portal/{real_project.uuid}/admin/chat/statistics/',
         )
-        with patch('seahub.portal.chat.apis.timezone.localdate', return_value=today):
+        with patch('seahub.portal.chat.utils.timezone.now', return_value=_utc_midnight(today)):
             response = PortalAdminChatStatisticsView.as_view()(
                 request, project_uuid=str(real_project.uuid),
             )
@@ -1213,7 +1268,7 @@ class TestPortalAdminChatAPIs:
             factory, real_project, project_creator,
             f'/api/v1/portal/{real_project.uuid}/admin/chat/statistics/',
         )
-        with patch('seahub.portal.chat.apis.timezone.localdate', return_value=today):
+        with patch('seahub.portal.chat.utils.timezone.now', return_value=_utc_midnight(today)):
             response = PortalAdminChatStatisticsView.as_view()(
                 request, project_uuid=str(real_project.uuid),
             )
@@ -1232,6 +1287,117 @@ class TestPortalAdminChatAPIs:
         )
 
         assert response.status_code == 403
+
+    @pytest.mark.parametrize('active_timezone', ['UTC', 'Asia/Shanghai', 'America/Los_Angeles'])
+    @pytest.mark.parametrize('now, expected_today, expected_users', [
+        (datetime(2026, 10, 31, 15, 59, tzinfo=datetime_timezone.utc), date(2026, 10, 31), 1),
+        (datetime(2026, 10, 31, 16, 0, tzinfo=datetime_timezone.utc), date(2026, 10, 31), 1),
+        (datetime(2026, 10, 31, 23, 59, tzinfo=datetime_timezone.utc), date(2026, 10, 31), 1),
+        (datetime(2026, 11, 1, 0, 0, tzinfo=datetime_timezone.utc), date(2026, 11, 1), 0),
+        (datetime(2025, 12, 31, 16, 0, tzinfo=datetime_timezone.utc), date(2025, 12, 31), 1),
+        (datetime(2026, 1, 1, 0, 0, tzinfo=datetime_timezone.utc), date(2026, 1, 1), 0),
+    ])
+    def test_statistics_change_month_only_at_utc_midnight(
+        self, factory, real_project, project_creator, active_timezone, now, expected_today, expected_users,
+    ):
+        project_uuid = str(real_project.uuid)
+        usage_day = expected_today if expected_users else expected_today - timedelta(days=1)
+        self._create_usage_session(
+            project_uuid, 'customer@example.com', _utc_midnight(usage_day) + timedelta(hours=15, minutes=30),
+        )
+        AIUsageStatistics.objects.create(
+            date=usage_day, project_uuid=uuid_str_to_32_chars(project_uuid),
+            owner='customer@example.com', model='test-model', scenario=AIScenario.PORTAL_CHAT.value,
+            input_tokens=100, output_tokens=20, cost=1,
+        )
+        request = self._admin_request(
+            factory, real_project, project_creator, f'/api/v1/portal/{project_uuid}/admin/chat/statistics/',
+        )
+
+        with timezone.override(active_timezone), patch('seahub.portal.chat.utils.timezone.now', return_value=now):
+            response = PortalAdminChatStatisticsView.as_view()(request, project_uuid=project_uuid)
+
+        assert response.status_code == 200
+        assert response.data['current'] == {
+            'users': expected_users,
+            'input_tokens': expected_users * 100,
+            'output_tokens': expected_users * 20,
+            'credit_used': expected_users * 100,
+        }
+        assert response.data['daily_session_counts'][-1]['date'] == expected_today.isoformat()
+        counts = {item['date']: item['count'] for item in response.data['daily_session_counts']}
+        assert counts[usage_day.isoformat()] == 1
+
+    @pytest.mark.parametrize('active_timezone', ['UTC', 'Asia/Shanghai', 'America/Los_Angeles'])
+    def test_statistics_use_utc_boundaries_for_users_and_daily_counts(
+        self, factory, real_project, project_creator, active_timezone,
+    ):
+        project_uuid = str(real_project.uuid)
+        for index, created_at in enumerate((
+            datetime(2026, 2, 1, 23, 59, 59, 999999, tzinfo=datetime_timezone.utc),
+            datetime(2026, 2, 2, tzinfo=datetime_timezone.utc),
+            datetime(2026, 2, 28, 23, 59, 59, 999999, tzinfo=datetime_timezone.utc),
+            datetime(2026, 3, 1, tzinfo=datetime_timezone.utc),
+            datetime(2026, 3, 2, tzinfo=datetime_timezone.utc),
+        )):
+            self._create_usage_session(project_uuid, f'boundary-{index}@example.com', created_at)
+        AIUsageStatistics.objects.create(
+            date=date(2026, 3, 1), project_uuid=uuid_str_to_32_chars(project_uuid),
+            owner='owner@example.com', model='test-model', scenario=AIScenario.PORTAL_CHAT.value, cost=1,
+        )
+        request = self._admin_request(
+            factory, real_project, project_creator, f'/api/v1/portal/{project_uuid}/admin/chat/statistics/',
+        )
+        now = datetime(2026, 3, 1, 12, tzinfo=datetime_timezone.utc)
+
+        with timezone.override(active_timezone), patch('seahub.portal.chat.utils.timezone.now', return_value=now):
+            response = PortalAdminChatStatisticsView.as_view()(request, project_uuid=project_uuid)
+
+        assert response.status_code == 200
+        assert response.data['current']['users'] == 1
+        assert response.data['current']['credit_used'] == 100
+        counts = response.data['daily_session_counts']
+        assert counts[0] == {'date': '2026-02-02', 'count': 1}
+        assert counts[-2] == {'date': '2026-02-28', 'count': 1}
+        assert counts[-1] == {'date': '2026-03-01', 'count': 1}
+        assert sum(item['count'] for item in counts) == 3
+
+    @pytest.mark.parametrize('active_timezone', ['UTC', 'Asia/Shanghai', 'America/Los_Angeles'])
+    @pytest.mark.parametrize('now, expected_months', [
+        (datetime(2026, 3, 31, 15, 59, tzinfo=datetime_timezone.utc), ['2026-03', '2026-02', '2026-01']),
+        (datetime(2026, 3, 31, 16, 0, tzinfo=datetime_timezone.utc), ['2026-03', '2026-02', '2026-01']),
+        (datetime(2026, 3, 31, 23, 59, tzinfo=datetime_timezone.utc), ['2026-03', '2026-02', '2026-01']),
+        (datetime(2026, 4, 1, 0, 0, tzinfo=datetime_timezone.utc), ['2026-04', '2026-03', '2026-02']),
+    ])
+    def test_user_usage_filters_and_groups_by_utc_month(
+        self, factory, real_project, project_creator, active_timezone, now, expected_months,
+    ):
+        project_uuid = str(real_project.uuid)
+        for created_at in (
+            datetime(2025, 12, 31, 23, 59, 59, 999999, tzinfo=datetime_timezone.utc),
+            datetime(2026, 1, 1, tzinfo=datetime_timezone.utc),
+            datetime(2026, 1, 31, 16, 30, tzinfo=datetime_timezone.utc),
+            datetime(2026, 2, 28, 16, 30, tzinfo=datetime_timezone.utc),
+            datetime(2026, 3, 31, 23, 59, 59, 999999, tzinfo=datetime_timezone.utc),
+            datetime(2026, 4, 1, tzinfo=datetime_timezone.utc),
+        ):
+            self._create_usage_session(project_uuid, 'customer@example.com', created_at)
+        request = self._admin_post_request(
+            factory, real_project, project_creator, f'/api/v1/portal/{project_uuid}/admin/chat/user-usage/',
+            data={'start': 0, 'limit': 1000},
+        )
+
+        with timezone.override(active_timezone), patch('seahub.portal.chat.utils.timezone.now', return_value=now):
+            response = PortalAdminChatUserUsageView.as_view()(request, project_uuid=project_uuid)
+
+        assert response.status_code == 200
+        assert [user['month'] for user in response.data['users']] == expected_months
+        for user in response.data['users']:
+            expected_sessions = 2 if user['month'] == '2026-01' else 1
+            assert user['sessions'] == expected_sessions
+            assert user['input_tokens'] == expected_sessions * 10
+            assert user['output_tokens'] == expected_sessions * 5
+            assert user['credit_used'] == pytest.approx(expected_sessions * 0.25)
 
     def test_admin_chat_apis_reject_non_admin(self, factory, real_project, auth_user):
         request = self._admin_request(

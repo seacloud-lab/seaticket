@@ -446,10 +446,11 @@ def get_total_ai_credit_by_org_id(org_id):
 
 
 def get_ai_cost_by_org_id(org_id):
-    cache_key = f'ai_cost_org_{org_id}'
+    date_range = get_month_date_range()
+    cache_key = f'ai_cost_org_{org_id}_{date_range[0]:%Y%m}'
     cost = cache.get(cache_key)
     if not cost:
-        cost = AIUsageStatistics.objects.filter(date__range=get_month_date_range(), org_id=org_id).aggregate(
+        cost = AIUsageStatistics.objects.filter(date__range=date_range, org_id=org_id).aggregate(
             total_cost=Coalesce(Sum('cost'), Value(0.0))
         )['total_cost']
         cache_timeout = 600 # update / 10 min

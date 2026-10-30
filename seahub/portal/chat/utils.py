@@ -4,6 +4,7 @@ import logging
 import os
 import re
 import time
+from datetime import timezone as datetime_timezone
 from urllib.parse import quote, unquote
 
 import jwt
@@ -85,8 +86,13 @@ def mark_external_chat_rate_limit(project_uuid, username):
     )
 
 
+def get_portal_chat_utc_date():
+    """Use the same UTC day for Portal limits and usage statistics."""
+    return timezone.now().astimezone(datetime_timezone.utc).date()
+
+
 def get_project_portal_chat_credit_used(project_uuid):
-    today = timezone.localdate()
+    today = get_portal_chat_utc_date()
     total_cost = AIUsageStatistics.objects.filter(
         date=today,
         project_uuid=uuid_str_to_32_chars(project_uuid),
@@ -99,16 +105,16 @@ def get_project_portal_chat_credit_used(project_uuid):
 
 
 def _get_anon_session_rate_limit_key(visitor_uuid, date_str):
-    return _get_counter_cache_key('portal_anon_chat_session_daily_', visitor_uuid, date_str)
+    return _get_counter_cache_key('portal_anon_chat_session_daily_utc_', visitor_uuid, date_str)
 
 
 def _get_anon_ip_rate_limit_key(ip, date_str):
-    return _get_counter_cache_key('portal_anon_chat_ip_daily_', ip, date_str)
+    return _get_counter_cache_key('portal_anon_chat_ip_daily_utc_', ip, date_str)
 
 
 def check_anonymous_chat_rate_limit(visitor_uuid, ip, chat_settings=None):
     chat_settings = chat_settings or PORTAL_CHAT_LIMIT_DEFAULTS
-    today_str = timezone.localdate().strftime('%Y%m%d')
+    today_str = get_portal_chat_utc_date().strftime('%Y%m%d')
 
     session_key = _get_anon_session_rate_limit_key(visitor_uuid, today_str)
     if _get_cached_counter(session_key) >= chat_settings['anonymous_chat_session_daily_limit']:
@@ -122,7 +128,7 @@ def check_anonymous_chat_rate_limit(visitor_uuid, ip, chat_settings=None):
 
 
 def mark_anonymous_chat_rate_limit(visitor_uuid, ip):
-    today_str = timezone.localdate().strftime('%Y%m%d')
+    today_str = get_portal_chat_utc_date().strftime('%Y%m%d')
 
     _increase_cached_counter(
         _get_anon_session_rate_limit_key(visitor_uuid, today_str),

@@ -124,9 +124,15 @@ def lines_monthly(month_num):
         lines.append(ym)
     return lines
 
+def get_utc_date():
+    """Return the UTC date independently of Django's display timezone."""
+    return timezone.now().astimezone(datetime.timezone.utc).date()
+
+
 def get_month_date_range(year=None, month=None):
+    """Return an inclusive month range, defaulting to the current UTC month."""
     if year is None or month is None:
-        today = datetime.date.today()
+        today = get_utc_date()
         year, month = today.year, today.month
     
     cache_key = f'month_range_{year}_{month}'
