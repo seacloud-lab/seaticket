@@ -3,7 +3,7 @@ import { gettext } from '@/constants';
 import SeaMetadata from '@/sea-metadata';
 import { CellType, VIEW_TOOL } from '@/sea-metadata/constants';
 import context from '@/sea-metadata/context';
-import { STATUS_OPTIONS } from './constants';
+import { STATUS_OPTIONS, USER_DISABLED_OPTIONS } from './constants';
 
 const CustomerFormatter = ({ value, row, onCustomerClick }) => {
   if (!value || !row?.customer_id) return null;
@@ -16,9 +16,9 @@ const CustomerFormatter = ({ value, row, onCustomerClick }) => {
   );
 };
 
-const UsersTable = ({ users, onDeleteUser, onCustomerClick, viewTabs }) => {
+const UsersTable = ({ users, onEditUser, onDeleteUser, onCustomerClick, viewTabs }) => {
   const metadataID = useMemo(() => {
-    return users.map(user => `${user.name || ''}:${user.email}:${user.activated ? '1' : '0'}:${user.customer_id || ''}`).join('|') || 'users-empty';
+    return users.map(user => `${user.name || ''}:${user.email}:${user.activated ? '1' : '0'}:${user.is_disabled ? '1' : '0'}:${user.customer_id || ''}`).join('|') || 'users-empty';
   }, [users]);
 
   const api = useMemo(() => ({
@@ -34,7 +34,7 @@ const UsersTable = ({ users, onDeleteUser, onCustomerClick, viewTabs }) => {
           _id: 'users',
           type: 'table',
           name: gettext('Users'),
-          columns_keys: ['name', 'user', 'customer', 'status'],
+          columns_keys: ['name', 'user', 'customer', 'status', 'admin_disabled'],
           sorts: context.localStorage?.getItem('sorts') || [],
         },
       },
@@ -54,6 +54,7 @@ const UsersTable = ({ users, onDeleteUser, onCustomerClick, viewTabs }) => {
           user: user.email,
           customer: user.customer_name || '',
           status: user.activated ? '1' : '0',
+          admin_disabled: user.is_disabled ? '1' : '0',
         })),
         columns: [
           {
@@ -94,6 +95,17 @@ const UsersTable = ({ users, onDeleteUser, onCustomerClick, viewTabs }) => {
             width: 180,
             editable: false,
           },
+          {
+            key: 'admin_disabled',
+            name: 'admin_disabled',
+            display_name: gettext('Disabled by admin'),
+            type: CellType.SINGLE_SELECT,
+            data: {
+              options: USER_DISABLED_OPTIONS,
+            },
+            width: 180,
+            editable: false,
+          },
         ],
         has_more: false,
         error_msg: users.length === 0 ? gettext('No users') : '',
@@ -108,12 +120,11 @@ const UsersTable = ({ users, onDeleteUser, onCustomerClick, viewTabs }) => {
       : selectedRowIds.length === 1 ? table?.id_row_map?.[selectedRowIds[0]] : null;
     if (!row) return [];
 
-    return [{
-      label: gettext('Delete user'),
-      key: 'delete_user',
-      callback: () => onDeleteUser(row),
-    }];
-  }, [onDeleteUser]);
+    return [
+      { label: gettext('Edit user'), key: 'edit_user', callback: () => onEditUser(row) },
+      { label: gettext('Delete user'), key: 'delete_user', callback: () => onDeleteUser(row) },
+    ];
+  }, [onDeleteUser, onEditUser]);
 
   return (
     <SeaMetadata

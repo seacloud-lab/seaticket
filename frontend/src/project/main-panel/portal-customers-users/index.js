@@ -11,6 +11,7 @@ import CustomerModal from './customer-modal';
 import CustomerUsersTabs from './customer-users-tabs';
 import CustomersTables from './customers-tables';
 import InviteUsersDialog from './invite-users-dialog';
+import UserModal from './user-modal';
 import UsersTab from './users-tab';
 
 import './index.css';
@@ -38,10 +39,15 @@ const PortalCustomersUsers = ({ title }) => {
   const [customerToManage, setCustomerToManage] = useState(null);
   const [customerMembers, setCustomerMembers] = useState([]);
   const [isLoadingCustomerMembers, setLoadingCustomerMembers] = useState(false);
+  const [userEditor, setUserEditor] = useState(null);
+  const [isUserSubmitting, setUserSubmitting] = useState(false);
   const [userOperation, setUserOperation] = useState(null);
   const [isInviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [inviteCustomerId, setInviteCustomerId] = useState('');
   const customerMembersRequestRef = useRef(0);
+  const userEditorRef = useRef(null);
+  const userEditorIdRef = useRef(0);
+  const isMountedRef = useRef(true);
 
   const showError = useCallback((error, fallback) => {
     toaster.danger(error.response?.data?.detail || error.response?.data?.error_msg || Utils.getErrorMsg(error) || fallback);
@@ -73,8 +79,11 @@ const PortalCustomersUsers = ({ title }) => {
   }, [loadCustomerList, loadCustomersData, loadInvitations, loadUsers]);
 
   useEffect(() => {
+    isMountedRef.current = true;
     return () => {
       customerMembersRequestRef.current += 1;
+      userEditorRef.current = null;
+      isMountedRef.current = false;
     };
   }, []);
 
@@ -225,6 +234,40 @@ const PortalCustomersUsers = ({ title }) => {
       .finally(() => setSubmitting(false));
   }, [loadCustomerList, loadInvitations, loadUsers, projectUuid, showError, userOperation]);
 
+  const openUserEditor = useCallback((user) => {
+    const editor = { id: ++userEditorIdRef.current, user, isSubmitting: false };
+    userEditorRef.current = editor;
+    setUserEditor(editor);
+    setUserSubmitting(false);
+  }, []);
+
+  const closeUserEditor = useCallback(() => {
+    userEditorRef.current = null;
+    setUserEditor(null);
+    setUserSubmitting(false);
+  }, []);
+
+  const saveUser = useCallback((name, isDisabled) => {
+    const editor = userEditorRef.current;
+    if (!editor || editor.isSubmitting) return;
+    editor.isSubmitting = true;
+    setUserSubmitting(true);
+    portalAPI.updateExternalUser(projectUuid, editor.user.email, { name, is_disabled: isDisabled }).then(() => {
+      if (!isMountedRef.current) return;
+      loadUsers();
+      if (userEditorRef.current !== editor) return;
+      toaster.success(gettext('User updated'));
+      closeUserEditor();
+    }).catch((error) => {
+      if (userEditorRef.current !== editor) return;
+      showError(error, gettext('Failed to update user'));
+    }).finally(() => {
+      if (userEditorRef.current !== editor) return;
+      editor.isSubmitting = false;
+      setUserSubmitting(false);
+    });
+  }, [closeUserEditor, loadUsers, projectUuid, showError]);
+
   const revokeInvitation = useCallback((token) => {
     portalAPI.revokeExternalInvitation(projectUuid, token).then(() => {
       toaster.success(gettext('Invitation deleted'));
@@ -276,6 +319,7 @@ const PortalCustomersUsers = ({ title }) => {
             />
           ) : (
             <UsersTab
+              onEditUser={openUserEditor}
               onDeleteUser={(user) => setUserOperation({ user })}
               onCustomerClick={openCustomerUsers}
               users={users}
@@ -309,6 +353,15 @@ const PortalCustomersUsers = ({ title }) => {
           isSubmitting={isSubmitting}
           onClose={closeCustomerModal}
           onSubmit={saveCustomer}
+        />
+      )}
+      {userEditor && (
+        <UserModal
+          key={userEditor.id}
+          user={userEditor.user}
+          isSubmitting={isUserSubmitting}
+          onClose={closeUserEditor}
+          onSubmit={saveUser}
         />
       )}
       {customerToManage && (

@@ -45,7 +45,7 @@ def get_portal_external_username(request, project_uuid):
     if not ext_username or ext_project_uuid != project_uuid:
         return ''
     exists = ProjectExternalUser.objects.filter(
-        project_uuid=project_uuid, username=ext_username, activated=True
+        project_uuid=project_uuid, username=ext_username, activated=True, is_disabled=False
     ).exists()
     return ext_username if exists else ''
 

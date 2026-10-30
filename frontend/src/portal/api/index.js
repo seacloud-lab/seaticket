@@ -1,7 +1,7 @@
 import axios from 'axios';
 import FormData from 'form-data';
 import Cookies from 'js-cookie';
-import { siteRoot } from '../../constants';
+import { siteRoot } from '@/constants';
 
 class PortalAPI {
   initForUsage({ siteRoot, xcsrfHeaders }) {
@@ -184,6 +184,11 @@ class PortalAPI {
   listExternalUsers(projectUuid) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/external-users/';
     return this.req.get(url);
+  }
+
+  updateExternalUser(projectUuid, email, data) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/external-users/';
+    return this.req.put(url, { ...data, email });
   }
 
   deleteExternalUser(projectUuid, email) {

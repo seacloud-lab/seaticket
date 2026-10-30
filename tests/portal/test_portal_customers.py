@@ -456,6 +456,7 @@ class TestPortalCustomersView:
         assert member.customer_id == customer.id
         assert invitation.accepted_at is not None
 
+    @patch('seahub.portal.apis.IS_EMAIL_CONFIGURED', True)
     def test_existing_customer_member_cannot_receive_another_invitation(self, factory, project_creator, real_project):
         customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
         another_customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Beta')
@@ -862,6 +863,7 @@ class TestPortalCustomersView:
             'email': 'inactive@example.com',
             'name': '',
             'activated': False,
+            'is_disabled': False,
             'customer_id': customer.id,
             'customer_name': 'Acme',
         }]

@@ -2538,6 +2538,27 @@ msgstr "客户已更新"
 msgid "Failed to update customer"
 msgstr "更新客户失败"
 
+#: frontend/src/project/main-panel/portal-customers-users/user-modal.js
+#: frontend/src/project/main-panel/portal-customers-users/users-table.js
+msgid "Edit user"
+msgstr "编辑用户"
+
+#: frontend/src/project/main-panel/portal-customers-users/user-modal.js
+msgid "Disable user"
+msgstr "禁用用户"
+
+#: frontend/src/project/main-panel/portal-customers-users/users-table.js
+msgid "Disabled by admin"
+msgstr "管理员禁用"
+
+#: frontend/src/project/main-panel/portal-customers-users/index.js
+msgid "User updated"
+msgstr "用户已更新"
+
+#: frontend/src/project/main-panel/portal-customers-users/index.js
+msgid "Failed to update user"
+msgstr "更新用户失败"
+
 #: frontend/src/portal/main-panel/user-management.js:259
 #: frontend/src/portal/main-panel/user-management.js:265
 #: frontend/src/project/main-panel/portal-customers-users/index.js:224

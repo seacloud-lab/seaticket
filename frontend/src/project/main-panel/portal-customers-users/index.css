@@ -100,11 +100,13 @@
   pointer-events: auto;
 }
 
-.portal-customer-dialog .modal-body {
+.portal-customer-dialog .modal-body,
+.portal-user-dialog .modal-body {
   min-height: 112px;
 }
 
-.portal-customer-dialog {
+.portal-customer-dialog,
+.portal-user-dialog {
   max-width: 560px;
   margin: 8vh auto 0;
 }
