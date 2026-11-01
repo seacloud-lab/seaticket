@@ -1,15 +1,18 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CenteredError, CenteredLoading, Collaborator, IconButton } from '@/components';
 import { gettext, PERMISSION_TYPES } from '@/constants';
 import { EmailThreadDetails } from '@/project/main-panel/connections/components/connection-resource-details';
 import { TICKET_STATE_OPTIONS } from '@/project/main-panel/tickets/constants';
 import SeaMetadata, { CellType } from '@/sea-metadata';
 import NumberFormatter from '@/sea-metadata/components/cell-formatter/number';
+import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
+import { CANVAS_RIGHT_INTERVAL, SEQUENCE_COLUMN_WIDTH } from '@/sea-metadata/constants/view/table';
+import context from '@/sea-metadata/context';
 import { portalAPI } from '../../api';
 import { buildPortalPath, getPortalPathSegments } from '../../path-utils';
 
 const EMAIL_TABLE_NAME = 'portal_emails';
-const EMAIL_LOCAL_STORAGE_PREFIX = 'seaqa-portal-emails-v2';
+const EMAIL_LOCAL_STORAGE_PREFIX = 'seaqa-portal-emails';
 const EMAIL_VIEW = { _id: 'all', name: gettext('All emails') };
 const EMAIL_COLUMN_ORDER = {
   title: 1,
@@ -55,6 +58,8 @@ const EMAIL_VIEW_DATA = {
 };
 
 const MyEmails = ({ projectUuid }) => {
+  const metadataContainerRef = useRef(null);
+  const metadataContentWidthRef = useRef(0);
   const [thread, setThread] = useState(null);
   const [threadContext, setThreadContext] = useState(null);
   const [error, setError] = useState('');
@@ -83,8 +88,35 @@ const MyEmails = ({ projectUuid }) => {
 
   const dataDidMount = useCallback((data) => {
     const subjectColumn = data.columns.find(column => column.name === 'title');
-    if (subjectColumn) subjectColumn.click = openThread;
+    if (subjectColumn) {
+      const otherColumnsWidth = data.columns
+        .filter(column => column !== subjectColumn)
+        .reduce((total, column) => total + column.width, 0);
+      subjectColumn.width = Math.max(
+        EMAIL_COLUMN_WIDTHS.title,
+        metadataContentWidthRef.current - otherColumnsWidth
+      );
+      subjectColumn.click = openThread;
+    }
   }, [openThread]);
+
+  useEffect(() => {
+    const container = metadataContainerRef.current;
+    if (!container || typeof ResizeObserver === 'undefined') return undefined;
+
+    const observer = new ResizeObserver(() => {
+      const availableColumnWidth = Math.max(
+        0,
+        container.clientWidth - SEQUENCE_COLUMN_WIDTH - CANVAS_RIGHT_INTERVAL
+      );
+      if (availableColumnWidth === metadataContentWidthRef.current) return;
+      metadataContentWidthRef.current = availableColumnWidth;
+      setTimeout(() => context.eventBus.dispatch(EVENT_BUS_TYPE.RELOAD_DATA), 0);
+    });
+
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
 
   const listAPI = useMemo(() => ({
     getMetadata: ({ start = 0, limit = 1000 } = {}) => portalAPI.listMyEmails(projectUuid, { start, limit }).then((response) => ({
@@ -168,7 +200,7 @@ const MyEmails = ({ projectUuid }) => {
   }
 
   return (
-    <div className="seaqa-portal-my-emails-metadata">
+    <div className="seaqa-portal-my-emails-metadata" ref={metadataContainerRef}>
       <SeaMetadata
         metadataID={`${EMAIL_TABLE_NAME}-${projectUuid}`}
         api={listAPI}
