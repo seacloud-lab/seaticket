@@ -42,7 +42,7 @@ def call_portal(request):
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize('page', ['', 'home/', 'my-issues/42/', 'team-issues/42/', 'knowledge-base/7/', 'chat/%s/' % uuid4()])
+@pytest.mark.parametrize('page', ['', 'home/', 'my-issues/42/', 'team-issues/42/', 'emails/2/42/', 'knowledge-base/7/', 'chat/%s/' % uuid4()])
 def test_path_routes_keep_public_base_url(factory, alias, real_project, monkeypatch, page):
     request = factory.get('/portals/my-brand/%s' % page)
     request.user = SimpleNamespace(username='', is_authenticated=False)
@@ -62,6 +62,20 @@ def test_path_routes_keep_public_base_url(factory, alias, real_project, monkeypa
     assert 'enable_portal_domain' not in captured
     assert captured['is_anonymous'] is True
     assert captured['can_access_issues'] is False
+
+
+@pytest.mark.parametrize('urlconf', ['seahub.portal.urls', 'seahub.portal_site_urls'])
+def test_portal_email_attachment_api_route_matches(urlconf):
+    match = resolve(
+        '/api/v1/portal/5ff1dda1-7161-44ca-9f39-a5fda6701316/emails/383/1/2/attachments/8fe60378ead9e7132bd6c9580e94dde5.jpeg',
+        urlconf=urlconf,
+    )
+
+    assert match.url_name == 'api-v1-portal-email-attachment'
+    assert match.kwargs['connection_id'] == '383'
+    assert match.kwargs['thread_id'] == '1'
+    assert match.kwargs['email_id'] == '2'
+    assert match.kwargs['file_path'] == '8fe60378ead9e7132bd6c9580e94dde5.jpeg'
 
 
 @pytest.mark.django_db

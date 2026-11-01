@@ -15,10 +15,10 @@ import './index.css';
 
 const { isExternalUser, isPortalDomain } = window.app.pageOptions;
 
-const TopBar = ({ isEditMode, activePage, onPageChange, isAnonymous, canAccessIssues, portalName, portalLogo }) => {
+const TopBar = ({ isEditMode, activePage, onPageChange, isAnonymous, canAccessIssues, canAccessEmails, portalName, portalLogo }) => {
   const [isShowMobileMenu, setIsShowMobileMenu] = useState(false);
   const topBarRef = useRef(null);
-  const primaryTabs = getPrimaryTabs({ isAnonymous, canAccessIssues });
+  const primaryTabs = getPrimaryTabs({ isAnonymous, canAccessIssues, canAccessEmails });
   const logo = portalLogo || PORTAL_DEFAULT_SETTINGS.portal_logo;
   const name = portalName || PORTAL_DEFAULT_SETTINGS.portal_name;
 

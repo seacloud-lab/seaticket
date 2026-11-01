@@ -5,6 +5,7 @@ export const PORTAL_PAGE = {
   SUBMIT_ISSUE: 'submit-issue',
   MY_ISSUES: 'my-issues',
   TEAM_ISSUES: 'team-issues',
+  EMAILS: 'emails',
   KNOWLEDGE_BASE: 'knowledge-base',
   CHAT: 'chat',
 };
@@ -36,13 +37,19 @@ export const ISSUES_TAB = {
   label: gettext('Issues'),
 };
 
+export const EMAILS_TAB = {
+  value: PORTAL_PAGE.EMAILS,
+  label: gettext('Emails'),
+};
+
 export const TICKET_SECONDARY_TABS = [
   { value: PORTAL_PAGE.SUBMIT_ISSUE, label: gettext('Submit issue') },
   { value: PORTAL_PAGE.MY_ISSUES, label: gettext('My issues') },
   { value: PORTAL_PAGE.TEAM_ISSUES, label: gettext('Team issues') },
 ];
 
-export const getPrimaryTabs = ({ isAnonymous, canAccessIssues = true }) => {
+export const getPrimaryTabs = ({ isAnonymous, canAccessIssues = true, canAccessEmails = false }) => {
   const tabs = isAnonymous || !canAccessIssues ? [HOME_TAB, CHAT_TAB] : [HOME_TAB, CHAT_TAB, ISSUES_TAB];
+  if (!isAnonymous && canAccessEmails) tabs.push(EMAILS_TAB);
   return tabs;
 };
