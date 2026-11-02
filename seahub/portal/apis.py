@@ -2855,10 +2855,6 @@ class PortalExternalInvitationsView(APIView):
             customer = PortalCustomer.objects.filter(id=customer_id, project_uuid=project_uuid, status=PortalCustomer.STATUS_ACTIVE).first()
             if not customer:
                 return api_error(status.HTTP_404_NOT_FOUND, 'Customer not found.')
-        external_user = ProjectExternalUser.objects.filter(email=email, project_uuid=project.uuid).first()
-        if external_user and external_user.customer_id is not None:
-            return api_error(status.HTTP_409_CONFLICT, 'External user already belongs to a customer.')
-
         if is_user_in_the_same_team(project, email):
             error_msg = _('The user is already a member of your team. Cannot invite the user to the portal.')
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -2871,6 +2867,11 @@ class PortalExternalInvitationsView(APIView):
         created_external_user = False
         try:
             with transaction.atomic():
+                external_user = ProjectExternalUser.objects.select_for_update().filter(
+                    email=email, project_uuid=str(project.uuid),
+                ).first()
+                if external_user and external_user.customer_id is not None:
+                    return api_error(status.HTTP_409_CONFLICT, 'External user already belongs to a customer.')
                 invitation = PortalExternalInvitation.objects.add(
                     inviter=username,
                     email=email,
@@ -3009,6 +3010,46 @@ class PortalExternalUsersView(APIView):
         return Response({'users': users})
 
     @require_org_context
+    def put(self, request, project_uuid):
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
+        if not check_project_admin_permission(request.user.username, project.workspace.owner):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        email = request.data.get('email')
+        if not isinstance(email, str):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'email invalid.')
+        email = normalize_external_login_email(email)
+        if not is_valid_email(email):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'email invalid.')
+
+        if set(request.data) - {'email', 'name'}:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Only name can be updated.')
+
+        name = request.data.get('name')
+        if 'name' in request.data:
+            if not isinstance(name, str) or not name.strip() or len(name.strip()) > 255:
+                return api_error(status.HTTP_400_BAD_REQUEST, 'name invalid.')
+            name = name.strip()
+
+        try:
+            with transaction.atomic():
+                external_user = ProjectExternalUser.objects.select_for_update().filter(
+                    project_uuid=project_uuid, email=email,
+                ).first()
+                if not external_user:
+                    return api_error(status.HTTP_404_NOT_FOUND, 'External user not found.')
+
+                if name is not None:
+                    external_user.name = name
+                external_user.save(update_fields=['name'])
+        except Exception:
+            logger.exception('Failed to update portal external user: project=%s', project_uuid)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+        return Response({'success': True})
+
+    @require_org_context
     def delete(self, request, project_uuid):
         email = request.data.get('email')
         if not email:
@@ -3065,7 +3106,9 @@ class PortalExternalLoginSendCodeView(APIView):
             'detail': _('If the email is eligible, a login code has been sent.'),
         }
 
-        ext_user_exists = ProjectExternalUser.objects.filter(email=email, project_uuid=project_uuid).exists()
+        ext_user_exists = ProjectExternalUser.objects.filter(
+            email=email, project_uuid=project_uuid
+        ).exists()
         if not ext_user_exists:
             logger.info('Portal external login send-code skipped for non-invited email: project=%s email=%s',
                         project_uuid, email)
@@ -3140,10 +3183,11 @@ class PortalExternalLoginVerifyCodeView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, 'code invalid.')
 
         try:
-            ext_user = ProjectExternalUser.objects.get(email=email, project_uuid=project_uuid)
-            if not ext_user.activated:
-                ext_user.activated = True
-                ext_user.save(update_fields=['activated'])
+            with transaction.atomic():
+                ext_user = ProjectExternalUser.objects.select_for_update().get(email=email, project_uuid=project_uuid)
+                if not ext_user.activated:
+                    ext_user.activated = True
+                    ext_user.save(update_fields=['activated'])
         except ProjectExternalUser.DoesNotExist:
             return api_error(status.HTTP_400_BAD_REQUEST, 'code invalid.')
 

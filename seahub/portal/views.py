@@ -124,7 +124,9 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
     can_access_issues = not is_anonymous
     can_access_emails = False
     if is_external_user:
-        external_user = ProjectExternalUser.objects.filter(project_uuid=project_uuid, username=ext_username, activated=True).first()
+        external_user = ProjectExternalUser.objects.filter(
+            project_uuid=project_uuid, username=ext_username, activated=True
+        ).first()
         active_customer = PortalCustomer.objects.filter(
             id=external_user.customer_id,
             project_uuid=project_uuid,
@@ -303,7 +305,7 @@ def portal_external_invitation_accept_view(request, token, project_uuid):
                 if not customer:
                     return render_error(request, _('Invitation link is invalid or expired.'))
 
-            ext_user = ProjectExternalUser.objects.filter(email=invitation.email, project_uuid=project_uuid).first()
+            ext_user = ProjectExternalUser.objects.select_for_update().filter(email=invitation.email, project_uuid=project_uuid).first()
             if not ext_user:
                 return render_error(request, _('Invitation link is invalid or expired.'))
             if customer and ext_user.customer_id not in (None, customer.id):
