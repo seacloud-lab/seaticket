@@ -38,7 +38,7 @@ class SelectProjectIconDialog extends React.Component {
         className="select-project-icon-dialog"
         zIndex={1071}
       >
-        <ModalHeader className="select-project-icon-dialog-header">
+        <ModalHeader toggle={onBack} className="select-project-icon-dialog-header">
           <IconButton
             icon="arrow-left"
             className="select-project-icon-dialog-back"
