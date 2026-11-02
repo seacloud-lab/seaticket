@@ -106,12 +106,12 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
   const { tagsData } = useTags();
 
   const renderGithubIssueRef = useCallback((activity = {}) => {
-    const { connection_id, issue_number, issue_url, title = '' } = activity;
-    if (!issue_number) return null;
+    const { connection_id, record_id, issue_number, issue_url, title = '' } = activity;
+    if (!record_id) return title ? <span>{title}</span> : null;
     if (issue_url) {
       return (
         <LinkedRecord
-          record={{ type: CONNECTION_TYPE.GITHUB_ISSUE, title, _id: issue_number, connection_id }}
+          record={{ type: CONNECTION_TYPE.GITHUB_ISSUE, title, _id: record_id, connection_id }}
           projectUuid={projectUuid}
           permission={permission}
           type={CONNECTION_TYPE.GITHUB_ISSUE}
@@ -124,12 +124,12 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
   }, [projectUuid, permission]);
 
   const renderDiscourseTopicRef = useCallback((activity = {}) => {
-    const { connection_id, topic_id, topic_url, title = '' } = activity;
-    if (!topic_id) return null;
+    const { connection_id, record_id, topic_id, topic_url, title = '' } = activity;
+    if (!record_id) return title ? <span>{title}</span> : null;
     if (topic_url) {
       return (
         <LinkedRecord
-          record={{ type: CONNECTION_TYPE.DISCOURSE_FORUM, title, _id: topic_id, connection_id }}
+          record={{ type: CONNECTION_TYPE.DISCOURSE_FORUM, title, _id: record_id, connection_id }}
           projectUuid={projectUuid}
           permission={permission}
           type={CONNECTION_TYPE.DISCOURSE_FORUM}
@@ -142,7 +142,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
   }, [projectUuid, permission]);
 
   const renderDiscordThreadRef = useCallback(({ connection_id, record_id, thread_id, title = '', thread_url } = {}) => {
-    if (!thread_id) return null;
+    if (!record_id) return title ? <span>{title}</span> : null;
     if (thread_url && record_id) {
       return (
         <LinkedRecord
@@ -158,14 +158,14 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
     return <span>{title || '# ' + thread_id}</span>;
   }, [projectUuid, permission]);
 
-  const renderEmailThreadRef = useCallback(({ connection_id, thread_id, title = '' } = {}) => {
-    if (!thread_id) return title ? <span>{title}</span> : null;
+  const renderEmailThreadRef = useCallback(({ connection_id, record_id, thread_id, title = '' } = {}) => {
+    if (!record_id) return title ? <span>{title}</span> : null;
     const label = title || `#${thread_id}`;
     if (projectUuid && connection_id) {
       return (
         <LinkedRecord
           permission={permission}
-          record={{ type: CONNECTION_TYPE.EMAIL, title, _id: thread_id, connection_id }}
+          record={{ type: CONNECTION_TYPE.EMAIL, title, _id: record_id, connection_id }}
           projectUuid={projectUuid}
           type={CONNECTION_TYPE.EMAIL}
         >
@@ -183,13 +183,12 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
   }, [projectUuid, permission]);
 
   const renderTaskRef = useCallback(({ connection_id, connection_type, record_id, title = '' } = {}) => {
-    const taskId = record_id;
-    if (!taskId) return title ? <span>{title}</span> : null;
-    const label = title || `#${taskId}`;
+    if (!record_id) return title ? <span>{title}</span> : null;
+    const label = title || `# ${record_id}`;
     if (projectUuid && connection_id) {
       return (
         <LinkedRecord
-          record={{ type: connection_type || CONNECTION_TYPE.GENERAL_TASK, title, _id: taskId, connection_id }}
+          record={{ type: connection_type || CONNECTION_TYPE.GENERAL_TASK, title, _id: record_id, connection_id }}
           projectUuid={projectUuid}
           permission={permission}
           type={connection_type || CONNECTION_TYPE.GENERAL_TASK}

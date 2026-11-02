@@ -1839,13 +1839,14 @@ class TicketActivitiesAPIView(APIView):
             field_key = None
             activity_type = a.get('activity_type', '')
 
+            record_id = detail.get('record_id', None)
+
             issue_number = None
             issue_url = None
             topic_id = None
             topic_url = None
             thread_id = None
             thread_title = None
-            task_record_id = None
             task_title = None
             connection_name = None
             if activity_type in GITHUB_ISSUE_ACTIVITY_TYPES:
@@ -1869,7 +1870,6 @@ class TicketActivitiesAPIView(APIView):
                 thread_title = detail.get('thread_title', '')
             elif activity_type in TASK_ACTIVITY_TYPES:
                 field_key = activity_type
-                task_record_id = detail.get('record_id')
                 task_title = detail.get('task_title', '')
                 connection_id = detail.get('connection_id')
                 connection_type = detail.get('connection_type') or ConnectionType.GENERAL_TASK.value
@@ -1944,6 +1944,7 @@ class TicketActivitiesAPIView(APIView):
                 'new_value': new_value,
                 'creator': a.get('creator'),
                 'created_time': a.get('created_time'),
+                'record_id': record_id,
             }
             if activity_type in GITHUB_ISSUE_ACTIVITY_TYPES:
                 activity_item['issue_number'] = issue_number
@@ -1954,7 +1955,6 @@ class TicketActivitiesAPIView(APIView):
                 activity_item['topic_url'] = topic_url
                 activity_item['title'] = topic_title
             elif activity_type in DISCORD_THREAD_ACTIVITY_TYPES:
-                activity_item['record_id'] = detail.get('record_id')
                 activity_item['thread_id'] = thread_id
                 activity_item['title'] = thread_title
                 activity_item['thread_url'] = thread_url
@@ -1962,7 +1962,6 @@ class TicketActivitiesAPIView(APIView):
                 activity_item['thread_id'] = thread_id
                 activity_item['title'] = thread_title
             elif activity_type in TASK_ACTIVITY_TYPES:
-                activity_item['record_id'] = task_record_id
                 activity_item['title'] = task_title
                 activity_item['connection_type'] = detail.get('connection_type') or ConnectionType.GENERAL_TASK.value
                 related_users_key = f'{activity_item["connection_type"]}_{detail.get("connection_id")}'
