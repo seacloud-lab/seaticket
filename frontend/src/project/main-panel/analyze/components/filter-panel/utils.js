@@ -11,23 +11,23 @@ export const getDurationLabel = (startDate, endDate) => {
 
 export const buildPresetRange = (preset, baseStartDate, baseEndDate) => {
   const end = dayjs(baseEndDate);
+  const endDate = end.format(DATE_FORMAT);
 
   if (preset === 'all') {
     return {
       startDate: baseStartDate,
-      endDate: end.format(DATE_FORMAT),
+      endDate,
     };
   }
 
   if (preset === 'YTD') {
     return {
       startDate: end.subtract(1, 'year').format(DATE_FORMAT),
-      endDate: end.format(DATE_FORMAT),
+      endDate,
     };
   }
 
   const days = Number.parseInt(preset, 10);
-  const endDate = end.format(DATE_FORMAT);
   return {
     startDate: end.subtract(days - 1, 'day').format(DATE_FORMAT),
     endDate,
