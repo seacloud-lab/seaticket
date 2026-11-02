@@ -24,6 +24,13 @@ const REQUEST_KEYS = {
   DATE: 'date',
 };
 
+const OVERVIEW_SECTION_KEYS = [
+  REQUEST_KEYS.SUMMARY,
+  REQUEST_KEYS.SCENARIO,
+  REQUEST_KEYS.MONTH,
+  REQUEST_KEYS.DATE,
+];
+
 const Overview = () => {
   const [creditSummaryData, setCreditSummaryData] = useState([
     {
@@ -157,16 +164,26 @@ const Overview = () => {
     return validData.some(item => item.value > 0);
   }, []);
 
-  const loadOverviewData = useCallback(async (statusKey, groupBy, dataBuilder, cancelledRef) => {
-    setStatus(statusKey, REQUEST_STATUS.LOADING);
+  const loadOverview = useCallback(async (cancelledRef) => {
+    OVERVIEW_SECTION_KEYS.forEach((key) => setStatus(key, REQUEST_STATUS.LOADING));
     try {
-      const res = await orgAdminAPI.orgAdminGetAIStatisticsOverview(orgID, groupBy);
+      const res = await orgAdminAPI.orgAdminGetAIStatisticsOverview(orgID);
       if (cancelledRef.current) return;
-      const hasData = dataBuilder(res?.data || {});
-      setStatus(statusKey, hasData ? REQUEST_STATUS.SUCCESS : REQUEST_STATUS.EMPTY);
+
+      const data = res?.data || {};
+      const hasSummary = Boolean(data.summary);
+      const hasScenario = buildScenarioData(data.scenario || {});
+      const hasMonth = buildMonthData(data.month || {});
+      const hasDate = buildDateData(data.date || {});
+      buildSummaryData(data.summary || {});
+
+      setStatus(REQUEST_KEYS.SUMMARY, hasSummary ? REQUEST_STATUS.SUCCESS : REQUEST_STATUS.EMPTY);
+      setStatus(REQUEST_KEYS.SCENARIO, hasScenario ? REQUEST_STATUS.SUCCESS : REQUEST_STATUS.EMPTY);
+      setStatus(REQUEST_KEYS.MONTH, hasMonth ? REQUEST_STATUS.SUCCESS : REQUEST_STATUS.EMPTY);
+      setStatus(REQUEST_KEYS.DATE, hasDate ? REQUEST_STATUS.SUCCESS : REQUEST_STATUS.EMPTY);
     } catch (error) {
       if (cancelledRef.current) return;
-      setStatus(statusKey, REQUEST_STATUS.EMPTY);
+      OVERVIEW_SECTION_KEYS.forEach((key) => setStatus(key, REQUEST_STATUS.EMPTY));
       toaster.danger(Utils.getErrorMsg(error));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -175,15 +192,12 @@ const Overview = () => {
   useEffect(() => {
     const cancelledRef = { current: false };
 
-    loadOverviewData(REQUEST_KEYS.SUMMARY, undefined, buildSummaryData, cancelledRef);
-    loadOverviewData(REQUEST_KEYS.SCENARIO, 'scenario', buildScenarioData, cancelledRef);
-    loadOverviewData(REQUEST_KEYS.MONTH, 'month', buildMonthData, cancelledRef);
-    loadOverviewData(REQUEST_KEYS.DATE, 'date', buildDateData, cancelledRef);
+    loadOverview(cancelledRef);
 
     return () => {
       cancelledRef.current = true;
     };
-  }, [loadOverviewData, buildSummaryData, buildScenarioData, buildMonthData, buildDateData]);
+  }, [loadOverview]);
 
   const renderSectionContent = useCallback((status, children) => {
     if (status === REQUEST_STATUS.LOADING) {
