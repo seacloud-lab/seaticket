@@ -1,7 +1,7 @@
 import React from 'react';
-import { Modal, ModalBody, ModalHeader } from 'reactstrap';
+import { Modal, ModalBody } from 'reactstrap';
 import PropTypes from 'prop-types';
-import { IconButton } from '@/components';
+import { IconButton, ModalHeader } from '@/components';
 import { gettext } from '@/constants';
 import SelectProjectIconContent from '../components/select-project-icon-content';
 

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
-import { CustomizeTable, EmptyTip, IconTooltip, UserSelect } from '@/components';
+import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
+import { CustomizeTable, EmptyTip, IconTooltip, ModalHeader, UserSelect } from '@/components';
 import { gettext } from '@/constants';
 
 const mergeUsersByEmail = (...groups) => {

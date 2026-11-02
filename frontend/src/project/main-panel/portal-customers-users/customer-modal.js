@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Button, FormGroup, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
+import { Button, FormGroup, Input, Label, Modal, ModalBody, ModalFooter } from 'reactstrap';
+import { ModalHeader } from '@/components';
 import { gettext } from '@/constants';
 
 const CustomerModal = ({ customer, isSubmitting, onClose, onSubmit, triggerRef }) => {
