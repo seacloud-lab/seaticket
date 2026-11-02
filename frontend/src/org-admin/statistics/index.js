@@ -212,6 +212,8 @@ class StatisticsAI extends Component {
                           <DatePicker
                             disabledDate={() => false}
                             value={date}
+                            isRemainOpen={false}
+                            showClear={false}
                             onChange={this.onDateChange}
                             inputWidth={118}
                           />
@@ -222,6 +224,8 @@ class StatisticsAI extends Component {
                           <span className="mr-2">{`${gettext('Month')}:`}</span>
                           <MonthPicker
                             value={month}
+                            isRemainOpen={false}
+                            showClear={false}
                             onChange={this.onMonthChange}
                             disabledDate={(date) => date.isAfter(dayjs().add(1, 'month').startOf('month'))}
                             inputWidth={94}
