@@ -1,10 +1,12 @@
 import React from 'react';
 import { CenteredLoading, CustomizeTabs } from '@/components';
+import { gettext } from '@/constants';
 import { useMetadata, useTags } from '@/project/hooks';
 import { PORTAL_PAGE, TICKETS_TAB, TICKET_SECONDARY_TABS } from '../constants';
 import PortalChat from './chat';
 import PortalHome from './home';
 import PortalKnowledgeBase from './knowledge-base/index';
+import MyEmails from './my-emails';
 import MyIssues from './my-issues';
 import SubmitIssue from './submit-issue';
 
@@ -36,6 +38,8 @@ const MainPanel = ({ activePage, onPageChange, onHomeChatSend, isAnonymous, isEx
         return (
           <MyIssues key={PORTAL_PAGE.TEAM_ISSUES} { ...props } isTeam={true} />
         );
+      case PORTAL_PAGE.EMAILS:
+        return <MyEmails projectUuid={props.projectUuid} />;
       case PORTAL_PAGE.KNOWLEDGE_BASE:
         return <PortalKnowledgeBase { ...props } />;
       case PORTAL_PAGE.CHAT:
@@ -67,6 +71,16 @@ const MainPanel = ({ activePage, onPageChange, onHomeChatSend, isAnonymous, isEx
           <CustomizeTabs
             className="seaqa-portal-secondary-tabs"
             tabs={ticketSecondaryTabs}
+            value={activePage}
+            onChange={onPageChange}
+          />
+        </div>
+      )}
+      {activePage === PORTAL_PAGE.EMAILS && (
+        <div className="seaqa-portal-sub-navigation">
+          <CustomizeTabs
+            className="seaqa-portal-secondary-tabs"
+            tabs={[{ value: PORTAL_PAGE.EMAILS, label: gettext('My emails') }]}
             value={activePage}
             onChange={onPageChange}
           />

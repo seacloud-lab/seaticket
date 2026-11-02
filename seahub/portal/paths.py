@@ -1,7 +1,7 @@
 from django.conf import settings
 
 
-PORTAL_ROOT_PAGES = ('submit-issue', 'my-issues', 'team-issues', 'knowledge-base', 'chat', 'login', 'anonymous-validate', 'home')
+PORTAL_ROOT_PAGES = ('submit-issue', 'my-issues', 'team-issues', 'emails', 'knowledge-base', 'chat', 'login', 'anonymous-validate', 'home')
 PORTAL_DETAIL_PAGES = ('my-issues', 'team-issues', 'knowledge-base')
 
 
@@ -28,6 +28,8 @@ def get_internal_portal_path(project_uuid, normalized_path):
         return ''
 
     if len(segments) == 3:
+        if segments[0] == 'emails' and all(segment.isdigit() for segment in segments[1:]):
+            return '%sportal/%s/emails/%s/%s/' % (site_root, project_uuid, segments[1], segments[2])
         token = segments[2]
         if segments[:2] == ['external', 'accept'] and token:
             return '%sportal-external/accept/%s/%s/' % (site_root, token, project_uuid)
