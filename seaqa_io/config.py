@@ -74,8 +74,8 @@ class _ConfigParser(object):
         return self.yaml_configs.get(key, default)
 
 CONF_DIR = os.getenv('CONF_PATH', '/opt/seaqa/conf/')
-yaml_file_path = os.path.join(CONF_DIR, os.environ.get('SEAQA_CONFIG_NAME', 'seaqa_config.yaml'))
-configs = _ConfigParser(yaml_file_path, 'seaqa-io')
+yaml_file_path = os.path.join(CONF_DIR, os.environ.get('SEATICKET_CONFIG_NAME', 'seaticket_config.yaml'))
+configs = _ConfigParser(yaml_file_path, 'seaticket-io')
 
 JWT_PRIVATE_KEY = configs.get('JWT_PRIVATE_KEY', '')
 SEADB_SERVER_URL = configs.get('SEADB_SERVER_URL', 'http://seadb:8888')
