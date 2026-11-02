@@ -3,6 +3,24 @@
 
 {% block sub_title %}{% trans "Log out" %} - {% endblock %}
 
+{% block extra_style %}
+{{ block.super }}
+<style>
+#header {
+	align-items: center;
+	padding: 0 16px;
+}
+
+#lang {
+	margin-top: 0;
+}
+
+#lang #lang-context {
+	color: var(--bs-sf-orange);
+}
+</style>
+{% endblock %}
+
 {% block main_content %}
 <div class="text-panel">
 	<p>{% trans "Thanks for your participation! " %}<a href="{{ SITE_ROOT }}accounts/login/">{% trans "Log in again" %}</a></p>

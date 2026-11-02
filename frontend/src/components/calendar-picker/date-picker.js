@@ -20,6 +20,7 @@ dayjs.extend(weekOfYear);
 const DatePicker = ({
   disabled,
   disabledDate,
+  showClear = true,
   isRemainOpen = true,
   format = 'YYYY-MM-DD',
   lang = '',
@@ -56,7 +57,7 @@ const DatePicker = ({
   const locale = useMemo(() => translateCalendar(), []);
 
   const initCalendarProps = useMemo(() => {
-    const clearIcon = (
+    const clearIcon = showClear ? (
       <IconTooltip
         icon="close"
         tip={gettext('Clear')}
@@ -65,7 +66,7 @@ const DatePicker = ({
         placement="bottom"
         className="mx-0"
       />
-    );
+    ) : () => null;
     return {
       defaultValue,
       disabledDate,
@@ -75,7 +76,7 @@ const DatePicker = ({
       clearIcon,
       ...calendarProps,
     };
-  }, [defaultValue, disabledDate, format, locale, showHourAndMinute, calendarProps]);
+  }, [defaultValue, disabledDate, format, locale, showHourAndMinute, showClear, calendarProps]);
 
   const getCalendarContainer = useCallback(() => {
     return calendarContainer || calendarContainerRef.current;
