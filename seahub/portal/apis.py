@@ -1872,7 +1872,7 @@ class PortalUserListView(APIView):
         is_external = False
         if ext_username and ext_project_uuid == project_uuid:
             is_external = ProjectExternalUser.objects.filter(
-                project_uuid=project_uuid, username=ext_username, activated=True, is_disabled=False
+                project_uuid=project_uuid, username=ext_username, activated=True
             ).exists()
 
         if not is_authenticated and not is_external:
@@ -2670,7 +2670,6 @@ class PortalCustomerMembersView(APIView):
                     'name': member.name,
                     'username': member.username,
                     'activated': member.activated,
-                    'is_disabled': member.is_disabled,
                 }
                 for member in members
             ],
@@ -2871,8 +2870,6 @@ class PortalExternalInvitationsView(APIView):
                 external_user = ProjectExternalUser.objects.select_for_update().filter(
                     email=email, project_uuid=str(project.uuid),
                 ).first()
-                if external_user and external_user.is_disabled:
-                    return api_error(status.HTTP_409_CONFLICT, 'External user is disabled.')
                 if external_user and external_user.customer_id is not None:
                     return api_error(status.HTTP_409_CONFLICT, 'External user already belongs to a customer.')
                 invitation = PortalExternalInvitation.objects.add(
@@ -3004,7 +3001,6 @@ class PortalExternalUsersView(APIView):
                     'email': it.email,
                     'name': it.name,
                     'activated': bool(getattr(it, 'activated', False)),
-                    'is_disabled': it.is_disabled,
                     'customer_id': it.customer_id,
                     'customer_name': customer_names.get(it.customer_id, ''),
                 })
@@ -3028,8 +3024,8 @@ class PortalExternalUsersView(APIView):
         if not is_valid_email(email):
             return api_error(status.HTTP_400_BAD_REQUEST, 'email invalid.')
 
-        if set(request.data) - {'email', 'name', 'is_disabled'}:
-            return api_error(status.HTTP_400_BAD_REQUEST, 'Only name and is_disabled can be updated.')
+        if set(request.data) - {'email', 'name'}:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Only name can be updated.')
 
         name = request.data.get('name')
         if 'name' in request.data:
@@ -3045,16 +3041,9 @@ class PortalExternalUsersView(APIView):
                 if not external_user:
                     return api_error(status.HTTP_404_NOT_FOUND, 'External user not found.')
 
-                is_disabled = request.data.get('is_disabled', external_user.is_disabled)
-                if not isinstance(is_disabled, bool):
-                    return api_error(status.HTTP_400_BAD_REQUEST, 'is_disabled invalid.')
-
                 if name is not None:
                     external_user.name = name
-                external_user.is_disabled = is_disabled
-                external_user.save(update_fields=['name', 'is_disabled'])
-                if is_disabled:
-                    clear_portal_external_login_code(project_uuid, email)
+                external_user.save(update_fields=['name'])
         except Exception:
             logger.exception('Failed to update portal external user: project=%s', project_uuid)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
@@ -3118,7 +3107,7 @@ class PortalExternalLoginSendCodeView(APIView):
         }
 
         ext_user_exists = ProjectExternalUser.objects.filter(
-            email=email, project_uuid=project_uuid, is_disabled=False
+            email=email, project_uuid=project_uuid
         ).exists()
         if not ext_user_exists:
             logger.info('Portal external login send-code skipped for non-invited email: project=%s email=%s',
@@ -3196,8 +3185,9 @@ class PortalExternalLoginVerifyCodeView(APIView):
         try:
             with transaction.atomic():
                 ext_user = ProjectExternalUser.objects.select_for_update().get(email=email, project_uuid=project_uuid)
-                if not ext_user.activate():
-                    return api_error(status.HTTP_403_FORBIDDEN, 'External user is disabled.')
+                if not ext_user.activated:
+                    ext_user.activated = True
+                    ext_user.save(update_fields=['activated'])
         except ProjectExternalUser.DoesNotExist:
             return api_error(status.HTTP_400_BAD_REQUEST, 'code invalid.')
 

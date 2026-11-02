@@ -867,7 +867,6 @@ class TestPortalCustomersView:
             'email': 'inactive@example.com',
             'name': '',
             'activated': False,
-            'is_disabled': False,
             'customer_id': customer.id,
             'customer_name': 'Acme',
         }]

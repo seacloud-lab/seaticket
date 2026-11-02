@@ -247,12 +247,12 @@ const PortalCustomersUsers = ({ title }) => {
     setUserSubmitting(false);
   }, []);
 
-  const saveUser = useCallback((name, isDisabled) => {
+  const saveUser = useCallback((name) => {
     const editor = userEditorRef.current;
     if (!editor || editor.isSubmitting) return;
     editor.isSubmitting = true;
     setUserSubmitting(true);
-    portalAPI.updateExternalUser(projectUuid, editor.user.email, { name, is_disabled: isDisabled }).then(() => {
+    portalAPI.updateExternalUser(projectUuid, editor.user.email, { name }).then(() => {
       if (!isMountedRef.current) return;
       loadUsers();
       if (userEditorRef.current !== editor) return;
