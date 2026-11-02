@@ -252,7 +252,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
                   {!readOnly && (
                     <div className="seaqa-row-color-rule-filters-footer pb-2">
                       <CustomizeButton
-                        className="popover-add-tool"
+                        className="popover-add-tool ml-2"
                         callBack={() => addRuleFilter(ruleIndex)}
                         name={gettext('Add condition')}
                       />

@@ -52,10 +52,10 @@ const Rename = ({
         onChange={onChange}
         onKeyDown={onKeyDown}
       />
-      <Button className="seaqa-rename-connection-title-cancel-btn" onClick={onToggle}>
+      <Button className="seaqa-rename-connection-title-cancel-btn flex-shrink-0" onClick={onToggle}>
         {gettext('Cancel')}
       </Button>
-      <Button className="seaqa-rename-connection-title-submit-btn" color="primary" disabled={disabled} onClick={handleModify}>
+      <Button className="seaqa-rename-connection-title-submit-btn flex-shrink-0" color="primary" disabled={disabled} onClick={handleModify}>
         {isSubmitting ? (<Loading />) : gettext('Submit')}
       </Button>
     </div>
