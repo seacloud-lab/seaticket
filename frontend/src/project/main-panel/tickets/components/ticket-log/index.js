@@ -3,7 +3,6 @@ import classnames from 'classnames';
 import { Icon, IconButton, Option, AsyncCollaborator } from '@/components';
 import { gettext } from '@/constants';
 import { useMetadata, useTags } from '@/project/hooks';
-import { CONNECTION_TYPE } from '@/project/main-panel/connections/constants';
 import { useCollaborators } from '@/sea-metadata';
 import Tag from '@/sea-metadata/components/tag';
 import { DELETED_OPTION_BACKGROUND_COLOR, PRIORITY_MAP, DELETED_OPTION } from '@/sea-metadata/constants';
@@ -105,101 +104,20 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
   const { statesData, substatesData, typesData, customersData } = useMetadata();
   const { tagsData } = useTags();
 
-  const renderGithubIssueRef = useCallback((activity = {}) => {
-    const { connection_id, issue_number, issue_url, title = '' } = activity;
-    if (!issue_number) return null;
-    if (issue_url) {
-      return (
-        <LinkedRecord
-          record={{ type: CONNECTION_TYPE.GITHUB_ISSUE, title, _id: issue_number, connection_id }}
-          projectUuid={projectUuid}
-          permission={permission}
-          type={CONNECTION_TYPE.GITHUB_ISSUE}
-        >
-          <>{title || '# ' + issue_number}</>
-        </LinkedRecord>
-      );
-    }
-    return <span>{title || '# ' + issue_number}</span>;
+  const renderLinkedRecordRef = useCallback(({ connection_id, connection_type, record_id, title = '' } = {}) => {
+    if (!record_id) return title ? <span>{title}</span> : null;
+    const label = title || `# ${record_id}`;
+    return (
+      <LinkedRecord
+        record={{ type: connection_type, title, _id: record_id, connection_id }}
+        projectUuid={projectUuid}
+        permission={permission}
+        type={connection_type}
+      >
+        {label}
+      </LinkedRecord>
+    );
   }, [projectUuid, permission]);
-
-  const renderDiscourseTopicRef = useCallback((activity = {}) => {
-    const { connection_id, topic_id, topic_url, title = '' } = activity;
-    if (!topic_id) return null;
-    if (topic_url) {
-      return (
-        <LinkedRecord
-          record={{ type: CONNECTION_TYPE.DISCOURSE_FORUM, title, _id: topic_id, connection_id }}
-          projectUuid={projectUuid}
-          permission={permission}
-          type={CONNECTION_TYPE.DISCOURSE_FORUM}
-        >
-          <>{title || '# ' + topic_id}</>
-        </LinkedRecord>
-      );
-    }
-    return <span>{title || '# ' + topic_id}</span>;
-  }, [projectUuid, permission]);
-
-  const renderDiscordThreadRef = useCallback(({ connection_id, record_id, thread_id, title = '', thread_url } = {}) => {
-    if (!thread_id) return null;
-    if (thread_url && record_id) {
-      return (
-        <LinkedRecord
-          record={{ type: CONNECTION_TYPE.DISCORD, title, _id: record_id, connection_id }}
-          projectUuid={projectUuid}
-          permission={permission}
-          type={CONNECTION_TYPE.DISCORD}
-        >
-          <>{title || '# ' + thread_id}</>
-        </LinkedRecord>
-      );
-    }
-    return <span>{title || '# ' + thread_id}</span>;
-  }, [projectUuid, permission]);
-
-  const renderEmailThreadRef = useCallback(({ connection_id, thread_id, title = '' } = {}) => {
-    if (!thread_id) return title ? <span>{title}</span> : null;
-    const label = title || `#${thread_id}`;
-    if (projectUuid && connection_id) {
-      return (
-        <LinkedRecord
-          permission={permission}
-          record={{ type: CONNECTION_TYPE.EMAIL, title, _id: thread_id, connection_id }}
-          projectUuid={projectUuid}
-          type={CONNECTION_TYPE.EMAIL}
-        >
-          {label}
-        </LinkedRecord>
-      );
-    }
-    if (title) {
-      return <span>{title}</span>;
-    }
-    if (thread_id) {
-      return <span>{label}</span>;
-    }
-    return null;
-  }, [projectUuid, permission]);
-
-  const renderTaskRef = useCallback(({ connection_id, connection_type, record_id, title = '' } = {}) => {
-    const taskId = record_id;
-    if (!taskId) return title ? <span>{title}</span> : null;
-    const label = title || `#${taskId}`;
-    if (projectUuid && connection_id) {
-      return (
-        <LinkedRecord
-          record={{ type: connection_type || CONNECTION_TYPE.GENERAL_TASK, title, _id: taskId, connection_id }}
-          projectUuid={projectUuid}
-          permission={permission}
-          type={connection_type || CONNECTION_TYPE.GENERAL_TASK}
-        >
-          {label}
-        </LinkedRecord>
-      );
-    }
-    return <span>{label}</span>;
-  }, [permission, projectUuid]);
 
   const renderActivityMessage = useCallback(() => {
     const { activity_type, old_value, new_value, thread_id } = activity;
@@ -611,13 +529,13 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
       case LOG_TYPE.GENERAL_TASK_ADDED:
       case LOG_TYPE.JIRA_ISSUE_ADDED:
       case LOG_TYPE.LINEAR_ISSUE_ADDED: {
-        const ref = renderTaskRef(activity);
+        const ref = renderLinkedRecordRef(activity);
         return (
           <span>{gettext('Task')}{ref ? <>{' '}{ref}</> : null}{' '}{gettext('added')}</span>
         );
       }
       case LOG_TYPE.GENERAL_TASK_UPDATED: {
-        const ref = renderTaskRef(activity);
+        const ref = renderLinkedRecordRef(activity);
         const taskUserMap = (activity.related_users || []).reduce((map, user) => {
           if (user?.email && user?.name) {
             map[user.email] = user.name;
@@ -638,15 +556,15 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
 
       // GitHub issue
       case LOG_TYPE.GITHUB_ISSUE_CLOSED: {
-        const ref = renderGithubIssueRef(activity);
+        const ref = renderLinkedRecordRef(activity);
         return <span>{gettext('GitHub issue')}{ref ? <>{' '}{ref}</> : null}{' '}{gettext('closed')}</span>;
       }
       case LOG_TYPE.GITHUB_ISSUE_REOPENED: {
-        const ref = renderGithubIssueRef(activity);
+        const ref = renderLinkedRecordRef(activity);
         return <span>{gettext('GitHub issue')}{ref ? <>{' '}{ref}</> : null}{' '}{gettext('reopened')}</span>;
       }
       case LOG_TYPE.GITHUB_ISSUE_UPDATED: {
-        const ref = renderGithubIssueRef(activity);
+        const ref = renderLinkedRecordRef(activity);
         const changeNodes = renderChangeNodes(old_value, new_value, githubLabelMap);
         if (changeNodes.length === 0) {
           return <span>{gettext('updated GitHub issue')}{ref ? <>{' '}{ref}</> : null}</span>;
@@ -659,7 +577,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
         );
       }
       case LOG_TYPE.GITHUB_ISSUE_COMMENT_ADDED: {
-        const ref = renderGithubIssueRef(activity);
+        const ref = renderLinkedRecordRef(activity);
         const isLegacyNumber = typeof new_value === 'number';
         const isObjectValue = !isLegacyNumber && new_value && typeof new_value === 'object';
         const count = isLegacyNumber ? new_value : (isObjectValue ? (new_value.count || 1) : 1);
@@ -675,7 +593,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
       }
 
       case LOG_TYPE.DISCOURSE_TOPIC_UPDATED: {
-        const ref = renderDiscourseTopicRef(activity);
+        const ref = renderLinkedRecordRef(activity);
         const changeNodes = renderChangeNodes(old_value, new_value, discourseLabelMap);
         if (changeNodes.length === 0) {
           return <span>{gettext('updated Discourse topic')}{ref ? <>{' '}{ref}</> : null}</span>;
@@ -688,7 +606,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
         );
       }
       case LOG_TYPE.DISCOURSE_TOPIC_COMMENT_ADDED: {
-        const ref = renderDiscourseTopicRef(activity);
+        const ref = renderLinkedRecordRef(activity);
         const isLegacyNumber = typeof new_value === 'number';
         const isObjectValue = !isLegacyNumber && new_value && typeof new_value === 'object';
         const count = isLegacyNumber ? new_value : (isObjectValue ? (new_value.count || 1) : 1);
@@ -703,7 +621,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
         );
       }
       case LOG_TYPE.DISCORD_THREAD_UPDATED: {
-        const ref = renderDiscordThreadRef(activity);
+        const ref = renderLinkedRecordRef(activity);
         const changeNodes = renderChangeNodes(old_value, new_value, discordLabelMap);
         if (changeNodes.length === 0) {
           return <span>{gettext('updated Discord thread')}{ref ? <>{' '}{ref}</> : null}</span>;
@@ -716,7 +634,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
         );
       }
       case LOG_TYPE.DISCORD_THREAD_MESSAGE_ADDED: {
-        const ref = renderDiscordThreadRef(activity);
+        const ref = renderLinkedRecordRef(activity);
         const isLegacyNumber = typeof new_value === 'number';
         const isObjectValue = !isLegacyNumber && new_value && typeof new_value === 'object';
         const count = isLegacyNumber ? new_value : (isObjectValue ? (new_value.count || 1) : 1);
@@ -735,7 +653,7 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
         return (
           <span>
             {gettext('Email thread')}
-            {thread_id && <>{' '}{renderEmailThreadRef(activity)}</>}
+            {thread_id && <>{' '}{renderLinkedRecordRef(activity)}</>}
             {' '}{count}{' '}{count === 1 ? gettext('message') : gettext('messages')}{' '}{gettext('added')}
           </span>
         );
@@ -744,8 +662,8 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
         return <span>{gettext('made changes')}</span>;
     }
   }, [
-    activity, collaborators, collaboratorsCache, customersData, queryUser, statesData, tagsData, substatesData, typesData, updateCollaboratorsCache,
-    renderTaskRef, renderDiscordThreadRef, renderDiscourseTopicRef, renderEmailThreadRef, renderGithubIssueRef,
+    activity, collaborators, collaboratorsCache, customersData, queryUser, statesData, tagsData, substatesData,
+    typesData, updateCollaboratorsCache, renderLinkedRecordRef,
   ]);
 
   const iconSymbol = LOG_ICONS[activity.activity_type] || 'info';
