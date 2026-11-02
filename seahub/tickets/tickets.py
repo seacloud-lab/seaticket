@@ -1945,20 +1945,25 @@ class TicketActivitiesAPIView(APIView):
                 'creator': a.get('creator'),
                 'created_time': a.get('created_time'),
                 'record_id': record_id,
+                'connection_type': detail.get('connection_type') or None
             }
             if activity_type in GITHUB_ISSUE_ACTIVITY_TYPES:
+                activity_item['connection_type'] = detail.get('connection_type') or ConnectionType.GITHUB_ISSUE.value
                 activity_item['issue_number'] = issue_number
                 activity_item['issue_url'] = issue_url
                 activity_item['title'] = issue_title
             elif activity_type in DISCOURSE_TOPIC_ACTIVITY_TYPES:
+                activity_item['connection_type'] = detail.get('connection_type') or ConnectionType.DISCOURSE_FORUM.value
                 activity_item['topic_id'] = topic_id
                 activity_item['topic_url'] = topic_url
                 activity_item['title'] = topic_title
             elif activity_type in DISCORD_THREAD_ACTIVITY_TYPES:
+                activity_item['connection_type'] = detail.get('connection_type') or ConnectionType.DISCORD.value
                 activity_item['thread_id'] = thread_id
                 activity_item['title'] = thread_title
                 activity_item['thread_url'] = thread_url
             elif activity_type in EMAIL_ACTIVITY_TYPES:
+                activity_item['connection_type'] = detail.get('connection_type') or ConnectionType.EMAIL.value
                 activity_item['thread_id'] = thread_id
                 activity_item['title'] = thread_title
             elif activity_type in TASK_ACTIVITY_TYPES:
