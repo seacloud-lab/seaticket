@@ -27,9 +27,10 @@ export const buildPresetRange = (preset, baseStartDate, baseEndDate) => {
   }
 
   const days = Number.parseInt(preset, 10);
+  const endDate = end.format(DATE_FORMAT);
   return {
     startDate: end.subtract(days - 1, 'day').format(DATE_FORMAT),
-    endDate: end.format(DATE_FORMAT),
+    endDate,
   };
 };
 
