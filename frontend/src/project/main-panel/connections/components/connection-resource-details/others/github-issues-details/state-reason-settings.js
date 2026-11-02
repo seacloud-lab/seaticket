@@ -27,7 +27,7 @@ const StateReasonSettings = ({
     const stateOptions = getColumnOptions(stateColumn);
     const stateOption = getOption(stateOptions, state);
     const stateReasonOptions = getColumnOptions(column).map(o => ({ ...o, value: o.id, display_name: GITHUB_STATE_REASON_NAME_MAP[o.name] }));
-    if (stateOption.name === 'open') return stateReasonOptions.slice(3);
+    if (stateOption?.name === 'open') return stateReasonOptions.slice(3);
     return stateReasonOptions.slice(0, 3);
   }, [state, stateColumn, column]);
 
