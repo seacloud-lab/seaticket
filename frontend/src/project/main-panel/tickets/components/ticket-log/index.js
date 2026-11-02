@@ -105,99 +105,76 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
   const { statesData, substatesData, typesData, customersData } = useMetadata();
   const { tagsData } = useTags();
 
-  const renderGithubIssueRef = useCallback((activity = {}) => {
-    const { connection_id, record_id, issue_number, issue_url, title = '' } = activity;
+  const renderGithubIssueRef = useCallback(({ connection_id, record_id, title = '' } = {}) => {
     if (!record_id) return title ? <span>{title}</span> : null;
-    if (issue_url) {
-      return (
-        <LinkedRecord
-          record={{ type: CONNECTION_TYPE.GITHUB_ISSUE, title, _id: record_id, connection_id }}
-          projectUuid={projectUuid}
-          permission={permission}
-          type={CONNECTION_TYPE.GITHUB_ISSUE}
-        >
-          <>{title || '# ' + issue_number}</>
-        </LinkedRecord>
-      );
-    }
-    return <span>{title || '# ' + issue_number}</span>;
+    return (
+      <LinkedRecord
+        record={{ type: CONNECTION_TYPE.GITHUB_ISSUE, title, _id: record_id, connection_id }}
+        projectUuid={projectUuid}
+        permission={permission}
+        type={CONNECTION_TYPE.GITHUB_ISSUE}
+      >
+        <>{title || '# ' + record_id}</>
+      </LinkedRecord>
+    );
   }, [projectUuid, permission]);
 
-  const renderDiscourseTopicRef = useCallback((activity = {}) => {
-    const { connection_id, record_id, topic_id, topic_url, title = '' } = activity;
+  const renderDiscourseTopicRef = useCallback(({ connection_id, record_id, title = '' }) => {
     if (!record_id) return title ? <span>{title}</span> : null;
-    if (topic_url) {
-      return (
-        <LinkedRecord
-          record={{ type: CONNECTION_TYPE.DISCOURSE_FORUM, title, _id: record_id, connection_id }}
-          projectUuid={projectUuid}
-          permission={permission}
-          type={CONNECTION_TYPE.DISCOURSE_FORUM}
-        >
-          <>{title || '# ' + topic_id}</>
-        </LinkedRecord>
-      );
-    }
-    return <span>{title || '# ' + topic_id}</span>;
+    return (
+      <LinkedRecord
+        record={{ type: CONNECTION_TYPE.DISCOURSE_FORUM, title, _id: record_id, connection_id }}
+        projectUuid={projectUuid}
+        permission={permission}
+        type={CONNECTION_TYPE.DISCOURSE_FORUM}
+      >
+        <>{title || '# ' + record_id}</>
+      </LinkedRecord>
+    );
   }, [projectUuid, permission]);
 
-  const renderDiscordThreadRef = useCallback(({ connection_id, record_id, thread_id, title = '', thread_url } = {}) => {
+  const renderDiscordThreadRef = useCallback(({ connection_id, record_id, title = '' } = {}) => {
     if (!record_id) return title ? <span>{title}</span> : null;
-    if (thread_url && record_id) {
-      return (
-        <LinkedRecord
-          record={{ type: CONNECTION_TYPE.DISCORD, title, _id: record_id, connection_id }}
-          projectUuid={projectUuid}
-          permission={permission}
-          type={CONNECTION_TYPE.DISCORD}
-        >
-          <>{title || '# ' + thread_id}</>
-        </LinkedRecord>
-      );
-    }
-    return <span>{title || '# ' + thread_id}</span>;
+    return (
+      <LinkedRecord
+        record={{ type: CONNECTION_TYPE.DISCORD, title, _id: record_id, connection_id }}
+        projectUuid={projectUuid}
+        permission={permission}
+        type={CONNECTION_TYPE.DISCORD}
+      >
+        <>{title || '# ' + record_id}</>
+      </LinkedRecord>
+    );
   }, [projectUuid, permission]);
 
-  const renderEmailThreadRef = useCallback(({ connection_id, record_id, thread_id, title = '' } = {}) => {
-    if (!record_id) return title ? <span>{title}</span> : null;
-    const label = title || `#${thread_id}`;
-    if (projectUuid && connection_id) {
-      return (
-        <LinkedRecord
-          permission={permission}
-          record={{ type: CONNECTION_TYPE.EMAIL, title, _id: record_id, connection_id }}
-          projectUuid={projectUuid}
-          type={CONNECTION_TYPE.EMAIL}
-        >
-          {label}
-        </LinkedRecord>
-      );
-    }
-    if (title) {
-      return <span>{title}</span>;
-    }
-    if (thread_id) {
-      return <span>{label}</span>;
-    }
-    return null;
-  }, [projectUuid, permission]);
-
-  const renderTaskRef = useCallback(({ connection_id, connection_type, record_id, title = '' } = {}) => {
+  const renderEmailThreadRef = useCallback(({ connection_id, record_id, title = '' } = {}) => {
     if (!record_id) return title ? <span>{title}</span> : null;
     const label = title || `# ${record_id}`;
-    if (projectUuid && connection_id) {
-      return (
-        <LinkedRecord
-          record={{ type: connection_type || CONNECTION_TYPE.GENERAL_TASK, title, _id: record_id, connection_id }}
-          projectUuid={projectUuid}
-          permission={permission}
-          type={connection_type || CONNECTION_TYPE.GENERAL_TASK}
-        >
-          {label}
-        </LinkedRecord>
-      );
-    }
-    return <span>{label}</span>;
+    return (
+      <LinkedRecord
+        permission={permission}
+        record={{ type: CONNECTION_TYPE.EMAIL, title, _id: record_id, connection_id }}
+        projectUuid={projectUuid}
+        type={CONNECTION_TYPE.EMAIL}
+      >
+        {label}
+      </LinkedRecord>
+    );
+  }, [projectUuid, permission]);
+
+  const renderTaskRef = useCallback(({ connection_id, record_id, title = '' } = {}) => {
+    if (!record_id) return title ? <span>{title}</span> : null;
+    const label = title || `# ${record_id}`;
+    return (
+      <LinkedRecord
+        record={{ type: CONNECTION_TYPE.GENERAL_TASK, title, _id: record_id, connection_id }}
+        projectUuid={projectUuid}
+        permission={permission}
+        type={CONNECTION_TYPE.GENERAL_TASK}
+      >
+        {label}
+      </LinkedRecord>
+    );
   }, [permission, projectUuid]);
 
   const renderActivityMessage = useCallback(() => {
