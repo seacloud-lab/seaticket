@@ -772,6 +772,7 @@ CREATE TABLE `portal_chat_sessions` (
   `username` VARCHAR(255) NOT NULL,
   `session_name` VARCHAR(255) NOT NULL,
   `input_tokens` INT NOT NULL DEFAULT 0,
+  `cached_tokens` INT NOT NULL DEFAULT 0,
   `output_tokens` INT NOT NULL DEFAULT 0,
   `credit_used` DOUBLE NOT NULL DEFAULT 0,
   `created_at` DATETIME(6) NOT NULL,
