@@ -1,8 +1,8 @@
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
-import AllConnections from './index';
+import AllConnections from '@/project/main-panel/connections/view/all-connections';
 
-jest.mock('./index.css', () => ({}));
+jest.mock('@/project/main-panel/connections/view/all-connections/index.css', () => ({}));
 jest.mock('@/constants', () => ({ gettext: text => text }));
 jest.mock('@/project/constants', () => ({ BAR_TYPE: { CONNECTION: 'connection' } }));
 jest.mock('@/project/api', () => ({ connectionsAPI: { queryConnectionsStatus: jest.fn() } }));
@@ -30,7 +30,7 @@ jest.mock('@/components', () => ({
     </div>
   ),
 }));
-jest.mock('../../hooks', () => {
+jest.mock('@/project/main-panel/connections/hooks', () => {
   global.window.app = { pageOptions: { isProjectAdmin: false }, config: { mediaUrl: '/media/' } };
   return {
     useConnections: () => ({
@@ -47,15 +47,15 @@ jest.mock('../../hooks', () => {
     useConnectionsPage: () => ({ togglePageSlugId: jest.fn() }),
   };
 });
-jest.mock('../../utils', () => ({ isConnectionSyncCompleted: () => true, isConnectionFirstSync: () => false }));
-jest.mock('../../components/cell-formatter', () => () => null);
-jest.mock('../../components/configure-webhook-dialog', () => () => null);
-jest.mock('../../components/connection-logs-dialog', () => () => null);
-jest.mock('../../components/connection-status-dialog', () => () => null);
-jest.mock('../../components/connection-statistics-dialog', () => ({ connection, onToggle }) => (
+jest.mock('@/project/main-panel/connections/utils', () => ({ isConnectionSyncCompleted: () => true, isConnectionFirstSync: () => false }));
+jest.mock('@/project/main-panel/connections/components/cell-formatter', () => () => null);
+jest.mock('@/project/main-panel/connections/components/configure-webhook-dialog', () => () => null);
+jest.mock('@/project/main-panel/connections/components/connection-logs-dialog', () => () => null);
+jest.mock('@/project/main-panel/connections/components/connection-status-dialog', () => () => null);
+jest.mock('@/project/main-panel/connections/components/connection-statistics-dialog', () => ({ connection, onToggle }) => (
   <div role="dialog">{`Statistics for ${connection.id}`}<button onClick={onToggle}>Close</button></div>
 ));
-jest.mock('../../constants', () => ({
+jest.mock('@/project/main-panel/connections/constants', () => ({
   CONNECTION_FIELD_TYPE: {},
   CONNECTION_SYNC_STATUS: {},
   CONNECTION_TYPE: { GITHUB_ISSUE: 'github_issue' },

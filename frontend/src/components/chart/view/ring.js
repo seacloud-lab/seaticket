@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useMemo, useRef } from 'react';
 import * as d3 from 'd3';
 import { STYLE_COLORS, DEFAULT_LABEL_FONT_SIZE, DEFAULT_LABEL_COLOR } from '../constants';
 import { resolveSideOverlap } from '../utils';
@@ -6,11 +6,16 @@ import useChartDraw from './use-chart-redraw';
 
 import './index.css';
 
-const Ring = ({ data }) => {
+const Ring = ({ data, variant = 'ring', ariaLabel }) => {
   const ref = useRef(null);
+  const options = useMemo(() => ({ insertPadding: variant === 'pie' ? 0 : 30 }), [variant]);
 
   const drawChart = (chart, container, data = []) => {
     const { width: chartWidth, height: chartHeight, insertPadding } = container.chartBoundingClientRect;
+    const isPie = variant === 'pie';
+    const total = d3.sum(data, item => Math.max(0, item.value));
+    const radius = Math.min(chartWidth, chartHeight) / 2;
+    chart.attr('role', 'img').attr('aria-label', ariaLabel);
 
     // Color
     const colorDomain = new Set(data.map(d => d.name));
@@ -25,10 +30,21 @@ const Ring = ({ data }) => {
       .padAngle(0)
       .value(d => d.value);
 
-    const arcs = pie(data);
+    const arcs = pie(data.filter(item => item.value > 0));
     const arc = d3.arc()
-      .innerRadius(Math.min(chartWidth, chartHeight) / 2 * 0.65)
-      .outerRadius(Math.min(chartWidth, chartHeight) / 2 * 0.45);
+      .innerRadius(isPie ? 0 : radius * 0.65)
+      .outerRadius(radius * (isPie ? 0.88 : 0.45));
+
+    if (arcs.length === 0) {
+      if (isPie) {
+        chart.append('circle')
+          .attr('class', 'chart-pie-empty')
+          .attr('cx', chartWidth / 2)
+          .attr('cy', chartHeight / 2)
+          .attr('r', radius * 0.88);
+      }
+      return;
+    }
 
     // Draw Ring
     chart.append('g')
@@ -37,10 +53,41 @@ const Ring = ({ data }) => {
       .data(arcs)
       .join('path')
       .attr('opacity', 1)
-      .attr('fill', d => color(d.data.name))
+      .attr('class', isPie ? 'chart-slice' : null)
+      .attr('fill', d => d.data.color || color(d.data.name))
       .attr('d', arc)
       .attr('data-groupName', d => d.data.name)
+      .attr('aria-label', d => `${d.data.name}: ${d.data.value.toLocaleString()} (${(d.data.value / total * 100).toFixed(1)}%)`)
       .call(g => {
+        g.append('title')
+          .text(d => `${d.data.name}: ${d.data.value.toLocaleString()} (${(d.data.value / total * 100).toFixed(1)}%)`);
+        if (isPie) {
+          d3.select(g.node().parentNode).attr('transform', `translate(${chartWidth / 2}, ${chartHeight / 2})`);
+          const labelRadius = radius * 0.88 * 0.58;
+          const labelPosition = d3.arc().innerRadius(labelRadius).outerRadius(labelRadius);
+          const labelBounds = [];
+          const labels = arcs.map(item => {
+            const text = `${(item.data.value / total * 100).toFixed(1)}%`;
+            const [x, y] = labelPosition.centroid(item);
+            const halfWidth = text.length * 4 + 2;
+            const bounds = { left: x - halfWidth, right: x + halfWidth, top: y - 10, bottom: y + 10 };
+            const showLabel = item.endAngle - item.startAngle >= 0.2 && !labelBounds.some(other =>
+              bounds.left < other.right && bounds.right > other.left && bounds.top < other.bottom && bounds.bottom > other.top
+            );
+            if (showLabel) labelBounds.push(bounds);
+            return { text, x, y, showLabel };
+          });
+          d3.select(g.node().parentNode).selectAll('.chart-percentage')
+            .data(labels.filter(item => item.showLabel))
+            .join('text')
+            .attr('class', 'chart-percentage')
+            .attr('x', item => item.x)
+            .attr('y', item => item.y)
+            .attr('dy', '0.35em')
+            .attr('text-anchor', 'middle')
+            .text(item => item.text);
+          return;
+        }
         const { width, height } = g.node().parentNode?.getBoundingClientRect() || { width: 0, height: 0 };
         const left = width / 2 + insertPadding;
         const top = height / 2 + insertPadding;
@@ -115,12 +162,13 @@ const Ring = ({ data }) => {
     target: ref,
     data,
     chartId: 'ring',
-    options: { insertPadding: 30 },
+    options,
     draw: drawChart,
+    drawEmpty: true,
   });
 
   return (
-    <div className="chart-svg-wrapper flex-1" ref={ref}></div>
+    <div className={`chart-svg-wrapper flex-1${variant === 'pie' ? ' chart-pie' : ''}`} ref={ref}></div>
   );
 };
 

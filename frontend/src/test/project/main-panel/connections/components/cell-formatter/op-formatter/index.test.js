@@ -1,10 +1,10 @@
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
-import OpFormatter from './index';
+import OpFormatter from '@/project/main-panel/connections/components/cell-formatter/op-formatter';
 
-jest.mock('./index.css', () => ({}));
+jest.mock('@/project/main-panel/connections/components/cell-formatter/op-formatter/index.css', () => ({}));
 jest.mock('@/constants', () => ({ gettext: text => text }));
-jest.mock('../../../constants', () => ({
+jest.mock('@/project/main-panel/connections/constants', () => ({
   CONNECTION_TYPE: { GITHUB_ISSUE: 'github_issue', DISCOURSE_FORUM: 'discourse_forum' },
 }));
 jest.mock('reactstrap', () => ({

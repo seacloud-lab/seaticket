@@ -42,7 +42,7 @@ const ConnectionStatisticsDialog = ({ projectUuid, connection, onToggle }) => {
     content = <CenteredLoading />;
   } else if (errorMessage) {
     content = (
-      <div className="connection-statistics-error" role="alert">
+      <div className="connection-statistics-dialog__error" role="alert">
         <div className="text-danger">{errorMessage}</div>
         <Button color="secondary" onClick={() => setRetryCount(count => count + 1)}>
           <Icon symbol="refresh" className="mr-2" />
@@ -53,18 +53,18 @@ const ConnectionStatisticsDialog = ({ projectUuid, connection, onToggle }) => {
   } else {
     content = (
       <>
-        {result.total === 0 && <div className="connection-statistics-empty">{gettext('No issues in the past 12 months.')}</div>}
-        <div className="connection-statistics-grid">
-          <section className="connection-statistics-panel">
-            <h3>{gettext('{name} issue types').replace('{name}', connection.name)}</h3>
+        {result.total === 0 && <div className="connection-statistics-dialog__empty">{gettext('No issues in the past 12 months.')}</div>}
+        <div className="connection-statistics-dialog__grid">
+          <section className="connection-statistics-dialog__panel">
+            <h3 className="connection-statistics-dialog__panel-title">{gettext('{name} issue types').replace('{name}', connection.name)}</h3>
             <StatisticsPieChart series={result.series} />
           </section>
-          <section className="connection-statistics-panel">
-            <h3>{gettext('{name} monthly issue count').replace('{name}', connection.name)}</h3>
+          <section className="connection-statistics-dialog__panel">
+            <h3 className="connection-statistics-dialog__panel-title">{gettext('{name} monthly issue count').replace('{name}', connection.name)}</h3>
             <StatisticsChart months={result.months} series={monthlyTotals} isTotal={true} />
           </section>
-          <section className="connection-statistics-panel connection-statistics-panel-wide">
-            <h3>{gettext('{name} issues by type').replace('{name}', connection.name)}</h3>
+          <section className="connection-statistics-dialog__panel connection-statistics-dialog__panel--wide">
+            <h3 className="connection-statistics-dialog__panel-title">{gettext('{name} issues by type').replace('{name}', connection.name)}</h3>
             <StatisticsChart months={result.months} series={result.series} />
           </section>
         </div>
@@ -76,7 +76,7 @@ const ConnectionStatisticsDialog = ({ projectUuid, connection, onToggle }) => {
     <Modal isOpen={true} toggle={onToggle} className="connection-statistics-dialog">
       <ModalHeader toggle={onToggle}>{gettext('Statistics')}</ModalHeader>
       <ModalBody>
-        <div className="connection-statistics-content">{content}</div>
+        <div className="connection-statistics-dialog__content">{content}</div>
       </ModalBody>
     </Modal>
   );

@@ -2,8 +2,8 @@ import * as d3 from 'd3';
 
 export const initChart = (container, chartRef, id, initConfig = {}) => {
   const { width: containerWidth, height: containerHeight } = container.current.getBoundingClientRect();
-  const { marginLeft = 0, marginRight = 0, marginBottom = 0 } = initConfig;
-  const width = containerWidth - marginLeft - marginRight;
+  const { marginLeft = 0, marginRight = 0, marginBottom = 0, minWidth = 0 } = initConfig;
+  const width = Math.max(minWidth, containerWidth - marginLeft - marginRight);
   const height = containerHeight - marginBottom;
 
   const chart = d3.create('svg')

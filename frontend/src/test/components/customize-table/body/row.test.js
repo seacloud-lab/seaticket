@@ -1,6 +1,6 @@
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react';
-import Row from './row';
+import Row from '@/components/customize-table/body/row';
 
 it('passes the selected record to an optional row context-menu callback', () => {
   const row = { id: 8 };

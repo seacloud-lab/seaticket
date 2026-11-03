@@ -1,9 +1,9 @@
 import React from 'react';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { connectionsAPI } from '@/project/api';
-import ConnectionStatisticsDialog from './index';
+import ConnectionStatisticsDialog from '@/project/main-panel/connections/components/connection-statistics-dialog';
 
-jest.mock('./index.css', () => ({}));
+jest.mock('@/project/main-panel/connections/components/connection-statistics-dialog/index.css', () => ({}));
 jest.mock('@/constants', () => ({ gettext: text => text }));
 jest.mock('@/project/api', () => ({
   connectionsAPI: { getConnectionStatistics: jest.fn() },
@@ -21,12 +21,12 @@ jest.mock('reactstrap', () => ({
   Modal: ({ children }) => <div role="dialog">{children}</div>,
   ModalBody: ({ children }) => <div>{children}</div>,
 }));
-jest.mock('./chart', () => ({ months, series, isTotal }) => (
+jest.mock('@/project/main-panel/connections/components/connection-statistics-dialog/chart', () => ({ months, series, isTotal }) => (
   <div data-testid={isTotal ? 'monthly-total-chart' : 'chart'}>
     {months.join(',')} / {JSON.stringify(series)}
   </div>
 ));
-jest.mock('./pie-chart', () => ({ series }) => <div data-testid="pie-chart">{JSON.stringify(series)}</div>);
+jest.mock('@/project/main-panel/connections/components/connection-statistics-dialog/pie-chart', () => ({ series }) => <div data-testid="pie-chart">{JSON.stringify(series)}</div>);
 
 const connection = { id: 7, name: 'GitHub Support' };
 const result = {
