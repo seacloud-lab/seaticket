@@ -49,6 +49,7 @@ const getPhaseStatistics = (actions = []) => {
   let totalOutputTokens = 0;
   let totalTokens = 0;
   let totalDurationMs = 0;
+  let totalCredits = 0;
 
   actions.forEach((action, index) => {
     const stats = parseStatistics(action.statistics);
@@ -57,6 +58,7 @@ const getPhaseStatistics = (actions = []) => {
     const outputTokens = stats?.output_tokens || 0;
     const stepTotalTokens = stats?.total_tokens || 0;
     const durationMs = stats?.duration_ms || 0;
+    const credits = Number.isFinite(stats?.credit_used) ? stats.credit_used : null;
     const step = getActionStepIndex(action);
 
     stepStats.push({
@@ -68,6 +70,7 @@ const getPhaseStatistics = (actions = []) => {
       outputTokens,
       totalTokens: stepTotalTokens,
       durationSec: formatDuration(durationMs),
+      credits,
     });
 
     totalInputTokens += inputTokens;
@@ -75,6 +78,7 @@ const getPhaseStatistics = (actions = []) => {
     totalOutputTokens += outputTokens;
     totalTokens += stepTotalTokens;
     totalDurationMs += durationMs;
+    totalCredits = totalCredits !== null && credits !== null ? totalCredits + credits : null;
   });
 
   return {
@@ -86,6 +90,7 @@ const getPhaseStatistics = (actions = []) => {
       totalTokens,
       durationMs: totalDurationMs,
       durationSec: formatDuration(totalDurationMs),
+      credits: totalCredits,
     },
   };
 };
@@ -166,6 +171,7 @@ const RunStatisticsDialog = ({ run: initialRun, runId, onToggle }) => {
                       <th>{gettext('Cached tokens')}</th>
                       <th>{gettext('Output tokens')}</th>
                       <th>{gettext('Total tokens')}</th>
+                      <th>{gettext('Credits')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -178,6 +184,7 @@ const RunStatisticsDialog = ({ run: initialRun, runId, onToggle }) => {
                         <td>{step.cachedTokens}</td>
                         <td>{step.outputTokens}</td>
                         <td>{step.totalTokens}</td>
+                        <td>{step.credits === null ? '—' : step.credits.toFixed(2)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -189,6 +196,7 @@ const RunStatisticsDialog = ({ run: initialRun, runId, onToggle }) => {
                       <td><strong>{totals.cachedTokens}</strong></td>
                       <td><strong>{totals.outputTokens}</strong></td>
                       <td><strong>{totals.totalTokens}</strong></td>
+                      <td><strong>{totals.credits === null ? '—' : totals.credits.toFixed(2)}</strong></td>
                     </tr>
                   </tfoot>
                 </table>
