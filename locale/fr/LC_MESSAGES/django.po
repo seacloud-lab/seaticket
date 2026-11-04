@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: seaqa-web\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-04 15:45+0800\n"
-"PO-Revision-Date: 2026-11-04 07:47\n"
+"PO-Revision-Date: 2026-11-04 09:14\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr\n"
@@ -1205,7 +1205,7 @@ msgstr "Ticket #%(ticket_id)s n'a pas d'affecté"
 #: seahub/project/agent/action_executor.py:1982
 #, python-format
 msgid "Notification sent to %(count)s assignee(s)."
-msgstr "Notification envoyée à %(count)s affecté(s)"
+msgstr "Notification envoyée à %(count)s affecté(s)."
 
 #: seahub/project/agent/action_executor.py:1999
 #, python-format
@@ -1220,7 +1220,7 @@ msgstr "Échec de la fermeture des issues GitHub liés : %(error)s"
 #: seahub/project/agent/action_executor.py:2041
 #, python-format
 msgid "Ticket #%(ticket_id)s closed."
-msgstr "Ticket #%(ticket_id)s a été fermé"
+msgstr "Ticket #%(ticket_id)s a été fermé."
 
 #: seahub/project/views.py:110 seahub/project/views.py:114
 #: seahub/project/views.py:142 seahub/project/views.py:146
@@ -1884,7 +1884,7 @@ msgstr "Le compte %(user)s a été gelé en raison d'un nombre excessif d'échec
 #: seahub/templates/sysadmin/user_reset_email.html:12
 #, python-format
 msgid "Your password on %(site_name)s has been reset. Now it is %(password)s. Please change it as soon as possible. "
-msgstr "Votre mot de passe sur %(site_name)s a été réinitialisé. C'est maintenant %(password)s. Veuillez le changer dès que possible."
+msgstr "Votre mot de passe sur %(site_name)s a été réinitialisé. C'est maintenant %(password)s. Veuillez le changer dès que possible. "
 
 #: seahub/two_factor/forms.py:39 seahub/two_factor/forms.py:63
 #: seahub/two_factor/forms.py:167 seahub/two_factor/forms.py:173

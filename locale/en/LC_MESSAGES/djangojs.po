@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: seahub\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-04 15:45+0800\n"
+"POT-Creation-Date: 2026-11-04 17:08+0800\n"
 "PO-Revision-Date: 2015-05-09 05:28+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: English (http://app.transifex.com/haiwen/seahub/language/"
@@ -1946,7 +1946,7 @@ msgstr ""
 
 #: frontend/src/org-admin/users/add-user-dialog.js:109
 #: frontend/src/org-admin/users/invite-user-dialog.js:54
-#: frontend/src/portal/main-panel/my-emails/index.js:225
+#: frontend/src/portal/main-panel/my-emails/index.js:276
 #: frontend/src/portal/main-panel/user-management.js:278
 #: frontend/src/portal/main-panel/user-management/invite-users-page.js:44
 #: frontend/src/portal/main-panel/user-management/invite-users-page.js:70
@@ -2150,7 +2150,7 @@ msgid "Chat"
 msgstr ""
 
 #: frontend/src/portal/constants.js:42
-#: frontend/src/portal/main-panel/my-emails/index.js:226
+#: frontend/src/portal/main-panel/my-emails/index.js:277
 #: frontend/src/project/main-panel/connections/constants.js:510
 msgid "Emails"
 msgstr ""
@@ -2342,7 +2342,7 @@ msgid "Last modifier"
 msgstr ""
 
 #: frontend/src/portal/main-panel/knowledge-base/constants.js:51
-#: frontend/src/portal/main-panel/my-emails/index.js:47
+#: frontend/src/portal/main-panel/my-emails/index.js:91
 #: frontend/src/project/main-panel/connections/constants.js:695
 #: frontend/src/project/main-panel/connections/constants.js:1076
 #: frontend/src/project/main-panel/knowledge-base/constants.js:52
@@ -2402,16 +2402,16 @@ msgstr ""
 msgid "All emails"
 msgstr ""
 
-#: frontend/src/portal/main-panel/my-emails/index.js:42
+#: frontend/src/portal/main-panel/my-emails/index.js:45
 #: frontend/src/project/main-panel/connections/constants.js:894
 msgid "Subject"
 msgstr ""
 
-#: frontend/src/portal/main-panel/my-emails/index.js:43
+#: frontend/src/portal/main-panel/my-emails/index.js:55
 msgid "Ticket #"
 msgstr ""
 
-#: frontend/src/portal/main-panel/my-emails/index.js:44
+#: frontend/src/portal/main-panel/my-emails/index.js:64
 #: frontend/src/project/main-panel/agent/components/run-log-details/run-details/action/suggestion-action/index.js:78
 #: frontend/src/project/main-panel/analyze/components/settings-panel/index.js:29
 #: frontend/src/project/main-panel/analyze/index.js:90
@@ -2425,7 +2425,7 @@ msgstr ""
 msgid "State"
 msgstr ""
 
-#: frontend/src/portal/main-panel/my-emails/index.js:45
+#: frontend/src/portal/main-panel/my-emails/index.js:73
 #: frontend/src/project/main-panel/agent/components/run-log-details/suggestion-detail-panel/ticket-detail/index.js:100
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/others/general-task-details/index.js:67
 #: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:166
@@ -2440,7 +2440,7 @@ msgstr ""
 msgid "Assignees"
 msgstr ""
 
-#: frontend/src/portal/main-panel/my-emails/index.js:46
+#: frontend/src/portal/main-panel/my-emails/index.js:82
 #: frontend/src/project/main-panel/connections/constants.js:826
 #: frontend/src/project/main-panel/connections/constants.js:1031
 #: frontend/src/project/main-panel/connections/constants.js:1067
@@ -2450,15 +2450,21 @@ msgstr ""
 msgid "Due date"
 msgstr ""
 
-#: frontend/src/portal/main-panel/my-emails/index.js:79
+#: frontend/src/portal/main-panel/my-emails/index.js:127
 msgid "Unable to load this email thread."
 msgstr ""
 
-#: frontend/src/portal/main-panel/my-emails/index.js:223
+#: frontend/src/portal/main-panel/my-emails/index.js:181
+msgid ""
+"No emails.\n"
+"Support emails from your team will appear here."
+msgstr ""
+
+#: frontend/src/portal/main-panel/my-emails/index.js:274
 msgid "email"
 msgstr ""
 
-#: frontend/src/portal/main-panel/my-emails/index.js:224
+#: frontend/src/portal/main-panel/my-emails/index.js:275
 msgid "emails"
 msgstr ""
 
