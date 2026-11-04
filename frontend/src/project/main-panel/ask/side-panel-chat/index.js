@@ -16,7 +16,7 @@ import './index.css';
 const INIT_WIDTH = 400;
 
 const Main = forwardRef(({
-  projectUuid, projectName, workspaceID, resizable = true,
+  projectUuid, projectName, workspaceID, resizable = true, readOnly = false,
   session, emptyTip, children, placeholder, displayOperations,
   onToggle, getMessages, sendMessage: sendMessageAPI, uploadChatImage,
 }, ref) => {
@@ -167,7 +167,7 @@ const Main = forwardRef(({
             <ChatInput
               ref={messageInputRef}
               isReply={_isReply}
-              readOnly={false}
+              readOnly={readOnly}
               projectUuid={projectUuid}
               placeholder={placeholder}
               allowedAttachmentSources={false}

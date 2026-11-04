@@ -139,6 +139,7 @@ const RegenerateChatPanel = ({ run, onClose, onApplied }) => {
         projectName={projectName}
         workspaceID={workspaceID}
         resizable={false}
+        readOnly={isApplying}
         emptyTip={gettext('Describe how the suggestions should change.')}
         displayOperations={false}
         onToggle={handleClose}
