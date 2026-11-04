@@ -14,7 +14,7 @@ import './index.css';
 
 const CommonMessage = ({
   chatId, message, settings, projectUuid, projectName, workspaceID, isApplied,
-  showOperations,
+  showOperations, usePublicSourceLinks = false,
 }) => {
   const markdownMessageRef = useRef(null);
 
@@ -45,6 +45,7 @@ const CommonMessage = ({
           projectUuid={projectUuid}
           workspaceID={workspaceID}
           openDocument={openDocument}
+          usePublicSourceLinks={usePublicSourceLinks}
         />
         {showOperations && (<MessageOperations getAIReply={getAIReply} />)}
       </div>
