@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: seaqa-web\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-26 11:27+0800\n"
-"PO-Revision-Date: 2026-10-26 03:46\n"
+"POT-Creation-Date: 2026-11-04 15:45+0800\n"
+"PO-Revision-Date: 2026-11-04 09:14\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -207,8 +207,8 @@ msgid "%(ext)s is an invalid file extension. Authorized extensions are : %(valid
 msgstr "%(ext)s ist eine ungültige Dateiendung. Autorisierte Endungen sind: %(valid_exts_list)s"
 
 #: seahub/api2/endpoints/org_admin/settings.py:91
-#: seahub/api2/endpoints/user_avatar.py:43 seahub/portal/apis.py:161
-#: seahub/portal/apis.py:224 seahub/utils/error_msg.py:13
+#: seahub/api2/endpoints/user_avatar.py:43 seahub/portal/apis.py:166
+#: seahub/portal/apis.py:229 seahub/utils/error_msg.py:13
 #, python-format
 msgid "Your file is too big (%(size)s), the maximum allowed size is %(max_valid_size)s"
 msgstr "Ihre Datei ist zu groß (%(size)s), die maximal zulässige Größe beträgt %(max_valid_size)s"
@@ -222,13 +222,13 @@ msgstr "Benutzer %s existiert bereits."
 
 #: seahub/api2/endpoints/org_admin/users.py:580
 #: seahub/api2/endpoints/org_admin/users.py:622 seahub/auth/forms.py:135
-#: seahub/portal/apis.py:2513
+#: seahub/portal/apis.py:2864
 msgid "Failed to send email, email service is not properly configured, please contact administrator."
 msgstr "E-Mail konnte nicht gesendet werden, der E-Mail-Dienst ist nicht ordnungsgemäß konfiguriert, bitte kontaktieren Sie den Administrator."
 
 #: seahub/api2/endpoints/project.py:189 seahub/portal/views.py:95
-#: seahub/portal/views.py:191 seahub/portal/views.py:205
-#: seahub/portal/views.py:222 seahub/portal/views.py:338
+#: seahub/portal/views.py:197 seahub/portal/views.py:211
+#: seahub/portal/views.py:228 seahub/portal/views.py:344
 #: seahub/project/views.py:57
 msgid "This project does not exist"
 msgstr "Dieses Projekt existiert nicht"
@@ -496,8 +496,8 @@ msgstr "Nur Gruppenmitarbeiter können Mitglieder entfernen"
 msgid "Can not remove myself"
 msgstr "Ich kann mich nicht selbst entfernen"
 
-#: seahub/group/views.py:98 seahub/portal/views.py:209
-#: seahub/portal/views.py:344 seahub/project/views.py:74
+#: seahub/group/views.py:98 seahub/portal/views.py:215
+#: seahub/portal/views.py:350 seahub/project/views.py:74
 #: seahub/project/views.py:78
 msgid "Permission denied"
 msgstr "Zugriff verweigert"
@@ -598,16 +598,16 @@ msgid "Passwords don't match"
 msgstr "Passwörter stimmen nicht überein"
 
 #: seahub/invitations/views.py:22 seahub/invitations/views.py:32
-#: seahub/invitations/views.py:59 seahub/portal/views.py:281
-#: seahub/portal/views.py:286 seahub/portal/views.py:300
-#: seahub/portal/views.py:304 seahub/portal/views.py:306
-#: seahub/portal/views.py:322
+#: seahub/invitations/views.py:59 seahub/portal/views.py:287
+#: seahub/portal/views.py:292 seahub/portal/views.py:306
+#: seahub/portal/views.py:310 seahub/portal/views.py:312
+#: seahub/portal/views.py:328
 msgid "Invitation link is invalid or expired."
 msgstr "Einladungslink ist ungültig oder abgelaufen."
 
-#: seahub/knowledge_base/knowledge_base.py:176 seahub/portal/apis.py:300
-#: seahub/portal/apis.py:711 seahub/portal/apis.py:790
-#: seahub/portal/apis.py:1431 seahub/project/connections.py:727
+#: seahub/knowledge_base/knowledge_base.py:176 seahub/portal/apis.py:305
+#: seahub/portal/apis.py:716 seahub/portal/apis.py:1145
+#: seahub/portal/apis.py:1786 seahub/project/connections.py:728
 #: seahub/tickets/tickets.py:190
 msgid "There are errors with the filters. Please correct them."
 msgstr "Es gibt Fehler bei den Filtern. Bitte korrigieren Sie diese."
@@ -724,30 +724,30 @@ msgstr "E-Mail konnte nicht gesendet werden"
 msgid "Internal Server Error"
 msgstr "Interner Serverfehler"
 
-#: seahub/portal/apis.py:2508
+#: seahub/portal/apis.py:2859
 msgid "The user is already a member of your team. Cannot invite the user to the portal."
 msgstr "Der Benutzer ist bereits Mitglied Ihres Teams. Er kann nicht zum Portal eingeladen werden."
 
-#: seahub/portal/apis.py:2710 seahub/templates/portal_login.html:58
+#: seahub/portal/apis.py:3106 seahub/templates/portal_login.html:58
 msgid "If the email is eligible, a login code has been sent."
 msgstr "Wenn die E-Mail berechtigt ist, wurde ein Anmeldecode gesendet."
 
-#: seahub/portal/apis.py:2738 seahub/templates/portal/email_login_code.html:5
+#: seahub/portal/apis.py:3136 seahub/templates/portal/email_login_code.html:5
 msgid "Your login code"
 msgstr "Ihr Anmeldecode"
 
-#: seahub/portal/views.py:102 seahub/portal/views.py:193
-#: seahub/portal/views.py:207 seahub/portal/views.py:228
-#: seahub/portal/views.py:292 seahub/portal/views.py:352
+#: seahub/portal/views.py:102 seahub/portal/views.py:199
+#: seahub/portal/views.py:213 seahub/portal/views.py:234
+#: seahub/portal/views.py:298 seahub/portal/views.py:358
 #: seahub/project/views.py:83
 msgid "Portal is not enabled"
 msgstr "Portal ist nicht aktiviert"
 
-#: seahub/portal/views.py:200
+#: seahub/portal/views.py:206
 msgid "Preview link is invalid or expired."
 msgstr "Vorschau-Link ist ungültig oder abgelaufen."
 
-#: seahub/portal/views.py:266 seahub/portal/views.py:271
+#: seahub/portal/views.py:272 seahub/portal/views.py:277
 msgid "Password invalid"
 msgstr "Passwort ungültig"
 
@@ -1634,12 +1634,12 @@ msgid "To activate this account, please click the following link within the next
 msgstr "Um dieses Konto zu aktivieren, klicken Sie bitte innerhalb der nächsten %(expiration_days)s Tage auf den folgenden Link: "
 
 #: seahub/templates/registration/logged_out.html:8
-#: seahub/templates/registration/logout.html:8
+#: seahub/templates/registration/logout.html:26
 msgid "Thanks for your participation! "
 msgstr "Vielen Dank für Ihre Teilnahme! "
 
 #: seahub/templates/registration/logged_out.html:8
-#: seahub/templates/registration/logout.html:8
+#: seahub/templates/registration/logout.html:26
 #: seahub/templates/registration/password_change_done.html:13
 msgid "Log in again"
 msgstr "Erneut anmelden"

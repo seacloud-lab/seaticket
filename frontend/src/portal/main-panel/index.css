@@ -3,6 +3,22 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  min-height: 0;
+}
+
+.seaqa-portal-main-panel .seaqa-portal-content .seaqa-portal-my-emails-metadata {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.seaqa-portal-main-panel .seaqa-portal-content .seaqa-portal-my-emails-metadata .sea-metadata {
+  padding: 0px;
+}
+
+.seaqa-portal-main-panel .seaqa-portal-content .seaqa-portal-my-emails-metadata .empty-tip-text {
+  white-space: pre-line;
 }
 
 .seaqa-portal-main-panel .seaqa-portal-content .ask-main-container {
