@@ -24,11 +24,11 @@ const EMAIL_COLUMN_ORDER = {
 };
 const EMAIL_COLUMN_WIDTHS = {
   title: 320,
-  ticket_pk: 100,
+  ticket_pk: 120,
   state: 120,
-  assignees: 240,
-  due_date: 150,
-  modified_time: 220,
+  assignees: 200,
+  due_date: 200,
+  modified_time: 200,
 };
 const AssigneesFormatter = ({ value = [] }) => (
   <div className="collaborators-formatter">
@@ -39,12 +39,60 @@ const TicketNumberFormatter = ({ value }) => value === null || value === undefin
   ? <div className="sea-metadata-ui cell-formatter-container text-formatter number-formatter">--</div>
   : <NumberFormatter value={`#${value}`} />;
 const EMAIL_COLUMNS = [
-  { key: 'subject', name: 'title', display_name: gettext('Subject'), type: CellType.TEXT, width: 320, frozen: true, is_name_column: true, editable: false },
-  { key: 'ticket', name: 'ticket_pk', display_name: gettext('Ticket #'), type: CellType.NUMBER, width: 100, editable: false, formatter: <TicketNumberFormatter /> },
-  { key: 'state', name: 'state', display_name: gettext('State'), type: CellType.SINGLE_SELECT, width: 120, editable: false, data: { options: TICKET_STATE_OPTIONS } },
-  { key: 'assignees', name: 'assignees', display_name: gettext('Assignees'), type: CellType.COLLABORATOR, width: 240, editable: false, formatter: <AssigneesFormatter /> },
-  { key: 'due_date', name: 'due_date', display_name: gettext('Due date'), type: CellType.DATE, width: 150, editable: false, data: { format: 'YYYY-MM-DD' } },
-  { key: 'modified_time', name: 'modified_time', display_name: gettext('Last modified time'), type: CellType.MTIME, width: 200, editable: false },
+  {
+    key: 'subject',
+    name: 'title',
+    display_name: gettext('Subject'),
+    type: CellType.TEXT,
+    width: 320,
+    frozen: true,
+    is_name_column: true,
+    editable: false,
+  },
+  {
+    key: 'ticket',
+    name: 'ticket_pk',
+    display_name: gettext('Ticket #'),
+    type: CellType.NUMBER,
+    width: 120,
+    editable: false,
+    formatter: <TicketNumberFormatter />,
+  },
+  {
+    key: 'state',
+    name: 'state',
+    display_name: gettext('State'),
+    type: CellType.SINGLE_SELECT,
+    width: 120,
+    editable: false,
+    data: { options: TICKET_STATE_OPTIONS },
+  },
+  {
+    key: 'assignees',
+    name: 'assignees',
+    display_name: gettext('Assignees'),
+    type: CellType.COLLABORATOR,
+    width: 200,
+    editable: false,
+    formatter: <AssigneesFormatter />,
+  },
+  {
+    key: 'due_date',
+    name: 'due_date',
+    display_name: gettext('Due date'),
+    type: CellType.DATE,
+    width: 200,
+    editable: false,
+    data: { format: 'YYYY-MM-DD' },
+  },
+  {
+    key: 'modified_time',
+    name: 'modified_time',
+    display_name: gettext('Last modified time'),
+    type: CellType.MTIME,
+    width: 200,
+    editable: false,
+  },
 ];
 
 const EMAIL_VIEWS_DATA = {
@@ -119,18 +167,21 @@ const MyEmails = ({ projectUuid }) => {
   }, []);
 
   const listAPI = useMemo(() => ({
-    getMetadata: ({ start = 0, limit = 1000 } = {}) => portalAPI.listMyEmails(projectUuid, { start, limit }).then((response) => ({
-      data: {
-        rows: (response.data.records || []).map(record => ({
-          ...record,
-          thread_id: record._pk,
-          _pk: `${record.connection_id}:${record._pk}`,
-        })),
-        columns: EMAIL_COLUMNS,
-        has_more: response.data.has_more,
-        error_msg: '',
-      },
-    })),
+    getMetadata: ({ start = 0, limit = 1000 } = {}) => portalAPI.listMyEmails(projectUuid, { start, limit }).then((response) => {
+      const records = response.data.records || [];
+      return {
+        data: {
+          rows: records.map(record => ({
+            ...record,
+            thread_id: record._pk,
+            _pk: `${record.connection_id}:${record._pk}`,
+          })),
+          columns: EMAIL_COLUMNS,
+          has_more: response.data.has_more,
+          error_msg: records.length === 0 ? gettext('No emails.\nSupport emails from your team will appear here.') : '',
+        },
+      };
+    }),
     getViews: () => Promise.resolve({ data: EMAIL_VIEWS_DATA }),
     getView: () => Promise.resolve({ data: { view: EMAIL_VIEW_DATA } }),
   }), [projectUuid]);
