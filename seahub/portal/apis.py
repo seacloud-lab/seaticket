@@ -2618,10 +2618,6 @@ class PortalCustomerView(APIView):
                     project_uuid=project_uuid,
                     customer_id=customer.id,
                 ).update(customer_id=None)
-                PortalExternalInvitation.objects.filter(
-                    project_uuid=project_uuid,
-                    customer_id=customer.id,
-                ).update(customer_id=None)
 
                 seadb_api = SeaDBAPI()
                 portal_issues_table_name = SchemaTables.PORTAL_ISSUES.table_name()
@@ -2797,8 +2793,6 @@ class PortalExternalInvitationsView(APIView):
 
         try:
             invites = PortalExternalInvitation.objects.list_invites_by_project_uuid(project_uuid)
-            customer_ids = {iv.customer_id for iv in invites if iv.customer_id}
-            customer_names = dict(PortalCustomer.objects.filter(project_uuid=project_uuid, id__in=customer_ids).values_list('id', 'name'))
             data = []
             for iv in invites:
                 data.append({
@@ -2807,8 +2801,6 @@ class PortalExternalInvitationsView(APIView):
                     'expire_time': iv.expire_time.isoformat(),
                     'email': iv.email,
                     'inviter': iv.inviter,
-                    'customer_id': iv.customer_id,
-                    'customer_name': customer_names.get(iv.customer_id, ''),
                     'accepted_at': iv.accepted_at,
                     'created_at': iv.created_at,
                 })
@@ -2865,18 +2857,21 @@ class PortalExternalInvitationsView(APIView):
             return api_error(status.HTTP_503_SERVICE_UNAVAILABLE, error_msg)
 
         created_external_user = False
+        assigned_customer_id = customer.id if customer else None
         try:
             with transaction.atomic():
                 external_user = ProjectExternalUser.objects.select_for_update().filter(
                     email=email, project_uuid=str(project.uuid),
                 ).first()
-                if external_user and external_user.customer_id is not None:
+                if external_user and external_user.activated and external_user.customer_id is not None:
                     return api_error(status.HTTP_409_CONFLICT, 'External user already belongs to a customer.')
+                if external_user:
+                    external_user.customer_id = assigned_customer_id
+                    external_user.save(update_fields=['customer_id'])
                 invitation = PortalExternalInvitation.objects.add(
                     inviter=username,
                     email=email,
                     project_uuid=str(project.uuid),
-                    customer_id=customer.id if customer else None,
                 )
                 if not external_user:
                     external_user = ProjectExternalUser.objects.create(
@@ -2884,6 +2879,7 @@ class PortalExternalInvitationsView(APIView):
                         username=gen_user_virtual_id(),
                         project_uuid=str(project.uuid),
                         name=name,
+                        customer_id=assigned_customer_id,
                         activated=False,
                     )
                     created_external_user = True
@@ -2891,7 +2887,11 @@ class PortalExternalInvitationsView(APIView):
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
         
-        invitation_link = invitation.get_link(request)
+        try:
+            invitation_link = invitation.get_link(request)
+        except Exception:
+            logger.exception('Failed to generate portal invitation link: project=%s email=%s', project_uuid, email)
+            invitation_link = ''
         if not invitation_link:
             try:
                 invitation.delete()
