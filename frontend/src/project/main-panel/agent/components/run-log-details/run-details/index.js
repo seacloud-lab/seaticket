@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import classnames from 'classnames';
-import { IconTooltip, SecondaryBtn } from '@/components';
+import { Icon, IconTooltip } from '@/components';
 import { gettext } from '@/constants';
 import DateFormatter from '@/project/main-panel/connections/components/cell-formatter/date-formatter';
 import { FROM_NOW } from '@/sea-metadata/constants';
@@ -14,6 +14,13 @@ import ThoughtProcessDialog from './thought-process-dialog';
 import './index.css';
 
 const thoughtProcessEnabled = window.app.pageOptions.thoughtProcessEnabled;
+
+const RunStatusTag = ({ icon = '', className, text }) => (
+  <span className={classnames('seaqa-agent-run-status px-2 d-flex align-items-center justify-content-center', className)}>
+    {icon && <Icon symbol={icon} />}
+    <span>{text}</span>
+  </span>
+);
 
 const RunDetail = ({
   run,
@@ -35,50 +42,23 @@ const RunDetail = ({
       if (suggestionsStatus === SUGGESTIONS_STATUS.RESOLVED) {
         return {
           status: RUN_STATUS.COMPLETED,
-          label: (
-            <SecondaryBtn
-              icon="check-circle"
-              isSmall={true}
-              className="seaqa-agent-run-status run-done"
-              text={gettext('Done')}
-            />
-          )
+          label: <RunStatusTag icon="check-circle" className="run-done" text={gettext('Done')} />
         };
       }
       if (suggestionsStatus === SUGGESTIONS_STATUS.NONE) {
         return {
           status: RUN_STATUS.COMPLETED,
-          label: (
-            <SecondaryBtn
-              isSmall={true}
-              icon="info-filled"
-              className="seaqa-agent-run-status run-no-action-needed"
-              text={gettext('No action needed')}
-            />
-          )
+          label: <RunStatusTag icon="info-filled" className="run-no-action-needed" text={gettext('No action needed')} />
         };
       }
     }
     if (run.status === RUN_STATUS.RUNNING) return {
       status: RUN_STATUS.RUNNING,
-      label: (
-        <SecondaryBtn
-          icon="spinner"
-          isSmall={true}
-          className="seaqa-agent-run-status run-running font-weight-500 mr-4"
-          text={gettext('Running')}
-        />
-      ),
+      label: <RunStatusTag icon="spinner" className="run-running font-weight-500 mr-4" text={gettext('Running')} />
     };
     if (run.status === RUN_STATUS.FAILED) return {
       status: RUN_STATUS.FAILED,
-      label: (
-        <SecondaryBtn
-          isSmall={true}
-          className="seaqa-agent-run-status run-failed font-weight-500 mr-4 text-danger"
-          text={gettext('Failed')}
-        />
-      )
+      label: <RunStatusTag className="run-failed font-weight-500 mr-4 text-danger" text={gettext('Failed')} />
     };
     return null;
   }, [run]);

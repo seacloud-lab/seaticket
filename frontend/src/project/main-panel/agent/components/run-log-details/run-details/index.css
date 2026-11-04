@@ -65,13 +65,20 @@
 }
 
 .seaqa-agent-run-status {
+  width: fit-content;
   height: 22px !important;
+  border: 1px solid rgba(0, 40, 100, 0.12);
+  border-radius: 4px;
+  color: var(--bs-body-color);
+  font-size: 12px;
+  gap: 4px;
+  cursor: default;
 }
 
-.seaqa-agent-run-status,
-.seaqa-agent-run-status:hover {
-  background-color: unset !important;
-  cursor: default !important;
+.seaqa-agent-run-status .seaqa-icon-svg {
+  height: 12px;
+  width: 12px;
+  color: var(--bs-icon-color);
 }
 
 .seaqa-agent-run-status.run-done,
