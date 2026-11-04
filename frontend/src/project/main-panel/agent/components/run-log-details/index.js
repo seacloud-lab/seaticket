@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useState, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { CenteredLoading, IconTooltip, toaster, EmptyTip } from '@/components';
 import { gettext, mediaUrl } from '@/constants';
@@ -35,16 +35,18 @@ const RunLogDetails = ({
   const [pendingMapping, setPendingMapping] = useState(null);
   const [suggestionInfo, setSuggestionInfo] = useState(null);
   const [regenerateInfo, setRegenerateInfo] = useState(null);
-  const [hasUnappliedRegenerateDrafts, setHasUnappliedRegenerateDrafts] = useState(false);
   const { openCloseLinkedGitHubIssuesWarningDialog } = useCloseLinkedIssues();
   const [isShowAll, setIsShowAll] = useState(true);
+
   const runsRequestVersionRef = useRef(0);
-  const [runsRefreshKey, setRunsRefreshKey] = useState(0);
+  const consumedUpdatedRunsVersionRef = useRef(0);
+  const latestUpdatedRunsVersionRef = useRef(updatedRuns?.version || 0);
 
   const { owner_source_id, owner_source_type } = useMemo(() => ({
     owner_source_id: runLog?.owner_source_id,
     owner_source_type: runLog?.owner_source_type,
   }), [runLog]);
+  const ownerSourceRef = useRef({ owner_source_id, owner_source_type });
   const resource = useMemo(() => getAgentResource(runLog), [runLog]);
   const suggestionDetail = useMemo(() => {
     if (!suggestionInfo) return null;
@@ -73,7 +75,6 @@ const RunLogDetails = ({
 
   const openSuggestionDetailPanel = useCallback((runId, actionId, mode = 'view') => {
     setRegenerateInfo(null);
-    setHasUnappliedRegenerateDrafts(false);
     setSuggestionInfo({ runId, actionId, mode });
     hideLogs();
   }, [hideLogs]);
@@ -91,14 +92,38 @@ const RunLogDetails = ({
 
   const closeRegeneratePanel = useCallback(() => {
     setRegenerateInfo(null);
-    setHasUnappliedRegenerateDrafts(false);
     showLogs();
   }, [showLogs]);
 
-  const handleRegenerateApplied = useCallback(() => {
-    setHasUnappliedRegenerateDrafts(false);
-    setRunsRefreshKey(key => key + 1);
-  }, []);
+  const handleRegenerateApplied = useCallback((runId, { instruction, suggestions } = {}) => {
+    const requestOwner = { owner_source_id, owner_source_type };
+    const matchesCurrentOwner = () => {
+      const currentOwner = ownerSourceRef.current;
+      return requestOwner.owner_source_id === currentOwner.owner_source_id &&
+        requestOwner.owner_source_type === currentOwner.owner_source_type;
+    };
+    if (!matchesCurrentOwner()) return Promise.resolve({ skipped: true });
+
+    const requestVersion = ++runsRequestVersionRef.current;
+    const isCurrentRequest = () => {
+      return requestVersion === runsRequestVersionRef.current && matchesCurrentOwner();
+    };
+
+    return agentAPI.materializeAgentRun(projectUuid, runId, { instruction, suggestions }).then(() => {
+      if (!isCurrentRequest()) return null;
+      return agentAPI.listAgentLogRuns(projectUuid, owner_source_id, owner_source_type);
+    }).then(res => {
+      if (!res || !isCurrentRequest()) return;
+      const runs = res.data?.runs || [];
+      consumedUpdatedRunsVersionRef.current = Math.max(
+        consumedUpdatedRunsVersionRef.current,
+        latestUpdatedRunsVersionRef.current
+      );
+      setRuns(runs);
+      const status = getRunLogStatusByRuns(runs);
+      updateRunLog(owner_source_id, owner_source_type, { status });
+    });
+  }, [owner_source_id, owner_source_type, updateRunLog]);
 
   const updateRunAction = useCallback((runId, actionId, update, runUpdate = null) => {
     setRuns(runs => {
@@ -337,7 +362,6 @@ const RunLogDetails = ({
       setRuns([]);
       setSuggestionInfo(null);
       setRegenerateInfo(null);
-      setHasUnappliedRegenerateDrafts(false);
       setPendingMapping(null);
       return () => controller.abort();
     }
@@ -346,7 +370,6 @@ const RunLogDetails = ({
     setRuns([]);
     setSuggestionInfo(null);
     setRegenerateInfo(null);
-    setHasUnappliedRegenerateDrafts(false);
     setPendingMapping(null);
     agentAPI.listAgentLogRuns(projectUuid, owner_source_id, owner_source_type, controller.signal).then(res => {
       if (controller.signal.aborted || requestVersion !== runsRequestVersionRef.current) return;
@@ -367,23 +390,39 @@ const RunLogDetails = ({
 
     return () => controller.abort();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [owner_source_id, owner_source_type, runsRefreshKey]);
+  }, [owner_source_id, owner_source_type]);
 
   useEffect(() => {
     if (!updatedRuns) return;
+    if (updatedRuns.version <= consumedUpdatedRunsVersionRef.current) return;
     if (
       updatedRuns.owner_source_id !== owner_source_id ||
       updatedRuns.owner_source_type !== owner_source_type
-    ) return;
-    if (regenerateInfo && hasUnappliedRegenerateDrafts) return;
+    ) {
+      consumedUpdatedRunsVersionRef.current = updatedRuns.version;
+      return;
+    }
+    if (regenerateInfo) return;
+    consumedUpdatedRunsVersionRef.current = updatedRuns.version;
     runsRequestVersionRef.current += 1;
     setRuns(updatedRuns.runs);
     setSuggestionInfo(null);
     setRegenerateInfo(null);
-    setHasUnappliedRegenerateDrafts(false);
     setPendingMapping(null);
     setIsShowAll(updatedRuns.runs.length <= 8);
-  }, [owner_source_id, owner_source_type, updatedRuns, regenerateInfo, hasUnappliedRegenerateDrafts]);
+  }, [owner_source_id, owner_source_type, updatedRuns, regenerateInfo]);
+
+  useLayoutEffect(() => {
+    ownerSourceRef.current = { owner_source_id, owner_source_type };
+    runsRequestVersionRef.current += 1;
+  }, [owner_source_id, owner_source_type]);
+
+  useLayoutEffect(() => {
+    latestUpdatedRunsVersionRef.current = Math.max(
+      latestUpdatedRunsVersionRef.current,
+      updatedRuns?.version || 0
+    );
+  }, [updatedRuns?.version]);
 
   return (
     <>
@@ -480,7 +519,6 @@ const RunLogDetails = ({
                   run={regenerateRun}
                   onClose={closeRegeneratePanel}
                   onApplied={handleRegenerateApplied}
-                  onDraftsChange={setHasUnappliedRegenerateDrafts}
                 />
               )}
             </>
