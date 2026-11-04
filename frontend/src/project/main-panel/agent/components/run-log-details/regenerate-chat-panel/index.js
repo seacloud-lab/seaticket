@@ -1,11 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from 'reactstrap';
+import slugid from 'slugid';
 import { CommonOperationConfirmationDialog, ResizeBar, toaster } from '@/components';
 import { gettext } from '@/constants';
 import { agentAPI } from '@/project/api';
 import { CHAT_MESSAGE_TYPE } from '@/project/main-panel/ask/constants';
 import SidePanelChat from '@/project/main-panel/ask/side-panel-chat';
 import { Utils } from '@/utils/utils';
+import { getLatestDraftMessage, markChatReplyApplied, markDraftVersionApplied } from './utils';
 
 import './index.css';
 
@@ -15,10 +17,6 @@ const MIN_WIDTH = 480;
 const MAX_WIDTH = 720;
 const WIDTH_STORAGE_KEY = 'project_agent_regenerate_chat_panel_width';
 
-const isValidAssistantMessage = (message) => {
-  return message?.role === 'assistant' && Array.isArray(message?.suggestions) && message?.suggestions.length > 0;
-};
-
 const RegenerateChatPanel = ({ run, onClose, onApplied }) => {
   const [messages, setMessages] = useState([]);
   const [isApplying, setIsApplying] = useState(false);
@@ -27,7 +25,7 @@ const RegenerateChatPanel = ({ run, onClose, onApplied }) => {
   const ref = useRef(null);
   const chatRef = useRef(null);
 
-  const latestDraftMessage = useMemo(() => messages.findLast(isValidAssistantMessage), [messages]);
+  const latestDraftMessage = useMemo(() => getLatestDraftMessage(messages), [messages]);
   const latestDrafts = useMemo(() => latestDraftMessage?.suggestions || [], [latestDraftMessage]);
 
   const instructionHistory = useMemo(() => (
@@ -37,10 +35,9 @@ const RegenerateChatPanel = ({ run, onClose, onApplied }) => {
       .join('\n')
   ), [messages]);
 
-  const hasUnappliedDrafts = useMemo(() => {
-    const unappliedDraft = messages.find(message => isValidAssistantMessage(message) && !message.isApplied);
-    return Boolean(unappliedDraft);
-  }, [messages]);
+  const hasUnappliedDrafts = useMemo(() => (
+    Boolean(latestDraftMessage && !latestDraftMessage.isApplied)
+  ), [latestDraftMessage]);
 
   useEffect(() => {
     const width = parseFloat(localStorage.getItem(WIDTH_STORAGE_KEY) || MIN_WIDTH);
@@ -67,23 +64,16 @@ const RegenerateChatPanel = ({ run, onClose, onApplied }) => {
 
   const applyDrafts = useCallback(() => {
     const { isReply } = chatRef.current?.getStatus() || {};
-    if (!latestDrafts.length || latestDraftMessage?.isApplied || isApplying || isReply) return;
+    const appliedVersionId = latestDraftMessage?.versionId;
+    if (!latestDrafts.length || !appliedVersionId || latestDraftMessage?.isApplied || isApplying || isReply) return;
     setIsApplying(true);
     onApplied(run.id, {
       instruction: instructionHistory,
       suggestions: latestDrafts,
     }).then(() => {
       toaster.success(gettext('Suggestions updated'));
-      setMessages(messages => {
-        return messages.map(message => isValidAssistantMessage(message) ? ({ ...message, isApplied: true }) : message);
-      });
-      chatRef.current?.setChatHistories(histories => {
-        const historiesCount = histories.length;
-        return histories.map((history, index) => {
-          history.isApplied = index === historiesCount - 1;
-          return history;
-        });
-      });
+      setMessages(messages => markDraftVersionApplied(messages, appliedVersionId));
+      chatRef.current?.setChatHistories(histories => markChatReplyApplied(histories, appliedVersionId));
     }).catch((error) => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
@@ -107,13 +97,14 @@ const RegenerateChatPanel = ({ run, onClose, onApplied }) => {
       previous_drafts: latestDrafts,
     }).then((res) => {
       const suggestions = res.data?.suggestions || [];
-      setMessages(prev => [...prev, { role: 'assistant', suggestions }]);
+      const versionId = slugid.nice();
+      setMessages(prev => [...prev, { role: 'assistant', suggestions, versionId }]);
       const ai_reply = suggestions.length === 0 ? gettext('No suggestions were generated.') : {
         [CHAT_MESSAGE_TYPE.SUGGESTIONS]: suggestions,
       };
       return {
         data: {
-          results: { ai_reply }
+          results: { ai_reply, ai_reply_message_id: versionId }
         }
       };
     }).catch(error => {
