@@ -225,7 +225,6 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
       />
       {statisticsConnection && (
         <ConnectionStatisticsDialog
-          key={statisticsConnection.id}
           projectUuid={projectUuid}
           connection={statisticsConnection}
           onToggle={() => setStatisticsConnection(null)}

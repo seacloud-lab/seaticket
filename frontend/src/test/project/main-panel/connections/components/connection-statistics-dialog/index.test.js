@@ -4,7 +4,7 @@ import { connectionsAPI } from '@/project/api';
 import ConnectionStatisticsDialog from '@/project/main-panel/connections/components/connection-statistics-dialog';
 
 jest.mock('@/project/main-panel/connections/components/connection-statistics-dialog/index.css', () => ({}));
-jest.mock('@/constants', () => ({ gettext: text => text }));
+jest.mock('@/constants', () => ({ gettext: text => text, mediaUrl: '/media/' }));
 jest.mock('@/project/api', () => ({
   connectionsAPI: { getConnectionStatistics: jest.fn() },
 }));
@@ -13,6 +13,7 @@ jest.mock('@/utils/utils', () => ({
 }));
 jest.mock('@/components', () => ({
   CenteredLoading: () => <div role="status">Loading</div>,
+  EmptyTip: ({ text }) => <div>{text}</div>,
   Icon: () => null,
   ModalHeader: ({ children, toggle }) => <div>{children}<button onClick={toggle}>Close</button></div>,
 }));
@@ -87,23 +88,23 @@ it('shows an API error for an unsupported connection instead of a chart', async 
   expect(screen.queryByTestId('monthly-total-chart')).toBeNull();
 });
 
-it('retains all three charts when there are no issues', async () => {
+it('shows the empty tip instead of charts when there are no issues', async () => {
   connectionsAPI.getConnectionStatistics.mockResolvedValue({
     data: { ...result, series: [{ issue_type: null, counts: [0, 0] }], total: 0 },
   });
   render(<ConnectionStatisticsDialog {...props} />);
   expect(await screen.findByText('No issues in the past 12 months.')).not.toBeNull();
-  expect(screen.queryByTestId('chart')).not.toBeNull();
-  expect(screen.queryByTestId('pie-chart')).not.toBeNull();
-  expect(screen.getByTestId('monthly-total-chart').textContent).toContain('"counts":[0,0]');
+  expect(screen.queryByTestId('chart')).toBeNull();
+  expect(screen.queryByTestId('pie-chart')).toBeNull();
+  expect(screen.queryByTestId('monthly-total-chart')).toBeNull();
 });
 
 it('renders empty statistics without state or timezone fields', async () => {
   connectionsAPI.getConnectionStatistics.mockResolvedValue({ data: { ...result, total: 0, series: [] } });
   render(<ConnectionStatisticsDialog {...props} />);
   expect(await screen.findByText('No issues in the past 12 months.')).not.toBeNull();
-  expect(screen.getByTestId('chart')).not.toBeNull();
-  expect(screen.getByTestId('monthly-total-chart').textContent).toContain('"counts":[0,0]');
+  expect(screen.queryByTestId('chart')).toBeNull();
+  expect(screen.queryByTestId('monthly-total-chart')).toBeNull();
   expect(screen.queryByText('This connection has not been synced yet.')).toBeNull();
 });
 

@@ -1,18 +1,16 @@
 import { useLayoutEffect, useRef } from 'react';
 import { initChart, destroyChart } from '../utils';
 
-const useChartDraw = ({ target, data, chartId, options, draw, drawEmpty = false }) => {
+const useChartDraw = ({ target, data, chartId, options, draw }) => {
   const chartRef = useRef(null);
   const dataRef = useRef(data);
   const drawRef = useRef(draw);
   const optionsRef = useRef(options);
-  const drawEmptyRef = useRef(drawEmpty);
   const chartSizeRef = useRef(null);
 
   dataRef.current = data;
   drawRef.current = draw;
   optionsRef.current = options;
-  drawEmptyRef.current = drawEmpty;
 
   const redrawChart = () => {
     if (!target.current) return;
@@ -23,7 +21,7 @@ const useChartDraw = ({ target, data, chartId, options, draw, drawEmpty = false 
     const { width, height } = target.current.getBoundingClientRect();
     chartSizeRef.current = { width, height };
 
-    if (Array.isArray(dataRef.current) && (dataRef.current.length > 0 || drawEmptyRef.current)) {
+    if (Array.isArray(dataRef.current)) {
       drawRef.current(chartRef.current, target.current, dataRef.current);
     }
   };
@@ -53,7 +51,7 @@ const useChartDraw = ({ target, data, chartId, options, draw, drawEmpty = false 
   useLayoutEffect(() => {
     redrawChart();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, options, drawEmpty]);
+  }, [data, options]);
 
   return chartRef.current;
 };

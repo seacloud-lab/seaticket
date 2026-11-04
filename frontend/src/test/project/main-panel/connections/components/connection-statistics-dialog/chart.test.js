@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import { STYLE_COLORS } from '@/components/chart/constants';
 import StatisticsChart from '@/project/main-panel/connections/components/connection-statistics-dialog/chart';
 import { getSeriesColor, TOTAL_COLOR } from '@/project/main-panel/connections/components/connection-statistics-dialog/utils';
 
@@ -56,10 +57,11 @@ it('renders all months and a zero baseline when no series are available', () => 
 });
 
 it('keeps colors stable regardless of series order', () => {
-  expect(getSeriesColor('Bug')).toBe('#5889ff');
-  expect(getSeriesColor('Feature')).toBe('#ffd154');
-  expect(getSeriesColor('Question')).toBe('#5d7092');
-  expect(getSeriesColor(null)).toBe('#54d6a3');
+  const colors = STYLE_COLORS[0].colors;
+  expect(getSeriesColor('Bug')).toBe(colors[0]);
+  expect(getSeriesColor('Feature')).toBe(colors[3]);
+  expect(getSeriesColor('Question')).toBe(colors[2]);
+  expect(getSeriesColor(null)).toBe(colors[1]);
   expect(getSeriesColor('Security')).toBe(getSeriesColor('security'));
 });
 

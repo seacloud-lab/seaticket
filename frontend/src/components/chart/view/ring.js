@@ -1,4 +1,5 @@
 import React, { useMemo, useRef } from 'react';
+import classnames from 'classnames';
 import * as d3 from 'd3';
 import { STYLE_COLORS, DEFAULT_LABEL_FONT_SIZE, DEFAULT_LABEL_COLOR } from '../constants';
 import { resolveSideOverlap } from '../utils';
@@ -164,11 +165,10 @@ const Ring = ({ data, variant = 'ring', ariaLabel }) => {
     chartId: 'ring',
     options,
     draw: drawChart,
-    drawEmpty: true,
   });
 
   return (
-    <div className={`chart-svg-wrapper flex-1${variant === 'pie' ? ' chart-pie' : ''}`} ref={ref}></div>
+    <div className={classnames('chart-svg-wrapper flex-1', { 'chart-pie': variant === 'pie' })} ref={ref}></div>
   );
 };
 

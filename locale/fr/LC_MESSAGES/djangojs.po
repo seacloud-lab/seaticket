@@ -8085,3 +8085,4 @@ msgstr "Le nom ne peut pas contenir de barre oblique (/)"
 #: frontend/src/utils/validate/name.js:15
 msgid "Name cannot contain backslash"
 msgstr "Le nom ne peut pas contenir de barre oblique inverse (\\)"
+
