@@ -1,9 +1,9 @@
 export const removeTextHTMLMark = (text) => {
   if (!text) return '';
   return text
-    .replace(/<!--[\s\S]*?-->/g, '') // remove notes
-    .replace(/<script\b[\s\S]*?<\/script>/gi, '') // remove script
-    .replace(/<style\b[\s\S]*?<\/style>/gi, '') // remove style
+    .replace(/<!--[\s\S]*?(?:-->|$)/g, '') // remove notes, including unterminated comments
+    .replace(/<script\b[\s\S]*?(?:<\/script\s*>|$)/gi, '') // remove script, including unterminated elements
+    .replace(/<style\b[\s\S]*?(?:<\/style\s*>|$)/gi, '') // remove style, including unterminated elements
     // remove incomplete tags
     .replace(/<[a-z][a-z0-9]*\b[^>]*$/gim, '') // remove incomplete line endings
     .replace(/<[a-z][a-z0-9]*\b[^>]*?(?=\s*<|$)/gim, '') // remove incomplete tags at the end of text
@@ -12,7 +12,8 @@ export const removeTextHTMLMark = (text) => {
     .replace(/^[^<]*>/g, '')
     .replace(/\b(class|id|style|src|href|alt|title)\s*=\s*(?:"[^"]*"|'[^']*'|[^"'\s>]+)/gi, '')
     .replace(/\b(class|id|style|name|value|type|width|height)\b/gi, '')
-    .replace(/<\/?[a-z][\s\S]*?>/gi, '');
+    .replace(/<\/?[a-z][\s\S]*?>/gi, '')
+    .replace(/<script\b/gi, ''); // disarm script openers formed by earlier stripping
 };
 
 export const removeTextMdMark = (text) => {
