@@ -16,7 +16,10 @@ import './index.css';
 const thoughtProcessEnabled = window.app.pageOptions.thoughtProcessEnabled;
 
 const RunStatusTag = ({ icon = '', className, text }) => (
-  <span className={classnames('seaqa-agent-run-status', className)}>{icon && <Icon symbol={icon} />}<span>{text}</span></span>
+  <span className={classnames('seaqa-agent-run-status px-2 d-flex align-items-center justify-content-center', className)}>
+    {icon && <Icon symbol={icon} />}
+    <span>{text}</span>
+  </span>
 );
 
 const RunDetail = ({

@@ -65,17 +65,14 @@
 }
 
 .seaqa-agent-run-status {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   width: fit-content;
   height: 22px !important;
-  padding: 0 8px;
   border: 1px solid rgba(0, 40, 100, 0.12);
   border-radius: 4px;
   color: var(--bs-body-color);
   font-size: 12px;
   gap: 4px;
+  cursor: default;
 }
 
 .seaqa-agent-run-status .seaqa-icon-svg {

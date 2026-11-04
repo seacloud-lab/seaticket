@@ -56,8 +56,8 @@ const RunLog = ({ active, runLog, onClick, onRemove }) => {
         </div>
         {status && (
           <>
-            {status === LOG_STATUS.PROCESSED && (<IconButton size={12} className="no-hover-bg seaqa-agent-run-status run-done" icon="check-circle" />)}
-            {status === 'no_action_needed' && (<IconButton size={12} className="no-hover-bg seaqa-agent-run-status run-no-action-needed" icon="info-filled" />)}
+            {status === LOG_STATUS.PROCESSED && (<IconButton size={12} className="no-hover-bg seaqa-agent-run-status run-done p-0" icon="check-circle" />)}
+            {status === 'no_action_needed' && (<IconButton size={12} className="no-hover-bg seaqa-agent-run-status run-no-action-needed p-0" icon="info-filled" />)}
           </>
         )}
       </div>
