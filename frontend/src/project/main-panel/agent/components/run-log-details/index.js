@@ -432,7 +432,7 @@ const RunLogDetails = ({
                       <div className="seaqa-agent-run-detail collapsed seaqa-agent-run-detail-more-tip">
                         <div className="seaqa-agent-run-detail-header">
                           <div className="flex-1 text-truncate">
-                            <span className="font-weight-500">{gettext('% runs').replace('%', runs.length - 1)}</span>
+                            <span className="font-weight-500">{gettext('%count runs').replace('%count', runs.length - 1)}</span>
                             {` ${gettext('more')}`}
                           </div>
                           <div className="d-flex align-items-center">

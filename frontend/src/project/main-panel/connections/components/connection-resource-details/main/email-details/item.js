@@ -35,9 +35,10 @@ const Item = ({
 
   const contentStart = useMemo(() => {
     const hrefReg = /\[.+\]\(\S+\)|<img( width=[\\|/]?"(\d)+[\\|/|]?")? src="(\S+)" .?\/>|!\[\]\(\S+\)|!\[\]\((\S+)\)|<\S+>/g;
-    let value = content ? content.replace(hrefReg, '').replace('\n', ' ').substring(0, 150) : '';
+    let value = content ? content.replace(hrefReg, '').replace(/\r\n?|\n/g, ' ').substring(0, 150) : '';
     const emailText = email || '';
-    const isGitLog = emailText.indexOf('github.com') > -1 || emailText.indexOf('gitlab') > -1;
+    const emailDomain = emailText.trim().toLowerCase().match(/^[^@\s<>]+@([^@\s<>]+)$/)?.[1];
+    const isGitLog = emailDomain === 'github.com' || emailDomain === 'gitlab.com';
     if (!isGitLog) return value;
     if (value.startsWith(`@${sender}`)) {
       value = value.replace(`@${sender}`, '');

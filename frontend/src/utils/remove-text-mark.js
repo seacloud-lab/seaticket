@@ -1,18 +1,18 @@
 export const removeTextHTMLMark = (text) => {
   if (!text) return '';
-  return text
-    .replace(/<!--[\s\S]*?-->/g, '') // remove notes
-    .replace(/<script\b[\s\S]*?<\/script>/gi, '') // remove script
-    .replace(/<style\b[\s\S]*?<\/style>/gi, '') // remove style
-    // remove incomplete tags
-    .replace(/<[a-z][a-z0-9]*\b[^>]*$/gim, '') // remove incomplete line endings
-    .replace(/<[a-z][a-z0-9]*\b[^>]*?(?=\s*<|$)/gim, '') // remove incomplete tags at the end of text
-    .replace(/<[a-z][a-z0-9]*(?:\s+[a-z][a-z0-9-]*(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^"'\s>]+))?)*\s*\/?>/gi, '') // remove tag and attributes
-    .replace(/<[^>]*?$/g, '')
-    .replace(/^[^<]*>/g, '')
-    .replace(/\b(class|id|style|src|href|alt|title)\s*=\s*(?:"[^"]*"|'[^']*'|[^"'\s>]+)/gi, '')
-    .replace(/\b(class|id|style|name|value|type|width|height)\b/gi, '')
-    .replace(/<\/?[a-z][\s\S]*?>/gi, '');
+
+  // Parse as an inert HTML document instead of trying to remove markup with
+  // regular expressions. Regex-based stripping can expose a tag after one
+  // replacement creates a new multi-character sequence such as "<script".
+  const parsedDocument = new DOMParser().parseFromString(String(text), 'text/html');
+  parsedDocument.querySelectorAll('script, style, noscript, template').forEach((element) => {
+    element.remove();
+  });
+
+  // This helper returns plain text, not HTML. Also remove literal angle
+  // brackets (including those decoded from entities) so the result cannot be
+  // interpreted as an HTML tag if a caller later inserts it into a document.
+  return parsedDocument.body.textContent.replace(/[<>]/g, '');
 };
 
 export const removeTextMdMark = (text) => {
