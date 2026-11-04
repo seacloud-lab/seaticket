@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { EmptyTip, CenteredLoading } from '@/components';
 import { gettext, mediaUrl } from '@/constants';
 import TopBar from '../top-bar';
@@ -11,6 +11,8 @@ import './index.css';
 const Main = ({ title, settings, modifySettings }) => {
   const [isShowLogs, setIsShowLogs] = useState(true);
   const [updatedRuns, setUpdatedRuns] = useState(null);
+
+  const updatedRunsVersionRef = useRef(0);
 
   const {
     runLogs,
@@ -30,7 +32,8 @@ const Main = ({ title, settings, modifySettings }) => {
   const activeLog = useMemo(() => runLogs.find(item => item.key === activeLogKey), [runLogs, activeLogKey]);
 
   const onRunsUpdated = useCallback((owner_source_id, owner_source_type, runs) => {
-    setUpdatedRuns({ owner_source_id, owner_source_type, runs });
+    updatedRunsVersionRef.current += 1;
+    setUpdatedRuns({ version: updatedRunsVersionRef.current, owner_source_id, owner_source_type, runs });
   }, []);
 
   return (
