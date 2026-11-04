@@ -120,7 +120,7 @@ export const transformReferencesToMarkdown = (value = '', sources = []) => {
       const urlObject = new URL(validLinkReference);
       const url = urlObject.href;
       const sourceIndex = sources.findIndex(source => source.url === url);
-      if (sourceIndex > -1) return `[Reference ${sourceIndex}]${linkReferenceIncludesParentheses ? ')' : ''}`;
+      if (sourceIndex > -1) return `[Reference ${sourceIndex + 1}]${linkReferenceIncludesParentheses ? ')' : ''}`;
       const referenceIndex = sources.length;
       sources.push({
         key: `unknown_${referenceIndex}`,
@@ -133,7 +133,7 @@ export const transformReferencesToMarkdown = (value = '', sources = []) => {
         icon: getResourceIconURL('unknown'),
         category_name: gettext('Unknown')
       });
-      return `[Reference ${referenceIndex}]${linkReferenceIncludesParentheses ? ')' : ''}`;
+      return `[Reference ${referenceIndex + 1}]${linkReferenceIncludesParentheses ? ')' : ''}`;
     })
     .replace(removeParentheses, (match, p1) => p1)
     .replace(removeComma, (match, references) => references.replace(/\],\s*\[/g, ']['))
