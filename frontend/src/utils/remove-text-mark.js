@@ -19,6 +19,7 @@ export const removeTextHTMLMark = (text) => {
       .replace(/<\/?[a-z][\s\S]*?>/gi, '')
       .replace(/<script\b/gi, ''); // disarm script openers formed by earlier stripping
   } while (cleanText !== previousText);
+  cleanText = cleanText.replace(/[<>]/g, ''); // remove any residual tag delimiters
   return cleanText;
 };
 
