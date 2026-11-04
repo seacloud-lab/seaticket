@@ -89,12 +89,10 @@ class TestOrgCreditStatisticsUTC:
         (datetime(2026, 12, 31, 23, 59, tzinfo=datetime_timezone.utc), date(2026, 12, 31)),
         (datetime(2027, 1, 1, tzinfo=datetime_timezone.utc), date(2027, 1, 1)),
     ])
-    @pytest.mark.parametrize('group_by', [None, 'scenario', 'month', 'date'])
-    def test_all_overview_modes_use_one_utc_date(self, active_timezone, now, expected_today, group_by):
+    def test_overview_returns_all_sections_with_one_utc_date(self, active_timezone, now, expected_today):
         view = OrgAdminAIStatisticsOverviewView()
         request = SimpleNamespace(
             user=SimpleNamespace(org=SimpleNamespace(org_id=7)),
-            GET={'group_by': group_by} if group_by else {},
         )
         with timezone.override(active_timezone), \
                 patch('seahub.utils.timeutils.timezone.now', side_effect=[now, now + timedelta(days=1)]) as clock, \
@@ -105,17 +103,20 @@ class TestOrgCreditStatisticsUTC:
 
         assert response.status_code == 200
         clock.assert_called_once()
+        assert set(response.data) == {'summary', 'scenario', 'month', 'date'}
+
         month_start = expected_today.replace(day=1)
         month_end = expected_today.replace(day=calendar.monthrange(expected_today.year, expected_today.month)[1])
         expected_range = [month_start.isoformat(), month_end.isoformat()]
-        if group_by == 'month':
-            assert response.data['results'][-1]['month'] == expected_today.strftime('%Y-%m')
-            assert total_usage.call_args.args == (expected_range, 7)
-        elif group_by == 'date':
-            daily_usage.assert_called_once_with('date', [month_start, expected_today], {'org_id': 7})
-            assert response.data['results'][-1]['date'] == expected_today.isoformat()
-            assert response.data['count'] == expected_today.day
-        elif group_by == 'scenario':
-            scenarios.assert_called_once_with(expected_range, 7)
-        else:
-            assert total_usage.call_args_list[0].args == (expected_range, 7)
+
+        assert total_usage.call_count == 9
+        assert total_usage.call_args_list[0].args == (expected_range, 7)
+        if expected_today.month == 1:
+            last_month_range = [f'{expected_today.year - 1}-12-01', f'{expected_today.year - 1}-12-31']
+            assert total_usage.call_args_list[1].args == (last_month_range, 7)
+        scenarios.assert_called_once_with(expected_range, 7)
+        daily_usage.assert_called_once_with('date', [month_start, expected_today], {'org_id': 7})
+        assert response.data['month']['count'] == 6
+        assert response.data['month']['results'][-1]['month'] == expected_today.strftime('%Y-%m')
+        assert response.data['date']['count'] == expected_today.day
+        assert response.data['date']['results'][-1]['date'] == expected_today.isoformat()

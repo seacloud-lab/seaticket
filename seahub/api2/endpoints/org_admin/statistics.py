@@ -363,44 +363,40 @@ class OrgAdminAIStatisticsOverviewView(APIView):
 
         return {'results': results, 'count': len(results)}
 
+    def _get_summary(self, today, org_id):
+        current_month_range = self._get_month_range(today)
+        if today.month == 1:
+            last_month_date = datetime.date(today.year - 1, 12, 1)
+        else:
+            last_month_date = datetime.date(today.year, today.month - 1, 1)
+        last_month_range = self._get_month_range(last_month_date)
+        last_month_same_day_range = self._get_last_month_same_day_range(today)
+
+        current_month_credit = self._get_total_credit_used(current_month_range, org_id)
+        last_month_credit = self._get_total_credit_used(last_month_range, org_id)
+        last_month_same_day_credit = self._get_total_credit_used(last_month_same_day_range, org_id)
+        month_on_month_change = current_month_credit - last_month_credit
+
+        return {
+            'current_month_credit': round(current_month_credit, 0),
+            'last_month_credit': round(last_month_credit, 0),
+            'last_month_same_day_credit': round(last_month_same_day_credit, 0),
+            'month_on_month_change': round(month_on_month_change, 0),
+        }
+
     def get(self, request, org_id):
         org_id = int(org_id)
         if not request.user.org or request.user.org.org_id != org_id:
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
 
         today = get_utc_date()
-        current_month_range = self._get_month_range(today)
-        group_by = request.GET.get('group_by')
-
-        if group_by and group_by not in ('scenario', 'month', 'date'):
-            return api_error(status.HTTP_400_BAD_REQUEST, 'group_by invalid. Must be "scenario" or "month" or "date"')
-
         try:
-            if group_by == 'scenario':
-                return Response(self._get_scenario_percentages(current_month_range, org_id))
-            if group_by == 'month':
-                return Response(self._get_monthly_credits(org_id, today=today))
-            if group_by == 'date':
-                return Response(self._get_daily_credits_current_month(org_id, today=today))
-
-            if today.month == 1:
-                last_month_date = datetime.date(today.year - 1, 12, 1)
-            else:
-                last_month_date = datetime.date(today.year, today.month - 1, 1)
-            last_month_range = self._get_month_range(last_month_date)
-            last_month_same_day_range = self._get_last_month_same_day_range(today)
-
-            current_month_credit = self._get_total_credit_used(current_month_range, org_id)
-            last_month_credit = self._get_total_credit_used(last_month_range, org_id)
-            last_month_same_day_credit = self._get_total_credit_used(last_month_same_day_range, org_id)
-            month_on_month_change = current_month_credit - last_month_credit
+            return Response({
+                'summary': self._get_summary(today, org_id),
+                'scenario': self._get_scenario_percentages(self._get_month_range(today), org_id),
+                'month': self._get_monthly_credits(org_id, today=today),
+                'date': self._get_daily_credits_current_month(org_id, today=today),
+            })
         except Exception as e:
             logger.exception(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal server error')
-
-        return Response({
-            'current_month_credit': round(current_month_credit, 0),
-            'last_month_credit': round(last_month_credit, 0),
-            'last_month_same_day_credit': round(last_month_same_day_credit, 0),
-            'month_on_month_change': round(month_on_month_change, 0),
-        })
