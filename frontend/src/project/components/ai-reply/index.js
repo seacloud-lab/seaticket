@@ -40,6 +40,7 @@ const AIReply = forwardRef(({
   className: propsClassName,
   canPreviewLinkedFile = true,
   openDocument,
+  usePublicSourceLinks = false,
 }, ref) => {
   const [aiMessageType, setAIMessageType] = useState('rich-text');
   const [className, setClassName] = useState('');
@@ -64,7 +65,7 @@ const AIReply = forwardRef(({
     let value = message.ai_reply || '';
     let aiReplyForCopy = '';
 
-    let sources = formatSources(message.sources, { workspaceID, projectName });
+    let sources = formatSources(message.sources, { workspaceID, projectName, usePublicSourceLinks });
     let mdFiles = [];
     value = transformMDFileToLink(value, mdFiles, messageId);
     value = transformKBToLink(value, { workspaceID, projectName });
@@ -76,8 +77,11 @@ const AIReply = forwardRef(({
     }
     value = transformReferencesToMarkdown(value, sources);
     aiReplyForCopy = transformContentForCopy(value, { mdFiles, sources });
-    if (sources.length > 0) {
-      const sourcesString = sources.map((s, i) => `[${i + 1}]: ${s.url} "${s.title}"`).join('\n');
+    const sourcesString = sources
+      .map((s, i) => (s.url ? `[${i + 1}]: ${s.url} "${s.title}"` : ''))
+      .filter(Boolean)
+      .join('\n');
+    if (sourcesString) {
       value = value + `\n\n${sourcesString}`;
     }
 
@@ -87,7 +91,7 @@ const AIReply = forwardRef(({
       sources,
       mdFiles,
     };
-  }, [message, projectName, workspaceID, messageId]);
+  }, [message, projectName, workspaceID, messageId, usePublicSourceLinks]);
 
   const handleConnectionRecord = useCallback((record) => {
     setResource(record);
@@ -95,8 +99,14 @@ const AIReply = forwardRef(({
   }, []);
 
   const openConnectionRecord = useCallback((event, record) => {
+    if (usePublicSourceLinks) {
+      if (record?.url) {
+        window.open(record.url, '_blank', 'noopener,noreferrer');
+      }
+      return;
+    }
     handleConnectionRecord(record);
-  }, [handleConnectionRecord]);
+  }, [handleConnectionRecord, usePublicSourceLinks]);
 
   const closeConnectionRecord = useCallback(() => {
     setResource(null);
@@ -307,7 +317,7 @@ const AIReply = forwardRef(({
           />
         </div>
       )}
-      {isShowResourceDetails && (
+      {isShowResourceDetails && !usePublicSourceLinks && (
         <ResourceDetailsDialog
           projectUuid={projectUuid}
           resource={resource}

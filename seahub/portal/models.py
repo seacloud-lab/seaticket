@@ -484,13 +484,14 @@ class PortalChatSessions(models.Model):
 
 class PortalChatMessagesManager(models.Manager):
 
-    def create_message(self, session_uuid, message_id, role, content, as_context=True, attachments=[]):
+    def create_message(self, session_uuid, message_id, role, content, as_context=True, sources='', attachments=[]):
         message = self.model(
             session_uuid=session_uuid,
             message_id=message_id,
             role=role,
             content=content,
             as_context=as_context,
+            sources=sources,
             attachments=json.dumps(attachments),
         )
         message.save()
@@ -516,6 +517,7 @@ class PortalChatMessages(models.Model):
     role = models.CharField(max_length=20)
     content = models.TextField(null=True)
     attachments = models.TextField(null=True)
+    sources = models.TextField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     as_context = models.BooleanField(default=True)
@@ -535,6 +537,12 @@ class PortalChatMessages(models.Model):
             attachments = []
         if not isinstance(attachments, list):
             attachments = []
+        try:
+            sources = json.loads(self.sources) if self.sources else []
+        except (TypeError, ValueError):
+            sources = []
+        if not isinstance(sources, list):
+            sources = []
         return {
             'id': self.id,
             'session_uuid': self.session_uuid,
@@ -542,6 +550,7 @@ class PortalChatMessages(models.Model):
             'role': self.role,
             'content': self.content,
             'attachments': attachments,
+            'sources': sources,
             'created_at': self.created_at,
             'updated_at': self.updated_at,
             'as_context': self.as_context,

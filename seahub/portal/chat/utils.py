@@ -333,12 +333,17 @@ def build_portal_message_result(ai_result, project_uuid, session_uuid, message_i
         'attachments': stripped_attachments,
     })
 
+    sources = ai_result.get('sources') or []
+    if not isinstance(sources, list):
+        sources = []
+
     try:
         user_message = PortalChatMessages.objects.create_message(
             session_uuid, message_id, 'user', query, attachments=stripped_attachments,
         )
         ai_reply_message = PortalChatMessages.objects.create_message(
-            session_uuid, message_id, 'assistant', ai_result['ai_reply']
+            session_uuid, message_id, 'assistant', ai_result['ai_reply'],
+            sources=json.dumps(sources, default=str),
         )
         ai_result.update({
             'user_message_id': user_message.id,

@@ -3,11 +3,18 @@ import { generatorKnowledgeBaseURL } from '@/project/main-panel/knowledge-base/u
 import { generatorTicketURL } from '@/project/main-panel/tickets/utils';
 import { getResourceIconURL, getInternalNetworkAddress } from '@/project/utils';
 
-export const formatSources = (sources, { workspaceID, projectName }) => {
+const isPublicHttpUrl = (url) => typeof url === 'string' && /^https?:\/\//i.test(url.trim());
+
+export const formatSources = (sources, { workspaceID, projectName, usePublicSourceLinks = false } = {}) => {
   if (!Array.isArray(sources) || sources.length === 0) return [];
   return sources.slice(0).map(source => {
     const { type, ai_summary, connection_id, _id, title } = source;
-    const url = !type || type === 'unknown' ? source?.url : getInternalNetworkAddress(type, _id, { workspaceID, projectName, connectionID: connection_id });
+    let url = '';
+    if (usePublicSourceLinks) {
+      url = isPublicHttpUrl(source?.url) ? source.url.trim() : '';
+    } else {
+      url = !type || type === 'unknown' ? source?.url : getInternalNetworkAddress(type, _id, { workspaceID, projectName, connectionID: connection_id });
+    }
     const urlObject = url ? new URL(url) : { href: '' };
 
     return {
@@ -133,7 +140,7 @@ export const transformReferencesToMarkdown = (value = '', sources = []) => {
     .replace(reference2Md, (match, text, orderString) => {
       const order = Number(orderString);
       const source = sources[order - 1];
-      if (!source) return '';
+      if (!source || !source.url) return '';
       return `[${source.title}][${order}]`;
     });
 };
