@@ -8,6 +8,8 @@ describe('Color Utilities', () => {
       expect(isHexColor('#ffffff')).toBe(true);
       expect(isHexColor('#ABCDEF')).toBe(true);
       expect(isHexColor('#123')).toBe(true);
+      expect(isHexColor('#a0F')).toBe(true);
+      expect(isHexColor('#09aBcD')).toBe(true);
     });
 
 
@@ -15,6 +17,14 @@ describe('Color Utilities', () => {
       expect(isHexColor('fff')).toBe(false); // missing #
       expect(isHexColor('#gggggg')).toBe(false); // invalid characters
       expect(isHexColor('#1234')).toBe(false); // invalid length
+      expect(isHexColor('#12')).toBe(false); // too short
+      expect(isHexColor('#12345')).toBe(false); // invalid length
+      expect(isHexColor('#1234567')).toBe(false); // too long
+      expect(isHexColor('#12G')).toBe(false); // outside the hex range
+      expect(isHexColor('#12[')).toBe(false); // punctuation must not match
+      expect(isHexColor('#12`')).toBe(false); // punctuation between uppercase and lowercase ranges
+      expect(isHexColor('##fff')).toBe(false); // extra #
+      expect(isHexColor('#fff ')).toBe(false); // trailing whitespace
       expect(isHexColor('')).toBe(false);
       expect(isHexColor(null)).toBe(false);
       expect(isHexColor(undefined)).toBe(false);
