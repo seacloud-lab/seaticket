@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Button, DropdownItem } from 'reactstrap';
+import { Button } from 'reactstrap';
 import { Icon, toaster, CenteredLoading, EmptyTip, CustomizeTable } from '@/components';
-import ModalPortal from '@/components/modal-portal';
 import { gettext } from '@/constants';
 import { connectionsAPI } from '@/project/api';
 import { BAR_TYPE } from '@/project/constants';
@@ -28,8 +27,6 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
   const [isShowLogDialog, setIsShowLogDialog] = useState(false);
   const [isShowWebhookDialog, setIsShowWebhookDialog] = useState(false);
   const [statisticsConnection, setStatisticsConnection] = useState(null);
-  const [contextMenu, setContextMenu] = useState(null);
-  const contextMenuRef = useRef(null);
 
   const { isLoading, isLoadingMore, connections, reloadConnections, loadMore, handleModify, handleDelete,
     modifyConnectionIsActiveStatus, modifyLocalConnectionRecord, modifyLocalConnectionsSyncStatus,
@@ -102,6 +99,15 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
           activeRecordRef.current = record;
           setIsShowLogDialog(true);
         },
+      }, (record) => {
+        if (record.type !== CONNECTION_TYPE.GITHUB_ISSUE) return null;
+        return {
+          key: 'statistic',
+          label: gettext('Statistic'),
+          callback: (record) => {
+            setStatisticsConnection(record);
+          }
+        };
       }, {
         key: 'sync_now',
         label: gettext('Sync now'),
@@ -217,21 +223,6 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
         rowsWillUnmount={rowsWillUnmount}
         modifyLocalRow={modifyLocalConnectionRecord}
       />
-      {contextMenu && (
-        <ModalPortal>
-          <div ref={contextMenuRef}>
-            <div
-              className="dropdown-menu connection-statistics-context-menu"
-              style={{ position: 'fixed', left: contextMenu.left, top: contextMenu.top }}
-              role="menu"
-            >
-              <DropdownItem toggle={false} onClick={() => onViewStatistics(contextMenu.record)}>
-                {gettext('Statistics')}
-              </DropdownItem>
-            </div>
-          </div>
-        </ModalPortal>
-      )}
       {statisticsConnection && (
         <ConnectionStatisticsDialog
           key={statisticsConnection.id}

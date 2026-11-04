@@ -13,16 +13,15 @@ jest.mock('@/utils/self-query', () => function SelfQuery() {
   this.start = jest.fn();
   this.clear = jest.fn();
 });
-jest.mock('@/components/modal-portal', () => ({ children }) => <>{children}</>);
 jest.mock('@/components', () => ({
   Icon: () => null,
   toaster: { success: jest.fn(), danger: jest.fn() },
   CenteredLoading: () => null,
   EmptyTip: () => null,
-  CustomizeTable: ({ rows, onRowContextMenu, onViewStatistics }) => (
+  CustomizeTable: ({ rows, onViewStatistics }) => (
     <div>
       {rows.map(row => (
-        <div key={row.id} data-testid={`connection-${row.id}`} onContextMenu={event => onRowContextMenu(event, row)}>
+        <div key={row.id} data-testid={`connection-${row.id}`}>
           {row.name}
           <button onClick={() => onViewStatistics(row)}>Statistics {row.id}</button>
         </div>
@@ -61,46 +60,18 @@ jest.mock('@/project/main-panel/connections/constants', () => ({
   CONNECTION_TYPE: { GITHUB_ISSUE: 'github_issue' },
 }));
 
-it('opens statistics for the right-clicked connection without navigation', () => {
+it('opens statistics from the more-menu callback without navigation', () => {
   const modifyLocalBar = jest.fn();
   render(<AllConnections projectUuid="project-1" modifyLocalBar={modifyLocalBar} />);
-  fireEvent.contextMenu(screen.getByTestId('connection-7'), { clientX: 50, clientY: 60 });
-  fireEvent.click(screen.getByRole('menuitem', { name: 'Statistics' }));
+  fireEvent.click(screen.getByText('Statistics 7'));
   expect(screen.getByRole('dialog').textContent).toContain('Statistics for 7');
-  expect(screen.queryByRole('menu')).toBeNull();
   expect(modifyLocalBar).not.toHaveBeenCalled();
   fireEvent.click(screen.getByText('Close'));
   expect(screen.queryByRole('dialog')).toBeNull();
 });
 
-it('opens the same dialog from the more-menu callback', () => {
+it.each([8, 9, 10])('does not open statistics for non-GitHub connection %s', id => {
   render(<AllConnections projectUuid="project-1" />);
-  fireEvent.click(screen.getByText('Statistics 7'));
-  expect(screen.getByRole('dialog').textContent).toContain('Statistics for 7');
-});
-
-it('dismisses the right-click menu with Escape and outside clicks', () => {
-  render(<AllConnections projectUuid="project-1" />);
-  fireEvent.contextMenu(screen.getByTestId('connection-7'));
-  fireEvent.keyDown(document, { key: 'Escape' });
-  expect(screen.queryByRole('menu')).toBeNull();
-  fireEvent.contextMenu(screen.getByTestId('connection-7'));
-  fireEvent.mouseDown(document.body);
-  expect(screen.queryByRole('menu')).toBeNull();
-});
-
-it.each([8, 9, 10])('does not open a statistics menu or dialog for non-GitHub connection %s', id => {
-  render(<AllConnections projectUuid="project-1" />);
-  expect(fireEvent.contextMenu(screen.getByTestId(`connection-${id}`))).toBe(true);
-  expect(screen.queryByRole('menu')).toBeNull();
   fireEvent.click(screen.getByText(`Statistics ${id}`));
   expect(screen.queryByRole('dialog')).toBeNull();
-});
-
-it('clears a previous GitHub menu when right-clicking another connection type', () => {
-  render(<AllConnections projectUuid="project-1" />);
-  fireEvent.contextMenu(screen.getByTestId('connection-7'));
-  expect(screen.getByRole('menu')).not.toBeNull();
-  fireEvent.contextMenu(screen.getByTestId('connection-8'));
-  expect(screen.queryByRole('menu')).toBeNull();
 });
