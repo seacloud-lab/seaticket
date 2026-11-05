@@ -2154,3 +2154,159 @@ class TestProjectConnectionRecordCustomer:
 
         assert resp.status_code == 404
         seadb.update_rows.assert_not_called()
+
+
+class TestProjectConnectionRecordsTicketStatus:
+
+    @staticmethod
+    def _metadata():
+        return [
+            {
+                'key': 'k_state',
+                'name': 'state',
+                'data': {'options': [
+                    {'id': '0001', 'name': 'open'},
+                    {'id': '0002', 'name': 'closed'},
+                ]},
+            },
+            {
+                'key': 'k_substate',
+                'name': 'substate',
+                'data': {
+                    'cascade_settings': {'0001': ['0010', '0011'], '0002': ['0014']},
+                    'options': [
+                        {'id': '0010', 'name': 'New'},
+                        {'id': '0011', 'name': 'Working on'},
+                        {'id': '0014', 'name': 'Completed'},
+                    ],
+                },
+            },
+        ]
+
+    def _create_task_from_ticket(self, factory, project_creator, real_project, connection_factory,
+                                 ticket, seadb=None):
+        connection = connection_factory(connection_type=ConnectionType.GENERAL_TASK.value, config={})
+        request = factory.post(
+            f'/api/v1/project/{real_project.uuid}/connections/{connection.id}/records/',
+            data={'title': 'From ticket', 'description': {'text': 'Body'}, 'linked_ticket': ticket['_pk']},
+            format='json',
+        )
+        request.user = project_creator
+        if seadb is None:
+            seadb = Mock()
+            seadb.insert_rows.return_value = {'pks': [9]}
+
+        with patch('seahub.project.connections.create_general_task_via_adapter',
+                   return_value={'id': 't1', 'title': 'From ticket'}), \
+                patch('seahub.project.connections.build_general_task_row_data',
+                      return_value={'title': 'From ticket'}), \
+                patch('seahub.project.connections.SeaDBAPI', return_value=seadb), \
+                patch('seahub.project.connections.get_ticket',
+                      return_value=(ticket, self._metadata())), \
+                patch('seahub.project.connections.check_ticket_link_changes',
+                      return_value=(Mock(), {})), \
+                patch('seahub.project.connections.sync_links_in_connection'), \
+                patch('seahub.tickets.ticket_utils.send_ticket_update_msg') as send_ticket_update, \
+                patch('seahub.tickets.ticket_utils.send_data_update_msg') as send_data_update:
+            resp = ProjectConnectionRecordsView.as_view()(
+                request, project_uuid=real_project.uuid, connection_id=str(connection.id))
+
+        return resp, seadb, connection, send_ticket_update, send_data_update
+
+    @staticmethod
+    def _ticket_rows(seadb):
+        return [c.args[2] for c in seadb.update_rows.call_args_list if c.args[1] == 'tickets']
+
+    def test_open_ticket_moves_to_working_on(self, factory, project_creator, real_project, connection_factory):
+        ticket = {'_pk': 11, 'state': 'open', 'substate': 'New', 'linked_connection_records': []}
+
+        resp, seadb, connection, send_ticket_update, send_data_update = self._create_task_from_ticket(
+            factory, project_creator, real_project, connection_factory, ticket)
+
+        assert resp.status_code == 201
+        ticket_rows = self._ticket_rows(seadb)
+        assert len(ticket_rows) == 1
+        row = ticket_rows[0][0]['row']
+        assert row['linked_connection_records'] == [f'{connection.id}_9']
+        assert row['substate'] == 'Working on'
+        assert row['modified_time']
+        assert 'state' not in row
+        assert 'closed_time' not in row
+
+        assert resp.data['ticket']['substate'] == '0011'
+        assert resp.data['ticket']['modified_time']
+        assert 'state' not in resp.data['ticket']
+
+        status_activity = [
+            a for a in resp.data['activities'] if a['activity_type'] == 'substate_changed']
+        assert len(status_activity) == 1
+        assert status_activity[0]['old_value'] == '0010'
+        assert status_activity[0]['new_value'] == '0011'
+        assert status_activity[0]['field_key'] == 'k_substate'
+        assert 'field_name' not in status_activity[0]
+
+        send_ticket_update.assert_called_once_with(real_project.uuid, updated=1)
+        event = send_data_update.call_args.kwargs['event']
+        assert event['type'] == 'ticket_updated'
+        assert event['new_value'] == {'substate': 'Working on'}
+
+    def test_closed_ticket_is_reopened(self, factory, project_creator, real_project, connection_factory):
+        ticket = {'_pk': 11, 'state': 'closed', 'substate': 'Completed', 'linked_connection_records': []}
+
+        resp, seadb, connection, send_ticket_update, send_data_update = self._create_task_from_ticket(
+            factory, project_creator, real_project, connection_factory, ticket)
+
+        assert resp.status_code == 201
+        row = self._ticket_rows(seadb)[0][0]['row']
+        assert row['state'] == 'open'
+        assert row['substate'] == 'Working on'
+        assert row['closed_time'] == ''
+
+        assert resp.data['ticket']['state'] == '0001'
+        assert resp.data['ticket']['substate'] == '0011'
+        assert resp.data['ticket']['closed_time'] == ''
+
+        status_activity = [
+            a for a in resp.data['activities'] if a['activity_type'] == 'state_substate_changed']
+        assert len(status_activity) == 1
+        assert status_activity[0]['old_value'] == {'k_state': '0002', 'k_substate': '0014'}
+        assert status_activity[0]['new_value'] == {'k_state': '0001', 'k_substate': '0011'}
+        assert status_activity[0]['field_key'] == 'k_state_k_substate'
+
+        event = send_data_update.call_args.kwargs['event']
+        assert event['type'] == 'ticket_reopened'
+
+    def test_ticket_already_working_on_is_untouched(
+            self, factory, project_creator, real_project, connection_factory):
+        ticket = {'_pk': 11, 'state': 'open', 'substate': 'Working on', 'linked_connection_records': []}
+
+        resp, seadb, connection, send_ticket_update, send_data_update = self._create_task_from_ticket(
+            factory, project_creator, real_project, connection_factory, ticket)
+
+        assert resp.status_code == 201
+        row = self._ticket_rows(seadb)[0][0]['row']
+        assert row == {'linked_connection_records': [f'{connection.id}_9']}
+        assert 'ticket' not in resp.data
+        assert not [a for a in resp.data['activities'] if a['activity_type'] == 'substate_changed']
+        send_ticket_update.assert_not_called()
+        send_data_update.assert_not_called()
+
+    def test_status_activity_failure_does_not_fail_creation(
+            self, factory, project_creator, real_project, connection_factory):
+        ticket = {'_pk': 11, 'state': 'open', 'substate': 'New', 'linked_connection_records': []}
+        seadb = Mock()
+
+        def insert_rows(base_id, table_name, rows):
+            if table_name == 'ticket_activities' and rows[0].get('activity_type') == 'substate_changed':
+                raise RuntimeError('activity insert failed')
+            return {'pks': [9]}
+
+        seadb.insert_rows.side_effect = insert_rows
+
+        resp, seadb, connection, send_ticket_update, send_data_update = self._create_task_from_ticket(
+            factory, project_creator, real_project, connection_factory, ticket, seadb=seadb)
+
+        assert resp.status_code == 201
+        assert self._ticket_rows(seadb)[0][0]['row']['substate'] == 'Working on'
+        assert resp.data['ticket']['substate'] == '0011'
+        send_ticket_update.assert_called_once_with(real_project.uuid, updated=1)

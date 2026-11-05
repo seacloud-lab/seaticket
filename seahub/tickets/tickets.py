@@ -41,6 +41,7 @@ from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     check_ticket_link_changes, sync_links_in_connection, TicketLinkValidationError, \
     TicketCustomerNotFound, \
     get_column_from_columns_by_name, get_option_id_by_name, send_data_update_msg, \
+    format_ticket_activity_for_client, notify_ticket_update, \
     build_tag_id_to_name_map, validate_linked_connection_records, \
     build_linked_github_issue_state_map, \
     collect_open_linked_github_issues_for_tickets, close_linked_github_issues, \
@@ -1196,60 +1197,7 @@ class TicketAPIView(APIView):
                     seadb_api, project_uuid, ticket.get('_pk'), username, changes
                 )
                 for activity in new_activities:
-                    field_name = activity.get('field_name')
-                    if field_name == 'state_substate':
-                        state_column = get_column_from_columns_by_name(metadata, SchemaTables.TICKETS.column.state.name)
-                        substate_column = get_column_from_columns_by_name(metadata, SchemaTables.TICKETS.column.substate.name)
-                        state_key = (state_column or {}).get('key') or SchemaTables.TICKETS.column.state.name
-                        substate_key = (substate_column or {}).get('key') or SchemaTables.TICKETS.column.substate.name
-                        old_value = activity.get('old_value') or {}
-                        new_value = activity.get('new_value') or {}
-                        if isinstance(old_value, dict):
-                            activity['old_value'] = {
-                                state_key: get_option_id_by_name(
-                                    metadata, SchemaTables.TICKETS.column.state.name, old_value.get('state'),
-                                    case_insensitive=True
-                                ),
-                                substate_key: get_option_id_by_name(
-                                    metadata, SchemaTables.TICKETS.column.substate.name, old_value.get('substate')
-                                )
-                            }
-                        if isinstance(new_value, dict):
-                            activity['new_value'] = {
-                                state_key: get_option_id_by_name(
-                                    metadata, SchemaTables.TICKETS.column.state.name, new_value.get('state'),
-                                    case_insensitive=True
-                                ),
-                                substate_key: get_option_id_by_name(
-                                    metadata, SchemaTables.TICKETS.column.substate.name, new_value.get('substate')
-                                )
-                            }
-                    elif field_name in (
-                        SchemaTables.TICKETS.column.state.name,
-                        SchemaTables.TICKETS.column.substate.name,
-                        SchemaTables.TICKETS.column.type.name,
-                    ):
-                        # keep storage as option name; only return ids for frontend consistency
-                        case_insensitive = field_name == SchemaTables.TICKETS.column.state.name
-                        activity['old_value'] = get_option_id_by_name(
-                            metadata, field_name, activity.get('old_value'),
-                            case_insensitive=case_insensitive
-                        )
-                        activity['new_value'] = get_option_id_by_name(
-                            metadata, field_name, activity.get('new_value'),
-                            case_insensitive=case_insensitive
-                        )
-                    if field_name == 'state_substate':
-                        state_column = get_column_from_columns_by_name(metadata, SchemaTables.TICKETS.column.state.name)
-                        substate_column = get_column_from_columns_by_name(metadata, SchemaTables.TICKETS.column.substate.name)
-                        state_key = (state_column or {}).get('key')
-                        substate_key = (substate_column or {}).get('key')
-                        if state_key and substate_key:
-                            activity['field_key'] = f'{state_key}_{substate_key}'
-                    else:
-                        column = get_column_from_columns_by_name(metadata, field_name)
-                        if column and column.get('key'):
-                            activity['field_key'] = column.get('key')
+                    format_ticket_activity_for_client(metadata, activity)
         except Exception as e:
             logger.error('Failed to record ticket activity: %s', e)
 
@@ -1272,20 +1220,9 @@ class TicketAPIView(APIView):
                     project_icon=project.icon,
                 )
 
-        send_ticket_update_msg(project_uuid, updated=1)
-        ticket_event = build_ticket_data_event(
-            event_type,
-            old_row=ticket,
-            new_row=update_row,
-            seadb_api=seadb_api,
-            project_uuid=project_uuid,
+        notify_ticket_update(
+            project_uuid, ticket.get('_pk'), ticket, update_row, event_type, seadb_api=seadb_api
         )
-        if has_ticket_event_changes(ticket_event):
-            send_data_update_msg(
-                project_uuid,
-                ticket.get('_pk'),
-                event=ticket_event,
-            )
 
         # Rename activity_type to type_description for frontend
         for activity in new_activities:
