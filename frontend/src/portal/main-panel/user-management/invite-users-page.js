@@ -113,7 +113,7 @@ const InviteUsersPage = ({
                 <td className="text-right operation-btns">
                   <div className="portal-customer-operation-btns">
                     <OperationButton icon="copy" tip={gettext('Copy')} onClick={() => onCopy(item.link)} />
-                    <OperationButton icon="delete" tip={gettext('Delete')} onClick={() => onRevoke(item.token)} />
+                    <OperationButton icon="delete" tip={gettext('Delete link')} onClick={() => onRevoke(item.token)} />
                   </div>
                 </td>
               </tr>
