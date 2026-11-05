@@ -8,7 +8,7 @@ from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE, ATTACHMENT_ISSUE_MAX_COMMENTS
 from seahub.profile.models import Profile
-from seahub.project.constants import TICKET_DISPLAY_ALL_COLUMNS, ExtraSourceType
+from seahub.project.constants import TICKET_DISPLAY_ALL_COLUMNS, ExtraSourceType, DataEventType
 from seahub.utils import mq, uuid_str_to_32_chars, time_str_to_utc_time
 from seahub.seadb_models.utils import get_connection_records_by_pks
 from seahub.project.models import ProjectConnections, Projects
@@ -1084,6 +1084,22 @@ def send_data_update_msg(project_uuid, record_id, event=None):
         logger.error('send data update msg failed, error: %s', e)
 
 
+def notify_ticket_update(project_uuid, ticket_id, old_row, new_row, event_type, seadb_api=None):
+    """Send the ticket update refresh message and data event."""
+    from seahub.tickets.tickets import build_ticket_data_event, has_ticket_event_changes
+
+    send_ticket_update_msg(project_uuid, updated=1)
+    event = build_ticket_data_event(
+        event_type,
+        old_row=old_row,
+        new_row=new_row,
+        seadb_api=seadb_api,
+        project_uuid=project_uuid,
+    )
+    if has_ticket_event_changes(event):
+        send_data_update_msg(project_uuid, ticket_id, event=event)
+
+
 def compare_ticket_changes(old_ticket, new_data):
     """ compare ticket changes, return changes list
 
@@ -1149,6 +1165,57 @@ def compare_ticket_changes(old_ticket, new_data):
         changes.append(('assignees_changed', 'assignees', list(old_assignees), list(new_assignees)))
 
     return changes
+
+
+def build_ticket_working_on_update(ticket, metadata, now=None):
+    """Compute the fields that move a ticket to Working on when a task is created.
+
+    Returns (update_fields, changes, event_type); all empty/None when no change.
+    """
+    working_on_name = ''
+    if isinstance(metadata, list) and metadata:
+        substate_column = get_column_from_columns_by_name(metadata, SchemaTables.TICKETS.column.substate.name)
+        substate_options = ((substate_column or {}).get('data') or {}).get('options') or []
+        for opt in substate_options:
+            if (opt.get('name') or '').lower() == 'working on':
+                working_on_name = opt.get('name')
+                break
+    if not working_on_name:
+        logger.warning('Working on substate option not found, skip ticket status update.')
+        return {}, [], None
+
+    old_state = (ticket.get(SchemaTables.TICKETS.column.state.name) or '').strip().lower()
+    new_state = 'open' if old_state == 'closed' else old_state
+    old_substate = ticket.get(SchemaTables.TICKETS.column.substate.name) or ''
+
+    if new_state == old_state and old_substate.strip().lower() == working_on_name.lower():
+        return {}, [], None
+
+    if new_state == 'open' and old_state != 'open':
+        try:
+            valid_relation = validate_ticket_state_substate_relation(metadata, new_state, working_on_name)
+        except Exception as e:
+            logger.error('Failed to validate ticket state/substate relation: %s', e)
+            valid_relation = False
+        if not valid_relation:
+            logger.warning('Cannot move ticket to %s + %s, skip status update.', new_state, working_on_name)
+            return {}, [], None
+
+    update_fields = {
+        SchemaTables.TICKETS.column.substate.name: working_on_name,
+        SchemaTables.TICKETS.column.modified_time.name: now or datetime.now(timezone.utc).isoformat(),
+    }
+    if new_state == 'open' and old_state != 'open':
+        update_fields[SchemaTables.TICKETS.column.state.name] = new_state
+        update_fields[SchemaTables.TICKETS.column.closed_time.name] = ''
+
+    changes = compare_ticket_changes(ticket, update_fields)
+    if new_state == 'open' and old_state != 'open':
+        event_type = DataEventType.TICKET_REOPENED.value
+    else:
+        event_type = DataEventType.TICKET_UPDATED.value
+    return update_fields, changes, event_type
+
 
 def record_create_task_activities(
     seadb_api, project_uuid, connection_id, task, creator='system',
@@ -1249,6 +1316,63 @@ def record_ticket_activities(seadb_api, project_uuid, ticket_id, creator, change
         activities.append(activity)
 
     return activities
+
+
+def format_ticket_activity_for_client(metadata, activity):
+    """Convert stored state/substate/type names to option ids and add field_key."""
+    if not isinstance(metadata, list):
+        return activity
+    field_name = activity.get('field_name')
+    if field_name == 'state_substate':
+        state_column = get_column_from_columns_by_name(metadata, SchemaTables.TICKETS.column.state.name)
+        substate_column = get_column_from_columns_by_name(metadata, SchemaTables.TICKETS.column.substate.name)
+        state_key = (state_column or {}).get('key') or SchemaTables.TICKETS.column.state.name
+        substate_key = (substate_column or {}).get('key') or SchemaTables.TICKETS.column.substate.name
+        old_value = activity.get('old_value') or {}
+        new_value = activity.get('new_value') or {}
+        if isinstance(old_value, dict):
+            activity['old_value'] = {
+                state_key: get_option_id_by_name(
+                    metadata, SchemaTables.TICKETS.column.state.name, old_value.get('state'),
+                    case_insensitive=True
+                ),
+                substate_key: get_option_id_by_name(
+                    metadata, SchemaTables.TICKETS.column.substate.name, old_value.get('substate')
+                ),
+            }
+        if isinstance(new_value, dict):
+            activity['new_value'] = {
+                state_key: get_option_id_by_name(
+                    metadata, SchemaTables.TICKETS.column.state.name, new_value.get('state'),
+                    case_insensitive=True
+                ),
+                substate_key: get_option_id_by_name(
+                    metadata, SchemaTables.TICKETS.column.substate.name, new_value.get('substate')
+                ),
+            }
+        state_field_key = (state_column or {}).get('key')
+        substate_field_key = (substate_column or {}).get('key')
+        if state_field_key and substate_field_key:
+            activity['field_key'] = f'{state_field_key}_{substate_field_key}'
+        return activity
+
+    if field_name in (
+        SchemaTables.TICKETS.column.state.name,
+        SchemaTables.TICKETS.column.substate.name,
+        SchemaTables.TICKETS.column.type.name,
+    ):
+        case_insensitive = field_name == SchemaTables.TICKETS.column.state.name
+        activity['old_value'] = get_option_id_by_name(
+            metadata, field_name, activity.get('old_value'), case_insensitive=case_insensitive
+        )
+        activity['new_value'] = get_option_id_by_name(
+            metadata, field_name, activity.get('new_value'), case_insensitive=case_insensitive
+        )
+
+    column = get_column_from_columns_by_name(metadata, field_name) if field_name else None
+    if column and column.get('key'):
+        activity['field_key'] = column.get('key')
+    return activity
 
 
 def get_ticket_activities(seadb_api, project_uuid, ticket_id, start=0, limit=50):

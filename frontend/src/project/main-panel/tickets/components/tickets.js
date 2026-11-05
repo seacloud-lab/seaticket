@@ -292,7 +292,7 @@ const Tickets = ({
     setIsShowCreateTaskDialog(true);
   }, []);
 
-  const handleTaskCreated = useCallback(({ task, connection }) => {
+  const handleTaskCreated = useCallback(({ task, connection, ticket: ticketUpdate = null }) => {
     if (!currentTicket) return;
     const linkedConnectionRecordsColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.LINKED_CONNECTION_RECORDS);
     if (!linkedConnectionRecordsColumn) return;
@@ -301,13 +301,35 @@ const Tickets = ({
     const oldValue = getCellValueByColumn(currentTicket, linkedConnectionRecordsColumn);
     const newValue = Array.isArray(oldValue) ? Array.from(new Set([...oldValue, newValueKey])) : [newValueKey];
     const update = { [linkedConnectionRecordsColumn.key]: newValue };
+    const dialogUpdate = { [linkedConnectionRecordsColumn.name]: newValue };
+
+    if (ticketUpdate) {
+      const stateColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.STATE);
+      const substateColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.SUB_STATE);
+      const modifiedTimeColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.MODIFIED_TIME);
+      const closedTimeColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.CLOSED_TIME);
+      if (ticketUpdate.state !== undefined && stateColumn) {
+        update[stateColumn.key] = ticketUpdate.state;
+        dialogUpdate[PREDEFINED_TICKET_COLUMN_NAME.STATE] = ticketUpdate.state;
+      }
+      if (ticketUpdate.substate !== undefined && substateColumn) {
+        update[substateColumn.key] = ticketUpdate.substate;
+        dialogUpdate[PREDEFINED_TICKET_COLUMN_NAME.SUB_STATE] = ticketUpdate.substate;
+      }
+      if (ticketUpdate.modified_time !== undefined && modifiedTimeColumn) {
+        update[modifiedTimeColumn.key] = ticketUpdate.modified_time;
+      }
+      if (ticketUpdate.closed_time !== undefined && closedTimeColumn) {
+        update[closedTimeColumn.key] = ticketUpdate.closed_time;
+      }
+    }
 
     // update cache
     const connectionTableName = getTableName(connection);
     const linked_records = { [newValueKey]: task.title };
     insertRowByLink(connectionTableName, TICKET_TABLE_NAME, linked_records, currentTicket._id, update, () => {
       // update current details dialog
-      eventBus.dispatch(GLOBAL_EVENT_BUS_TYPE.MODIFY_LOCAL_RECORD_IN_DIALOG, { [linkedConnectionRecordsColumn.name]: newValue }, { [newValueKey]: { _pk: task._pk, title: task.title, connection_type: connection.type } });
+      eventBus.dispatch(GLOBAL_EVENT_BUS_TYPE.MODIFY_LOCAL_RECORD_IN_DIALOG, dialogUpdate, { [newValueKey]: { _pk: task._pk, title: task.title, connection_type: connection.type } });
 
       // update current view display
       const metadataEventBus = context.eventBus;
