@@ -3,11 +3,18 @@ import { generatorKnowledgeBaseURL } from '@/project/main-panel/knowledge-base/u
 import { generatorTicketURL } from '@/project/main-panel/tickets/utils';
 import { getResourceIconURL, getInternalNetworkAddress } from '@/project/utils';
 
-export const formatSources = (sources, { workspaceID, projectName }) => {
+const isPublicHttpUrl = (url) => typeof url === 'string' && /^https?:\/\//i.test(url.trim());
+
+export const formatSources = (sources, { workspaceID, projectName, usePublicSourceLinks = false } = {}) => {
   if (!Array.isArray(sources) || sources.length === 0) return [];
   return sources.slice(0).map(source => {
     const { type, ai_summary, connection_id, _id, title } = source;
-    const url = !type || type === 'unknown' ? source?.url : getInternalNetworkAddress(type, _id, { workspaceID, projectName, connectionID: connection_id });
+    let url = '';
+    if (usePublicSourceLinks) {
+      url = isPublicHttpUrl(source?.url) ? source.url.trim() : '';
+    } else {
+      url = !type || type === 'unknown' ? source?.url : getInternalNetworkAddress(type, _id, { workspaceID, projectName, connectionID: connection_id });
+    }
     const urlObject = url ? new URL(url) : { href: '' };
 
     return {
@@ -113,7 +120,7 @@ export const transformReferencesToMarkdown = (value = '', sources = []) => {
       const urlObject = new URL(validLinkReference);
       const url = urlObject.href;
       const sourceIndex = sources.findIndex(source => source.url === url);
-      if (sourceIndex > -1) return `[Reference ${sourceIndex}]${linkReferenceIncludesParentheses ? ')' : ''}`;
+      if (sourceIndex > -1) return `[Reference ${sourceIndex + 1}]${linkReferenceIncludesParentheses ? ')' : ''}`;
       const referenceIndex = sources.length;
       sources.push({
         key: `unknown_${referenceIndex}`,
@@ -126,14 +133,14 @@ export const transformReferencesToMarkdown = (value = '', sources = []) => {
         icon: getResourceIconURL('unknown'),
         category_name: gettext('Unknown')
       });
-      return `[Reference ${referenceIndex}]${linkReferenceIncludesParentheses ? ')' : ''}`;
+      return `[Reference ${referenceIndex + 1}]${linkReferenceIncludesParentheses ? ')' : ''}`;
     })
     .replace(removeParentheses, (match, p1) => p1)
     .replace(removeComma, (match, references) => references.replace(/\],\s*\[/g, ']['))
     .replace(reference2Md, (match, text, orderString) => {
       const order = Number(orderString);
       const source = sources[order - 1];
-      if (!source) return '';
+      if (!source || !source.url) return '';
       return `[${source.title}][${order}]`;
     });
 };

@@ -27,7 +27,7 @@ const Definition = ({ element, attributes, editor, openDefinitionRecord, onClick
     return `calc((100% - 16px - ${offsetWidth}) / 3)`;
   }, [sources]);
 
-  if (!element) return null;
+  if (!element || !source?.url) return null;
 
   const { identifier, icon, title, content, mtime } = source;
 
