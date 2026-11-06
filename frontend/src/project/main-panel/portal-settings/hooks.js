@@ -59,7 +59,6 @@ export const PortalSettingsProvider = ({ projectUuid, isActive, children }) => {
     });
 
     const stateUpdate = { ...update };
-    delete stateUpdate.password;
     const saveVersion = ++settingsSaveVersion.current;
     const fieldVersions = {};
     Object.keys(stateUpdate).forEach(key => {
@@ -85,15 +84,12 @@ export const PortalSettingsProvider = ({ projectUuid, isActive, children }) => {
         });
         settingsRef.current = restoredSettings;
         setSettings(restoredSettings);
-
-        const errorMessage = Utils.getErrorMsg(error);
-        toaster.danger(errorMessage);
-        callback && callback(false);
+        callback && callback({ error });
         return false;
       }
 
       committedSettingsRef.current = { ...committedSettingsRef.current, ...stateUpdate };
-      callback && callback(true);
+      callback && callback();
       return true;
     });
   }, [projectUuid]);
@@ -150,19 +146,17 @@ export const PortalSettingsProvider = ({ projectUuid, isActive, children }) => {
       try {
         await portalAPI.updateDomainAlias(projectUuid, update);
       } catch (error) {
-        const errorMessage = Utils.getErrorMsg(error);
-        if (enablePortalDomain) toaster.danger(errorMessage);
-        callback && callback(false, errorMessage);
+        callback && callback({ error });
         return false;
       }
 
       if (!enablePortalDomain) {
         const value = await reloadDomainAliasSettings();
-        callback && callback(!!value);
+        callback && callback({}, value);
         return !!value;
       }
 
-      callback && callback(true);
+      callback && callback();
       if (isActiveRef.current) {
         reloadDomainAliasSettings();
         reloadCustomDomainSettings();
@@ -176,13 +170,11 @@ export const PortalSettingsProvider = ({ projectUuid, isActive, children }) => {
       try {
         await portalAPI.updateCustomDomain(projectUuid, update);
       } catch (error) {
-        const errorMessage = Utils.getErrorMsg(error);
-        toaster.danger(errorMessage);
-        callback && callback(false);
+        callback && callback({ error });
         return false;
       }
 
-      callback && callback(true);
+      callback && callback();
       if (isActiveRef.current) reloadCustomDomainSettings();
       return true;
     });

@@ -1971,6 +1971,10 @@ class PortalSettingsView(APIView):
         welcome_email_subject = portal_settings.get('welcome_email_subject') or PORTAL_WELCOME_EMAIL_SUBJECT
         welcome_email_content = portal_settings.get('welcome_email_content') or PORTAL_WELCOME_EMAIL_CONTENT
         chat_settings = get_portal_chat_settings(project)
+        password = portal_settings.get('password', '')
+        if password:
+            cryptor = AESPasswordHasher()
+            password = cryptor.decode(password)
 
         return Response({
             'portal_name': portal_name,
@@ -1978,6 +1982,7 @@ class PortalSettingsView(APIView):
             'portal_theme_color': portal_theme_color,
             'allow_anonymous': allow_anonymous,
             'enable_password_protection': enable_password_protection,
+            'password': password,
             'chat_allowed_sources': chat_allowed_sources,
             'external_chat_user_rate_limit': chat_settings['external_chat_user_rate_limit'],
             'anonymous_chat_session_daily_limit': chat_settings['anonymous_chat_session_daily_limit'],
@@ -2010,6 +2015,10 @@ class PortalSettingsView(APIView):
         )
         raw_chat_limits = {field: request.data.get(field) for field in chat_limit_fields}
         password = request.data.get('password', '')
+        if password is None:
+            password = ''
+        if not isinstance(password, str):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Password is invalid.')
         portal_name = request.data.get('portal_name')
         portal_logo = request.data.get('portal_logo')
         portal_theme_color = request.data.get('portal_theme_color')
@@ -2060,11 +2069,6 @@ class PortalSettingsView(APIView):
                     PORTAL_WELCOME_EMAIL_CONTENT_MAX_LENGTH,
                 )
 
-        enable_password_protection = bool_updates.get('enable_password_protection')
-        if enable_password_protection and password and len(password) < 8:
-            error_msg = 'Password too short.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
         if chat_allowed_sources is not None and not isinstance(chat_allowed_sources, dict):
             error_msg = 'chat_allowed_sources invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
@@ -2096,6 +2100,17 @@ class PortalSettingsView(APIView):
             project_settings = {}
 
         portal_settings = project_settings.get('portal', {})
+        requested_enable_password_protection = bool_updates.get('enable_password_protection')
+        is_password_protection_enabled = requested_enable_password_protection
+        if is_password_protection_enabled is None:
+            is_password_protection_enabled = bool(portal_settings.get('enable_password_protection', False))
+        existing_password = portal_settings.get('password', '')
+        if requested_enable_password_protection is True or (is_password_protection_enabled and password):
+            if password and len(password) < 8:
+                return api_error(status.HTTP_400_BAD_REQUEST, 'Password must be at least 8 characters.')
+            if not password and not existing_password:
+                return api_error(status.HTTP_400_BAD_REQUEST, 'Password is required.')
+
         old_home_settings = portal_settings.get('portal_home_settings', {})
         portal_settings.pop('show_knowledge_base', None)
         portal_settings.update(bool_updates)
@@ -2128,11 +2143,11 @@ class PortalSettingsView(APIView):
         if portal_home_settings is not None:
             portal_settings['portal_home_settings'] = portal_home_settings
 
-        if enable_password_protection is True:
+        if is_password_protection_enabled:
             if password:
                 cryptor = AESPasswordHasher()
                 portal_settings['password'] = cryptor.encode(password)
-        elif enable_password_protection is False:
+        elif requested_enable_password_protection is False:
             portal_settings.pop('password', None)
 
         project_settings['portal'] = portal_settings

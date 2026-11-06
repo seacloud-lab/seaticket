@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button, FormGroup, Input, InputGroup, Label } from 'reactstrap';
 import copy from 'copy-to-clipboard';
-import { CommonOperationConfirmationDialog, SettingsItem, toaster, IconTooltip } from '@/components';
+import { CommonOperationConfirmationDialog, SettingsItem, toaster, IconTooltip, SaveStatus } from '@/components';
+import { SAVE_STATUS_TYPE } from '@/components/save-status/constants';
 import { gettext } from '@/constants';
+import { isEnterWithoutComposition } from '@/utils/hotkey';
 import { Utils } from '@/utils/utils';
 import { usePortalSettings } from '../hooks';
 
@@ -30,8 +32,11 @@ const Main = ({
   const [customDomain, setCustomDomain] = useState(propsCustomDomain || '');
   const [isShowRemoveCustomDomainConfirm, setIsShowRemoveCustomDomainConfirm] = useState(false);
   const [isVerifyingCustomDomain, setIsVerifyingCustomDomain] = useState(false);
+
   const customDomainEditVersion = useRef(0);
   const customDomainSyncedVersion = useRef(0);
+  const statusSaveRef = useRef(null);
+  const inputRef = useRef(null);
 
   const validCustomDomain = useMemo(() => customDomain.trim(), [customDomain]);
   const currentPortalDomain = useMemo(() => currentSubdomainDomain || getHostFromUrl(subdomainPublicUrl),
@@ -41,18 +46,15 @@ const Main = ({
     : gettext('Custom domain allows you to serve your portal from a domain other than your current portal domain.'),
   [currentPortalDomain]);
 
-  const handleCustomDomainChange = useCallback(() => {
-    if (!validCustomDomain) return;
-    if (validCustomDomain === propsCustomDomain) {
-      return;
-    }
+  const handleCustomDomainChange = useCallback((callback) => {
     const editVersion = customDomainEditVersion.current;
-    onChange && onChange({ custom_domain: validCustomDomain }, (isSuccess = true) => {
-      if (isSuccess && customDomainEditVersion.current === editVersion) {
+    onChange && onChange({ custom_domain: validCustomDomain }, ({ error } = {}) => {
+      if (!error && customDomainEditVersion.current === editVersion) {
         customDomainSyncedVersion.current = editVersion;
       }
+      callback && callback({ error });
     });
-  }, [validCustomDomain, propsCustomDomain, onChange]);
+  }, [validCustomDomain, onChange]);
 
   const onOpenRemoveCustomDomainConfirm = useCallback(() => {
     if (!propsCustomDomain) return;
@@ -63,11 +65,25 @@ const Main = ({
     setIsShowRemoveCustomDomainConfirm(false);
   }, []);
 
+  const onKeyDown = useCallback((event) => {
+    if (isEnterWithoutComposition(event)) {
+      event.preventDefault();
+      inputRef?.current?.blur();
+    }
+  }, []);
+
   const onRemoveCustomDomain = useCallback(() => {
     if (!propsCustomDomain) return;
     const editVersion = customDomainEditVersion.current;
-    onChange && onChange({ custom_domain: '' }, (isSuccess = true) => {
-      if (!isSuccess) return;
+    const submissionSequence = statusSaveRef.current.startSubmission();
+    onChange && onChange({ custom_domain: '' }, ({ error } = {}) => {
+      statusSaveRef?.current?.setSubmissionStatus(
+        submissionSequence,
+        !error ? SAVE_STATUS_TYPE.SAVED : SAVE_STATUS_TYPE.SAVE_ERROR,
+        !error ? '' : Utils.getErrorMsg(error),
+        0,
+      );
+      if (error) return;
       if (customDomainEditVersion.current === editVersion) {
         customDomainSyncedVersion.current = editVersion;
         setCustomDomain('');
@@ -110,32 +126,39 @@ const Main = ({
     <SettingsItem title={gettext('Custom domain')} className="seaqa-portal-custom-domain-settings">
       <FormGroup className={propsCustomDomain ? 'mb-2' : 'mb-4'}>
         <Label className="seaqa-tip-default font-size-12 line-height-20 mb-4">{customDomainHint}</Label>
-        <InputGroup className="seaqa-project-portal-input-group-settings">
-          <Input
-            type="text"
-            className="custom-domain-input"
-            value={customDomain}
-            placeholder={gettext('support.example.com')}
-            spellCheck={false}
-            autoComplete="off"
-            onChange={(event) => {
-              customDomainEditVersion.current += 1;
-              setCustomDomain(event.target.value);
-            }}
-            onBlur={handleCustomDomainChange}
-          />
-          {propsCustomDomain && (
-            <IconTooltip
-              icon="delete"
-              tip={gettext('Remove')}
-              className="mx-0 btn btn-secondary p-0"
-              hoverBackground={true}
-              size={{ btn: 38, icon: 14 }}
-              placement="bottom"
-              onClick={onOpenRemoveCustomDomainConfirm}
-            />
+        <SaveStatus type="input" callback={handleCustomDomainChange} ref={statusSaveRef}>
+          {({ callback, onContentChange }) => (
+            <InputGroup className="seaqa-project-portal-input-group-settings">
+              <Input
+                innerRef={inputRef}
+                type="text"
+                className="custom-domain-input"
+                value={customDomain}
+                placeholder={gettext('support.example.com')}
+                spellCheck={false}
+                autoComplete="off"
+                onChange={(event) => {
+                  onContentChange();
+                  customDomainEditVersion.current += 1;
+                  setCustomDomain(event.target.value);
+                }}
+                onBlur={validCustomDomain === propsCustomDomain ? undefined : callback}
+                onKeyDown={onKeyDown}
+              />
+              {propsCustomDomain && (
+                <IconTooltip
+                  icon="delete"
+                  tip={gettext('Remove')}
+                  className="mx-0 btn btn-secondary p-0"
+                  hoverBackground={true}
+                  size={{ btn: 38, icon: 14 }}
+                  placement="bottom"
+                  onClick={onOpenRemoveCustomDomainConfirm}
+                />
+              )}
+            </InputGroup>
           )}
-        </InputGroup>
+        </SaveStatus>
       </FormGroup>
       {propsCustomDomain && (
         <>

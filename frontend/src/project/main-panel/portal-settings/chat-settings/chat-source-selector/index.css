@@ -1,50 +1,3 @@
-.portal-chat-source-selector {
-  width: 100%;
-}
-
-.portal-chat-source-selector .portal-chat-source-trigger {
-  width: fit-content;
-  display: flex;
-  align-items: center;
-  outline: none;
-}
-
-.portal-chat-source-selector .portal-chat-source-toggle {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  padding: 2px 4px;
-  border-radius: 3px;
-  color: var(--bs-body-color);
-}
-
-.portal-chat-source-selector .portal-chat-source-toggle:hover,
-.portal-chat-source-selector .portal-chat-source-toggle.active:hover,
-.portal-chat-source-selector .portal-chat-source-toggle.highlighted:hover {
-  background-color: #efefef;
-}
-
-.portal-chat-source-selector .portal-chat-source-toggle.highlighted,
-.portal-chat-source-selector .portal-chat-source-toggle.highlighted .sf3-font-down {
-  color: var(--bs-sf-orange);
-}
-
-.portal-chat-source-selector .portal-chat-source-toggle.disabled,
-.portal-chat-source-selector .portal-chat-source-toggle.disabled .sf3-font-down {
-  color: var(--bs-icon-secondary-color);
-  cursor: not-allowed;
-}
-
-.portal-chat-source-selector .portal-chat-source-label {
-  width: fit-content;
-  display: inline-block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  margin-right: 8px;
-  max-width: 120px;
-}
-
 .portal-chat-source-popover {
   z-index: 1050;
 }
@@ -52,10 +5,6 @@
 .portal-chat-source-popover .popover {
   width: 320px;
   font-size: 13px;
-}
-
-.portal-chat-source-popover .popover-body {
-  padding: 0;
 }
 
 .portal-chat-source-popover-content {

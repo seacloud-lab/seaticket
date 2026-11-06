@@ -193,6 +193,9 @@ export const Utils = {
       } else if (error.response.data &&
         error.response.data['error_msg']) {
         errorMsg = error.response.data['error_msg'];
+        if (errorMsg === 'subdomain_prefix already in use.') {
+          errorMsg = gettext('This URL is already in use.');
+        }
       } else {
         errorMsg = gettext('Error');
       }

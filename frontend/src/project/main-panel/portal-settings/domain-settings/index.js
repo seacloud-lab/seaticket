@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FormGroup, Label, InputGroup, Input } from 'reactstrap';
 import copy from 'copy-to-clipboard';
-import { SettingsItem, toaster, IconTooltip } from '@/components';
+import { SettingsItem, toaster, IconTooltip, SaveStatus } from '@/components';
 import { gettext } from '@/constants';
+import { isEnterWithoutComposition } from '@/utils/hotkey';
 import { Utils } from '@/utils/utils';
 import { usePortalSettings } from '../hooks';
 
@@ -17,13 +18,22 @@ const Main = ({
 }) => {
   const [subdomainPrefix, setSubdomainPrefix] = useState(propsSubdomainPrefix || '');
   const [isOpeningPortalPreview, setIsOpeningPortalPreview] = useState(false);
+
   const subdomainPrefixEditVersion = useRef(0);
   const subdomainPrefixSyncedVersion = useRef(0);
+  const inputRef = useRef(null);
 
   const onCopyUrl = useCallback((value) => {
     if (!value) return;
     copy(value);
     toaster.success(gettext('Copied'), { duration: 2, hasCloseButton: false });
+  }, []);
+
+  const onKeyDown = useCallback((event) => {
+    if (isEnterWithoutComposition(event)) {
+      event.preventDefault();
+      inputRef?.current?.blur();
+    }
   }, []);
 
   const onOpenPortalPreview = useCallback(() => {
@@ -38,21 +48,16 @@ const Main = ({
     });
   }, [isOpeningPortalPreview, createPreviewToken]);
 
-  const handleCustomSubdomainPrefixChange = useCallback(() => {
+  const handleCustomSubdomainPrefixChange = useCallback((callback) => {
     const validSubdomainPrefix = subdomainPrefix.trim();
-    if (validSubdomainPrefix === propsSubdomainPrefix) {
-      if (validSubdomainPrefix !== subdomainPrefix) {
-        setSubdomainPrefix(validSubdomainPrefix);
-      }
-      return;
-    }
     const editVersion = subdomainPrefixEditVersion.current;
-    onChange && onChange({ subdomain_prefix: validSubdomainPrefix }, (isSuccess = true) => {
-      if (isSuccess && subdomainPrefixEditVersion.current === editVersion) {
+    onChange && onChange({ subdomain_prefix: validSubdomainPrefix }, ({ error } = {}) => {
+      if (!error && subdomainPrefixEditVersion.current === editVersion) {
         subdomainPrefixSyncedVersion.current = editVersion;
       }
+      callback && callback({ error });
     });
-  }, [subdomainPrefix, propsSubdomainPrefix, onChange]);
+  }, [subdomainPrefix, onChange]);
 
   useEffect(() => {
     if (subdomainPrefixEditVersion.current !== subdomainPrefixSyncedVersion.current) return;
@@ -99,26 +104,33 @@ const Main = ({
       {domainAliasRoot ? (
         <FormGroup className="mb-4">
           <Label>{gettext('Customize the prefix:')}</Label>
-          <div className="seaqa-portal-customize-url-settings-container gap-2">
-            <Input
-              type="text"
-              value={subdomainPrefix}
-              onChange={(event) => {
-                subdomainPrefixEditVersion.current += 1;
-                setSubdomainPrefix(event.target.value);
-              }}
-              placeholder={gettext('my-brand')}
-              spellCheck={false}
-              autoComplete="off"
-              onBlur={handleCustomSubdomainPrefixChange}
-            />
-            <Input
-              type="text"
-              value={`.${domainAliasRoot}`}
-              readOnly
-              disabled={true}
-            />
-          </div>
+          <SaveStatus type="input" callback={handleCustomSubdomainPrefixChange}>
+            {({ callback, onContentChange }) => (
+              <InputGroup className="seaqa-portal-customize-url-settings-container">
+                <Input
+                  innerRef={inputRef}
+                  type="text"
+                  value={subdomainPrefix}
+                  onChange={(event) => {
+                    onContentChange();
+                    subdomainPrefixEditVersion.current += 1;
+                    setSubdomainPrefix(event.target.value);
+                  }}
+                  placeholder={gettext('my-brand')}
+                  spellCheck={false}
+                  autoComplete="off"
+                  onBlur={subdomainPrefix.trim() === propsSubdomainPrefix ? undefined : callback}
+                  onKeyDown={onKeyDown}
+                />
+                <Input
+                  type="text"
+                  value={`.${domainAliasRoot}`}
+                  readOnly
+                  disabled={true}
+                />
+              </InputGroup>
+            )}
+          </SaveStatus>
         </FormGroup>
       ) : (
         <p className="seaqa-tip-default m-0 mb-4 font-size-12 line-height-20">

@@ -23,3 +23,14 @@ export const normalizeChatAllowedSources = (rawChatAllowedSources, connections =
     extra_sources: extraSources,
   };
 };
+
+export const getInputCheckError = (message) => {
+  return {
+    response: {
+      status: 400,
+      data: {
+        error_msg: message
+      }
+    }
+  };
+};
