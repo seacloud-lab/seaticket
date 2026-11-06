@@ -2184,7 +2184,7 @@ class TestProjectConnectionRecordsTicketStatus:
         ]
 
     def _create_task_from_ticket(self, factory, project_creator, real_project, connection_factory,
-                                 ticket, seadb=None):
+                                 ticket, seadb=None, metadata=None):
         connection = connection_factory(connection_type=ConnectionType.GENERAL_TASK.value, config={})
         request = factory.post(
             f'/api/v1/project/{real_project.uuid}/connections/{connection.id}/records/',
@@ -2202,7 +2202,7 @@ class TestProjectConnectionRecordsTicketStatus:
                       return_value={'title': 'From ticket'}), \
                 patch('seahub.project.connections.SeaDBAPI', return_value=seadb), \
                 patch('seahub.project.connections.get_ticket',
-                      return_value=(ticket, self._metadata())), \
+                      return_value=(ticket, metadata or self._metadata())), \
                 patch('seahub.project.connections.check_ticket_link_changes',
                       return_value=(Mock(), {})), \
                 patch('seahub.project.connections.sync_links_in_connection'), \
@@ -2275,6 +2275,27 @@ class TestProjectConnectionRecordsTicketStatus:
 
         event = send_data_update.call_args.kwargs['event']
         assert event['type'] == 'ticket_reopened'
+
+    def test_state_follows_working_on_parent_state(
+            self, factory, project_creator, real_project, connection_factory):
+        metadata = self._metadata()
+        metadata[1]['data']['cascade_settings'] = {'0001': ['0010'], '0002': ['0011', '0014']}
+        ticket = {'_pk': 11, 'state': 'open', 'substate': 'New', 'linked_connection_records': []}
+
+        resp, seadb, connection, send_ticket_update, send_data_update = self._create_task_from_ticket(
+            factory, project_creator, real_project, connection_factory, ticket, metadata=metadata)
+
+        assert resp.status_code == 201
+        row = self._ticket_rows(seadb)[0][0]['row']
+        assert row['state'] == 'closed'
+        assert row['substate'] == 'Working on'
+        assert row['closed_time']
+
+        assert resp.data['ticket']['state'] == '0002'
+        assert resp.data['ticket']['substate'] == '0011'
+
+        event = send_data_update.call_args.kwargs['event']
+        assert event['type'] == 'ticket_closed'
 
     def test_ticket_already_working_on_is_untouched(
             self, factory, project_creator, real_project, connection_factory):

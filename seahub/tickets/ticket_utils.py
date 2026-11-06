@@ -1167,53 +1167,69 @@ def compare_ticket_changes(old_ticket, new_data):
     return changes
 
 
-def build_ticket_working_on_update(ticket, metadata, now=None):
+def build_ticket_working_on_update(ticket, metadata):
     """Compute the fields that move a ticket to Working on when a task is created.
 
+    The ticket state follows the state that Working on belongs to.
     Returns (update_fields, changes, event_type); all empty/None when no change.
     """
     working_on_name = ''
+    working_on_id = ''
+    state_options = []
+    cascade_settings = {}
     if isinstance(metadata, list) and metadata:
+        state_column = get_column_from_columns_by_name(metadata, SchemaTables.TICKETS.column.state.name)
+        state_options = ((state_column or {}).get('data') or {}).get('options') or []
         substate_column = get_column_from_columns_by_name(metadata, SchemaTables.TICKETS.column.substate.name)
-        substate_options = ((substate_column or {}).get('data') or {}).get('options') or []
-        for opt in substate_options:
+        substate_data = (substate_column or {}).get('data') or {}
+        cascade_settings = substate_data.get('cascade_settings') or {}
+        for opt in substate_data.get('options') or []:
             if (opt.get('name') or '').lower() == 'working on':
                 working_on_name = opt.get('name')
+                working_on_id = opt.get('id')
                 break
     if not working_on_name:
         logger.warning('Working on substate option not found, skip ticket status update.')
         return {}, [], None
 
     old_state = (ticket.get(SchemaTables.TICKETS.column.state.name) or '').strip().lower()
-    new_state = 'open' if old_state == 'closed' else old_state
     old_substate = ticket.get(SchemaTables.TICKETS.column.substate.name) or ''
+
+    if isinstance(cascade_settings, dict) and cascade_settings:
+        new_state = ''
+        for state_id, substate_ids in cascade_settings.items():
+            if working_on_id and working_on_id in (substate_ids or []):
+                for opt in state_options:
+                    if opt.get('id') == state_id:
+                        new_state = (opt.get('name') or '').strip().lower()
+                        break
+                break
+        if not new_state:
+            logger.warning('Cannot find the state of %s, skip ticket status update.', working_on_name)
+            return {}, [], None
+    else:
+        # projects without cascade settings keep the previous behavior
+        new_state = 'open' if old_state == 'closed' else old_state
 
     if new_state == old_state and old_substate.strip().lower() == working_on_name.lower():
         return {}, [], None
 
-    if new_state == 'open' and old_state != 'open':
-        try:
-            valid_relation = validate_ticket_state_substate_relation(metadata, new_state, working_on_name)
-        except Exception as e:
-            logger.error('Failed to validate ticket state/substate relation: %s', e)
-            valid_relation = False
-        if not valid_relation:
-            logger.warning('Cannot move ticket to %s + %s, skip status update.', new_state, working_on_name)
-            return {}, [], None
-
+    now = datetime.now(timezone.utc).isoformat()
     update_fields = {
         SchemaTables.TICKETS.column.substate.name: working_on_name,
-        SchemaTables.TICKETS.column.modified_time.name: now or datetime.now(timezone.utc).isoformat(),
+        SchemaTables.TICKETS.column.modified_time.name: now,
     }
-    if new_state == 'open' and old_state != 'open':
+    event_type = DataEventType.TICKET_UPDATED.value
+    if new_state != old_state:
         update_fields[SchemaTables.TICKETS.column.state.name] = new_state
-        update_fields[SchemaTables.TICKETS.column.closed_time.name] = ''
+        if new_state == 'closed':
+            update_fields[SchemaTables.TICKETS.column.closed_time.name] = now
+            event_type = DataEventType.TICKET_CLOSED.value
+        elif new_state == 'open':
+            update_fields[SchemaTables.TICKETS.column.closed_time.name] = ''
+            event_type = DataEventType.TICKET_REOPENED.value
 
     changes = compare_ticket_changes(ticket, update_fields)
-    if new_state == 'open' and old_state != 'open':
-        event_type = DataEventType.TICKET_REOPENED.value
-    else:
-        event_type = DataEventType.TICKET_UPDATED.value
     return update_fields, changes, event_type
 
 

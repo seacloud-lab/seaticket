@@ -1134,26 +1134,32 @@ def get_ticket_columns_metadata():
 
 
 class TestBuildTicketWorkingOnUpdate:
-    NOW = '2026-11-03T00:00:00+00:00'
+
+    @staticmethod
+    def _build(ticket, metadata):
+        fields, changes, event_type = build_ticket_working_on_update(ticket, metadata)
+        if not fields:
+            return fields, changes, event_type
+        modified_time = fields.pop('modified_time')
+        assert isinstance(modified_time, str) and modified_time
+        if fields.get('closed_time'):
+            assert fields['closed_time'] == modified_time
+            fields['closed_time'] = '<modified_time>'
+        return fields, changes, event_type
 
     def test_open_ticket_moves_to_working_on(self):
-        fields, changes, event_type = build_ticket_working_on_update(
-            {'_pk': 1, 'state': 'open', 'substate': 'New'}, get_ticket_columns_metadata(), self.NOW)
+        fields, changes, event_type = self._build(
+            {'_pk': 1, 'state': 'open', 'substate': 'New'}, get_ticket_columns_metadata())
 
-        assert fields == {'substate': 'Working on', 'modified_time': self.NOW}
+        assert fields == {'substate': 'Working on'}
         assert changes == [('substate_changed', 'substate', 'New', 'Working on')]
         assert event_type == 'ticket_updated'
 
     def test_closed_ticket_is_reopened(self):
-        fields, changes, event_type = build_ticket_working_on_update(
-            {'_pk': 1, 'state': 'closed', 'substate': 'Completed'}, get_ticket_columns_metadata(), self.NOW)
+        fields, changes, event_type = self._build(
+            {'_pk': 1, 'state': 'closed', 'substate': 'Completed'}, get_ticket_columns_metadata())
 
-        assert fields == {
-            'substate': 'Working on',
-            'modified_time': self.NOW,
-            'state': 'open',
-            'closed_time': '',
-        }
+        assert fields == {'substate': 'Working on', 'state': 'open', 'closed_time': ''}
         assert changes == [(
             'state_substate_changed',
             'state_substate',
@@ -1162,38 +1168,79 @@ class TestBuildTicketWorkingOnUpdate:
         )]
         assert event_type == 'ticket_reopened'
 
+    def test_state_follows_working_on_parent_state(self):
+        metadata = get_ticket_columns_metadata()
+        metadata[1]['data']['cascade_settings'] = {'0001': ['0010'], '0002': ['0011', '0014']}
+
+        fields, changes, event_type = self._build(
+            {'_pk': 1, 'state': 'open', 'substate': 'New'}, metadata)
+
+        assert fields == {
+            'substate': 'Working on',
+            'state': 'closed',
+            'closed_time': '<modified_time>',
+        }
+        assert changes == [(
+            'state_substate_changed',
+            'state_substate',
+            {'state': 'open', 'substate': 'New'},
+            {'state': 'closed', 'substate': 'Working on'},
+        )]
+        assert event_type == 'ticket_closed'
+
+    def test_closed_ticket_working_on_under_closed_updates_substate_only(self):
+        metadata = get_ticket_columns_metadata()
+        metadata[1]['data']['cascade_settings'] = {'0001': ['0010'], '0002': ['0011', '0014']}
+
+        fields, changes, event_type = self._build(
+            {'_pk': 1, 'state': 'closed', 'substate': 'Completed'}, metadata)
+
+        assert fields == {'substate': 'Working on'}
+        assert changes == [('substate_changed', 'substate', 'Completed', 'Working on')]
+        assert event_type == 'ticket_updated'
+
+    def test_missing_cascade_settings_keeps_previous_state_behavior(self):
+        metadata = get_ticket_columns_metadata()
+        metadata[1]['data'].pop('cascade_settings')
+
+        fields, _, event_type = self._build(
+            {'_pk': 1, 'state': 'closed', 'substate': 'Completed'}, metadata)
+
+        assert fields == {'substate': 'Working on', 'state': 'open', 'closed_time': ''}
+        assert event_type == 'ticket_reopened'
+
     def test_open_ticket_already_working_on_is_noop(self):
-        assert build_ticket_working_on_update(
+        assert self._build(
             {'_pk': 1, 'state': 'open', 'substate': 'Working on'},
-            get_ticket_columns_metadata(), self.NOW) == ({}, [], None)
+            get_ticket_columns_metadata()) == ({}, [], None)
 
     def test_option_match_is_case_insensitive(self):
         metadata = get_ticket_columns_metadata()
         metadata[1]['data']['options'][1]['name'] = 'WORKING ON'
 
-        fields, changes, _ = build_ticket_working_on_update(
-            {'_pk': 1, 'state': 'open', 'substate': 'New'}, metadata, self.NOW)
+        fields, changes, _ = self._build(
+            {'_pk': 1, 'state': 'open', 'substate': 'New'}, metadata)
 
         assert fields['substate'] == 'WORKING ON'
         assert changes == [('substate_changed', 'substate', 'New', 'WORKING ON')]
 
     @pytest.mark.parametrize('metadata', [None, {}, []])
     def test_invalid_metadata_is_noop(self, metadata):
-        assert build_ticket_working_on_update(
-            {'_pk': 1, 'state': 'open', 'substate': 'New'}, metadata, self.NOW) == ({}, [], None)
+        assert self._build(
+            {'_pk': 1, 'state': 'open', 'substate': 'New'}, metadata) == ({}, [], None)
 
     def test_missing_substate_column_is_noop(self):
         metadata = [{'key': 'k_state', 'name': 'state', 'data': {'options': []}}]
 
-        assert build_ticket_working_on_update(
-            {'_pk': 1, 'state': 'open', 'substate': 'New'}, metadata, self.NOW) == ({}, [], None)
+        assert self._build(
+            {'_pk': 1, 'state': 'open', 'substate': 'New'}, metadata) == ({}, [], None)
 
     def test_invalid_cascade_settings_skip_reopen(self):
         metadata = get_ticket_columns_metadata()
         metadata[1]['data']['cascade_settings'] = {'0001': ['0010']}
 
-        assert build_ticket_working_on_update(
-            {'_pk': 1, 'state': 'closed', 'substate': 'Completed'}, metadata, self.NOW) == ({}, [], None)
+        assert self._build(
+            {'_pk': 1, 'state': 'closed', 'substate': 'Completed'}, metadata) == ({}, [], None)
 
 
 class TestFormatTicketActivityForClient:
