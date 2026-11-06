@@ -21,6 +21,10 @@ const Main = ({
 
   const subdomainPrefixEditVersion = useRef(0);
   const subdomainPrefixSyncedVersion = useRef(0);
+  const subdomainPrefixDraft = useRef(propsSubdomainPrefix || '');
+  const lastSavedSubdomainPrefix = useRef(propsSubdomainPrefix || '');
+  const subdomainPrefixSaveSequence = useRef(0);
+  const pendingSubdomainPrefixSave = useRef(null);
   const inputRef = useRef(null);
 
   const onCopyUrl = useCallback((value) => {
@@ -51,16 +55,26 @@ const Main = ({
   const handleCustomSubdomainPrefixChange = useCallback((callback) => {
     const validSubdomainPrefix = subdomainPrefix.trim();
     const editVersion = subdomainPrefixEditVersion.current;
+    const saveSequence = ++subdomainPrefixSaveSequence.current;
+    pendingSubdomainPrefixSave.current = { sequence: saveSequence, value: validSubdomainPrefix };
     onChange && onChange({ subdomain_prefix: validSubdomainPrefix }, ({ error } = {}) => {
-      if (!error && subdomainPrefixEditVersion.current === editVersion) {
-        subdomainPrefixSyncedVersion.current = editVersion;
+      if (!error) {
+        lastSavedSubdomainPrefix.current = validSubdomainPrefix;
+        if (subdomainPrefixEditVersion.current === editVersion || subdomainPrefixDraft.current.trim() === validSubdomainPrefix) {
+          subdomainPrefixSyncedVersion.current = subdomainPrefixEditVersion.current;
+          subdomainPrefixDraft.current = validSubdomainPrefix;
+          setSubdomainPrefix(validSubdomainPrefix);
+        }
       }
+      if (pendingSubdomainPrefixSave.current?.sequence === saveSequence) pendingSubdomainPrefixSave.current = null;
       callback && callback({ error });
     });
   }, [subdomainPrefix, onChange]);
 
   useEffect(() => {
+    lastSavedSubdomainPrefix.current = propsSubdomainPrefix || '';
     if (subdomainPrefixEditVersion.current !== subdomainPrefixSyncedVersion.current) return;
+    subdomainPrefixDraft.current = propsSubdomainPrefix || '';
     setSubdomainPrefix(propsSubdomainPrefix || '');
   }, [propsSubdomainPrefix]);
 
@@ -114,12 +128,21 @@ const Main = ({
                   onChange={(event) => {
                     onContentChange();
                     subdomainPrefixEditVersion.current += 1;
+                    subdomainPrefixDraft.current = event.target.value;
                     setSubdomainPrefix(event.target.value);
                   }}
                   placeholder={gettext('my-brand')}
                   spellCheck={false}
                   autoComplete="off"
-                  onBlur={subdomainPrefix.trim() === propsSubdomainPrefix ? undefined : callback}
+                  onBlur={() => {
+                    const pendingValue = pendingSubdomainPrefixSave.current?.value;
+                    const expectedValue = pendingValue ?? lastSavedSubdomainPrefix.current;
+                    if (subdomainPrefix.trim() !== expectedValue) {
+                      callback();
+                    } else if (pendingValue === undefined) {
+                      subdomainPrefixSyncedVersion.current = subdomainPrefixEditVersion.current;
+                    }
+                  }}
                   onKeyDown={onKeyDown}
                 />
                 <Input

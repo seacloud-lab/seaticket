@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { FormGroup, Label } from 'reactstrap';
 import { PasswordInput, SettingsItem, SwitchSettings, SaveStatus } from '@/components';
 import { gettext } from '@/constants';
@@ -17,6 +17,8 @@ const Main = ({
   const [isPasswordDirty, setIsPasswordDirty] = useState(false);
   const [passwordInputVersion, setPasswordInputVersion] = useState(0);
   const [isEnablingPassword, setIsEnablingPassword] = useState(false);
+  const passwordDraftVersion = useRef(0);
+  const passwordDraftRef = useRef(savedPassword || '');
 
   const isPasswordProtectionEnabled = enablePassword || isEnablingPassword;
 
@@ -26,6 +28,8 @@ const Main = ({
     const previousIsEnablingPassword = isEnablingPassword;
     let update = { allow_anonymous: Boolean(newValue) };
     if (!newValue) {
+      passwordDraftVersion.current += 1;
+      passwordDraftRef.current = '';
       setPassword('');
       setIsPasswordDirty(false);
       setIsEnablingPassword(false);
@@ -35,6 +39,8 @@ const Main = ({
     onChange(update, (callbackParams = {}) => {
       callback && callback(callbackParams);
       if (callbackParams.error && !newValue) {
+        passwordDraftVersion.current += 1;
+        passwordDraftRef.current = previousPassword;
         setPassword(previousPassword);
         setIsPasswordDirty(previousPasswordDirty);
         setIsEnablingPassword(previousIsEnablingPassword);
@@ -46,6 +52,8 @@ const Main = ({
     const previousPassword = password;
     const previousPasswordDirty = isPasswordDirty;
     if (!newValue) {
+      passwordDraftVersion.current += 1;
+      passwordDraftRef.current = '';
       setPassword('');
       setIsPasswordDirty(false);
     }
@@ -58,6 +66,8 @@ const Main = ({
     onChange && onChange({ enable_password_protection: false, password: '' }, (callbackParams = {}) => {
       callback && callback(callbackParams);
       if (callbackParams.error) {
+        passwordDraftVersion.current += 1;
+        passwordDraftRef.current = previousPassword;
         setPassword(previousPassword);
         setIsPasswordDirty(previousPasswordDirty);
       }
@@ -71,9 +81,12 @@ const Main = ({
       });
       return;
     }
+    const submittedPassword = password;
+    const submittedDraftVersion = passwordDraftVersion.current;
     onChange({ enable_password_protection: true, password }, (callbackParams) => {
       callback && callback(callbackParams);
       if (callbackParams?.error) return;
+      if (passwordDraftVersion.current !== submittedDraftVersion && passwordDraftRef.current !== submittedPassword) return;
       setIsPasswordDirty(false);
       setPasswordInputVersion(version => version + 1);
       setIsEnablingPassword(false);
@@ -125,6 +138,8 @@ const Main = ({
                 value={password}
                 onChange={(value) => {
                   onContentChange();
+                  passwordDraftVersion.current += 1;
+                  passwordDraftRef.current = value;
                   setIsPasswordDirty(true);
                   setPassword(value);
                 }}

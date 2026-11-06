@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { FormGroup, Input, InputGroup, Label } from 'reactstrap';
 import copy from 'copy-to-clipboard';
 import { SettingsItem, toaster, SaveStatus, IconTooltip } from '@/components';
@@ -14,11 +14,22 @@ const CustomUrlSettings = () => {
   const [token, setToken] = useState(savedToken);
   const [isSaving, setIsSaving] = useState(false);
   const [isOpeningPreview, setIsOpeningPreview] = useState(false);
+  const [lastSavedTokenValue, setLastSavedTokenValue] = useState(savedToken);
 
   const tokenEditVersion = useRef(0);
+  const tokenSaveSequence = useRef(0);
+  const pendingTokenSave = useRef(null);
+  const lastSavedToken = useRef(savedToken);
   const inputRef = useRef(null);
 
-  const hasUnsavedToken = token !== savedToken;
+  useEffect(() => {
+    if (lastSavedToken.current === savedToken) return;
+    lastSavedToken.current = savedToken;
+    setLastSavedTokenValue(savedToken);
+  }, [savedToken]);
+
+  const expectedToken = pendingTokenSave.current?.value ?? lastSavedTokenValue ?? savedToken;
+  const hasUnsavedToken = token.trim() !== expectedToken;
   const canCopy = !!publicUrl && !hasUnsavedToken && !isSaving;
   const urlPrefix = publicUrl.slice(0, -(savedToken.length + 1));
 
@@ -39,14 +50,22 @@ const CustomUrlSettings = () => {
       return;
     }
     const editVersion = tokenEditVersion.current;
+    const saveSequence = ++tokenSaveSequence.current;
+    pendingTokenSave.current = { sequence: saveSequence, value: validValue };
     setIsSaving(true);
     setToken(validValue);
     updateDomainAliasSettings({ subdomain_prefix: validValue }, ({ error } = {}, savedSettings = {}) => {
-      if (!error && tokenEditVersion.current === editVersion && savedSettings?.subdomain_prefix) {
-        setToken(savedSettings.subdomain_prefix);
+      if (!error) {
+        const persistedToken = savedSettings?.subdomain_prefix || validValue;
+        lastSavedToken.current = persistedToken;
+        setLastSavedTokenValue(persistedToken);
+        if (tokenEditVersion.current === editVersion) setToken(persistedToken);
       }
       callback && callback({ error });
-      setIsSaving(false);
+      if (pendingTokenSave.current?.sequence === saveSequence) {
+        pendingTokenSave.current = null;
+        setIsSaving(false);
+      }
     });
   };
 
@@ -85,7 +104,11 @@ const CustomUrlSettings = () => {
                 }}
                 spellCheck={false}
                 autoComplete="off"
-                onBlur={token.trim() === savedToken ? undefined : callback}
+                onBlur={() => {
+                  const currentPendingToken = pendingTokenSave.current?.value;
+                  const expectedToken = currentPendingToken ?? lastSavedToken.current ?? savedToken;
+                  if (token.trim() !== expectedToken) callback();
+                }}
                 onKeyDown={onKeyDown}
               />
               <IconTooltip

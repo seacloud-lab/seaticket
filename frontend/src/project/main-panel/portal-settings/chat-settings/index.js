@@ -13,12 +13,15 @@ const ChatLimitInput = ({ label, name, unit, value, onSave }) => {
   const [draftValue, setDraftValue] = useState(String(value));
 
   const inputRef = useRef(null);
-  const isSavingDraft = useRef(false);
   const hasUnsavedDraft = useRef(false);
+  const draftVersion = useRef(0);
+  const draftValueRef = useRef(String(value));
 
   useEffect(() => {
-    if (isSavingDraft.current || hasUnsavedDraft.current) return;
-    setDraftValue(String(value));
+    if (hasUnsavedDraft.current) return;
+    const savedValue = String(value);
+    draftValueRef.current = savedValue;
+    setDraftValue(savedValue);
   }, [value]);
 
   const onKeyDown = useCallback((event) => {
@@ -32,16 +35,34 @@ const ChatLimitInput = ({ label, name, unit, value, onSave }) => {
     const parsedValue = Number(draftValue);
     if (!Number.isInteger(parsedValue) || parsedValue < 0) {
       hasUnsavedDraft.current = false;
-      setDraftValue(String(value));
+      const savedValue = String(value);
+      draftValueRef.current = savedValue;
+      setDraftValue(savedValue);
       const error = getInputCheckError(gettext('%s is invalid and has been automatically reset to the last valid value.').replace('%s', label));
       callback && callback({ error });
       return;
     }
-    isSavingDraft.current = true;
+    const submittedDraftVersion = draftVersion.current;
     onSave({ [name]: parsedValue }, ({ error } = {}) => {
-      isSavingDraft.current = false;
-      hasUnsavedDraft.current = Boolean(error);
-      if (!error) setDraftValue(String(parsedValue));
+      const currentDraftMatchesSubmittedValue = Number(draftValueRef.current) === parsedValue;
+      const currentDraftMatchesPreviousValue = Number(draftValueRef.current) === value;
+      if (!error) {
+        if (draftVersion.current === submittedDraftVersion || currentDraftMatchesSubmittedValue) {
+          hasUnsavedDraft.current = false;
+          const savedValue = String(parsedValue);
+          draftValueRef.current = savedValue;
+          setDraftValue(savedValue);
+        } else {
+          hasUnsavedDraft.current = true;
+        }
+      } else if (draftVersion.current !== submittedDraftVersion && currentDraftMatchesPreviousValue) {
+        hasUnsavedDraft.current = false;
+        const savedValue = String(value);
+        draftValueRef.current = savedValue;
+        setDraftValue(savedValue);
+      } else {
+        hasUnsavedDraft.current = true;
+      }
       callback({ error });
     });
   };
@@ -59,6 +80,8 @@ const ChatLimitInput = ({ label, name, unit, value, onSave }) => {
             value={draftValue}
             onChange={event => {
               onContentChange();
+              draftVersion.current += 1;
+              draftValueRef.current = event.target.value;
               hasUnsavedDraft.current = true;
               setDraftValue(event.target.value);
             }}
