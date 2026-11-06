@@ -26,9 +26,11 @@ const Main = ({
     const previousPassword = password;
     const previousPasswordDirty = isPasswordDirty;
     const previousIsEnablingPassword = isEnablingPassword;
+    let rollbackDraftVersion;
     let update = { allow_anonymous: Boolean(newValue) };
     if (!newValue) {
       passwordDraftVersion.current += 1;
+      rollbackDraftVersion = passwordDraftVersion.current;
       passwordDraftRef.current = '';
       setPassword('');
       setIsPasswordDirty(false);
@@ -38,7 +40,7 @@ const Main = ({
     }
     onChange(update, (callbackParams = {}) => {
       callback && callback(callbackParams);
-      if (callbackParams.error && !newValue) {
+      if (callbackParams.error && !newValue && passwordDraftVersion.current === rollbackDraftVersion) {
         passwordDraftVersion.current += 1;
         passwordDraftRef.current = previousPassword;
         setPassword(previousPassword);
@@ -51,8 +53,10 @@ const Main = ({
   const handleEnablePassword = useCallback((newValue, callback) => {
     const previousPassword = password;
     const previousPasswordDirty = isPasswordDirty;
+    let rollbackDraftVersion;
     if (!newValue) {
       passwordDraftVersion.current += 1;
+      rollbackDraftVersion = passwordDraftVersion.current;
       passwordDraftRef.current = '';
       setPassword('');
       setIsPasswordDirty(false);
@@ -65,7 +69,7 @@ const Main = ({
 
     onChange && onChange({ enable_password_protection: false, password: '' }, (callbackParams = {}) => {
       callback && callback(callbackParams);
-      if (callbackParams.error) {
+      if (callbackParams.error && passwordDraftVersion.current === rollbackDraftVersion) {
         passwordDraftVersion.current += 1;
         passwordDraftRef.current = previousPassword;
         setPassword(previousPassword);

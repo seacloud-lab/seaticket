@@ -35,6 +35,9 @@ const Main = ({
 
   const customDomainEditVersion = useRef(0);
   const customDomainSyncedVersion = useRef(0);
+  const lastSavedCustomDomain = useRef(propsCustomDomain || '');
+  const customDomainSaveSequence = useRef(0);
+  const pendingCustomDomainSave = useRef(null);
   const statusSaveRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -47,11 +50,24 @@ const Main = ({
   [currentPortalDomain]);
 
   const handleCustomDomainChange = useCallback((callback) => {
+    if (!validCustomDomain) {
+      setIsShowRemoveCustomDomainConfirm(true);
+      callback && callback({}, true);
+      return;
+    }
+
     const editVersion = customDomainEditVersion.current;
+    const saveSequence = ++customDomainSaveSequence.current;
+    pendingCustomDomainSave.current = { sequence: saveSequence, value: validCustomDomain };
     onChange && onChange({ custom_domain: validCustomDomain }, ({ error } = {}) => {
-      if (!error && customDomainEditVersion.current === editVersion) {
-        customDomainSyncedVersion.current = editVersion;
+      if (!error) {
+        lastSavedCustomDomain.current = validCustomDomain;
+        if (customDomainEditVersion.current === editVersion) {
+          customDomainSyncedVersion.current = editVersion;
+          setCustomDomain(validCustomDomain);
+        }
       }
+      if (pendingCustomDomainSave.current?.sequence === saveSequence) pendingCustomDomainSave.current = null;
       callback && callback({ error });
     });
   }, [validCustomDomain, onChange]);
@@ -63,7 +79,14 @@ const Main = ({
 
   const onCloseRemoveCustomDomainConfirm = useCallback(() => {
     setIsShowRemoveCustomDomainConfirm(false);
-  }, []);
+    if (!customDomain.trim()) {
+      const pendingSave = pendingCustomDomainSave.current;
+      const restoredCustomDomain = pendingSave?.value ?? (propsCustomDomain || '');
+      customDomainEditVersion.current += 1;
+      setCustomDomain(restoredCustomDomain);
+      if (!pendingSave) customDomainSyncedVersion.current = customDomainEditVersion.current;
+    }
+  }, [customDomain, propsCustomDomain]);
 
   const onKeyDown = useCallback((event) => {
     if (isEnterWithoutComposition(event)) {
@@ -73,21 +96,29 @@ const Main = ({
   }, []);
 
   const onRemoveCustomDomain = useCallback(() => {
-    if (!propsCustomDomain) return;
+    const pendingValue = pendingCustomDomainSave.current?.value;
+    if (!propsCustomDomain && !lastSavedCustomDomain.current && !pendingValue) return;
     const editVersion = customDomainEditVersion.current;
-    const submissionSequence = statusSaveRef.current.startSubmission();
+    const statusSave = statusSaveRef.current;
+    if (!statusSave) return;
+    const saveSequence = ++customDomainSaveSequence.current;
+    pendingCustomDomainSave.current = { sequence: saveSequence, value: '', editVersion, isRemoval: true };
+    const submissionSequence = statusSave.startSubmission();
     onChange && onChange({ custom_domain: '' }, ({ error } = {}) => {
-      statusSaveRef?.current?.setSubmissionStatus(
+      if (!error) {
+        lastSavedCustomDomain.current = '';
+        if (customDomainEditVersion.current === editVersion) {
+          customDomainSyncedVersion.current = editVersion;
+          setCustomDomain('');
+        }
+      }
+      if (pendingCustomDomainSave.current?.sequence === saveSequence) pendingCustomDomainSave.current = null;
+      statusSaveRef.current?.setSubmissionStatus(
         submissionSequence,
         !error ? SAVE_STATUS_TYPE.SAVED : SAVE_STATUS_TYPE.SAVE_ERROR,
         !error ? '' : Utils.getErrorMsg(error),
         0,
       );
-      if (error) return;
-      if (customDomainEditVersion.current === editVersion) {
-        customDomainSyncedVersion.current = editVersion;
-        setCustomDomain('');
-      }
     });
   }, [propsCustomDomain, onChange]);
 
@@ -114,6 +145,8 @@ const Main = ({
   }, []);
 
   useEffect(() => {
+    if (pendingCustomDomainSave.current) return;
+    lastSavedCustomDomain.current = propsCustomDomain || '';
     if (customDomainEditVersion.current !== customDomainSyncedVersion.current) return;
     setCustomDomain(propsCustomDomain || '');
   }, [propsCustomDomain]);
@@ -142,7 +175,17 @@ const Main = ({
                   customDomainEditVersion.current += 1;
                   setCustomDomain(event.target.value);
                 }}
-                onBlur={validCustomDomain === propsCustomDomain ? undefined : callback}
+                onBlur={() => {
+                  const pendingSave = pendingCustomDomainSave.current;
+                  if (pendingSave?.isRemoval && customDomainEditVersion.current === pendingSave.editVersion) return;
+                  const pendingValue = pendingSave?.value;
+                  const expectedValue = pendingValue ?? lastSavedCustomDomain.current;
+                  if (!validCustomDomain) {
+                    if (expectedValue) callback();
+                    return;
+                  }
+                  if (validCustomDomain !== expectedValue) callback();
+                }}
                 onKeyDown={onKeyDown}
               />
               {propsCustomDomain && (

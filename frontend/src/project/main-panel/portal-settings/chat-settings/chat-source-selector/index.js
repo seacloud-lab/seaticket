@@ -80,6 +80,7 @@ const PortalChatSourceSelector = ({ connections, disabled, value: oldValue, onCh
   const [searchValue, setSearchValue] = useState('');
   const [value, setValue] = useState([]);
   const hasUnsavedSourceValue = useRef(false);
+  const sourceDraftVersion = useRef(0);
 
   const targetRef = useRef(null);
 
@@ -128,9 +129,12 @@ const PortalChatSourceSelector = ({ connections, disabled, value: oldValue, onCh
   }, []);
 
   const handleChange = useCallback((callback) => {
+    const submittedDraftVersion = sourceDraftVersion.current;
     closePopover();
     onChange(newValue, ({ error } = {}) => {
-      hasUnsavedSourceValue.current = Boolean(error);
+      if (sourceDraftVersion.current === submittedDraftVersion) {
+        hasUnsavedSourceValue.current = Boolean(error);
+      }
       callback({ error });
     });
   }, [newValue, onChange, closePopover]);
@@ -148,6 +152,7 @@ const PortalChatSourceSelector = ({ connections, disabled, value: oldValue, onCh
     } else {
       newValue.push(sourceId);
     }
+    sourceDraftVersion.current += 1;
     hasUnsavedSourceValue.current = true;
     onContentChange();
     setValue(newValue);
@@ -157,6 +162,7 @@ const PortalChatSourceSelector = ({ connections, disabled, value: oldValue, onCh
     const newValue = connections.map(connection => connection.id);
     const nextValue = [...newValue, KNOWLEDGE_BASE_SOURCE_ID, TICKET_SOURCE_ID];
     if (newValue.length + 2 === value.length && nextValue.every(sourceId => value.includes(sourceId))) return;
+    sourceDraftVersion.current += 1;
     hasUnsavedSourceValue.current = true;
     onContentChange();
     setValue(nextValue);
@@ -164,6 +170,7 @@ const PortalChatSourceSelector = ({ connections, disabled, value: oldValue, onCh
 
   const clearAll = (onContentChange) => {
     if (!value.length) return;
+    sourceDraftVersion.current += 1;
     hasUnsavedSourceValue.current = true;
     onContentChange();
     setValue([]);
