@@ -593,7 +593,7 @@ CREATE TABLE `ai_usage_statistics` (
   `model` varchar(100) NOT NULL,
   `scenario` varchar(64) NOT NULL DEFAULT 'unknown',
   `input_tokens` int(11) DEFAULT NULL,
-  `cached_tokens` int(11) NOT NULL DEFAULT 0,
+  `cached_tokens` int(11) DEFAULT NULL,
   `output_tokens` int(11) DEFAULT NULL,
   `cost` double NOT NULL,
   `created_at` datetime(6) DEFAULT NULL,
