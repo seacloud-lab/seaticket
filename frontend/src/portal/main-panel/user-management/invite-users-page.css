@@ -51,17 +51,32 @@
 }
 
 .portal-invite-email-column {
-  width: 30%;
+  width: 23%;
 }
 
 .portal-invite-link-column {
-  width: 24%;
+  width: 19%;
 }
 
 .portal-invite-expiration-column {
-  width: 31%;
+  width: 25%;
+}
+
+.portal-invite-status-column {
+  width: 18%;
 }
 
 .portal-invite-expiration-cell {
+  white-space: nowrap;
+}
+
+.portal-invite-status-badge {
+  display: inline-block;
+  padding: 0 8px;
+  border-radius: 10px;
+  background-color: #59cb74;
+  color: #fff;
+  font-size: 12px;
+  line-height: 20px;
   white-space: nowrap;
 }
