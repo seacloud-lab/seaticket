@@ -10,9 +10,10 @@ const formatCreditUsed = (value) => {
 
 const TokenCreditUsed = ({
   data = [],
-  modelsUsageStatics = { totalInputTokens: 0, totalOutputTokens: 0, totalCreditUsed: 0 },
+  modelsUsageStatics = { totalInputTokens: 0, totalCachedTokens: 0, totalOutputTokens: 0, totalCreditUsed: 0 },
   legends = [
     { key: 'input_tokens', name: gettext('Input tokens'), color: '#8884d8' },
+    { key: 'cached_tokens', name: gettext('Cached tokens'), color: '#8884d8' },
     { key: 'output_tokens', name: gettext('Output tokens'), color: '#82ca9d' },
     { key: 'credit_used', name: gettext('Credit used'), color: '#ff7300' },
   ],
@@ -39,6 +40,7 @@ const TokenCreditUsed = ({
     const innerHeight = height - margin.top - margin.bottom;
 
     const inputTokensColor = legends.find(l => l.key === 'input_tokens')?.color;
+    const cachedTokensColor = legends.find(l => l.key === 'cached_tokens')?.color;
     const outputTokensColor = legends.find(l => l.key === 'output_tokens')?.color;
     const creditUsedColor = legends.find(l => l.key === 'credit_used')?.color;
 
@@ -53,6 +55,7 @@ const TokenCreditUsed = ({
     const chartData = data.map(d => ({
       name: d.name,
       input_tokens: Number(d.input_tokens) || 0,
+      cached_tokens: Number(d.cached_tokens) || 0,
       output_tokens: Number(d.output_tokens) || 0,
       total_tokens: Number(d.total_tokens) || 0,
       credit_used: Number(d.credit_used) || 0,
@@ -263,6 +266,14 @@ const TokenCreditUsed = ({
         .attr('height', innerHeight - yLeftScale(d.input_tokens))
         .attr('fill', inputTokensColor);
 
+      // draw cached tokens
+      group.append('rect')
+        .attr('x', x)
+        .attr('y', yLeftScale(d.cached_tokens))
+        .attr('width', barWidth)
+        .attr('height', innerHeight - yLeftScale(d.cached_tokens))
+        .attr('fill', cachedTokensColor);
+
       // draw output tokens
       group.append('rect')
         .attr('x', x)
@@ -399,6 +410,23 @@ const TokenCreditUsed = ({
         .attr('font-size', '11px')
         .attr('fill', '#666')
         .text(`${gettext('Input tokens')}: ${inputTokensTotal.toLocaleString()}`);
+
+      // Cached tokens
+      const cachedTokensTotal = modelsUsageStatics.totalCachedTokens || 0;
+      annotationGroup.append('rect')
+        .attr('x', 10)
+        .attr('y', 48)
+        .attr('width', 12)
+        .attr('height', 12)
+        .attr('fill', cachedTokensColor)
+        .attr('rx', 2);
+
+      annotationGroup.append('text')
+        .attr('x', 26)
+        .attr('y', 58)
+        .attr('font-size', '11px')
+        .attr('fill', '#666')
+        .text(`${gettext('Cached tokens')}: ${cachedTokensTotal.toLocaleString()}`);
 
       // Output tokens
       const outputTokensTotal = modelsUsageStatics.totalOutputTokens || 0;

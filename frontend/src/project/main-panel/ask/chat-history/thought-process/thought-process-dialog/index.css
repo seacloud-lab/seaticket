@@ -19,3 +19,42 @@
   width: 100%;
   margin: 0;
 }
+
+.seaqa-ai-thought-process-dialog .token-usage-statistics {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.seaqa-ai-thought-process-dialog .token-usage-statistic {
+  margin-bottom: 0;
+}
+
+.seaqa-ai-thought-process-dialog .token-usage-statistic .description {
+  color: var(--bs-body-secondary-color);
+}
+
+.seaqa-ai-thought-process-dialog .token-usage-statistic .value {
+  margin-right: 24px;
+  font-weight: 500;
+}
+
+.seaqa-tooltip .tooltip-inner.token-usage-tooltip {
+  min-width: 200px;
+  padding: 8px 16px;
+  border: 1px solid #e2e2e2;
+  border-radius: 3px;
+  background-color: var(--bs-body-bg);
+  box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.1);
+  color: #595959;
+  font-size: 12px;
+}
+
+.seaqa-tooltip .tooltip-inner.token-usage-tooltip .token-usage-tooltip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 8px 0;
+  line-height: 16px;
+  white-space: nowrap;
+}

@@ -90,6 +90,10 @@ const ChatAnalysis = ({
         key: 'input_tokens',
         type: CellType.NUMBER,
       }, {
+        name: gettext('Cached tokens'),
+        key: 'cached_tokens',
+        type: CellType.NUMBER,
+      }, {
         name: gettext('Output tokens'),
         key: 'output_tokens',
         type: CellType.NUMBER,
@@ -125,6 +129,10 @@ const ChatAnalysis = ({
       }, {
         name: gettext('Input tokens'),
         key: 'input_tokens',
+        type: CellType.NUMBER,
+      }, {
+        name: gettext('Cached tokens'),
+        key: 'cached_tokens',
         type: CellType.NUMBER,
       }, {
         name: gettext('Output tokens'),
@@ -194,6 +202,15 @@ const ChatAnalysis = ({
               },
               {
                 _pk: 3,
+                name: gettext('Cached tokens'),
+                column_key: 'cached_tokens',
+                summary_type: 'count',
+                value: formatTokenCount(current.cached_tokens || 0),
+                comparison: { ...formatComparison(changePercent.cached_tokens), label: comparisonLabel },
+                type: STATISTIC_TYPE.CARD,
+              },
+              {
+                _pk: 4,
                 name: gettext('Output tokens'),
                 column_key: 'output_tokens',
                 summary_type: 'count',
@@ -202,7 +219,7 @@ const ChatAnalysis = ({
                 type: STATISTIC_TYPE.CARD,
               },
               {
-                _pk: 4,
+                _pk: 5,
                 name: gettext('Credit used'),
                 column_key: 'credit_used',
                 summary_type: 'count',
@@ -211,7 +228,7 @@ const ChatAnalysis = ({
                 type: STATISTIC_TYPE.CARD,
               },
               {
-                _pk: 5,
+                _pk: 6,
                 name: gettext('Daily conversations in the past month'),
                 column_key: 'date',
                 summary_type: 'count',
@@ -220,7 +237,7 @@ const ChatAnalysis = ({
                 type: STATISTIC_TYPE.LINE,
               },
               {
-                _pk: 6,
+                _pk: 7,
                 name: gettext('Daily credit used in the past month'),
                 column_key: 'date',
                 summary_type: 'count',

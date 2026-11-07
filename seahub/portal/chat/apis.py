@@ -96,6 +96,7 @@ def _get_portal_chat_usage(project_uuid, start_date, end_date):
         date__range=(start_date, end_date),
     ).aggregate(
         input_tokens=Sum('input_tokens', default=0),
+        cached_tokens=Sum('cached_tokens', default=0),
         output_tokens=Sum('output_tokens', default=0),
         total_cost=Sum('cost', default=0),
     )
@@ -112,6 +113,7 @@ def _get_portal_chat_usage(project_uuid, start_date, end_date):
     return {
         'users': user_count,
         'input_tokens': usage['input_tokens'] or 0,
+        'cached_tokens': usage['cached_tokens'] or 0,
         'output_tokens': usage['output_tokens'] or 0,
         'credit_used': convert_cost_to_credit(usage['total_cost'] or 0),
     }
@@ -410,7 +412,7 @@ class PortalAdminChatStatisticsView(APIView):
                 metric: _get_percentage_change(
                     current_month[metric], previous_same_period[metric]
                 )
-                for metric in ('users', 'input_tokens', 'output_tokens', 'credit_used')
+                for metric in ('users', 'input_tokens', 'cached_tokens', 'output_tokens', 'credit_used')
             }
 
             return Response({
@@ -475,6 +477,7 @@ class PortalAdminChatUserUsageView(APIView):
                 .annotate(
                     sessions=Count('id'),
                     input_tokens=Sum('input_tokens'),
+                    cached_tokens=Sum('cached_tokens'),
                     output_tokens=Sum('output_tokens'),
                     credit_used=Sum('credit_used'),
                 )

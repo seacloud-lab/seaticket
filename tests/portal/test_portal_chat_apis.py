@@ -919,6 +919,7 @@ class TestPortalAdminChatAPIs:
             **common_data,
             scenario=AIScenario.PORTAL_CHAT.value,
             input_tokens=100,
+            cached_tokens=20,
             output_tokens=40,
             cost=1.5,
         )
@@ -926,6 +927,7 @@ class TestPortalAdminChatAPIs:
             **common_data,
             scenario=AIScenario.CHAT.value,
             input_tokens=900,
+            cached_tokens=700,
             output_tokens=800,
             cost=9.0,
         )
@@ -955,6 +957,7 @@ class TestPortalAdminChatAPIs:
         assert response.data['current'] == {
             'users': 1,
             'input_tokens': 100,
+            'cached_tokens': 20,
             'output_tokens': 40,
             'credit_used': 150,
         }
@@ -1000,6 +1003,7 @@ class TestPortalAdminChatAPIs:
             **common_data,
             date=date(2026, 3, 5),
             input_tokens=300,
+            cached_tokens=60,
             output_tokens=100,
             cost=2.5,
         )
@@ -1007,6 +1011,7 @@ class TestPortalAdminChatAPIs:
             **common_data,
             date=date(2026, 2, 10),
             input_tokens=200,
+            cached_tokens=20,
             output_tokens=80,
             cost=1.5,
         )
@@ -1014,6 +1019,7 @@ class TestPortalAdminChatAPIs:
             **common_data,
             date=date(2026, 2, 25),
             input_tokens=900,
+            cached_tokens=700,
             output_tokens=400,
             cost=9.0,
         )
@@ -1034,12 +1040,14 @@ class TestPortalAdminChatAPIs:
         assert response.data['current'] == {
             'users': 1,
             'input_tokens': 300,
+            'cached_tokens': 60,
             'output_tokens': 100,
             'credit_used': 250,
         }
         assert response.data['change_percent'] == {
             'users': 0,
             'input_tokens': 50.0,
+            'cached_tokens': 200.0,
             'output_tokens': 25.0,
             'credit_used': round((250 - 150) * 100 / 150, 2),
         }
@@ -1083,6 +1091,7 @@ class TestPortalAdminChatAPIs:
         assert response.data['change_percent'] == {
             'users': 100,
             'input_tokens': 100,
+            'cached_tokens': None,
             'output_tokens': 100,
             'credit_used': 100,
         }
@@ -1321,6 +1330,7 @@ class TestPortalAdminChatAPIs:
         assert response.data['current'] == {
             'users': expected_users,
             'input_tokens': expected_users * 100,
+            'cached_tokens': 0,
             'output_tokens': expected_users * 20,
             'credit_used': expected_users * 100,
         }
