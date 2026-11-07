@@ -20,9 +20,9 @@
 - `pip install pylint`: install the checker required by `code-check.sh` in the
   active development environment.
 - `python manage.py runserver`: start the backend with a configured local
-  Seafile deployment.
+  SeaTicket deployment.
 - `./code-check.sh seahub.api2`: run Pylint error checks for a focused module.
-- `./tests/seahubtests.sh test`: run the Python suite after Seafile services and
+- `./tests/seahubtests.sh test`: run the Python suite after SeaTicket services and
   the test environment have been initialized; use `.github/workflows/test.yml`
   as the setup reference.
 - `make dist`: regenerate locale and static output when affected.

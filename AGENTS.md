@@ -23,7 +23,7 @@
 
 - `pip install -r dev-requirements.txt`: install Python development dependencies.
 - `python manage.py runserver`: start the Django server after configuring a
-  local Seafile deployment.
+  local SeaTicket deployment.
 - `make dist`: compile locale and static output.
 - `frontend/AGENTS.md`: find React commands and prerequisites.
 - `seahub/AGENTS.md`: find Django checks and test-environment requirements.
