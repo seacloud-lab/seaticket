@@ -111,6 +111,16 @@ const Bar = ({ data }) => {
       .on('mouseleave', (event) => {
         hiddenTooltip(event);
       });
+
+    contentWrapper.selectAll('.chart-value')
+      .data(data.filter(item => Number(item.value) !== 0))
+      .join('text')
+      .attr('class', 'chart-value')
+      .attr('x', item => x(item.name) + x.bandwidth() / 2)
+      .attr('y', item => y(item.value) - 8)
+      .attr('text-anchor', 'middle')
+      .attr('fill', theme.labelColor)
+      .text(item => Number(item.value).toLocaleString());
   };
 
   const chart = useChartDraw({

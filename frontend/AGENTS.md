@@ -10,7 +10,8 @@
 - `src/models/`: frontend data models and state-related code.
 - `src/assets/`: images, icons, and other frontend assets.
 - `build/`: generated output; do not edit it directly.
-- `Feature placement`: keep feature code close to its tests.
+- `Test placement`: put frontend tests in `src/test/`, mirroring the tested
+  module's path under `src/`.
 
 ## Technical Architecture
 
@@ -20,6 +21,8 @@
 - `Routing`: `@gatsbyjs/reach-router` provides client-side navigation.
 - `UI`: Reactstrap and repository components form the shared UI layer; reuse
   them before adding another component library.
+- `Charts`: keep base chart renderers in `src/components/chart/view/`, render
+  from data, and reuse existing chart types when possible.
 - `HTTP`: Axios clients in `src/api/` call Seahub APIs and retain CSRF and
   server initialization behavior.
 - `Localization`: ordinary Seahub UI strings use Django JavaScript `gettext`;

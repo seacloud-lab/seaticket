@@ -1,6 +1,9 @@
 import logging
 import datetime
 
+from dateutil.relativedelta import relativedelta
+from django.utils import timezone
+
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE, ATTACHMENT_ISSUE_MAX_COMMENTS
 from seahub.project.constants import ConnectionType
@@ -10,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 _COMMENTS_OMITTED_NOTICE = '[comments omitted due to content limit]'
 _MORE_COMMENTS_OMITTED_NOTICE = '[more comments omitted due to content limit]'
+ISSUE_STATISTICS_MONTHS = 12
 
 
 def _truncate_content_with_ellipsis(content, max_length):
@@ -31,6 +35,16 @@ def _build_comment_notice(content):
     }
 
 
+def _get_issue_type_options(columns):
+    type_column = next(
+        (column for column in columns or [] if column.get('name') == 'issue_type'),
+        None,
+    )
+    if type_column is None:
+        raise RuntimeError('GitHub issue statistics require an issue_type column.')
+    return (type_column.get('data') or {}).get('options') or []
+
+
 class GitHubSeaDBAPI:
     def __init__(self, base_id, timeout=30, seadb_api=None):
         self.base_id = base_id
@@ -45,6 +59,75 @@ class GitHubSeaDBAPI:
         if response and 'results' in response:
             return response['results']
         return []
+
+    def get_issue_statistics(self, connection_id, user_timezone=datetime.timezone.utc):
+        now = timezone.now().astimezone(datetime.timezone.utc)
+        local_now = now.astimezone(user_timezone)
+        month_start = datetime.datetime(local_now.year, local_now.month, 1, tzinfo=user_timezone)
+        month_starts = [
+            month_start + relativedelta(months=index - ISSUE_STATISTICS_MONTHS + 1)
+            for index in range(ISSUE_STATISTICS_MONTHS)
+        ]
+        months = [start.strftime('%Y-%m') for start in month_starts]
+        utc_month_starts = [start.astimezone(datetime.timezone.utc) for start in month_starts]
+
+        bucket_terms = []
+        for index in reversed(range(1, ISSUE_STATISTICS_MONTHS)):
+            bucket_terms.extend([
+                f"`created_time` >= DATEADD('{utc_month_starts[index].isoformat()}', 0, 'seconds')",
+                f"'{months[index]}'",
+            ])
+        bucket_terms.extend(['TRUE()', f"'{months[0]}'"])
+        month_bucket = f"IFS({', '.join(bucket_terms)})"
+
+        table_name = SchemaTables.GITHUB_ISSUES.table_name(connection_id)
+        sql = (
+            f"SELECT {month_bucket} AS `month`, `issue_type`, COUNT(*) AS `count` "
+            f"FROM `{table_name}` "
+            "WHERE (`deleted` = False OR `deleted` IS NULL) "
+            "AND `created_time` >= ? AND `created_time` < ? "
+            "GROUP BY `month`, `issue_type` "
+            "ORDER BY `month`, `issue_type`"
+        )
+        result = self.seadb_api.query_rows(
+            self.base_id, sql,
+            params=[utc_month_starts[0].isoformat(), now.isoformat()],
+        )
+        if result.get('success') is False:
+            raise RuntimeError('Could not query connection statistics.')
+
+        counts_by_type = {None: [0] * ISSUE_STATISTICS_MONTHS}
+        for option in _get_issue_type_options(result.get('metadata')):
+            if option.get('name'):
+                counts_by_type[option['name']] = [0] * ISSUE_STATISTICS_MONTHS
+
+        month_indexes = {month: index for index, month in enumerate(months)}
+        for row in result.get('results') or []:
+            month_index = month_indexes.get(row.get('month'))
+            if month_index is None:
+                logger.warning('Unexpected month bucket %r in GitHub issue statistics', row.get('month'))
+                continue
+            issue_type = row.get('issue_type') or None
+            counts = counts_by_type.setdefault(issue_type, [0] * ISSUE_STATISTICS_MONTHS)
+            counts[month_index] += int(row.get('count') or 0)
+
+        names = sorted(
+            (name for name in counts_by_type if name is not None),
+            key=lambda name: (
+                {'bug': 0, 'feature': 1, 'task': 2}.get(name.lower(), 3),
+                name.lower(), name,
+            ),
+        )
+        series = [
+            {'issue_type': name, 'counts': counts_by_type[name]}
+            for name in [*names, None]
+        ]
+        return {
+            'connection_id': connection_id,
+            'months': months,
+            'series': series,
+            'total': sum(sum(item['counts']) for item in series),
+        }
 
     def get_issue_by_pk(self, connection_id, _pk):
         """Retrieve issue for the specified _pk."""

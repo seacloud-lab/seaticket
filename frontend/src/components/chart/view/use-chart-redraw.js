@@ -42,14 +42,14 @@ const useChartDraw = ({ target, data, chartId, options, draw }) => {
       destroyChart(chartRef);
       chartRef.current = null;
     };
-  // chartId and options are immutable module-level constants in callers.
+  // Resize callbacks use the latest data and drawing function; updates are keyed by data and options.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useLayoutEffect(() => {
     redrawChart();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data]);
+  }, [data, options]);
 
   return chartRef.current;
 };
