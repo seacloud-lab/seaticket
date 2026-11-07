@@ -22,6 +22,8 @@ EMAIL_RE = re.compile(
     r')@(?:[A-Z0-9-]+\.)+[A-Z]{2,6}$', re.IGNORECASE)  # domain
 
 def is_valid_email(value):
+    if not isinstance(value, str) or len(value) > 256:
+        return False
     if not EMAIL_RE.search(value):
         raise exceptions.ValidationError(_('Enter a valid e-mail address.'))
 
