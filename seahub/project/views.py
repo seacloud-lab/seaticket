@@ -10,6 +10,7 @@ import requests
 from django.conf import settings as django_settings
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 from django.utils import timezone
 from requests_oauthlib import OAuth2Session
@@ -540,6 +541,8 @@ def confluence_oauth_callback(request):
 def discord_oauth(request):
     """Initiate Discord OAuth2 flow to add the bot to a server."""
     return_to = request.GET.get('next') or '/'
+    if not url_has_allowed_host_and_scheme(url=return_to, allowed_hosts={request.get_host()}):
+        return_to = '/'
     project_uuid = request.GET.get('project_uuid', '')
 
     if not project_uuid:
@@ -648,6 +651,9 @@ def discord_oauth_callback(request):
     request.session.pop('discord_oauth_state', None)
     request.session.pop('discord_oauth_project_uuid', None)
     request.session.pop('discord_oauth_return_to', None)
+
+    if not url_has_allowed_host_and_scheme(url=return_to, allowed_hosts={request.get_host()}):
+        return_to = '/'
 
     message = json.dumps({
         'type': 'discord-oauth-success',

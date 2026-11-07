@@ -2033,6 +2033,10 @@ class ProjectConnectionReplyEmailView(APIView):
         cc_text = request.data.get('cc')
         cc_emails = extract_email_addresses(cc_text)
 
+        if cc_text and not cc_emails:
+            error_msg = 'cc invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
         subject = request.data.get('subject')
         if not subject:
             subject = target_email.get('title')

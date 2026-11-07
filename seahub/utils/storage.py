@@ -79,9 +79,35 @@ def gen_record_file_path(entity_type, record_id, filename=''):
     parent_dir = 'portal' if entity_type == 'portal-issues' else 'attachments'
     return f'{parent_dir}/{entity_type}/{record_id}/{filename}'
 
-def gen_tmp_upload_file_path(project_uuid, file_path):
+
+def resolve_path_under_root(root_dir, relative_path):
+    if (not isinstance(relative_path, str) or not relative_path or
+            '\\' in relative_path or os.path.isabs(relative_path)):
+        raise ValueError('Invalid relative file path.')
+    if any(part in ('', '.', '..') for part in relative_path.split('/')):
+        raise ValueError('Invalid relative file path.')
+
+    root_dir = os.path.realpath(root_dir)
+    file_path = os.path.realpath(os.path.join(root_dir, relative_path))
+    try:
+        is_within_root = os.path.commonpath((root_dir, file_path)) == root_dir
+    except ValueError:
+        is_within_root = False
+    if not is_within_root:
+        raise ValueError('File path is outside the allowed directory.')
+
+    return file_path
+
+
+def _resolve_tmp_upload_path(project_uuid, file_path):
     project_uuid = uuid_str_to_36_chars(project_uuid)
-    tmp_upload_file_path = os.path.join('/tmp', 'projects', project_uuid, file_path)
+    tmp_project_dir = os.path.join('/tmp', 'projects', project_uuid)
+    tmp_upload_file_path = resolve_path_under_root(tmp_project_dir, file_path)
+    return os.path.realpath(tmp_project_dir), tmp_upload_file_path
+
+
+def gen_tmp_upload_file_path(project_uuid, file_path):
+    _, tmp_upload_file_path = _resolve_tmp_upload_path(project_uuid, file_path)
     tmp_dir = os.path.dirname(tmp_upload_file_path)
     if not os.path.exists(tmp_dir):
         os.makedirs(tmp_dir, exist_ok=True)
@@ -89,9 +115,17 @@ def gen_tmp_upload_file_path(project_uuid, file_path):
 
 
 def upload_file_to_tmp_dir(project_uuid, file, subdir=''):
-    subdir_prefix = (subdir.strip('/') + '/') if subdir else ''
-    file_path = subdir_prefix + datetime.now(timezone.utc).strftime('%Y-%m') + '/' + file.name
-    tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, file_path)
+    project_uuid = uuid_str_to_36_chars(project_uuid)
+    file_name = getattr(file, 'name', None)
+    subdir = subdir.strip('/') if subdir else ''
+    if not isinstance(file_name, str) or '/' in file_name or '\\' in file_name:
+        raise ValueError('Invalid upload file path.')
+
+    file_path = '/'.join(filter(None, (
+        subdir, datetime.now(timezone.utc).strftime('%Y-%m'), file_name,
+    )))
+    _, tmp_upload_file_path = _resolve_tmp_upload_path(project_uuid, file_path)
+    os.makedirs(os.path.dirname(tmp_upload_file_path), exist_ok=True)
     with open(tmp_upload_file_path, 'wb') as fd:
         for chunk in iter(lambda: file.read(1024 * 1024), b''):
             fd.write(chunk)
@@ -99,14 +133,21 @@ def upload_file_to_tmp_dir(project_uuid, file, subdir=''):
 
 
 def upload_files(project_uuid, file_urls, username, entity_type, record_id):
+    project_uuid = uuid_str_to_36_chars(project_uuid)
+    upload_prefix = f'/upload-file/project/{project_uuid}/'
     new_file_urls_dict = {}
     backend = get_backend()
     for file_url in file_urls:
-        if '/upload-file/project/' not in file_url:
+        if not isinstance(file_url, str) or not file_url.startswith(upload_prefix):
             continue
-        file_name = os.path.basename(file_url)
-        file_path = file_url.split('/')[-2] + '/' + file_name
-        tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, file_path)
+
+        relative_path = file_url[len(upload_prefix):]
+        try:
+            _, tmp_upload_file_path = _resolve_tmp_upload_path(project_uuid, relative_path)
+        except ValueError:
+            continue
+
+        file_name = os.path.basename(relative_path)
         if not os.path.exists(tmp_upload_file_path):
             logger.warning(tmp_upload_file_path + ' not exists.')
             continue
@@ -141,9 +182,12 @@ def upload_portal_files(project_uuid, file_urls, username, entity_type, record_i
     for file_url in file_urls:
         if not isinstance(file_url, str) or not file_url.startswith(portal_prefix):
             continue
-        file_name = os.path.basename(file_url)
         rel = file_url[len(portal_prefix):]
-        tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, f'portal/{rel}')
+        try:
+            tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, f'portal/{rel}')
+        except ValueError:
+            continue
+        file_name = os.path.basename(rel)
         if not os.path.exists(tmp_upload_file_path):
             logger.warning(tmp_upload_file_path + ' not exists.')
             continue

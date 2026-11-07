@@ -20,6 +20,7 @@ from seahub.project.utils import check_project_permission
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.settings import TEMP_EXPORT_VIEW_DIR
 from seahub.utils.io import convert_kb_view_to_excel, query_io_task_status, import_kb_from_excel
+from seahub.utils.storage import resolve_path_under_root
 
 
 logger = logging.getLogger(__name__)
@@ -138,7 +139,10 @@ class KnowledgeBaseExportExcel(APIView):
         project_name = project.name
         excel_name = f'{project_name}_knowledge_base_{view_name}.xlsx'
         target_dir = os.path.join(TEMP_EXPORT_VIEW_DIR, str(project_uuid))
-        tmp_excel_path = os.path.join(target_dir, excel_name)
+        try:
+            tmp_excel_path = resolve_path_under_root(target_dir, excel_name)
+        except ValueError:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Export file not found.')
         if not os.path.isfile(tmp_excel_path):
             return api_error(status.HTTP_404_NOT_FOUND, excel_name + ' not found.')
 
@@ -166,16 +170,21 @@ class KnowledgeBaseImportExcel(APIView):
         preview_only = str(preview_only).lower() in ('true', '1', 'yes') if preview_only is not None else False
 
         file_obj = request.FILES.get('file')
-        file_name = request.data.get('file_name') or (file_obj.name if file_obj else None)
+        file_name = file_obj.name if file_obj else request.data.get('file_name')
         if not file_name:
             return api_error(status.HTTP_400_BAD_REQUEST, 'File not found.')
-        if not file_name.endswith('.xlsx'):
+        if (not isinstance(file_name, str) or '/' in file_name or '\\' in file_name or
+                not file_name.endswith('.xlsx')):
             return api_error(status.HTTP_400_BAD_REQUEST, 'File type invalid.')
 
+        temp_dir = os.path.join(TEMP_EXPORT_VIEW_DIR, str(project_uuid))
+        try:
+            file_path = resolve_path_under_root(temp_dir, file_name)
+        except ValueError:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'File name invalid.')
+
         if file_obj:
-            temp_dir = os.path.join(TEMP_EXPORT_VIEW_DIR, str(project_uuid))
-            os.makedirs(temp_dir, exist_ok=True)
-            file_path = os.path.join(temp_dir, file_obj.name)
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
             with open(file_path, 'wb+') as destination:
                 for chunk in file_obj.chunks():
                     destination.write(chunk)
