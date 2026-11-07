@@ -2,6 +2,7 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { InputGroup, Input } from 'reactstrap';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
+import { isEnterWithoutComposition } from '@/utils/hotkey';
 import { isFunction } from '@/utils/type-detection';
 import { Utils } from '@/utils/utils';
 import IconButton from '../icon-button';
@@ -58,6 +59,13 @@ const PasswordInput = ({
     setIsShowChecker(false);
   }, [isShowChecker, handleBlur]);
 
+  const onKeyDown = useCallback((event) => {
+    if (isEnterWithoutComposition(event)) {
+      event.preventDefault();
+      ref?.current?.blur();
+    }
+  }, []);
+
   useEffect(() => {
     if (initSize) return;
     const { height } = ref.current.getBoundingClientRect();
@@ -80,6 +88,7 @@ const PasswordInput = ({
         value={value}
         placeholder={placeholder}
         onChange={onChangePassword}
+        onKeyDown={onKeyDown}
         onFocus={onFocus}
         onBlur={onBlur}
       />

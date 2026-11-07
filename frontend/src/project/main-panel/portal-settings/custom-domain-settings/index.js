@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button, FormGroup, Input, InputGroup, Label } from 'reactstrap';
 import copy from 'copy-to-clipboard';
-import { CommonOperationConfirmationDialog, SettingsItem, toaster, IconTooltip } from '@/components';
+import { CommonOperationConfirmationDialog, SettingsItem, toaster, IconTooltip, SaveStatus } from '@/components';
+import { SAVE_STATUS_TYPE } from '@/components/save-status/constants';
 import { gettext } from '@/constants';
+import { isEnterWithoutComposition } from '@/utils/hotkey';
 import { Utils } from '@/utils/utils';
 import { usePortalSettings } from '../hooks';
 
@@ -30,8 +32,14 @@ const Main = ({
   const [customDomain, setCustomDomain] = useState(propsCustomDomain || '');
   const [isShowRemoveCustomDomainConfirm, setIsShowRemoveCustomDomainConfirm] = useState(false);
   const [isVerifyingCustomDomain, setIsVerifyingCustomDomain] = useState(false);
+
   const customDomainEditVersion = useRef(0);
   const customDomainSyncedVersion = useRef(0);
+  const lastSavedCustomDomain = useRef(propsCustomDomain || '');
+  const customDomainSaveSequence = useRef(0);
+  const pendingCustomDomainSave = useRef(null);
+  const statusSaveRef = useRef(null);
+  const inputRef = useRef(null);
 
   const validCustomDomain = useMemo(() => customDomain.trim(), [customDomain]);
   const currentPortalDomain = useMemo(() => currentSubdomainDomain || getHostFromUrl(subdomainPublicUrl),
@@ -41,18 +49,28 @@ const Main = ({
     : gettext('Custom domain allows you to serve your portal from a domain other than your current portal domain.'),
   [currentPortalDomain]);
 
-  const handleCustomDomainChange = useCallback(() => {
-    if (!validCustomDomain) return;
-    if (validCustomDomain === propsCustomDomain) {
+  const handleCustomDomainChange = useCallback((callback) => {
+    if (!validCustomDomain) {
+      setIsShowRemoveCustomDomainConfirm(true);
+      callback && callback({}, true);
       return;
     }
+
     const editVersion = customDomainEditVersion.current;
-    onChange && onChange({ custom_domain: validCustomDomain }, (isSuccess = true) => {
-      if (isSuccess && customDomainEditVersion.current === editVersion) {
-        customDomainSyncedVersion.current = editVersion;
+    const saveSequence = ++customDomainSaveSequence.current;
+    pendingCustomDomainSave.current = { sequence: saveSequence, value: validCustomDomain };
+    onChange && onChange({ custom_domain: validCustomDomain }, ({ error } = {}) => {
+      if (!error) {
+        lastSavedCustomDomain.current = validCustomDomain;
+        if (customDomainEditVersion.current === editVersion) {
+          customDomainSyncedVersion.current = editVersion;
+          setCustomDomain(validCustomDomain);
+        }
       }
+      if (pendingCustomDomainSave.current?.sequence === saveSequence) pendingCustomDomainSave.current = null;
+      callback && callback({ error });
     });
-  }, [validCustomDomain, propsCustomDomain, onChange]);
+  }, [validCustomDomain, onChange]);
 
   const onOpenRemoveCustomDomainConfirm = useCallback(() => {
     if (!propsCustomDomain) return;
@@ -61,17 +79,46 @@ const Main = ({
 
   const onCloseRemoveCustomDomainConfirm = useCallback(() => {
     setIsShowRemoveCustomDomainConfirm(false);
+    if (!customDomain.trim()) {
+      const pendingSave = pendingCustomDomainSave.current;
+      const restoredCustomDomain = pendingSave?.value ?? (propsCustomDomain || '');
+      customDomainEditVersion.current += 1;
+      setCustomDomain(restoredCustomDomain);
+      if (!pendingSave) customDomainSyncedVersion.current = customDomainEditVersion.current;
+    }
+  }, [customDomain, propsCustomDomain]);
+
+  const onKeyDown = useCallback((event) => {
+    if (isEnterWithoutComposition(event)) {
+      event.preventDefault();
+      inputRef?.current?.blur();
+    }
   }, []);
 
   const onRemoveCustomDomain = useCallback(() => {
-    if (!propsCustomDomain) return;
+    const pendingValue = pendingCustomDomainSave.current?.value;
+    if (!propsCustomDomain && !lastSavedCustomDomain.current && !pendingValue) return;
     const editVersion = customDomainEditVersion.current;
-    onChange && onChange({ custom_domain: '' }, (isSuccess = true) => {
-      if (!isSuccess) return;
-      if (customDomainEditVersion.current === editVersion) {
-        customDomainSyncedVersion.current = editVersion;
-        setCustomDomain('');
+    const statusSave = statusSaveRef.current;
+    if (!statusSave) return;
+    const saveSequence = ++customDomainSaveSequence.current;
+    pendingCustomDomainSave.current = { sequence: saveSequence, value: '', editVersion, isRemoval: true };
+    const submissionSequence = statusSave.startSubmission();
+    onChange && onChange({ custom_domain: '' }, ({ error } = {}) => {
+      if (!error) {
+        lastSavedCustomDomain.current = '';
+        if (customDomainEditVersion.current === editVersion) {
+          customDomainSyncedVersion.current = editVersion;
+          setCustomDomain('');
+        }
       }
+      if (pendingCustomDomainSave.current?.sequence === saveSequence) pendingCustomDomainSave.current = null;
+      statusSaveRef.current?.setSubmissionStatus(
+        submissionSequence,
+        !error ? SAVE_STATUS_TYPE.SAVED : SAVE_STATUS_TYPE.SAVE_ERROR,
+        !error ? '' : Utils.getErrorMsg(error),
+        0,
+      );
     });
   }, [propsCustomDomain, onChange]);
 
@@ -98,6 +145,8 @@ const Main = ({
   }, []);
 
   useEffect(() => {
+    if (pendingCustomDomainSave.current) return;
+    lastSavedCustomDomain.current = propsCustomDomain || '';
     if (customDomainEditVersion.current !== customDomainSyncedVersion.current) return;
     setCustomDomain(propsCustomDomain || '');
   }, [propsCustomDomain]);
@@ -110,32 +159,49 @@ const Main = ({
     <SettingsItem title={gettext('Custom domain')} className="seaqa-portal-custom-domain-settings">
       <FormGroup className={propsCustomDomain ? 'mb-2' : 'mb-4'}>
         <Label className="seaqa-tip-default font-size-12 line-height-20 mb-4">{customDomainHint}</Label>
-        <InputGroup className="seaqa-project-portal-input-group-settings">
-          <Input
-            type="text"
-            className="custom-domain-input"
-            value={customDomain}
-            placeholder={gettext('support.example.com')}
-            spellCheck={false}
-            autoComplete="off"
-            onChange={(event) => {
-              customDomainEditVersion.current += 1;
-              setCustomDomain(event.target.value);
-            }}
-            onBlur={handleCustomDomainChange}
-          />
-          {propsCustomDomain && (
-            <IconTooltip
-              icon="delete"
-              tip={gettext('Remove')}
-              className="mx-0 btn btn-secondary p-0"
-              hoverBackground={true}
-              size={{ btn: 38, icon: 14 }}
-              placement="bottom"
-              onClick={onOpenRemoveCustomDomainConfirm}
-            />
+        <SaveStatus type="input" callback={handleCustomDomainChange} ref={statusSaveRef}>
+          {({ callback, onContentChange }) => (
+            <InputGroup className="seaqa-project-portal-input-group-settings">
+              <Input
+                innerRef={inputRef}
+                type="text"
+                className="custom-domain-input"
+                value={customDomain}
+                placeholder={gettext('support.example.com')}
+                spellCheck={false}
+                autoComplete="off"
+                onChange={(event) => {
+                  onContentChange();
+                  customDomainEditVersion.current += 1;
+                  setCustomDomain(event.target.value);
+                }}
+                onBlur={() => {
+                  const pendingSave = pendingCustomDomainSave.current;
+                  if (pendingSave?.isRemoval && customDomainEditVersion.current === pendingSave.editVersion) return;
+                  const pendingValue = pendingSave?.value;
+                  const expectedValue = pendingValue ?? lastSavedCustomDomain.current;
+                  if (!validCustomDomain) {
+                    if (expectedValue) callback();
+                    return;
+                  }
+                  if (validCustomDomain !== expectedValue) callback();
+                }}
+                onKeyDown={onKeyDown}
+              />
+              {propsCustomDomain && (
+                <IconTooltip
+                  icon="delete"
+                  tip={gettext('Remove')}
+                  className="mx-0 btn btn-secondary p-0"
+                  hoverBackground={true}
+                  size={{ btn: 38, icon: 14 }}
+                  placement="bottom"
+                  onClick={onOpenRemoveCustomDomainConfirm}
+                />
+              )}
+            </InputGroup>
           )}
-        </InputGroup>
+        </SaveStatus>
       </FormGroup>
       {propsCustomDomain && (
         <>

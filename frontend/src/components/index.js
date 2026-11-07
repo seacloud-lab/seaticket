@@ -58,6 +58,7 @@ import Radio from './radio';
 import RadioGroup from './radio-group';
 import RemoveButton from './remove-btn';
 import ResizeBar from './resize-bar';
+import SaveStatus from './save-status';
 import SearchInput, { AdminSearch } from './search-input';
 import { SectionSettings } from './settings';
 import SettingsItem from './settings-item';
@@ -146,4 +147,5 @@ export {
   FilterSelect,
   DatePicker,
   MonthPicker,
+  SaveStatus,
 };

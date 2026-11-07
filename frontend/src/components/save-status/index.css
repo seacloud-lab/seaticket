@@ -1,0 +1,10 @@
+.seaqa-save-status .seaqa-input-error-tip {
+  height: 32px;
+  font-size: 12px;
+  line-height: 32px;
+}
+
+.seaqa-save-status-error input:enabled,
+.seaqa-save-status-error textarea:enabled {
+  border-color: var(--bs-text-danger);
+}

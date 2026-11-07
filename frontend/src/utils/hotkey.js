@@ -26,6 +26,10 @@ const isShiftModEnter = isHotkey('shift+mod+enter');
 const isOptPageUp = isHotkey('opt+pageup');
 const isOptPageDown = isHotkey('opt+pagedown');
 const isEnter = isHotkey('enter');
+const isEnterWithoutComposition = (event) => {
+  const nativeEvent = event?.nativeEvent || event;
+  return !nativeEvent?.isComposing && nativeEvent?.keyCode !== 229 && isEnter(event);
+};
 const isEsc = isHotkey('esc');
 const isTab = isHotkey('tab');
 const isUpArrow = isHotkey('arrowup');
@@ -40,7 +44,7 @@ const isShiftT = isHotkey('shift+t'); // type setting
 const isShiftSlash = isHotkey('shift+/');
 
 export { isModS, isModZ, isModL, isModF, isModP, isModG, isModDot, isModComma, isModUp, isModDown, isModLeft, isModRight,
-  isShiftEnter, isModSlash, isModBackslash, isModSemicolon, isSpace, isEnter, isEsc, isOptPageDown, isOptPageUp, isShiftModEnter,
+  isShiftEnter, isModSlash, isModBackslash, isModSemicolon, isSpace, isEnter, isEnterWithoutComposition, isEsc, isOptPageDown, isOptPageUp, isShiftModEnter,
   isModShiftZ, isModShiftG, isModShiftDot, isModShiftComma, isModEnter, isTab, isUpArrow, isDownArrow,
   isP, isA, isT, isS, isShiftS, isShiftT, isShiftSlash, isL,
 };

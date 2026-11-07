@@ -1,98 +1,160 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { FormGroup, Label } from 'reactstrap';
-import { PasswordInput, SettingsItem, SwitchSettings, toaster } from '@/components';
+import { PasswordInput, SettingsItem, SwitchSettings, SaveStatus } from '@/components';
 import { gettext } from '@/constants';
 import { usePortalSettings } from '../hooks';
+import { getInputCheckError } from '../utils';
 
 import './index.css';
 
 const Main = ({
   allowAnonymous,
   enablePassword,
+  savedPassword,
   onChange,
-  ...props
 }) => {
-  const [password, setPassword] = useState(props?.password || '');
+  const [password, setPassword] = useState(savedPassword || '');
+  const [isPasswordDirty, setIsPasswordDirty] = useState(false);
   const [passwordInputVersion, setPasswordInputVersion] = useState(0);
   const [isEnablingPassword, setIsEnablingPassword] = useState(false);
+  const passwordDraftVersion = useRef(0);
+  const passwordDraftRef = useRef(savedPassword || '');
 
   const isPasswordProtectionEnabled = enablePassword || isEnablingPassword;
 
-  const handleEnablePassword = useCallback((newValue) => {
-    if (newValue) {
+  const handleAllowAnonymousChange = useCallback((newValue, callback) => {
+    const previousPassword = password;
+    const previousPasswordDirty = isPasswordDirty;
+    const previousIsEnablingPassword = isEnablingPassword;
+    let rollbackDraftVersion;
+    let update = { allow_anonymous: Boolean(newValue) };
+    if (!newValue) {
+      passwordDraftVersion.current += 1;
+      rollbackDraftVersion = passwordDraftVersion.current;
+      passwordDraftRef.current = '';
       setPassword('');
-      setIsEnablingPassword(true);
+      setIsPasswordDirty(false);
+      setIsEnablingPassword(false);
+      update['enable_password_protection'] = false;
+      update['password'] = '';
+    }
+    onChange(update, (callbackParams = {}) => {
+      callback && callback(callbackParams);
+      if (callbackParams.error && !newValue && passwordDraftVersion.current === rollbackDraftVersion) {
+        passwordDraftVersion.current += 1;
+        passwordDraftRef.current = previousPassword;
+        setPassword(previousPassword);
+        setIsPasswordDirty(previousPasswordDirty);
+        setIsEnablingPassword(previousIsEnablingPassword);
+      }
+    });
+  }, [onChange, password, isPasswordDirty, isEnablingPassword]);
+
+  const handleEnablePassword = useCallback((newValue, callback) => {
+    const previousPassword = password;
+    const previousPasswordDirty = isPasswordDirty;
+    let rollbackDraftVersion;
+    if (!newValue) {
+      passwordDraftVersion.current += 1;
+      rollbackDraftVersion = passwordDraftVersion.current;
+      passwordDraftRef.current = '';
+      setPassword('');
+      setIsPasswordDirty(false);
+    }
+    setIsEnablingPassword(Boolean(newValue));
+    if (newValue || enablePassword === newValue) {
+      callback && callback({}, true);
       return;
     }
-    setPassword('');
-    setIsEnablingPassword(false);
-    onChange && onChange({ enable_password_protection: false, password: '' });
-  }, [onChange]);
 
-  const handleAllowAnonymousChange = useCallback((newValue) => {
-    if (!newValue) {
-      setPassword('');
-      setIsEnablingPassword(false);
-      onChange({
-        allow_anonymous: false,
-        enable_password_protection: false,
-        password: '',
+    onChange && onChange({ enable_password_protection: false, password: '' }, (callbackParams = {}) => {
+      callback && callback(callbackParams);
+      if (callbackParams.error && passwordDraftVersion.current === rollbackDraftVersion) {
+        passwordDraftVersion.current += 1;
+        passwordDraftRef.current = previousPassword;
+        setPassword(previousPassword);
+        setIsPasswordDirty(previousPasswordDirty);
+      }
+    });
+  }, [enablePassword, onChange, password, isPasswordDirty]);
+
+  const handlePasswordChange = useCallback((callback) => {
+    if (!password || password.length < 8) {
+      callback && callback({
+        error: getInputCheckError(gettext('Password must be at least 8 characters')),
       });
       return;
     }
-    onChange({ allow_anonymous: true });
-  }, [onChange]);
-
-  const handlePasswordChange = useCallback(() => {
-    if (!(allowAnonymous && isPasswordProtectionEnabled)) return;
-    if (!password && !isEnablingPassword) return;
-    if (!password || password.length < 8) {
-      toaster.danger(gettext('Password must be at least 8 characters'), { duration: 2, hasCloseButton: false });
-      return;
-    }
-    onChange({ enable_password_protection: true, password }, (isSuccess = true) => {
-      if (isSuccess) {
-        setPasswordInputVersion(version => version + 1);
-        setIsEnablingPassword(false);
-        return;
-      }
-      setPassword('');
+    const submittedPassword = password;
+    const submittedDraftVersion = passwordDraftVersion.current;
+    onChange({ enable_password_protection: true, password }, (callbackParams) => {
+      callback && callback(callbackParams);
+      if (callbackParams?.error) return;
+      if (passwordDraftVersion.current !== submittedDraftVersion && passwordDraftRef.current !== submittedPassword) return;
+      setIsPasswordDirty(false);
       setPasswordInputVersion(version => version + 1);
       setIsEnablingPassword(false);
     });
-  }, [allowAnonymous, isPasswordProtectionEnabled, isEnablingPassword, password, onChange]);
+  }, [password, onChange]);
 
   return (
     <SettingsItem title={gettext('Open access')} className="seaqa-portal-open-access-settings">
-      <SwitchSettings
-        value={allowAnonymous}
-        onChange={handleAllowAnonymousChange}
-        placeholder={gettext('Allow anonymous access')}
+      <SaveStatus
         className={allowAnonymous ? '' : 'mb-4'}
-      />
+        callback={(callback, update) => handleAllowAnonymousChange(update, callback)}
+      >
+        {({ callback, onContentChange }) => (
+          <SwitchSettings
+            value={allowAnonymous}
+            isFullWidth={false}
+            onChange={(value) => {
+              onContentChange();
+              callback(value);
+            }}
+            placeholder={gettext('Allow anonymous access')}
+          />
+        )}
+      </SaveStatus>
       {allowAnonymous && (
-        <SwitchSettings
-          value={isPasswordProtectionEnabled}
-          onChange={handleEnablePassword}
-          placeholder={gettext('Enable password protection')}
-          className="mb-4"
-        />
+        <SaveStatus className="mb-4" callback={(callback, update) => handleEnablePassword(update, callback)}>
+          {({ callback, onContentChange }) => (
+            <SwitchSettings
+              value={isPasswordProtectionEnabled}
+              isFullWidth={false}
+              onChange={(value) => {
+                onContentChange();
+                callback(value);
+              }}
+              placeholder={gettext('Enable password protection')}
+            />
+          )}
+        </SaveStatus>
       )}
       {allowAnonymous && isPasswordProtectionEnabled && (
-        <FormGroup className="mb-4">
+        <FormGroup className="mb-4 flex-fill">
           <Label>
             {gettext('Password (at least 8 characters)')}
           </Label>
-          <PasswordInput
-            key={passwordInputVersion}
-            value={password}
-            onChange={setPassword}
-            enableRandomGeneration={false}
-            enableCheckStrength={false}
-            placeholder={gettext('Enter password')}
-            className="seaqa-portal-password-settings"
-            onBlur={handlePasswordChange}
-          />
+          <SaveStatus className="w-100" type="input" callback={handlePasswordChange}>
+            {({ callback, onContentChange }) => (
+              <PasswordInput
+                key={passwordInputVersion}
+                value={password}
+                onChange={(value) => {
+                  onContentChange();
+                  passwordDraftVersion.current += 1;
+                  passwordDraftRef.current = value;
+                  setIsPasswordDirty(true);
+                  setPassword(value);
+                }}
+                enableRandomGeneration={false}
+                enableCheckStrength={false}
+                placeholder={gettext('Enter password')}
+                className="seaqa-portal-password-settings"
+                onBlur={isPasswordDirty || isEnablingPassword ? callback : undefined}
+              />
+            )}
+          </SaveStatus>
         </FormGroup>
       )}
     </SettingsItem>
@@ -106,7 +168,7 @@ const OpenAccessSettings = () => {
     <Main
       allowAnonymous={allow_anonymous}
       enablePassword={enable_password_protection}
-      password={password}
+      savedPassword={password}
       onChange={updateSettings}
     />
   );

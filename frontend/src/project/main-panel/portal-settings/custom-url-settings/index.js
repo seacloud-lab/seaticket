@@ -1,42 +1,72 @@
-import React, { useEffect, useState } from 'react';
-import { Button, FormGroup, Input, Label } from 'reactstrap';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { FormGroup, Input, InputGroup, Label } from 'reactstrap';
 import copy from 'copy-to-clipboard';
-import { Icon, SettingsItem, toaster } from '@/components';
+import { SettingsItem, toaster, SaveStatus, IconTooltip } from '@/components';
 import { gettext } from '@/constants';
+import { isEnterWithoutComposition } from '@/utils/hotkey';
 import { Utils } from '@/utils/utils';
 import { usePortalSettings } from '../hooks';
-
-import './index.css';
+import { getInputCheckError } from '../utils';
 
 const CustomUrlSettings = () => {
   const { domainAliasSettings, updateDomainAliasSettings, createPreviewToken } = usePortalSettings();
   const { subdomain_prefix: savedToken, public_url: publicUrl } = domainAliasSettings;
   const [token, setToken] = useState(savedToken);
   const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState('');
   const [isOpeningPreview, setIsOpeningPreview] = useState(false);
+  const [lastSavedTokenValue, setLastSavedTokenValue] = useState(savedToken);
+
+  const tokenEditVersion = useRef(0);
+  const tokenSaveSequence = useRef(0);
+  const pendingTokenSave = useRef(null);
+  const lastSavedToken = useRef(savedToken);
+  const inputRef = useRef(null);
 
   useEffect(() => {
-    setToken(savedToken);
+    if (lastSavedToken.current === savedToken) return;
+    lastSavedToken.current = savedToken;
+    setLastSavedTokenValue(savedToken);
   }, [savedToken]);
 
-  const hasUnsavedToken = token !== savedToken;
-  const canSave = hasUnsavedToken && !isSaving;
+  const expectedToken = pendingTokenSave.current?.value ?? lastSavedTokenValue ?? savedToken;
+  const hasUnsavedToken = token.trim() !== expectedToken;
   const canCopy = !!publicUrl && !hasUnsavedToken && !isSaving;
   const urlPrefix = publicUrl.slice(0, -(savedToken.length + 1));
 
-  const onSave = (event) => {
-    event.preventDefault();
-    if (!canSave) return;
-    setError('');
+  const onKeyDown = useCallback((event) => {
+    if (isEnterWithoutComposition(event)) {
+      event.preventDefault();
+      inputRef?.current?.blur();
+    }
+  }, []);
+
+  const onSave = (callback) => {
+    const validValue = token.trim();
+    if (!validValue) {
+      setToken(savedToken);
+      callback && callback({
+        error: getInputCheckError(gettext('%s is invalid and has been automatically reset to the last valid value.').replace('%s', 'Subdomain prefix')),
+      });
+      return;
+    }
+    const editVersion = tokenEditVersion.current;
+    const saveSequence = ++tokenSaveSequence.current;
+    pendingTokenSave.current = { sequence: saveSequence, value: validValue };
     setIsSaving(true);
-    updateDomainAliasSettings({ subdomain_prefix: token }, (isSuccess, errorMessage) => {
-      if (isSuccess) {
-        toaster.success(gettext('Saved'), { duration: 2, hasCloseButton: false });
-      } else if (errorMessage) {
-        setError(errorMessage === 'subdomain_prefix already in use.' ? gettext('This URL is already in use.') : errorMessage);
+    setToken(validValue);
+    updateDomainAliasSettings({ subdomain_prefix: validValue }, ({ error } = {}, savedSettings = {}) => {
+      if (!error) {
+        const persistedToken = savedSettings?.subdomain_prefix || validValue;
+        lastSavedToken.current = persistedToken;
+        setLastSavedTokenValue(persistedToken);
+        if (tokenEditVersion.current === editVersion) setToken(persistedToken);
       }
-    }).finally(() => setIsSaving(false));
+      callback && callback({ error });
+      if (pendingTokenSave.current?.sequence === saveSequence) {
+        pendingTokenSave.current = null;
+        setIsSaving(false);
+      }
+    });
   };
 
   const onCopy = () => {
@@ -57,71 +87,65 @@ const CustomUrlSettings = () => {
 
   return (
     <SettingsItem title={gettext('Custom URL')} className="seaqa-portal-custom-url-settings">
-      <form onSubmit={onSave} aria-busy={isSaving}>
-        <FormGroup className="mb-4 seaqa-project-portal-input-group-settings">
-          <Label for="portal-url-token">{gettext('Portal URL')}</Label>
-          <div className="d-flex align-items-center gap-2">
-            <div className="form-control portal-custom-url__editor">
-              <span id="portal-url-prefix" className="portal-custom-url__prefix">{urlPrefix}</span>
+      <FormGroup className="mb-4">
+        <Label>{gettext('Portal URL')}</Label>
+        <SaveStatus type="input" callback={onSave}>
+          {({ callback, onContentChange }) => (
+            <InputGroup className="seaqa-project-portal-input-group-settings">
+              <Input value={urlPrefix} disabled readOnly />
               <Input
-                id="portal-url-token"
-                name="portal-url-token"
                 type="text"
-                className="portal-custom-url__token"
+                innerRef={inputRef}
                 value={token}
                 onChange={event => {
+                  onContentChange();
+                  tokenEditVersion.current += 1;
                   setToken(event.target.value);
-                  setError('');
                 }}
-                disabled={isSaving}
-                required
                 spellCheck={false}
                 autoComplete="off"
-                invalid={!!error}
-                aria-describedby={`portal-url-prefix portal-url-token-help portal-url-token-warning${error ? ' portal-url-token-error' : ''}`}
+                onBlur={() => {
+                  const currentPendingToken = pendingTokenSave.current?.value;
+                  const expectedToken = currentPendingToken ?? lastSavedToken.current ?? savedToken;
+                  if (token.trim() !== expectedToken) callback();
+                }}
+                onKeyDown={onKeyDown}
               />
-            </div>
-            <Button
-              color="secondary"
-              type="button"
-              className="portal-custom-url__action p-0"
-              onClick={onCopy}
-              disabled={!canCopy}
-              title={gettext('Copy URL')}
-              aria-label={gettext('Copy URL')}
-              aria-describedby={!canCopy ? 'portal-url-copy-help' : undefined}
-            >
-              <Icon symbol="copy" />
-            </Button>
-            <Button
-              color="secondary"
-              type="button"
-              className="portal-custom-url__action p-0"
-              onClick={onOpenPreview}
-              disabled={isOpeningPreview}
-              title={gettext('Open preview')}
-              aria-label={gettext('Open preview')}
-            >
-              <Icon symbol="open-in-new-tab" />
-            </Button>
-          </div>
-          <p id="portal-url-token-help" className="seaqa-tip-default mt-2 mb-0 font-size-12 line-height-20">
-            {gettext('Use 3–63 letters, numbers or hyphens. Start and end with a letter or number.')}
-          </p>
-          <p id="portal-url-token-warning" className="seaqa-tip-default mt-2 mb-0 font-size-12 line-height-20">
-            {gettext('Changing the token will make the old portal URL unavailable.')}
-          </p>
-          {!canCopy && (
-            <p id="portal-url-copy-help" className="seaqa-tip-default mt-2 mb-0 font-size-12 line-height-20">
-              {gettext('Save the URL before copying.')}
-            </p>
+              <IconTooltip
+                icon="copy"
+                tip={gettext('Copy URL')}
+                disabled={!canCopy}
+                className="mx-0 btn btn-secondary p-0"
+                hoverBackground={true}
+                size={{ btn: 38, icon: 14 }}
+                placement="bottom"
+                onClick={onCopy}
+              />
+              <IconTooltip
+                icon="open-in-new-tab"
+                disabled={!canCopy || isOpeningPreview}
+                tip={gettext('Open preview')}
+                className="mx-0 btn btn-secondary p-0"
+                hoverBackground={true}
+                size={{ btn: 38, icon: 14 }}
+                placement="bottom"
+                onClick={onOpenPreview}
+              />
+            </InputGroup>
           )}
-          {error && <p id="portal-url-token-error" className="text-danger mt-2 mb-0" role="alert">{error}</p>}
-          <Button color="primary" size="sm" type="submit" className="mt-3" disabled={!canSave}>
-            {isSaving ? gettext('Saving...') : gettext('Save')}
-          </Button>
-        </FormGroup>
-      </form>
+        </SaveStatus>
+        <p id="portal-url-token-help" className="seaqa-tip-default mt-2 mb-0 font-size-12 line-height-20">
+          {gettext('Use 3–63 letters, numbers or hyphens. Start and end with a letter or number.')}
+        </p>
+        <p id="portal-url-token-warning" className="seaqa-tip-default mt-2 mb-0 font-size-12 line-height-20">
+          {gettext('Changing the token will make the old portal URL unavailable.')}
+        </p>
+        {!canCopy && (
+          <p id="portal-url-copy-help" className="seaqa-tip-default mt-2 mb-0 font-size-12 line-height-20">
+            {gettext('Save the URL before copying.')}
+          </p>
+        )}
+      </FormGroup>
     </SettingsItem>
   );
 };

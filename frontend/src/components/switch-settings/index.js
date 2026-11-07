@@ -7,6 +7,7 @@ const SwitchSettings = ({
   placeholder,
   className,
   value = true,
+  isFullWidth = true,
   textPosition = 'right',
   onChange,
 }) => {
@@ -20,7 +21,7 @@ const SwitchSettings = ({
       <Switch
         checked={value}
         textPosition={textPosition}
-        className={classnames('w-100 h-6 d-flex align-items-center', className)}
+        className={classnames({ 'w-100': isFullWidth }, 'h-6 d-flex align-items-center', className)}
         onChange={onValueChange}
         placeholder={placeholder}
       />
