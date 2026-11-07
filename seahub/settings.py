@@ -5,6 +5,7 @@
 import sys
 import os
 import re
+from urllib.parse import urlparse
 from .config_parser import ConfigParser
 
 # Microsoft does not return offline_access in its token response even when it
@@ -923,7 +924,8 @@ NOTION_REDIRECT_URL = configs.get('NOTION_REDIRECT_URL', '')
 
 if CHROME_EXTENSION_ID:
     CSRF_TRUSTED_ORIGINS.append(f'chrome-extension://{CHROME_EXTENSION_ID}')
-    if SERVICE_URL.startswith('https://cloud.seaticket.ai'):
+    parsed_service_url = urlparse(SERVICE_URL)
+    if parsed_service_url.scheme == 'https' and parsed_service_url.hostname == 'cloud.seaticket.ai':
         CHROME_EXTENSION_INSTALL_URL = f'https://chromewebstore.google.com/detail/seaticket/{CHROME_EXTENSION_ID}/'
     else:
         CHROME_EXTENSION_INSTALL_URL = 'https:\/\/dev.seafile.com/seahub/smart-link/d95a18a9-281a-469a-aa98-fd4e6a25efa5/'
