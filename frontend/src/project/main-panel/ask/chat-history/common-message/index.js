@@ -1,16 +1,19 @@
 import React, { useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
+import { IconTextBtn } from '@/components';
+import { gettext } from '@/constants';
 import AIReply from '@/project/components/ai-reply';
 import { Attachments } from '../../components';
 import { CHAT_MESSAGE_TYPE } from '../../constants';
 import { useDocuments } from '../../hooks';
 import MessageOperations from '../message-operations';
+import SuggestionMessage from '../suggestion-message';
 import ThoughtProcess from '../thought-process';
 
 import './index.css';
 
 const CommonMessage = ({
-  chatId, message, settings, projectUuid, projectName, workspaceID,
+  chatId, message, settings, projectUuid, projectName, workspaceID, isApplied,
   showOperations,
 }) => {
   const markdownMessageRef = useRef(null);
@@ -33,6 +36,7 @@ const CommonMessage = ({
           workspaceID={workspaceID}
         />
         {message[CHAT_MESSAGE_TYPE.TEXT] && (<>{message[CHAT_MESSAGE_TYPE.TEXT]}</>)}
+        {message[CHAT_MESSAGE_TYPE.SUGGESTIONS] && (<SuggestionMessage suggestions={message[CHAT_MESSAGE_TYPE.SUGGESTIONS]} />)}
         <AIReply
           ref={markdownMessageRef}
           messageId={chatId}
@@ -44,6 +48,14 @@ const CommonMessage = ({
         />
         {showOperations && (<MessageOperations getAIReply={getAIReply} />)}
       </div>
+      {isApplied && (
+        <IconTextBtn
+          className="seaqa-ai-ask-replied text-success"
+          icon="check-circle-stroked"
+          disabled={true}
+          text={gettext('Version applied')}
+        />
+      )}
     </>
   );
 };

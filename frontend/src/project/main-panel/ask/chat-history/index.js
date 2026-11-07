@@ -7,7 +7,7 @@ import MessageBox from './message-box';
 import './index.css';
 
 const ChatHistory = ({ chat, settings, projectUuid, projectName, workspaceID, displayOperations = true }) => {
-  const { _id, message, isUserSpeak, type } = chat;
+  const { _id, message, isUserSpeak, type, isApplied = false } = chat;
 
   const chatId = useMemo(() => _id || '', [_id]);
 
@@ -15,9 +15,10 @@ const ChatHistory = ({ chat, settings, projectUuid, projectName, workspaceID, di
     if (!displayOperations) return false;
     if (isUserSpeak) return false;
     if (type === CHAT_MESSAGE_TYPE.TIP) return false;
+    if (message[CHAT_MESSAGE_TYPE.SUGGESTIONS]) return false;
     if (chatId === 'typing') return false;
     return true;
-  }, [displayOperations, chatId, isUserSpeak, type]);
+  }, [displayOperations, chatId, isUserSpeak, type, message]);
 
   if (Object.keys(message).length === 0) return null;
 
@@ -25,6 +26,7 @@ const ChatHistory = ({ chat, settings, projectUuid, projectName, workspaceID, di
     <MessageBox isUserSpeak={isUserSpeak}>
       <CommonMessage
         message={message}
+        isApplied={isApplied}
         chatId={chatId}
         settings={settings}
         projectUuid={projectUuid}
