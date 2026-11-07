@@ -2,6 +2,19 @@ import slugid from 'slugid';
 import { gettext } from '@/constants';
 import { CHAT_ATTACHMENT_TYPE } from '../constants';
 
+const ATTACHMENT_TYPE_NAMES = {
+  [CHAT_ATTACHMENT_TYPE.TICKET]: gettext('Ticket'),
+  [CHAT_ATTACHMENT_TYPE.EMAIL]: gettext('Email'),
+  [CHAT_ATTACHMENT_TYPE.GITHUB_ISSUE]: gettext('GitHub issue'),
+  [CHAT_ATTACHMENT_TYPE.SEAFILE]: gettext('Seafile library'),
+  [CHAT_ATTACHMENT_TYPE.NOTION]: gettext('Notion'),
+  [CHAT_ATTACHMENT_TYPE.SITE]: gettext('Site'),
+  [CHAT_ATTACHMENT_TYPE.GENERAL_TASK]: gettext('General tasks'),
+  [CHAT_ATTACHMENT_TYPE.DISCOURSE_FORUM]: gettext('Discourse forum'),
+  [CHAT_ATTACHMENT_TYPE.IMAGE]: gettext('Image'),
+  [CHAT_ATTACHMENT_TYPE.PAGE_CONTENT]: gettext('Page content'),
+};
+
 class AttachmentObject {
   constructor(object) {
     this.record_id = object._id || object._pk || object.record_id || -1;
@@ -28,28 +41,7 @@ class AttachmentObject {
       this.content = object.content || '';
       this.url = object.url || '';
     }
-    this.type_name = '';
-    if (this.type === CHAT_ATTACHMENT_TYPE.TICKET) {
-      this.type_name = gettext('Ticket');
-    } else if (this.type === CHAT_ATTACHMENT_TYPE.EMAIL) {
-      this.type_name = gettext('Email');
-    } else if (this.type === CHAT_ATTACHMENT_TYPE.GITHUB_ISSUE) {
-      this.type_name = gettext('GitHub issue');
-    } else if (this.type === CHAT_ATTACHMENT_TYPE.SEAFILE) {
-      this.type_name = gettext('Seafile library');
-    } else if (this.type === CHAT_ATTACHMENT_TYPE.NOTION) {
-      this.type_name = gettext('Notion');
-    } else if (this.type === CHAT_ATTACHMENT_TYPE.SITE) {
-      this.type_name = gettext('Site');
-    } else if (this.type === CHAT_ATTACHMENT_TYPE.GENERAL_TASK) {
-      this.type_name = gettext('General tasks');
-    } else if (this.type === CHAT_ATTACHMENT_TYPE.DISCOURSE_FORUM) {
-      this.type_name = gettext('Discourse forum');
-    } else if (this.type === CHAT_ATTACHMENT_TYPE.IMAGE) {
-      this.type_name = gettext('Image');
-    } else if (this.type === CHAT_ATTACHMENT_TYPE.PAGE_CONTENT) {
-      this.type_name = gettext('Page content');
-    }
+    this.type_name = ATTACHMENT_TYPE_NAMES[this.type] || '';
   }
 
   to_json = () => {
