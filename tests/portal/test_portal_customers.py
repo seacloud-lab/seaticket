@@ -125,7 +125,7 @@ class TestPortalCustomersView:
 
         assert response.status_code == 409
 
-    def test_delete_customer_unassigns_users_and_invitations(self, factory, project_creator, real_project):
+    def test_delete_customer_unassigns_users_without_changing_invitations(self, factory, project_creator, real_project):
         project_uuid = str(real_project.uuid)
         customer = PortalCustomer.objects.create(project_uuid=project_uuid, name='Acme')
         member = ProjectExternalUser.objects.create(
@@ -133,7 +133,7 @@ class TestPortalCustomersView:
             customer_id=customer.id, activated=True,
         )
         invitation = PortalExternalInvitation.objects.add(
-            project_creator.username, 'invite@example.com', project_uuid, customer.id,
+            project_creator.username, 'invite@example.com', project_uuid,
         )
         request = factory.delete(f'/api/v1/portal/{project_uuid}/customers/{customer.id}/')
         request.user = project_creator
@@ -148,9 +148,8 @@ class TestPortalCustomersView:
         assert response.status_code == 204
         assert not PortalCustomer.objects.filter(id=customer.id).exists()
         member.refresh_from_db()
-        invitation.refresh_from_db()
         assert member.customer_id is None
-        assert invitation.customer_id is None
+        assert PortalExternalInvitation.objects.filter(id=invitation.id).exists()
 
     def test_delete_customer_soft_deletes_customer_issues(self, factory, project_creator, real_project):
         project_uuid = str(real_project.uuid)
@@ -421,7 +420,7 @@ class TestPortalCustomersView:
         assert member.customer_id == customer_a.id
         assert member.activated is False
 
-    def test_invitation_assigns_customer_only_when_accepted(self, factory, project_creator, real_project):
+    def test_invitation_assigns_customer_before_acceptance(self, factory, project_creator, real_project):
         customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
         project_settings = json.loads(real_project.settings) if real_project.settings else {}
         project_settings.setdefault('portal', {})['enable_send_email'] = True
@@ -431,7 +430,7 @@ class TestPortalCustomersView:
             email='member@example.com',
             username='member',
             project_uuid=str(real_project.uuid),
-            activated=True,
+            activated=False,
         )
         request = factory.post(
             f'/api/v1/portal/{real_project.uuid}/external-invitations/',
@@ -446,7 +445,7 @@ class TestPortalCustomersView:
 
         assert response.status_code == 200
         member.refresh_from_db()
-        assert member.customer_id is None
+        assert member.customer_id == customer.id
 
         invitation = PortalExternalInvitation.objects.get(email=member.email, project_uuid=str(real_project.uuid))
         accept_request = factory.get(f'/external/accept/{invitation.token}/')
@@ -460,8 +459,17 @@ class TestPortalCustomersView:
         assert member.customer_id == customer.id
         assert invitation.accepted_at is not None
 
+        list_request = factory.get(f'/api/v1/portal/{real_project.uuid}/external-invitations/')
+        list_request.user = project_creator
+        list_response = PortalExternalInvitationsView.as_view()(
+            list_request, project_uuid=str(real_project.uuid)
+        )
+        assert list_response.status_code == 200
+        assert 'customer_id' not in list_response.data['invite_list'][0]
+        assert 'customer_name' not in list_response.data['invite_list'][0]
+
     @patch('seahub.portal.apis.IS_EMAIL_CONFIGURED', True)
-    def test_existing_customer_member_cannot_receive_another_invitation(self, factory, project_creator, real_project):
+    def test_activated_customer_member_cannot_receive_another_invitation(self, factory, project_creator, real_project):
         customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
         another_customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Beta')
         member = ProjectExternalUser.objects.create(
@@ -469,7 +477,7 @@ class TestPortalCustomersView:
             username='member',
             project_uuid=str(real_project.uuid),
             customer_id=customer.id,
-            activated=False,
+            activated=True,
         )
         for data in (
             {'email': member.email, 'name': 'Member'},
@@ -490,6 +498,87 @@ class TestPortalCustomersView:
         assert not PortalExternalInvitation.objects.filter(
             email=member.email,
             project_uuid=str(real_project.uuid),
+        ).exists()
+
+    def test_inactive_user_can_be_reinvited_to_another_customer_or_unassigned(
+        self, factory, project_creator, real_project,
+    ):
+        project_uuid = str(real_project.uuid)
+        customer_a = PortalCustomer.objects.create(project_uuid=project_uuid, name='Acme')
+        customer_b = PortalCustomer.objects.create(project_uuid=project_uuid, name='Beta')
+        member = ProjectExternalUser.objects.create(
+            email='member@example.com', username='member', project_uuid=project_uuid,
+            customer_id=customer_a.id, activated=False,
+        )
+        old_invitation = PortalExternalInvitation.objects.add(
+            inviter=project_creator.username, email=member.email, project_uuid=project_uuid,
+        )
+
+        response = self._invite(factory, project_creator, project_uuid, {
+            'email': member.email, 'name': 'Member', 'customer_id': customer_b.id,
+        })
+
+        assert response.status_code == 200
+        member.refresh_from_db()
+        assert member.customer_id == customer_b.id
+        assert PortalExternalInvitation.objects.filter(pk=old_invitation.pk).exists()
+        assert PortalExternalInvitation.objects.filter(
+            email=member.email, project_uuid=project_uuid, accepted_at__isnull=True,
+        ).count() == 2
+
+        response = self._invite(factory, project_creator, project_uuid, {
+            'email': member.email, 'name': 'Member',
+        })
+
+        assert response.status_code == 200
+        member.refresh_from_db()
+        assert member.customer_id is None
+        assert PortalExternalInvitation.objects.filter(
+            email=member.email, project_uuid=project_uuid, accepted_at__isnull=True,
+        ).count() == 3
+
+    def test_revoke_invitation_does_not_unassign_user(self, factory, project_creator, real_project):
+        project_uuid = str(real_project.uuid)
+        customer = PortalCustomer.objects.create(project_uuid=project_uuid, name='Acme')
+        member = ProjectExternalUser.objects.create(
+            email='member@example.com', username='member', project_uuid=project_uuid,
+            customer_id=customer.id, activated=False,
+        )
+        invitation = PortalExternalInvitation.objects.add(
+            inviter=project_creator.username, email=member.email, project_uuid=project_uuid,
+        )
+        request = factory.delete(
+            f'/api/v1/portal/{project_uuid}/external-invitations/{invitation.token}/'
+        )
+        request.user = project_creator
+
+        response = PortalExternalInvitationsView.as_view()(
+            request, project_uuid=project_uuid, token=invitation.token
+        )
+
+        assert response.status_code == 200
+        member.refresh_from_db()
+        assert member.customer_id == customer.id
+        assert not PortalExternalInvitation.objects.filter(pk=invitation.pk).exists()
+
+    def test_failed_reinvite_keeps_new_customer_assignment(self, factory, project_creator, real_project):
+        project_uuid = str(real_project.uuid)
+        customer_a = PortalCustomer.objects.create(project_uuid=project_uuid, name='Acme')
+        customer_b = PortalCustomer.objects.create(project_uuid=project_uuid, name='Beta')
+        member = ProjectExternalUser.objects.create(
+            email='member@example.com', username='member', project_uuid=project_uuid,
+            customer_id=customer_a.id, activated=False,
+        )
+
+        response = self._invite(factory, project_creator, project_uuid, {
+            'email': member.email, 'name': 'Member', 'customer_id': customer_b.id,
+        }, email_sent=False)
+
+        assert response.status_code == 500
+        member.refresh_from_db()
+        assert member.customer_id == customer_b.id
+        assert not PortalExternalInvitation.objects.filter(
+            email=member.email, project_uuid=project_uuid, accepted_at__isnull=True,
         ).exists()
 
     def _invite(self, factory, project_creator, project_uuid, data, email_sent=True):
@@ -713,13 +802,12 @@ class TestPortalCustomersView:
             email=email,
             project_uuid=str(real_project.uuid),
         )
-        assert external_user.customer_id is None
+        assert external_user.customer_id == customer.id
         assert external_user.activated is False
         invitation = PortalExternalInvitation.objects.get(
             email=email,
             project_uuid=str(real_project.uuid),
         )
-        assert invitation.customer_id == customer.id
         send_mail.assert_not_called()
 
         accept_request = factory.get(f'/external/accept/{invitation.token}/')
@@ -746,8 +834,9 @@ class TestPortalCustomersView:
             inviter=project_creator.username,
             email=member.email,
             project_uuid=str(real_project.uuid),
-            customer_id=customer.id,
         )
+        member.customer_id = customer.id
+        member.save(update_fields=['customer_id'])
         request = factory.get(f'/external/accept/{invitation.token}/')
         request.user = _external_request_user()
 
@@ -758,7 +847,37 @@ class TestPortalCustomersView:
         assert response.status_code == 400
         member.refresh_from_db()
         invitation.refresh_from_db()
-        assert member.customer_id is None
+        assert member.customer_id == customer.id
+        assert member.activated is False
+        assert invitation.accepted_at is None
+
+    def test_invitation_for_disabled_customer_cannot_be_accepted(self, factory, project_creator, real_project):
+        customer = PortalCustomer.objects.create(
+            project_uuid=str(real_project.uuid),
+            name='Acme',
+            status=PortalCustomer.STATUS_DISABLED,
+        )
+        member = ProjectExternalUser.objects.create(
+            email='member@example.com',
+            username='member',
+            project_uuid=str(real_project.uuid),
+            customer_id=customer.id,
+            activated=False,
+        )
+        invitation = PortalExternalInvitation.objects.add(
+            inviter=project_creator.username,
+            email=member.email,
+            project_uuid=str(real_project.uuid),
+        )
+        request = factory.get(f'/external/accept/{invitation.token}/')
+        request.user = _external_request_user()
+
+        with patch('seahub.portal.views.render_error', return_value=Mock(status_code=400)):
+            response = portal_external_invitation_accept_view(request, invitation.token, str(real_project.uuid))
+
+        assert response.status_code == 400
+        member.refresh_from_db()
+        invitation.refresh_from_db()
         assert member.activated is False
         assert invitation.accepted_at is None
 
