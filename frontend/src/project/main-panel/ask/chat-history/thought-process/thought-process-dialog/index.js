@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Label, Modal, ModalBody } from 'reactstrap';
-import { ModalHeader, Tooltip } from '@/components';
+import { CustomizeMarkdownViewer, ModalHeader, Tooltip } from '@/components';
 import { gettext } from '@/constants';
 import AIReply from '@/project/components/ai-reply';
 import ProcessDetails from '@/project/components/thought-process/process-details';
@@ -167,61 +167,10 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
   useEffect(() => {
     let value = [];
     const customizeMDProps = { ...props, projectUuid, canPreviewLinkedFile: false, chatId: 'thought-process' };
-    const getStructuredToolArguments = (toolCall = {}, fallbackContent = '') => {
-      if (toolCall.name === 'generate_markdown') {
-        return [
-          {
-            name: gettext('File name'),
-            value: toolCall?.arguments?.file_name,
-          }, {
-            name: gettext('Content'),
-            children: [
-              {
-                value: toolCall?.arguments?.content ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: toolCall.arguments.content } : null,
-                formatter: ({ className, value }) => (<AIReply message={value} className={className} { ...customizeMDProps } />),
-              }
-            ]
-          },
-        ];
-      }
-      if (toolCall.name === 'create_knowledge_base_entry') {
-        return [
-          {
-            name: gettext('Title'),
-            value: toolCall?.arguments?.title,
-          }, {
-            name: gettext('Content'),
-            children: [
-              {
-                value: toolCall?.arguments?.content ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: toolCall.arguments.content } : null,
-                formatter: ({ className, value }) => (<AIReply message={value} className={className} { ...customizeMDProps } />),
-              }
-            ]
-          },
-        ];
-      }
-      if (toolCall.name === 'create_ticket') {
-        const contentValue = toolCall?.arguments?.content || fallbackContent;
-        return [
-          `${gettext('Title')}: ${toolCall?.arguments?.title || ''}`,
-          `${gettext('Type')}: ${toolCall?.arguments?.type || ''}`,
-          `${gettext('Priority')}: ${toolCall?.arguments?.priority ?? ''}`,
-          `${gettext('State')}: ${toolCall?.arguments?.state || ''}`,
-          {
-            name: gettext('Content'),
-            children: [
-              {
-                value: contentValue ? { [CHAT_MESSAGE_TYPE.AI_REPLY]: contentValue } : null,
-                formatter: ({ className, value }) => (<AIReply message={value} className={className} { ...customizeMDProps } />),
-              }
-            ]
-          },
-        ];
-      }
-      return Object.entries(toolCall?.arguments || {}).map(([argumentKey, argumentValue]) => {
-        return `${argumentKey}: ${argumentValue}`;
-      });
-    };
+    const getToolArguments = (toolCall) => [{
+      value: toolCall.arguments,
+      formatter: ({ className, value }) => (<CustomizeMarkdownViewer value={value} className={className} showTOC={false} />),
+    }];
 
     // task
     if (hasOwnProperty(propsValue, 'task') && propsValue.task) {
@@ -360,7 +309,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
           if (tool_calls?.length === 1) {
             let executionInfo = [{
               name: gettext('Arguments'),
-              children: getStructuredToolArguments(tool_calls?.[0]),
+              children: getToolArguments(tool_calls[0]),
             }];
             if (tool_calls?.[0]?.execution_detail) {
               executionInfo.push({
@@ -382,7 +331,7 @@ const ThoughtProcessDialog = ({ value: propsValue, onToggle, projectUuid, ...pro
               children: action.tool_calls.map((too_call, toolIndex) => {
                 let SubstepExecutionInfo = [{
                   name: gettext('Arguments'),
-                  children: getStructuredToolArguments(too_call, tool_calls?.[0]?.arguments?.content || ''),
+                  children: getToolArguments(too_call),
                 }];
                 if (too_call.execution_detail) {
                   SubstepExecutionInfo.push({
