@@ -74,16 +74,9 @@
   display: inline-block;
   padding: 0 8px;
   border-radius: 10px;
+  background-color: #59cb74;
   color: #fff;
   font-size: 12px;
   line-height: 20px;
   white-space: nowrap;
-}
-
-.portal-invite-status-badge.is-accepted {
-  background-color: #59cb74;
-}
-
-.portal-invite-status-badge.is-pending {
-  background-color: #c2c2c2;
 }

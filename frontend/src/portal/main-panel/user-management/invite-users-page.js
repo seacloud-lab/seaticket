@@ -100,7 +100,7 @@ const InviteUsersPage = ({
               <th>{gettext('Email')}</th>
               <th>{gettext('Invitation link')}</th>
               <th>{gettext('Expiration time')}</th>
-              <th>{gettext('Invitation status')}</th>
+              <th>{gettext('Status')}</th>
               <th>{/* More operations */}</th>
             </tr>
           </thead>
@@ -113,9 +113,9 @@ const InviteUsersPage = ({
                   {item.expire_time ? dayjs(item.expire_time).format('YYYY-MM-DD HH:mm') : '-'}
                 </td>
                 <td>
-                  <span className={`portal-invite-status-badge ${item.accepted_at ? 'is-accepted' : 'is-pending'}`}>
-                    {item.accepted_at ? gettext('Accepted') : gettext('Not accepted')}
-                  </span>
+                  {item.accepted_at && (
+                    <span className="portal-invite-status-badge">{gettext('Accepted')}</span>
+                  )}
                 </td>
                 <td className="text-right operation-btns">
                   <div className="portal-customer-operation-btns">
