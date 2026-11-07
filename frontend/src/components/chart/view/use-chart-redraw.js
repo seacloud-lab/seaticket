@@ -5,23 +5,21 @@ const useChartDraw = ({ target, data, chartId, options, draw }) => {
   const chartRef = useRef(null);
   const dataRef = useRef(data);
   const drawRef = useRef(draw);
-  const optionsRef = useRef(options);
   const chartSizeRef = useRef(null);
 
   dataRef.current = data;
   drawRef.current = draw;
-  optionsRef.current = options;
 
   const redrawChart = () => {
     if (!target.current) return;
 
     destroyChart(chartRef);
-    initChart(target, chartRef, chartId, optionsRef.current);
+    initChart(target, chartRef, chartId, options);
 
     const { width, height } = target.current.getBoundingClientRect();
     chartSizeRef.current = { width, height };
 
-    if (Array.isArray(dataRef.current)) {
+    if (Array.isArray(dataRef.current) && dataRef.current.length > 0) {
       drawRef.current(chartRef.current, target.current, dataRef.current);
     }
   };
@@ -44,7 +42,7 @@ const useChartDraw = ({ target, data, chartId, options, draw }) => {
       destroyChart(chartRef);
       chartRef.current = null;
     };
-  // Resize callbacks use refs to read the latest data, options and drawing function.
+  // Resize callbacks use the latest data and drawing function; updates are keyed by data and options.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

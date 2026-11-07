@@ -1,4 +1,4 @@
-import React, { useId, useMemo, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import * as d3 from 'd3';
 import { gettext } from '@/constants';
 import ChartTooltip from '../chart-tooltip';
@@ -8,37 +8,20 @@ import useChartDraw from './use-chart-redraw';
 
 import './index.css';
 
-const DEFAULT_OPTIONS = {};
-
-// Grouped categories use { name, values: [{ name, value, color }] }; flat entries stay supported.
-const Bar = ({ data, options = DEFAULT_OPTIONS, ariaLabel }) => {
+const Bar = ({ data }) => {
   const [tooltipData, setTooltipData] = useState(null);
   const [toolTipPosition, setToolTipPosition] = useState(null);
   const ref = useRef(null);
-  const chartId = useId().replace(/:/g, '');
-  const rows = useMemo(() => data.map(item => ({
-    ...item,
-    values: item.values || [item],
-  })), [data]);
-  const isGrouped = data.some(item => Array.isArray(item.values));
-  const seriesCount = d3.max(rows, row => row.values.length) || 1;
-  const initOptions = useMemo(() => ({
-    insertPadding: 20,
-    borderRadius: 0.2,
-    minWidth: options.minCategoryWidth
-      ? 40 + data.length * Math.max(options.minCategoryWidth, isGrouped ? seriesCount * 20 + 8 : 0)
-      : 0,
-  }), [data.length, isGrouped, options, seriesCount]);
 
-  const showTooltip = (event, item) => {
-    const [offsetX, offsetY] = d3.pointer(event, ref.current.querySelector('svg'));
+  const showTooltip = (event, data, color) => {
+    const { offsetX, offsetY } = event;
     const newTooltipData = {
-      title: isGrouped ? item.category : gettext('Amount'),
+      title: gettext('Amount'),
       items: [
         {
-          color: item.color || STYLE_COLORS[0].colors[0],
-          name: item.name,
-          value: item.value
+          color,
+          name: data.name,
+          value: data.value
         }
       ]
     };
@@ -47,51 +30,39 @@ const Bar = ({ data, options = DEFAULT_OPTIONS, ariaLabel }) => {
   };
 
   const moveTooltip = (event) => {
-    const [offsetX, offsetY] = d3.pointer(event, ref.current.querySelector('svg'));
+    const { offsetX, offsetY } = event;
     setToolTipPosition({ offsetX, offsetY });
   };
 
-  const hiddenTooltip = () => {
+  const hiddenTooltip = (event) => {
     setToolTipPosition(null);
   };
 
   const drawChart = (chart, container, data = []) => {
     const { width: chartWidth, height: chartHeight, insertPadding } = container.chartBoundingClientRect;
     const theme = CHART_THEME_COLOR;
-    const bottom = options.labelRotation ? 62 : options.showValues ? 36 : insertPadding;
-    const top = options.showValues ? 28 : insertPadding;
-    const maxValue = d3.max(data, row => d3.max(row.values, item => item.value)) || 0;
 
     const y = d3.scaleLinear()
-      .domain([0, maxValue > 0 ? maxValue : 1])
-      .range([chartHeight - bottom, top]);
-    if (options.integerTicks) y.nice(5);
-
-    chart.attr('role', 'img').attr('aria-label', ariaLabel || gettext('Amount'));
+      .domain([0, d3.max(data, (d) => d.value)])
+      .range([chartHeight - insertPadding, insertPadding]);
 
     // Y axis
     chart.append('g')
       .attr('class', 'y-axis-wrapper')
       .attr('transform', `translate(${insertPadding}, 0)`)
-      .call(d3.axisLeft(y).tickSizeInner(0).ticks(5)
-        .tickValues(options.integerTicks ? y.ticks(5).filter(Number.isInteger) : null)
-        .tickFormat(value => value.toLocaleString()))
+      .call(d3.axisLeft(y).tickSizeInner(0).ticks(5).tickFormat((d) => d))
       .call(g => drawYaxis(g, theme, 0, container));
 
     const x = d3.scaleBand()
       .domain(data.map(item => item.name))
-      .range([insertPadding + container.horizontalOverflowOffset, chartWidth - (options.labelRotation ? 32 : insertPadding)])
-      .paddingInner(isGrouped ? 0.16 : 0.5)
-      .paddingOuter(isGrouped ? 0.12 : 0.1);
-    const groupX = d3.scaleBand()
-      .domain(d3.range(seriesCount))
-      .range([0, x.bandwidth()])
-      .padding(isGrouped ? 0.08 : 0);
+      .range([insertPadding + container.horizontalOverflowOffset, chartWidth - insertPadding])
+      .paddingInner(0.5)
+      .paddingOuter(0.1);
 
     // X axis
     chart.append('g')
       .attr('class', 'x-axis-wrapper')
-      .attr('transform', `translate(0, ${chartHeight - bottom})`)
+      .attr('transform', `translate(0, ${chartHeight - insertPadding})`)
       .call(d3.axisBottom(x).tickSizeOuter(0).tickSizeInner(5))
       .call(g => {
         g.selectAll('.domain').attr('stroke', theme.XAxisColor);
@@ -99,39 +70,25 @@ const Bar = ({ data, options = DEFAULT_OPTIONS, ariaLabel }) => {
         g.selectAll('text').attr('font-size', theme.fontSize);
         g.selectAll('text').attr('fill', theme.textColor);
 
-        if (options.labelRotation) {
-          g.selectAll('text')
-            .attr('transform', `rotate(${options.labelRotation})`)
-            .attr('text-anchor', 'start')
-            .attr('dx', '0.5em');
-        } else {
-          checkTickOverlap(g, 'xAxis', chart, container.chartBoundingClientRect);
-        }
+        checkTickOverlap(g, 'xAxis', chart, container.chartBoundingClientRect);
       });
 
-    const barWidth = Math.min(groupX.bandwidth(), options.maxBarWidth || Infinity);
-    const bars = data.flatMap(row => row.values.map((item, index) => ({
-      ...item,
-      category: row.name,
-      x: x(row.name) + groupX(index) + (groupX.bandwidth() - barWidth) / 2,
-    })));
     const contentWrapper = chart.append('g').attr('class', 'content-wrapper');
     contentWrapper
       .selectAll()
-      .data(bars)
+      .data(data)
       .join('rect')
       .attr('opacity', 1)
-      .attr('fill', d => d.color || STYLE_COLORS[0].colors[0])
-      .attr('data-x', d => d.x)
+      .attr('fill', () => STYLE_COLORS[0].colors[0])
+      .attr('data-x', (d) => x(d.name))
       .attr('data-y', (d) => y(d.value))
-      .attr('data-width', barWidth)
+      .attr('data-width', x.bandwidth())
       .attr('data-value', (d) => d.value)
       .attr('data-groupName', (d) => d.name)
-      .attr('data-slugid', (d, index) => `${chartId}-${index}`)
-      .attr('aria-label', d => `${d.category}${isGrouped ? ` / ${d.name}` : ''}: ${d.value.toLocaleString()}`)
-      .attr('x', d => d.x)
+      .attr('data-slugid', (d) => d.name)
+      .attr('x', (d) => x(d.name))
       .attr('y', d => y(d.value))
-      .attr('width', barWidth)
+      .attr('width', x.bandwidth())
       .attr('height', d => y(0) - y(d.value))
       .call(g => {
         g.nodes().forEach(path => {
@@ -145,42 +102,38 @@ const Bar = ({ data, options = DEFAULT_OPTIONS, ariaLabel }) => {
         });
       })
       .on('mouseover', (event, data) => {
-        showTooltip(event, data);
+        const barColor = event.currentTarget?.getAttribute('fill') || STYLE_COLORS[0].colors[0];
+        showTooltip(event, data, barColor);
       })
       .on('mousemove', (event) => {
         moveTooltip(event);
       })
       .on('mouseleave', (event) => {
         hiddenTooltip(event);
-      })
-      .append('title')
-      .text(d => `${d.category}${isGrouped ? ` / ${d.name}` : ''}: ${d.value.toLocaleString()}`);
+      });
 
-    if (options.showValues) {
-      contentWrapper.selectAll('.chart-value')
-        .data(bars.filter(item => item.value > 0 && groupX.bandwidth() >= item.value.toLocaleString().length * 7))
-        .join('text')
-        .attr('class', 'chart-value')
-        .attr('x', d => d.x + barWidth / 2)
-        .attr('y', d => y(d.value) - 8)
-        .attr('text-anchor', 'middle')
-        .text(d => d.value.toLocaleString());
-    }
+    contentWrapper.selectAll('.chart-value')
+      .data(data.filter(item => Number(item.value) !== 0))
+      .join('text')
+      .attr('class', 'chart-value')
+      .attr('x', item => x(item.name) + x.bandwidth() / 2)
+      .attr('y', item => y(item.value) - 8)
+      .attr('text-anchor', 'middle')
+      .attr('fill', theme.labelColor)
+      .text(item => Number(item.value).toLocaleString());
   };
 
   const chart = useChartDraw({
     target: ref,
-    data: rows,
-    chartId: `bar-${chartId}`,
-    options: initOptions,
+    data,
+    chartId: 'bar',
+    options: { insertPadding: 20, borderRadius: 0.2 },
     draw: drawChart,
   });
 
   return (
-    <div className="chart-bar-scroll flex-1">
-      <div className="chart-svg-wrapper chart-bar" ref={ref} style={options.height ? { height: options.height } : undefined}>
-        <ChartTooltip tooltipData={tooltipData} toolTipPosition={toolTipPosition} chart={chart} />
-      </div>
+    <div className="chart-svg-wrapper flex-1" ref={ref}>
+      <ChartTooltip tooltipData={tooltipData} toolTipPosition={toolTipPosition} chart={chart} />
     </div>
   );
 };

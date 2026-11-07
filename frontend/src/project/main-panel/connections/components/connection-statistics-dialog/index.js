@@ -1,11 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Button, Modal, ModalBody } from 'reactstrap';
 import { CenteredLoading, EmptyTip, Icon, ModalHeader } from '@/components';
+import { Pie, Bar, BarGroup } from '@/components/chart/view';
 import { gettext, mediaUrl } from '@/constants';
 import { connectionsAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
-import StatisticsChart from './chart';
-import StatisticsPieChart from './pie-chart';
 
 import './index.css';
 
@@ -14,12 +13,32 @@ const ConnectionStatisticsDialog = ({ projectUuid, connection, onToggle }) => {
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
-  const monthlyTotals = useMemo(() => [{
-    issue_type: gettext('Issue total'),
-    counts: (result?.months || []).map((month, index) =>
-      result.series.reduce((total, item) => total + (item.counts[index] || 0), 0)
-    ),
-  }], [result]);
+
+  const pieData = useMemo(() => Array.isArray(result?.series) ? result?.series.map(item => ({
+    name: item.issue_type || gettext('Unclassified'),
+    value: item.counts.reduce((sum, count) => sum + count, 0),
+  })) : [], [result]);
+
+  const barData = useMemo(() => {
+    if (!result) return [];
+    const { months, series } = result;
+    return months.map((name, monthIndex) => ({
+      name,
+      value: series.reduce((pre, cur) => pre + (cur.counts[monthIndex] || 0), 0),
+    }));
+  }, [result]);
+
+  const groupBarData = useMemo(() => {
+    if (!result) return [];
+    const { months, series } = result;
+    return months.map((name, monthIndex) => ({
+      name,
+      values: series.map((item) => ({
+        name: item.issue_type || gettext('Unclassified'),
+        value: item.counts[monthIndex] || 0,
+      })),
+    }));
+  }, [result]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -63,15 +82,15 @@ const ConnectionStatisticsDialog = ({ projectUuid, connection, onToggle }) => {
       <div className="seaqa-connection-statistics-dialog-grid">
         <section className="seaqa-connection-statistics-dialog-panel">
           <h3 className="seaqa-connection-statistics-dialog-panel-title">{gettext('{name} issue types').replace('{name}', connection.name)}</h3>
-          <StatisticsPieChart series={result.series} />
+          <Pie data={pieData} />
         </section>
         <section className="seaqa-connection-statistics-dialog-panel">
           <h3 className="seaqa-connection-statistics-dialog-panel-title">{gettext('{name} monthly issue count').replace('{name}', connection.name)}</h3>
-          <StatisticsChart months={result.months} series={monthlyTotals} isTotal={true} />
+          <Bar data={barData} />
         </section>
         <section className="seaqa-connection-statistics-dialog-panel seaqa-connection-statistics-dialog-panel-wide">
           <h3 className="seaqa-connection-statistics-dialog-panel-title">{gettext('{name} issues by type').replace('{name}', connection.name)}</h3>
-          <StatisticsChart months={result.months} series={result.series} />
+          <BarGroup data={groupBarData} />
         </section>
       </div>
     );

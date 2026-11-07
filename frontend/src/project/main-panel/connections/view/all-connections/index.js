@@ -102,8 +102,8 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
       }, (record) => {
         if (record.type !== CONNECTION_TYPE.GITHUB_ISSUE) return null;
         return {
-          key: 'statistic',
-          label: gettext('Statistic'),
+          key: 'statistics',
+          label: gettext('Statistics'),
           callback: (record) => {
             setStatisticsConnection(record);
           }
