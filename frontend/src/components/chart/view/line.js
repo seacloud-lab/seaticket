@@ -8,6 +8,8 @@ import useChartDraw from './use-chart-redraw';
 
 import './index.css';
 
+const CHART_OPTIONS = { insertPadding: 20 };
+
 const Line = ({ data, tooltipTitle = gettext('Amount') }) => {
   const [tooltipData, setTooltipData] = useState(null);
   const [toolTipPosition, setToolTipPosition] = useState(null);
@@ -161,7 +163,7 @@ const Line = ({ data, tooltipTitle = gettext('Amount') }) => {
     target: ref,
     data,
     chartId: 'line',
-    options: { insertPadding: 20 },
+    options: CHART_OPTIONS,
     draw: drawChart,
   });
 

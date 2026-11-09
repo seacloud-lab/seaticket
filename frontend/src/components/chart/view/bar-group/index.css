@@ -1,0 +1,16 @@
+.seaqa-chart-bar-group .seaqa-chart-bar-group-value {
+  fill: var(--bs-sf-grey-text, #888888);
+  font-size: 11px;
+}
+
+.seaqa-chart-bar-group .seaqa-chart-bar-group-bar:hover {
+  opacity: 0.8;
+}
+
+.seaqa-chart-bar-group .legend-item:focus,
+.seaqa-chart-bar-group .legend-item:focus-visible,
+.seaqa-chart-bar-group .legend-flip-page polygon:focus-visible {
+  outline: none;
+  box-shadow: none;
+  filter: none;
+}

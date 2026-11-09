@@ -1,0 +1,35 @@
+.seaqa-chart-pie {
+  width: min(100%, 480px);
+  min-width: 0;
+  margin: 0 auto;
+}
+
+.seaqa-chart-pie svg {
+  display: block;
+}
+
+.seaqa-chart-pie .seaqa-chart-pie-slice {
+  stroke: var(--bs-body-bg, #ffffff);
+  stroke-width: 2px;
+}
+
+.seaqa-chart-pie .seaqa-chart-pie-slice:hover {
+  opacity: 0.8;
+}
+
+.seaqa-chart-pie .seaqa-chart-pie-percentage {
+  stroke-width: 1px;
+  paint-order: stroke;
+  font-size: 13px;
+  pointer-events: none;
+}
+
+.seaqa-chart-pie .seaqa-chart-pie-empty {
+  fill: var(--bs-border-color, #ededed);
+}
+
+@media (max-width: 575px) {
+  .seaqa-chart-pie {
+    width: 100%;
+  }
+}

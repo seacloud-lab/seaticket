@@ -2,15 +2,16 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from 'reactstrap';
 import { Icon, toaster, CenteredLoading, EmptyTip, CustomizeTable } from '@/components';
 import { gettext } from '@/constants';
+import { connectionsAPI } from '@/project/api';
 import { BAR_TYPE } from '@/project/constants';
 import { areArraysEqual } from '@/utils/array-utils';
 import dayjs from '@/utils/dayjs';
 import SelfQuery from '@/utils/self-query';
 import { Utils } from '@/utils/utils';
-import { connectionsAPI } from '../../../../api';
 import createFormatter from '../../components/cell-formatter';
 import ConfigureWebhookDialog from '../../components/configure-webhook-dialog';
 import ConnectionLogsDialog from '../../components/connection-logs-dialog';
+import ConnectionStatisticsDialog from '../../components/connection-statistics-dialog';
 import ConnectionStatusDialog from '../../components/connection-status-dialog';
 import { CONNECTION_TYPE, CONNECTION_FIELD_TYPE, CONNECTION_SYNC_STATUS } from '../../constants';
 import { useConnections, useConnectionsPage } from '../../hooks';
@@ -25,6 +26,7 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
   const [isShowStatusDialog, setIsShowStatusDialog] = useState(false);
   const [isShowLogDialog, setIsShowLogDialog] = useState(false);
   const [isShowWebhookDialog, setIsShowWebhookDialog] = useState(false);
+  const [isShowStatisticsDialog, setIsShowStatisticsDialog] = useState(false);
 
   const { isLoading, isLoadingMore, connections, reloadConnections, loadMore, handleModify, handleDelete,
     modifyConnectionIsActiveStatus, modifyLocalConnectionRecord, modifyLocalConnectionsSyncStatus,
@@ -97,6 +99,16 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
           activeRecordRef.current = record;
           setIsShowLogDialog(true);
         },
+      }, (record) => {
+        if (record.type !== CONNECTION_TYPE.GITHUB_ISSUE) return null;
+        return {
+          key: 'statistics',
+          label: gettext('Statistics'),
+          callback: (record) => {
+            activeRecordRef.current = record;
+            setIsShowStatisticsDialog(true);
+          }
+        };
       }, {
         key: 'sync_now',
         label: gettext('Sync now'),
@@ -136,6 +148,11 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
   const closeLogDialog = useCallback(() => {
     activeRecordRef.current = null;
     setIsShowLogDialog(false);
+  }, []);
+
+  const closeStatisticsDialog = useCallback(() => {
+    activeRecordRef.current = null;
+    setIsShowStatisticsDialog(false);
   }, []);
 
   const closeWebhookDialog = useCallback(() => {
@@ -226,6 +243,13 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
           projectUuid={projectUuid}
           connectionId={activeRecordRef.current?.id}
           onToggle={closeLogDialog}
+        />
+      )}
+      {isShowStatisticsDialog && (
+        <ConnectionStatisticsDialog
+          projectUuid={projectUuid}
+          connection={activeRecordRef.current}
+          onToggle={closeStatisticsDialog}
         />
       )}
       {isShowWebhookDialog && activeRecordRef.current && (
