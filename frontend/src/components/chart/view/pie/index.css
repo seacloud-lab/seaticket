@@ -1,7 +1,6 @@
 .seaqa-chart-pie {
   width: min(100%, 480px);
   min-width: 0;
-  min-height: 308px;
   margin: 0 auto;
 }
 

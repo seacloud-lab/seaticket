@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Modal, ModalBody } from 'reactstrap';
 import { CenteredLoading, EmptyTip, Icon, ModalHeader } from '@/components';
 import { Pie, Bar, BarGroup } from '@/components/chart/view';
@@ -56,51 +56,51 @@ const ConnectionStatisticsDialog = ({ projectUuid, connection, onToggle }) => {
     return () => controller.abort();
   }, [projectUuid, connection.id, retryCount]);
 
-  let content;
-  if (isLoading) {
-    content = <CenteredLoading />;
-  } else if (errorMessage) {
-    content = (
-      <div className="seaqa-connection-statistics-dialog-error" role="alert">
-        <div className="text-danger">{errorMessage}</div>
-        <Button color="secondary" onClick={() => setRetryCount(count => count + 1)}>
-          <Icon symbol="refresh" className="mr-2" />
-          {gettext('Retry')}
-        </Button>
-      </div>
-    );
-  } else if (result.total === 0) {
-    content = (
-      <EmptyTip
-        className="seaqa-connection-statistics-dialog-empty"
-        src={`${mediaUrl}img/no-items-tip.png`}
-        text={gettext('No issues in the past 12 months.')}
-      />
-    );
-  } else {
-    content = (
-      <div className="seaqa-connection-statistics-dialog-grid">
-        <section className="seaqa-connection-statistics-dialog-panel">
-          <h3 className="seaqa-connection-statistics-dialog-panel-title">{gettext('{name} issue types').replace('{name}', connection.name)}</h3>
+  const renderContent = useCallback(() => {
+    if (isLoading) return (<CenteredLoading />);
+    if (errorMessage) {
+      return (
+        <div className="seaqa-connection-statistics-error" role="alert">
+          <div className="text-danger">{errorMessage}</div>
+          <Button color="secondary" onClick={() => setRetryCount(count => count + 1)}>
+            <Icon symbol="refresh" className="mr-2" />
+            {gettext('Retry')}
+          </Button>
+        </div>
+      );
+    }
+    if (result.total === 0) {
+      return (
+        <EmptyTip
+          className="seaqa-connection-statistics-dialog-empty"
+          src={`${mediaUrl}img/no-items-tip.png`}
+          text={gettext('No issues in the past 12 months.')}
+        />
+      );
+    }
+    return (
+      <>
+        <section className="seaqa-connection-statistics-item">
+          <h3 className="seaqa-connection-statistics-item-title">{gettext('{name} issue types').replace('{name}', connection.name)}</h3>
           <Pie data={pieData} />
         </section>
-        <section className="seaqa-connection-statistics-dialog-panel">
-          <h3 className="seaqa-connection-statistics-dialog-panel-title">{gettext('{name} monthly issue count').replace('{name}', connection.name)}</h3>
-          <Bar data={barData} />
+        <section className="seaqa-connection-statistics-item">
+          <h3 className="seaqa-connection-statistics-item-title">{gettext('{name} monthly issue count').replace('{name}', connection.name)}</h3>
+          <Bar data={barData} title={gettext('Total')} />
         </section>
-        <section className="seaqa-connection-statistics-dialog-panel seaqa-connection-statistics-dialog-panel-wide">
-          <h3 className="seaqa-connection-statistics-dialog-panel-title">{gettext('{name} issues by type').replace('{name}', connection.name)}</h3>
+        <section className="seaqa-connection-statistics-item seaqa-connection-statistics-item-wide">
+          <h3 className="seaqa-connection-statistics-item-title">{gettext('{name} issues by type').replace('{name}', connection.name)}</h3>
           <BarGroup data={groupBarData} />
         </section>
-      </div>
+      </>
     );
-  }
+  }, [isLoading, errorMessage, result, connection, pieData, barData, groupBarData]);
 
   return (
     <Modal isOpen={true} toggle={onToggle} className="seaqa-connection-statistics-dialog">
       <ModalHeader toggle={onToggle}>{gettext('Statistics')}</ModalHeader>
       <ModalBody>
-        <div className="seaqa-connection-statistics-dialog-content">{content}</div>
+        {renderContent()}
       </ModalBody>
     </Modal>
   );

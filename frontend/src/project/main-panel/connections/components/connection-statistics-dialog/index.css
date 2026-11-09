@@ -20,27 +20,19 @@
 .seaqa-connection-statistics-dialog .modal-body {
   overflow-y: auto;
   padding: 16px;
-}
-
-.seaqa-connection-statistics-dialog-content,
-.seaqa-connection-statistics-dialog-content > .h-100 {
-  min-height: 400px;
-}
-
-.seaqa-connection-statistics-dialog-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
 }
 
-.seaqa-connection-statistics-dialog-panel {
+.seaqa-connection-statistics-dialog .seaqa-connection-statistics-item {
   min-width: 0;
   padding: 24px 20px 16px;
   border: 1px solid var(--bs-border-color, #ededed);
   border-radius: 8px;
 }
 
-.seaqa-connection-statistics-dialog-panel-title {
+.seaqa-connection-statistics-dialog .seaqa-connection-statistics-item-title {
   margin: 0 0 20px;
   font-size: 16px;
   font-weight: 600;
@@ -48,11 +40,11 @@
   overflow-wrap: anywhere;
 }
 
-.seaqa-connection-statistics-dialog-panel-wide {
+.seaqa-connection-statistics-dialog .seaqa-connection-statistics-item-wide {
   grid-column: 1 / -1;
 }
 
-.seaqa-connection-statistics-dialog-error {
+.seaqa-connection-statistics-dialog .seaqa-connection-statistics-error {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -62,12 +54,12 @@
   overflow-wrap: anywhere;
 }
 
-.seaqa-connection-statistics-dialog-empty {
+.seaqa-connection-statistics-dialog .seaqa-connection-statistics-empty {
   min-height: 400px;
 }
 
 @media (max-width: 991px) {
-  .seaqa-connection-statistics-dialog-grid {
+  .seaqa-connection-statistics-dialog .modal-body {
     grid-template-columns: minmax(0, 1fr);
   }
 }
@@ -80,18 +72,19 @@
 
   .seaqa-connection-statistics-dialog .modal-content {
     max-height: calc(100vh - 24px);
-    max-height: calc(100dvh - 24px);
-  }
-
-  .seaqa-connection-statistics-dialog .modal-body {
-    padding: 12px;
   }
 
   .seaqa-connection-statistics-dialog-grid {
     gap: 12px;
   }
 
-  .seaqa-connection-statistics-dialog-panel {
+  .seaqa-connection-statistics-item {
     padding: 16px 12px 12px;
   }
+}
+
+.seaqa-connection-statistics-dialog .seaqa-chart-bar,
+.seaqa-connection-statistics-dialog .seaqa-chart-pie,
+.seaqa-connection-statistics-dialog .seaqa-chart-bar-group {
+  min-height: 308px;
 }

@@ -8,7 +8,9 @@ import useChartDraw from './use-chart-redraw';
 
 import './index.css';
 
-const Bar = ({ data }) => {
+const BAR_OPTIONS = { insertPadding: 20, borderRadius: 0.2 };
+
+const Bar = ({ data, title }) => {
   const [tooltipData, setTooltipData] = useState(null);
   const [toolTipPosition, setToolTipPosition] = useState(null);
   const ref = useRef(null);
@@ -16,7 +18,7 @@ const Bar = ({ data }) => {
   const showTooltip = (event, data, color) => {
     const { offsetX, offsetY } = event;
     const newTooltipData = {
-      title: gettext('Amount'),
+      title: title || gettext('Amount'),
       items: [
         {
           color,
@@ -127,12 +129,12 @@ const Bar = ({ data }) => {
     target: ref,
     data,
     chartId: 'bar',
-    options: { insertPadding: 20, borderRadius: 0.2 },
+    options: BAR_OPTIONS,
     draw: drawChart,
   });
 
   return (
-    <div className="chart-svg-wrapper flex-1" ref={ref}>
+    <div className="chart-svg-wrapper seaqa-chart-bar flex-1" ref={ref}>
       <ChartTooltip tooltipData={tooltipData} toolTipPosition={toolTipPosition} chart={chart} />
     </div>
   );

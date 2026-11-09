@@ -448,10 +448,10 @@ const BarGroup = ({
         itemIndex,
       }));
       const categoryGroup = d3.select(nodes[rowIndex]);
-      const bars = categoryGroup.selectAll('rect.bar-group-bar')
+      const bars = categoryGroup.selectAll('rect.seaqa-chart-bar-group-bar')
         .data(barData)
         .join('rect')
-        .attr('class', 'bar-group-bar')
+        .attr('class', 'seaqa-chart-bar-group-bar')
         .attr('opacity', item => hiddenSeriesRef.current.has(item.name) ? 0 : 1)
         .style('pointer-events', item => hiddenSeriesRef.current.has(item.name) ? 'none' : 'auto')
         .attr('fill', item => item.color)
@@ -512,10 +512,10 @@ const BarGroup = ({
         });
 
       if (yAxisShowValue) {
-        const labels = categoryGroup.selectAll('.bar-group-value')
+        const labels = categoryGroup.selectAll('.seaqa-chart-bar-group-value')
           .data(barData.filter(item => Number(item.value) !== 0))
           .join('text')
-          .attr('class', 'bar-group-value')
+          .attr('class', 'seaqa-chart-bar-group-value')
           .attr('data-groupName', item => item.name)
           .attr('x', item => item.x + barWidth / 2)
           .attr('y', item => item.value < 0 ? y(item.value) + 15 : y(item.value) - 8)
@@ -553,10 +553,8 @@ const BarGroup = ({
   });
 
   return (
-    <div className="bar-group-scroll">
-      <div className="bar-group-chart" ref={ref} style={options.height ? { height: options.height } : undefined}>
-        <ChartTooltip tooltipData={tooltipData} toolTipPosition={toolTipPosition} chart={chart} />
-      </div>
+    <div className="chart-svg-wrapper seaqa-chart-bar-group" ref={ref} style={options.height ? { height: options.height } : undefined}>
+      <ChartTooltip tooltipData={tooltipData} toolTipPosition={toolTipPosition} chart={chart} />
     </div>
   );
 };

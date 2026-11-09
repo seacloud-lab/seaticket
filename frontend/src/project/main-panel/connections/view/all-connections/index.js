@@ -26,7 +26,7 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
   const [isShowStatusDialog, setIsShowStatusDialog] = useState(false);
   const [isShowLogDialog, setIsShowLogDialog] = useState(false);
   const [isShowWebhookDialog, setIsShowWebhookDialog] = useState(false);
-  const [statisticsConnection, setStatisticsConnection] = useState(null);
+  const [isShowStatisticsDialog, setIsShowStatisticsDialog] = useState(false);
 
   const { isLoading, isLoadingMore, connections, reloadConnections, loadMore, handleModify, handleDelete,
     modifyConnectionIsActiveStatus, modifyLocalConnectionRecord, modifyLocalConnectionsSyncStatus,
@@ -105,7 +105,8 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
           key: 'statistics',
           label: gettext('Statistics'),
           callback: (record) => {
-            setStatisticsConnection(record);
+            activeRecordRef.current = record;
+            setIsShowStatisticsDialog(true);
           }
         };
       }, {
@@ -147,6 +148,11 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
   const closeLogDialog = useCallback(() => {
     activeRecordRef.current = null;
     setIsShowLogDialog(false);
+  }, []);
+
+  const closeStatisticsDialog = useCallback(() => {
+    activeRecordRef.current = null;
+    setIsShowStatisticsDialog(false);
   }, []);
 
   const closeWebhookDialog = useCallback(() => {
@@ -223,13 +229,6 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
         rowsWillUnmount={rowsWillUnmount}
         modifyLocalRow={modifyLocalConnectionRecord}
       />
-      {statisticsConnection && (
-        <ConnectionStatisticsDialog
-          projectUuid={projectUuid}
-          connection={statisticsConnection}
-          onToggle={() => setStatisticsConnection(null)}
-        />
-      )}
       {isShowStatusDialog && (
         <ConnectionStatusDialog
           projectUuid={projectUuid}
@@ -244,6 +243,13 @@ const AllConnections = ({ projectUuid, modifyLocalBar }) => {
           projectUuid={projectUuid}
           connectionId={activeRecordRef.current?.id}
           onToggle={closeLogDialog}
+        />
+      )}
+      {isShowStatisticsDialog && (
+        <ConnectionStatisticsDialog
+          projectUuid={projectUuid}
+          connection={activeRecordRef.current}
+          onToggle={closeStatisticsDialog}
         />
       )}
       {isShowWebhookDialog && activeRecordRef.current && (

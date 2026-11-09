@@ -1,35 +1,19 @@
-.bar-group-scroll {
-  display: flex;
-  flex: 1 0 auto;
-  flex-direction: column;
-  min-width: 0;
-  overflow-x: auto;
+.seaqa-chart-bar-group {
+  
 }
 
-.bar-group-chart {
-  position: relative;
-  flex: 1 0 auto;
-  min-width: 0;
-  min-height: 220px;
-  width: 100%;
-}
-
-.bar-group-chart svg {
-  display: block;
-}
-
-.bar-group-value {
+.seaqa-chart-bar-group .seaqa-chart-bar-group-value {
   fill: var(--bs-sf-grey-text, #888888);
   font-size: 11px;
 }
 
-.bar-group-chart .bar-group-bar:hover {
+.seaqa-chart-bar-group .seaqa-chart-bar-group-bar:hover {
   opacity: 0.8;
 }
 
-.bar-group-chart .legend-item:focus,
-.bar-group-chart .legend-item:focus-visible,
-.bar-group-chart .legend-flip-page polygon:focus-visible {
+.seaqa-chart-bar-group .legend-item:focus,
+.seaqa-chart-bar-group .legend-item:focus-visible,
+.seaqa-chart-bar-group .legend-flip-page polygon:focus-visible {
   outline: none;
   box-shadow: none;
   filter: none;

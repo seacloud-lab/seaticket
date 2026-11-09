@@ -320,12 +320,12 @@ const Pie = ({
         .attr('class', 'seaqa-chart-pie-percentage')
         .attr('data-groupName', item => item.item.data.name)
         .attr('dominant-baseline', 'central')
-        .attr('stroke', '#fff')
         .attr('stroke-width', 1)
         .attr('paint-order', 'stroke')
         .attr('transform', item => `translate(${item.x}, ${item.y})`)
         .text(item => item.text)
         .attr('fill', item => isDarkColor(item.item.data.color) ? '#fff' : '#000')
+        .attr('stroke', item => isDarkColor(item.item.data.color) ? '#000' : '#fff')
         .attr('font-size', CHART_THEME_COLOR.fontSize);
       animateFadeIn(labels);
     }
@@ -399,7 +399,7 @@ const Pie = ({
     draw: drawChart,
   });
 
-  return <div className="chart-svg-wrapper seaqa-chart-pie" ref={ref}></div>;
+  return <div className="chart-svg-wrapper flex-1 seaqa-chart-pie" ref={ref}></div>;
 };
 
 export default Pie;

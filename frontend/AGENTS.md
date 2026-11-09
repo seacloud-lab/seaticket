@@ -9,9 +9,8 @@
 - `src/utils/`: general-purpose utility functions.
 - `src/models/`: frontend data models and state-related code.
 - `src/assets/`: images, icons, and other frontend assets.
+- `src/tests/`: frontend tests.
 - `build/`: generated output; do not edit it directly.
-- `Test placement`: put frontend tests in `src/test/`, mirroring the tested
-  module's path under `src/`.
 
 ## Technical Architecture
 
