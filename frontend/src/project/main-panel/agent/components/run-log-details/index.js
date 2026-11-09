@@ -366,7 +366,7 @@ const RunLogDetails = ({
     agentAPI.listAgentLogRuns(projectUuid, owner_source_id, owner_source_type, controller.signal).then(res => {
       if (controller.signal.aborted || requestVersion !== runsRequestVersionRef.current) return;
       const runs = res.data?.runs || [];
-      setRuns([]);
+      setRuns(runs);
       const status = getRunLogStatusByRuns(runs);
       updateRunLog(owner_source_id, owner_source_type, { status });
       setIsShowAll(runs.length <= 8);
