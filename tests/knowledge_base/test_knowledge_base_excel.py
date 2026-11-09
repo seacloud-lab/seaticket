@@ -6,6 +6,8 @@ Unit tests for knowledge_base_excel API endpoints.
 import os
 from unittest.mock import Mock, patch
 
+from django.core.files.uploadedfile import SimpleUploadedFile
+
 
 def get_kb_convert_view_url(project_uuid):
     return f'/api/v1/project/{project_uuid}/knowledge-bases/convert-view-to-excel/'
@@ -152,19 +154,10 @@ class TestKnowledgeBaseIOStatus:
 
 
 class TestKnowledgeBaseExportExcel:
-    def test_get_missing_task_id_returns_400(self, api_client, project_uuid):
+    def test_get_missing_view_id_returns_400(self, api_client, project_uuid):
         url = get_kb_export_url(project_uuid)
 
         resp = api_client.get(url)
-
-        assert resp.status_code == 400
-        assert 'task_id invalid' in resp.data['error_msg']
-
-    def test_get_missing_view_id_returns_400(self, api_client, project_uuid):
-        url = get_kb_export_url(project_uuid)
-        params = {'task_id': 'task-1'}
-
-        resp = api_client.get(url, params)
 
         assert resp.status_code == 400
         assert 'view_id invalid' in resp.data['error_msg']
@@ -173,7 +166,7 @@ class TestKnowledgeBaseExportExcel:
         self, api_client, missing_project_uuid
     ):
         url = get_kb_export_url(missing_project_uuid)
-        params = {'task_id': 'task-1', 'view_id': '0000'}
+        params = {'view_id': '0000'}
 
         resp = api_client.get(url, params)
 
@@ -184,7 +177,7 @@ class TestKnowledgeBaseExportExcel:
         self, api_client_other, project_uuid
     ):
         url = get_kb_export_url(project_uuid)
-        params = {'task_id': 'task-1', 'view_id': '0000'}
+        params = {'view_id': '0000'}
 
         resp = api_client_other.get(url, params)
 
@@ -195,7 +188,7 @@ class TestKnowledgeBaseExportExcel:
         self, api_client, project_uuid
     ):
         url = get_kb_export_url(project_uuid)
-        params = {'task_id': 'task-1', 'view_id': '9999'}
+        params = {'view_id': '9999'}
 
         resp = api_client.get(url, params)
 
@@ -206,7 +199,7 @@ class TestKnowledgeBaseExportExcel:
         self, api_client, project_uuid
     ):
         url = get_kb_export_url(project_uuid)
-        params = {'task_id': 'task-1', 'view_id': '0000'}
+        params = {'view_id': '0000'}
         resp = api_client.get(url, params)
 
         assert resp.status_code == 404
@@ -218,16 +211,39 @@ class TestKnowledgeBaseExportExcel:
         from seahub.settings import TEMP_EXPORT_VIEW_DIR
 
         excel_name = f'{real_project.project_name}_knowledge_base_All.xlsx'
-        project_folder = os.path.join(TEMP_EXPORT_VIEW_DIR, project_uuid)
+        project_folder = os.path.join(TEMP_EXPORT_VIEW_DIR, project_uuid, 'exports')
         os.makedirs(project_folder, exist_ok=True)
-        tmp_excel_path = os.path.join(project_folder, excel_name)
+        tmp_excel_path = os.path.join(project_folder, '0000.xlsx')
         with open(tmp_excel_path, 'wb') as fp:
             fp.write(b'data')
 
         url = get_kb_export_url(project_uuid)
-        params = {'task_id': 'task-1', 'view_id': '0000'}
+        params = {'view_id': '0000'}
         resp = api_client.get(url, params)
 
         assert resp.status_code == 200
         assert resp['Content-Type'] == 'application/ms-excel'
         assert 'attachment;filename*=UTF-8' in resp['Content-Disposition']
+
+
+class TestKnowledgeBaseImportExcel:
+    def test_uploaded_file_is_stored_under_imports_directory(
+        self, api_client, project_uuid, tmp_path
+    ):
+        upload = SimpleUploadedFile('import.xlsx', b'test workbook')
+        with patch(
+                'seahub.knowledge_base.knowledge_base_excel.TEMP_EXPORT_VIEW_DIR', str(tmp_path)), \
+                patch(
+                    'seahub.knowledge_base.knowledge_base_excel.import_kb_from_excel',
+                    return_value='task-import',
+                ) as import_task:
+            response = api_client.post(
+                f'/api/v1/project/{project_uuid}/knowledge-bases/import-excel/',
+                {'file': upload, 'preview_only': 'true'},
+                format='multipart',
+            )
+
+        stored_file = tmp_path / project_uuid / 'imports' / 'import.xlsx'
+        assert response.status_code == 200
+        assert stored_file.read_bytes() == b'test workbook'
+        assert import_task.call_args.args[0]['file_name'] == 'import.xlsx'

@@ -2025,13 +2025,23 @@ class ProjectConnectionReplyEmailView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         to_text = request.data.get('to') or target_email.get('email_from')
-        to_emails = extract_email_addresses(to_text)
+        try:
+            to_emails = extract_email_addresses(to_text)
+        except ValueError as e:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'to invalid: %s' % e)
         if not to_emails:
             error_msg = 'to invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         cc_text = request.data.get('cc')
-        cc_emails = extract_email_addresses(cc_text)
+        try:
+            cc_emails = extract_email_addresses(cc_text)
+        except ValueError as e:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'cc invalid: %s' % e)
+
+        if cc_text and not cc_emails:
+            error_msg = 'cc invalid.'
+            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
         subject = request.data.get('subject')
         if not subject:

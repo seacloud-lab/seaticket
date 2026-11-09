@@ -123,7 +123,7 @@ const ViewItem = ({
       const poll = () => {
         api.queryIOStatus(taskId).then(r => {
           if (r?.data?.is_finished) {
-            const url = api.getExportExcelUrl(taskId, view._id);
+            const url = api.getExportExcelUrl(view._id);
             window.open(url, '_self');
           } else {
             setTimeout(poll, 1000);

@@ -1028,9 +1028,14 @@ class AgentActionExecutor:
             return None
         if not any(key in parsed for key in ('to', 'cc', 'is_html')):
             return None
+        try:
+            to = AgentActionExecutor._normalize_email_address_list(parsed.get('to'))
+            cc = AgentActionExecutor._normalize_email_address_list(parsed.get('cc'))
+        except ValueError as e:
+            raise ValueError('Email recipient is invalid: %s' % e) from e
         return {
-            'to': AgentActionExecutor._normalize_email_address_list(parsed.get('to')),
-            'cc': AgentActionExecutor._normalize_email_address_list(parsed.get('cc')),
+            'to': to,
+            'cc': cc,
             'content': str(parsed.get('content') or ''),
             'is_html': bool(parsed.get('is_html')),
         }
@@ -1046,7 +1051,10 @@ class AgentActionExecutor:
         target_email = AgentActionExecutor._latest_inbound_email(emails)
         if not target_email:
             return []
-        return extract_email_addresses(target_email.get('email_from') or '')
+        try:
+            return extract_email_addresses(target_email.get('email_from') or '')
+        except ValueError:
+            return []
 
     def _create_ticket(
         self,
@@ -1534,7 +1542,10 @@ class AgentActionExecutor:
         )
 
     def _execute_email_suggest_reply(self, seadb_api, project_uuid, source_id, reply_content):
-        draft = self._parse_email_suggestion_content(reply_content)
+        try:
+            draft = self._parse_email_suggestion_content(reply_content)
+        except ValueError as e:
+            return self._failed_execution(str(e))
         if draft:
             content = (draft.get('content') or '').strip()
             is_html = bool(draft.get('is_html'))

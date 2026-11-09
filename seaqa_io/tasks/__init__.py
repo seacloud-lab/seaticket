@@ -1,6 +1,7 @@
 import datetime
 import json
 import os
+import re
 import zipfile
 
 import numpy as np
@@ -26,9 +27,15 @@ from seaqa_io.utils.attachment_backend import (
 
 logger = setup_logger('seaqa_io', propagate=False)
 
+
+def _safe_export_name_component(value):
+    value = re.sub(r'[\\/:*?"<>|\x00-\x1f]', '_', str(value or ''))
+    return value.strip(' .') or '_'
+
+
 def convert_kb_view_to_excel(project_uuid, view_id, username):
     try:
-        target_dir = os.path.join(TEMP_EXPORT_VIEW_DIR, str(project_uuid))
+        target_dir = os.path.join(TEMP_EXPORT_VIEW_DIR, str(project_uuid), 'exports')
         os.makedirs(target_dir, exist_ok=True)
 
         session_class = init_db_session_class(configs)
@@ -46,7 +53,8 @@ def convert_kb_view_to_excel(project_uuid, view_id, username):
 
         details = json.loads(view_res[0]) if view_res else {'views': []}
         view = next((v for v in details.get('views', []) if v.get('_id') == view_id), {'name': 'view'})
-        view_name = view.get('name') or 'view'
+        view_name = _safe_export_name_component(view.get('name') or 'view')
+        project_name = _safe_export_name_component(project_name)
 
         seadb_api = SeaDBAPI()
         metadata = seadb_api.get_base_metadata(project_uuid)
@@ -69,8 +77,7 @@ def convert_kb_view_to_excel(project_uuid, view_id, username):
             'modified_time': 'Last modified time',
         }
 
-        excel_name = f'{project_name}_knowledge_base_{view_name}.xlsx'
-        target_path = os.path.join(target_dir, excel_name)
+        target_path = os.path.join(target_dir, f'{view_id}.xlsx')
         wb = Workbook(write_only=True)
         ws = wb.create_sheet(view_name or 'view')
 
@@ -111,7 +118,7 @@ def convert_kb_view_to_excel(project_uuid, view_id, username):
 
 
 def preview_import_kb_from_excel(project_uuid, file_name, limit=20):
-    temp_dir = os.path.join(TEMP_EXPORT_VIEW_DIR, str(project_uuid))
+    temp_dir = os.path.join(TEMP_EXPORT_VIEW_DIR, str(project_uuid), 'imports')
     file_path = os.path.join(temp_dir, file_name)
 
     try:
@@ -169,7 +176,7 @@ def preview_import_kb_from_excel(project_uuid, file_name, limit=20):
 
 
 def import_kb_from_excel(project_uuid, username, file_name):
-    temp_dir = os.path.join(TEMP_EXPORT_VIEW_DIR, str(project_uuid))
+    temp_dir = os.path.join(TEMP_EXPORT_VIEW_DIR, str(project_uuid), 'imports')
     file_path = os.path.join(temp_dir, file_name)
 
     wb = load_workbook(file_path, read_only=True)
