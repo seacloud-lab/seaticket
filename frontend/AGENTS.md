@@ -11,6 +11,7 @@
 - `src/assets/`: images, icons, and other frontend assets.
 - `src/tests/`: frontend tests.
 - `build/`: generated output; do not edit it directly.
+- `Feature placement`: keep feature code close to its tests.
 
 ## Technical Architecture
 
