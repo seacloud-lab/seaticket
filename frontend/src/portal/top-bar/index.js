@@ -29,14 +29,13 @@ const TopBar = ({ isEditMode, activePage, onPageChange, isAnonymous, canAccessIs
     if (value === TICKETS_TAB) {
       const targetPage = isIssuesPage ? activePage : PORTAL_PAGE.SUBMIT_ISSUE;
       onPageChange(targetPage);
+      if (isShowMobileMenu) setIsShowMobileMenu(false);
       return;
     }
 
     onPageChange(value);
 
-    if (isShowMobileMenu) {
-      setIsShowMobileMenu(false);
-    }
+    if (isShowMobileMenu) setIsShowMobileMenu(false);
   };
 
   useEffect(() => {

@@ -152,10 +152,6 @@ body {
     margin-top: 24px;
   }
 
-  .seaqa-portal-main-panel .sf-slate-viewer-container.mobile .sf-slate-viewer-article-container .article {
-    padding: 0 !important;
-  }
-
   .seaqa-portal-main-panel .ask-main-container {
     position: relative;
   }

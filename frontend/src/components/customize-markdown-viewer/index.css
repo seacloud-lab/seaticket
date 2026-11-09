@@ -30,3 +30,7 @@
 .longtext-preview-container .article h2 {
   border-bottom: none;
 }
+
+.longtext-preview-container .sf-slate-viewer-container.mobile .sf-slate-article-content {
+  padding: 0;
+}
