@@ -1137,7 +1137,8 @@ class TestBuildTicketWorkingOnUpdate:
 
     @staticmethod
     def _build(ticket, metadata):
-        fields, changes, event_type = build_ticket_working_on_update(ticket, metadata)
+        fields, event_type = build_ticket_working_on_update(ticket, metadata)
+        changes = compare_ticket_changes(ticket, fields)
         if not fields:
             return fields, changes, event_type
         modified_time = fields.pop('modified_time')

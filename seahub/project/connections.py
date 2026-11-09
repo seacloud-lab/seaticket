@@ -54,7 +54,7 @@ from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_tick
     check_ticket_link_changes, sync_links_in_connection, TicketLinkValidationError, \
     record_create_task_activities, record_ticket_activities, validate_ticket_customer_id, \
     TicketCustomerNotFound, build_ticket_working_on_update, format_ticket_activity_for_client, \
-    notify_ticket_update, get_option_id_by_name
+    notify_ticket_update, get_option_id_by_name, compare_ticket_changes
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES, send_connection_data_event
 from seahub.settings import GITHUB_WEBHOOK_SECRET
 from seahub.project.github_issues_api import GitHubAPI, GitHubAppNotInstalled
@@ -1720,7 +1720,8 @@ class ProjectConnectionRecordsView(APIView):
                     old_value = []
                 new_value = list(dict.fromkeys(old_value + [linked_record_key]))
 
-                status_fields, status_changes, event_type = build_ticket_working_on_update(ticket, metadata)
+                status_fields, event_type = build_ticket_working_on_update(ticket, metadata)
+                status_changes = compare_ticket_changes(ticket, status_fields)
 
                 ticket_update_row = {'linked_connection_records': new_value}
                 ticket_update_row.update(status_fields)

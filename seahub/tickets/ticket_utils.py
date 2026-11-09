@@ -1171,48 +1171,37 @@ def build_ticket_working_on_update(ticket, metadata):
     """Compute the fields that move a ticket to Working on when a task is created.
 
     The ticket state follows the state that Working on belongs to.
-    Returns (update_fields, changes, event_type); all empty/None when no change.
+    Returns (update_fields, event_type); both empty/None when no change.
     """
     working_on_name = ''
-    working_on_id = ''
     state_options = []
-    cascade_settings = {}
     if isinstance(metadata, list) and metadata:
         state_column = get_column_from_columns_by_name(metadata, SchemaTables.TICKETS.column.state.name)
         state_options = ((state_column or {}).get('data') or {}).get('options') or []
         substate_column = get_column_from_columns_by_name(metadata, SchemaTables.TICKETS.column.substate.name)
-        substate_data = (substate_column or {}).get('data') or {}
-        cascade_settings = substate_data.get('cascade_settings') or {}
-        for opt in substate_data.get('options') or []:
+        for opt in ((substate_column or {}).get('data') or {}).get('options') or []:
             if (opt.get('name') or '').lower() == 'working on':
                 working_on_name = opt.get('name')
-                working_on_id = opt.get('id')
                 break
     if not working_on_name:
         logger.warning('Working on substate option not found, skip ticket status update.')
-        return {}, [], None
+        return {}, None
 
     old_state = (ticket.get(SchemaTables.TICKETS.column.state.name) or '').strip().lower()
     old_substate = ticket.get(SchemaTables.TICKETS.column.substate.name) or ''
 
-    if isinstance(cascade_settings, dict) and cascade_settings:
-        new_state = ''
-        for state_id, substate_ids in cascade_settings.items():
-            if working_on_id and working_on_id in (substate_ids or []):
-                for opt in state_options:
-                    if opt.get('id') == state_id:
-                        new_state = (opt.get('name') or '').strip().lower()
-                        break
-                break
-        if not new_state:
-            logger.warning('Cannot find the state of %s, skip ticket status update.', working_on_name)
-            return {}, [], None
-    else:
-        # projects without cascade settings keep the previous behavior
-        new_state = 'open' if old_state == 'closed' else old_state
+    new_state = ''
+    for opt in state_options:
+        state_name = opt.get('name') or ''
+        if validate_ticket_state_substate_relation(metadata, state_name, working_on_name):
+            new_state = state_name.strip().lower()
+            break
+    if not new_state:
+        logger.warning('Cannot find the state of %s, skip ticket status update.', working_on_name)
+        return {}, None
 
     if new_state == old_state and old_substate.strip().lower() == working_on_name.lower():
-        return {}, [], None
+        return {}, None
 
     now = datetime.now(timezone.utc).isoformat()
     update_fields = {
@@ -1229,8 +1218,7 @@ def build_ticket_working_on_update(ticket, metadata):
             update_fields[SchemaTables.TICKETS.column.closed_time.name] = ''
             event_type = DataEventType.TICKET_REOPENED.value
 
-    changes = compare_ticket_changes(ticket, update_fields)
-    return update_fields, changes, event_type
+    return update_fields, event_type
 
 
 def record_create_task_activities(
