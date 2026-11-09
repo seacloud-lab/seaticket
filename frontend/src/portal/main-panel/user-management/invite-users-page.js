@@ -92,6 +92,7 @@ const InviteUsersPage = ({
             <col className="portal-invite-email-column" />
             <col className="portal-invite-link-column" />
             <col className="portal-invite-expiration-column" />
+            <col className="portal-invite-status-column" />
             <col className="portal-user-operations-column" />
           </colgroup>
           <thead>
@@ -99,6 +100,7 @@ const InviteUsersPage = ({
               <th>{gettext('Email')}</th>
               <th>{gettext('Invitation link')}</th>
               <th>{gettext('Expiration time')}</th>
+              <th>{gettext('Status')}</th>
               <th>{/* More operations */}</th>
             </tr>
           </thead>
@@ -109,6 +111,11 @@ const InviteUsersPage = ({
                 <td className="text-truncate" title={item.link}>{shortenInvitationLink(item.link)}</td>
                 <td className="portal-invite-expiration-cell">
                   {item.expire_time ? dayjs(item.expire_time).format('YYYY-MM-DD HH:mm') : '-'}
+                </td>
+                <td>
+                  {item.accepted_at && (
+                    <span className="portal-invite-status-badge">{gettext('Accepted')}</span>
+                  )}
                 </td>
                 <td className="text-right operation-btns">
                   <div className="portal-customer-operation-btns">
