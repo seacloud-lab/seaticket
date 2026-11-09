@@ -184,7 +184,7 @@ const RunLogs = ({
             <EmptyTip
               className="seaqa-agent-filter-run-logs-tip"
               src={`${mediaUrl}img/no-items-tip.png`}
-              text={gettext('No record')}
+              text={gettext('No matching logs')}
             />
           )}
         </div>
