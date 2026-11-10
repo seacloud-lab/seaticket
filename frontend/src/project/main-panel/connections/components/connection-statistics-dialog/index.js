@@ -81,24 +81,29 @@ const ConnectionStatisticsDialog = ({ projectUuid, connection, onToggle }) => {
     return (
       <>
         <section className="seaqa-connection-statistics-item">
-          <h3 className="seaqa-connection-statistics-item-title">{gettext('{name} issue types').replace('{name}', connection.name)}</h3>
+          <h3 className="seaqa-connection-statistics-item-title">{gettext('Issue types')}</h3>
           <Pie data={pieData} />
         </section>
         <section className="seaqa-connection-statistics-item">
-          <h3 className="seaqa-connection-statistics-item-title">{gettext('{name} monthly issue count').replace('{name}', connection.name)}</h3>
+          <h3 className="seaqa-connection-statistics-item-title">{gettext('Monthly issue count')}</h3>
           <Bar data={barData} title={gettext('Total')} />
         </section>
         <section className="seaqa-connection-statistics-item seaqa-connection-statistics-item-wide">
-          <h3 className="seaqa-connection-statistics-item-title">{gettext('{name} issues by type').replace('{name}', connection.name)}</h3>
+          <h3 className="seaqa-connection-statistics-item-title">{gettext('Issues by type')}</h3>
           <BarGroup data={groupBarData} />
         </section>
       </>
     );
-  }, [isLoading, errorMessage, result, connection, pieData, barData, groupBarData]);
+  }, [isLoading, errorMessage, result, pieData, barData, groupBarData]);
+
+  const title = gettext('Statistics for %connection_name')
+    .replace('%connection_name', `<span class="text-orange">${connection.name}</span>`);
 
   return (
     <Modal isOpen={true} toggle={onToggle} className="seaqa-connection-statistics-dialog">
-      <ModalHeader toggle={onToggle}>{gettext('Statistics')}</ModalHeader>
+      <ModalHeader className="o-hidden" toggle={onToggle}>
+        <div className="text-truncate" dangerouslySetInnerHTML={{ __html: title }}></div>
+      </ModalHeader>
       <ModalBody>
         {renderContent()}
       </ModalBody>
