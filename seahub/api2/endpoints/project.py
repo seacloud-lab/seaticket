@@ -43,12 +43,15 @@ from seahub.constants import PERMISSION_READ
 logger = logging.getLogger(__name__)
 
 PROJECT_PROMPT_TAG_LIKE_RE = re.compile(r'<[^>]+>')
-
+PROMTP_LIMIT = 10000
 
 def is_safe_prompt(value):
     if value is None:
         return True
     if not isinstance(value, str):
+        return False
+    if len(value) > PROMTP_LIMIT:
+        logger.warning('The length of prompt is %s, which exceeds the %s-character limit.', len(value), PROMTP_LIMIT)
         return False
     return PROJECT_PROMPT_TAG_LIKE_RE.search(value) is None
 

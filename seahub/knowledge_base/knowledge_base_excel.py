@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import logging
+import re
 from io import BytesIO
 from urllib.parse import quote
 
@@ -20,9 +21,15 @@ from seahub.project.utils import check_project_permission
 from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.settings import TEMP_EXPORT_VIEW_DIR
 from seahub.utils.io import convert_kb_view_to_excel, query_io_task_status, import_kb_from_excel
+from seahub.utils.storage import resolve_path_under_root
 
 
 logger = logging.getLogger(__name__)
+
+
+def _safe_export_name_component(value):
+    value = re.sub(r'[\\/:*?"<>|\x00-\x1f]', '_', str(value or ''))
+    return value.strip(' .') or '_'
 
 
 class KnowledgeBaseConvertViewToExcel(APIView):
@@ -44,6 +51,9 @@ class KnowledgeBaseConvertViewToExcel(APIView):
         username = request.user.username
         if not check_project_permission(username, workspace.owner):
             return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        if not KnowledgeBaseViews.objects.get_view(project_uuid, view_id):
+            return api_error(status.HTTP_404_NOT_FOUND, 'View not found.')
 
         params = {
             'project_uuid': str(project_uuid),
@@ -113,10 +123,6 @@ class KnowledgeBaseExportExcel(APIView):
     throttle_classes = (ExportRateThrottle,)
 
     def get(self, request, project_uuid):
-        task_id = request.GET.get('task_id', '')
-        if not task_id:
-            return api_error(status.HTTP_400_BAD_REQUEST, 'task_id invalid.')
-
         view_id = request.GET.get('view_id', '')
         if not view_id:
             return api_error(status.HTTP_400_BAD_REQUEST, 'view_id invalid.')
@@ -134,15 +140,22 @@ class KnowledgeBaseExportExcel(APIView):
         if not view:
             return api_error(status.HTTP_404_NOT_FOUND, 'View not found.')
 
-        view_name = view.get('name')
-        project_name = project.name
+        view_name = _safe_export_name_component(view.get('name'))
+        project_name = _safe_export_name_component(project.name)
         excel_name = f'{project_name}_knowledge_base_{view_name}.xlsx'
-        target_dir = os.path.join(TEMP_EXPORT_VIEW_DIR, str(project_uuid))
-        tmp_excel_path = os.path.join(target_dir, excel_name)
+        target_dir = os.path.join(TEMP_EXPORT_VIEW_DIR, str(project_uuid), 'exports')
+        try:
+            tmp_excel_path = resolve_path_under_root(target_dir, f'{view_id}.xlsx')
+        except ValueError:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Export file not found.')
         if not os.path.isfile(tmp_excel_path):
             return api_error(status.HTTP_404_NOT_FOUND, excel_name + ' not found.')
 
-        resp = FileResponse(open(tmp_excel_path, 'rb'), content_type='application/ms-excel', as_attachment=True)
+        try:
+            file_handle = open(tmp_excel_path, 'rb')
+        except FileNotFoundError:
+            return api_error(status.HTTP_404_NOT_FOUND, excel_name + ' not found.')
+        resp = FileResponse(file_handle, content_type='application/ms-excel', as_attachment=True)
         resp['Content-Disposition'] = 'attachment;filename*=UTF-8\'\'' + quote(excel_name)
         return resp
 
@@ -166,16 +179,21 @@ class KnowledgeBaseImportExcel(APIView):
         preview_only = str(preview_only).lower() in ('true', '1', 'yes') if preview_only is not None else False
 
         file_obj = request.FILES.get('file')
-        file_name = request.data.get('file_name') or (file_obj.name if file_obj else None)
+        file_name = file_obj.name if file_obj else request.data.get('file_name')
         if not file_name:
             return api_error(status.HTTP_400_BAD_REQUEST, 'File not found.')
-        if not file_name.endswith('.xlsx'):
+        if (not isinstance(file_name, str) or '/' in file_name or '\\' in file_name or
+                not file_name.endswith('.xlsx')):
             return api_error(status.HTTP_400_BAD_REQUEST, 'File type invalid.')
 
+        temp_dir = os.path.join(TEMP_EXPORT_VIEW_DIR, str(project_uuid), 'imports')
+        try:
+            file_path = resolve_path_under_root(temp_dir, file_name)
+        except ValueError:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'File name invalid.')
+
         if file_obj:
-            temp_dir = os.path.join(TEMP_EXPORT_VIEW_DIR, str(project_uuid))
-            os.makedirs(temp_dir, exist_ok=True)
-            file_path = os.path.join(temp_dir, file_obj.name)
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
             with open(file_path, 'wb+') as destination:
                 for chunk in file_obj.chunks():
                     destination.write(chunk)

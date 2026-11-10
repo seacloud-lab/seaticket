@@ -576,14 +576,21 @@ def rank_vector_search_results(query_record, results, org_id, project_uuid):
 def convert_cost_to_credit(cost):
     return 100 * cost
 
-_ADDR_WITH_NAME_RE = re.compile(r'([^<,]*?)\s*<([^@\s>]+@[^>]+)>')
+_FALLBACK_ADDR_RE = re.compile(r'<([^\s@<>]+@[^\s@<>]+)>')
+EMAIL_ADDRESSES_LIMIT = 1500
 
 # email utils
 def extract_email_addresses(address_text):
     if not address_text:
         return []
-
+    
     address_text = str(address_text)
+    if len(address_text) > EMAIL_ADDRESSES_LIMIT:
+        raise ValueError(
+            'Email address text exceeds the %s-character limit (got %s characters).' %
+            (EMAIL_ADDRESSES_LIMIT, len(address_text))
+        )
+
     addresses = []
     seen_emails = set()
     for name, email in getaddresses([address_text]):
@@ -592,17 +599,16 @@ def extract_email_addresses(address_text):
             seen_emails.add(email.lower())
             addresses.append(formataddr((name, normalize_email_domain(email))))
 
-    for m in _ADDR_WITH_NAME_RE.finditer(address_text):
-        display = m.group(1).strip().strip('"')
-        email = m.group(2).strip()
-        if not email or email.lower() in seen_emails:
+    display_start = 0
+    for match in _FALLBACK_ADDR_RE.finditer(address_text):
+        email = match.group(1).strip()
+        display_start = address_text.rfind(',', display_start, match.start()) + 1
+        display = address_text[display_start:match.start()].strip().strip('"')
+        display_start = match.end()
+        if email.lower() in seen_emails:
             continue
         seen_emails.add(email.lower())
-        if display:
-            escaped = display.replace('\\', '\\\\').replace('"', '\\"')
-            addresses.append('"%s" <%s>' % (escaped, email))
-        else:
-            addresses.append(email)
+        addresses.append(formataddr((display, normalize_email_domain(email))))
     return addresses
 
 

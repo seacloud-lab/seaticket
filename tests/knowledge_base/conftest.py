@@ -294,4 +294,3 @@ def mock_query_kb_task_status():
         'seahub.knowledge_base.knowledge_base_excel.query_io_task_status'
     ) as mock:
         yield mock
-

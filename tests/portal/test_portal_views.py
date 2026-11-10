@@ -1,5 +1,6 @@
 import json
 from types import SimpleNamespace
+from unittest.mock import patch
 
 import pytest
 from django.core.cache import cache
@@ -9,6 +10,7 @@ from django.http import HttpResponse
 from django.test import RequestFactory, override_settings
 
 from seahub.portal.middleware import PortalDomainMiddleware
+from seahub.portal.files import GetPortalUploadFileView
 from seahub.portal.models import PortalCustomer, PortalCustomDomain, PortalDomainAlias, ProjectExternalUser
 from seahub.portal.permissions import PortalAnonymousAccessPermission
 from seahub.portal.utils import (
@@ -21,6 +23,26 @@ from seahub.portal.views import portal_accounts_login_view, portal_external_logo
 
 def process_portal_domain_request(request):
     return PortalDomainMiddleware(lambda _request: None).process_request(request)
+
+
+@pytest.mark.django_db
+def test_portal_upload_read_returns_404_for_invalid_path(factory, real_project):
+    request = factory.get(
+        f'/upload-file/portal/{real_project.uuid}/2026-11//missing.txt'
+    )
+
+    with patch('seahub.portal.files.PortalUploadPermission.has_permission', return_value=True), \
+            patch(
+                'seahub.portal.utils._get_request_identity',
+                return_value=({'username': 'portal-user', 'is_anonymous': False}, None),
+            ):
+        response = GetPortalUploadFileView.as_view()(
+            request,
+            project_uuid=str(real_project.uuid),
+            file_path='2026-11//missing.txt',
+        )
+
+    assert response.status_code == 404
 
 
 def build_session_request(path):

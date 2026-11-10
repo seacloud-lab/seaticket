@@ -109,7 +109,10 @@ class GetProjectUploadFileView(APIView):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 
-        tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, file_path)
+        try:
+            tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, file_path)
+        except ValueError:
+            return api_error(status.HTTP_404_NOT_FOUND, 'File not exist.')
         if not os.path.exists(tmp_upload_file_path):
             error_msg = 'File not exist.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)

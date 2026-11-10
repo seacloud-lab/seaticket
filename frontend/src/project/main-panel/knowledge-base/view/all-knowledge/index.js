@@ -79,7 +79,7 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
       uploadFile: (file) => knowledgeBaseAPI.uploadFile(projectUuid, file),
       convertViewToExcel: (viewId) => knowledgeBaseAPI.convertViewToExcel(projectUuid, viewId),
       queryIOStatus: (taskId) => knowledgeBaseAPI.queryIOStatus(taskId),
-      getExportExcelUrl: (taskId, viewId) => knowledgeBaseAPI.getExportExcelUrl(projectUuid, taskId, viewId),
+      getExportExcelUrl: (viewId) => knowledgeBaseAPI.getExportExcelUrl(projectUuid, viewId),
       importExcel: (file, previewOnly) => knowledgeBaseAPI.importExcel(projectUuid, file, previewOnly),
       commitImportExcel: (fileName) => knowledgeBaseAPI.commitImportExcel(projectUuid, fileName),
     };

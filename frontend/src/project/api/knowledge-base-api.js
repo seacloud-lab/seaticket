@@ -205,8 +205,8 @@ class KnowledgeBaseAPI {
     return this.req.get(url);
   }
 
-  getExportExcelUrl(projectUuid, taskId, viewId) {
-    return this.server + '/api/v1/project/' + projectUuid + '/knowledge-bases/export-excel/?task_id=' + taskId + '&view_id=' + encodeURIComponent(viewId);
+  getExportExcelUrl(projectUuid, viewId) {
+    return this.server + '/api/v1/project/' + projectUuid + '/knowledge-bases/export-excel/?view_id=' + encodeURIComponent(viewId);
   }
 
   uploadFile(projectUuid, file, onUploadProgress = null) {

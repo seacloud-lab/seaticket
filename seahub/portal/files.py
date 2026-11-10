@@ -15,9 +15,16 @@ from seahub import settings
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle
 from seahub.api2.utils import api_error
-from seahub.portal.permissions import PortalFilePermission, PortalUploadPermission, can_access_portal_issue
+from seahub.portal.permissions import (
+    PortalFilePermission,
+    PortalUploadPermission,
+    can_access_portal_issue,
+    get_portal_preview_username,
+)
 from seahub.portal.portal_utils import get_portal_issue
 from seahub.portal.utils import portal_endpoint
+from seahub.portal.models import PortalChatSessions
+from seahub.project.utils import check_project_admin_permission
 from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.storage import (
     FileNotFound,
@@ -81,7 +88,10 @@ class GetPortalUploadFileView(APIView):
 
     @portal_endpoint
     def get(self, request, project_uuid, file_path):
-        tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, f'portal/{file_path}')
+        try:
+            tmp_upload_file_path = gen_tmp_upload_file_path(project_uuid, f'portal/{file_path}')
+        except ValueError:
+            return api_error(status.HTTP_404_NOT_FOUND, 'File not exist.')
         if not os.path.exists(tmp_upload_file_path):
             return api_error(status.HTTP_404_NOT_FOUND, 'File not exist.')
 
@@ -123,6 +133,28 @@ class PortalFileView(APIView):
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
             if not issue or not can_access_portal_issue(request, request.project, issue):
                 return api_error(status.HTTP_404_NOT_FOUND, 'File not exist')
+        elif file_path.startswith('attachments/portal-chat/'):
+            path_parts = file_path.split('/')
+            if len(path_parts) != 5 or not all(path_parts[2:]):
+                return api_error(status.HTTP_404_NOT_FOUND, 'File not exist')
+
+            session_uuid = path_parts[2]
+            session = PortalChatSessions.objects.filter(
+                project_uuid=project_uuid,
+                session_uuid=session_uuid,
+            ).first()
+            if not session:
+                return api_error(status.HTTP_404_NOT_FOUND, 'File not exist')
+
+            is_project_admin = (
+                getattr(request.user, 'is_authenticated', False)
+                and check_project_admin_permission(
+                    request.user.username, request.project.workspace.owner
+                )
+            )
+            if not is_project_admin:
+                if session.username != request.identity['username']:
+                    return api_error(status.HTTP_404_NOT_FOUND, 'File not exist')
 
         try:
             s3_meta = get_project_file_metadata(project_uuid, file_path)

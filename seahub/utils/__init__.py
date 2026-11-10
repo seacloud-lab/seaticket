@@ -120,6 +120,8 @@ email_re = re.compile(
 def is_valid_email(email):
     """A heavy email format validation.
     """
+    if not isinstance(email, str) or len(email) > 256:
+        return False
     return True if email_re.match(email) is not None else False
 
 def is_valid_username(username):
