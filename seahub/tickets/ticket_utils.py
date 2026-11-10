@@ -1173,29 +1173,23 @@ def build_ticket_working_on_update(ticket, metadata):
     The ticket state follows the state that Working on belongs to.
     Returns (update_fields, event_type); both empty/None when no change.
     """
-    working_on_name = ''
-    state_options = []
-    if isinstance(metadata, list) and metadata:
-        state_column = get_column_from_columns_by_name(metadata, SchemaTables.TICKETS.column.state.name)
-        state_options = ((state_column or {}).get('data') or {}).get('options') or []
-        substate_column = get_column_from_columns_by_name(metadata, SchemaTables.TICKETS.column.substate.name)
-        for opt in ((substate_column or {}).get('data') or {}).get('options') or []:
-            if (opt.get('name') or '').lower() == 'working on':
-                working_on_name = opt.get('name')
-                break
-    if not working_on_name:
-        logger.warning('Working on substate option not found, skip ticket status update.')
+    if not isinstance(metadata, list) or not metadata:
+        logger.warning('Ticket metadata unavailable, skip ticket status update.')
         return {}, None
 
+    working_on_name = 'Working on'
     old_state = (ticket.get(SchemaTables.TICKETS.column.state.name) or '').strip().lower()
     old_substate = ticket.get(SchemaTables.TICKETS.column.substate.name) or ''
 
     new_state = ''
-    for opt in state_options:
-        state_name = opt.get('name') or ''
-        if validate_ticket_state_substate_relation(metadata, state_name, working_on_name):
-            new_state = state_name.strip().lower()
-            break
+    try:
+        for state_name in ('open', 'closed'):
+            if validate_ticket_state_substate_relation(metadata, state_name, working_on_name):
+                new_state = state_name
+                break
+    except Exception as e:
+        logger.error('Failed to validate ticket state/substate relation: %s', e)
+        return {}, None
     if not new_state:
         logger.warning('Cannot find the state of %s, skip ticket status update.', working_on_name)
         return {}, None
@@ -1631,9 +1625,9 @@ def validate_ticket_state_substate_relation(table_columns, state_name, substate_
     cascade_settings = substate_data.get('cascade_settings') or {}
 
     if not state_options or not substate_options:
-        return True
+        return False
     if not isinstance(cascade_settings, dict) or not cascade_settings:
-        return True
+        return False
 
     state_id = None
     substate_id = None

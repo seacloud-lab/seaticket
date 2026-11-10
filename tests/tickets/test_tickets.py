@@ -1215,15 +1215,12 @@ class TestBuildTicketWorkingOnUpdate:
             {'_pk': 1, 'state': 'open', 'substate': 'Working on'},
             get_ticket_columns_metadata()) == ({}, [], None)
 
-    def test_option_match_is_case_insensitive(self):
+    def test_renamed_option_is_not_updated(self):
         metadata = get_ticket_columns_metadata()
         metadata[1]['data']['options'][1]['name'] = 'WORKING ON'
 
-        fields, changes, _ = self._build(
-            {'_pk': 1, 'state': 'open', 'substate': 'New'}, metadata)
-
-        assert fields['substate'] == 'WORKING ON'
-        assert changes == [('substate_changed', 'substate', 'New', 'WORKING ON')]
+        assert self._build(
+            {'_pk': 1, 'state': 'open', 'substate': 'New'}, metadata) == ({}, [], None)
 
     @pytest.mark.parametrize('metadata', [None, {}, []])
     def test_invalid_metadata_is_noop(self, metadata):
