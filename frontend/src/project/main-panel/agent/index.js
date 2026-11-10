@@ -84,8 +84,6 @@ const Main = ({ title, settings, modifySettings }) => {
               isRunLogsLoading={isRunLogsLoading}
               runLogs={runLogs}
               runLog={activeLog}
-              statusFilterValue={statusFilterValue}
-              statusFilterOptions={statusFilterOptions}
               settings={settings}
               modifySettings={modifySettings}
               updateRunLog={updateRunLog}

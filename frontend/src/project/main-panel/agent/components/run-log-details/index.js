@@ -23,8 +23,6 @@ const RunLogDetails = ({
   isRunLogsLoading,
   showLogs,
   settings,
-  statusFilterValue,
-  statusFilterOptions,
   modifySettings,
   hideLogs,
   updateRunLog,
@@ -60,12 +58,6 @@ const RunLogDetails = ({
     if (!action) return null;
     return { runId, action, mode, event: run.event };
   }, [runs, suggestionInfo]);
-
-  const statusFilterOptionName = useMemo(() => {
-    if (!statusFilterValue) return '';
-    const option = statusFilterOptions.find(item => item.value === statusFilterValue) || statusFilterOptions[0];
-    return option.label;
-  }, [statusFilterValue, statusFilterOptions]);
 
   const regenerateRun = useMemo(() => {
     if (!regenerateInfo) return null;
@@ -448,21 +440,11 @@ const RunLogDetails = ({
             <>
               {(isLoading) && (<CenteredLoading />)}
               {!isLoading && runs.length === 0 && (
-                <>
-                  {statusFilterValue && (
-                    <EmptyTip
-                      text={gettext('No logs match Status: %s in the list on the left, so there are no details to display').replace('%s', statusFilterOptionName)}
-                      className="w-100"
-                    />
-                  )}
-                  {!statusFilterValue && (
-                    <EmptyTip
-                      src={`${mediaUrl}img/no-items-tip.png`}
-                      title={gettext('No agent runs')}
-                      className="w-100"
-                    />
-                  )}
-                </>
+                <EmptyTip
+                  src={`${mediaUrl}img/no-agent-log-details.png`}
+                  text={gettext('No log details to display')}
+                  className="w-100"
+                />
               )}
               {!isLoading && runs.length !== 0 && runLog && (
                 <>
