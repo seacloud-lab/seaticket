@@ -4,7 +4,6 @@ import { getPortalLogoutPath } from '@/portal/path-utils';
 import { isEnter, isEsc } from '@/utils/hotkey';
 import { Utils } from '@/utils/utils';
 import Icon from '../icon';
-import IconBtn from '../icon-button';
 
 import './account.css';
 
@@ -88,7 +87,7 @@ class ExternalUserAccount extends Component {
         <span
           id="my-info"
           onClick={this.onClickAccount}
-          className="account-toggle no-deco d-none d-md-block"
+          className="account-toggle no-deco d-md-block"
           aria-label={gettext('View profile and more')}
           title={gettext('View profile and more')}
           tabIndex={0}
@@ -97,13 +96,6 @@ class ExternalUserAccount extends Component {
             <img src={avatarURL} width="36" height="36" className="avatar" alt={gettext('Avatar')} />
           </span>
         </span>
-        <IconBtn
-          icon="more-vertical"
-          className="account-toggle mobile-icon d-md-none"
-          aria-label={gettext('View profile and more')}
-          title={gettext('View profile and more')}
-          onClick={this.onClickAccount}
-        />
         <div id="user-info-popup" className={`account-popup sf-popover ${this.state.showInfo ? '' : 'hide'}`}>
           <div className="sf-popover-con">
             <div className="item o-hidden">

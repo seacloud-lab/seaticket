@@ -1,12 +1,7 @@
-.seaqa-portal-language-selector {
-  display: flex;
-  align-items: center;
-  margin-right: 8px;
-}
-
-.seaqa-portal-language-selector .seaqa-portal-language-btn {
+.seaqa-portal-language-btn {
   flex-shrink: 0;
   border: 1px solid rgba(0, 40, 100, 0.12);
+  margin-right: 8px;
 }
 
 .seaqa-portal-language-popover .popover {

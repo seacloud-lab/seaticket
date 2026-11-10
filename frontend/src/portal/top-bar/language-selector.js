@@ -35,7 +35,7 @@ const LanguageSelector = () => {
   if (languages.length === 0) return null;
 
   return (
-    <div className="seaqa-portal-language-selector">
+    <>
       <IconButton
         ref={buttonRef}
         className={classnames('seaqa-portal-language-btn', { active: isOpen })}
@@ -81,7 +81,7 @@ const LanguageSelector = () => {
           </div>
         </CustomizePopover>
       )}
-    </div>
+    </>
   );
 };
 
