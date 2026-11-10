@@ -52,7 +52,9 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_ticket, \
     check_ticket_link_changes, sync_links_in_connection, TicketLinkValidationError, \
-    record_create_task_activities, validate_ticket_customer_id, TicketCustomerNotFound
+    record_create_task_activities, record_ticket_activities, validate_ticket_customer_id, \
+    TicketCustomerNotFound, build_ticket_working_on_update, format_ticket_activity_for_client, \
+    notify_ticket_update, get_option_id_by_name, compare_ticket_changes
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES, send_connection_data_event
 from seahub.settings import GITHUB_WEBHOOK_SECRET
 from seahub.project.github_issues_api import GitHubAPI, GitHubAppNotInstalled
@@ -1701,9 +1703,11 @@ class ProjectConnectionRecordsView(APIView):
                 pass
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Task created remotely but local sync failed.')
 
+        status_changes = []
+        metadata = []
         if linked_ticket is not None:
             try:
-                ticket, _ = get_ticket(seadb_api, project_uuid, linked_ticket)
+                ticket, metadata = get_ticket(seadb_api, project_uuid, linked_ticket)
                 if not ticket:
                     return api_error(status.HTTP_404_NOT_FOUND, 'Ticket not found.')
 
@@ -1715,16 +1719,43 @@ class ProjectConnectionRecordsView(APIView):
                 if not isinstance(old_value, list):
                     old_value = []
                 new_value = list(dict.fromkeys(old_value + [linked_record_key]))
+
+                status_fields, event_type = build_ticket_working_on_update(ticket, metadata)
+                status_changes = compare_ticket_changes(ticket, status_fields)
+
+                ticket_update_row = {'linked_connection_records': new_value}
+                ticket_update_row.update(status_fields)
                 seadb_api.update_rows(project_uuid, 'tickets', [{
                     'pk': ticket.get('_pk'),
-                    'row': {'linked_connection_records': new_value}
+                    'row': ticket_update_row
                 }])
                 sync_links_in_connection(seadb_api, project_uuid, sync_plan, connections)
+
+                status_activities = []
+                if status_changes:
+                    try:
+                        status_activities = record_ticket_activities(
+                            seadb_api, project_uuid, ticket.get('_pk'), username, status_changes
+                        )
+                        for activity in status_activities:
+                            format_ticket_activity_for_client(metadata, activity)
+                            activity.pop('field_name', None)
+                    except Exception as e:
+                        logger.error('Failed to record ticket status activity: %s', e)
+
+                    try:
+                        notify_ticket_update(
+                            project_uuid, ticket.get('_pk'), ticket, status_fields, event_type
+                        )
+                    except Exception as e:
+                        logger.error('Failed to send ticket status update event: %s', e)
+
                 row_data['linked_ticket'] = linked_ticket
                 activities = record_create_task_activities(
                     seadb_api, project_uuid, connection_id, row_data, creator=username,
                     connection_type=project_connection.type,
                 )
+                activities.extend(status_activities)
 
             except TicketLinkValidationError as e:
                 return api_error(status.HTTP_400_BAD_REQUEST, str(e))
@@ -1732,7 +1763,20 @@ class ProjectConnectionRecordsView(APIView):
                 logger.error(f'link created general task to ticket error: {e}')
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Task created but link sync failed.')
 
-        return Response({'row': row_data, 'activities': activities}, status=status.HTTP_201_CREATED)
+        response_data = {'row': row_data, 'activities': activities}
+        if status_changes:
+            ticket_info = {
+                'substate': get_option_id_by_name(metadata, 'substate', status_fields.get('substate')),
+                'modified_time': status_fields.get('modified_time'),
+            }
+            if 'state' in status_fields:
+                ticket_info['state'] = get_option_id_by_name(
+                    metadata, 'state', status_fields['state'], case_insensitive=True
+                )
+            if 'closed_time' in status_fields:
+                ticket_info['closed_time'] = status_fields['closed_time']
+            response_data['ticket'] = ticket_info
+        return Response(response_data, status=status.HTTP_201_CREATED)
 
     @require_org_context
     def put(self, request, project_uuid, connection_id):

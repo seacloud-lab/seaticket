@@ -217,7 +217,7 @@ const Ticket = ({
     setIsShowCreateTaskDialog(true);
   }, []);
 
-  const handleTaskCreated = useCallback(({ task, connection, activities = [] }) => {
+  const handleTaskCreated = useCallback(({ task, connection, activities = [], ticket: ticketUpdate = null }) => {
     if (!ticket) return;
 
     const newValueKey = `${connection.id}_${task._pk}`;
@@ -230,6 +230,16 @@ const Ticket = ({
       const columns = Object.values(table.key_column_map);
       const linkedConnectionRecordsColumn = getColumnByName(columns, PREDEFINED_TICKET_COLUMN_NAME.LINKED_CONNECTION_RECORDS);
       const update = { [linkedConnectionRecordsColumn.key]: newValue };
+      if (ticketUpdate) {
+        const stateColumn = getColumnByName(columns, PREDEFINED_TICKET_COLUMN_NAME.STATE);
+        const substateColumn = getColumnByName(columns, PREDEFINED_TICKET_COLUMN_NAME.SUB_STATE);
+        const modifiedTimeColumn = getColumnByName(columns, PREDEFINED_TICKET_COLUMN_NAME.MODIFIED_TIME);
+        const closedTimeColumn = getColumnByName(columns, PREDEFINED_TICKET_COLUMN_NAME.CLOSED_TIME);
+        if (ticketUpdate.state !== undefined && stateColumn) update[stateColumn.key] = ticketUpdate.state;
+        if (ticketUpdate.substate !== undefined && substateColumn) update[substateColumn.key] = ticketUpdate.substate;
+        if (ticketUpdate.modified_time !== undefined && modifiedTimeColumn) update[modifiedTimeColumn.key] = ticketUpdate.modified_time;
+        if (ticketUpdate.closed_time !== undefined && closedTimeColumn) update[closedTimeColumn.key] = ticketUpdate.closed_time;
+      }
       const connectionTableName = getTableName(connection);
       const linked_records = { [newValueKey]: task.title };
       insertRowByLink(connectionTableName, TICKET_TABLE_NAME, linked_records, ticketID, update, () => {
@@ -238,6 +248,11 @@ const Ticket = ({
     }
 
     const update = { linked_connection_records: newValue };
+    if (ticketUpdate) {
+      if (ticketUpdate.state !== undefined) update.state = ticketUpdate.state;
+      if (ticketUpdate.substate !== undefined) update.substate = ticketUpdate.substate;
+      if (ticketUpdate.closed_time !== undefined) update.closed_time = ticketUpdate.closed_time;
+    }
     const newTicket = ticket._update(update);
 
     setTicket(deepCopy(newTicket));

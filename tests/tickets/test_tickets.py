@@ -21,6 +21,8 @@ from seahub.tickets.ticket_utils import (
     filter_tickets_by_select,
     TicketCustomerNotFound,
     validate_ticket_customer_id,
+    build_ticket_working_on_update,
+    format_ticket_activity_for_client,
 )
 from seahub.utils.date_utils import normalize_date
 
@@ -551,6 +553,34 @@ class TestTicketAPIView:
         assert update_row['due_date'] == '2026-08-01'
         assert resp.data['row']['due_date'] == '2026-08-01'
 
+    def test_put_state_change_returns_formatted_activity(self, factory, project_creator, real_project):
+        project = real_project
+        request = factory.put(
+            f"/api/v1/projects/{project.uuid}/tickets/1/", data={'substate': 'Working on'}, format='json')
+        request.user = project_creator
+        ticket = {
+            '_pk': 1, 'state': 'open', 'substate': 'New', 'participants': [],
+            'linked_connection_records': [], 'assignees': [],
+        }
+        seadb_api = Mock()
+        seadb_api.insert_rows.return_value = {'pks': [101]}
+        with patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.tickets.tickets.get_ticket',
+                      return_value=(ticket, get_ticket_columns_metadata())), \
+                patch('seahub.tickets.tickets.check_ticket_permission', return_value=True), \
+                patch('seahub.tickets.ticket_utils.send_ticket_update_msg') as send_ticket_update, \
+                patch('seahub.tickets.ticket_utils.send_data_update_msg'):
+            resp = TicketAPIView.as_view()(request, project_uuid=project.uuid, ticket_id='1')
+
+        assert resp.status_code == 200
+        send_ticket_update.assert_called_once_with(project.uuid, updated=1)
+        activity = [
+            item for item in resp.data['activities'] if item['activity_type'] == 'substate_changed'][0]
+        assert activity['old_value'] == '0010'
+        assert activity['new_value'] == '0011'
+        assert activity['field_key'] == 'k_substate'
+        assert 'field_name' not in activity
+
     def test_delete_ticket_not_found(self, factory, project_creator, real_project):
         project = real_project
         request = factory.delete(f"/api/v1/projects/{project.uuid}/tickets/1/", data={}, format='json')
@@ -1076,3 +1106,164 @@ class TestTicketMetadataCustomers:
         customers = resp.data['customers']['options']
         assert {c['id'] for c in customers} == {active.id, disabled.id}
         assert {c['name']: c['status'] for c in customers} == {'Acme': 'active', 'Old Co': 'disabled'}
+
+
+def get_ticket_columns_metadata():
+    return [
+        {
+            'key': 'k_state',
+            'name': 'state',
+            'data': {'options': [
+                {'id': '0001', 'name': 'open'},
+                {'id': '0002', 'name': 'closed'},
+            ]},
+        },
+        {
+            'key': 'k_substate',
+            'name': 'substate',
+            'data': {
+                'cascade_settings': {'0001': ['0010', '0011'], '0002': ['0014']},
+                'options': [
+                    {'id': '0010', 'name': 'New'},
+                    {'id': '0011', 'name': 'Working on'},
+                    {'id': '0014', 'name': 'Completed'},
+                ],
+            },
+        },
+    ]
+
+
+class TestBuildTicketWorkingOnUpdate:
+
+    @staticmethod
+    def _build(ticket, metadata):
+        fields, event_type = build_ticket_working_on_update(ticket, metadata)
+        changes = compare_ticket_changes(ticket, fields)
+        if not fields:
+            return fields, changes, event_type
+        modified_time = fields.pop('modified_time')
+        assert isinstance(modified_time, str) and modified_time
+        if fields.get('closed_time'):
+            assert fields['closed_time'] == modified_time
+            fields['closed_time'] = '<modified_time>'
+        return fields, changes, event_type
+
+    def test_open_ticket_moves_to_working_on(self):
+        fields, changes, event_type = self._build(
+            {'_pk': 1, 'state': 'open', 'substate': 'New'}, get_ticket_columns_metadata())
+
+        assert fields == {'substate': 'Working on'}
+        assert changes == [('substate_changed', 'substate', 'New', 'Working on')]
+        assert event_type == 'ticket_updated'
+
+    def test_closed_ticket_is_reopened(self):
+        fields, changes, event_type = self._build(
+            {'_pk': 1, 'state': 'closed', 'substate': 'Completed'}, get_ticket_columns_metadata())
+
+        assert fields == {'substate': 'Working on', 'state': 'open', 'closed_time': ''}
+        assert changes == [(
+            'state_substate_changed',
+            'state_substate',
+            {'state': 'closed', 'substate': 'Completed'},
+            {'state': 'open', 'substate': 'Working on'},
+        )]
+        assert event_type == 'ticket_reopened'
+
+    def test_state_follows_working_on_parent_state(self):
+        metadata = get_ticket_columns_metadata()
+        metadata[1]['data']['cascade_settings'] = {'0001': ['0010'], '0002': ['0011', '0014']}
+
+        fields, changes, event_type = self._build(
+            {'_pk': 1, 'state': 'open', 'substate': 'New'}, metadata)
+
+        assert fields == {
+            'substate': 'Working on',
+            'state': 'closed',
+            'closed_time': '<modified_time>',
+        }
+        assert changes == [(
+            'state_substate_changed',
+            'state_substate',
+            {'state': 'open', 'substate': 'New'},
+            {'state': 'closed', 'substate': 'Working on'},
+        )]
+        assert event_type == 'ticket_closed'
+
+    def test_closed_ticket_working_on_under_closed_updates_substate_only(self):
+        metadata = get_ticket_columns_metadata()
+        metadata[1]['data']['cascade_settings'] = {'0001': ['0010'], '0002': ['0011', '0014']}
+
+        fields, changes, event_type = self._build(
+            {'_pk': 1, 'state': 'closed', 'substate': 'Completed'}, metadata)
+
+        assert fields == {'substate': 'Working on'}
+        assert changes == [('substate_changed', 'substate', 'Completed', 'Working on')]
+        assert event_type == 'ticket_updated'
+
+    def test_missing_cascade_settings_is_noop(self):
+        metadata = get_ticket_columns_metadata()
+        metadata[1]['data'].pop('cascade_settings')
+
+        assert self._build(
+            {'_pk': 1, 'state': 'closed', 'substate': 'Completed'}, metadata) == ({}, [], None)
+
+    def test_open_ticket_already_working_on_is_noop(self):
+        assert self._build(
+            {'_pk': 1, 'state': 'open', 'substate': 'Working on'},
+            get_ticket_columns_metadata()) == ({}, [], None)
+
+    def test_renamed_option_is_not_updated(self):
+        metadata = get_ticket_columns_metadata()
+        metadata[1]['data']['options'][1]['name'] = 'WORKING ON'
+
+        assert self._build(
+            {'_pk': 1, 'state': 'open', 'substate': 'New'}, metadata) == ({}, [], None)
+
+    def test_substate_comparison_is_case_sensitive(self):
+        fields, changes, _ = self._build(
+            {'_pk': 1, 'state': 'open', 'substate': 'working on'}, get_ticket_columns_metadata())
+
+        assert fields == {'substate': 'Working on'}
+        assert changes == [('substate_changed', 'substate', 'working on', 'Working on')]
+
+    @pytest.mark.parametrize('metadata', [None, {}, []])
+    def test_invalid_metadata_is_noop(self, metadata):
+        assert self._build(
+            {'_pk': 1, 'state': 'open', 'substate': 'New'}, metadata) == ({}, [], None)
+
+    def test_invalid_cascade_settings_skip_reopen(self):
+        metadata = get_ticket_columns_metadata()
+        metadata[1]['data']['cascade_settings'] = {'0001': ['0010']}
+
+        assert self._build(
+            {'_pk': 1, 'state': 'closed', 'substate': 'Completed'}, metadata) == ({}, [], None)
+
+
+class TestFormatTicketActivityForClient:
+    def test_substate_activity_values_become_option_ids(self):
+        activity = {
+            'activity_type': 'substate_changed',
+            'field_name': 'substate',
+            'old_value': 'New',
+            'new_value': 'Working on',
+        }
+
+        result = format_ticket_activity_for_client(get_ticket_columns_metadata(), activity)
+
+        assert result['old_value'] == '0010'
+        assert result['new_value'] == '0011'
+        assert result['field_key'] == 'k_substate'
+
+    def test_state_substate_activity_uses_column_keys(self):
+        activity = {
+            'activity_type': 'state_substate_changed',
+            'field_name': 'state_substate',
+            'old_value': {'state': 'closed', 'substate': 'Completed'},
+            'new_value': {'state': 'open', 'substate': 'Working on'},
+        }
+
+        result = format_ticket_activity_for_client(get_ticket_columns_metadata(), activity)
+
+        assert result['old_value'] == {'k_state': '0002', 'k_substate': '0014'}
+        assert result['new_value'] == {'k_state': '0001', 'k_substate': '0011'}
+        assert result['field_key'] == 'k_state_k_substate'
