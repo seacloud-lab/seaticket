@@ -179,7 +179,7 @@ class KnowledgeBaseImportExcel(APIView):
         preview_only = str(preview_only).lower() in ('true', '1', 'yes') if preview_only is not None else False
 
         file_obj = request.FILES.get('file')
-        file_name = file_obj.name if file_obj else request.data.get('file_name')
+        file_name = file_obj.name
         if not file_name:
             return api_error(status.HTTP_400_BAD_REQUEST, 'File not found.')
         if (not isinstance(file_name, str) or '/' in file_name or '\\' in file_name or
