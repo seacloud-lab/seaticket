@@ -3638,7 +3638,7 @@ msgstr "总耗时"
 #: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:327
 #: frontend/src/project/main-panel/ask/chat-history/thought-process/thought-process-dialog/index.js:357
 msgid "Step"
-msgstr "步"
+msgstr "步骤"
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/run-details/run-statistics-dialog/index.js:158
 msgid "Tool"
