@@ -4,7 +4,7 @@ import { IconTextBtn, SecondaryBtn } from './btn';
 import { DatePicker, MonthPicker } from './calendar-picker';
 import CenteredError from './centered-error';
 import CenteredLoading from './centered-loading';
-import { UsageCard, MultipleTextCard, InfoCard } from './chart';
+import { UsageCard, MultipleTextCard, InfoCard, StatisticItem } from './chart';
 import ClearIconButton from './clear-icon-button';
 import ClickOutside from './click-outside';
 import { Collaborator, AsyncCollaborator } from './collaborator';
@@ -78,6 +78,7 @@ export {
   UsageCard,
   MultipleTextCard,
   InfoCard,
+  StatisticItem,
   SectionSettings,
   SettingsItem,
   SwitchSettings,

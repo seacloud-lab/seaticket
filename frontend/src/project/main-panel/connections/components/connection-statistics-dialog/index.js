@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Modal, ModalBody } from 'reactstrap';
-import { CenteredLoading, EmptyTip, Icon, ModalHeader } from '@/components';
+import { CenteredLoading, EmptyTip, Icon, ModalHeader, StatisticItem } from '@/components';
 import { Pie, Bar, BarGroup } from '@/components/chart/view';
 import { gettext, mediaUrl } from '@/constants';
 import { connectionsAPI } from '@/project/api';
@@ -80,18 +80,15 @@ const ConnectionStatisticsDialog = ({ projectUuid, connection, onToggle }) => {
     }
     return (
       <>
-        <section className="seaqa-connection-statistics-item">
-          <h3 className="seaqa-connection-statistics-item-title">{gettext('Issue types')}</h3>
+        <StatisticItem title={gettext('Issue types')}>
           <Pie data={pieData} />
-        </section>
-        <section className="seaqa-connection-statistics-item">
-          <h3 className="seaqa-connection-statistics-item-title">{gettext('Monthly issue count')}</h3>
+        </StatisticItem>
+        <StatisticItem title={gettext('Monthly issue count')}>
           <Bar data={barData} title={gettext('Total')} />
-        </section>
-        <section className="seaqa-connection-statistics-item seaqa-connection-statistics-item-wide">
-          <h3 className="seaqa-connection-statistics-item-title">{gettext('Issues by type')}</h3>
+        </StatisticItem>
+        <StatisticItem className="seaqa-connection-statistics-item-wide" title={gettext('Issues by type')}>
           <BarGroup data={groupBarData} />
-        </section>
+        </StatisticItem>
       </>
     );
   }, [isLoading, errorMessage, result, pieData, barData, groupBarData]);

@@ -1,6 +1,5 @@
 import React, { useMemo, useRef } from 'react';
 import * as d3 from 'd3';
-import { isDarkColor } from '@/utils/color-utils';
 import { CHART_THEME_COLOR, STYLE_COLORS } from '../../constants';
 import useChartDraw from '../use-chart-redraw';
 
@@ -324,8 +323,8 @@ const Pie = ({
         .attr('paint-order', 'stroke')
         .attr('transform', item => `translate(${item.x}, ${item.y})`)
         .text(item => item.text)
-        .attr('fill', item => isDarkColor(item.item.data.color) ? '#fff' : '#000')
-        .attr('stroke', item => isDarkColor(item.item.data.color) ? '#000' : '#fff')
+        .attr('fill', '#666')
+        .attr('stroke', '#fff')
         .attr('font-size', CHART_THEME_COLOR.fontSize);
       animateFadeIn(labels);
     }
