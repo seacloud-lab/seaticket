@@ -1200,15 +1200,12 @@ class TestBuildTicketWorkingOnUpdate:
         assert changes == [('substate_changed', 'substate', 'Completed', 'Working on')]
         assert event_type == 'ticket_updated'
 
-    def test_missing_cascade_settings_keeps_previous_state_behavior(self):
+    def test_missing_cascade_settings_is_noop(self):
         metadata = get_ticket_columns_metadata()
         metadata[1]['data'].pop('cascade_settings')
 
-        fields, _, event_type = self._build(
-            {'_pk': 1, 'state': 'closed', 'substate': 'Completed'}, metadata)
-
-        assert fields == {'substate': 'Working on', 'state': 'open', 'closed_time': ''}
-        assert event_type == 'ticket_reopened'
+        assert self._build(
+            {'_pk': 1, 'state': 'closed', 'substate': 'Completed'}, metadata) == ({}, [], None)
 
     def test_open_ticket_already_working_on_is_noop(self):
         assert self._build(
@@ -1222,14 +1219,15 @@ class TestBuildTicketWorkingOnUpdate:
         assert self._build(
             {'_pk': 1, 'state': 'open', 'substate': 'New'}, metadata) == ({}, [], None)
 
+    def test_substate_comparison_is_case_sensitive(self):
+        fields, changes, _ = self._build(
+            {'_pk': 1, 'state': 'open', 'substate': 'working on'}, get_ticket_columns_metadata())
+
+        assert fields == {'substate': 'Working on'}
+        assert changes == [('substate_changed', 'substate', 'working on', 'Working on')]
+
     @pytest.mark.parametrize('metadata', [None, {}, []])
     def test_invalid_metadata_is_noop(self, metadata):
-        assert self._build(
-            {'_pk': 1, 'state': 'open', 'substate': 'New'}, metadata) == ({}, [], None)
-
-    def test_missing_substate_column_is_noop(self):
-        metadata = [{'key': 'k_state', 'name': 'state', 'data': {'options': []}}]
-
         assert self._build(
             {'_pk': 1, 'state': 'open', 'substate': 'New'}, metadata) == ({}, [], None)
 

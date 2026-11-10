@@ -1178,23 +1178,19 @@ def build_ticket_working_on_update(ticket, metadata):
         return {}, None
 
     working_on_name = 'Working on'
-    old_state = (ticket.get(SchemaTables.TICKETS.column.state.name) or '').strip().lower()
+    old_state = (ticket.get(SchemaTables.TICKETS.column.state.name) or '').strip()
     old_substate = ticket.get(SchemaTables.TICKETS.column.substate.name) or ''
 
     new_state = ''
-    try:
-        for state_name in ('open', 'closed'):
-            if validate_ticket_state_substate_relation(metadata, state_name, working_on_name):
-                new_state = state_name
-                break
-    except Exception as e:
-        logger.error('Failed to validate ticket state/substate relation: %s', e)
-        return {}, None
+    for state_name in ('open', 'closed'):
+        if validate_ticket_state_substate_relation(metadata, state_name, working_on_name):
+            new_state = state_name
+            break
     if not new_state:
         logger.warning('Cannot find the state of %s, skip ticket status update.', working_on_name)
         return {}, None
 
-    if new_state == old_state and old_substate.strip().lower() == working_on_name.lower():
+    if new_state == old_state and old_substate.strip() == working_on_name:
         return {}, None
 
     now = datetime.now(timezone.utc).isoformat()
