@@ -357,6 +357,7 @@ class _OAuthEmailSender(OAuthTokenClient, _EmailSenderBase):
             raise EmailConfigError('Email account type is invalid')
 
         if not self._has_complete_oauth_config():
+            logger.error('OAuth email config is invalid.')
             raise EmailConfigError('OAuth email configuration is incomplete')
         if self.account_type in ('alias', 'shared') and not self.sender_email:
             raise EmailConfigError('Alias or shared mailbox sender address is required')
