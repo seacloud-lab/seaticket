@@ -47,19 +47,6 @@ const JSONDetailValueFormatter = ({ className, value }) => (
 
 const hasDetailValue = (value) => value !== undefined && value !== null && value !== '';
 
-const hasArguments = (value) => {
-  if (!hasDetailValue(value)) return false;
-  if (typeof value === 'object') return Object.keys(value).length > 0;
-  if (typeof value !== 'string') return true;
-  try {
-    const parsedValue = JSON.parse(value);
-    if (!parsedValue || typeof parsedValue !== 'object') return true;
-    return Object.keys(parsedValue).length > 0;
-  } catch (e) {
-    return true;
-  }
-};
-
 const buildPhaseDetailNode = (phase, field, label, formatter) => {
   if (!hasDetailValue(phase?.[field])) return null;
   return {
@@ -79,11 +66,11 @@ const buildDetailsChildren = (details) => {
 
   const isSkillView = details.tool_name === 'skill_view';
   const children = [];
-  if (hasArguments(details.tool_arguments)) {
+  if (hasDetailValue(details.tool_arguments)) {
     children.push({
       name: `• ${gettext('Arguments')}`,
-      value: formatDetailsJSONValue(details.tool_arguments),
-      formatter: JSONDetailValueFormatter,
+      value: details.tool_arguments,
+      formatter: MarkdownValueFormatter,
     });
   }
   if (hasDetailValue(details.observation)) {
