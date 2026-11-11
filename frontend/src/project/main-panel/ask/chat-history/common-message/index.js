@@ -35,7 +35,9 @@ const CommonMessage = ({
           projectName={projectName}
           workspaceID={workspaceID}
         />
-        {message[CHAT_MESSAGE_TYPE.TEXT] && (<>{message[CHAT_MESSAGE_TYPE.TEXT]}</>)}
+        {message[CHAT_MESSAGE_TYPE.TEXT] && (
+          <div className="seaqa-ai-ask-message-text">{message[CHAT_MESSAGE_TYPE.TEXT]}</div>
+        )}
         {message[CHAT_MESSAGE_TYPE.SUGGESTIONS] && (<SuggestionMessage suggestions={message[CHAT_MESSAGE_TYPE.SUGGESTIONS]} />)}
         <AIReply
           ref={markdownMessageRef}
