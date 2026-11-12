@@ -7,7 +7,7 @@
   gap: 8px;
   overflow: hidden;
   transition: height 360ms linear, margin-bottom 360ms linear, opacity 360ms linear, transform 360ms linear;
-  transition-delay: 1s;
+  transition-delay: 10s;
   will-change: height, margin-bottom, opacity, transform;
 }
 
