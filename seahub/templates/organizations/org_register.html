@@ -46,6 +46,11 @@
           <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}" data-size="flexible" data-theme="light"></div>
         </div>
         {% endif %}
+        {% if privacy_policy_link and terms_of_service_link %}
+        <p class="mt-2" style="font-size: 11px; color: #666;">
+          {% blocktrans with privacy_url=privacy_policy_link terms_url=terms_of_service_link %}By submitting, you agree to our <a href="{{ privacy_url }}">Privacy Policy</a> and <a href="{{ terms_url }}">Terms of Service</a>.{% endblocktrans %}
+        </p>
+        {% endif %}
         <button id="org-register-submit" type="submit" class="submit btn btn-primary btn-block">{% trans "Submit" %}</button>
       </form>
     </div>

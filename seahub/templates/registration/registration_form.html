@@ -44,6 +44,11 @@
 			        <input type="checkbox" id="newsletter" name="newsletter" class="form-check-input mr-2 mt-0">
 				    <label for="newsletter">{% trans "Subscribe to our newsletter" %}</label>
 				</div>
+				{% if privacy_policy_link and terms_of_service_link %}
+				<p class="mt-2" style="font-size: 11px; color: #666;">
+					{% blocktrans with privacy_url=privacy_policy_link terms_url=terms_of_service_link %}By submitting, you agree to our <a href="{{ privacy_url }}">Privacy Policy</a> and <a href="{{ terms_url }}">Terms of Service</a>.{% endblocktrans %}
+				</p>
+				{% endif %}
 				<button type="submit" class="submit btn btn-primary btn-block">{% trans "Sign up" %}</button>
 			</form>
 			{% endif %}
