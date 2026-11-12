@@ -1,7 +1,8 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
 from django.conf import settings
 from django.dispatch import receiver
-from hashlib import md5
+import hashlib
+import hmac
 
 from seahub.auth.signals import user_logged_in
 
@@ -9,11 +10,10 @@ PASSWORD_HASH_KEY = getattr(settings, 'PASSWORD_SESSION_PASSWORD_HASH_KEY', 'pas
 
 
 def get_password_hash(user):
-    """Returns a string of crypted password hash"""
-    password = user.enc_password or ''
-    return md5(
-        md5(password.encode()).hexdigest().encode() + settings.SECRET_KEY.encode()
-    ).hexdigest()
+    """Return a keyed digest of the user's stored password hash."""
+    password = (user.enc_password or '').encode('utf-8')
+    key = settings.SECRET_KEY.encode('utf-8')
+    return hmac.new(key, password, hashlib.sha256).hexdigest()
 
 
 def update_session_auth_hash(request, user):

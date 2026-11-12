@@ -1,6 +1,5 @@
 import re
-import random
-import hashlib
+import secrets
 import logging
 import datetime
 
@@ -20,13 +19,10 @@ from seahub.settings import ACTIVATE_AFTER_REGISTRATION, REGISTRATION_SEND_MAIL
 
 logger = logging.getLogger(__name__)
 
-SHA1_RE = re.compile('^[a-f0-9]{40}$')
+ACTIVATION_KEY_RE = re.compile('^[a-f0-9]{40}$')
 
-def _generate_activation_key(username):
-    salt = hashlib.sha1(str(random.random()).encode('utf-8')).hexdigest()[:5].encode('utf-8')
-    if isinstance(username, str):
-        username = username.encode('utf-8')
-    return hashlib.sha1(salt + username).hexdigest()
+def _generate_activation_key():
+    return secrets.token_hex(20)
 
 
 class RegistrationManager(models.Manager):
@@ -57,10 +53,8 @@ class RegistrationManager(models.Manager):
         after successful activation.
 
         """
-        # Make sure the key we're trying conforms to the pattern of a
-        # SHA1 hash; if it doesn't, no point trying to look it up in
-        # the database.
-        if SHA1_RE.search(activation_key):
+        # Reject malformed keys before looking them up in the database.
+        if ACTIVATION_KEY_RE.fullmatch(activation_key):
             try:
                 profile = self.get(activation_key=activation_key)
             except self.model.DoesNotExist:
@@ -122,16 +116,11 @@ class RegistrationManager(models.Manager):
         Create a ``RegistrationProfile`` for a given
         ``User``, and return the ``RegistrationProfile``.
         
-        The activation key for the ``RegistrationProfile`` will be a
-        SHA1 hash, generated from a combination of the ``User``'s
-        username and a random salt.
+        The activation key for the ``RegistrationProfile`` is a
+        cryptographically secure random token.
         
         """
-        salt = hashlib.sha1(str(random.random()).encode('utf-8')).hexdigest()[:5].encode('utf-8')
-        username = user.username
-        if isinstance(username, str):
-            username = username.encode('utf-8')
-        activation_key = hashlib.sha1(salt+username).hexdigest()
+        activation_key = _generate_activation_key()
         return self.create(emailuser_id=user.id,
                            activation_key=activation_key)
 
@@ -186,7 +175,7 @@ class RegistrationManager(models.Manager):
     
     def refresh_profile(self, user):
         profile = self.filter(emailuser_id=user.id).first()
-        activation_key = _generate_activation_key(user.username)
+        activation_key = _generate_activation_key()
  
         if profile:
             profile.activation_key = activation_key
