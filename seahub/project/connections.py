@@ -1256,12 +1256,21 @@ class ProjectConnectionRecordView(APIView):
 
         related_users = get_connection_related_users(project_uuid, connection_id, project_connection.type)
 
-        return Response({
+        response_data = {
             'record': record,
             'columns': columns,
             'linked_ticket_title': linked_ticket_title,
             'related_users': related_users,
-        })
+        }
+        if project_connection.type == ConnectionType.EMAIL.value:
+            try:
+                config = decrypt_config(json.loads(project_connection.config or '{}'))
+            except Exception as e:
+                logger.warning('Failed to read sender email for connection %s: %s', project_connection.id, e)
+                config = {}
+            response_data['sender_email'] = config.get('sender_email') or config.get('username') or ''
+
+        return Response(response_data, status=status.HTTP_200_OK)
 
 
     @require_org_context

@@ -4,6 +4,8 @@ import { isObject, isString } from '@/utils/type-detection';
 import { CONNECTION_TYPES } from '../connections/constants';
 import { ACTION_TYPE, LOG_STATUS, RUN_EVENT, RUN_STATUS, SUGGESTIONS_STATUS } from './constants';
 
+export { extractEmailAddresses } from '@/utils/email';
+
 export const getTriggerInfoFromRun = (run) => {
   const eventType = run?.event?.type;
   const newValue = run?.event?.new_value;
@@ -110,22 +112,6 @@ const normalizeEmailAddressList = (value) => {
 export const getEmailReplyDefaultTo = (action) => {
   if (action?.tool_name !== 'suggest_reply' || action?.target_item_type !== 'email') return [];
   return normalizeEmailAddressList(action.default_reply_to);
-};
-
-export const extractEmailAddresses = (addressText) => {
-  if (!addressText) return [];
-  const regex = /([^<,]*?)\s*<([^@\s>,]+@[^>\s,]+)>|([^\s,;<>]+@[^\s,;<>]+)/g;
-  const result = [];
-  const seen = new Set();
-  let match;
-  while ((match = regex.exec(addressText)) !== null) {
-    const name = (match[1] || '').trim();
-    const address = (match[2] || match[3] || '').trim();
-    if (!address || seen.has(address.toLowerCase())) continue;
-    seen.add(address.toLowerCase());
-    result.push(name ? `${name} <${address}>` : address);
-  }
-  return result;
 };
 
 export const parseEmailReplySuggestion = (suggestionContent, defaultReplyTo = []) => {
