@@ -35,7 +35,7 @@ export const getReplyTargets = (detail, senderEmail) => {
       replyTo,
       replyAllTo: replyTo,
       replyAllCc,
-      hasReplyAll: replyAllCc.length > 0,
+      hasReplyAll: replyAllCc.length > 0 || toList.length > 1,
     };
   }
 
