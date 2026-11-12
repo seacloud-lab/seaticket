@@ -80,15 +80,11 @@ class NotionOAuthUtils(CommonOAuthUtils):
 
 class EmailOAuthUtils(CommonOAuthUtils):
     @staticmethod
-    def _get_oauth_config(provider, account_type, connection_config=None):
+    def _get_oauth_config(provider, account_type):
         config = EMAIL_OAUTH_CONFIGS.get(provider)
         if not config or account_type not in EMAIL_ACCOUNT_TYPES.get(provider, ()):
             return None
 
-        connection_config = connection_config or {}
-        # Legacy custom-application tokens cannot be used with the platform app.
-        if connection_config.get('oauth_client_mode') not in (None, '', 'default'):
-            return None
         client_id = getattr(settings, config['client_id_setting'], '')
         client_secret = getattr(settings, config['client_secret_setting'], '')
 
@@ -197,7 +193,7 @@ class EmailOAuthUtils(CommonOAuthUtils):
                 return None, api_error(status.HTTP_400_BAD_REQUEST, 'sender_name invalid.')
             connection_config['sender_email'] = sender_email
             connection_config['sender_name'] = sender_name.strip()
-        oauth_config = cls._get_oauth_config(provider, account_type, connection_config)
+        oauth_config = cls._get_oauth_config(provider, account_type)
         if not oauth_config:
             return None, api_error(status.HTTP_400_BAD_REQUEST, 'Email OAuth provider is not configured.')
         return {

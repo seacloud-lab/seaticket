@@ -1636,7 +1636,6 @@ class AgentActionExecutor:
                 oauth_config = EmailOAuthUtils._get_oauth_config(
                     config.get('server_provider'),
                     config.get('account_type', EMAIL_ACCOUNT_TYPE_PERSONAL),
-                    config,
                 )
             send_res = toggle_send_email(config, send_info, oauth_token, oauth_config)
         except EmailConfigError as e:
@@ -1726,7 +1725,6 @@ class AgentActionExecutor:
             oauth_config = EmailOAuthUtils._get_oauth_config(
                 config.get('server_provider'),
                 config.get('account_type', EMAIL_ACCOUNT_TYPE_PERSONAL),
-                config,
             )
 
         inbound_message_ids = []

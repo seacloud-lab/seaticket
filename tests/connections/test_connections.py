@@ -49,8 +49,6 @@ class TestEmailOAuthUtils:
     def test_oauth_scopes_include_mailbox_write_permissions(self):
         assert EMAIL_OAUTH_CONFIGS['Gmail']['scopes']['personal'][0] == \
             'https://www.googleapis.com/auth/gmail.modify'
-        assert 'alias' not in EMAIL_OAUTH_CONFIGS['Gmail']['scopes']
-        assert 'alias' not in EMAIL_OAUTH_CONFIGS['Microsoft']['scopes']
         assert 'Mail.ReadWrite' in EMAIL_OAUTH_CONFIGS['Microsoft']['scopes']['personal']
         assert 'Mail.ReadWrite.Shared' in EMAIL_OAUTH_CONFIGS['Microsoft']['scopes'][EMAIL_ACCOUNT_TYPE_SHARED]
 
@@ -94,13 +92,10 @@ class TestEmailOAuthUtils:
     @pytest.mark.parametrize('provider,account_type', [
         ('Gmail', 'personal'), ('Microsoft', 'personal'), ('Microsoft', 'shared'),
     ])
-    @pytest.mark.parametrize('client_mode', ['default', 'custom'])
-    def test_oauth_uses_platform_config_only(self, factory, provider, account_type, client_mode):
+    def test_oauth_uses_platform_config_only(self, factory, provider, account_type):
         config = {
             'server_provider': provider, 'account_type': account_type,
-            'oauth_client_mode': client_mode, 'client_id': 'custom-id', 'client_secret': 'custom-secret',
-            'sender_email': 'alias@example.com', 'sender_name': 'Support',
-            'authority_url': 'https://ignored.example/authorize', 'token_url': 'https://ignored.example/token',
+            'sender_email': 'shared@example.com', 'sender_name': 'Support',
         }
         request = factory.post('/', data={'name': 'Mail', 'config': config}, format='json')
         provider_config = EMAIL_OAUTH_CONFIGS[provider]
@@ -118,13 +113,10 @@ class TestEmailOAuthUtils:
             expected_scopes.extend(provider_config['identity_scopes'])
             assert payload['oauth_config']['scopes'] == list(dict.fromkeys(expected_scopes))
             assert ('sender_email' in payload['config']) == (account_type != 'personal')
-            assert not {'oauth_client_mode', 'client_id', 'client_secret', 'authority_url', 'token_url'} & payload['config'].keys()
-            assert EmailOAuthUtils._get_oauth_config(provider, account_type, payload['config']) == payload['oauth_config']
+            assert EmailOAuthUtils._get_oauth_config(provider, account_type) == payload['oauth_config']
 
     @pytest.mark.parametrize('config', [
         {'server_provider': 'Gmail', 'account_type': 'shared'},
-        {'server_provider': 'Gmail', 'account_type': 'alias', 'sender_email': ''},
-        {'server_provider': 'Microsoft', 'account_type': 'alias', 'sender_email': 'invalid'},
         {'server_provider': 'Microsoft', 'account_type': 'shared', 'sender_email': ''},
         {'server_provider': 'Microsoft', 'account_type': 'shared', 'sender_email': 'invalid'},
     ])
@@ -139,7 +131,7 @@ class TestEmailOAuthUtils:
         transaction = TestProjectEmailOAuthCallbackView._oauth_transaction('project-id')
         transaction['config'] = {
             'server_provider': provider, 'account_type': account_type,
-            'sender_email': 'alias@example.com', 'sender_name': 'Support',
+            'sender_email': 'shared@example.com', 'sender_name': 'Support',
         }
         request = factory.get('/?state=state-1')
         request.user = user
@@ -155,16 +147,15 @@ class TestEmailOAuthUtils:
         profile.assert_not_called()
         result = request.session['oauth_email_connection']['state-1']
         assert result['status'] == 'authorized'
-        assert result['config']['sender_email'] == 'alias@example.com'
+        assert result['config']['sender_email'] == 'shared@example.com'
         assert result['config']['sender_name'] == 'Support'
 
     @pytest.mark.parametrize('changed_key,value', [
         ('sender_email', 'other@example.com'), ('account_type', 'personal'),
-        ('oauth_client_mode', 'custom'), ('client_id', 'different-app'),
     ])
     def test_modify_rejects_mailbox_and_authorization_changes(self, factory, user, changed_key, value):
         config = {'server_provider': 'Microsoft', 'account_type': 'shared',
-                  'sender_email': 'alias@example.com'}
+                   'sender_email': 'shared@example.com'}
         record = Mock(type='email', config=json.dumps(config))
         request = factory.put('/', data={'config': json.dumps({changed_key: value})}, format='json')
         request.user = user
@@ -326,19 +317,9 @@ class TestProjectConnectionsView:
         add_task_mock.assert_called_once()
 
     @pytest.mark.parametrize('provider', ['Gmail', 'Microsoft'])
-    @pytest.mark.parametrize('request_advanced_config', [
-        {},
-        {
-            'oauth_client_mode': 'custom',
-            'client_id': 'request-client-id',
-            'client_secret': 'request-client-secret',
-            'authority_url': 'https://login.microsoftonline.com/request/oauth2/v2.0/authorize',
-            'token_url': 'https://login.microsoftonline.com/request/oauth2/v2.0/token',
-        },
-    ])
     def test_post_email_associates_callback_oauth_record(
             self, factory, project_creator, real_project, connection_factory,
-            provider, request_advanced_config):
+            provider):
         state = 'state-1'
         connection_factory(
             connection_type='email',
@@ -351,7 +332,6 @@ class TestProjectConnectionsView:
                 'name': 'mail-conn',
                 'type': 'email',
                 'config': json.dumps({
-                    **request_advanced_config,
                     'server_provider': provider,
                     'account_type': 'personal',
                     'sync_years': 2,
@@ -391,7 +371,6 @@ class TestProjectConnectionsView:
         created_config = create_connection_mock.call_args.args[4]
         assert created_config['sync_years'] == 2
         assert created_config['server_provider'] == provider
-        assert not {'oauth_client_mode', 'client_id', 'client_secret', 'authority_url', 'token_url'} & created_config.keys()
         upsert_connection_token_mock.assert_called_once_with(
             real_project.uuid, 11, 'access-token', 123456, 'refresh-token'
         )

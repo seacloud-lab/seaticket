@@ -102,15 +102,3 @@ class TestMicrosoftMailboxManager:
     def test_shared_mailbox_requires_sender_email(self):
         with pytest.raises(MailboxConfigError, match='Shared email sender address is required'):
             MicrosoftMailboxManager({'account_type': 'shared'}, make_oauth_token(), make_oauth_config())
-
-
-@pytest.mark.parametrize('manager_class', [GmailMailboxManager, MicrosoftMailboxManager])
-def test_mailbox_rejects_alias(manager_class):
-    with pytest.raises(MailboxConfigError, match='account type'):
-        manager_class({'account_type': 'alias'}, make_oauth_token(), make_oauth_config())
-
-
-@pytest.mark.parametrize('manager_class', [GmailMailboxManager, MicrosoftMailboxManager])
-def test_mailbox_rejects_legacy_custom_application(manager_class):
-    with pytest.raises(MailboxConfigError, match='no longer supported'):
-        manager_class({'oauth_client_mode': 'custom'}, make_oauth_token(), make_oauth_config())

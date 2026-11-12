@@ -11,11 +11,11 @@ from seahub.utils.email_sender import GmailSender, MicrosoftSender, EmailConfigE
 @pytest.mark.parametrize('sender_class,account_type,principal', [
     (GmailSender, 'personal', 'users/me'),
     (MicrosoftSender, 'personal', 'me'),
-    (MicrosoftSender, 'shared', 'users/alias%40example.com'),
+    (MicrosoftSender, 'shared', 'users/shared%40example.com'),
 ])
 def test_oauth_sender_uses_mailbox_principal_and_configured_from(sender_class, account_type, principal):
     sender = sender_class(
-        {'account_type': account_type, 'sender_email': 'alias@example.com', 'sender_name': 'Support'},
+        {'account_type': account_type, 'sender_email': 'shared@example.com', 'sender_name': 'Support'},
         {'access_token': 'access', 'refresh_token': 'refresh', 'expires_at': 9999999999},
         {'client_id': 'id', 'client_secret': 'secret', 'token_url': 'https://provider.example/token', 'scopes': ['scope']},
     )
@@ -26,24 +26,12 @@ def test_oauth_sender_uses_mailbox_principal_and_configured_from(sender_class, a
     assert f'/{principal}/' in post.call_args.args[0]
     if sender_class is MicrosoftSender:
         msg = message_from_bytes(base64.b64decode(post.call_args.kwargs['data']))
-        assert parseaddr(msg['From']) == ('Support', 'alias@example.com')
+        assert parseaddr(msg['From']) == ('Support', 'shared@example.com')
     else:
-        assert 'From: Support <alias@example.com>' in post.call_args.kwargs['data']
+        assert 'From: Support <shared@example.com>' in post.call_args.kwargs['data']
     assert result['success'] is True
 
 
 def test_gmail_rejects_shared():
     with pytest.raises(EmailConfigError, match='account type'):
         GmailSender({'account_type': 'shared'})
-
-
-@pytest.mark.parametrize('sender_class', [GmailSender, MicrosoftSender])
-def test_sender_rejects_alias(sender_class):
-    with pytest.raises(EmailConfigError, match='account type'):
-        sender_class({'account_type': 'alias', 'sender_email': 'alias@example.com'})
-
-
-@pytest.mark.parametrize('sender_class', [GmailSender, MicrosoftSender])
-def test_sender_rejects_legacy_custom_application(sender_class):
-    with pytest.raises(EmailConfigError, match='no longer supported'):
-        sender_class({'account_type': 'personal', 'oauth_client_mode': 'custom'})

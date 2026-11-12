@@ -540,8 +540,6 @@ class ProjectConnectionsManager(models.Manager):
         if connection_type == ConnectionType.EMAIL.value and config.get('server_provider') in OAUTH_EMAIL_PROVIDERS:
             if (config.get('account_type') or EMAIL_ACCOUNT_TYPE_PERSONAL) not in EMAIL_ACCOUNT_TYPES[config['server_provider']]:
                 return False
-            if config.get('oauth_client_mode') not in (None, '', 'default'):
-                return False
         elif not records:
             return True
 

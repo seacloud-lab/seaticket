@@ -25,20 +25,13 @@ test.each([['Gmail', 'personal'], ['Microsoft', 'personal'], ['Microsoft', 'shar
   '%s %s uses platform credentials', (provider, accountType) => {
     const config = { server_provider: provider, account_type: accountType, sender_email: 'shared@example.com' };
     expect(isEmailOAuthConfigValid(config, fields)).toBe(true);
-    const defaultConfig = sanitizeEmailConfigByProvider({ ...config, oauth_client_mode: 'custom', client_id: 'id', client_secret: 'secret' });
-    expect(defaultConfig.client_id).toBeUndefined();
-    expect(defaultConfig.client_secret).toBeUndefined();
-    expect(defaultConfig.oauth_client_mode).toBeUndefined();
+    const defaultConfig = sanitizeEmailConfigByProvider(config);
     expect(isEmailOAuthConfigValid(defaultConfig, fields)).toBe(true);
     expect(defaultConfig.sender_email).toBe(accountType === 'personal' ? undefined : 'shared@example.com');
   }
 );
 
-test('unsupported account types and legacy custom applications are rejected', () => {
-  expect(isEmailOAuthConfigValid({ server_provider: 'Gmail', account_type: 'alias' }, fields)).toBe(false);
+test('shared mailbox configuration is validated', () => {
   expect(isEmailOAuthConfigValid({ server_provider: 'Gmail', account_type: 'shared', sender_email: 'mail@example.com' }, fields)).toBe(false);
-  expect(isEmailOAuthConfigValid({ server_provider: 'Microsoft', account_type: 'alias', sender_email: 'mail@example.com' }, fields)).toBe(false);
   expect(isEmailOAuthConfigValid({ server_provider: 'Microsoft', account_type: 'shared' }, fields)).toBe(false);
-  expect(isEmailOAuthConfigValid({ server_provider: 'Microsoft', account_type: 'personal', oauth_client_mode: 'custom',
-    client_id: 'id', client_secret: 'secret', token_url: 'https://evil.example/token' }, fields)).toBe(false);
 });

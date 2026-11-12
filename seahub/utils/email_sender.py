@@ -347,8 +347,6 @@ class _OAuthEmailSender(OAuthTokenClient, _EmailSenderBase):
     """Base class for OAuth-based email senders (Gmail, Microsoft)"""
 
     def __init__(self, config, oauth_token=None, oauth_config=None):
-        if config.get('oauth_client_mode') not in (None, '', 'default'):
-            raise EmailConfigError('Custom email OAuth applications are no longer supported. Reauthorize with the platform application.')
         super().__init__(config, oauth_token, oauth_config)
         self.sender_name = config.get('sender_name', '')
         sender_email = config.get('sender_email')

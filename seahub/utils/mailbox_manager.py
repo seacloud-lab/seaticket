@@ -325,8 +325,6 @@ class OAuthMailboxManager(OAuthTokenClient, BaseMailboxManager):
     _JUNK_LABEL = ''
 
     def __init__(self, config, oauth_token=None, oauth_config=None):
-        if config.get('oauth_client_mode') not in (None, '', 'default'):
-            raise MailboxConfigError('Custom email OAuth applications are no longer supported. Reauthorize with the platform application.')
         super().__init__(config, oauth_token, oauth_config)
         if not self._has_complete_oauth_config():
             raise MailboxConfigError('OAuth email configuration is incomplete for mailbox operations.')

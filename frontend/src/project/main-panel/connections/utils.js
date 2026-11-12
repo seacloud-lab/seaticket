@@ -84,7 +84,6 @@ export const isEmailOAuthConfigValid = (config, fields) => {
   const supportedTypes = provider === EMAIL_SERVER_PROVIDER.GMAIL
     ? [EMAIL_ACCOUNT_TYPE.PERSONAL] : [EMAIL_ACCOUNT_TYPE.PERSONAL, EMAIL_ACCOUNT_TYPE.SHARED];
   if (!supportedTypes.includes(accountType)) return false;
-  if (config.oauth_client_mode && config.oauth_client_mode !== 'default') return false;
   return getVisibleEmailFields(fields, provider, accountType).every(field => {
     if (!field.is_required) return true;
     return Boolean(String(config[field.key] ?? field.default_value ?? '').trim());
