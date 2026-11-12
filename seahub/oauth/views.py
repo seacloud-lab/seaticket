@@ -68,20 +68,12 @@ def oauth_check(func):
             if not CLIENT_ID or not CLIENT_SECRET or not AUTHORIZATION_URL \
                     or not REDIRECT_URL or not TOKEN_URL or not USER_INFO_URL \
                     or not OAUTH_ATTRIBUTE_MAP or not PROVIDER_DOMAIN:
-                logger.error('OAuth relevant settings invalid.')
-                logger.error('CLIENT_ID: %s' % CLIENT_ID)
-                logger.error('CLIENT_SECRET: %s' % CLIENT_SECRET)
-                logger.error('AUTHORIZATION_URL: %s' % AUTHORIZATION_URL)
-                logger.error('REDIRECT_URL: %s' % REDIRECT_URL)
-                logger.error('TOKEN_URL: %s' % TOKEN_URL)
-                logger.error('USER_INFO_URL: %s' % USER_INFO_URL)
-                logger.error('OAUTH_ATTRIBUTE_MAP: %s' % OAUTH_ATTRIBUTE_MAP)
-                logger.error('PROVIDER_DOMAIN: %s' % PROVIDER_DOMAIN)
+                logger.error('OAuth relevant settings invalid. please check CLIENT_ID, CLIENT_SECRET, ' \
+                'AUTHORIZATION_URL, REDIRECT_URL, TOKEN_URL, USER_INFO_URL, OAUTH_ATTRIBUTE_MAP and PROVIDER_DOMAIN')
                 error = True
 
         if error:
-            return render_error(request,
-                                _('Error, please contact administrator.'))
+            return render_error(request, _('Error, please contact administrator.'))
 
         return func(request)
 
