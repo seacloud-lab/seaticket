@@ -109,11 +109,11 @@ class PortalCustomer(models.Model):
 
 class PortalExternalInvitationManager(models.Manager):
 
-    def add(self, inviter, email, project_uuid, customer_id=None, expire_hours=72):
+    def add(self, inviter, email, project_uuid, expire_hours=72):
         token = uuid4().hex
         expire_time = timezone.now() + timezone.timedelta(hours=int(expire_hours))
         obj = self.model(token=token, inviter=inviter, email=email, project_uuid=project_uuid,
-            customer_id=customer_id, expire_time=expire_time)
+            expire_time=expire_time)
         obj.save(using=self._db)
         return obj
 
@@ -129,7 +129,6 @@ class PortalExternalInvitation(models.Model):
     inviter = models.CharField(max_length=255)
     email = models.CharField(max_length=255)
     project_uuid = models.CharField(max_length=36, db_index=True)
-    customer_id = models.BigIntegerField(null=True, blank=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     expire_time = models.DateTimeField()
     accepted_at = models.DateTimeField(null=True, blank=True)

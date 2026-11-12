@@ -701,14 +701,12 @@ CREATE TABLE `portal_external_invitations` (
   `inviter` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
   `project_uuid` char(36) NOT NULL,
-  `customer_id` bigint(20) DEFAULT NULL,
   `created_at` datetime(6) NOT NULL,
   `expire_time` datetime(6) NOT NULL,
   `accepted_at` datetime(6) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `portal_external_invitations_token_uniq` (`token`),
-  KEY `portal_external_invitations_project_uuid_idx` (`project_uuid`),
-  KEY `portal_external_invitations_customer_id_idx` (`customer_id`)
+  KEY `portal_external_invitations_project_uuid_idx` (`project_uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `project_issues_statistics` (

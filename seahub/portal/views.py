@@ -299,22 +299,17 @@ def portal_external_invitation_accept_view(request, token, project_uuid):
 
     try:
         with transaction.atomic():
-            customer = None
-            if invitation.customer_id:
-                customer = PortalCustomer.objects.filter(id=invitation.customer_id, project_uuid=project_uuid, status=PortalCustomer.STATUS_ACTIVE).first()
-                if not customer:
-                    return render_error(request, _('Invitation link is invalid or expired.'))
-
             ext_user = ProjectExternalUser.objects.select_for_update().filter(email=invitation.email, project_uuid=project_uuid).first()
             if not ext_user:
                 return render_error(request, _('Invitation link is invalid or expired.'))
-            if customer and ext_user.customer_id not in (None, customer.id):
+            if ext_user.customer_id and not PortalCustomer.objects.filter(
+                id=ext_user.customer_id,
+                project_uuid=project_uuid,
+                status=PortalCustomer.STATUS_ACTIVE,
+            ).exists():
                 return render_error(request, _('Invitation link is invalid or expired.'))
 
             update_fields = []
-            if customer and not ext_user.customer_id:
-                ext_user.customer_id = customer.id
-                update_fields.append('customer_id')
             if not ext_user.activated:
                 ext_user.activated = True
                 update_fields.append('activated')
