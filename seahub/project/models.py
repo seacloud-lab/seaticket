@@ -17,7 +17,7 @@ from django.utils import timezone
 from seahub.project.constants import ORG_STORAGE_SIZE_PREFIX, ORG_STORAGE_SIZE_CACHE_TIMEOUT, \
     CONNECTION_FIELDS, CONNECTION_DEFAULT_DETAILS, ConnectionType, \
     GENERAL_EMAIL_PROVIDER, OAUTH_EMAIL_PROVIDERS, EMAIL_ACCOUNT_TYPE_PERSONAL, \
-    EMAIL_ACCOUNT_TYPE_SHARED, EMAIL_ACCOUNT_TYPE_ALIAS, EMAIL_ACCOUNT_TYPES, EMAIL_OAUTH_CLIENT_CUSTOM, merge_project_settings_defaults
+    EMAIL_ACCOUNT_TYPE_SHARED, EMAIL_ACCOUNT_TYPES, merge_project_settings_defaults
 from seahub.utils import get_no_duplicate_obj_name, uuid_str_to_32_chars, \
     utf8_normalize, is_valid_uuid
 from seahub.utils.hasher import AESPasswordHasher
@@ -40,10 +40,8 @@ def get_required_connection_fields(connection_type, config=None):
 
     if provider in OAUTH_EMAIL_PROVIDERS:
         keys = []
-        if account_type in (EMAIL_ACCOUNT_TYPE_ALIAS, EMAIL_ACCOUNT_TYPE_SHARED):
+        if account_type == EMAIL_ACCOUNT_TYPE_SHARED:
             keys.append('sender_email')
-        if config.get('oauth_client_mode') == EMAIL_OAUTH_CLIENT_CUSTOM:
-            keys.extend(('client_id', 'client_secret'))
         return [{'key': key, 'is_required': True, 'is_unique': False} for key in keys]
 
     return [field for field in CONNECTION_FIELDS.get(connection_type, []) if field.get('is_required')]
@@ -542,7 +540,7 @@ class ProjectConnectionsManager(models.Manager):
         if connection_type == ConnectionType.EMAIL.value and config.get('server_provider') in OAUTH_EMAIL_PROVIDERS:
             if (config.get('account_type') or EMAIL_ACCOUNT_TYPE_PERSONAL) not in EMAIL_ACCOUNT_TYPES[config['server_provider']]:
                 return False
-            if (config.get('oauth_client_mode') or 'default') not in ('default', 'custom'):
+            if config.get('oauth_client_mode') not in (None, '', 'default'):
                 return False
         elif not records:
             return True

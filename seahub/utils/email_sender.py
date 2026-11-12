@@ -347,20 +347,22 @@ class _OAuthEmailSender(OAuthTokenClient, _EmailSenderBase):
     """Base class for OAuth-based email senders (Gmail, Microsoft)"""
 
     def __init__(self, config, oauth_token=None, oauth_config=None):
+        if config.get('oauth_client_mode') not in (None, '', 'default'):
+            raise EmailConfigError('Custom email OAuth applications are no longer supported. Reauthorize with the platform application.')
         super().__init__(config, oauth_token, oauth_config)
         self.sender_name = config.get('sender_name', '')
         sender_email = config.get('sender_email')
         self.sender_email = normalize_email_domain(sender_email) if sender_email else sender_email
         self.account_type = config.get('account_type') or 'personal'
-        supported_types = ('personal', 'alias') if isinstance(self, GmailSender) else ('personal', 'alias', 'shared')
+        supported_types = ('personal',) if isinstance(self, GmailSender) else ('personal', 'shared')
         if self.account_type not in supported_types:
             raise EmailConfigError('Email account type is invalid')
 
         if not self._has_complete_oauth_config():
             logger.error('OAuth email config is invalid.')
             raise EmailConfigError('OAuth email configuration is incomplete')
-        if self.account_type in ('alias', 'shared') and not self.sender_email:
-            raise EmailConfigError('Alias or shared mailbox sender address is required')
+        if self.account_type == 'shared' and not self.sender_email:
+            raise EmailConfigError('Shared mailbox sender address is required')
 
     def _do_send_email(self, msg_obj):
         """Subclasses implement this to send email via their API"""

@@ -64,8 +64,8 @@ msgstr "Erweiterte Einstellungen ausblenden"
 msgid "OAuth callback URL"
 msgstr "OAuth-Rückruf-URL"
 
-msgid "Alias and shared mailbox connections only sync messages associated with the configured From address."
-msgstr "Alias- und freigegebene Postfachverbindungen synchronisieren nur Nachrichten, die mit der konfigurierten Absenderadresse verknüpft sind."
+msgid "Shared mailbox connections only sync messages associated with the configured From address."
+msgstr "Freigegebene Postfachverbindungen synchronisieren nur Nachrichten, die mit der konfigurierten Absenderadresse verknüpft sind."
 
 #: frontend/src/components/account/external-user-account.js:92
 #: frontend/src/components/account/external-user-account.js:93

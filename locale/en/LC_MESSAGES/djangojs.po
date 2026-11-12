@@ -64,8 +64,8 @@ msgstr "Hide advanced settings"
 msgid "OAuth callback URL"
 msgstr "OAuth callback URL"
 
-msgid "Alias and shared mailbox connections only sync messages associated with the configured From address."
-msgstr "Alias and shared mailbox connections only sync messages associated with the configured From address."
+msgid "Shared mailbox connections only sync messages associated with the configured From address."
+msgstr "Shared mailbox connections only sync messages associated with the configured From address."
 
 #: frontend/src/components/account/external-user-account.js:92
 #: frontend/src/components/account/external-user-account.js:93

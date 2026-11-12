@@ -36,7 +36,7 @@ class OAuthTokenClient:
         self.config = config
         self.oauth_updated = False
         oauth_token = oauth_token or {}
-        oauth_config = oauth_config or config
+        oauth_config = oauth_config or {}
         self.client_id = oauth_config.get('client_id')
         self.client_secret = oauth_config.get('client_secret')
         self.refresh_token = oauth_token.get('refresh_token')

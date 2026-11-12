@@ -5,9 +5,9 @@ import { ModalHeader, Loading, toaster, Icon } from '@/components';
 import { gettext } from '@/constants';
 import { connectionsAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
-import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, STEP, STEPS, EMAIL_SERVER_PROVIDER, EMAIL_ACCOUNT_TYPE, getAvailableConnectionTypes } from '../../constants';
+import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, STEP, STEPS, EMAIL_SERVER_PROVIDER, getAvailableConnectionTypes } from '../../constants';
 import { useConnections } from '../../hooks/connections';
-import { getVisibleEmailFields, getEmailProvider, isOAuthEmailProvider, hasValidMicrosoftOAuthUrls, sanitizeEmailConfigByProvider, isEmailOAuthConfigValid } from '../../utils';
+import { getVisibleEmailFields, getEmailProvider, isOAuthEmailProvider, sanitizeEmailConfigByProvider, isEmailOAuthConfigValid } from '../../utils';
 import ConnectionConfigEditor from '../connection-config-editor';
 import { ConfluenceConfig, DiscordConfig, GithubConfig, JiraConfig, LinearConfig, NotionConfig } from './connection-config';
 import ConnectionDialogFooter from './connection-dialog-footer';
@@ -112,15 +112,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     const _columns = CONNECTION_FIELDS[type] || [];
     if (type === CONNECTION_TYPE.GITHUB_ISSUE) return _columns;
     if (type !== CONNECTION_TYPE.EMAIL) return _columns;
-    const provider = getEmailProvider(config);
-    return getVisibleEmailFields(_columns, provider, false, config.account_type, config.oauth_client_mode)
-      .filter(column => column.key !== 'account_type' || provider !== EMAIL_SERVER_PROVIDER.GMAIL)
-      .map(column => {
-        if (column.key === 'account_type' && provider === EMAIL_SERVER_PROVIDER.MICROSOFT) {
-          return { ...column, options: column.options.filter(option => option.value !== EMAIL_ACCOUNT_TYPE.ALIAS) };
-        }
-        return column;
-      });
+    return getVisibleEmailFields(_columns, getEmailProvider(config), config.account_type);
   }, [type, config]);
 
   const customColumns = useMemo(() => columns.filter(c => {
@@ -141,9 +133,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     return isEmail && isOAuthEmailProvider(getEmailProvider(config));
   }, [isEmail, config]);
 
-  const basicCustomColumns = useMemo(() => {
-    return customColumns.filter(column => !column.is_advanced_option);
-  }, [customColumns]);
+  const basicCustomColumns = customColumns;
 
   const step = useMemo(() => {
     return STEPS[stepIndex];
@@ -279,7 +269,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const onConfigChange = useCallback((key, value) => {
     if (config[key] === value) return;
 
-    if (['server_provider', 'account_type', 'oauth_client_mode', 'client_id', 'client_secret', 'authority_url', 'token_url', 'sender_email', 'sender_name'].includes(key)) {
+    if (['server_provider', 'account_type', 'sender_email', 'sender_name'].includes(key)) {
       setEmailOAuthState('');
       setEmailOAuthSender(null);
     }
@@ -308,10 +298,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     setEmailOAuthSender(null);
     let _config = { ...config };
     _config = sanitizeEmailConfigByProvider(_config);
-    if (!hasValidMicrosoftOAuthUrls(_config)) {
-      toaster.danger(gettext('Microsoft OAuth URLs must start with https://login.microsoftonline.com/.'));
-      return;
-    }
     setSubmitting(true);
     connectionsAPI.startEmailOAuth(projectUuid, { name: name.trim(), config: _config }).then((res) => {
       const authorizationUrl = res.data?.auth_url;
@@ -765,7 +751,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   }, []);
 
   const renderConnectionField = useCallback((column) => {
-    const { type, key, children, is_advanced_option } = column;
+    const { type, key, children } = column;
     if (type === CONNECTION_FIELD_TYPE.GROUP) {
       return (
         <Row className="mx-0 seaqa-project-connection-group-config" key={key}>
@@ -850,7 +836,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
 
     return (
       <ConnectionConfigEditor
-        className={is_advanced_option ? 'seaqa-project-connection-advanced-options-field' : ''}
         column={fieldColumn}
         api={api}
         key={key}

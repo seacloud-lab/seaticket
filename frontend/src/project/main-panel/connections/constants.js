@@ -9,17 +9,9 @@ export const EMAIL_SERVER_PROVIDER = {
   MICROSOFT: 'Microsoft',
 };
 
-export const MICROSOFT_OAUTH_URL_PREFIX = 'https://login.microsoftonline.com/';
-
 export const EMAIL_ACCOUNT_TYPE = {
   PERSONAL: 'personal',
-  ALIAS: 'alias',
   SHARED: 'shared',
-};
-
-export const EMAIL_OAUTH_CLIENT_MODE = {
-  DEFAULT: 'default',
-  CUSTOM: 'custom',
 };
 
 export const STEP = {
@@ -105,29 +97,13 @@ export const CONNECTION_FIELDS = {
       type: CONNECTION_FIELD_TYPE.SELECT,
       is_required: true,
       is_custom: true,
-      providers: [EMAIL_SERVER_PROVIDER.GMAIL, EMAIL_SERVER_PROVIDER.MICROSOFT],
+      providers: [EMAIL_SERVER_PROVIDER.MICROSOFT],
       default_value: EMAIL_ACCOUNT_TYPE.PERSONAL,
       options: [
         { value: EMAIL_ACCOUNT_TYPE.PERSONAL, label: gettext('Personal account') },
-        { value: EMAIL_ACCOUNT_TYPE.ALIAS, label: gettext('Alias') },
         { value: EMAIL_ACCOUNT_TYPE.SHARED, label: gettext('Shared mailbox') },
       ],
-      tip: gettext('Alias and shared mailbox connections only sync messages associated with the configured From address.'),
-    }, {
-      key: 'oauth_client_mode',
-      name: gettext('OAuth application'),
-      tip: gettext('Platform default uses the OAuth application configured by the server administrator. Custom application uses your own Client ID and Client secret. Either option supports personal accounts, aliases, and shared mailboxes.'),
-      type: CONNECTION_FIELD_TYPE.SELECT,
-      is_required: true,
-      is_custom: true,
-      is_edit_readonly: true,
-      is_advanced_option: true,
-      providers: [EMAIL_SERVER_PROVIDER.GMAIL, EMAIL_SERVER_PROVIDER.MICROSOFT],
-      default_value: EMAIL_OAUTH_CLIENT_MODE.DEFAULT,
-      options: [
-        { value: EMAIL_OAUTH_CLIENT_MODE.DEFAULT, label: gettext('Platform default') },
-        { value: EMAIL_OAUTH_CLIENT_MODE.CUSTOM, label: gettext('Custom application') },
-      ],
+      tip: gettext('Shared mailbox connections only sync messages associated with the configured From address.'),
     }, {
       key: 'sender_name',
       name: gettext('"From" display name (optional)'),
@@ -136,7 +112,7 @@ export const CONNECTION_FIELDS = {
       is_display: true,
       is_custom: true,
       providers: [EMAIL_SERVER_PROVIDER.GENERAL, EMAIL_SERVER_PROVIDER.GMAIL, EMAIL_SERVER_PROVIDER.MICROSOFT],
-      account_types: [EMAIL_ACCOUNT_TYPE.ALIAS, EMAIL_ACCOUNT_TYPE.SHARED],
+      account_types: [EMAIL_ACCOUNT_TYPE.SHARED],
       tip: gettext('The display name is an arbitrary description prepended to an email address. When a display name is used, the email address is enclosed in angle brackets. Example: \'Bill Smith <william.smith@example.com>\''),
     }, {
       key: 'sender_email',
@@ -146,58 +122,8 @@ export const CONNECTION_FIELDS = {
       is_display: true,
       is_custom: true,
       providers: [EMAIL_SERVER_PROVIDER.GENERAL, EMAIL_SERVER_PROVIDER.GMAIL, EMAIL_SERVER_PROVIDER.MICROSOFT],
-      account_types: [EMAIL_ACCOUNT_TYPE.ALIAS, EMAIL_ACCOUNT_TYPE.SHARED],
+      account_types: [EMAIL_ACCOUNT_TYPE.SHARED],
       tip: gettext('The address is the full email address of the sender. It need not be identical to the username of the account.')
-    }, {
-      key: 'client_id',
-      name: gettext('Client ID'),
-      tip: gettext('The OAuth application ID registered in Google Cloud or Microsoft Entra. This is not your email address or tenant ID.'),
-      type: CONNECTION_FIELD_TYPE.TEXT,
-      is_required: true,
-      is_display: true,
-      is_custom: true,
-      is_edit_readonly: true,
-      providers: [EMAIL_SERVER_PROVIDER.GMAIL, EMAIL_SERVER_PROVIDER.MICROSOFT],
-      oauth_client_modes: [EMAIL_OAUTH_CLIENT_MODE.CUSTOM],
-      is_advanced_option: true,
-    }, {
-      key: 'client_secret',
-      name: gettext('Client secret'),
-      tip: gettext('The secret belonging to this Client ID. For Microsoft Entra, enter the client secret Value, not the Secret ID.'),
-      type: CONNECTION_FIELD_TYPE.PASSWORD,
-      is_required: true,
-      is_display: true,
-      is_custom: true,
-      is_edit_readonly: true,
-      providers: [EMAIL_SERVER_PROVIDER.GMAIL, EMAIL_SERVER_PROVIDER.MICROSOFT],
-      oauth_client_modes: [EMAIL_OAUTH_CLIENT_MODE.CUSTOM],
-      is_advanced_option: true,
-    }, {
-      key: 'authority_url',
-      name: gettext('Authority URL'),
-      tip: gettext('The Microsoft OAuth authorization endpoint. Leave blank to use the default common endpoint. For a single-tenant application, use the endpoint for your tenant.'),
-      type: CONNECTION_FIELD_TYPE.TEXT,
-      placeholder: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
-      is_required: false,
-      is_display: true,
-      is_custom: true,
-      is_edit_readonly: true,
-      providers: [EMAIL_SERVER_PROVIDER.MICROSOFT],
-      oauth_client_modes: [EMAIL_OAUTH_CLIENT_MODE.CUSTOM],
-      is_advanced_option: true,
-    }, {
-      key: 'token_url',
-      name: gettext('Token URL'),
-      tip: gettext('The Microsoft endpoint for obtaining and refreshing tokens. Leave blank to use the default common endpoint. A custom endpoint must use the same tenant as the Authority URL.'),
-      type: CONNECTION_FIELD_TYPE.TEXT,
-      placeholder: 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
-      is_required: false,
-      is_display: true,
-      is_custom: true,
-      is_edit_readonly: true,
-      providers: [EMAIL_SERVER_PROVIDER.MICROSOFT],
-      oauth_client_modes: [EMAIL_OAUTH_CLIENT_MODE.CUSTOM],
-      is_advanced_option: true,
     }, {
       type: CONNECTION_FIELD_TYPE.GROUP,
       key: '1',

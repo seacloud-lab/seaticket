@@ -64,8 +64,8 @@ msgstr "隐藏高级设置"
 msgid "OAuth callback URL"
 msgstr "OAuth 回调地址"
 
-msgid "Alias and shared mailbox connections only sync messages associated with the configured From address."
-msgstr "别名和共享邮箱连接只同步与配置的发件地址关联的邮件。"
+msgid "Shared mailbox connections only sync messages associated with the configured From address."
+msgstr "共享邮箱连接只同步与配置的发件地址关联的邮件。"
 
 #: frontend/src/components/account/external-user-account.js:92
 #: frontend/src/components/account/external-user-account.js:93

@@ -280,6 +280,11 @@ class ProjectConnectionsView(APIView):
             if email_oauth_data.get('status') != 'authorized':
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Email OAuth authorization is required.')
             authorized_config = email_oauth_data.get('config') or {}
+            if not EmailOAuthUtils._get_oauth_config(
+                    authorized_config.get('server_provider'),
+                    authorized_config.get('account_type') or EMAIL_ACCOUNT_TYPE_PERSONAL,
+                    authorized_config):
+                return api_error(status.HTTP_400_BAD_REQUEST, 'Email OAuth configuration is no longer supported or the provider is not configured. Reauthorize with the platform application.')
             if (authorized_config.get('server_provider') != config.get('server_provider') or
                     authorized_config.get('account_type', EMAIL_ACCOUNT_TYPE_PERSONAL) !=
                     config.get('account_type', EMAIL_ACCOUNT_TYPE_PERSONAL)):
@@ -557,11 +562,13 @@ class ProjectConnectionView(APIView):
             if project_connection.type == ConnectionType.EMAIL.value and (
                     is_oauth_email_provider(config.get('server_provider')) or
                     is_oauth_email_provider(new_config.get('server_provider'))):
-                for key in ('server_provider', 'account_type', 'oauth_client_mode', 'client_id',
-                            'client_secret', 'authority_url', 'token_url', 'sender_email'):
-                    default = 'personal' if key == 'account_type' else 'default' if key == 'oauth_client_mode' else ''
+                for key in ('server_provider', 'account_type', 'sender_email'):
+                    default = 'personal' if key == 'account_type' else ''
                     if key in new_config and (new_config.get(key) or default) != (config.get(key) or default):
                         return api_error(status.HTTP_400_BAD_REQUEST, 'Email authorization and mailbox settings cannot be changed. Create a new connection.')
+                if any(key in new_config for key in (
+                        'oauth_client_mode', 'client_id', 'client_secret', 'authority_url', 'token_url')):
+                    return api_error(status.HTTP_400_BAD_REQUEST, 'Connection-level email OAuth credentials are not supported.')
             config.update(new_config)
             new_config = config
 

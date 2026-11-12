@@ -10,9 +10,7 @@ from seahub.utils.email_sender import GmailSender, MicrosoftSender, EmailConfigE
 
 @pytest.mark.parametrize('sender_class,account_type,principal', [
     (GmailSender, 'personal', 'users/me'),
-    (GmailSender, 'alias', 'users/me'),
     (MicrosoftSender, 'personal', 'me'),
-    (MicrosoftSender, 'alias', 'me'),
     (MicrosoftSender, 'shared', 'users/alias%40example.com'),
 ])
 def test_oauth_sender_uses_mailbox_principal_and_configured_from(sender_class, account_type, principal):
@@ -37,3 +35,15 @@ def test_oauth_sender_uses_mailbox_principal_and_configured_from(sender_class, a
 def test_gmail_rejects_shared():
     with pytest.raises(EmailConfigError, match='account type'):
         GmailSender({'account_type': 'shared'})
+
+
+@pytest.mark.parametrize('sender_class', [GmailSender, MicrosoftSender])
+def test_sender_rejects_alias(sender_class):
+    with pytest.raises(EmailConfigError, match='account type'):
+        sender_class({'account_type': 'alias', 'sender_email': 'alias@example.com'})
+
+
+@pytest.mark.parametrize('sender_class', [GmailSender, MicrosoftSender])
+def test_sender_rejects_legacy_custom_application(sender_class):
+    with pytest.raises(EmailConfigError, match='no longer supported'):
+        sender_class({'account_type': 'personal', 'oauth_client_mode': 'custom'})

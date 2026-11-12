@@ -64,8 +64,8 @@ msgstr "Masquer les paramètres avancés"
 msgid "OAuth callback URL"
 msgstr "URL de rappel OAuth"
 
-msgid "Alias and shared mailbox connections only sync messages associated with the configured From address."
-msgstr "Les connexions d’alias et de boîtes partagées synchronisent uniquement les messages associés à l’adresse d’expéditeur configurée."
+msgid "Shared mailbox connections only sync messages associated with the configured From address."
+msgstr "Les connexions de boîtes partagées synchronisent uniquement les messages associés à l’adresse d’expéditeur configurée."
 
 #: frontend/src/components/account/external-user-account.js:92
 #: frontend/src/components/account/external-user-account.js:93

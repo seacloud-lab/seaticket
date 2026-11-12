@@ -49,8 +49,8 @@ class TestEmailOAuthUtils:
     def test_oauth_scopes_include_mailbox_write_permissions(self):
         assert EMAIL_OAUTH_CONFIGS['Gmail']['scopes']['personal'][0] == \
             'https://www.googleapis.com/auth/gmail.modify'
-        assert EMAIL_OAUTH_CONFIGS['Gmail']['scopes']['alias'][0] == \
-            'https://www.googleapis.com/auth/gmail.modify'
+        assert 'alias' not in EMAIL_OAUTH_CONFIGS['Gmail']['scopes']
+        assert 'alias' not in EMAIL_OAUTH_CONFIGS['Microsoft']['scopes']
         assert 'Mail.ReadWrite' in EMAIL_OAUTH_CONFIGS['Microsoft']['scopes']['personal']
         assert 'Mail.ReadWrite.Shared' in EMAIL_OAUTH_CONFIGS['Microsoft']['scopes'][EMAIL_ACCOUNT_TYPE_SHARED]
 
@@ -59,16 +59,15 @@ class TestEmailOAuthUtils:
             'https://www.googleapis.com/auth/gmail.modify',
             'https://www.googleapis.com/auth/gmail.settings.basic',
         ]),
-        ('Gmail', 'alias', ['https://www.googleapis.com/auth/gmail.modify']),
         ('Microsoft', 'personal', ['offline_access', 'Mail.ReadWrite', 'Mail.Send', 'openid', 'profile', 'email', 'User.Read']),
-        ('Microsoft', 'alias', ['offline_access', 'Mail.ReadWrite', 'Mail.Send']),
-        ('Microsoft', 'shared', ['offline_access', 'Mail.ReadWrite.Shared', 'Mail.Send.Shared']),
+        ('Microsoft', 'shared', ['offline_access', 'Mail.ReadWrite.Shared', 'Mail.Send.Shared', 'openid', 'profile', 'email', 'User.Read']),
     ])
-    def test_custom_scopes_include_identity_permissions_only_for_personal(
+    def test_platform_scopes_include_identity_permissions(
             self, provider, account_type, expected_scopes):
-        oauth_config = EmailOAuthUtils._get_oauth_config(provider, account_type, {
-            'oauth_client_mode': 'custom', 'client_id': 'client-id', 'client_secret': 'client-secret',
-        })
+        provider_config = EMAIL_OAUTH_CONFIGS[provider]
+        with patch.object(settings, provider_config['client_id_setting'], 'platform-id', create=True), \
+                patch.object(settings, provider_config['client_secret_setting'], 'platform-secret', create=True):
+            oauth_config = EmailOAuthUtils._get_oauth_config(provider, account_type)
         assert oauth_config['scopes'] == expected_scopes
 
     def test_get_oauth_session_ignores_expired_transactions(self):
@@ -92,138 +91,16 @@ class TestEmailOAuthUtils:
         # just-written failure. The prune is still applied on write paths.
         assert request.session.modified is False
 
-    def test_alias_gmail_uses_server_endpoints_and_scopes(self, factory):
-        request = factory.post('/', data={
-            'name': 'shared-mail',
-            'config': {
-                'server_provider': 'Gmail',
-                'account_type': 'alias',
-                'oauth_client_mode': 'custom',
-                'client_id': 'client-id',
-                'client_secret': 'client-secret',
-                'sender_email': 'shared@example.com',
-                'authority_url': 'https://ignored.example.com/authorize',
-                'token_url': 'https://ignored.example.com/token',
-                'scopes': ['ignored'],
-                'authority_args': {'ignored': 'value'},
-            },
-        }, format='json')
-
-        payload, error_response = EmailOAuthUtils.build_email_oauth_config(request)
-
-        assert error_response is None
-        assert payload['config'] == {
-            'server_provider': 'Gmail',
-            'account_type': 'alias',
-            'oauth_client_mode': 'custom',
-            'client_id': 'client-id',
-            'client_secret': 'client-secret',
-            'sender_email': 'shared@example.com',
-            'sender_name': '',
-        }
-        assert payload['oauth_config']['authority_url'] == EMAIL_OAUTH_CONFIGS['Gmail']['authority_url']
-        assert payload['oauth_config']['token_url'] == EMAIL_OAUTH_CONFIGS['Gmail']['token_url']
-        assert payload['oauth_config']['scopes'] == EMAIL_OAUTH_CONFIGS['Gmail']['scopes']['alias']
-        assert payload['oauth_config']['authority_args'] == EMAIL_OAUTH_CONFIGS['Gmail']['authority_args']
-
-    def test_shared_microsoft_allows_tenant_endpoints(self, factory):
-        request = factory.post('/', data={
-            'name': 'shared-mail',
-            'config': {
-                'server_provider': 'Microsoft',
-                'account_type': 'shared',
-                'oauth_client_mode': 'custom',
-                'client_id': 'client-id',
-                'client_secret': 'client-secret',
-                'sender_email': 'shared@example.com',
-                'authority_url': 'https://login.microsoftonline.com/tenant-id/oauth2/v2.0/authorize',
-                'token_url': 'https://login.microsoftonline.com/tenant-id/oauth2/v2.0/token',
-            },
-        }, format='json')
-
-        payload, error_response = EmailOAuthUtils.build_email_oauth_config(request)
-
-        assert error_response is None
-        assert payload['config']['authority_url'].endswith('/tenant-id/oauth2/v2.0/authorize')
-        assert payload['config']['token_url'].endswith('/tenant-id/oauth2/v2.0/token')
-        assert payload['oauth_config']['scopes'] == EMAIL_OAUTH_CONFIGS['Microsoft']['scopes'][EMAIL_ACCOUNT_TYPE_SHARED]
-        assert payload['oauth_config']['authority_args'] == EMAIL_OAUTH_CONFIGS['Microsoft']['authority_args']
-
-    def test_shared_microsoft_defaults_missing_endpoints(self, factory):
-        request = factory.post('/', data={
-            'name': 'shared-mail',
-            'config': {
-                'server_provider': 'Microsoft',
-                'account_type': 'shared',
-                'oauth_client_mode': 'custom',
-                'client_id': 'client-id',
-                'client_secret': 'client-secret',
-                'sender_email': 'shared@example.com',
-            },
-        }, format='json')
-
-        payload, error_response = EmailOAuthUtils.build_email_oauth_config(request)
-
-        assert error_response is None
-        assert 'authority_url' not in payload['config']
-        assert 'token_url' not in payload['config']
-        assert payload['oauth_config']['authority_url'] == EMAIL_OAUTH_CONFIGS['Microsoft']['authority_url']
-        assert payload['oauth_config']['token_url'] == EMAIL_OAUTH_CONFIGS['Microsoft']['token_url']
-
-    def test_shared_microsoft_strips_tenant_endpoints(self, factory):
-        request = factory.post('/', data={
-            'name': 'shared-mail',
-            'config': {
-                'server_provider': 'Microsoft',
-                'account_type': 'shared',
-                'oauth_client_mode': 'custom',
-                'client_id': 'client-id',
-                'client_secret': 'client-secret',
-                'sender_email': 'shared@example.com',
-                'authority_url': ' https://login.microsoftonline.com/tenant-id/oauth2/v2.0/authorize ',
-                'token_url': ' https://login.microsoftonline.com/tenant-id/oauth2/v2.0/token ',
-            },
-        }, format='json')
-
-        payload, error_response = EmailOAuthUtils.build_email_oauth_config(request)
-
-        assert error_response is None
-        assert payload['config']['authority_url'] == 'https://login.microsoftonline.com/tenant-id/oauth2/v2.0/authorize'
-        assert payload['config']['token_url'] == 'https://login.microsoftonline.com/tenant-id/oauth2/v2.0/token'
-
-    def test_shared_microsoft_rejects_non_microsoft_endpoint(self, factory):
-        for key, endpoint in (
-                ('authority_url', 'http://169.254.169.254/latest/meta-data/'),
-                ('token_url', 'https://login.microsoftonline.com.evil.example/token'),
-        ):
-            request = factory.post('/', data={
-                'name': 'shared-mail',
-                'config': {
-                    'server_provider': 'Microsoft',
-                    'account_type': 'shared',
-                    'oauth_client_mode': 'custom',
-                    'client_id': 'client-id',
-                    'client_secret': 'client-secret',
-                    'sender_email': 'shared@example.com',
-                    key: endpoint,
-                },
-            }, format='json')
-
-            payload, error_response = EmailOAuthUtils.build_email_oauth_config(request)
-
-            assert payload is None
-            assert error_response.status_code == 400
-
     @pytest.mark.parametrize('provider,account_type', [
-        ('Gmail', 'personal'), ('Gmail', 'alias'),
-        ('Microsoft', 'personal'), ('Microsoft', 'alias'), ('Microsoft', 'shared'),
+        ('Gmail', 'personal'), ('Microsoft', 'personal'), ('Microsoft', 'shared'),
     ])
     @pytest.mark.parametrize('client_mode', ['default', 'custom'])
-    def test_account_type_and_client_mode_are_independent(self, factory, provider, account_type, client_mode):
+    def test_oauth_uses_platform_config_only(self, factory, provider, account_type, client_mode):
         config = {
             'server_provider': provider, 'account_type': account_type,
             'oauth_client_mode': client_mode, 'client_id': 'custom-id', 'client_secret': 'custom-secret',
             'sender_email': 'alias@example.com', 'sender_name': 'Support',
+            'authority_url': 'https://ignored.example/authorize', 'token_url': 'https://ignored.example/token',
         }
         request = factory.post('/', data={'name': 'Mail', 'config': config}, format='json')
         provider_config = EMAIL_OAUTH_CONFIGS[provider]
@@ -233,21 +110,23 @@ class TestEmailOAuthUtils:
                              provider_config['client_secret_setting'], 'platform-secret', create=True):
             payload, error = EmailOAuthUtils.build_email_oauth_config(request)
             assert error is None
-            assert payload['oauth_config']['client_id'] == ('custom-id' if client_mode == 'custom' else 'platform-id')
+            assert payload['oauth_config']['client_id'] == 'platform-id'
+            assert payload['oauth_config']['client_secret'] == 'platform-secret'
+            assert payload['oauth_config']['authority_url'] == provider_config['authority_url']
+            assert payload['oauth_config']['token_url'] == provider_config['token_url']
             expected_scopes = list(provider_config['scopes'][account_type])
-            if client_mode == 'default' or account_type == 'personal':
-                expected_scopes.extend(provider_config['identity_scopes'])
+            expected_scopes.extend(provider_config['identity_scopes'])
             assert payload['oauth_config']['scopes'] == list(dict.fromkeys(expected_scopes))
             assert ('sender_email' in payload['config']) == (account_type != 'personal')
-            assert ('client_secret' in payload['config']) == (client_mode == 'custom')
+            assert not {'oauth_client_mode', 'client_id', 'client_secret', 'authority_url', 'token_url'} & payload['config'].keys()
             assert EmailOAuthUtils._get_oauth_config(provider, account_type, payload['config']) == payload['oauth_config']
 
     @pytest.mark.parametrize('config', [
         {'server_provider': 'Gmail', 'account_type': 'shared'},
         {'server_provider': 'Gmail', 'account_type': 'alias', 'sender_email': ''},
         {'server_provider': 'Microsoft', 'account_type': 'alias', 'sender_email': 'invalid'},
-        {'server_provider': 'Microsoft', 'account_type': 'personal', 'oauth_client_mode': 'custom', 'client_id': 'id'},
-        {'server_provider': 'Gmail', 'oauth_client_mode': 'invalid'},
+        {'server_provider': 'Microsoft', 'account_type': 'shared', 'sender_email': ''},
+        {'server_provider': 'Microsoft', 'account_type': 'shared', 'sender_email': 'invalid'},
     ])
     def test_rejects_invalid_account_configuration(self, factory, config):
         request = factory.post('/', data={'name': 'Mail', 'config': config}, format='json')
@@ -255,7 +134,7 @@ class TestEmailOAuthUtils:
         assert payload is None
         assert error.status_code == 400
 
-    @pytest.mark.parametrize('provider,account_type', [('Gmail', 'alias'), ('Microsoft', 'alias'), ('Microsoft', 'shared')])
+    @pytest.mark.parametrize('provider,account_type', [('Microsoft', 'shared')])
     def test_callback_preserves_specified_sender(self, factory, user, provider, account_type):
         transaction = TestProjectEmailOAuthCallbackView._oauth_transaction('project-id')
         transaction['config'] = {
@@ -284,7 +163,7 @@ class TestEmailOAuthUtils:
         ('oauth_client_mode', 'custom'), ('client_id', 'different-app'),
     ])
     def test_modify_rejects_mailbox_and_authorization_changes(self, factory, user, changed_key, value):
-        config = {'server_provider': 'Gmail', 'account_type': 'alias', 'oauth_client_mode': 'default',
+        config = {'server_provider': 'Microsoft', 'account_type': 'shared',
                   'sender_email': 'alias@example.com'}
         record = Mock(type='email', config=json.dumps(config))
         request = factory.put('/', data={'config': json.dumps({changed_key: value})}, format='json')
@@ -492,11 +371,6 @@ class TestProjectConnectionsView:
                         'server_provider': provider,
                         'account_type': 'personal',
                         'sync_years': 5,
-                        'oauth_client_mode': 'custom',
-                        'client_id': 'authorized-client-id',
-                        'client_secret': 'authorized-client-secret',
-                        'authority_url': 'https://login.microsoftonline.com/authorized/oauth2/v2.0/authorize',
-                        'token_url': 'https://login.microsoftonline.com/authorized/oauth2/v2.0/token',
                     },
                     'access_token': 'access-token',
                     'refresh_token': 'refresh-token',
@@ -508,6 +382,8 @@ class TestProjectConnectionsView:
         record = Mock(id=11)
         record.to_dict.return_value = {'id': 11, 'name': 'mail-conn', 'type': 'email'}
         with patch('seahub.project.connections.create_connection', return_value=(record, None)) as create_connection_mock, \
+                patch.object(settings, EMAIL_OAUTH_CONFIGS[provider]['client_id_setting'], 'platform-id', create=True), \
+                patch.object(settings, EMAIL_OAUTH_CONFIGS[provider]['client_secret_setting'], 'platform-secret', create=True), \
                 patch('seahub.project.connections.ProjectConnectionOauth.objects.upsert_connection_token') as upsert_connection_token_mock:
             resp = ProjectConnectionsView.as_view()(request, project_uuid=real_project.uuid)
 
@@ -515,11 +391,7 @@ class TestProjectConnectionsView:
         created_config = create_connection_mock.call_args.args[4]
         assert created_config['sync_years'] == 2
         assert created_config['server_provider'] == provider
-        assert created_config['oauth_client_mode'] == 'custom'
-        assert created_config['client_id'] == 'authorized-client-id'
-        assert created_config['client_secret'] == 'authorized-client-secret'
-        assert created_config['authority_url'] == 'https://login.microsoftonline.com/authorized/oauth2/v2.0/authorize'
-        assert created_config['token_url'] == 'https://login.microsoftonline.com/authorized/oauth2/v2.0/token'
+        assert not {'oauth_client_mode', 'client_id', 'client_secret', 'authority_url', 'token_url'} & created_config.keys()
         upsert_connection_token_mock.assert_called_once_with(
             real_project.uuid, 11, 'access-token', 123456, 'refresh-token'
         )
