@@ -284,10 +284,6 @@ class ProjectConnectionsView(APIView):
                     authorized_config.get('account_type', EMAIL_ACCOUNT_TYPE_PERSONAL) !=
                     config.get('account_type', EMAIL_ACCOUNT_TYPE_PERSONAL)):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'OAuth authorization does not match connection configuration.')
-            for key in ('oauth_client_mode', 'client_id', 'client_secret', 'authority_url', 'token_url'):
-                default = 'default' if key == 'oauth_client_mode' else ''
-                if (authorized_config.get(key) or default) != (config.get(key) or default):
-                    return api_error(status.HTTP_400_BAD_REQUEST, 'OAuth authorization does not match connection configuration.')
             if authorized_config.get('account_type') != EMAIL_ACCOUNT_TYPE_PERSONAL:
                 for key in ('sender_email', 'sender_name'):
                     if (authorized_config.get(key) or '') != (config.get(key) or '').strip():

@@ -1,13 +1,11 @@
 import React, { useCallback, useMemo, useState, useEffect, useRef } from 'react';
 import { Button, Modal, Input, ModalBody, FormGroup, Label, Row } from 'reactstrap';
-import copy from 'copy-to-clipboard';
 import PropTypes from 'prop-types';
-import { ModalHeader, Loading, toaster, Icon, IconTooltip } from '@/components';
-import Switch from '@/components/switch';
+import { ModalHeader, Loading, toaster, Icon } from '@/components';
 import { gettext } from '@/constants';
 import { connectionsAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
-import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, STEP, STEPS, EMAIL_SERVER_PROVIDER, getAvailableConnectionTypes } from '../../constants';
+import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, STEP, STEPS, EMAIL_SERVER_PROVIDER, EMAIL_ACCOUNT_TYPE, getAvailableConnectionTypes } from '../../constants';
 import { useConnections } from '../../hooks/connections';
 import { getVisibleEmailFields, getEmailProvider, isOAuthEmailProvider, hasValidMicrosoftOAuthUrls, sanitizeEmailConfigByProvider, isEmailOAuthConfigValid } from '../../utils';
 import ConnectionConfigEditor from '../connection-config-editor';
@@ -48,7 +46,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const [isSubmitting, setSubmitting] = useState(false);
   const [githubRepositories, setGithubRepositories] = useState([]);
   const [isLoadingRepositories, setIsLoadingRepositories] = useState(false);
-  const [showEmailAdvancedOptions, setShowEmailAdvancedOptions] = useState(false);
   const [isWaitingEmailOAuth, setWaitingEmailOAuth] = useState(false);
   const [emailOAuthState, setEmailOAuthState] = useState('');
   const [emailOAuthSender, setEmailOAuthSender] = useState(null);
@@ -115,8 +112,16 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     const _columns = CONNECTION_FIELDS[type] || [];
     if (type === CONNECTION_TYPE.GITHUB_ISSUE) return _columns;
     if (type !== CONNECTION_TYPE.EMAIL) return _columns;
-    return getVisibleEmailFields(_columns, getEmailProvider(config), showEmailAdvancedOptions, config.account_type, config.oauth_client_mode);
-  }, [type, config, showEmailAdvancedOptions]);
+    const provider = getEmailProvider(config);
+    return getVisibleEmailFields(_columns, provider, false, config.account_type, config.oauth_client_mode)
+      .filter(column => column.key !== 'account_type' || provider !== EMAIL_SERVER_PROVIDER.GMAIL)
+      .map(column => {
+        if (column.key === 'account_type' && provider === EMAIL_SERVER_PROVIDER.MICROSOFT) {
+          return { ...column, options: column.options.filter(option => option.value !== EMAIL_ACCOUNT_TYPE.ALIAS) };
+        }
+        return column;
+      });
+  }, [type, config]);
 
   const customColumns = useMemo(() => columns.filter(c => {
     if (c.type === CONNECTION_FIELD_TYPE.GROUP) return c.children.find(children => children.is_custom);
@@ -138,10 +143,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
 
   const basicCustomColumns = useMemo(() => {
     return customColumns.filter(column => !column.is_advanced_option);
-  }, [customColumns]);
-
-  const advancedCustomColumns = useMemo(() => {
-    return customColumns.filter(column => column.is_advanced_option);
   }, [customColumns]);
 
   const step = useMemo(() => {
@@ -1010,36 +1011,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
               </FormGroup>
             )}
             {isDiscord && basicCustomColumns.filter(column => column.key === 'channel_id').map(renderConnectionField)}
-            {isOAuthEmail && (
-              <div className="seaqa-project-connection-advanced-options mb-3">
-                <Switch
-                  checked={showEmailAdvancedOptions}
-                  onChange={() => setShowEmailAdvancedOptions(!showEmailAdvancedOptions)}
-                  placeholder={gettext('Advanced settings')}
-                  textPosition="right"
-                  disabled={isSubmitting}
-                />
-              </div>
-            )}
-            {advancedCustomColumns.map(renderConnectionField)}
-            {isOAuthEmail && showEmailAdvancedOptions && config.oauth_client_mode === 'custom' && (
-              <FormGroup>
-                <Label>
-                  {gettext('OAuth callback URL')}
-                  <IconTooltip
-                    tip={gettext('Register this callback URL in your OAuth application. It is read-only and must match exactly, including the protocol and path.')}
-                    icon="question-circle-stroked"
-                    className="connection-config-tip-btn"
-                  />
-                </Label>
-                <div className="input-group">
-                  <Input value={window.app.pageOptions.emailOAuthCallbackUrl || ''} readOnly />
-                  <Button type="button" disabled={isSubmitting} onClick={() => copy(window.app.pageOptions.emailOAuthCallbackUrl || '')}>
-                    {gettext('Copy')}
-                  </Button>
-                </div>
-              </FormGroup>
-            )}
             {isOAuthEmail && (
               <FormGroup>
                 <Label>{gettext('Authorization')}</Label>

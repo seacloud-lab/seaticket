@@ -446,8 +446,20 @@ class TestProjectConnectionsView:
         assert resp.data['record']['id'] == 11
         add_task_mock.assert_called_once()
 
+    @pytest.mark.parametrize('provider', ['Gmail', 'Microsoft'])
+    @pytest.mark.parametrize('request_advanced_config', [
+        {},
+        {
+            'oauth_client_mode': 'custom',
+            'client_id': 'request-client-id',
+            'client_secret': 'request-client-secret',
+            'authority_url': 'https://login.microsoftonline.com/request/oauth2/v2.0/authorize',
+            'token_url': 'https://login.microsoftonline.com/request/oauth2/v2.0/token',
+        },
+    ])
     def test_post_email_associates_callback_oauth_record(
-            self, factory, project_creator, real_project, connection_factory):
+            self, factory, project_creator, real_project, connection_factory,
+            provider, request_advanced_config):
         state = 'state-1'
         connection_factory(
             connection_type='email',
@@ -460,7 +472,8 @@ class TestProjectConnectionsView:
                 'name': 'mail-conn',
                 'type': 'email',
                 'config': json.dumps({
-                    'server_provider': 'Microsoft',
+                    **request_advanced_config,
+                    'server_provider': provider,
                     'account_type': 'personal',
                     'sync_years': 2,
                 }),
@@ -476,9 +489,14 @@ class TestProjectConnectionsView:
                     'status': 'authorized',
                     'name': 'mail-conn',
                     'config': {
-                        'server_provider': 'Microsoft',
+                        'server_provider': provider,
                         'account_type': 'personal',
                         'sync_years': 5,
+                        'oauth_client_mode': 'custom',
+                        'client_id': 'authorized-client-id',
+                        'client_secret': 'authorized-client-secret',
+                        'authority_url': 'https://login.microsoftonline.com/authorized/oauth2/v2.0/authorize',
+                        'token_url': 'https://login.microsoftonline.com/authorized/oauth2/v2.0/token',
                     },
                     'access_token': 'access-token',
                     'refresh_token': 'refresh-token',
@@ -494,7 +512,14 @@ class TestProjectConnectionsView:
             resp = ProjectConnectionsView.as_view()(request, project_uuid=real_project.uuid)
 
         assert resp.status_code == 201
-        assert create_connection_mock.call_args.args[4]['sync_years'] == 2
+        created_config = create_connection_mock.call_args.args[4]
+        assert created_config['sync_years'] == 2
+        assert created_config['server_provider'] == provider
+        assert created_config['oauth_client_mode'] == 'custom'
+        assert created_config['client_id'] == 'authorized-client-id'
+        assert created_config['client_secret'] == 'authorized-client-secret'
+        assert created_config['authority_url'] == 'https://login.microsoftonline.com/authorized/oauth2/v2.0/authorize'
+        assert created_config['token_url'] == 'https://login.microsoftonline.com/authorized/oauth2/v2.0/token'
         upsert_connection_token_mock.assert_called_once_with(
             real_project.uuid, 11, 'access-token', 123456, 'refresh-token'
         )
