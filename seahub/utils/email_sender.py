@@ -354,8 +354,6 @@ class _OAuthEmailSender(OAuthTokenClient, _EmailSenderBase):
         self.account_type = config.get('account_type', 'personal')
 
         if not self._has_complete_oauth_config():
-            logger.error('OAuth email config is invalid. client_id: %s, token_url: %s',
-                        self.client_id, self.token_url)
             raise EmailConfigError('OAuth email configuration is incomplete')
         if self.account_type == 'shared' and not self.sender_email:
             raise EmailConfigError('Shared email sender address is required')

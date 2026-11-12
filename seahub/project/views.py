@@ -246,10 +246,6 @@ def email_oauth_callback(request):
     provider_error = request.GET.get('error')
     if provider_error:
         detail = request.GET.get('error_description') or provider_error
-        logger.error(
-            'Email OAuth provider returned an error, state: %s, provider: %s, error: %s, description: %s',
-            request_state, config.get('server_provider'), provider_error, detail,
-        )
         error_msg = _('The email provider rejected the authorization.') + f' {detail}'
         EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
         return render(request, 'error.html', {'error_msg': error_msg})
@@ -280,11 +276,7 @@ def email_oauth_callback(request):
             authorization_response=authorization_response_url,
         )
     except Exception as e:
-        logger.error(
-            'Email OAuth token exchange failed, provider: %s, token_url: %s, error_type: %s, details: %s',
-            config.get('server_provider'), oauth_config.get('token_url'),
-            type(e).__name__, getattr(e, '__dict__', None) or repr(e),
-        )
+        logger.error('Email OAuth token exchange failed, error: %s, e')
         error_msg = 'Failed to request token, please check your connection configurations'
         EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
         return render(request, 'error.html', {'error_msg': _(error_msg)})
@@ -304,6 +296,11 @@ def email_oauth_callback(request):
         error_msg = 'Failed to fetch sender profile, please check your connection configurations'
         EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
         return render(request, 'error.html', {'error_msg': _(error_msg)})
+    except Exception as e:
+        logger.error('fetch email sender error: %s', e)
+        error_msg = 'Failed to fetch email sender.'
+        EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
+        return render_error(request, _(error_msg))
 
     oauth_data['status'] = 'authorized'
     oauth_data['sender_name'] = final_config.get('sender_name', '')
