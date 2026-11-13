@@ -1,8 +1,7 @@
 # Copyright (c) 2012-2016 Seafile Ltd.
-import hashlib
 import json
 import logging
-import random
+import secrets
 
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication
@@ -145,10 +144,7 @@ class UserContactEmailView(APIView):
     UPDATE_KEY_TIMEOUT = 60 * 60 * 24 * EXPIRATION_DAYS
 
     def _cache_update_contact_email_key(self, username, new_contact_email):
-        salt = hashlib.sha1(str(random.random()).encode('utf-8')).hexdigest()[:5].encode('utf-8')
-        # if isinstance(username, str):
-        #     username = username.encode('utf-8')
-        update_key = hashlib.sha1(salt+username.encode('utf-8')).hexdigest()
+        update_key = secrets.token_hex(32)
         cache_key = get_update_contact_email_cache_key(update_key)
         cache.set(cache_key, json.dumps({
             'username': username,
