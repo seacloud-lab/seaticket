@@ -645,7 +645,7 @@ class TestProjectEmailOAuthCallbackView:
         assert request.session['oauth_email_connection']['state-1']['expires_at'] == 123456
         assert request.session['oauth_email_connection']['state-1']['status'] == 'authorized'
 
-    def test_callback_failure_is_saved_without_type_error(self, factory, project_creator, real_project):
+    def test_callback_failure_is_saved_without_type_error(self, factory, project_creator, real_project, caplog):
         session = DummySession({
             'oauth_email_connection': {
                 'state-1': self._oauth_transaction(real_project.uuid),
@@ -658,7 +658,10 @@ class TestProjectEmailOAuthCallbackView:
         request.is_tablet = False
 
         oauth_session = Mock()
-        oauth_session.fetch_token.side_effect = Exception('token request failed')
+        sensitive_value = 'sensitive-oauth-error-details'
+        error = Exception(sensitive_value)
+        error.client_secret = sensitive_value
+        oauth_session.fetch_token.side_effect = error
 
         with patch('seahub.project.views.OAuth2Session', return_value=oauth_session):
             resp = email_oauth_callback(request)
@@ -667,6 +670,10 @@ class TestProjectEmailOAuthCallbackView:
         oauth_data = request.session['oauth_email_connection']['state-1']
         assert oauth_data['status'] == 'failure'
         assert oauth_data['error_msg'] == 'Failed to request token, please check your connection configurations'
+        assert 'Email OAuth token exchange failed' in caplog.text
+        assert sensitive_value not in caplog.text
+        assert session['oauth_email_connection']['state-1']['oauth_config']['token_url'] not in caplog.text
+        assert all(record.exc_info is None for record in caplog.records)
 
     def test_callback_only_updates_transaction_for_its_state(self, factory, project_creator, real_project):
         session = DummySession({

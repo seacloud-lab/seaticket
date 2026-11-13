@@ -6,6 +6,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from seahub.utils.email_sender import GmailSender, MicrosoftSender, EmailConfigError
+from seahub.utils.email_oauth import OAuthTokenClient, EmailAuthProviderError
 
 
 @pytest.mark.parametrize('sender_class,account_type,principal', [
@@ -35,3 +36,21 @@ def test_oauth_sender_uses_mailbox_principal_and_configured_from(sender_class, a
 def test_gmail_rejects_shared():
     with pytest.raises(EmailConfigError, match='account type'):
         GmailSender({'account_type': 'shared'})
+
+
+def test_token_refresh_failure_does_not_log_sensitive_details(caplog):
+    sensitive_value = 'sensitive-oauth-configuration'
+    client = OAuthTokenClient(
+        {}, {'refresh_token': sensitive_value, 'expires_at': 0},
+        {'client_id': sensitive_value, 'client_secret': sensitive_value,
+         'token_url': 'https://sensitive.example/token', 'scopes': ['scope']},
+    )
+    response = Mock(status_code=400)
+    response.json.return_value = {'error_description': sensitive_value}
+    with patch('seahub.utils.email_oauth.requests.post', return_value=response):
+        with pytest.raises(EmailAuthProviderError):
+            client._request_access_token()
+    assert 'Failure to fetch new access token' in caplog.text
+    assert sensitive_value not in caplog.text
+    assert client.token_url not in caplog.text
+    assert all(record.exc_info is None for record in caplog.records)

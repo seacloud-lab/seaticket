@@ -82,48 +82,52 @@ def fetch_oauth_email_sender_info(config, access_token):
     provider = config.get('server_provider')
     headers = {'Authorization': f'Bearer {access_token}'}
 
-    if provider == GMAIL_EMAIL_PROVIDER:
-        response = requests.get(
-            'https://gmail.googleapis.com/gmail/v1/users/me/settings/sendAs',
-            headers=headers,
-            timeout=10,
-        )
-        response.raise_for_status()
-        send_as_list = response.json().get('sendAs') or []
-        sender_info = next(
-            (item for item in send_as_list if item.get('isPrimary') or item.get('isDefault')),
-            send_as_list[0] if send_as_list else None,
-        )
-        if not sender_info:
-            raise EmailOAuthProfileError('No Gmail sender profile found.')
+    try:
+        if provider == GMAIL_EMAIL_PROVIDER:
+            response = requests.get(
+                'https://gmail.googleapis.com/gmail/v1/users/me/settings/sendAs',
+                headers=headers,
+                timeout=10,
+            )
+            response.raise_for_status()
+            send_as_list = response.json().get('sendAs') or []
+            sender_info = next(
+                (item for item in send_as_list if item.get('isPrimary') or item.get('isDefault')),
+                send_as_list[0] if send_as_list else None,
+            )
+            if not sender_info:
+                raise EmailOAuthProfileError('No Gmail sender profile found.')
 
-        sender_email = sender_info.get('sendAsEmail')
-        if not sender_email:
-            raise EmailOAuthProfileError('No Gmail sender email found.')
+            sender_email = sender_info.get('sendAsEmail')
+            if not sender_email:
+                raise EmailOAuthProfileError('No Gmail sender email found.')
 
-        return {
-            'sender_name': sender_info.get('displayName', ''),
-            'sender_email': sender_email,
-            'username': sender_email,
-        }
+            return {
+                'sender_name': sender_info.get('displayName', ''),
+                'sender_email': sender_email,
+                'username': sender_email,
+            }
 
-    if provider == MICROSOFT_EMAIL_PROVIDER:
-        response = requests.get(
-            'https://graph.microsoft.com/v1.0/me',
-            headers=headers,
-            timeout=10,
-        )
-        response.raise_for_status()
-        sender_info = response.json()
-        sender_email = sender_info.get('mail') or sender_info.get('userPrincipalName')
-        if not sender_email:
-            raise EmailOAuthProfileError('No Microsoft sender email found.')
+        if provider == MICROSOFT_EMAIL_PROVIDER:
+            response = requests.get(
+                'https://graph.microsoft.com/v1.0/me',
+                headers=headers,
+                timeout=10,
+            )
+            response.raise_for_status()
+            sender_info = response.json()
+            sender_email = sender_info.get('mail') or sender_info.get('userPrincipalName')
+            if not sender_email:
+                raise EmailOAuthProfileError('No Microsoft sender email found.')
 
-        return {
-            'sender_name': sender_info.get('displayName', ''),
-            'sender_email': sender_email,
-            'username': sender_email,
-        }
+            return {
+                'sender_name': sender_info.get('displayName', ''),
+                'sender_email': sender_email,
+                'username': sender_email,
+            }
+    except requests.RequestException as e:
+        logger.error('Failed to fetch sender profile for provider %s, error_type: %s', provider, type(e).__name__)
+        raise EmailOAuthProfileError('Failed to fetch sender profile.') from e
 
     raise EmailOAuthProfileError(f'Unsupported OAuth email provider: {provider}')
 

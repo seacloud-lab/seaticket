@@ -195,7 +195,7 @@ def email_oauth(request, project_uuid):
         for key, value in oauth_config.get('authority_args', {}).items():
             authorization_url += f'&{key}={value}'
     except Exception as e:
-        logger.exception(e)
+        logger.error('Email OAuth authorization URL creation failed, error_type: %s', type(e).__name__)
         return JsonResponse({'error_msg': 'Failed to fetch authorization url'}, status=500)
 
     EmailOAuthUtils.set_oauth_session(request, state, {
@@ -246,6 +246,10 @@ def email_oauth_callback(request):
     provider_error = request.GET.get('error')
     if provider_error:
         detail = request.GET.get('error_description') or provider_error
+        logger.error(
+            'Email OAuth provider rejected authorization, provider: %s',
+            config.get('server_provider'),
+        )
         error_msg = _('The email provider rejected the authorization.') + f' {detail}'
         EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
         return render(request, 'error.html', {'error_msg': error_msg})
@@ -276,7 +280,10 @@ def email_oauth_callback(request):
             authorization_response=authorization_response_url,
         )
     except Exception as e:
-        logger.error('Email OAuth token exchange failed, error: %s, e')
+        logger.error(
+            'Email OAuth token exchange failed, provider: %s, error_type: %s',
+            config.get('server_provider'), type(e).__name__,
+        )
         error_msg = 'Failed to request token, please check your connection configurations'
         EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
         return render(request, 'error.html', {'error_msg': _(error_msg)})
@@ -292,7 +299,7 @@ def email_oauth_callback(request):
         if final_config.get('account_type') == 'personal':
             final_config.update(fetch_oauth_email_sender_info(final_config, token.get('access_token')))
     except EmailOAuthProfileError as e:
-        logger.error(e)
+        logger.error('Email OAuth sender profile request failed, error_type: %s', type(e).__name__)
         error_msg = 'Failed to fetch sender profile, please check your connection configurations'
         EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
         return render(request, 'error.html', {'error_msg': _(error_msg)})
