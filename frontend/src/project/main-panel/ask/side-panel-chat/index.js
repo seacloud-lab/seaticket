@@ -17,7 +17,7 @@ const INIT_WIDTH = 400;
 
 const Main = forwardRef(({
   projectUuid, projectName, workspaceID, resizable = true, readOnly = false,
-  session, emptyTip, children, placeholder, displayOperations,
+  session, emptyTip, children, placeholder, displayOperations, showThoughtProcess = true,
   onToggle, getMessages, sendMessage: sendMessageAPI, uploadChatImage,
 }, ref) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -75,7 +75,7 @@ const Main = forwardRef(({
       let message = {
         [CHAT_MESSAGE_TYPE.TEXT]: '',
         [CHAT_MESSAGE_TYPE.SOURCES]: sources,
-        [CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]: thought_process || 'disabled',
+        [CHAT_MESSAGE_TYPE.THOUGHT_PROCESS]: showThoughtProcess ? (thought_process || 'disabled') : '',
         [CHAT_MESSAGE_TYPE.ATTACHMENTS]: attachments,
         ...others,
       };

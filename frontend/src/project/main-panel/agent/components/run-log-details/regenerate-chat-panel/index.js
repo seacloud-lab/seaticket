@@ -7,7 +7,12 @@ import { agentAPI } from '@/project/api';
 import { CHAT_MESSAGE_TYPE } from '@/project/main-panel/ask/constants';
 import SidePanelChat from '@/project/main-panel/ask/side-panel-chat';
 import { Utils } from '@/utils/utils';
-import { getLatestDraftMessage, markChatReplyApplied, markDraftVersionApplied } from './utils';
+import {
+  getLatestDraftMessage,
+  hasApplicableChanges,
+  markChatReplyApplied,
+  markDraftVersionApplied,
+} from './utils';
 
 import './index.css';
 
@@ -27,6 +32,11 @@ const RegenerateChatPanel = ({ run, onClose, onApplied }) => {
 
   const latestDraftMessage = useMemo(() => getLatestDraftMessage(messages), [messages]);
   const latestDrafts = useMemo(() => latestDraftMessage?.suggestions || [], [latestDraftMessage]);
+  const latestRemovedIds = useMemo(
+    () => latestDraftMessage?.removedSuggestionIds || [],
+    [latestDraftMessage],
+  );
+  const latestRegenerationReport = latestDraftMessage?.regenerationReport || '';
 
   const instructionHistory = useMemo(() => (
     messages
@@ -35,9 +45,10 @@ const RegenerateChatPanel = ({ run, onClose, onApplied }) => {
       .join('\n')
   ), [messages]);
 
-  const hasUnappliedDrafts = useMemo(() => (
-    Boolean(latestDraftMessage && !latestDraftMessage.isApplied)
-  ), [latestDraftMessage]);
+  const hasUnappliedDrafts = useMemo(
+    () => hasApplicableChanges(latestDraftMessage),
+    [latestDraftMessage],
+  );
 
   useEffect(() => {
     const width = parseFloat(localStorage.getItem(WIDTH_STORAGE_KEY) || MIN_WIDTH);
@@ -65,22 +76,26 @@ const RegenerateChatPanel = ({ run, onClose, onApplied }) => {
   const applyDrafts = useCallback(() => {
     const { isReply } = chatRef.current?.getStatus() || {};
     const appliedVersionId = latestDraftMessage?.versionId;
-    if (!latestDrafts.length || !appliedVersionId || latestDraftMessage?.isApplied || isApplying || isReply) return;
+    if (!hasUnappliedDrafts || !appliedVersionId || isApplying || isReply) return;
     setIsApplying(true);
     onApplied(run.id, {
       instruction: instructionHistory,
+      regeneration_report: latestRegenerationReport,
       suggestions: latestDrafts,
-    }).then(() => {
+      removed_suggestion_ids: latestRemovedIds,
+    }).then((result) => {
+      if (result?.skipped) return;
+      const savedSuggestions = result?.suggestions || latestDrafts;
       toaster.success(gettext('Suggestions updated'));
-      setMessages(messages => markDraftVersionApplied(messages, appliedVersionId));
-      chatRef.current?.setChatHistories(histories => markChatReplyApplied(histories, appliedVersionId));
+      setMessages(messages => markDraftVersionApplied(messages, appliedVersionId, savedSuggestions));
+      chatRef.current?.setChatHistories(histories => markChatReplyApplied(histories, appliedVersionId, savedSuggestions));
     }).catch((error) => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
     }).finally(() => {
       setIsApplying(false);
     });
-  }, [instructionHistory, isApplying, latestDraftMessage, latestDrafts, onApplied, run.id]);
+  }, [hasUnappliedDrafts, instructionHistory, isApplying, latestDraftMessage, latestDrafts, latestRemovedIds, latestRegenerationReport, onApplied, run.id]);
 
   const getMessages = useCallback(() => {
     return new Promise((resolve, reject) => {
@@ -95,11 +110,20 @@ const RegenerateChatPanel = ({ run, onClose, onApplied }) => {
     return agentAPI.regenerateAgentRun(projectUuid, run.id, {
       instruction,
       previous_drafts: latestDrafts,
+      removed_suggestion_ids: latestRemovedIds,
     }).then((res) => {
       const suggestions = res.data?.suggestions || [];
+      const removedSuggestionIds = res.data?.removed_suggestion_ids || [];
+      const regenerationReport = res.data?.regeneration_report || '';
       const versionId = slugid.nice();
-      setMessages(prev => [...prev, { role: 'assistant', suggestions, versionId }]);
-      const ai_reply = suggestions.length === 0 ? gettext('No suggestions were generated.') : {
+      setMessages(prev => [...prev, {
+        role: 'assistant', suggestions, regenerationReport, removedSuggestionIds, versionId,
+      }]);
+      const emptyText = removedSuggestionIds.length > 0
+        ? gettext('Pending suggestions were removed.')
+        : gettext('No suggestions were generated.');
+      const ai_reply = {
+        [CHAT_MESSAGE_TYPE.TEXT]: regenerationReport || (suggestions.length === 0 ? emptyText : ''),
         [CHAT_MESSAGE_TYPE.SUGGESTIONS]: suggestions,
       };
       return {
@@ -113,7 +137,7 @@ const RegenerateChatPanel = ({ run, onClose, onApplied }) => {
       chatRef.current?.setAsk([instruction]);
       throw error;
     });
-  }, [latestDrafts, run]);
+  }, [latestDrafts, latestRemovedIds, run]);
 
   useEffect(() => {
     setMessages([]);
@@ -133,6 +157,7 @@ const RegenerateChatPanel = ({ run, onClose, onApplied }) => {
         readOnly={isApplying}
         emptyTip={gettext('Describe how the suggestions should change.')}
         displayOperations={false}
+        showThoughtProcess={false}
         onToggle={handleClose}
         getMessages={getMessages}
         sendMessage={sendMessage}
@@ -145,7 +170,7 @@ const RegenerateChatPanel = ({ run, onClose, onApplied }) => {
             <Button
               color="primary"
               onClick={applyDrafts}
-              disabled={!latestDrafts.length || latestDraftMessage?.isApplied || isReply || isApplying}
+              disabled={!hasUnappliedDrafts || isReply || isApplying}
             >
               {isApplying ? gettext('Applying...') : gettext('Apply this version')}
             </Button>
