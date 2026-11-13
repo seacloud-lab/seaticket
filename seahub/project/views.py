@@ -246,10 +246,7 @@ def email_oauth_callback(request):
     provider_error = request.GET.get('error')
     if provider_error:
         detail = request.GET.get('error_description') or provider_error
-        logger.error(
-            'Email OAuth provider rejected authorization, provider: %s',
-            config.get('server_provider'),
-        )
+        logger.error('Email OAuth provider rejected authorization.')
         error_msg = _('The email provider rejected the authorization.') + f' {detail}'
         EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
         return render(request, 'error.html', {'error_msg': error_msg})
@@ -279,11 +276,8 @@ def email_oauth_callback(request):
             client_secret=oauth_config.get('client_secret'),
             authorization_response=authorization_response_url,
         )
-    except Exception as e:
-        logger.error(
-            'Email OAuth token exchange failed, provider: %s, error_type: %s',
-            config.get('server_provider'), type(e).__name__,
-        )
+    except Exception:
+        logger.error('Email OAuth token exchange failed.')
         error_msg = 'Failed to request token, please check your connection configurations'
         EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
         return render(request, 'error.html', {'error_msg': _(error_msg)})
@@ -304,7 +298,7 @@ def email_oauth_callback(request):
         EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
         return render(request, 'error.html', {'error_msg': _(error_msg)})
     except Exception as e:
-        logger.error('fetch email sender error: %s', e)
+        logger.error('Email OAuth sender profile request failed, error_type: %s', type(e).__name__)
         error_msg = 'Failed to fetch email sender.'
         EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
         return render_error(request, _(error_msg))

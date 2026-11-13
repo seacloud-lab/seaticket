@@ -18,6 +18,61 @@ PROVIDERS = ['linear', 'confluence', 'discord', 'jira', 'notion']
 VIEWS_PATH = Path(__file__).resolve().parents[2] / 'seahub/project/views.py'
 
 
+@pytest.mark.parametrize('filename,function_name,message', [
+    ('utils.py', 'fetch_oauth_email_sender_info', 'Failed to fetch sender profile.'),
+    ('views.py', 'email_oauth_callback', 'Email OAuth provider rejected authorization.'),
+    ('views.py', 'email_oauth_callback', 'Email OAuth token exchange failed.'),
+])
+def test_email_oauth_reported_logs_use_only_fixed_messages(filename, function_name, message, caplog):
+    source_path = VIEWS_PATH.with_name(filename)
+    source = ast.parse(source_path.read_text())
+    function = next(node for node in source.body
+                    if isinstance(node, ast.FunctionDef) and node.name == function_name)
+    logs = [node for node in ast.walk(function)
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+            and isinstance(node.func.value, ast.Name) and node.func.value.id == 'logger'
+            and node.args and isinstance(node.args[0], ast.Constant)
+            and node.args[0].value == message]
+    assert len(logs) == 1
+    log = logs[0]
+    assert len(log.args) == 1
+    assert not log.keywords
+    module = ast.fix_missing_locations(ast.Module(body=[ast.Expr(value=log)], type_ignores=[]))
+    # No configuration, provider or exception objects are available to the log.
+    exec(compile(module, str(source_path), 'exec'), {
+        'logger': logging.getLogger('oauth_callback_logging_test'),
+    })
+    assert len(caplog.records) == 1
+    record = caplog.records[0]
+    assert record.getMessage() == message
+    assert not record.args
+    assert record.exc_info is None
+    assert record.stack_info is None
+
+
+def test_email_sender_profile_fallback_log_excludes_exception_details(caplog):
+    source = ast.parse(VIEWS_PATH.read_text())
+    callback = next(node for node in source.body
+                    if isinstance(node, ast.FunctionDef) and node.name == 'email_oauth_callback')
+    profile_request = next(node for node in ast.walk(callback)
+                           if isinstance(node, ast.Try) and any(
+                               isinstance(handler.type, ast.Name) and handler.type.id == 'EmailOAuthProfileError'
+                               for handler in node.handlers))
+    fallback = next(handler for handler in profile_request.handlers
+                    if isinstance(handler.type, ast.Name) and handler.type.id == 'Exception')
+    # Execute the production logging statement with a sensitive exception.
+    statement = fallback.body[0]
+    module = ast.Module(body=[statement], type_ignores=[])
+    exec(compile(module, str(VIEWS_PATH), 'exec'), {
+        'logger': logging.getLogger('oauth_callback_logging_test'),
+        'e': RuntimeError('private-token-and-credential-details'),
+    })
+    assert len(caplog.records) == 1
+    assert 'RuntimeError' in caplog.text
+    assert 'private-token-and-credential-details' not in caplog.text
+    assert caplog.records[0].exc_info is None
+
+
 def load_callback(provider, namespace):
     source = ast.parse(VIEWS_PATH.read_text())
     name = provider + '_oauth_callback'

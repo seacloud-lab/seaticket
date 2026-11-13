@@ -126,7 +126,7 @@ def fetch_oauth_email_sender_info(config, access_token):
                 'username': sender_email,
             }
     except requests.RequestException as e:
-        logger.error('Failed to fetch sender profile for provider %s, error_type: %s', provider, type(e).__name__)
+        logger.error('Failed to fetch sender profile.')
         raise EmailOAuthProfileError('Failed to fetch sender profile.') from e
 
     raise EmailOAuthProfileError(f'Unsupported OAuth email provider: {provider}')
