@@ -4,6 +4,8 @@
   flex: 1;
   flex-direction: column;
   width: 100%;
+  position: relative;
+  z-index: 3;
 }
 
 .seaqa-ai-ask-chats-header {
