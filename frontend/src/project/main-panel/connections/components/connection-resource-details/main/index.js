@@ -19,6 +19,7 @@ const ConnectionResourceDetails = ({
   const [status, setStatus] = useState('loading'); // loading / error / loaded
   const [errorMessage, setErrorMessage] = useState('');
   const [details, setDetails] = useState(null);
+  const [senderEmail, setSenderEmail] = useState('');
   const [localEmailDetails, setLocalEmailDetails] = useState([]);
   const [localDiscourseDetails, setLocalDiscourseDetails] = useState([]);
   const updateResourceRef = useRef(updateResource);
@@ -47,11 +48,11 @@ const ConnectionResourceDetails = ({
 
   const handleReplyEmailSuccess = useCallback((payload) => {
     if (!payload) return;
-    const senderEmail = payload.sender_email;
+    const replySenderEmail = payload.sender_email;
     const senderName = payload.sender_name || '';
-    const emailFrom = senderName && senderEmail
-      ? `${senderName} <${senderEmail}>`
-      : (senderEmail || senderName || '');
+    const emailFrom = senderName && replySenderEmail
+      ? `${senderName} <${replySenderEmail}>`
+      : (replySenderEmail || senderName || '');
     const emailTo = payload.email_to || payload.replyTargetEmail?.email_from || '';
     const now = new Date().toISOString();
     const nextDetail = {
@@ -154,6 +155,9 @@ const ConnectionResourceDetails = ({
           record.assignees = record.assignees.map(id => jiraUserMap[id] || id);
         }
       }
+      if (type === CONNECTION_TYPE.EMAIL) {
+        setSenderEmail(res.data.sender_email || '');
+      }
       const autoReadState = type === CONNECTION_TYPE.EMAIL
         ? getAutoReadEmailState(record, initialDetails, permission)
         : { record, details: initialDetails, shouldMarkThreadRead: false };
@@ -212,6 +216,7 @@ const ConnectionResourceDetails = ({
         connection_id={resource.connection_id}
         recordId={resource._id}
         permission={permission}
+        senderEmail={senderEmail}
         handleReplyEmailSuccess={handleReplyEmailSuccess}
         onUnreadChange={handleEmailUnreadChange}
       />

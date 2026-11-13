@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import classnames from 'classnames';
-import { CustomizeMarkdownViewer, IconTextBtn, IconTooltip, toaster } from '@/components';
+import { CustomizeMarkdownViewer, IconTooltip, toaster } from '@/components';
 import { gettext, mediaUrl, PERMISSION_TYPES } from '@/constants';
 import { connectionsAPI } from '@/project/api';
 import dayjs from '@/utils/dayjs';
@@ -9,21 +9,23 @@ import { Utils } from '@/utils/utils';
 import { generatorConnectionAssetURLPrefix, getInfoByEmailFrom } from '../../../../utils';
 import DateFormatter from '../../../cell-formatter/date-formatter';
 import HTMLContentWrapper from './html-content';
+import ReplyActions from './reply-actions';
 import ReplyEmail from './reply-email';
+import { getReplyTargets } from './utils';
 
 import './index.css';
 
 const Item = ({
   isLast, isExpand,
   detail, projectUuid, connection_id, setIsLastExpanded, recordId, permission,
-  handleReplyEmailSuccess, onUnreadChange, isPortal = false, threadId,
+  handleReplyEmailSuccess, onUnreadChange, isPortal = false, threadId, senderEmail,
 }) => {
   const [isExpanded, setIsExpanded] = useState(isExpand);
   const [isShowReply, setIsShowReply] = useState(false);
   const [isUpdatingUnread, setIsUpdatingUnread] = useState(false);
+  const [initialRecipients, setInitialRecipients] = useState({ to: [], cc: [] });
 
   const ref = useRef(null);
-  const replySendTo = useRef('');
   const expandedRef = useRef(null);
 
   const content = useMemo(() => detail.content || '', [detail.content]);
@@ -31,6 +33,7 @@ const Item = ({
   const isHTMLContent = useMemo(() => HTMLContent ? true : false, [HTMLContent]);
   const { sender, email } = useMemo(() => getInfoByEmailFrom(detail['email_from']), [detail]);
   const isReadonly = useMemo(() => permission === PERMISSION_TYPES.READ_ONLY, [permission]);
+  const replyTargets = useMemo(() => getReplyTargets(detail, senderEmail), [detail, senderEmail]);
   const isUnread = Boolean(detail.unread);
 
   const contentStart = useMemo(() => {
@@ -96,16 +99,30 @@ const Item = ({
     setIsExpanded(true);
   }, []);
 
-  const openReply = useCallback((event) => {
-    event.stopPropagation();
-    event.nativeEvent.stopImmediatePropagation();
+  const startReply = useCallback((mode, { event, mailtoTo = '' } = {}) => {
+    event?.stopPropagation?.();
+    event?.nativeEvent?.stopImmediatePropagation?.();
+    setInitialRecipients(mode === 'replyAll'
+      ? { to: replyTargets.replyAllTo, cc: replyTargets.replyAllCc }
+      : { to: mailtoTo ? [mailtoTo] : replyTargets.replyTo, cc: [] });
     setIsShowReply(true);
-  }, []);
+  }, [replyTargets]);
+
+  const handleReply = useCallback((event) => {
+    startReply('reply', { event });
+  }, [startReply]);
+
+  const handleReplyAll = useCallback((event) => {
+    startReply('replyAll', { event });
+  }, [startReply]);
 
   const openReplyByEmail = useCallback((sendTo = '') => {
-    replySendTo.current = sendTo;
-    setIsShowReply(true);
-  }, []);
+    startReply('reply', { mailtoTo: sendTo });
+  }, [startReply]);
+
+  const renderReplyActions = () => (
+    <ReplyActions hasReplyAll={replyTargets.hasReplyAll} onReply={handleReply} onReplyAll={handleReplyAll} />
+  );
 
   const updateUnread = useCallback((nextUnread) => {
     if (isReadonly || isUpdatingUnread) return;
@@ -175,7 +192,8 @@ const Item = ({
 
     return (
       <ReplyEmail
-        emailTo={[replySendTo.current || detail['email_from']]}
+        emailTo={initialRecipients.to}
+        emailCC={initialRecipients.cc}
         initValue={initValue}
         onToggle={() => setIsShowReply(false)}
         onSubmit={onSubmit}
@@ -183,7 +201,7 @@ const Item = ({
         assetURLPrefix={assetURLPrefix}
       />
     );
-  }, [detail, isHTMLContent, detailContent, sender, projectUuid, connection_id, onSubmit]);
+  }, [detail, isHTMLContent, detailContent, sender, projectUuid, connection_id, onSubmit, initialRecipients]);
 
   const onLinkClick = useCallback((link) => {
     if (!link || !isString(link)) return;
@@ -219,11 +237,6 @@ const Item = ({
   }, [isLast, isExpanded]);
 
   useEffect(() => {
-    if (isShowReply) return;
-    replySendTo.current = '';
-  }, [isShowReply]);
-
-  useEffect(() => {
     if (!expandedRef.current) return;
     expandedRef.current.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
   }, []);
@@ -249,9 +262,7 @@ const Item = ({
               <div className="email-record-info-to">
                 {gettext('To')}: {emailTo}
               </div>
-              {!isReadonly && !isPortal && !isShowReply && (
-                <IconTextBtn icon="reply" color="default" text={gettext('Reply')} className="h-5" onClick={openReply} />
-              )}
+              {!isReadonly && !isPortal && !isShowReply && renderReplyActions()}
             </div>
           </div>
         </div>
@@ -291,9 +302,7 @@ const Item = ({
                 <div className={classnames('read-status', { unread: isUnread })}/>
               </IconTooltip>
             )}
-            {!isReadonly && !isPortal && !isShowReply && (
-              <IconTextBtn icon="reply" color="default" text={gettext('Reply')} className="h-5" onClick={openReply} />
-            )}
+            {!isReadonly && !isPortal && !isShowReply && renderReplyActions()}
           </div>
         </div>
       </div>

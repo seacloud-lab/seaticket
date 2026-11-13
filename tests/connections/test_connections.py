@@ -1508,6 +1508,25 @@ class TestProjectConnectionRecordView:
             'cc': '"Comma, Recipient" <copy@example.invalid>',
         }
 
+    def test_get_email_record_returns_sender_email(self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        connection = connection_factory(
+            connection_type='email',
+            config={'sender_email': 'sender@example.invalid', 'username': 'login@example.invalid'},
+        )
+        request = factory.get(
+            f"/api/v1/project/{project.uuid}/connections/{connection.id}/records/1/")
+        request.user = project_creator
+
+        with patch('seahub.project.connections.SeaDBAPI', return_value=Mock()), \
+                patch('seahub.project.connections.list_email_record_details',
+                      return_value=({'emails': []}, [], '')):
+            response = ProjectConnectionRecordView.as_view()(
+                request, project_uuid=project.uuid, connection_id=str(connection.id), record_id='1')
+
+        assert response.status_code == 200
+        assert response.data['sender_email'] == 'sender@example.invalid'
+
     def test_list_email_record_details_decodes_addresses_without_mutating_query_results(self):
         from seahub.seadb_models.utils import list_email_record_details
 
