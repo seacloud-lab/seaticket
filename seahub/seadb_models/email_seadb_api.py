@@ -266,6 +266,13 @@ class EmailSeaDBAPI:
                 SchemaTables.THREAD.column.is_replied.name: is_replied,
             }
         }])
+
+        try:
+            from seahub.tickets.ticket_utils import record_email_reply_activity
+            thread = self.get_thread_by_pk(connection_id, thread_id)
+            record_email_reply_activity(self.seadb_api, self.base_id, connection_id, thread)
+        except Exception as e:
+            logger.error('record reply activity failed, error: %s', e)
         return pks[0] if pks else None
 
     def mark_emails_deleted(self, connection_id, email_pks):

@@ -1268,6 +1268,33 @@ def record_create_task_activities(
     return activities
 
 
+def record_email_reply_activity(seadb_api, project_uuid, connection_id, thread, creator='system'):
+    """Record an activity when an outbound email reply is saved on a linked thread."""
+    if not thread:
+        return None
+    linked_ticket = thread.get('linked_ticket')
+    if not linked_ticket:
+        return None
+
+    thread_id = thread.get('_pk')
+    now = datetime.now(timezone.utc).isoformat()
+    row = {
+        'ticket_id': int(linked_ticket),
+        'activity_type': 'email_message_added',
+        'detail': json.dumps({
+            'connection_id': connection_id,
+            'record_id': thread_id,
+            'thread_id': thread_id,
+            'thread_title': thread.get('title') or '',
+        }),
+        'creator': creator,
+        'created_time': now,
+    }
+    res = seadb_api.insert_rows(project_uuid, SchemaTables.TICKET_ACTIVITIES.table_name(), [row])
+    pks = res.get('pks', [])
+    return pks[0] if pks else None
+
+
 def record_ticket_activities(seadb_api, project_uuid, ticket_id, creator, changes):
     if not changes:
         return []
