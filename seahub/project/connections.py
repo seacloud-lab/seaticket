@@ -280,10 +280,18 @@ class ProjectConnectionsView(APIView):
             if email_oauth_data.get('status') != 'authorized':
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Email OAuth authorization is required.')
             authorized_config = email_oauth_data.get('config') or {}
+            if not EmailOAuthUtils._get_oauth_config(
+                    authorized_config.get('server_provider'),
+                    authorized_config.get('account_type') or EMAIL_ACCOUNT_TYPE_PERSONAL):
+                return api_error(status.HTTP_400_BAD_REQUEST, 'Email OAuth configuration is no longer supported or the provider is not configured. Reauthorize with the platform application.')
             if (authorized_config.get('server_provider') != config.get('server_provider') or
                     authorized_config.get('account_type', EMAIL_ACCOUNT_TYPE_PERSONAL) !=
                     config.get('account_type', EMAIL_ACCOUNT_TYPE_PERSONAL)):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'OAuth authorization does not match connection configuration.')
+            if authorized_config.get('account_type') != EMAIL_ACCOUNT_TYPE_PERSONAL:
+                for key in ('sender_email', 'sender_name'):
+                    if (authorized_config.get(key) or '') != (config.get(key) or '').strip():
+                        return api_error(status.HTTP_400_BAD_REQUEST, 'OAuth authorization does not match connection configuration.')
             if not email_oauth_data.get('access_token') or not email_oauth_data.get('refresh_token'):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Email OAuth authorization is required.')
             authorized_config['sync_years'] = config.get(
@@ -550,6 +558,13 @@ class ProjectConnectionView(APIView):
         if new_config:
             config = decrypt_config(json.loads(project_connection.config))
             new_config = json.loads(new_config)
+            if project_connection.type == ConnectionType.EMAIL.value and (
+                    is_oauth_email_provider(config.get('server_provider')) or
+                    is_oauth_email_provider(new_config.get('server_provider'))):
+                for key in ('server_provider', 'account_type', 'sender_email'):
+                    default = 'personal' if key == 'account_type' else ''
+                    if key in new_config and (new_config.get(key) or default) != (config.get(key) or default):
+                        return api_error(status.HTTP_400_BAD_REQUEST, 'Email authorization and mailbox settings cannot be changed. Create a new connection.')
             config.update(new_config)
             new_config = config
 
@@ -2158,7 +2173,6 @@ class ProjectConnectionReplyEmailView(APIView):
                 oauth_config = EmailOAuthUtils._get_oauth_config(
                     config.get('server_provider'),
                     config.get('account_type', EMAIL_ACCOUNT_TYPE_PERSONAL),
-                    config,
                 )
             send_res = toggle_send_email(config, send_info, oauth_token, oauth_config)
         except EmailConfigError as e:
@@ -2250,7 +2264,6 @@ class ProjectConnectionDeleteEmailView(APIView):
             oauth_config = EmailOAuthUtils._get_oauth_config(
                 config.get('server_provider'),
                 config.get('account_type', EMAIL_ACCOUNT_TYPE_PERSONAL),
-                config,
             )
 
         seadb_api = SeaDBAPI()

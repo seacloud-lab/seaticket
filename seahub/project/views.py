@@ -195,7 +195,7 @@ def email_oauth(request, project_uuid):
         for key, value in oauth_config.get('authority_args', {}).items():
             authorization_url += f'&{key}={value}'
     except Exception as e:
-        logger.exception(e)
+        logger.error('Email OAuth authorization URL creation failed, error_type: %s', type(e).__name__)
         return JsonResponse({'error_msg': 'Failed to fetch authorization url'}, status=500)
 
     EmailOAuthUtils.set_oauth_session(request, state, {
@@ -246,6 +246,7 @@ def email_oauth_callback(request):
     provider_error = request.GET.get('error')
     if provider_error:
         detail = request.GET.get('error_description') or provider_error
+        logger.error('Email OAuth provider rejected authorization.')
         error_msg = _('The email provider rejected the authorization.') + f' {detail}'
         EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
         return render(request, 'error.html', {'error_msg': error_msg})
@@ -275,8 +276,8 @@ def email_oauth_callback(request):
             client_secret=oauth_config.get('client_secret'),
             authorization_response=authorization_response_url,
         )
-    except Exception as e:
-        logger.error('Email OAuth token exchange failed, error: %s, e')
+    except Exception:
+        logger.error('Email OAuth token exchange failed.')
         error_msg = 'Failed to request token, please check your connection configurations'
         EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
         return render(request, 'error.html', {'error_msg': _(error_msg)})
@@ -292,12 +293,12 @@ def email_oauth_callback(request):
         if final_config.get('account_type') == 'personal':
             final_config.update(fetch_oauth_email_sender_info(final_config, token.get('access_token')))
     except EmailOAuthProfileError as e:
-        logger.error(e)
+        logger.error('Email OAuth sender profile request failed, error_type: %s', type(e).__name__)
         error_msg = 'Failed to fetch sender profile, please check your connection configurations'
         EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
         return render(request, 'error.html', {'error_msg': _(error_msg)})
     except Exception as e:
-        logger.error('fetch email sender error: %s', e)
+        logger.error('Email OAuth sender profile request failed, error_type: %s', type(e).__name__)
         error_msg = 'Failed to fetch email sender.'
         EmailOAuthUtils.set_oauth_failure(request, request_state, error_msg)
         return render_error(request, _(error_msg))
@@ -390,11 +391,11 @@ def linear_oauth_callback(request):
     try:
         resp = requests.post('https://api.linear.app/oauth/token', data=token_payload, timeout=10)
     except Exception as e:
-        logger.error('Linear OAuth token request error: %s', e)
+        logger.error('Linear OAuth token request failed, error_type: %s', type(e).__name__)
         return render_error(request, _('Failed to authorize Linear.'))
 
     if resp.status_code != 200:
-        logger.error('Linear OAuth token response invalid: %s %s', resp.status_code, resp.text)
+        logger.error('Linear OAuth token response invalid, status_code: %s', resp.status_code)
         return render_error(request, _('Failed to authorize Linear.'))
 
     token_json = resp.json()
@@ -402,7 +403,7 @@ def linear_oauth_callback(request):
     refresh_token = token_json.get('refresh_token')
     expires_in = token_json.get('expires_in')
     if not access_token:
-        logger.error('Linear OAuth token missing access_token: %s', token_json)
+        logger.error('Linear OAuth token missing access_token.')
         return render_error(request, _('Failed to authorize Linear.'))
 
     expires_at = CommonOAuthUtils.calc_expires_at(expires_in)
@@ -504,18 +505,18 @@ def confluence_oauth_callback(request):
     try:
         resp = requests.post('https://auth.atlassian.com/oauth/token', json=token_payload, timeout=10)
     except Exception as e:
-        logger.error('Confluence OAuth token request error: %s', e)
+        logger.error('Confluence OAuth token request failed, error_type: %s', type(e).__name__)
         return render_error(request, _('Failed to authorize Confluence.'))
 
     if resp.status_code != 200:
-        logger.error('Confluence OAuth token response invalid: %s %s', resp.status_code, resp.text)
+        logger.error('Confluence OAuth token response invalid, status_code: %s', resp.status_code)
         return render_error(request, _('Failed to authorize Confluence.'))
 
     token_json = resp.json()
     access_token = token_json.get('access_token')
     refresh_token = token_json.get('refresh_token')
     if not access_token or not refresh_token:
-        logger.error('Confluence OAuth token missing access/refresh token: %s', token_json)
+        logger.error('Confluence OAuth token missing access/refresh token.')
         return render_error(request, _('Failed to authorize Confluence.'))
 
     ProjectConnectionOauth.objects.upsert_token(
@@ -630,11 +631,11 @@ def discord_oauth_callback(request):
     try:
         resp = requests.post('https://discord.com/api/oauth2/token', data=token_payload, timeout=10)
     except Exception as e:
-        logger.error('Discord OAuth token request error: %s', e)
+        logger.error('Discord OAuth token request failed, error_type: %s', type(e).__name__)
         return render_error(request, _('Failed to authorize Discord.'))
 
     if resp.status_code != 200:
-        logger.error('Discord OAuth token response invalid: %s %s', resp.status_code, resp.text)
+        logger.error('Discord OAuth token response invalid, status_code: %s', resp.status_code)
         return render_error(request, _('Failed to authorize Discord.'))
 
     token_json = resp.json()
@@ -748,18 +749,18 @@ def jira_oauth_callback(request):
     try:
         resp = requests.post('https://auth.atlassian.com/oauth/token', json=token_payload, timeout=10)
     except Exception as e:
-        logger.error('Jira OAuth token request error: %s', e)
+        logger.error('Jira OAuth token request failed, error_type: %s', type(e).__name__)
         return render_error(request, _('Failed to authorize Jira.'))
 
     if resp.status_code != 200:
-        logger.error('Jira OAuth token response invalid: %s %s', resp.status_code, resp.text)
+        logger.error('Jira OAuth token response invalid, status_code: %s', resp.status_code)
         return render_error(request, _('Failed to authorize Jira.'))
 
     token_json = resp.json()
     access_token = token_json.get('access_token')
     refresh_token = token_json.get('refresh_token')
     if not access_token or not refresh_token:
-        logger.error('Jira OAuth token missing access/refresh token: %s', token_json)
+        logger.error('Jira OAuth token missing access/refresh token.')
         return render_error(request, _('Failed to authorize Jira.'))
 
     ProjectConnectionOauth.objects.upsert_token(
@@ -885,13 +886,13 @@ def notion_oauth_callback(request):
     try:
         resp = requests.post('https://api.notion.com/v1/oauth/token', headers=headers, json=token_payload, timeout=10)
     except Exception as e:
-        logger.error('Notion OAuth token request error: %s', e)
+        logger.error('Notion OAuth token request failed, error_type: %s', type(e).__name__)
         error_msg = 'Failed to request token, please check your connection configurations'
         NotionOAuthUtils.set_oauth_failure(request, error_msg)
         return render_error(request, _(error_msg))
 
     if resp.status_code != 200:
-        logger.error('Notion OAuth token response invalid: %s %s', resp.status_code, resp.text)
+        logger.error('Notion OAuth token response invalid, status_code: %s', resp.status_code)
         error_msg = 'Failed to request token, please check your connection configurations'
         NotionOAuthUtils.set_oauth_failure(request, error_msg)
         return render_error(request, _(error_msg))
@@ -900,7 +901,7 @@ def notion_oauth_callback(request):
     access_token = token_json.get('access_token')
     refresh_token = token_json.get('refresh_token')
     if not access_token or not refresh_token:
-        logger.error('Notion OAuth token missing access/refresh token: %s', token_json)
+        logger.error('Notion OAuth token missing access/refresh token.')
         error_msg = 'Failed to request token'
         NotionOAuthUtils.set_oauth_failure(request, error_msg)
         return render_error(request, _(error_msg))

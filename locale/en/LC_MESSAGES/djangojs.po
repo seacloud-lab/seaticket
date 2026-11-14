@@ -18,6 +18,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+msgid "Gmail and Microsoft connections use OAuth. Other email providers require an App Password instead of your regular password. If any problem occurs, check the"
+msgstr "Gmail and Microsoft connections use OAuth. Other email providers require an App Password instead of your regular password. If any problem occurs, check the"
+
+msgid "Shared mailbox"
+msgstr "Shared mailbox"
+
+msgid "Shared mailbox connections only sync messages associated with the configured From address."
+msgstr "Shared mailbox connections only sync messages associated with the configured From address."
+
 #: frontend/src/components/account/external-user-account.js:92
 #: frontend/src/components/account/external-user-account.js:93
 #: frontend/src/components/account/external-user-account.js:103
@@ -4635,11 +4644,6 @@ msgstr ""
 msgid "Failed to check Confluence authorization status."
 msgstr ""
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:303
-msgid ""
-"Microsoft OAuth URLs must start with https://login.microsoftonline.com/."
-msgstr ""
-
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:312
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:638
 msgid "Failed to fetch authorization url"
@@ -4873,22 +4877,6 @@ msgstr ""
 msgid ""
 "The address is the full email address of the sender. It need not be "
 "identical to the username of the account."
-msgstr ""
-
-#: frontend/src/project/main-panel/connections/constants.js:160
-msgid "Client ID"
-msgstr ""
-
-#: frontend/src/project/main-panel/connections/constants.js:170
-msgid "Client secret"
-msgstr ""
-
-#: frontend/src/project/main-panel/connections/constants.js:180
-msgid "Authority URL"
-msgstr ""
-
-#: frontend/src/project/main-panel/connections/constants.js:191
-msgid "Token URL"
 msgstr ""
 
 #: frontend/src/project/main-panel/connections/constants.js:207

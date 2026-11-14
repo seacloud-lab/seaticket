@@ -14,27 +14,26 @@ import {
   SUPPORT_LINK_EXISTING_TICKET_CONNECTION_TYPES, GENERAL_TASK_STATUS_NAME_MAP, GENERAL_TASK_SIZE_NAME_MAP,
   GENERAL_TASK_PRIORITY_NAME_MAP, CONNECTION_PREDEFINED_COLUMN_CONFIG, GITHUB_STATE_REASON_NAME_MAP,
   GITHUB_STATE_OPTION_NAME_MAP,
-  CONNECTION_FIELD_TYPE, EMAIL_SERVER_PROVIDER, EMAIL_ACCOUNT_TYPE, MICROSOFT_OAUTH_URL_PREFIX,
+  CONNECTION_FIELD_TYPE, EMAIL_SERVER_PROVIDER, EMAIL_ACCOUNT_TYPE,
 } from './constants';
 
-export const shouldDisplayEmailField = (field, provider, showAdvancedOptions, accountType = EMAIL_ACCOUNT_TYPE.PERSONAL) => {
+export const shouldDisplayEmailField = (field, provider, accountType = EMAIL_ACCOUNT_TYPE.PERSONAL) => {
   if (field.providers && !field.providers.includes(provider)) return false;
   if (field.account_types && isOAuthEmailProvider(provider) && !field.account_types.includes(accountType)) return false;
-  if (field.is_advanced_option && !showAdvancedOptions) return false;
   return true;
 };
 
-export const getVisibleEmailFields = (fields, provider, showAdvancedOptions, accountType) => {
+export const getVisibleEmailFields = (fields, provider, accountType) => {
   return fields.reduce((acc, field) => {
     if (field.type === CONNECTION_FIELD_TYPE.GROUP) {
       if (field.providers && !field.providers.includes(provider)) return acc;
-      const children = field.children.filter(child => shouldDisplayEmailField(child, provider, showAdvancedOptions, accountType));
+      const children = field.children.filter(child => shouldDisplayEmailField(child, provider, accountType));
       if (children.length === 0) return acc;
       acc.push({ ...field, children });
       return acc;
     }
 
-    if (!shouldDisplayEmailField(field, provider, showAdvancedOptions, accountType)) return acc;
+    if (!shouldDisplayEmailField(field, provider, accountType)) return acc;
     acc.push(field);
     return acc;
   }, []);
@@ -48,20 +47,16 @@ export const isOAuthEmailProvider = (provider) => {
   return provider === EMAIL_SERVER_PROVIDER.MICROSOFT || provider === EMAIL_SERVER_PROVIDER.GMAIL;
 };
 
-export const hasValidMicrosoftOAuthUrls = (config = {}) => {
-  if (getEmailProvider(config) !== EMAIL_SERVER_PROVIDER.MICROSOFT ||
-      config.account_type !== EMAIL_ACCOUNT_TYPE.SHARED) {
-    return true;
-  }
-  return ['authority_url', 'token_url'].every((key) => {
-    const value = config[key];
-    return !value || (typeof value === 'string' && value.trim().startsWith(MICROSOFT_OAUTH_URL_PREFIX));
-  });
-};
-
 export const sanitizeEmailConfigByProvider = (config = {}) => {
   const provider = getEmailProvider(config);
   const nextConfig = { ...config, server_provider: provider };
+  delete nextConfig.oauth_client_mode;
+  delete nextConfig.client_id;
+  delete nextConfig.client_secret;
+  delete nextConfig.authority_url;
+  delete nextConfig.token_url;
+  delete nextConfig.authority_args;
+  delete nextConfig.scopes;
 
   if (isOAuthEmailProvider(provider)) {
     nextConfig.account_type = nextConfig.account_type || EMAIL_ACCOUNT_TYPE.PERSONAL;
@@ -74,31 +69,25 @@ export const sanitizeEmailConfigByProvider = (config = {}) => {
     if (nextConfig.account_type === EMAIL_ACCOUNT_TYPE.PERSONAL) {
       delete nextConfig.sender_name;
       delete nextConfig.sender_email;
-      delete nextConfig.client_id;
-      delete nextConfig.client_secret;
-      delete nextConfig.authority_url;
-      delete nextConfig.token_url;
-      delete nextConfig.authority_args;
-      delete nextConfig.scopes;
-    } else {
-      delete nextConfig.scopes;
-      delete nextConfig.authority_args;
-      if (provider === EMAIL_SERVER_PROVIDER.GMAIL) {
-        delete nextConfig.authority_url;
-        delete nextConfig.token_url;
-      }
     }
     return nextConfig;
   }
 
   delete nextConfig.account_type;
-  delete nextConfig.client_id;
-  delete nextConfig.client_secret;
-  delete nextConfig.authority_url;
-  delete nextConfig.token_url;
-  delete nextConfig.authority_args;
-  delete nextConfig.scopes;
   return nextConfig;
+};
+
+export const isEmailOAuthConfigValid = (config, fields) => {
+  const provider = getEmailProvider(config);
+  const accountType = config.account_type || EMAIL_ACCOUNT_TYPE.PERSONAL;
+  if (!isOAuthEmailProvider(provider)) return true;
+  const supportedTypes = provider === EMAIL_SERVER_PROVIDER.GMAIL
+    ? [EMAIL_ACCOUNT_TYPE.PERSONAL] : [EMAIL_ACCOUNT_TYPE.PERSONAL, EMAIL_ACCOUNT_TYPE.SHARED];
+  if (!supportedTypes.includes(accountType)) return false;
+  return getVisibleEmailFields(fields, provider, accountType).every(field => {
+    if (!field.is_required) return true;
+    return Boolean(String(config[field.key] ?? field.default_value ?? '').trim());
+  });
 };
 
 export const getConnectionIcon = (type) => {

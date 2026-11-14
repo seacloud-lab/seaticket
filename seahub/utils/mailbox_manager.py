@@ -328,6 +328,10 @@ class OAuthMailboxManager(OAuthTokenClient, BaseMailboxManager):
         super().__init__(config, oauth_token, oauth_config)
         if not self._has_complete_oauth_config():
             raise MailboxConfigError('OAuth email configuration is incomplete for mailbox operations.')
+        account_type = config.get('account_type') or 'personal'
+        supported_types = ('personal',) if isinstance(self, GmailMailboxManager) else ('personal', 'shared')
+        if account_type not in supported_types:
+            raise MailboxConfigError('Email account type is invalid')
 
     def _auth_headers(self, extra=None):
         headers = {'Authorization': f'Bearer {self.access_token}'}

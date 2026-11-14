@@ -18,6 +18,15 @@ msgstr ""
 "X-Crowdin-File: djangojs.po\n"
 "X-Crowdin-File-ID: 6\n"
 
+msgid "Gmail and Microsoft connections use OAuth. Other email providers require an App Password instead of your regular password. If any problem occurs, check the"
+msgstr "Gmail 和 Microsoft 连接使用 OAuth 授权。其他邮箱服务商需要使用应用专用密码，而非普通密码。如遇问题，请查看"
+
+msgid "Shared mailbox"
+msgstr "共享邮箱"
+
+msgid "Shared mailbox connections only sync messages associated with the configured From address."
+msgstr "共享邮箱连接只同步与配置的发件地址关联的邮件。"
+
 #: frontend/src/components/account/external-user-account.js:92
 #: frontend/src/components/account/external-user-account.js:93
 #: frontend/src/components/account/external-user-account.js:103
@@ -4586,10 +4595,6 @@ msgstr "安装 GitHub App"
 msgid "Failed to check Confluence authorization status."
 msgstr "检查 Confluence 授权状态失败。"
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:303
-msgid "Microsoft OAuth URLs must start with https://login.microsoftonline.com/."
-msgstr "Microsoft OAuth URL 必须以 https://login.microsoftonline.com/ 开头。"
-
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:312
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:638
 msgid "Failed to fetch authorization url"
@@ -4811,22 +4816,6 @@ msgstr "发件人地址"
 #: frontend/src/project/main-panel/connections/constants.js:157
 msgid "The address is the full email address of the sender. It need not be identical to the username of the account."
 msgstr "该地址是发件人的完整电子邮件地址。它不需要与账号的用户名相同。"
-
-#: frontend/src/project/main-panel/connections/constants.js:160
-msgid "Client ID"
-msgstr "客户端 ID (Client ID)"
-
-#: frontend/src/project/main-panel/connections/constants.js:170
-msgid "Client secret"
-msgstr "客户端密钥 (Client secret)"
-
-#: frontend/src/project/main-panel/connections/constants.js:180
-msgid "Authority URL"
-msgstr "权威 URL (Authority URL)"
-
-#: frontend/src/project/main-panel/connections/constants.js:191
-msgid "Token URL"
-msgstr "令牌URL"
 
 #: frontend/src/project/main-panel/connections/constants.js:207
 msgid "SMTP host"
@@ -8085,4 +8074,3 @@ msgstr "名称不能包含斜杠"
 #: frontend/src/utils/validate/name.js:15
 msgid "Name cannot contain backslash"
 msgstr "名称不能包含反斜杠"
-

@@ -7,7 +7,7 @@ import { connectionsAPI } from '@/project/api';
 import { Utils } from '@/utils/utils';
 import { CONNECTION_TYPES, CONNECTION_FIELDS, CONNECTION_FIELD_TYPE, CONNECTION_TYPE, STEP, STEPS, EMAIL_SERVER_PROVIDER, getAvailableConnectionTypes } from '../../constants';
 import { useConnections } from '../../hooks/connections';
-import { getVisibleEmailFields, getEmailProvider, isOAuthEmailProvider, hasValidMicrosoftOAuthUrls, sanitizeEmailConfigByProvider } from '../../utils';
+import { getVisibleEmailFields, getEmailProvider, isOAuthEmailProvider, sanitizeEmailConfigByProvider, isEmailOAuthConfigValid } from '../../utils';
 import ConnectionConfigEditor from '../connection-config-editor';
 import { ConfluenceConfig, DiscordConfig, GithubConfig, JiraConfig, LinearConfig, NotionConfig } from './connection-config';
 import ConnectionDialogFooter from './connection-dialog-footer';
@@ -46,7 +46,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const [isSubmitting, setSubmitting] = useState(false);
   const [githubRepositories, setGithubRepositories] = useState([]);
   const [isLoadingRepositories, setIsLoadingRepositories] = useState(false);
-  const [showEmailAdvancedOptions] = useState(false);
   const [isWaitingEmailOAuth, setWaitingEmailOAuth] = useState(false);
   const [emailOAuthState, setEmailOAuthState] = useState('');
   const [emailOAuthSender, setEmailOAuthSender] = useState(null);
@@ -113,8 +112,8 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     const _columns = CONNECTION_FIELDS[type] || [];
     if (type === CONNECTION_TYPE.GITHUB_ISSUE) return _columns;
     if (type !== CONNECTION_TYPE.EMAIL) return _columns;
-    return getVisibleEmailFields(_columns, getEmailProvider(config), showEmailAdvancedOptions, config.account_type);
-  }, [type, config, showEmailAdvancedOptions]);
+    return getVisibleEmailFields(_columns, getEmailProvider(config), config.account_type);
+  }, [type, config]);
 
   const customColumns = useMemo(() => columns.filter(c => {
     if (c.type === CONNECTION_FIELD_TYPE.GROUP) return c.children.find(children => children.is_custom);
@@ -134,13 +133,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     return isEmail && isOAuthEmailProvider(getEmailProvider(config));
   }, [isEmail, config]);
 
-  const basicCustomColumns = useMemo(() => {
-    return customColumns.filter(column => !column.is_advanced_option);
-  }, [customColumns]);
-
-  const advancedCustomColumns = useMemo(() => {
-    return customColumns.filter(column => column.is_advanced_option);
-  }, [customColumns]);
+  const basicCustomColumns = customColumns;
 
   const step = useMemo(() => {
     return STEPS[stepIndex];
@@ -155,6 +148,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     if (isOAuthEmail && !emailOAuthState) return false;
     if (isNotion && !isNotionOauthConnected) return false;
     if (isNotion && !notionOauthState) return false;
+    if (isOAuthEmail && !isEmailOAuthConfigValid(config, CONNECTION_FIELDS[type])) return false;
     return customColumns.length > 0 ? customColumns.every(c => {
       if (c.type === CONNECTION_FIELD_TYPE.GROUP) {
         return c.children.every(child => {
@@ -275,20 +269,25 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   const onConfigChange = useCallback((key, value) => {
     if (config[key] === value) return;
 
+    if (['server_provider', 'account_type', 'sender_email', 'sender_name'].includes(key)) {
+      setEmailOAuthState('');
+      setEmailOAuthSender(null);
+    }
+
     if (key === 'server_provider') {
       const nextProvider = value || EMAIL_SERVER_PROVIDER.GENERAL;
-      setConfig({
+      setConfig(sanitizeEmailConfigByProvider({
         ...config,
         [key]: nextProvider,
         ...(isOAuthEmailProvider(nextProvider) ? { account_type: 'personal' } : { account_type: undefined }),
-      });
+      }));
       setEmailOAuthState('');
       setEmailOAuthSender(null);
       return;
     }
 
-    setConfig({ ...config, [key]: value });
-  }, [config]);
+    setConfig(type === CONNECTION_TYPE.EMAIL ? sanitizeEmailConfigByProvider({ ...config, [key]: value }) : { ...config, [key]: value });
+  }, [config, type]);
 
   const handleEmailOAuthLogin = useCallback(() => {
     // Starting a new authorization attempt invalidates the previous result.
@@ -299,10 +298,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
     setEmailOAuthSender(null);
     let _config = { ...config };
     _config = sanitizeEmailConfigByProvider(_config);
-    if (!hasValidMicrosoftOAuthUrls(_config)) {
-      toaster.danger(gettext('Microsoft OAuth URLs must start with https://login.microsoftonline.com/.'));
-      return;
-    }
     setSubmitting(true);
     connectionsAPI.startEmailOAuth(projectUuid, { name: name.trim(), config: _config }).then((res) => {
       const authorizationUrl = res.data?.auth_url;
@@ -756,7 +751,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
   }, []);
 
   const renderConnectionField = useCallback((column) => {
-    const { type, key, children, is_advanced_option } = column;
+    const { type, key, children } = column;
     if (type === CONNECTION_FIELD_TYPE.GROUP) {
       return (
         <Row className="mx-0 seaqa-project-connection-group-config" key={key}>
@@ -841,7 +836,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
 
     return (
       <ConnectionConfigEditor
-        className={is_advanced_option ? 'seaqa-project-connection-advanced-options-field' : ''}
         column={fieldColumn}
         api={api}
         key={key}
@@ -977,7 +971,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
               </Label>
               <Input value={name} onChange={onNameChange} disabled={isSubmitting} />
             </FormGroup>
-            {isOAuthEmail ? basicCustomColumns.filter(column => column.key !== 'account_type').map(renderConnectionField) : (
+            {isOAuthEmail ? basicCustomColumns.map(renderConnectionField) : (
               isDiscord
                 ? basicCustomColumns.filter(column => column.key !== 'channel_id').map(renderConnectionField)
                 : basicCustomColumns.map(renderConnectionField)
@@ -1002,8 +996,6 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
               </FormGroup>
             )}
             {isDiscord && basicCustomColumns.filter(column => column.key === 'channel_id').map(renderConnectionField)}
-            {false && isOAuthEmail && basicCustomColumns.filter(column => column.key === 'account_type').map(renderConnectionField)}
-            {advancedCustomColumns.map(renderConnectionField)}
             {isOAuthEmail && (
               <FormGroup>
                 <Label>{gettext('Authorization')}</Label>
@@ -1017,7 +1009,7 @@ const NewConnectionDialog = ({ onSubmit, onToggle }) => {
                   </span>
                   <Button
                     color={emailOAuthSender ? 'secondary' : 'primary'}
-                    disabled={isSubmitting || isWaitingEmailOAuth || !name.trim()}
+                    disabled={isSubmitting || isWaitingEmailOAuth || !name.trim() || !isEmailOAuthConfigValid(config, CONNECTION_FIELDS[type])}
                     onClick={handleEmailOAuthLogin}
                   >
                     {gettext('Login')}

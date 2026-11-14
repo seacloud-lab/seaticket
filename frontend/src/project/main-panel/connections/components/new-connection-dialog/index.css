@@ -93,10 +93,6 @@
   color: var(--bs-sf-grey-text);
 }
 
-.seaqa-project-connection-advanced-options {
-  margin-top: 4px;
-}
-
 .seaqa-project-connection-oauth-tip {
   margin-bottom: 8px;
   font-size: 12px;

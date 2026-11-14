@@ -18,6 +18,15 @@ msgstr ""
 "X-Crowdin-File: djangojs.po\n"
 "X-Crowdin-File-ID: 6\n"
 
+msgid "Gmail and Microsoft connections use OAuth. Other email providers require an App Password instead of your regular password. If any problem occurs, check the"
+msgstr "Gmail- und Microsoft-Verbindungen verwenden OAuth. Andere E-Mail-Anbieter benötigen ein App-Passwort statt Ihres normalen Passworts. Bei Problemen lesen Sie die"
+
+msgid "Shared mailbox"
+msgstr "Freigegebenes Postfach"
+
+msgid "Shared mailbox connections only sync messages associated with the configured From address."
+msgstr "Freigegebene Postfachverbindungen synchronisieren nur Nachrichten, die mit der konfigurierten Absenderadresse verknüpft sind."
+
 #: frontend/src/components/account/external-user-account.js:92
 #: frontend/src/components/account/external-user-account.js:93
 #: frontend/src/components/account/external-user-account.js:103
@@ -4586,10 +4595,6 @@ msgstr "GitHub-App installieren"
 msgid "Failed to check Confluence authorization status."
 msgstr "Prüfung des Confluence-Autorisierungsstatus fehlgeschlagen."
 
-#: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:303
-msgid "Microsoft OAuth URLs must start with https://login.microsoftonline.com/."
-msgstr "Microsoft OAuth-URLs müssen mit https://login.microsoftonline.com/ beginnen."
-
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:312
 #: frontend/src/project/main-panel/connections/components/new-connection-dialog/index.js:638
 msgid "Failed to fetch authorization url"
@@ -4811,22 +4816,6 @@ msgstr "Absenderadresse"
 #: frontend/src/project/main-panel/connections/constants.js:157
 msgid "The address is the full email address of the sender. It need not be identical to the username of the account."
 msgstr "Die Absenderadresse. Sie muss nicht identisch mit dem Nutzernamen des Kontos sein."
-
-#: frontend/src/project/main-panel/connections/constants.js:160
-msgid "Client ID"
-msgstr "Client-ID"
-
-#: frontend/src/project/main-panel/connections/constants.js:170
-msgid "Client secret"
-msgstr "Client-Geheimnis"
-
-#: frontend/src/project/main-panel/connections/constants.js:180
-msgid "Authority URL"
-msgstr "Autorisierungs-URL"
-
-#: frontend/src/project/main-panel/connections/constants.js:191
-msgid "Token URL"
-msgstr "Token-URL"
 
 #: frontend/src/project/main-panel/connections/constants.js:207
 msgid "SMTP host"
@@ -8085,4 +8074,3 @@ msgstr "Name darf keinen Schrägstrich enthalten"
 #: frontend/src/utils/validate/name.js:15
 msgid "Name cannot contain backslash"
 msgstr "Name darf keinen Backslash enthalten"
-

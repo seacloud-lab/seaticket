@@ -36,7 +36,7 @@ class OAuthTokenClient:
         self.config = config
         self.oauth_updated = False
         oauth_token = oauth_token or {}
-        oauth_config = oauth_config or config
+        oauth_config = oauth_config or {}
         self.client_id = oauth_config.get('client_id')
         self.client_secret = oauth_config.get('client_secret')
         self.refresh_token = oauth_token.get('refresh_token')
@@ -67,12 +67,12 @@ class OAuthTokenClient:
             try:
                 _check_and_raise_error(response)
             except Exception as e:
-                logger.exception('Failure to fetch new access token, error: %s', e)
+                logger.error('Failure to fetch new access token, error_type: %s', type(e).__name__)
                 raise EmailAuthProviderError('Failed to fetch access token')
             else:
                 response = response.json()
                 if 'access_token' not in response:
-                    logger.exception('Failure to fetch new access token. No access_token in response.')
+                    logger.error('Failure to fetch new access token. No access_token in response.')
                     raise EmailAuthProviderError('No access_token in response')
 
             expires_at = 0
