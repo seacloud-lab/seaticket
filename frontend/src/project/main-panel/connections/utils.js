@@ -307,16 +307,6 @@ export const initConnectionResourceDetails = (type, record, highlight) => {
 
 };
 
-export const getInfoByEmailFrom = (emailFrom) => {
-  if (!emailFrom) return { sender: '', email: '' };
-  const regex = /^([^<]+?)\s*(?:<([^>]+)>)?$/;
-  const match = emailFrom.match(regex);
-  if (!match) return { sender: emailFrom, email: '' };
-  const sender = match[1].trim();
-  const email = match[2] ? match[2].trim() : null;
-  return { sender, email };
-};
-
 export const generatorConnectionAssetURLPrefix = (projectUuid, connectionId) => {
   const assetURLPrefix = `${server.endsWith('/') ? server : server + '/'}file/project/${projectUuid}/connections/${connectionId}/path/`;
   return assetURLPrefix;

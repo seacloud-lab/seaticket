@@ -14,12 +14,16 @@
   transition: margin .2s;
 }
 
+.seaqa-connection-email-record-details .email-header {
+  padding: 6px 0;
+}
+
 .seaqa-connection-email-record-details .email-avatar {
   display: flex;
   align-items: center;
   flex-shrink: 0;
   justify-content: center;
-  height: 60px;
+  height: 48px;
   width: 60px;
 }
 
@@ -43,20 +47,47 @@
   width: 100%;
   margin-bottom: 2px;
   gap: 4px;
+  line-height: 22px;
 }
 
 .seaqa-connection-email-record-details .email-record-info .email-record-info-sender {
   flex-shrink: 0;
   width: fit-content;
   font-weight: 500;
+  max-width: 300px;
 }
 
-.seaqa-connection-email-record-details .email-record-info-to {
+.seaqa-connection-email-record-details .email-record-info-participants {
   overflow: hidden;
   flex: 1;
   width: 100%;
   text-overflow: ellipsis;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+}
+
+.seaqa-connection-email-record-details .email-record-info-participants .email-record-info-participants-category {
+  max-width: calc((100% - 32px) / 2);
+}
+
+.seaqa-connection-email-record-details .email-record-info-participants.cc-invalid .email-record-info-participants-category {
+  max-width: calc(100% - 28px);
+}
+
+.seaqa-connection-email-record-details .email-record-info-participants-category-value span:hover {
+  cursor: default;
+}
+
+.seaqa-connection-email-record-details .email-record-info-participants-details-container .email-record-info-participants-category-title {
+  font-weight: 500;
+  min-width: 48px;
+}
+
+.seaqa-connection-email-record-details .email-record-info-participants-details-container .email-record-info-participants-category-value {
+  flex-wrap: wrap;
+  overflow: auto;
+  white-space: unset;
 }
 
 .seaqa-connection-email-record-details .email-record-info .email-record-info-content {
@@ -69,10 +100,6 @@
   width: fit-content;
   margin-left: 12px;
   text-align: right;
-}
-
-.seaqa-connection-email-record-details .email-record-info .seaqa-reply-text-btn {
-  margin-left: 4px;
 }
 
 .seaqa-connection-email-record-details .email-record-info .seaqa-reply-text-btn .seaqa-icon-svg {
@@ -104,6 +131,9 @@
 .seaqa-connection-email-record-details.collapsed {
   margin-bottom: -27px;
   cursor: pointer;
+  padding: 6px 0;
+  align-items: flex-start;
+  padding-right: 10px;
 }
 
 /* expanded */
@@ -121,10 +151,18 @@
 
 .seaqa-connection-email-record-details.expanded .email-header {
   display: flex;
-  align-items: center;
   width: 100%;
   padding-right: 10px;
   cursor: pointer;
+}
+
+.seaqa-connection-email-record-details.expanded .email-record-info .email-record-info-sender {
+  flex: 1;
+  max-width: unset;
+}
+
+.seaqa-connection-email-record-details.expanded .email-record-info .email-record-info-content {
+  display: none;
 }
 
 .seaqa-connection-email-record-details.expanded .email-body {
@@ -182,7 +220,7 @@
   font-weight: 600;
 }
 
-.seaqa-connection-email-record-details .email-record-info-to-container {
+.seaqa-connection-email-record-details .email-record-info-participants-container {
   display: flex;
   align-items: center;
   justify-content: space-between;

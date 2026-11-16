@@ -1,17 +1,56 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState, Fragment } from 'react';
 import classnames from 'classnames';
-import { CustomizeMarkdownViewer, IconTextBtn, IconTooltip, toaster } from '@/components';
+import { CustomizeMarkdownViewer, IconTextBtn, IconTooltip, toaster, IconButton } from '@/components';
 import { gettext, mediaUrl, PERMISSION_TYPES } from '@/constants';
 import { connectionsAPI } from '@/project/api';
 import dayjs from '@/utils/dayjs';
 import { isString } from '@/utils/type-detection';
 import { Utils } from '@/utils/utils';
-import { generatorConnectionAssetURLPrefix, getInfoByEmailFrom } from '../../../../utils';
+import { parseEmailAddress, splitEmailAddresses } from '@/utils/validate';
+import { generatorConnectionAssetURLPrefix } from '../../../../utils';
 import DateFormatter from '../../../cell-formatter/date-formatter';
 import HTMLContentWrapper from './html-content';
 import ReplyEmail from './reply-email';
 
 import './index.css';
+
+const EmailUser = ({ emailAddress, isShowEmail = true }) => {
+  const { username, email } = parseEmailAddress(emailAddress);
+  return (
+    <span
+      title={emailAddress}
+      className="font-size-14"
+      onClick={(event) => {event.stopPropagation(); event.nativeEvent.stopImmediatePropagation();}}
+    >
+      {(isShowEmail && username) ? (
+        <>
+          <span>{username}</span>
+          <span className="text-secondary">{` <${email}>`}</span>
+        </>
+      ) : (
+        <>
+          {username || email}
+        </>
+      )}
+    </span>
+  );
+};
+
+const ParticipantsCategory = ({ category, value, isShowEmail = true }) => {
+  return (
+    <div className="email-record-info-participants-category d-flex gap-1">
+      <div className="email-record-info-participants-category-title flex-shrink-0">{`${category}: `}</div>
+      <div className="email-record-info-participants-category-value flex-1 text-truncate">
+        {value.map((emailAddress, index) => (
+          <Fragment key={emailAddress || index}>
+            {index !== 0 && (<span>{', '}</span>)}
+            <EmailUser key={emailAddress} emailAddress={emailAddress} isShowEmail={isShowEmail} />
+          </Fragment>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 const Item = ({
   isLast, isExpand,
@@ -21,6 +60,7 @@ const Item = ({
   const [isExpanded, setIsExpanded] = useState(isExpand);
   const [isShowReply, setIsShowReply] = useState(false);
   const [isUpdatingUnread, setIsUpdatingUnread] = useState(false);
+  const [isParticipantsExpanded, setIsParticipantsExpanded] = useState(false);
 
   const ref = useRef(null);
   const replySendTo = useRef('');
@@ -29,7 +69,10 @@ const Item = ({
   const content = useMemo(() => detail.content || '', [detail.content]);
   const HTMLContent = useMemo(() => detail.html_content || '', [detail.html_content]);
   const isHTMLContent = useMemo(() => HTMLContent ? true : false, [HTMLContent]);
-  const { sender, email } = useMemo(() => getInfoByEmailFrom(detail['email_from']), [detail]);
+  const { sender, email } = useMemo(() => {
+    const { username, email } = parseEmailAddress(detail['email_from']);
+    return { sender: username || email, email };
+  }, [detail]);
   const isReadonly = useMemo(() => permission === PERMISSION_TYPES.READ_ONLY, [permission]);
   const isUnread = Boolean(detail.unread);
 
@@ -56,7 +99,14 @@ const Item = ({
     return trimmedValue;
   }, [isHTMLContent, content, HTMLContent]);
 
-  const emailTo = useMemo(() => detail['email_to']?.split(',')?.join(', '), [detail]);
+  const emailTo = useMemo(() => splitEmailAddresses(detail['email_to']), [detail]);
+  const emailCc = useMemo(() => splitEmailAddresses(detail['cc']), [detail]);
+
+  const toggleParticipantsExpanded = useCallback((event) => {
+    event.stopPropagation();
+    event.nativeEvent?.stopImmediatePropagation?.();
+    setIsParticipantsExpanded(value => !value);
+  }, []);
 
   const addQuoteToggleBtn = useCallback(() => {
     if (!ref.current || ref.current.querySelector('.email-item-toggle-btn')) return;
@@ -96,14 +146,21 @@ const Item = ({
     setIsExpanded(true);
   }, []);
 
+  const closeExpanded = useCallback(() => {
+    setIsExpanded(false);
+    setIsParticipantsExpanded(false);
+  }, []);
+
   const openReply = useCallback((event) => {
     event.stopPropagation();
     event.nativeEvent.stopImmediatePropagation();
+    setIsParticipantsExpanded(false);
     setIsShowReply(true);
   }, []);
 
   const openReplyByEmail = useCallback((sendTo = '') => {
     replySendTo.current = sendTo;
+    setIsParticipantsExpanded(false);
     setIsShowReply(true);
   }, []);
 
@@ -196,6 +253,38 @@ const Item = ({
     window.open(link, '_blank', 'noopener,noreferrer');
   }, [openReplyByEmail, isPortal]);
 
+  const renderParticipants = useCallback(() => {
+    const isValidCc = Array.isArray(emailCc) && emailCc.length > 0;
+    return (
+      <div className={classnames('email-record-info-participants gap-1 mr-2', { 'cc-invalid': !isValidCc })}>
+        <ParticipantsCategory category={gettext('To')} value={emailTo} isShowEmail={false} />
+        {isValidCc && (
+          <ParticipantsCategory category={gettext('Cc')} value={emailCc} isShowEmail={false} />
+        )}
+        <IconButton
+          icon="arrow-down-b"
+          className={classnames('d-inline-flex', { 'rotate-icon-180': isParticipantsExpanded })}
+          aria-label={isParticipantsExpanded ? gettext('Collapse') : gettext('Expand')}
+          aria-expanded={isParticipantsExpanded}
+          onClick={toggleParticipantsExpanded}
+        />
+      </div>
+    );
+  }, [emailTo, emailCc, isParticipantsExpanded, toggleParticipantsExpanded]);
+
+  const renderParticipantsDetails = useCallback(() => {
+    if (!isParticipantsExpanded) return null;
+    return (
+      <div className="email-record-info-participants-details-container w-100 d-flex flex-column gap-1 mt-1">
+        <ParticipantsCategory category={gettext('From')} value={[detail['email_from']]} isShowEmail={true} />
+        <ParticipantsCategory category={gettext('To')} value={emailTo} isShowEmail={true} />
+        {Array.isArray(emailCc) && emailCc.length > 0 && (
+          <ParticipantsCategory category={gettext('Cc')} value={emailCc} isShowEmail={true} />
+        )}
+      </div>
+    );
+  }, [isParticipantsExpanded, detail, emailTo, emailCc]);
+
   useEffect(() => {
     if (!isExpanded || isShowReply) return;
     let timer = null;
@@ -240,19 +329,18 @@ const Item = ({
           </div>
           <div className="email-record-info">
             <div className="email-record-info-container">
-              <span className="email-record-info-sender text-truncate" title={sender}>{sender}</span>
+              <span className="email-record-info-sender text-truncate" title={detail['email_from']}>{sender}</span>
               <span className="email-record-info-content text-truncate" title={contentStart}>{contentStart}</span>
               {isUnread && <div className="read-status unread" />}
               <DateFormatter value={detail.modified_time} className="email-record-info-time" />
             </div>
-            <div className="email-record-info-to-container">
-              <div className="email-record-info-to">
-                {gettext('To')}: {emailTo}
-              </div>
+            <div className="email-record-info-participants-container gap-1">
+              {renderParticipants()}
               {!isReadonly && !isPortal && !isShowReply && (
                 <IconTextBtn icon="reply" color="default" text={gettext('Reply')} className="h-5" onClick={openReply} />
               )}
             </div>
+            {renderParticipantsDetails()}
           </div>
         </div>
         {isShowReply && (<>{renderReply()}</>)}
@@ -265,20 +353,18 @@ const Item = ({
       className={classnames('seaqa-connection-email-record-details expanded', { 'seaqa-connection-resource-highlight': detail.highlight })}
       ref={expandedRef}
     >
-      <div className="email-header" onClick={() => setIsExpanded(false)}>
+      <div className="email-header" onClick={closeExpanded}>
         <div className="email-avatar">
           <img alt='' src={`${mediaUrl}avatars/default.png`}/>
         </div>
         <div className="email-record-info">
           <div className="email-record-info-container">
-            <span className="email-record-info-sender text-truncate" title={detail['email_from']}>{detail['email_from']}</span>
+            <span className="email-record-info-sender text-truncate" title={detail['email_from']}>{sender}</span>
             <span className="email-record-info-content text-truncate"></span>
             <DateFormatter value={detail.modified_time} className="email-record-info-time" />
           </div>
-          <div className="email-record-info-to-container">
-            <div className="email-record-info-to">
-              {gettext('To')}: {emailTo}
-            </div>
+          <div className="email-record-info-participants-container gap-1">
+            {renderParticipants()}
             {!isReadonly && !isPortal && (
               <IconTooltip
                 className={classnames('email-record-read-status-wrapper', { disabled: isReadonly || isUpdatingUnread })}
@@ -295,6 +381,7 @@ const Item = ({
               <IconTextBtn icon="reply" color="default" text={gettext('Reply')} className="h-5" onClick={openReply} />
             )}
           </div>
+          {renderParticipantsDetails()}
         </div>
       </div>
       <div className="email-body" ref={ref}>
