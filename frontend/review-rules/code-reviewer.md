@@ -42,6 +42,23 @@ Report an issue only when all of the following are true:
 
 Do not force uncertain evidence into a defect classification. Put it under `Manual Confirmation` instead. Do not report pure style preferences, unrelated refactoring suggestions, pre-existing issues, or speculative concerns that cannot be demonstrated from the change.
 
+## Frontend Test File Placement
+
+- Keep frontend test files under `frontend/src/tests/`. This includes unit,
+  component, and integration tests, whether named `*.test.*`, `*.spec.*`, or
+  placed in an `__tests__` directory.
+- Mirror the tested production module's path beneath `src/tests` where
+  practical. For example, tests for `src/utils/date.js` belong in
+  `src/tests/utils/date.test.js`, and tests for
+  `src/project/main-panel/search/filter-by-date/` belong under the matching
+  `src/tests/project/main-panel/search/filter-by-date/` directory.
+- When the current change adds, moves, or materially updates a frontend test
+  outside `src/tests`, report the placement as a P3 finding and recommend moving
+  it. Do not report unchanged legacy test files solely for their location.
+- If a test's location also prevents the configured test runner from
+  discovering it, report the resulting test coverage gap at the severity
+  warranted by its impact.
+
 ## Internationalization (gettext)
 
 Check user-visible English text in new or modified calls to `gettext`, `gettext_lazy`, and related internationalization helpers:

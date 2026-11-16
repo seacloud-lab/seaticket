@@ -11,7 +11,8 @@
 - `src/assets/`: images, icons, and other frontend assets.
 - `src/tests/`: frontend tests.
 - `build/`: generated output; do not edit it directly.
-- `Feature placement`: keep feature code close to its tests.
+- `Feature placement`: keep feature code close to related source modules;
+  place its tests under the matching path in `src/tests/`.
 
 ## Technical Architecture
 
@@ -166,6 +167,10 @@ imports must follow this convention.
 - `Implementation`: keep components focused and preserve existing import order.
 - `Reuse`: prefer existing project components and styles over duplicates.
 - `Visible text`: add new strings to the established i18n catalogs.
+- `Tests`: place all frontend unit, component, and integration test files under
+  `src/tests/`, mirroring the tested source path where practical. For example,
+  test `src/utils/date.js` in `src/tests/utils/date.test.js`. Keep test-only
+  helpers under `src/tests/`; production modules must not import them.
 
 ## Review
 
