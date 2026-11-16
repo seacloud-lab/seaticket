@@ -20,6 +20,15 @@
 
   django.catalog = django.catalog || {};
   
+  const newcatalog = {
+    "Gmail and Microsoft connections use OAuth. Other email providers require an App Password instead of your regular password. If any problem occurs, check the": "Gmail and Microsoft connections use OAuth. Other email providers require an App Password instead of your regular password. If any problem occurs, check the",
+    "Shared mailbox": "Shared mailbox",
+    "Shared mailbox connections only sync messages associated with the configured From address.": "Shared mailbox connections only sync messages associated with the configured From address."
+  };
+  for (const key in newcatalog) {
+    django.catalog[key] = newcatalog[key];
+  }
+  
 
   if (!django.jsi18n_initialized) {
     django.gettext = function(msgid) {
