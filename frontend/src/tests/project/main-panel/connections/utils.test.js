@@ -1,5 +1,5 @@
-import { CONNECTION_FIELDS, CONNECTION_TYPE } from './constants';
-import { getVisibleEmailFields, isEmailOAuthConfigValid, sanitizeEmailConfigByProvider } from './utils';
+import { CONNECTION_FIELDS, CONNECTION_TYPE } from '@/project/main-panel/connections/constants';
+import { getVisibleEmailFields, isEmailOAuthConfigValid, sanitizeEmailConfigByProvider } from '@/project/main-panel/connections/utils';
 
 jest.mock('@/constants', () => ({ gettext: value => value }), { virtual: true });
 jest.mock('@/components', () => ({}), { virtual: true });
@@ -10,7 +10,7 @@ jest.mock('@/sea-metadata/utils/cell', () => ({}), { virtual: true });
 jest.mock('@/sea-metadata/utils/column', () => ({}), { virtual: true });
 jest.mock('@/sea-metadata/utils/row', () => ({}), { virtual: true });
 jest.mock('@/utils/type-detection', () => ({}), { virtual: true });
-jest.mock('../tickets/constants', () => ({}));
+jest.mock('@/project/main-panel/tickets/constants', () => ({}));
 
 const fields = CONNECTION_FIELDS[CONNECTION_TYPE.EMAIL];
 
