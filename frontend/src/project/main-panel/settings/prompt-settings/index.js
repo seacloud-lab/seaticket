@@ -53,7 +53,7 @@ const PromptSettings = ({
             </div>
           </div>
         )}
-        <Button color="primary" outline onClick={openDialog}>
+        <Button color="primary" size="sm" outline onClick={openDialog}>
           {dialogTitle}
         </Button>
       </SettingsItem>
