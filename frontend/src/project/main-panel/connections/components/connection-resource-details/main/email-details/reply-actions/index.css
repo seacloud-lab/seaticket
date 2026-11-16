@@ -1,0 +1,30 @@
+.seaqa-email-reply-actions {
+  display: inline-flex;
+  align-items: center;
+}
+
+.seaqa-email-reply-actions .seaqa-email-reply-actions-main {
+  border-radius: 4px 0 0 4px;
+  padding-right: 8px;
+}
+
+.seaqa-email-reply-menu-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  width: 22px;
+  border-left: 1px solid var(--bs-border-secondary-color);
+  border-radius: 0 4px 4px 0;
+  color: var(--bs-icon-color);
+  cursor: pointer;
+}
+
+.seaqa-email-reply-menu-toggle:hover {
+  background-color: rgba(0, 0, 0, .04);
+}
+
+.seaqa-email-reply-menu-toggle .seaqa-icon-svg {
+  height: 12px;
+  width: 12px;
+}
