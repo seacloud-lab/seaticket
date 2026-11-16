@@ -34,7 +34,7 @@ const IconTextBtn = ({
       onKeyDown={handleKeyDown}
       { ...props }
     >
-      {icon && (<Icon symbol={icon} className="mr-2" aria-hidden="true" />)}
+      {icon && (<Icon symbol={icon} aria-hidden="true" />)}
       {isLoading && (<Loading />)}
       <span>{text}</span>
     </div>

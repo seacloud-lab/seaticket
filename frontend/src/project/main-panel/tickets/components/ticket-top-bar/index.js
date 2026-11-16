@@ -96,7 +96,7 @@ const TicketTopBar = ({ title, type, permission, toggleBar }) => {
     if (pageSlugId === TICKET_PAGE_SLUG_ID.TYPES && childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
       if (!isRW) return null;
       return (
-        <Button color="primary" className="btn-xs" onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_TYPE)}>
+        <Button color="primary" size="xs" onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_TYPE)}>
           <Icon symbol="plus" aria-hidden="true" />
           {gettext('New type')}
         </Button>
@@ -105,7 +105,7 @@ const TicketTopBar = ({ title, type, permission, toggleBar }) => {
     if (pageSlugId === TICKET_PAGE_SLUG_ID.SUBSTATES && childrenPageSlugId === TICKET_CHILDREN_PAGE_SLUG_ID.ALL) {
       if (!isRW) return null;
       return (
-        <Button color="primary" className="btn-xs" onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_SUBSTATE)}>
+        <Button color="primary" size="xs" onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_SUBSTATE)}>
           <Icon symbol="plus" aria-hidden="true" />
           {gettext('New substate')}
         </Button>
@@ -121,7 +121,7 @@ const TicketTopBar = ({ title, type, permission, toggleBar }) => {
     if (type === BAR_TYPE.NEW_TICKET) return null;
     if (type === BAR_TYPE.TRASH) return null;
     return (
-      <Button color="primary" className="btn-xs" onClick={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.NEW)}>
+      <Button color="primary" size="xs" onClick={() => togglePageSlugId(TICKET_PAGE_SLUG_ID.NEW)}>
         <Icon symbol="all-tickets" aria-hidden="true" />
         {gettext('New ticket')}
       </Button>

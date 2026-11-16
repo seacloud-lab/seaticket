@@ -70,7 +70,7 @@ const ReplyEmail = ({
   return (
     <div className="seaqa-email-reply-container">
       <div className="seaqa-email-reply-header">
-        <Button color="primary" className="seaqa-email-reply-send-btn" disabled={isSubmitting} onClick={handleSubmit}>
+        <Button color="primary" className="seaqa-email-reply-send-btn" size="sm" disabled={isSubmitting} onClick={handleSubmit}>
           {isSubmitting ? (<Loading />) : (<Icon symbol="send-stroked" />)}
           {isSubmitting ? gettext('Sending') : gettext('Send')}
         </Button>

@@ -139,7 +139,7 @@ const TopBar = ({ title, modifyLocalBar }) => {
     if (pageSlugId === CONNECTION_PAGE_SLUG_ID.ALL) {
       if (!isProjectAdmin) return null;
       return (
-        <Button color="primary" className="btn-xs" onClick={handleNewConnection}>
+        <Button color="primary" size="xs" onClick={handleNewConnection}>
           <Icon symbol="connection" aria-hidden="true" />
           {gettext('New connection')}
         </Button>

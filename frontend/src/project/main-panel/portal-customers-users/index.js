@@ -287,12 +287,12 @@ const PortalCustomersUsers = ({ title }) => {
         {[
           <span key="title" className="text-truncate" title={title}>{title}</span>,
           activeTab === Tabs.CUSTOMERS ? (
-            <Button key="new-customer" color="primary" className="btn-xs" onClick={() => setCustomerToEdit({})}>
+            <Button key="new-customer" color="primary" size="xs" onClick={() => setCustomerToEdit({})}>
               <Icon symbol="plus" aria-hidden="true" />
               {gettext('New customer')}
             </Button>
           ) : (
-            <Button key="invite-users" color="primary" className="btn-xs" onClick={() => { setInviteCustomerId(''); setInviteDialogOpen(true); }}>
+            <Button key="invite-users" color="primary" size="xs" onClick={() => { setInviteCustomerId(''); setInviteDialogOpen(true); }}>
               <Icon symbol="invite-members" aria-hidden="true" />
               {gettext('Invite users')}
             </Button>

@@ -12,7 +12,7 @@ const AddButton = ({ onClick, text, icon, className }) => {
       onClick={onClick}
       className={classnames('seaqa-project-add-btn', className)}
     >
-      {icon && <Icon symbol={icon} className="mr-2" />}
+      {icon && <Icon symbol={icon}/>}
       {text}
     </Button>
   );

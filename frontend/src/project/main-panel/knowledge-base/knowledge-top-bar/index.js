@@ -65,7 +65,7 @@ const KnowledgeTopBar = ({ title, permission }) => {
   const renderRightChildren = useCallback(() => {
     if (pageSlugId === KNOWLEDGE_PAGE_SLUG_ID.ALL) {
       return (
-        <Button color="primary" className="btn-xs" onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.NEW)}>
+        <Button color="primary" size="xs" onClick={() => togglePageSlugId(KNOWLEDGE_PAGE_SLUG_ID.NEW)}>
           <Icon symbol="knowledge-base" aria-hidden="true" />
           {gettext('New record')}
         </Button>
