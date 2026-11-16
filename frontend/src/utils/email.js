@@ -45,14 +45,14 @@ export const getEmailAddress = (address) => {
   return bareMatch ? bareMatch[0].toLowerCase() : '';
 };
 
-export const extractEmailAddresses = (addressText) => {
+export const extractEmailAddresses = (addressText, { deduplicate = true } = {}) => {
   if (!addressText) return [];
 
   const result = [];
   const seen = new Set();
   splitAddressTokens(addressText).forEach((token) => {
     const email = getEmailAddress(token);
-    if (!email || seen.has(email)) return;
+    if (!email || (deduplicate && seen.has(email))) return;
     seen.add(email);
 
     if (ANGLE_ADDRESS_PATTERN.test(token)) {
