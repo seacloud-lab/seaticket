@@ -5,7 +5,7 @@ import { CellType, VIEW_TOOL } from '@/sea-metadata/constants';
 import context from '@/sea-metadata/context';
 import { STATUS_OPTIONS } from './constants';
 
-const CustomersTables = ({ customers, onEdit, onManageUsers, onInviteUsers, onDelete, viewTabs }) => {
+const CustomersTables = ({ customers, onEdit, onManageUsers, onInviteUsers, onViewEmails, onDelete, viewTabs }) => {
   const metadataID = useMemo(() => {
     return customers.map(customer => `${customer.id}:${customer.updated_at || ''}`).join('|') || 'customers-empty';
   }, [customers]);
@@ -98,8 +98,9 @@ const CustomersTables = ({ customers, onEdit, onManageUsers, onInviteUsers, onDe
       'Divider',
       { label: gettext('Users management'), key: 'manage_customer_users', callback: () => onManageUsers(row) },
       ...(row.status === '1' ? [{ label: gettext('Invite users'), key: 'invite_customer_users', callback: () => onInviteUsers(row) }] : []),
+      { label: gettext('View emails'), key: 'view_customer_emails', callback: () => onViewEmails(row) },
     ];
-  }, [onDelete, onEdit, onManageUsers, onInviteUsers]);
+  }, [onDelete, onEdit, onManageUsers, onInviteUsers, onViewEmails]);
 
   return (
     <SeaMetadata

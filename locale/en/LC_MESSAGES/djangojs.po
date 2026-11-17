@@ -2164,6 +2164,18 @@ msgstr ""
 msgid "Emails"
 msgstr ""
 
+#: frontend/src/project/main-panel/portal-customers-users/customers-tables.js
+msgid "View emails"
+msgstr ""
+
+#: frontend/src/project/main-panel/portal-customers-users/customer-emails-modal.js
+msgid "Emails for {customer}"
+msgstr ""
+
+#: frontend/src/project/main-panel/portal-customers-users/customer-emails-modal.js
+msgid "No emails"
+msgstr ""
+
 #: frontend/src/portal/constants.js:46
 msgid "Submit issue"
 msgstr ""

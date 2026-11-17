@@ -8,7 +8,7 @@ import pytz
 from django.contrib.auth.models import AnonymousUser
 from django.core.cache import cache
 
-from seahub.portal.apis import PortalCustomerMemberView, PortalCustomerMembersView, PortalCustomerView, PortalCustomersView, PortalExternalInvitationsView, \
+from seahub.portal.apis import PortalCustomerMemberView, PortalCustomerMembersView, PortalCustomerView, PortalCustomersView, PortalCustomerEmailsView, PortalCustomerEmailThreadView, PortalCustomerEmailAttachmentView, PortalExternalInvitationsView, \
     PortalExternalLoginSendCodeView, PortalExternalUsersView, PortalIssueCommentsView, PortalIssueView, PortalIssuesView, PortalMyIssuesView, \
     PortalTeamIssuesView, PortalMyEmailsView, PortalEmailThreadView, PortalEmailAttachmentView, \
     PortalEmailAttachmentsZipView, PortalEmailAttachmentsZipStatusView, PortalEmailAttachmentsZipDownloadView
@@ -944,6 +944,156 @@ class TestPortalCustomerIssueAccess:
 
         with patch('seahub.portal.apis.SeaDBAPI') as seadb_api:
             response = PortalMyEmailsView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert response.status_code == 403
+        seadb_api.assert_not_called()
+
+    def test_admin_can_list_emails_for_customer(self, factory, project_creator, real_project):
+        customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
+        connection = ProjectConnections(
+            project_uuid=real_project.uuid,
+            name='Support mailbox',
+            type='email',
+            config='{}',
+            modifier=project_creator.username,
+            status='{}',
+        )
+        connection.save()
+        request = factory.get(f'/api/v1/portal/{real_project.uuid}/customers/{customer.id}/emails/')
+        request.user = project_creator
+        seadb_api = Mock()
+        table_name = f'email_thread_{connection.id}'
+        seadb_api.query_rows.return_value = {'results': [{
+            f'{table_name}._pk': 17,
+            f'{table_name}.title': 'Customer question',
+            f'{table_name}.modified_time': '2026-01-01',
+            'tickets._pk': None,
+            'tickets.state': None,
+            'tickets.assignees': None,
+            'tickets.due_date': None,
+        }]}
+
+        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api):
+            response = PortalCustomerEmailsView.as_view()(
+                request, project_uuid=str(real_project.uuid), customer_id=customer.id,
+            )
+
+        assert response.status_code == 200
+        assert response.data['records'][0]['_pk'] == 17
+        assert response.data['records'][0]['connection_id'] == connection.id
+        assert f'email_thread.`customer_id` = {customer.id}' in seadb_api.query_rows.call_args.args[1]
+
+    def test_admin_email_thread_detail_is_customer_scoped(self, factory, project_creator, real_project):
+        customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
+        connection = ProjectConnections(
+            project_uuid=real_project.uuid,
+            name='Support mailbox',
+            type='email',
+            config='{}',
+            modifier=project_creator.username,
+            status='{}',
+        )
+        connection.save()
+        request = factory.get(f'/api/v1/portal/{real_project.uuid}/customers/{customer.id}/emails/{connection.id}/17/')
+        request.user = project_creator
+        seadb_api = Mock()
+        seadb_api.query_rows.return_value = {'results': [{'_pk': 17}]}
+        record = {'_pk': 17, 'title': 'Question', 'customer_id': customer.id, 'emails': []}
+        columns = [{'name': 'customer_id'}, {'name': 'title'}]
+
+        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.portal.apis.list_email_record_details', return_value=(record, columns, '')):
+            response = PortalCustomerEmailThreadView.as_view()(
+                request,
+                project_uuid=str(real_project.uuid),
+                customer_id=customer.id,
+                connection_id=connection.id,
+                thread_id=17,
+            )
+
+        assert response.status_code == 200
+        assert 'customer_id' not in response.data['record']
+        assert all(column['name'] != 'customer_id' for column in response.data['columns'])
+        assert f'`customer_id` = {customer.id}' in seadb_api.query_rows.call_args.args[1]
+
+    def test_admin_email_thread_detail_hides_other_customer_thread(self, factory, project_creator, real_project):
+        customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
+        connection = ProjectConnections(
+            project_uuid=real_project.uuid,
+            name='Support mailbox',
+            type='email',
+            config='{}',
+            modifier=project_creator.username,
+            status='{}',
+        )
+        connection.save()
+        request = factory.get(f'/api/v1/portal/{real_project.uuid}/customers/{customer.id}/emails/{connection.id}/17/')
+        request.user = project_creator
+        seadb_api = Mock()
+        seadb_api.query_rows.return_value = {'results': []}
+
+        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.portal.apis.list_email_record_details') as get_details:
+            response = PortalCustomerEmailThreadView.as_view()(
+                request,
+                project_uuid=str(real_project.uuid),
+                customer_id=customer.id,
+                connection_id=connection.id,
+                thread_id=17,
+            )
+
+        assert response.status_code == 404
+        get_details.assert_not_called()
+
+    def test_admin_email_attachment_requires_customer_thread_and_message(self, factory, project_creator, real_project):
+        customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
+        connection = ProjectConnections(
+            project_uuid=real_project.uuid,
+            name='Support mailbox',
+            type='email',
+            config='{}',
+            modifier=project_creator.username,
+            status='{}',
+        )
+        connection.save()
+        request = factory.get(
+            f'/api/v1/portal/{real_project.uuid}/customers/{customer.id}/emails/{connection.id}/17/21/attachments/file.pdf'
+        )
+        request.user = project_creator
+        seadb_api = Mock()
+        seadb_api.query_rows.side_effect = [
+            {'results': [{'_pk': 17}]},
+            {'results': []},
+        ]
+
+        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.portal.apis.get_connection_file') as get_file:
+            response = PortalCustomerEmailAttachmentView.as_view()(
+                request,
+                project_uuid=str(real_project.uuid),
+                customer_id=customer.id,
+                connection_id=connection.id,
+                thread_id=17,
+                email_id=21,
+                file_path='file.pdf',
+            )
+
+        assert response.status_code == 404
+        assert f'`customer_id` = {customer.id}' in seadb_api.query_rows.call_args_list[0].args[1]
+        assert '`thread_id` = 17' in seadb_api.query_rows.call_args_list[1].args[1]
+        get_file.assert_not_called()
+
+    def test_customer_email_list_rejects_non_admin(self, factory, real_project):
+        customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
+        member = self._create_external_member(real_project, customer)
+        request = factory.get(f'/api/v1/portal/{real_project.uuid}/customers/{customer.id}/emails/')
+        request.user = _external_request_user()
+        _set_external_session(request, real_project.uuid, member.username)
+
+        with patch('seahub.portal.apis.SeaDBAPI') as seadb_api:
+            response = PortalCustomerEmailsView.as_view()(
+                request, project_uuid=str(real_project.uuid), customer_id=customer.id,
+            )
 
         assert response.status_code == 403
         seadb_api.assert_not_called()

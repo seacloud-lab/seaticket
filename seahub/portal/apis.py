@@ -48,7 +48,7 @@ from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.utils.decorators import require_org_context
 from seahub.portal.permissions import PortalKnowledgeBasePermission, PortalIssuePermission, PortalEmailPermission, PortalAnonymousAccessPermission, \
     can_access_portal_issue, check_portal_issue_permission, get_request_external_user, get_request_portal_customer, \
-    is_same_org_user
+    is_same_org_user, PortalAdminPermission
 from seahub.portal.models import PortalCustomer, ProjectExternalUser, PortalCustomDomain, PortalDomainAlias, get_portal_tls_ask_cache_key,\
     PORTAL_TLS_ASK_CACHE_TIMEOUT, get_preferred_portal_domain, get_service_portal_domain
 from seahub.portal.utils import PORTAL_EXTERNAL_LOGIN_CODE_TTL, PORTAL_EXTERNAL_LOGIN_SEND_COOLDOWN, PORTAL_EXTERNAL_LOGIN_VERIFY_FAIL_LIMIT, \
@@ -807,6 +807,167 @@ class PortalMyEmailsView(APIView):
             'records': page_records,
             'has_more': len(records) > start + limit,
         })
+
+
+class PortalCustomerEmailsView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (PortalAdminPermission,)
+    throttle_classes = (UserRateThrottle,)
+
+    def get(self, request, project_uuid, customer_id):
+        try:
+            customer_id = int(customer_id)
+            start = int(request.GET.get('start', 0))
+            limit = int(request.GET.get('limit', 1000))
+        except (TypeError, ValueError):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'pagination or customer id invalid.')
+        if start < 0 or limit < 1 or limit > 1000:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'pagination invalid.')
+
+        customer = PortalCustomer.objects.filter(id=customer_id, project_uuid=project_uuid).first()
+        if not customer:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Customer not found.')
+
+        email_connections = ProjectConnections.objects.filter(
+            project_uuid=project_uuid,
+            type=ConnectionType.EMAIL.value,
+            deleted=False,
+        ).only('id')
+
+        seadb_api = SeaDBAPI()
+        records = []
+        fetch_limit = start + limit + 1
+        try:
+            for connection in email_connections:
+                table_name = SchemaTables.THREAD.table_name(connection.id)
+                sql = (
+                    f"SELECT email_thread.`_pk`, email_thread.`title`, email_thread.`modified_time` "
+                    f"FROM `{table_name}` AS email_thread "
+                    f"WHERE email_thread.`customer_id` = {customer.id} "
+                    f"AND (email_thread.`deleted` = false OR email_thread.`deleted` IS NULL) "
+                    f"ORDER BY email_thread.`modified_time` DESC, email_thread.`_pk` DESC LIMIT {fetch_limit}"
+                )
+                for record in seadb_api.query_rows(project_uuid, sql).get('results', []):
+                    normalized_record = {}
+                    for field in ('_pk', 'title', 'modified_time'):
+                        normalized_record[field] = record.get(f'{table_name}.{field}', record.get(field))
+                    normalized_record['connection_id'] = connection.id
+                    records.append(normalized_record)
+        except Exception as e:
+            logger.error('Failed to list emails for customer %s: %s', customer.id, e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        records.sort(key=lambda record: (str(record.get('modified_time') or ''), int(record.get('_pk') or 0)), reverse=True)
+        page_records = records[start:start + limit]
+        return Response({'records': page_records, 'has_more': len(records) > start + limit})
+
+
+class PortalCustomerEmailThreadView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (PortalAdminPermission,)
+    throttle_classes = (UserRateThrottle,)
+
+    def get(self, request, project_uuid, customer_id, connection_id, thread_id):
+        try:
+            customer_id = int(customer_id)
+            connection_id = int(connection_id)
+            thread_id = int(thread_id)
+        except (TypeError, ValueError):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Email thread id invalid.')
+
+        customer = PortalCustomer.objects.filter(id=customer_id, project_uuid=project_uuid).first()
+        connection = ProjectConnections.objects.filter(
+            project_uuid=project_uuid,
+            id=connection_id,
+            type=ConnectionType.EMAIL.value,
+            deleted=False,
+        ).first()
+        if not customer or not connection:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Email thread not found.')
+
+        seadb_api = SeaDBAPI()
+        table_name = SchemaTables.THREAD.table_name(connection_id)
+        try:
+            thread_rows = seadb_api.query_rows(
+                project_uuid,
+                f"SELECT `_pk` FROM `{table_name}` WHERE `_pk` = {thread_id} "
+                f"AND `customer_id` = {customer.id} AND (`deleted` = false OR `deleted` IS NULL)",
+            ).get('results', [])
+            if not thread_rows:
+                return api_error(status.HTTP_404_NOT_FOUND, 'Email thread not found.')
+
+            record, columns, _linked_ticket_title = list_email_record_details(
+                seadb_api, project_uuid, connection_id, thread_id
+            )
+            record.pop('customer_id', None)
+            visible_columns = [column for column in columns or [] if column.get('name') != 'customer_id']
+            return Response({'record': record, 'columns': visible_columns})
+        except Exception as e:
+            logger.error('Failed to load email thread %s for customer %s: %s', thread_id, customer.id, e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+
+class PortalCustomerEmailAttachmentView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (PortalAdminPermission,)
+    throttle_classes = (UserRateThrottle,)
+
+    def get(self, request, project_uuid, customer_id, connection_id, thread_id, email_id, file_path):
+        try:
+            customer_id, connection_id, thread_id, email_id = map(
+                int, (customer_id, connection_id, thread_id, email_id)
+            )
+        except (TypeError, ValueError):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'Email attachment id invalid.')
+
+        customer = PortalCustomer.objects.filter(id=customer_id, project_uuid=project_uuid).first()
+        connection = ProjectConnections.objects.filter(
+            project_uuid=project_uuid,
+            id=connection_id,
+            type=ConnectionType.EMAIL.value,
+            deleted=False,
+        ).first()
+        if not customer or not connection:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Email attachment not found.')
+
+        thread_table = SchemaTables.THREAD.table_name(connection_id)
+        email_table = SchemaTables.EMAIL.table_name(connection_id)
+        try:
+            seadb_api = SeaDBAPI()
+            thread_rows = seadb_api.query_rows(
+                project_uuid,
+                f"SELECT `_pk` FROM `{thread_table}` WHERE `_pk` = {thread_id} "
+                f"AND `customer_id` = {customer.id} AND (`deleted` = false OR `deleted` IS NULL)",
+            ).get('results', [])
+            email_rows = seadb_api.query_rows(
+                project_uuid,
+                f"SELECT `_pk` FROM `{email_table}` WHERE `_pk` = {email_id} "
+                f"AND `thread_id` = {thread_id} AND (`deleted` = false OR `deleted` IS NULL)",
+            ).get('results', [])
+            if not thread_rows or not email_rows:
+                return api_error(status.HTTP_404_NOT_FOUND, 'Email attachment not found.')
+            if '/' in file_path or '\\' in file_path or file_path in ('.', '..'):
+                return api_error(status.HTTP_404_NOT_FOUND, 'Email attachment not found.')
+
+            authorized_file_path = f'{email_id}/{file_path}'
+            file_metadata = get_connection_file_metadata(project_uuid, str(connection_id), authorized_file_path)
+            file = get_connection_file(project_uuid, str(connection_id), authorized_file_path)
+        except FileNotFound:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Email attachment not found.')
+        except Exception as e:
+            logger.error('Failed to load customer email attachment: %s', e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        etag = file_metadata.get('ETag')
+        is_download = request.query_params.get('download') == '1'
+        if etag and not is_download and is_safe_inline_attachment(file_path) and if_none_match_hit(request, etag):
+            response = HttpResponseNotModified()
+        else:
+            response = get_attachment_file_response(file, file_path, force_download=is_download)
+        response['Cache-Control'] = 'max-age=3600, private'
+        if etag:
+            response['ETag'] = etag
+        return response
 
 
 class PortalEmailThreadView(APIView):
