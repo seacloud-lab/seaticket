@@ -12,6 +12,8 @@ from seahub.utils.email_address import get_email_domain
 logger = logging.getLogger(__name__)
 
 _MORE_EMAILS_OMITTED_NOTICE = '[more emails omitted due to content limit]'
+# An explicit LIMIT also bypasses SeaDB's default 100-row cap, so page through the thread.
+EMAIL_DOMAIN_PAGE_SIZE = 1000
 
 
 def _truncate_content_with_ellipsis(content, max_length):
@@ -51,12 +53,21 @@ class EmailSeaDBAPI:
     def get_received_email_domains(self, connection_id, thread_id):
         """Sender domains of the received (is_sender=false) emails in a thread."""
         table_name = SchemaTables.EMAIL.table_name(connection_id)
-        sql = f"SELECT `email_from` FROM `{table_name}` " \
-              f"WHERE `thread_id` = {int(thread_id)} AND `is_sender` = false AND `deleted` = false"
-        rows = self.seadb_api.query_rows(self.base_id, sql).get('results') or []
-        return {
-            domain for domain in (get_email_domain(row.get('email_from')) for row in rows) if domain
-        }
+        domains = set()
+        offset = 0
+        while True:
+            sql = f"SELECT `email_from` FROM `{table_name}` " \
+                  f"WHERE `thread_id` = {int(thread_id)} AND `is_sender` = false AND `deleted` = false " \
+                  f"ORDER BY `_pk` ASC LIMIT {EMAIL_DOMAIN_PAGE_SIZE} OFFSET {offset}"
+            rows = self.seadb_api.query_rows(self.base_id, sql).get('results') or []
+            for row in rows:
+                domain = get_email_domain(row.get('email_from'))
+                if domain:
+                    domains.add(domain)
+            if len(rows) < EMAIL_DOMAIN_PAGE_SIZE:
+                break
+            offset += len(rows)
+        return domains
 
     def get_emails_by_thread_id(self, connection_id, thread_id, limit=None):
         table_name = SchemaTables.EMAIL.table_name(connection_id)

@@ -2149,6 +2149,31 @@ class TestProjectConnectionRecordCustomer:
         assert "`is_sender` = false" in sql
         assert '`thread_id` = 10' in sql
 
+    def test_put_reads_later_pages_when_the_thread_exceeds_the_page_size(
+            self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        connection = connection_factory(connection_type='email')
+        customer = PortalCustomer.objects.create(
+            project_uuid=str(project.uuid), name='Acme', email_domain='acme.com')
+
+        seadb = Mock()
+        seadb.query_rows.side_effect = [
+            {'results': [{'email_from': 'a@other.com'}, {'email_from': 'b@other.com'}]},
+            {'results': [{'email_from': 'c@acme.com'}]},
+        ]
+        request = factory.put(
+            f"/api/v1/project/{project.uuid}/connections/{connection.id}/records/10/",
+            data={'customer_id': str(customer.id)}, format='json')
+        request.user = project_creator
+        with patch('seahub.seadb_models.email_seadb_api.EMAIL_DOMAIN_PAGE_SIZE', 2), \
+                patch('seahub.project.connections.SeaDBAPI', return_value=seadb):
+            resp = ProjectConnectionRecordView.as_view()(
+                request, project_uuid=project.uuid, connection_id=str(connection.id), record_id='10')
+
+        assert resp.status_code == 200
+        assert seadb.query_rows.call_count == 2
+        assert 'OFFSET 2' in seadb.query_rows.call_args_list[1][0][1]
+
     def test_put_returns_400_when_no_received_email_domain_matches(
             self, factory, project_creator, real_project, connection_factory):
         project = real_project
