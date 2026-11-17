@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import { Modal, ModalBody, ModalFooter } from 'reactstrap';
+import React, { useState, useCallback, useMemo, useRef } from 'react';
+import { Button, Modal, ModalBody, ModalFooter } from 'reactstrap';
 import { ModalHeader } from '@/components';
 import toaster from '@/components/toaster';
 import { gettext } from '@/constants';
@@ -19,6 +19,23 @@ const PromptDialog = ({
 }) => {
   const [value, setValue] = useState(initialValue);
 
+  const textareaRef = useRef(null);
+
+  const isValid = useMemo(() => {
+    const validValue = value?.trim() || '';
+    if (initialValue) return validValue !== initialValue;
+    return Boolean(validValue);
+  }, [initialValue, value]);
+
+  const focusAtEnd = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    textarea.focus();
+    const end = textarea.value.length;
+    textarea.setSelectionRange(end, end);
+  }, []);
+
   const handleInputChange = useCallback((e) => {
     setValue(e.target.value);
   }, []);
@@ -28,14 +45,16 @@ const PromptDialog = ({
       toaster.danger(validationMessage);
       return;
     }
-    onConfirm && onConfirm(value);
+    const validValue = value?.trim() || '';
+    onConfirm && onConfirm(validValue);
   }, [value, onConfirm, validationMessage]);
 
   return (
-    <Modal isOpen={true} toggle={onToggle} autoFocus={false} className="edit-prompt-dialog">
+    <Modal isOpen={true} toggle={onToggle} autoFocus={false} onOpened={focusAtEnd} className="edit-prompt-dialog">
       <ModalHeader toggle={onToggle}>{title}</ModalHeader>
       <ModalBody>
         <textarea
+          ref={textareaRef}
           className="form-control edit-prompt-textarea"
           rows={10}
           value={value}
@@ -46,8 +65,8 @@ const PromptDialog = ({
         />
       </ModalBody>
       <ModalFooter>
-        <button className="btn btn-secondary" onClick={onToggle}>{gettext('Cancel')}</button>
-        <button className="btn btn-primary" onClick={handleSubmit}>{gettext('Submit')}</button>
+        <Button color="secondary" onClick={onToggle}>{gettext('Cancel')}</Button>
+        <Button color="primary" disabled={!isValid} onClick={handleSubmit}>{gettext('Submit')}</Button>
       </ModalFooter>
     </Modal>
   );
