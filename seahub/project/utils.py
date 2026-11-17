@@ -633,6 +633,17 @@ def extract_email_addresses_to_display(address_text):
             addresses.append(email)
     return addresses
 
+
+def email_thread_customer_domain_matches(email_seadb_api, connection_id, thread_id, customer):
+    """A customer without an email domain does not restrict the thread."""
+    if not customer:
+        return True
+    email_domain = (customer.email_domain or '').strip().lower()
+    if not email_domain:
+        return True
+    return email_domain in email_seadb_api.get_received_email_domains(connection_id, thread_id)
+
+
 def _collect_github_issue_column_options(seadb_api, project_uuid, connection_ids, column_name, extra_id_field):
     """Merge select-column options from GitHub issue tables across connections."""
     if not connection_ids:

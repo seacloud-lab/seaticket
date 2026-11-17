@@ -2123,6 +2123,94 @@ class TestProjectConnectionRecordCustomer:
         assert resp.status_code == 400
         seadb.update_rows.assert_not_called()
 
+    def test_put_stores_the_customer_when_a_received_email_domain_matches(
+            self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        connection = connection_factory(connection_type='email')
+        customer = PortalCustomer.objects.create(
+            project_uuid=str(project.uuid), name='Acme', email_domain='acme.com')
+
+        seadb = Mock()
+        seadb.query_rows.return_value = {'results': [
+            {'email_from': 'Bob <bob@ACME.com>'},
+            {'email_from': 'carol@other.com'},
+        ]}
+        request = factory.put(
+            f"/api/v1/project/{project.uuid}/connections/{connection.id}/records/10/",
+            data={'customer_id': str(customer.id)}, format='json')
+        request.user = project_creator
+        with patch('seahub.project.connections.SeaDBAPI', return_value=seadb):
+            resp = ProjectConnectionRecordView.as_view()(
+                request, project_uuid=project.uuid, connection_id=str(connection.id), record_id='10')
+
+        assert resp.status_code == 200
+        assert seadb.update_rows.call_args[0][2][0]['row']['customer_id'] == customer.id
+        sql = seadb.query_rows.call_args[0][1]
+        assert "`is_sender` = false" in sql
+        assert '`thread_id` = 10' in sql
+
+    def test_put_returns_400_when_no_received_email_domain_matches(
+            self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        connection = connection_factory(connection_type='email')
+        customer = PortalCustomer.objects.create(
+            project_uuid=str(project.uuid), name='Acme', email_domain='acme.com')
+
+        seadb = Mock()
+        seadb.query_rows.return_value = {'results': [{'email_from': 'bob@other.com'}]}
+        request = factory.put(
+            f"/api/v1/project/{project.uuid}/connections/{connection.id}/records/10/",
+            data={'customer_id': str(customer.id)}, format='json')
+        request.user = project_creator
+        with patch('seahub.project.connections.SeaDBAPI', return_value=seadb):
+            resp = ProjectConnectionRecordView.as_view()(
+                request, project_uuid=project.uuid, connection_id=str(connection.id), record_id='10')
+
+        assert resp.status_code == 400
+        assert resp.data['error_msg'] == 'Customer email domain does not match the email.'
+        seadb.update_rows.assert_not_called()
+
+    def test_put_returns_400_when_the_thread_has_no_received_email(
+            self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        connection = connection_factory(connection_type='email')
+        customer = PortalCustomer.objects.create(
+            project_uuid=str(project.uuid), name='Acme', email_domain='acme.com')
+
+        seadb = Mock()
+        seadb.query_rows.return_value = {'results': []}
+        request = factory.put(
+            f"/api/v1/project/{project.uuid}/connections/{connection.id}/records/10/",
+            data={'customer_id': str(customer.id)}, format='json')
+        request.user = project_creator
+        with patch('seahub.project.connections.SeaDBAPI', return_value=seadb):
+            resp = ProjectConnectionRecordView.as_view()(
+                request, project_uuid=project.uuid, connection_id=str(connection.id), record_id='10')
+
+        assert resp.status_code == 400
+        seadb.update_rows.assert_not_called()
+
+    def test_put_skips_the_domain_check_when_the_customer_has_no_email_domain(
+            self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        connection = connection_factory(connection_type='email')
+        customer = PortalCustomer.objects.create(project_uuid=str(project.uuid), name='Acme')
+
+        resp, seadb = self._put(factory, project_creator, project, connection, {'customer_id': str(customer.id)})
+
+        assert resp.status_code == 200
+        seadb.query_rows.assert_not_called()
+
+    def test_put_clears_the_customer_without_reading_the_email(
+            self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        connection = connection_factory(connection_type='email')
+
+        resp, seadb = self._put(factory, project_creator, project, connection, {'customer_id': ''})
+
+        assert resp.status_code == 200
+        seadb.query_rows.assert_not_called()
+
     def test_put_batch_stores_the_customer(self, factory, project_creator, real_project, connection_factory):
         project = real_project
         connection = connection_factory(connection_type='email')
@@ -2146,6 +2234,49 @@ class TestProjectConnectionRecordCustomer:
 
         assert resp.status_code == 404
         seadb.update_rows.assert_not_called()
+
+    def test_put_batch_returns_400_when_no_received_email_domain_matches(
+            self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        connection = connection_factory(connection_type='email')
+        customer = PortalCustomer.objects.create(
+            project_uuid=str(project.uuid), name='Acme', email_domain='acme.com')
+
+        seadb = Mock()
+        seadb.query_rows.return_value = {'results': [{'email_from': 'bob@other.com'}]}
+        request = factory.put(
+            f"/api/v1/project/{project.uuid}/connections/{connection.id}/records/",
+            data={'records_data': [{'row_id': '10', 'row': {'customer_id': str(customer.id)}}]},
+            format='json')
+        request.user = project_creator
+        with patch('seahub.project.connections.SeaDBAPI', return_value=seadb):
+            resp = ProjectConnectionRecordsView.as_view()(
+                request, project_uuid=project.uuid, connection_id=str(connection.id))
+
+        assert resp.status_code == 400
+        assert resp.data['error_msg'] == 'Customer email domain does not match the email.'
+        seadb.update_rows.assert_not_called()
+
+    def test_put_batch_stores_the_customer_when_a_received_email_domain_matches(
+            self, factory, project_creator, real_project, connection_factory):
+        project = real_project
+        connection = connection_factory(connection_type='email')
+        customer = PortalCustomer.objects.create(
+            project_uuid=str(project.uuid), name='Acme', email_domain='acme.com')
+
+        seadb = Mock()
+        seadb.query_rows.return_value = {'results': [{'email_from': 'bob@acme.com'}]}
+        request = factory.put(
+            f"/api/v1/project/{project.uuid}/connections/{connection.id}/records/",
+            data={'records_data': [{'row_id': '10', 'row': {'customer_id': str(customer.id)}}]},
+            format='json')
+        request.user = project_creator
+        with patch('seahub.project.connections.SeaDBAPI', return_value=seadb):
+            resp = ProjectConnectionRecordsView.as_view()(
+                request, project_uuid=project.uuid, connection_id=str(connection.id))
+
+        assert resp.status_code == 200
+        assert seadb.update_rows.call_args[0][2][0]['row']['customer_id'] == customer.id
 
 
 class TestProjectConnectionRecordsTicketStatus:

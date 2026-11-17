@@ -7,6 +7,7 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.settings import ATTACHMENT_CONTENT_MAX_SIZE, ATTACHMENT_ISSUE_MAX_COMMENTS
 from seahub.project.constants import ConnectionType
 from seahub.seadb_models.models import SchemaTables
+from seahub.utils.email_address import get_email_domain
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +47,16 @@ class EmailSeaDBAPI:
         response = self.seadb_api.query_rows(self.base_id, sql)
         result = response.get('results', [])
         return result[0] if result else {}
+
+    def get_received_email_domains(self, connection_id, thread_id):
+        """Sender domains of the received (is_sender=false) emails in a thread."""
+        table_name = SchemaTables.EMAIL.table_name(connection_id)
+        sql = f"SELECT `email_from` FROM `{table_name}` " \
+              f"WHERE `thread_id` = {int(thread_id)} AND `is_sender` = false AND `deleted` = false"
+        rows = self.seadb_api.query_rows(self.base_id, sql).get('results') or []
+        return {
+            domain for domain in (get_email_domain(row.get('email_from')) for row in rows) if domain
+        }
 
     def get_emails_by_thread_id(self, connection_id, thread_id, limit=None):
         table_name = SchemaTables.EMAIL.table_name(connection_id)
