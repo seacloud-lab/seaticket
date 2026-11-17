@@ -112,15 +112,17 @@ export const useAgentRunLogs = () => {
       let newRunLogs = runLogs.slice(0);
       const runLogIndex = newRunLogs.findIndex(item => item.key === key);
       if (runLogIndex === -1) return newRunLogs;
-      const nextLog = newRunLogs[runLogIndex + 1] || newRunLogs[runLogIndex - 1] || { key: '' };
-      updateActiveLogKey(nextLog.key);
+      if (key === activeLogKey) {
+        const nextLog = newRunLogs[runLogIndex + 1] || newRunLogs[runLogIndex - 1] || { key: '' };
+        updateActiveLogKey(nextLog.key);
+      }
       newRunLogs.splice(runLogIndex, 1);
       if (newRunLogs.length < pageCount.current) {
         loadMore();
       }
       return newRunLogs;
     });
-  }, [loadMore]);
+  }, [activeLogKey, loadMore]);
 
   useEffect(() => {
     const statusFilterValue = localStorage.getItem(localStorageName, '');
