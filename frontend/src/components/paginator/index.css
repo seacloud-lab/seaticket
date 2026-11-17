@@ -1,28 +1,3 @@
-.paginator .paginator-btn {
-  height: 38px;
-  min-width: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.paginator .paginator-btn.disabled {
-  background-color: var(--bs-btn-disabled-bg);
-  border-color: var(--bs-btn-disabled-border-color);
-  color: var(--bs-btn-disabled-color);
-  opacity: var(--bs-btn-disabled-opacity);
-  pointer-events: none;
-}
-
-.paginator .paginator-btn .seaqa-icon-svg {
-  height: 14px;
-  width: 14px;
-}
-
-.paginator .paginator-btn:not(.disabled) .seaqa-icon-svg {
-  color: var(--bs-body-color);
-}
-
 .paginator .paginator-dropdown .btn {
   font-weight: 400;
 }

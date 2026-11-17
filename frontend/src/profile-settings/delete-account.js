@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from 'reactstrap';
 import ConfirmDeleteAccount from '../components/dialog/confirm-delete-account';
 import ModalPortal from '../components/modal-portal';
 import { gettext, siteRoot } from '../constants';
@@ -35,7 +36,7 @@ class DeleteAccount extends React.Component {
         <div className="setting-item" id="del-account">
           <h3 className="setting-item-heading">{gettext('Delete account')}</h3>
           <p className="mb-2">{gettext('This operation will not be reverted. Please think twice!')}</p>
-          <button className="btn btn-outline-primary" onClick={this.confirmDelete}>{gettext('Delete')}</button>
+          <Button color="outline-primary" onClick={this.confirmDelete}>{gettext('Delete')}</Button>
         </div>
         {this.state.isConfirmDialogOpen && (
           <ModalPortal>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from 'reactstrap';
 import { toaster, ModalPortal, IconButton } from '@/components';
 import { gettext } from '@/constants';
 import { Utils } from '@/utils/utils';
@@ -57,10 +58,10 @@ class WebdavPassword extends React.Component {
                 <input className="border-0 mr-1" type="text" value={isPasswordVisible ? password : '**********'} readOnly={true} size={Math.max(password.length, 10)} />
                 <IconButton icon={this.state.isPasswordVisible ? 'eye' : 'eye-slash'} onClick={this.togglePasswordVisible} />
               </div>
-              <button className="btn btn-outline-primary mt-2" onClick={this.toggleDialog}>{gettext('Update')}</button>
+              <Button color="outline-primary" className="mt-2" onClick={this.toggleDialog}>{gettext('Update')}</Button>
             </React.Fragment>
           ) : (
-            <button className="btn btn-outline-primary" onClick={this.toggleDialog}>{gettext('Set password')}</button>
+            <Button color="outline-primary" onClick={this.toggleDialog}>{gettext('Set password')}</Button>
           )}
         </div>
         {this.state.isDialogOpen && (

@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { I18nextProvider } from 'react-i18next';
+import { Button } from 'reactstrap';
 import i18n from '@/_i18n/i18n-seafile-editor';
 import { gettext } from '@/constants';
 import { getPortalAnonymousValidatePath } from './path-utils';
@@ -88,9 +89,9 @@ const PasswordPanel = ({ displayName, csrfToken }) => {
               <div className="portal-password-error">{gettext('Password invalid')}</div>
             )}
             <div className="portal-password-actions">
-              <button className="btn btn-primary" type="submit" disabled={isSubmittingPassword}>
+              <Button color="primary" type="submit" disabled={isSubmittingPassword}>
                 {isSubmittingPassword ? gettext('Validating...') : gettext('Confirm')}
-              </button>
+              </Button>
             </div>
           </form>
         </div>

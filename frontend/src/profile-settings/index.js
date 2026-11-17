@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from 'reactstrap';
 import { createRoot } from 'react-dom/client';
 import { Account, toaster } from '@/components';
 import { gettext, siteRoot, mediaUrl, logoPath, logoWidth, logoHeight, siteTitle, isOrgContext } from '@/constants';
@@ -211,13 +212,13 @@ class ProfileSettings extends React.Component {
                     {userUnusablePassword ? (
                       <>
                         <p>{gettext('You have not set a password yet. Setting a password and binding an email will enable you to login via email.')}</p>
-                        <button className="btn btn-outline-primary mb-2" onClick={this.toggleSetPassword}>{gettext('Set')}</button>
+                        <Button color="outline-primary" className="mb-2" onClick={this.toggleSetPassword}>{gettext('Set')}</Button>
                       </>
                     ) : (
-                      <button className="btn btn-outline-primary mb-2" onClick={this.toggleUpdatePassword}>{gettext('Update')}</button>
+                      <Button color="outline-primary" className="mb-2" onClick={this.toggleUpdatePassword}>{gettext('Update')}</Button>
                     )}
                     {canRemovePassword && !userUnusablePassword &&
-                      <button className="btn btn-outline-primary ml-2 mb-2" onClick={this.toggleRemovePassword}>{gettext('Remove')}</button>
+                      <Button color="outline-primary" className="mb-2" onClick={this.toggleRemovePassword}>{gettext('Remove')}</Button>
                     }
                   </div>
                 }

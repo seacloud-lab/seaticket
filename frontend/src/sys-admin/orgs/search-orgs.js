@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { Form, FormGroup, Input, Label, Col } from 'reactstrap';
+import { Form, FormGroup, Input, Label, Col, Button } from 'reactstrap';
 import PropTypes from 'prop-types';
 import { toaster } from '@/components';
 import { loginUrl, gettext } from '@/constants';
@@ -128,13 +128,13 @@ class SearchOrgs extends Component {
               </FormGroup>
               <FormGroup row>
                 <Col sm={{ size: 5, offset: 1 }}>
-                  <button
-                    className="btn btn-outline-primary"
+                  <Button
+                    color="outline-primary"
                     disabled={!isSubmitBtnActive}
                     onClick={this.onClick}
                   >
                     {gettext('Submit')}
-                  </button>
+                  </Button>
                 </Col>
               </FormGroup>
             </Form>

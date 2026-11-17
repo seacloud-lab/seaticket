@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from 'reactstrap';
 import ModalPortal from '../components/modal-portal';
 import { gettext } from '../constants';
 import ConfirmUserConvertToTeam from './dialog/confirm-user-convert-to-team';
@@ -31,7 +32,7 @@ class UserConvertToTeam extends React.Component {
         <div className="setting-item" id="convert">
           <h3 className="setting-item-heading">{gettext('Convert to team account')}</h3>
           <p className="mb-2">{gettext('This operation will not be reverted. Please think twice!')}</p>
-          <button className="btn btn-outline-primary" onClick={this.confirm}>{gettext('Confirm')}</button>
+          <Button color="outline-primary" onClick={this.confirm}>{gettext('Confirm')}</Button>
         </div>
         {this.state.isConfirmDialogOpen && (
           <ModalPortal>

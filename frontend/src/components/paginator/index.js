@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Dropdown, DropdownToggle } from 'reactstrap';
+import { Button, Dropdown, DropdownToggle } from 'reactstrap';
 import { navigate } from '@gatsbyjs/reach-router';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
@@ -83,9 +83,13 @@ class Paginator extends Component {
     let rightDisabled = !this.props.hasNextPage;
     return (
       <div className="my-6 paginator d-flex align-items-center justify-content-center">
-        <IconBtn icon="arrow-left" disabled={leftDisabled} className="btn btn-secondary paginator-btn" onClick={this.goToPrevious} />
-        <div className="btn btn-primary mx-4 paginator-btn">{currentPage}</div>
-        <IconBtn icon="arrow-right" disabled={rightDisabled} className="btn btn-secondary paginator-btn" onClick={this.goToNext} />
+        <Button color="secondary" disabled={leftDisabled}>
+          <Icon symbol="arrow-left" onClick={this.goToPrevious} />
+        </Button>
+        <Button color="primary" className="mx-4">{currentPage}</Button>
+        <Button color="secondary" disabled={rightDisabled}>
+          <Icon symbol="arrow-right" onClick={this.goToNext} />
+        </Button>
         <Dropdown isOpen={this.state.isMenuShow} toggle={this.toggleOperationMenu} direction="up" className="paginator-dropdown">
           <DropdownToggle
             className="ml-6"
