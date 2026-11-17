@@ -143,7 +143,7 @@ const StateSettings = ({
                 disabled={isSubmitting}
                 onClick={handleChange}
               >
-                <Icon symbol={icon} className={`mr-2 seaqa-project-ticket-state-${icon}-icon`} />
+                <Icon symbol={icon} className={`seaqa-project-ticket-state-${icon}-icon`} />
                 <span className="text-truncate" title={option?.label}>{option?.label}</span>
               </Button>
             ) : (
@@ -153,7 +153,7 @@ const StateSettings = ({
                   disabled={isSubmitting}
                   onClick={handleChange}
                 >
-                  <Icon symbol={icon} className={`mr-2 seaqa-project-ticket-state-${icon}-icon`} />
+                  <Icon symbol={icon} className={`seaqa-project-ticket-state-${icon}-icon`} />
                   <span className="text-truncate" title={option?.label}>{option?.label}</span>
                 </Button>
                 <Button className="seaqa-project-ticket-state-toggle-btn" innerRef={editorRef} onClick={openEditor}>

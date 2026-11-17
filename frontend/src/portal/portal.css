@@ -8,12 +8,12 @@ body {
 }
 
 .seaqa-project-ticket-state-check-circle-stroked-icon {
-  color: var(--ticket-close-color);
+  color: var(--ticket-close-color) !important;
 }
 
 .seaqa-project-ticket-state-dot-circle-stroked-icon,
 .seaqa-project-ticket-state-loop-dot-icon {
-  color: var(--ticket-open-color);
+  color: var(--ticket-open-color) !important;
   flex-shrink: 0;
 }
 
@@ -56,16 +56,6 @@ body {
   --bs-btn-disabled-color: var(--bs-sf-orange);
   --bs-btn-disabled-bg: transparent;
   --bs-btn-disabled-border-color: var(--bs-sf-orange);
-}
-
-.seaqa-portal .btn-check:checked+.btn,
-.seaqa-portal .btn.active,
-.seaqa-portal .btn-primary:active,
-.seaqa-portal .btn-primary:hover,
-.seaqa-portal .btn:first-child:active,
-.seaqa-portal :not(.btn-check)+.btn:active {
-  background-color: var(--bs-sf-orange);
-  border-color: var(--bs-sf-orange);
 }
 
 .seaqa-portal-body {

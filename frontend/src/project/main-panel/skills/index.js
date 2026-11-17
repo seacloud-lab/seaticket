@@ -112,7 +112,7 @@ const Skills = ({ title }) => {
       <TopBar>
         <div className="w-100 text-truncate">{title}</div>
         {isProjectAdmin && (
-          <Button color="primary" className="btn-xs" onClick={onCreate}>
+          <Button color="primary" size="xs" onClick={onCreate}>
             <Icon symbol="plus" aria-hidden="true" />
             {gettext('New skill')}
           </Button>

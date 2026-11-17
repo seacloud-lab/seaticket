@@ -64,7 +64,7 @@ const OrgUsers = ({ orgID, onCloseSidePanel }) => {
       <TopBar onCloseSidePanel={onCloseSidePanel}></TopBar>
       <Main title={(<OrgTitle orgName={orgName} />)}>
         <OrgNav currentItem="users" orgID={orgID} searchValue={searchValue} onChangeSearchValue={onChangeSearchValue}/>
-        <Button className="btn btn-secondary operation-item mt-4" onClick={openAddUserDialog}>{gettext('Add member')}</Button>
+        <Button color="secondary" className="operation-item mt-4" onClick={openAddUserDialog}>{gettext('Add member')}</Button>
         <UsersTable
           ref={usersTableRef}
           searchValue={searchValue}

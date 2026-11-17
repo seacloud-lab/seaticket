@@ -62,12 +62,12 @@ const View = () => {
       <div className="seaqa-support-portal-tip-pages">
         {isProjectAdmin && (
           <Button color="primary" onClick={() => window.open(editURL, '_blank', 'noopener,noreferrer')}>
-            <Icon symbol="rename" className="mr-2" aria-hidden="true" />
+            <Icon symbol="rename" aria-hidden="true" />
             {gettext('Edit portal')}
           </Button>
         )}
         <Button color="secondary" onClick={onViewPortal} disabled={isOpeningPortal}>
-          <Icon symbol="open-in-new-tab" className="mr-2" aria-hidden="true" />
+          <Icon symbol="open-in-new-tab" aria-hidden="true" />
           {gettext('View portal')}
         </Button>
       </div>

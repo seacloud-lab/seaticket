@@ -98,7 +98,7 @@ const PortalIdentity = ({ portalName, portalLogo, setPortalName, setPortalLogo }
                 <UploadFile fileType="image/jpeg, image/png, .jpg, .jpeg, .png" onUpload={onLogoChange} ref={uploadLogoRef} />
                 <div className="seaqa-tip-default">{gettext('Select a png or jpg image with in 5MB.')}</div>
                 <div className="seaqa-tip-default">{gettext('Recommended size is 256x256px.')}</div>
-                <Button color="primary" outline className="portal-appearance-logo-upload-button" onClick={() => uploadLogoRef.current?.onClick()}>
+                <Button color="primary" outline className="portal-appearance-logo-upload-button" size="sm" onClick={() => uploadLogoRef.current?.onClick()}>
                   {isDefaultLogo ? gettext('Upload logo') : gettext('Change logo')}
                 </Button>
               </div>

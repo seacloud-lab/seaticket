@@ -202,20 +202,20 @@ const AllUsers = ({ isAdmin, onCloseSidePanel }) => {
         titleClassName="cur-view-path sys-user-nav tab-nav-container mb-4"
       >
         {selectedUsers.length > 0 ? (
-          <Button className="btn btn-secondary operation-item" onClick={toggleBatchDeleteUserDialog}>
+          <Button color="secondary" className="operation-item" onClick={toggleBatchDeleteUserDialog}>
             {gettext('Delete users')}
           </Button>
         ) : (
           <>
             {isAdmin ?
-              <Button className="btn btn-secondary operation-item" onClick={toggleBatchAddAdminDialog}>
+              <Button color="secondary" className="operation-item" onClick={toggleBatchAddAdminDialog}>
                 {gettext('Add admin')}
               </Button>
               :
               <div>
-                <Button className="btn btn-secondary operation-item" onClick={toggleImportUserDialog}>{gettext('Import users')}</Button>
-                <Button className="btn btn-secondary operation-item" onClick={toggleAddUserDialog}>{gettext('Add user')}</Button>
-                <Button className="btn btn-secondary operation-item" onClick={exportExcel}>{gettext('Export Excel')}</Button>
+                <Button color="secondary" className="operation-item" onClick={toggleImportUserDialog}>{gettext('Import users')}</Button>
+                <Button color="secondary" className="operation-item" onClick={toggleAddUserDialog}>{gettext('Add user')}</Button>
+                <Button color="secondary" className="operation-item" onClick={exportExcel}>{gettext('Export Excel')}</Button>
               </div>
             }
           </>
