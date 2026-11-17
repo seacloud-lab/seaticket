@@ -83,12 +83,12 @@ class Paginator extends Component {
     let rightDisabled = !this.props.hasNextPage;
     return (
       <div className="my-6 paginator d-flex align-items-center justify-content-center">
-        <Button color="secondary" disabled={leftDisabled}>
-          <Icon symbol="arrow-left" onClick={this.goToPrevious} />
+        <Button color="secondary" disabled={leftDisabled} onClick={this.goToPrevious}>
+          <Icon symbol="arrow-left" />
         </Button>
         <Button color="primary" className="mx-4">{currentPage}</Button>
-        <Button color="secondary" disabled={rightDisabled}>
-          <Icon symbol="arrow-right" onClick={this.goToNext} />
+        <Button color="secondary" disabled={rightDisabled} onClick={this.goToNext} >
+          <Icon symbol="arrow-right"/>
         </Button>
         <Dropdown isOpen={this.state.isMenuShow} toggle={this.toggleOperationMenu} direction="up" className="paginator-dropdown">
           <DropdownToggle
