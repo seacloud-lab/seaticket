@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import classnames from 'classnames';
 import { EmptyTip, IconButton } from '@/components';
 import { gettext } from '@/constants';
-import { getInfoByEmailFrom } from '../../../../utils';
+import { parseEmailAddress } from '@/utils/validate';
 import Item from './item';
 
 import './index.css';
@@ -24,7 +24,7 @@ const EmailDetails = ({ details, className, ...props }) => {
     );
   }
 
-  const { email } = getInfoByEmailFrom(details[0]?.email_from);
+  const { username, email } = parseEmailAddress(details[0]?.email_from);
 
   const highlightDetail = details.find(item => item.highlight);
 
@@ -37,7 +37,7 @@ const EmailDetails = ({ details, className, ...props }) => {
           </div>
           <div className="email-record-info">
             <div className="email-record-info-container">
-              <span className="email-record-info-sender">{email}</span>
+              <span className="email-record-info-sender">{username || email}</span>
               <span className="email-record-info-content text-truncate"></span>
               {isUnread && <div className="read-status unread"/>}
               <span className="email-record-info-time">
@@ -46,7 +46,7 @@ const EmailDetails = ({ details, className, ...props }) => {
                 {gettext('messages')}
               </span>
             </div>
-            <div className="email-record-info-to">
+            <div className="email-record-info-participants">
               {'more'}
             </div>
           </div>
