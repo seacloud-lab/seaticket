@@ -1,4 +1,5 @@
 import React, { Fragment } from 'react';
+import { Button } from 'reactstrap';
 import PropTypes from 'prop-types';
 import { ModalPortal, toaster } from '@/components';
 import SetContactEmailDialog from '@/components/dialog/set-contact-email-dialog';
@@ -51,7 +52,7 @@ class BindContactEmail extends React.Component {
           <div className="from-group">
             <p className="mb-2">{showText}</p>
             {enableUserSetContactEmail &&
-              <button className="btn btn-outline-primary" onClick={this.onToggleContactDialog}>{buttonValue}</button>
+              <Button color="outline-primary" onClick={this.onToggleContactDialog}>{buttonValue}</Button>
             }
           </div>
         </div>

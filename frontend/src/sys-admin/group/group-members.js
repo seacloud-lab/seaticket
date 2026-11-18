@@ -318,7 +318,7 @@ class GroupMembers extends Component {
             searchValue={searchValue}
             onChangeSearchValue={this.onChangeSearchValue}
           />
-          <Button className="btn btn-secondary operation-item mt-4" onClick={this.toggleAddMemberDialog}>{gettext('Add member')}</Button>
+          <Button color="secondary" className="operation-item mt-4" onClick={this.toggleAddMemberDialog}>{gettext('Add member')}</Button>
           <Content
             loading={this.state.loading}
             errorMsg={this.state.errorMsg}

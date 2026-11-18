@@ -16,7 +16,7 @@ const TicketTopBar = ({ title, permission }) => {
     const isRW = permission === PERMISSION_TYPES.READ_WRITE;
     if (!isRW) return null;
     return (
-      <Button color="primary" className="btn-xs" onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_TAG)}>
+      <Button color="primary" size="xs" onClick={() => eventBus.dispatch(EVENT_BUS_TYPE.NEW_TAG)}>
         <Icon symbol="tag-stroked" aria-hidden="true" />
         {gettext('New tag')}
       </Button>

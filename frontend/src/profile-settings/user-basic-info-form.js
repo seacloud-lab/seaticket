@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from 'reactstrap';
 import PropTypes from 'prop-types';
 import { toaster } from '@/components';
 import { validateName } from '@/utils/validate';
@@ -75,13 +76,14 @@ class UserBasicInfoForm extends React.Component {
           </div>
         </div>
 
-        <button
+        <Button
           type="submit"
-          className="btn btn-outline-primary offset-sm-1"
+          color="outline-primary"
+          className="offset-sm-1"
           disabled={!enableUpdateUserInfo || !enableMemberModifyName || !enableUserSetName}
         >
           {gettext('Submit')}
-        </button>
+        </Button>
       </form>
     );
   }

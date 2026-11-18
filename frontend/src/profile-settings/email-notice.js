@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from 'reactstrap';
 import { toaster, Radio } from '@/components';
 import { gettext } from '@/constants';
 import { Utils } from '@/utils/utils';
@@ -79,7 +80,7 @@ class EmailNotice extends React.Component {
             );
           })}
         </form>
-        <button type="submit" className="btn btn-outline-primary mt-2" onClick={this.formSubmit}>{gettext('Submit')}</button>
+        <Button type="submit" color="outline-primary" className="mt-2" onClick={this.formSubmit}>{gettext('Submit')}</Button>
       </div>
     );
   }

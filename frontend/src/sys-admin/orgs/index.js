@@ -365,7 +365,7 @@ class Orgs extends Component {
           titleClassName="ml-0"
         >
           {isShowOrgOpItem &&
-            <Button className="btn btn-secondary operation-item my-4" onClick={this.toggleAddOrgDialog}>
+            <Button color="secondary" className="operation-item my-4" onClick={this.toggleAddOrgDialog}>
               {gettext('Add organization')}
             </Button>
           }

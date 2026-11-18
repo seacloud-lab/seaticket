@@ -24,21 +24,6 @@
   z-index: 103;
 }
 
-.seaqa-email-reply-container .seaqa-email-reply-send-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 32px;
-  padding-top: 0;
-  padding-bottom: 0;
-  gap: 8px;
-}
-
-.seaqa-email-reply-container .seaqa-email-reply-send-btn .seaqa-icon-svg {
-  height: 14px;
-  width: 14px;
-}
-
 .seaqa-email-reply-container .seaqa-email-reply-body {
   position: relative;
   display: flex;

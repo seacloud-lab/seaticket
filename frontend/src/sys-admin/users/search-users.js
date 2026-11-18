@@ -47,7 +47,7 @@ const CustomizeTopBar = ({ onCloseSidePanel, deleteUsers }) => {
         {isDesktop ? (
           <>
             {selectedUsers.length > 0 && (
-              <Button className="btn btn-secondary operation-item" onClick={toggleBatchDeleteUserDialog}>
+              <Button color="secondary" className="operation-item" onClick={toggleBatchDeleteUserDialog}>
                 {gettext('Delete users')}
               </Button>
             )}

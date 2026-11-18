@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, Modal, ModalBody } from 'reactstrap';
+import { Alert, Modal, ModalBody, Button } from 'reactstrap';
 import PropTypes from 'prop-types';
 import ModalHeader from '../../components/modal-header';
 import { gettext, siteRoot } from '../../constants';
@@ -53,7 +53,7 @@ class SysAdminImportUserDialog extends React.Component {
           <p>
             <a className="text-secondary small" href={`${siteRoot}users/batchadduser/example/`}>{gettext('Download an example file')}</a>
           </p>
-          <button className="btn btn-outline-primary" onClick={this.openFileInput}>{gettext('Upload file')}</button>
+          <Button color="outline-primary" onClick={this.openFileInput}>{gettext('Upload file')}</Button>
           <input className="d-none" type="file" onChange={this.uploadFile} ref={this.fileInputRef} />
           {errorMsg && <Alert color="danger">{errorMsg}</Alert>}
         </ModalBody>

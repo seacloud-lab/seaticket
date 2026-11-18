@@ -130,8 +130,8 @@ const StatusToggleButton = ({
   return (
     <>
       <ButtonGroup className="mr-4">
-        <Button className="seaqa-project-ticket-state-toggle-btn d-flex align-items-center" disabled={disabled} onClick={handleChange}>
-          <Icon symbol={icon} className={`mr-2 seaqa-project-ticket-state-${icon}-icon`} />
+        <Button className="seaqa-project-ticket-state-toggle-btn" disabled={disabled} onClick={handleChange}>
+          <Icon symbol={icon} className={`seaqa-project-ticket-state-${icon}-icon`} />
           <span>{name}</span>
         </Button>
         <Button className="seaqa-project-ticket-state-toggle-btn" innerRef={downBtn} onClick={openPopover}>

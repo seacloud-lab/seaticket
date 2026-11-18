@@ -1,4 +1,5 @@
 import React, { Fragment } from 'react';
+import { Button } from 'reactstrap';
 import ConfirmDisconnectWechat from '../components/dialog/confirm-disconnect-wechat';
 import ModalPortal from '../components/modal-portal';
 import { gettext, siteRoot, isOrgContext } from '../constants';
@@ -54,7 +55,7 @@ class SocialLogin extends React.Component {
             <div className="mb-4">
               <p className="mb-2">{'SAML'}</p>
               {(samlConnected || orgSamlConnected) ?
-                <button className="btn btn-outline-primary" onClick={this.confirmDisconnect.bind(this, 'saml')}>{gettext('Disconnect')}</button> :
+                <Button color="primary" onClick={this.confirmDisconnect.bind(this, 'saml')}>{gettext('Disconnect')}</Button> :
                 <a href={samlConnectUrl} className="btn btn-outline-primary">{gettext('Connect')}</a>}
             </div>
           )}
