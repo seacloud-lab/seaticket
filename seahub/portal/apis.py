@@ -78,6 +78,7 @@ logger = logging.getLogger(__name__)
 
 
 MAX_LENGTH = 10000
+PORTAL_EMAILS_MAX_RECORDS = 10000
 
 
 def _normalize_portal_customer_email_domain(email_domain):
@@ -741,8 +742,11 @@ class PortalMyEmailsView(APIView):
             limit = int(request.GET.get('limit', 1000))
         except (TypeError, ValueError):
             return api_error(status.HTTP_400_BAD_REQUEST, 'pagination invalid.')
-        if start < 0 or limit < 1 or limit > 1000:
+        if start < 0 or limit < 1 or limit > PORTAL_EMAILS_MAX_RECORDS:
             return api_error(status.HTTP_400_BAD_REQUEST, 'pagination invalid.')
+
+        if start >= PORTAL_EMAILS_MAX_RECORDS:
+            return Response({'records': [], 'has_more': False})
 
         customer = get_request_portal_customer(request, str(project_uuid))
         email_connections = ProjectConnections.objects.filter(
@@ -753,7 +757,7 @@ class PortalMyEmailsView(APIView):
 
         seadb_api = SeaDBAPI()
         records = []
-        fetch_limit = start + limit + 1
+        fetch_limit = min(start + limit + 1, PORTAL_EMAILS_MAX_RECORDS)
         try:
             for connection in email_connections:
                 table_name = SchemaTables.THREAD.table_name(connection.id)
@@ -783,6 +787,7 @@ class PortalMyEmailsView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
         records.sort(key=lambda record: (str(record.get('modified_time') or ''), int(record.get('_pk') or 0)), reverse=True)
+        records = records[:PORTAL_EMAILS_MAX_RECORDS]
         page_records = records[start:start + limit]
         assignees_by_email = {}
         for record in page_records:
@@ -821,8 +826,11 @@ class PortalCustomerEmailsView(APIView):
             limit = int(request.GET.get('limit', 1000))
         except (TypeError, ValueError):
             return api_error(status.HTTP_400_BAD_REQUEST, 'pagination or customer id invalid.')
-        if start < 0 or limit < 1 or limit > 1000:
+        if start < 0 or limit < 1 or limit > PORTAL_EMAILS_MAX_RECORDS:
             return api_error(status.HTTP_400_BAD_REQUEST, 'pagination invalid.')
+
+        if start >= PORTAL_EMAILS_MAX_RECORDS:
+            return Response({'records': [], 'has_more': False})
 
         customer = PortalCustomer.objects.filter(id=customer_id, project_uuid=project_uuid).first()
         if not customer:
@@ -836,13 +844,16 @@ class PortalCustomerEmailsView(APIView):
 
         seadb_api = SeaDBAPI()
         records = []
-        fetch_limit = start + limit + 1
+        fetch_limit = min(start + limit + 1, PORTAL_EMAILS_MAX_RECORDS)
         try:
             for connection in email_connections:
                 table_name = SchemaTables.THREAD.table_name(connection.id)
                 sql = (
-                    f"SELECT email_thread.`_pk`, email_thread.`title`, email_thread.`modified_time` "
+                    f"SELECT email_thread.`_pk`, email_thread.`title`, email_thread.`modified_time`, "
+                    f"ticket.`_pk`, ticket.`state`, ticket.`assignees`, ticket.`due_date` "
                     f"FROM `{table_name}` AS email_thread "
+                    f"LEFT JOIN `tickets` AS ticket ON ticket.`_pk` = email_thread.`linked_ticket` "
+                    f"AND (ticket.`deleted` = false OR ticket.`deleted` IS NULL) "
                     f"WHERE email_thread.`customer_id` = {customer.id} "
                     f"AND (email_thread.`deleted` = false OR email_thread.`deleted` IS NULL) "
                     f"ORDER BY email_thread.`modified_time` DESC, email_thread.`_pk` DESC LIMIT {fetch_limit}"
@@ -851,6 +862,11 @@ class PortalCustomerEmailsView(APIView):
                     normalized_record = {}
                     for field in ('_pk', 'title', 'modified_time'):
                         normalized_record[field] = record.get(f'{table_name}.{field}', record.get(field))
+                    for field in ('_pk', 'state', 'assignees', 'due_date'):
+                        value = record.get(f'tickets.{field}')
+                        if value is None:
+                            value = record.get(f'ticket.{field}', record.get(field) if field != '_pk' else None)
+                        normalized_record['ticket_pk' if field == '_pk' else field] = value
                     normalized_record['connection_id'] = connection.id
                     records.append(normalized_record)
         except Exception as e:
@@ -858,116 +874,28 @@ class PortalCustomerEmailsView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
         records.sort(key=lambda record: (str(record.get('modified_time') or ''), int(record.get('_pk') or 0)), reverse=True)
+        records = records[:PORTAL_EMAILS_MAX_RECORDS]
         page_records = records[start:start + limit]
+        assignees_by_email = {}
+        for record in page_records:
+            assignees = []
+            for email in record.get('assignees') or []:
+                if not isinstance(email, str) or not email:
+                    continue
+                if email not in assignees_by_email:
+                    try:
+                        user = get_user_common_info(email, include_contact_email=False) or {}
+                        assignees_by_email[email] = {
+                            'email': email,
+                            'name': user.get('name') or email,
+                            'avatar_url': user.get('avatar_url', ''),
+                        }
+                    except Exception as e:
+                        logger.warning('Failed to resolve ticket assignee %s: %s', email, e)
+                        assignees_by_email[email] = {'email': email, 'name': email, 'avatar_url': ''}
+                assignees.append(assignees_by_email[email])
+            record['assignees'] = assignees
         return Response({'records': page_records, 'has_more': len(records) > start + limit})
-
-
-class PortalCustomerEmailThreadView(APIView):
-    authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (PortalAdminPermission,)
-    throttle_classes = (UserRateThrottle,)
-
-    def get(self, request, project_uuid, customer_id, connection_id, thread_id):
-        try:
-            customer_id = int(customer_id)
-            connection_id = int(connection_id)
-            thread_id = int(thread_id)
-        except (TypeError, ValueError):
-            return api_error(status.HTTP_400_BAD_REQUEST, 'Email thread id invalid.')
-
-        customer = PortalCustomer.objects.filter(id=customer_id, project_uuid=project_uuid).first()
-        connection = ProjectConnections.objects.filter(
-            project_uuid=project_uuid,
-            id=connection_id,
-            type=ConnectionType.EMAIL.value,
-            deleted=False,
-        ).first()
-        if not customer or not connection:
-            return api_error(status.HTTP_404_NOT_FOUND, 'Email thread not found.')
-
-        seadb_api = SeaDBAPI()
-        table_name = SchemaTables.THREAD.table_name(connection_id)
-        try:
-            thread_rows = seadb_api.query_rows(
-                project_uuid,
-                f"SELECT `_pk` FROM `{table_name}` WHERE `_pk` = {thread_id} "
-                f"AND `customer_id` = {customer.id} AND (`deleted` = false OR `deleted` IS NULL)",
-            ).get('results', [])
-            if not thread_rows:
-                return api_error(status.HTTP_404_NOT_FOUND, 'Email thread not found.')
-
-            record, columns, _linked_ticket_title = list_email_record_details(
-                seadb_api, project_uuid, connection_id, thread_id
-            )
-            record.pop('customer_id', None)
-            visible_columns = [column for column in columns or [] if column.get('name') != 'customer_id']
-            return Response({'record': record, 'columns': visible_columns})
-        except Exception as e:
-            logger.error('Failed to load email thread %s for customer %s: %s', thread_id, customer.id, e)
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
-
-
-class PortalCustomerEmailAttachmentView(APIView):
-    authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (PortalAdminPermission,)
-    throttle_classes = (UserRateThrottle,)
-
-    def get(self, request, project_uuid, customer_id, connection_id, thread_id, email_id, file_path):
-        try:
-            customer_id, connection_id, thread_id, email_id = map(
-                int, (customer_id, connection_id, thread_id, email_id)
-            )
-        except (TypeError, ValueError):
-            return api_error(status.HTTP_400_BAD_REQUEST, 'Email attachment id invalid.')
-
-        customer = PortalCustomer.objects.filter(id=customer_id, project_uuid=project_uuid).first()
-        connection = ProjectConnections.objects.filter(
-            project_uuid=project_uuid,
-            id=connection_id,
-            type=ConnectionType.EMAIL.value,
-            deleted=False,
-        ).first()
-        if not customer or not connection:
-            return api_error(status.HTTP_404_NOT_FOUND, 'Email attachment not found.')
-
-        thread_table = SchemaTables.THREAD.table_name(connection_id)
-        email_table = SchemaTables.EMAIL.table_name(connection_id)
-        try:
-            seadb_api = SeaDBAPI()
-            thread_rows = seadb_api.query_rows(
-                project_uuid,
-                f"SELECT `_pk` FROM `{thread_table}` WHERE `_pk` = {thread_id} "
-                f"AND `customer_id` = {customer.id} AND (`deleted` = false OR `deleted` IS NULL)",
-            ).get('results', [])
-            email_rows = seadb_api.query_rows(
-                project_uuid,
-                f"SELECT `_pk` FROM `{email_table}` WHERE `_pk` = {email_id} "
-                f"AND `thread_id` = {thread_id} AND (`deleted` = false OR `deleted` IS NULL)",
-            ).get('results', [])
-            if not thread_rows or not email_rows:
-                return api_error(status.HTTP_404_NOT_FOUND, 'Email attachment not found.')
-            if '/' in file_path or '\\' in file_path or file_path in ('.', '..'):
-                return api_error(status.HTTP_404_NOT_FOUND, 'Email attachment not found.')
-
-            authorized_file_path = f'{email_id}/{file_path}'
-            file_metadata = get_connection_file_metadata(project_uuid, str(connection_id), authorized_file_path)
-            file = get_connection_file(project_uuid, str(connection_id), authorized_file_path)
-        except FileNotFound:
-            return api_error(status.HTTP_404_NOT_FOUND, 'Email attachment not found.')
-        except Exception as e:
-            logger.error('Failed to load customer email attachment: %s', e)
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
-
-        etag = file_metadata.get('ETag')
-        is_download = request.query_params.get('download') == '1'
-        if etag and not is_download and is_safe_inline_attachment(file_path) and if_none_match_hit(request, etag):
-            response = HttpResponseNotModified()
-        else:
-            response = get_attachment_file_response(file, file_path, force_download=is_download)
-        response['Cache-Control'] = 'max-age=3600, private'
-        if etag:
-            response['ETag'] = etag
-        return response
 
 
 class PortalEmailThreadView(APIView):

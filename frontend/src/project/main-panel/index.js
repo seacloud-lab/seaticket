@@ -87,7 +87,7 @@ const Container = ({ activeBar, settings, modifySettings, toggleBar, modifyLocal
       return (<PortalIssues key={barKey} title={title} toggleBar={toggleBar} type={barKey} />);
     }
     case BAR_TYPE.PORTAL_CUSTOMERS_AND_USERS: {
-      return (<PortalCustomersUsers title={title} />);
+      return (<PortalCustomersUsers title={title} toggleBar={toggleBar} />);
     }
     case BAR_TYPE.PORTAL_SETTINGS: {
       return (<PortalSettings title={title} />);

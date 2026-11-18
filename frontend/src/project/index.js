@@ -74,6 +74,20 @@ const Project = () => {
       eventBus.dispatch(EVENT_BUS_TYPE.PORTAL_ISSUES_PAGE, PORTAL_ISSUE_PAGE_SLUG_ID.SUBSTATES);
     }
 
+    if (activeBarKey === BAR_TYPE.CONNECTION
+      && newActiveBar[1]
+      && newActiveBar[2] === 'records'
+      && newActiveBar[3]) {
+      const connectionID = Number(newActiveBar[1]);
+      if (activeBar[0] === BAR_TYPE.CONNECTION) {
+        eventBus.dispatch(EVENT_BUS_TYPE.CONNECTION_PAGE, connectionID, newActiveBar[3]);
+      } else {
+        resetURL(false, [BAR_TYPE.CONNECTION], connectionID, 'records', newActiveBar[3]);
+        setActiveBar([BAR_TYPE.CONNECTION, connectionID]);
+      }
+      return;
+    }
+
     if (activeBar[0] === activeBarKey) {
       if ([BAR_TYPE.SEARCH, BAR_TYPE.SETTINGS, BAR_TYPE.SUPPORT_PORTAL].includes(activeBarKey)) return;
       if (activeBarKey === BAR_TYPE.CHAT && !location.pathname.endsWith('chat/')) {
