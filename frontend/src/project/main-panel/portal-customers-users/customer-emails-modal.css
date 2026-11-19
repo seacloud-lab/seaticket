@@ -27,11 +27,6 @@
   min-height: 0;
 }
 
-.portal-customer-email-thread {
-  overflow: auto;
-  min-height: 0;
-}
-
 @media (max-width: 767.98px) {
   .portal-customer-emails-dialog {
     height: calc(100vh - 24px);

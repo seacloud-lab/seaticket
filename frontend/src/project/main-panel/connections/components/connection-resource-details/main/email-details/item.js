@@ -16,7 +16,7 @@ import './index.css';
 const Item = ({
   isLast, isExpand,
   detail, projectUuid, connection_id, setIsLastExpanded, recordId, permission,
-  handleReplyEmailSuccess, onUnreadChange, isPortal = false, threadId, customerId,
+  handleReplyEmailSuccess, onUnreadChange, isPortal = false, threadId,
 }) => {
   const [isExpanded, setIsExpanded] = useState(isExpand);
   const [isShowReply, setIsShowReply] = useState(false);
@@ -308,7 +308,6 @@ const Item = ({
             recordId={detail._pk}
             threadId={threadId}
             isPortal={isPortal}
-            customerId={customerId}
             detail={detail}
             value={detailContent}
             isReadonly={isReadonly}

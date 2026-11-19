@@ -7,7 +7,7 @@ import Item from './item';
 
 import './index.css';
 
-const EmailDetails = ({ details, className, customerId, ...props }) => {
+const EmailDetails = ({ details, className, ...props }) => {
   const [isShowAll, setIsShowAll] = useState(details.length <= 5 || Boolean(details.find(item => item.highlight)));
   const [isLastExpand, setIsLastExpanded] = useState(false);
 
@@ -59,7 +59,6 @@ const EmailDetails = ({ details, className, customerId, ...props }) => {
             key={detail._pk}
             isLast={index === (details.length - 1)}
             detail={detail}
-            customerId={customerId}
             isExpand={highlightDetail ? detail.highlight : index === details.length - 1}
             setIsLastExpanded={setIsLastExpanded}
             { ...props }

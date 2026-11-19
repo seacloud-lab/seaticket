@@ -22,7 +22,6 @@ const HTMLContent = ({
   openReplyByEmail,
   isPortal = false,
   threadId,
-  customerId,
 }) => {
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
 
@@ -31,12 +30,10 @@ const HTMLContent = ({
   const isUnmounted = useRef(false);
   const imageTimersRef = useRef([]);
 
-  const assetURLPrefix = useMemo(() => customerId
-    ? `${siteRoot}api/v1/portal/${projectUuid}/customers/${customerId}/emails/${connectionId}/${threadId}/`
-    : isPortal
-      ? `${siteRoot}api/v1/portal/${projectUuid}/emails/${connectionId}/${threadId}/${recordId}/attachments/`
-      : generatorConnectionAssetURLPrefix(projectUuid, connectionId), [customerId, isPortal, projectUuid, connectionId, threadId, recordId]);
-  const assetFilePrefix = customerId ? `${recordId}/attachments/` : isPortal ? '' : `${detail._pk}/`;
+  const assetURLPrefix = useMemo(() => isPortal
+    ? `${siteRoot}api/v1/portal/${projectUuid}/emails/${connectionId}/${threadId}/${recordId}/attachments/`
+    : generatorConnectionAssetURLPrefix(projectUuid, connectionId), [isPortal, projectUuid, connectionId, threadId, recordId]);
+  const assetFilePrefix = isPortal ? '' : `${detail._pk}/`;
   const content = useMemo(() => {
     const HTMLContentBody = parseAndCleanHTML(value);
     return HTMLContentBody.innerHTML;
@@ -221,8 +218,8 @@ const HTMLContent = ({
             const attachmentName = isString(attachment) ? attachment : '';
             const url = getAttachmentURL(attachmentName);
             const downloadUrl = getAttachmentURL(attachmentName, true);
-            const Tag = isReadonly && !isPortal && !customerId ? 'span' : 'a';
-            const canDownload = (!isReadonly || isPortal || customerId) && Boolean(url);
+            const Tag = isReadonly && !isPortal ? 'span' : 'a';
+            const canDownload = (!isReadonly || isPortal) && Boolean(url);
             return (
               <div className="seaqa-email-attachment" key={index}>
                 <div className="seaqa-email-attachment-icon">
@@ -258,7 +255,7 @@ const HTMLContent = ({
           })}
         </div>
       )}
-      {(!isReadonly || isPortal) && !customerId && attachments.length > 1 && (
+      {(!isReadonly || isPortal) && attachments.length > 1 && (
         <IconTextBtn
           icon={isDownloadingAll ? '' : 'download'}
           className="seaqa-email-attachments-download-btn"
