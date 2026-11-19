@@ -6,7 +6,7 @@ import MessageBox from './message-box';
 
 import './index.css';
 
-const ChatHistory = ({ chat, settings, projectUuid, projectName, workspaceID, displayOperations = true }) => {
+const ChatHistory = ({ chat, settings, projectUuid, projectName, workspaceID, displayOperations = true, usePublicSourceLinks = false }) => {
   const { _id, message, isUserSpeak, type, isApplied = false } = chat;
 
   const chatId = useMemo(() => _id || '', [_id]);
@@ -33,6 +33,7 @@ const ChatHistory = ({ chat, settings, projectUuid, projectName, workspaceID, di
         projectName={projectName}
         workspaceID={workspaceID}
         showOperations={showOperations}
+        usePublicSourceLinks={usePublicSourceLinks}
       />
     </MessageBox>
   );

@@ -216,6 +216,47 @@ class TestPortalChatViewAnonymous:
         assert resp.data['user_message_id'] is not None
         assert resp.data['ai_reply_message_id'] is not None
 
+    def test_non_stream_chat_persists_sources(self, factory, real_project):
+        _set_portal_settings(real_project, allow_anonymous=True, enable_password_protection=False)
+        visitor = create_visitor_session()
+        session = PortalChatSessions.objects.create_session(
+            project_uuid=str(real_project.uuid),
+            session_name='test',
+            username=visitor['visitor_uuid'],
+        )
+        sources = [{
+            'type': 'github_issue',
+            'title': 'Sync fails',
+            'url': 'https://github.com/haiwen/seafile/issues/1',
+            'ai_summary': 'A sync failure report',
+            '_id': 9,
+            'connection_id': 3,
+            'modified_time': '2026-01-01T00:00:00',
+        }]
+        request = factory.post(
+            f'/api/v1/portal/{real_project.uuid}/chat/',
+            data=json.dumps({
+                'query': 'hello',
+                'session_uuid': session.session_uuid,
+                'stream': False,
+            }),
+            content_type='application/json',
+        )
+        from seahub.portal.visitor_session import _sign_visitor_uuid
+        request.COOKIES['portal_visitor_session'] = _sign_visitor_uuid(visitor['visitor_uuid'])
+
+        with patch('seahub.portal.chat.apis.validate_chat_input', return_value={'valid': True, 'reason': ''}), \
+                patch('seahub.portal.chat.apis.get_ai_reply', return_value={'ai_reply': 'See [Reference 1].', 'sources': sources}), \
+                patch('seahub.portal.chat.apis.check_ai_limit', return_value=False):
+            resp = PortalChatView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert resp.status_code == 200
+        assert resp.data['sources'] == sources
+        assistant_message = PortalChatMessages.objects.filter(
+            session_uuid=session.session_uuid, role='assistant',
+        ).get()
+        assert assistant_message.to_dict()['sources'] == sources
+
     def test_input_validation_rejected_records_mock_reply(self, factory, real_project):
         _set_portal_settings(real_project, allow_anonymous=True, enable_password_protection=False)
         visitor = create_visitor_session()
@@ -882,7 +923,14 @@ class TestPortalAdminChatAPIs:
             session.session_uuid, 'abcd', 'user', 'How do I reset my password?'
         )
         PortalChatMessages.objects.create_message(
-            session.session_uuid, 'abcd', 'assistant', 'Use the password reset page.'
+            session.session_uuid, 'abcd', 'assistant', 'Use the password reset page.',
+            sources=json.dumps([{
+                'type': 'site',
+                'title': 'Reset password',
+                'url': 'https://example.com/reset',
+                '_id': 4,
+                'connection_id': 2,
+            }]),
         )
 
         request = self._admin_request(
@@ -903,6 +951,14 @@ class TestPortalAdminChatAPIs:
             'How do I reset my password?',
             'Use the password reset page.',
         ]
+        assert response.data['messages'][0]['sources'] == []
+        assert response.data['messages'][1]['sources'] == [{
+            'type': 'site',
+            'title': 'Reset password',
+            'url': 'https://example.com/reset',
+            '_id': 4,
+            'connection_id': 2,
+        }]
 
     def test_statistics_only_include_portal_chat_usage(self, factory, real_project, project_creator):
         today = date(2026, 3, 21)

@@ -53,6 +53,7 @@ const Main = ({ title, settings, isEditMode }) => {
                 canSelectModel={false}
                 enableSkills={false}
                 customHeaderTitle={gettext('Chat')}
+                usePublicSourceLinks
                 renderOperation={() => (
                   <div className="d-flex">
                     <IconButton
