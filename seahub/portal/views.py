@@ -146,12 +146,15 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
             username = ext_username
     else:
         username = ''
+    from seahub.avatar.templatetags.avatar_tags import api_avatar_url
+    avatar_url, _, _  = api_avatar_url(username)
 
     return_dict = {
         'version': SEAQA_VERSION,
         'project_name': project.name,
         'project_uuid': project_uuid,
         'media_url': MEDIA_URL,
+        'avatar_url': avatar_url,
         'is_edit_mode': False,
         'workspace_id': project.workspace_id,
         'is_anonymous': is_anonymous,
