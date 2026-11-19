@@ -331,7 +331,7 @@ const Item = ({
       <div className="email-header">
         <div className="email-header-content" onClick={() => setIsExpanded(value => !value)}>
           <div className="email-avatar" aria-hidden="true">
-            <span className="email-avatar-initials" style={{ backgroundColor: avatar.color }}>
+            <span className="email-avatar-initials" data-avatar-color={avatar.color} style={{ backgroundColor: avatar.color }}>
               {avatar.initials}
             </span>
           </div>

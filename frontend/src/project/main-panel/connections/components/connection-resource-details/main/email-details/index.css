@@ -38,6 +38,7 @@
 }
 
 .seaqa-connection-email-record-details .email-avatar-initials {
+  --email-avatar-highlight: .2;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -46,12 +47,38 @@
   height: 40px;
   width: 40px;
   border-radius: 50%;
+  background-image: conic-gradient(
+    from 56deg,
+    rgba(255, 255, 255, var(--email-avatar-highlight)) 0deg 180deg,
+    rgba(255, 255, 255, calc(var(--email-avatar-highlight) / 2)) 180deg 248deg,
+    rgba(255, 255, 255, var(--email-avatar-base-tint, 0)) 248deg 360deg
+  );
   color: #fff;
   font-size: 16px;
   font-weight: 600;
   line-height: 1;
   white-space: nowrap;
   user-select: none;
+}
+
+/* Dark initials for selected lighter backgrounds; orange keeps white initials. */
+.seaqa-connection-email-record-details .email-avatar-initials:is(
+  [data-avatar-color="#4f8246"], [data-avatar-color="#cd463c"],
+  [data-avatar-color="#617988"], [data-avatar-color="#d63864"], [data-avatar-color="#318074"]
+) {
+  color: #000;
+}
+
+.seaqa-connection-email-record-details .email-avatar-initials[data-avatar-color="#0067b9"] {
+  --email-avatar-highlight: .12;
+}
+
+.seaqa-connection-email-record-details .email-avatar-initials[data-avatar-color="#306721"] {
+  --email-avatar-highlight: .16;
+}
+
+.seaqa-connection-email-record-details .email-avatar-initials[data-avatar-color="#318074"] {
+  --email-avatar-base-tint: .02;
 }
 
 .seaqa-connection-email-record-details .email-record-info {
