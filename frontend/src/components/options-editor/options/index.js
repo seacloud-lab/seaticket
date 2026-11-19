@@ -1,15 +1,27 @@
 import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import classnames from 'classnames';
 import { isEsc, isEnter, isUpArrow, isDownArrow, isTab } from '@/utils/hotkey';
-import { isFunction, isNumber } from '@/utils/type-detection';
+import ObjectUtils from '@/utils/object-utils';
+import { isFunction, isNumber, isObject } from '@/utils/type-detection';
 import CenteredLoading from '../../centered-loading';
 import Tip from '../tip';
 import Option from './option';
 
 import './index.css';
 
-const Options = ({
+const areOptionsEqual = (options = [], nextOptions = []) => {
+  if (!Array.isArray(options) || !Array.isArray(nextOptions) || options.length !== nextOptions.length) return false;
+  return options.every((option, index) => {
+    const nextOption = nextOptions[index];
+    if (Object.is(option, nextOption)) return true;
+    if (!option || !nextOption || isObject(option) || isObject(nextOption)) return false;
+    return ObjectUtils.isSameObject(option, nextOption);
+  });
+};
+
+const Options = React.memo(({
   isLoading = false,
+  defaultHighlightIndex = -1,
   options = [],
   maxHeight,
   isAsyncSearch,
@@ -22,7 +34,6 @@ const Options = ({
   onToggleOption,
   onPressTab,
   onToggle,
-  defaultHighlightIndex = -1,
 }) => {
   const maxItemNum = useMemo(() => isNumber(optionHeight) ? Math.floor(parseInt(maxHeight) / parseInt(optionHeight)) - 1 : 30, [maxHeight, optionHeight]);
 
@@ -161,6 +172,24 @@ const Options = ({
       )}
     </div>
   );
-};
+}, (props, nextProps) => {
+  const isChanged = (
+    !areOptionsEqual(props.options, nextProps.options) ||
+    props.defaultHighlightIndex !== nextProps.defaultHighlightIndex ||
+    props.isLoading !== nextProps.isLoading ||
+    props.maxHeight !== nextProps.maxHeight ||
+    props.isAsyncSearch !== nextProps.isAsyncSearch ||
+    props.searchValue !== nextProps.searchValue ||
+    props.emptyTip !== nextProps.emptyTip ||
+    props.value !== nextProps.value ||
+    props.checkPlacement !== nextProps.checkPlacement ||
+    props.optionHeight !== nextProps.optionHeight ||
+    props.optionClassName !== nextProps.optionClassName ||
+    props.onToggleOption !== nextProps.onToggleOption ||
+    props.onPressTab !== nextProps.onPressTab ||
+    props.onToggle !== nextProps.onToggle
+  );
+  return !isChanged;
+});
 
 export default Options;
