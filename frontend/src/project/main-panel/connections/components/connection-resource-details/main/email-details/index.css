@@ -37,10 +37,21 @@
   width: 60px;
 }
 
-.seaqa-connection-email-record-details .email-avatar img {
+.seaqa-connection-email-record-details .email-avatar-initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
   height: 40px;
   width: 40px;
   border-radius: 50%;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  user-select: none;
 }
 
 .seaqa-connection-email-record-details .email-record-info {

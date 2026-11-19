@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState, Fragment } from 'react';
 import classnames from 'classnames';
 import { CustomizeMarkdownViewer, IconTextBtn, IconTooltip, toaster, IconButton } from '@/components';
-import { gettext, mediaUrl, PERMISSION_TYPES } from '@/constants';
+import { gettext, PERMISSION_TYPES } from '@/constants';
 import { connectionsAPI } from '@/project/api';
 import dayjs from '@/utils/dayjs';
 import { isString } from '@/utils/type-detection';
@@ -9,6 +9,7 @@ import { Utils } from '@/utils/utils';
 import { parseEmailAddress, splitEmailAddresses } from '@/utils/validate';
 import { generatorConnectionAssetURLPrefix } from '../../../../utils';
 import DateFormatter from '../../../cell-formatter/date-formatter';
+import { getEmailAvatar } from './avatar-utils';
 import HTMLContentWrapper from './html-content';
 import ReplyEmail from './reply-email';
 
@@ -65,10 +66,11 @@ const Item = ({
   const content = useMemo(() => detail.content || '', [detail.content]);
   const HTMLContent = useMemo(() => detail.html_content || '', [detail.html_content]);
   const isHTMLContent = useMemo(() => HTMLContent ? true : false, [HTMLContent]);
-  const { sender, email } = useMemo(() => {
-    const { username, email } = parseEmailAddress(detail['email_from']);
-    return { sender: username || email, email };
-  }, [detail]);
+  const { sender, email, avatar } = useMemo(() => {
+    const address = parseEmailAddress(detail.email_from);
+    const { username, email } = address;
+    return { sender: username || email, email, avatar: getEmailAvatar(address) };
+  }, [detail.email_from]);
   const isReadonly = useMemo(() => permission === PERMISSION_TYPES.READ_ONLY, [permission]);
   const isUnread = Boolean(detail.unread);
 
@@ -328,8 +330,10 @@ const Item = ({
     return (
       <div className="email-header">
         <div className="email-header-content" onClick={() => setIsExpanded(value => !value)}>
-          <div className="email-avatar">
-            <img alt='' src={`${mediaUrl}avatars/default.png`}/>
+          <div className="email-avatar" aria-hidden="true">
+            <span className="email-avatar-initials" style={{ backgroundColor: avatar.color }}>
+              {avatar.initials}
+            </span>
           </div>
           <div className="email-record-info">
             {renderSimpleInfo()}
@@ -339,7 +343,7 @@ const Item = ({
         {renderParticipantsDetails()}
       </div>
     );
-  }, [renderParticipantsAndOp, renderParticipantsDetails, renderSimpleInfo]);
+  }, [avatar, renderParticipantsAndOp, renderParticipantsDetails, renderSimpleInfo]);
 
   useEffect(() => {
     if (!isExpanded) return;
