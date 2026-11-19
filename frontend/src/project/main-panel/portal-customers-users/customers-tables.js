@@ -98,6 +98,7 @@ const CustomersTables = ({ customers, onEdit, onManageUsers, onInviteUsers, onVi
       'Divider',
       { label: gettext('Users management'), key: 'manage_customer_users', callback: () => onManageUsers(row) },
       ...(row.status === '1' ? [{ label: gettext('Invite users'), key: 'invite_customer_users', callback: () => onInviteUsers(row) }] : []),
+      'Divider',
       { label: gettext('View emails'), key: 'view_customer_emails', callback: () => onViewEmails(row) },
     ];
   }, [onDelete, onEdit, onManageUsers, onInviteUsers, onViewEmails]);
