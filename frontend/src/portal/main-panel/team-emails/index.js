@@ -105,7 +105,7 @@ const EMAIL_VIEW_DATA = {
   columns_keys: EMAIL_COLUMNS.map(column => column.key),
 };
 
-const MyEmails = ({ projectUuid }) => {
+const TeamEmails = ({ projectUuid }) => {
   const metadataContainerRef = useRef(null);
   const metadataContentWidthRef = useRef(0);
   const [thread, setThread] = useState(null);
@@ -167,7 +167,7 @@ const MyEmails = ({ projectUuid }) => {
   }, []);
 
   const listAPI = useMemo(() => ({
-    getMetadata: ({ start = 0, limit = 1000 } = {}) => portalAPI.listMyEmails(projectUuid, { start, limit }).then((response) => {
+    getMetadata: ({ start = 0, limit = 1000 } = {}) => portalAPI.listTeamEmails(projectUuid, { start, limit }).then((response) => {
       const records = response.data.records || [];
       return {
         data: {
@@ -251,7 +251,7 @@ const MyEmails = ({ projectUuid }) => {
   }
 
   return (
-    <div className="seaqa-portal-my-emails-metadata" ref={metadataContainerRef}>
+    <div className="seaqa-portal-team-emails-metadata" ref={metadataContainerRef}>
       <SeaMetadata
         metadataID={`${EMAIL_TABLE_NAME}-${projectUuid}`}
         api={listAPI}
@@ -281,4 +281,4 @@ const MyEmails = ({ projectUuid }) => {
   );
 };
 
-export default MyEmails;
+export default TeamEmails;

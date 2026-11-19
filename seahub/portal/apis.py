@@ -732,7 +732,7 @@ class PortalMyIssuesView(APIView):
         })
 
 
-class PortalMyEmailsView(APIView):
+class PortalTeamEmailsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (PortalEmailPermission,)
     throttle_classes = (UserRateThrottle,)

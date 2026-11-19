@@ -3,7 +3,11 @@ from uuid import uuid4
 import pytest
 from django.urls import Resolver404, resolve
 
-from seahub.portal.apis import PortalExternalLoginSendCodeView, PortalExternalLoginVerifyCodeView
+from seahub.portal.apis import (
+    PortalExternalLoginSendCodeView,
+    PortalExternalLoginVerifyCodeView,
+    PortalTeamEmailsView,
+)
 
 PORTAL_URLCONF = 'seahub.portal_site_urls'
 PORTAL_DOMAIN_MIDDLEWARE = 'seahub.portal.middleware.PortalDomainMiddleware'
@@ -39,6 +43,20 @@ def test_external_login_routes_are_available_in_both_modes(urlconf, endpoint, vi
 
     assert match.func.view_class is view
     assert match.kwargs['project_uuid'] == project_uuid
+
+
+@pytest.mark.parametrize('urlconf', ['seahub.urls', PORTAL_URLCONF])
+def test_team_emails_route_replaces_my_emails_in_both_modes(urlconf):
+    project_uuid = str(uuid4())
+    match = resolve(
+        f'/api/v1/portal/{project_uuid}/team-emails/',
+        urlconf=urlconf,
+    )
+
+    assert match.url_name == 'api-v1-portal-team-emails'
+    assert match.func.view_class is PortalTeamEmailsView
+    with pytest.raises(Resolver404):
+        resolve(f'/api/v1/portal/{project_uuid}/my-emails/', urlconf=urlconf)
 
 
 @pytest.mark.parametrize('path', [

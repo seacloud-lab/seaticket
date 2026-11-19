@@ -1930,7 +1930,7 @@ msgstr "添加用户"
 
 #: frontend/src/org-admin/users/add-user-dialog.js:109
 #: frontend/src/org-admin/users/invite-user-dialog.js:54
-#: frontend/src/portal/main-panel/my-emails/index.js:276
+#: frontend/src/portal/main-panel/team-emails/index.js:276
 #: frontend/src/portal/main-panel/user-management.js:278
 #: frontend/src/portal/main-panel/user-management/invite-users-page.js:44
 #: frontend/src/portal/main-panel/user-management/invite-users-page.js:70
@@ -2134,7 +2134,7 @@ msgid "Chat"
 msgstr "对话"
 
 #: frontend/src/portal/constants.js:42
-#: frontend/src/portal/main-panel/my-emails/index.js:277
+#: frontend/src/portal/main-panel/team-emails/index.js:277
 #: frontend/src/project/main-panel/connections/constants.js:510
 msgid "Emails"
 msgstr "邮件"
@@ -2247,8 +2247,8 @@ msgid "Hey 👋, how can we help?"
 msgstr "你好 👋，有什么可以帮你的？"
 
 #: frontend/src/portal/main-panel/index.js:83
-msgid "My emails"
-msgstr "我的邮件"
+msgid "Team emails"
+msgstr "团队邮件"
 
 #: frontend/src/portal/main-panel/knowledge-base/constants.js:19
 #: frontend/src/portal/main-panel/submit-issue.js:181
@@ -2338,7 +2338,7 @@ msgid "Last modifier"
 msgstr "修改者"
 
 #: frontend/src/portal/main-panel/knowledge-base/constants.js:51
-#: frontend/src/portal/main-panel/my-emails/index.js:91
+#: frontend/src/portal/main-panel/team-emails/index.js:91
 #: frontend/src/project/main-panel/connections/constants.js:695
 #: frontend/src/project/main-panel/connections/constants.js:1076
 #: frontend/src/project/main-panel/knowledge-base/constants.js:52
@@ -2394,20 +2394,20 @@ msgstr "记录"
 msgid "Records"
 msgstr "记录"
 
-#: frontend/src/portal/main-panel/my-emails/index.js:16
+#: frontend/src/portal/main-panel/team-emails/index.js:16
 msgid "All emails"
 msgstr "所有邮件"
 
-#: frontend/src/portal/main-panel/my-emails/index.js:45
+#: frontend/src/portal/main-panel/team-emails/index.js:45
 #: frontend/src/project/main-panel/connections/constants.js:894
 msgid "Subject"
 msgstr "主题"
 
-#: frontend/src/portal/main-panel/my-emails/index.js:55
+#: frontend/src/portal/main-panel/team-emails/index.js:55
 msgid "Ticket #"
 msgstr "工单 #"
 
-#: frontend/src/portal/main-panel/my-emails/index.js:64
+#: frontend/src/portal/main-panel/team-emails/index.js:64
 #: frontend/src/project/main-panel/agent/components/run-log-details/run-details/action/suggestion-action/index.js:78
 #: frontend/src/project/main-panel/analyze/components/settings-panel/index.js:29
 #: frontend/src/project/main-panel/analyze/index.js:90
@@ -2421,7 +2421,7 @@ msgstr "工单 #"
 msgid "State"
 msgstr "状态"
 
-#: frontend/src/portal/main-panel/my-emails/index.js:73
+#: frontend/src/portal/main-panel/team-emails/index.js:73
 #: frontend/src/project/main-panel/agent/components/run-log-details/suggestion-detail-panel/ticket-detail/index.js:100
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/others/general-task-details/index.js:67
 #: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:166
@@ -2436,7 +2436,7 @@ msgstr "状态"
 msgid "Assignees"
 msgstr "负责人"
 
-#: frontend/src/portal/main-panel/my-emails/index.js:82
+#: frontend/src/portal/main-panel/team-emails/index.js:82
 #: frontend/src/project/main-panel/connections/constants.js:826
 #: frontend/src/project/main-panel/connections/constants.js:1031
 #: frontend/src/project/main-panel/connections/constants.js:1067
@@ -2446,21 +2446,21 @@ msgstr "负责人"
 msgid "Due date"
 msgstr "截止日期"
 
-#: frontend/src/portal/main-panel/my-emails/index.js:127
+#: frontend/src/portal/main-panel/team-emails/index.js:127
 msgid "Unable to load this email thread."
 msgstr "无法加载此邮件线程。"
 
-#: frontend/src/portal/main-panel/my-emails/index.js:181
+#: frontend/src/portal/main-panel/team-emails/index.js:181
 msgid "No emails.\n"
 "Support emails from your team will appear here."
 msgstr "没有电子邮件。\n"
 "你团队的支持电子邮件将显示在此处。"
 
-#: frontend/src/portal/main-panel/my-emails/index.js:274
+#: frontend/src/portal/main-panel/team-emails/index.js:274
 msgid "email"
 msgstr "邮件"
 
-#: frontend/src/portal/main-panel/my-emails/index.js:275
+#: frontend/src/portal/main-panel/team-emails/index.js:275
 msgid "emails"
 msgstr "邮件"
 
