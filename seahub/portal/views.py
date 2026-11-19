@@ -140,6 +140,7 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
     if has_ticket_access:
         if preview_username:
             username = preview_username
+            avatar_url, _, _  = api_avatar_url(username)
         elif is_external_user:
             username = ext_username
         elif is_authenticated_user:
