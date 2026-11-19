@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import classnames from 'classnames';
 import { isEsc, isEnter, isUpArrow, isDownArrow, isTab } from '@/utils/hotkey';
-import ObjectUtils from '@/utils/object-utils';
 import { isFunction, isNumber, isObject } from '@/utils/type-detection';
 import CenteredLoading from '../../centered-loading';
 import Tip from '../tip';
@@ -9,13 +8,18 @@ import Option from './option';
 
 import './index.css';
 
+const OPTION_COMPARISON_FIELDS = [
+  'value', 'disabled', 'icon', 'img', 'label', 'name', 'display_name',
+  'color', 'text_color', 'border_color', 'textColor',
+];
+
 const areOptionsEqual = (options = [], nextOptions = []) => {
   if (!Array.isArray(options) || !Array.isArray(nextOptions) || options.length !== nextOptions.length) return false;
   return options.every((option, index) => {
     const nextOption = nextOptions[index];
     if (Object.is(option, nextOption)) return true;
     if (!isObject(option) || !isObject(nextOption)) return false;
-    return ObjectUtils.isSameObject(option, nextOption);
+    return OPTION_COMPARISON_FIELDS.every(field => Object.is(option[field], nextOption[field]));
   });
 };
 

@@ -18,11 +18,11 @@ const Tip = ({ isAsyncSearch = false, searchValue, tip, src, isShowSrc = false }
 
   const className = classnames('options-editor-empty-tip', { 'options-editor-empty-img-tip': isShowSrc && tipImgSrc });
   if (!isAsyncSearch || tip) {
-    return (<EmptyTip innerRef={tipRef} src={isShowSrc && tipImgSrc} text={tip} className={className} />);
+    return (<EmptyTip innerRef={tipRef} src={isShowSrc && tipImgSrc || ''} text={tip} className={className} />);
   }
 
   if (searchValue) {
-    return (<EmptyTip innerRef={tipRef} src={isShowSrc && tipImgSrc} text={gettext('No results')} className={className} />);
+    return (<EmptyTip innerRef={tipRef} src={isShowSrc && tipImgSrc || ''} text={gettext('No results')} className={className} />);
   }
 
   return (
