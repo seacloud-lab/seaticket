@@ -20,6 +20,12 @@
         <div id="prompt-email" class="prompt-text">{% trans "We will send a login code to the email that you were invited with." %}</div>
         <input id="code" type="text" class="input form-item-input" placeholder="{% trans 'Login code' %}" style="display: none;">
         <div id="prompt-code" class="prompt-text" style="display: none;"></div>
+        {% if remember_days > 0 %}
+        <label class="login-form-pass-member d-flex align-items-center mt-3 mb-4">
+          <input type="checkbox" id="remember-me-input" name="remember_me" class="remember-input">
+          <span class="remember-me-text">{% blocktrans %}Remember me for {{remember_days}} days {% endblocktrans %}</span>
+        </label>
+        {% endif %}
         <button id="send-btn" class="btn btn-primary btn-block">{% trans "Continue" %}</button>
         <button id="verify-btn" class="btn btn-primary btn-block" style="display: none;">{% trans "Login" %}</button>
         <div id="countdown-wrapper" class="countdown-wrapper" style="display: none;"></div>
@@ -64,6 +70,7 @@
   const sendBtn = document.getElementById('send-btn');
   const verifyBtn = document.getElementById('verify-btn');
   const countdownWrapper = document.getElementById('countdown-wrapper');
+  const rememberMeInput = document.getElementById('remember-me-input');
 
   function showMsg(el, text, isError) {
     if (!el) return;
@@ -175,7 +182,7 @@
     fetch(`/api/v1/portal/${projectUuid}/external-login/verify/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
-      body: JSON.stringify({ email, code })
+      body: JSON.stringify({ email, code, remember_me: rememberMeInput ? rememberMeInput.checked : false })
     }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)))
       .then(data => { window.location.href = (data && data.redirect_url) || `/portal/${projectUuid}/`; })
       .catch(e => showMsg(promptCode, getErrorMessage(e, '{% trans "Verify failed" %}'), true));
