@@ -6,6 +6,7 @@ import { portalAPI } from '@/portal/api';
 import { usePortalIssuesMetadata } from '@/project/hooks';
 import { Utils } from '@/utils/utils';
 import TopBar from '../top-bar';
+import CustomerEmailsModal from './customer-emails-modal';
 import CustomerMembersModal from './customer-members-modal';
 import CustomerModal from './customer-modal';
 import CustomerUsersTabs from './customer-users-tabs';
@@ -21,7 +22,7 @@ const Tabs = {
   USERS: 'users',
 };
 
-const PortalCustomersUsers = ({ title }) => {
+const PortalCustomersUsers = ({ title, toggleBar }) => {
   const { projectUuid } = window.app.pageOptions;
   const {
     createCustomer: createCustomerData,
@@ -37,6 +38,7 @@ const PortalCustomersUsers = ({ title }) => {
   const [customerToEdit, setCustomerToEdit] = useState(null);
   const [customerToDelete, setCustomerToDelete] = useState(null);
   const [customerToManage, setCustomerToManage] = useState(null);
+  const [customerToViewEmails, setCustomerToViewEmails] = useState(null);
   const [customerMembers, setCustomerMembers] = useState([]);
   const [isLoadingCustomerMembers, setLoadingCustomerMembers] = useState(false);
   const [userEditor, setUserEditor] = useState(null);
@@ -302,21 +304,24 @@ const PortalCustomersUsers = ({ title }) => {
       <div className="portal-customers-users-page">
         <div className="portal-customers-users-content" role="tabpanel">
           {activeTab === Tabs.CUSTOMERS ? (
-            <CustomersTables
-              customers={customers}
-              onEdit={setCustomerToEdit}
-              onManageUsers={manageUsers}
-              onInviteUsers={(customer) => { setInviteCustomerId(customer.id); setInviteDialogOpen(true); }}
-              onDelete={setCustomerToDelete}
-              viewTabs={(
-                <CustomerUsersTabs
-                  activeTab={activeTab}
-                  onChange={setActiveTab}
-                  customersTab={Tabs.CUSTOMERS}
-                  usersTab={Tabs.USERS}
-                />
-              )}
-            />
+            customerToViewEmails ? null : (
+              <CustomersTables
+                customers={customers}
+                onEdit={setCustomerToEdit}
+                onManageUsers={manageUsers}
+                onInviteUsers={(customer) => { setInviteCustomerId(customer.id); setInviteDialogOpen(true); }}
+                onViewEmails={setCustomerToViewEmails}
+                onDelete={setCustomerToDelete}
+                viewTabs={(
+                  <CustomerUsersTabs
+                    activeTab={activeTab}
+                    onChange={setActiveTab}
+                    customersTab={Tabs.CUSTOMERS}
+                    usersTab={Tabs.USERS}
+                  />
+                )}
+              />
+            )
           ) : (
             <UsersTab
               onEditUser={openUserEditor}
@@ -373,6 +378,14 @@ const PortalCustomersUsers = ({ title }) => {
           isSubmitting={isSubmitting}
           onClose={closeCustomerMembers}
           onSubmit={saveCustomerMembers}
+        />
+      )}
+      {customerToViewEmails && (
+        <CustomerEmailsModal
+          projectUuid={projectUuid}
+          customer={customerToViewEmails}
+          onClose={() => setCustomerToViewEmails(null)}
+          toggleBar={toggleBar}
         />
       )}
       {customerToDelete && (

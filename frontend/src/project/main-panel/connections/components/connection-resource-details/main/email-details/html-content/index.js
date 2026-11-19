@@ -128,13 +128,16 @@ const HTMLContent = ({
     const link = target.closest('a');
     if (!link || !ref.current?.contains(link)) return;
     const href = link.getAttribute('href') || '';
-    if (!href) return;
-    if (!href.startsWith('mailto:')) return;
+    if (!href || !href.startsWith('mailto:')) return;
+    if (isReadonly || isPortal) {
+      event.preventDefault();
+      return;
+    }
     const email = href.slice(7);
     if (!isValidEmail(email)) return;
     event.preventDefault();
     openReplyByEmail(email);
-  }, [openReplyByEmail]);
+  }, [openReplyByEmail, isPortal, isReadonly]);
 
   useEffect(() => {
     const handleImgSrc = () => {

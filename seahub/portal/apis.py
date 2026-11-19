@@ -48,7 +48,7 @@ from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.utils.decorators import require_org_context
 from seahub.portal.permissions import PortalKnowledgeBasePermission, PortalIssuePermission, PortalEmailPermission, PortalAnonymousAccessPermission, \
     can_access_portal_issue, check_portal_issue_permission, get_request_external_user, get_request_portal_customer, \
-    is_same_org_user
+    is_same_org_user, PortalAdminPermission
 from seahub.portal.models import PortalCustomer, ProjectExternalUser, PortalCustomDomain, PortalDomainAlias, get_portal_tls_ask_cache_key,\
     PORTAL_TLS_ASK_CACHE_TIMEOUT, get_preferred_portal_domain, get_service_portal_domain
 from seahub.portal.utils import PORTAL_EXTERNAL_LOGIN_CODE_TTL, PORTAL_EXTERNAL_LOGIN_SEND_COOLDOWN, PORTAL_EXTERNAL_LOGIN_VERIFY_FAIL_LIMIT, \
@@ -78,6 +78,7 @@ logger = logging.getLogger(__name__)
 
 
 MAX_LENGTH = 10000
+PORTAL_EMAILS_MAX_RECORDS = 10000
 
 
 def _normalize_portal_customer_email_domain(email_domain):
@@ -741,8 +742,11 @@ class PortalMyEmailsView(APIView):
             limit = int(request.GET.get('limit', 1000))
         except (TypeError, ValueError):
             return api_error(status.HTTP_400_BAD_REQUEST, 'pagination invalid.')
-        if start < 0 or limit < 1 or limit > 1000:
+        if start < 0 or limit < 1 or limit > PORTAL_EMAILS_MAX_RECORDS:
             return api_error(status.HTTP_400_BAD_REQUEST, 'pagination invalid.')
+
+        if start >= PORTAL_EMAILS_MAX_RECORDS:
+            return Response({'records': [], 'has_more': False})
 
         customer = get_request_portal_customer(request, str(project_uuid))
         email_connections = ProjectConnections.objects.filter(
@@ -753,7 +757,7 @@ class PortalMyEmailsView(APIView):
 
         seadb_api = SeaDBAPI()
         records = []
-        fetch_limit = start + limit + 1
+        fetch_limit = min(start + limit + 1, PORTAL_EMAILS_MAX_RECORDS)
         try:
             for connection in email_connections:
                 table_name = SchemaTables.THREAD.table_name(connection.id)
@@ -783,6 +787,7 @@ class PortalMyEmailsView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
         records.sort(key=lambda record: (str(record.get('modified_time') or ''), int(record.get('_pk') or 0)), reverse=True)
+        records = records[:PORTAL_EMAILS_MAX_RECORDS]
         page_records = records[start:start + limit]
         assignees_by_email = {}
         for record in page_records:
@@ -807,6 +812,90 @@ class PortalMyEmailsView(APIView):
             'records': page_records,
             'has_more': len(records) > start + limit,
         })
+
+
+class PortalCustomerEmailsView(APIView):
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (PortalAdminPermission,)
+    throttle_classes = (UserRateThrottle,)
+
+    def get(self, request, project_uuid, customer_id):
+        try:
+            customer_id = int(customer_id)
+            start = int(request.GET.get('start', 0))
+            limit = int(request.GET.get('limit', 1000))
+        except (TypeError, ValueError):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'pagination or customer id invalid.')
+        if start < 0 or limit < 1 or limit > PORTAL_EMAILS_MAX_RECORDS:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'pagination invalid.')
+
+        if start >= PORTAL_EMAILS_MAX_RECORDS:
+            return Response({'records': [], 'has_more': False})
+
+        customer = PortalCustomer.objects.filter(id=customer_id, project_uuid=project_uuid).first()
+        if not customer:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Customer not found.')
+
+        email_connections = ProjectConnections.objects.filter(
+            project_uuid=project_uuid,
+            type=ConnectionType.EMAIL.value,
+            deleted=False,
+        ).only('id')
+
+        seadb_api = SeaDBAPI()
+        records = []
+        fetch_limit = min(start + limit + 1, PORTAL_EMAILS_MAX_RECORDS)
+        try:
+            for connection in email_connections:
+                table_name = SchemaTables.THREAD.table_name(connection.id)
+                sql = (
+                    f"SELECT email_thread.`_pk`, email_thread.`title`, email_thread.`modified_time`, "
+                    f"ticket.`_pk`, ticket.`state`, ticket.`assignees`, ticket.`due_date` "
+                    f"FROM `{table_name}` AS email_thread "
+                    f"LEFT JOIN `tickets` AS ticket ON ticket.`_pk` = email_thread.`linked_ticket` "
+                    f"AND (ticket.`deleted` = false OR ticket.`deleted` IS NULL) "
+                    f"WHERE email_thread.`customer_id` = {customer.id} "
+                    f"AND (email_thread.`deleted` = false OR email_thread.`deleted` IS NULL) "
+                    f"ORDER BY email_thread.`modified_time` DESC, email_thread.`_pk` DESC LIMIT {fetch_limit}"
+                )
+                for record in seadb_api.query_rows(project_uuid, sql).get('results', []):
+                    normalized_record = {}
+                    for field in ('_pk', 'title', 'modified_time'):
+                        normalized_record[field] = record.get(f'{table_name}.{field}', record.get(field))
+                    for field in ('_pk', 'state', 'assignees', 'due_date'):
+                        value = record.get(f'tickets.{field}')
+                        if value is None:
+                            value = record.get(f'ticket.{field}', record.get(field) if field != '_pk' else None)
+                        normalized_record['ticket_pk' if field == '_pk' else field] = value
+                    normalized_record['connection_id'] = connection.id
+                    records.append(normalized_record)
+        except Exception as e:
+            logger.error('Failed to list emails for customer %s: %s', customer.id, e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
+
+        records.sort(key=lambda record: (str(record.get('modified_time') or ''), int(record.get('_pk') or 0)), reverse=True)
+        records = records[:PORTAL_EMAILS_MAX_RECORDS]
+        page_records = records[start:start + limit]
+        assignees_by_email = {}
+        for record in page_records:
+            assignees = []
+            for email in record.get('assignees') or []:
+                if not isinstance(email, str) or not email:
+                    continue
+                if email not in assignees_by_email:
+                    try:
+                        user = get_user_common_info(email, include_contact_email=False) or {}
+                        assignees_by_email[email] = {
+                            'email': email,
+                            'name': user.get('name') or email,
+                            'avatar_url': user.get('avatar_url', ''),
+                        }
+                    except Exception as e:
+                        logger.warning('Failed to resolve ticket assignee %s: %s', email, e)
+                        assignees_by_email[email] = {'email': email, 'name': email, 'avatar_url': ''}
+                assignees.append(assignees_by_email[email])
+            record['assignees'] = assignees
+        return Response({'records': page_records, 'has_more': len(records) > start + limit})
 
 
 class PortalEmailThreadView(APIView):

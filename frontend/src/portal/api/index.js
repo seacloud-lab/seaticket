@@ -120,6 +120,11 @@ class PortalAPI {
     return this.req.get(url, { params: { start, limit } });
   }
 
+  listCustomerEmails(projectUuid, customerId, { start = 0, limit = 1000 } = {}) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/customers/' + customerId + '/emails/';
+    return this.req.get(url, { params: { start, limit } });
+  }
+
   getPortalEmailThread(projectUuid, connectionId, threadId) {
     const url = this.server + '/api/v1/portal/' + projectUuid + '/emails/' + connectionId + '/' + threadId + '/';
     return this.req.get(url);

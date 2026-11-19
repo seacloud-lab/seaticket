@@ -152,17 +152,19 @@ const Item = ({
   }, []);
 
   const openReply = useCallback((event) => {
+    if (isReadonly || isPortal) return;
     event.stopPropagation();
     event.nativeEvent.stopImmediatePropagation();
     setIsParticipantsExpanded(false);
     setIsShowReply(true);
-  }, []);
+  }, [isPortal, isReadonly]);
 
   const openReplyByEmail = useCallback((sendTo = '') => {
+    if (isReadonly || isPortal) return;
     replySendTo.current = sendTo;
     setIsParticipantsExpanded(false);
     setIsShowReply(true);
-  }, []);
+  }, [isPortal, isReadonly]);
 
   const updateUnread = useCallback((nextUnread) => {
     if (isReadonly || isUpdatingUnread) return;
@@ -187,6 +189,7 @@ const Item = ({
   }, [isUnread, updateUnread]);
 
   const onSubmit = useCallback(({ to, cc, content }, callback) => {
+    if (isReadonly || isPortal) return;
     const payload = {
       html_content: content,
       to: to.join(','),
@@ -201,7 +204,7 @@ const Item = ({
       toaster.danger(Utils.getErrorMsg(error));
       callback && callback(true);
     });
-  }, [projectUuid, detail, connection_id, handleReplyEmailSuccess]);
+  }, [projectUuid, detail, connection_id, handleReplyEmailSuccess, isPortal, isReadonly]);
 
   const renderReply = useCallback(() => {
     const sendTime = dayjs(detail.modified_time, 'YYYY-MM-DD HH:mm').locale('en');
@@ -245,13 +248,13 @@ const Item = ({
   const onLinkClick = useCallback((link) => {
     if (!link || !isString(link)) return;
     if (link.startsWith('mailto:')) {
-      if (isPortal) return;
+      if (isPortal || isReadonly) return;
       const email = link.slice(7);
       openReplyByEmail(email);
       return;
     }
     window.open(link, '_blank', 'noopener,noreferrer');
-  }, [openReplyByEmail, isPortal]);
+  }, [openReplyByEmail, isPortal, isReadonly]);
 
   const renderParticipants = useCallback(() => {
     const isValidCc = Array.isArray(emailCc) && emailCc.length > 0;
@@ -396,7 +399,7 @@ const Item = ({
             value={detailContent}
             isReadonly={isReadonly}
             className="email-content-detail"
-            openReplyByEmail={isPortal ? () => {} : openReplyByEmail}
+            openReplyByEmail={isPortal || isReadonly ? () => {} : openReplyByEmail}
           />
         ) : (
           <CustomizeMarkdownViewer value={detailContent} onLinkClick={onLinkClick} />

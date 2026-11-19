@@ -1,0 +1,35 @@
+.portal-customer-emails-dialog {
+  max-width: 1000px;
+  height: calc(100vh - 64px);
+  margin: 32px auto;
+}
+
+.portal-customer-emails-dialog .modal-content {
+  height: 100%;
+}
+
+.portal-customer-emails-dialog .modal-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: auto;
+}
+
+.portal-customer-emails-list {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.portal-customer-emails-list > .sea-metadata {
+  flex: 1;
+  min-height: 0;
+}
+
+@media (max-width: 767.98px) {
+  .portal-customer-emails-dialog {
+    height: calc(100vh - 24px);
+    margin: 12px;
+  }
+}

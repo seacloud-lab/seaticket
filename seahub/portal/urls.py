@@ -6,7 +6,7 @@ from .views import portal_edit_view, portal_path_view
 from .apis import PortalTagsView, PortalKnowledgeBaseViewsView, PortalKnowledgeBaseRecordsView, PortalKnowledgeBaseFeaturedArticlesView, PortalKnowledgeBaseRecordView, PortalIssueMetadataView, \
     PortalSettingsView, PortalExternalInvitationsView, PortalIssueViewsView, PortalIssueViewView, PortalExternalUsersView, PortalUserListView, \
     PortalCustomersView, PortalCustomerView, PortalCustomerMembersView, PortalCustomerMemberView, PortalIssueViewsMoveView, PortalIssueViewsDuplicateView, \
-    PortalIssuesView, PortalMyIssuesView, PortalTeamIssuesView, PortalMyEmailsView, PortalEmailThreadView, PortalEmailAttachmentView, \
+    PortalIssuesView, PortalMyIssuesView, PortalTeamIssuesView, PortalMyEmailsView, PortalCustomerEmailsView, PortalEmailThreadView, PortalEmailAttachmentView, \
     PortalEmailAttachmentsZipView, PortalEmailAttachmentsZipStatusView, PortalEmailAttachmentsZipDownloadView, PortalIssueView, PortalIssueCommentsView, \
     PortalIssueCommentView, PortalIssueTrashAPIView, PortalCustomDomainView, PortalCustomDomainVerificationView, PortalDomainAliasView, \
     PortalPreviewTokenView, PortalLogoView, PortalBackgroundImageView, PortalExternalLoginSendCodeView, PortalExternalLoginVerifyCodeView
@@ -87,6 +87,7 @@ urlpatterns = [
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/my-issues/$', PortalMyIssuesView.as_view(), name='api-v1-portal-my-issues'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/team-issues/$', PortalTeamIssuesView.as_view(), name='api-v1-portal-team-issues'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/my-emails/$', PortalMyEmailsView.as_view(), name='api-v1-portal-my-emails'),
+    re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/customers/(?P<customer_id>\d+)/emails/$', PortalCustomerEmailsView.as_view(), name='api-v1-portal-customer-emails'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/emails/(?P<connection_id>\d+)/(?P<thread_id>\d+)/$', PortalEmailThreadView.as_view(), name='api-v1-portal-email-thread'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/emails/(?P<connection_id>\d+)/(?P<thread_id>\d+)/(?P<email_id>\d+)/attachments/(?P<file_path>.*)$', PortalEmailAttachmentView.as_view(), name='api-v1-portal-email-attachment'),
     re_path(r'^api/v1/portal/(?P<project_uuid>[-0-9a-f]{36})/emails/(?P<connection_id>\d+)/(?P<thread_id>\d+)/(?P<email_id>\d+)/zip-attachments/$', PortalEmailAttachmentsZipView.as_view(), name='api-v1-portal-email-zip-attachments'),

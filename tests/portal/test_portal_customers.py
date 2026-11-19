@@ -8,7 +8,7 @@ import pytz
 from django.contrib.auth.models import AnonymousUser
 from django.core.cache import cache
 
-from seahub.portal.apis import PortalCustomerMemberView, PortalCustomerMembersView, PortalCustomerView, PortalCustomersView, PortalExternalInvitationsView, \
+from seahub.portal.apis import PortalCustomerMemberView, PortalCustomerMembersView, PortalCustomerView, PortalCustomersView, PortalCustomerEmailsView, PortalExternalInvitationsView, \
     PortalExternalLoginSendCodeView, PortalExternalUsersView, PortalIssueCommentsView, PortalIssueView, PortalIssuesView, PortalMyIssuesView, \
     PortalTeamIssuesView, PortalMyEmailsView, PortalEmailThreadView, PortalEmailAttachmentView, \
     PortalEmailAttachmentsZipView, PortalEmailAttachmentsZipStatusView, PortalEmailAttachmentsZipDownloadView
@@ -944,6 +944,241 @@ class TestPortalCustomerIssueAccess:
 
         with patch('seahub.portal.apis.SeaDBAPI') as seadb_api:
             response = PortalMyEmailsView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert response.status_code == 403
+        seadb_api.assert_not_called()
+
+    def test_my_emails_caps_the_browsable_window(self, factory, real_project):
+        customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
+        member = self._create_external_member(real_project, customer)
+        connection = ProjectConnections(
+            project_uuid=real_project.uuid,
+            name='Support mailbox',
+            type='email',
+            config='{}',
+            modifier=member.username,
+            status='{}',
+        )
+        connection.save()
+        another_connection = ProjectConnections(
+            project_uuid=real_project.uuid,
+            name='Another mailbox',
+            type='email',
+            config='{}',
+            modifier=member.username,
+            status='{}',
+        )
+        another_connection.save()
+        request = factory.get(f'/api/v1/portal/{real_project.uuid}/my-emails/?start=9500&limit=1000')
+        request.user = _external_request_user()
+        _set_external_session(request, real_project.uuid, member.username)
+        table_name = f'email_thread_{connection.id}'
+        another_table_name = f'email_thread_{another_connection.id}'
+        seadb_api = Mock()
+        seadb_api.query_rows.side_effect = [
+            {'results': [{
+                f'{table_name}._pk': record_id,
+                f'{table_name}.title': f'Email {record_id}',
+                f'{table_name}.modified_time': f'2026-02-{record_id % 28 + 1:02}',
+            } for record_id in range(1, 10001)]},
+            {'results': [{
+                f'{another_table_name}._pk': record_id,
+                f'{another_table_name}.title': f'Another email {record_id}',
+                f'{another_table_name}.modified_time': f'2026-01-{record_id % 28 + 1:02}',
+            } for record_id in range(1, 10001)]},
+        ]
+
+        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api):
+            response = PortalMyEmailsView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert response.status_code == 200
+        assert len(response.data['records']) == 500
+        assert response.data['has_more'] is False
+        assert all(call.args[1].endswith('LIMIT 10000') for call in seadb_api.query_rows.call_args_list)
+
+    def test_my_emails_allows_reload_limit_for_loaded_rows(self, factory, real_project):
+        customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
+        member = self._create_external_member(real_project, customer)
+        connection = ProjectConnections(
+            project_uuid=real_project.uuid,
+            name='Support mailbox',
+            type='email',
+            config='{}',
+            modifier=member.username,
+            status='{}',
+        )
+        connection.save()
+        request = factory.get(f'/api/v1/portal/{real_project.uuid}/my-emails/?limit=2000')
+        request.user = _external_request_user()
+        _set_external_session(request, real_project.uuid, member.username)
+        table_name = f'email_thread_{connection.id}'
+        seadb_api = Mock()
+        seadb_api.query_rows.return_value = {'results': [{
+            f'{table_name}._pk': record_id,
+            f'{table_name}.title': f'Email {record_id}',
+            f'{table_name}.modified_time': '2026-01-01',
+        } for record_id in range(1, 2001)]}
+
+        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api):
+            response = PortalMyEmailsView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert response.status_code == 200
+        assert len(response.data['records']) == 2000
+        assert response.data['has_more'] is False
+        assert seadb_api.query_rows.call_args.args[1].endswith('LIMIT 2001')
+
+    def test_my_emails_offset_past_cap_skips_seadb_query(self, factory, real_project):
+        customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
+        member = self._create_external_member(real_project, customer)
+        request = factory.get(f'/api/v1/portal/{real_project.uuid}/my-emails/?start=10000')
+        request.user = _external_request_user()
+        _set_external_session(request, real_project.uuid, member.username)
+
+        with patch('seahub.portal.apis.SeaDBAPI') as seadb_api:
+            response = PortalMyEmailsView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert response.status_code == 200
+        assert response.data == {'records': [], 'has_more': False}
+        seadb_api.assert_not_called()
+
+    def test_admin_can_list_emails_for_customer(self, factory, project_creator, real_project):
+        customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
+        connection = ProjectConnections(
+            project_uuid=real_project.uuid,
+            name='Support mailbox',
+            type='email',
+            config='{}',
+            modifier=project_creator.username,
+            status='{}',
+        )
+        connection.save()
+        request = factory.get(f'/api/v1/portal/{real_project.uuid}/customers/{customer.id}/emails/')
+        request.user = project_creator
+        seadb_api = Mock()
+        table_name = f'email_thread_{connection.id}'
+        seadb_api.query_rows.return_value = {'results': [{
+            f'{table_name}._pk': 17,
+            f'{table_name}.title': 'Customer question',
+            f'{table_name}.modified_time': '2026-01-01',
+            'tickets._pk': 29,
+            'tickets.state': '0001',
+            'tickets.assignees': ['agent@example.com'],
+            'tickets.due_date': '2026-02-01',
+        }]}
+
+        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
+                patch('seahub.portal.apis.get_user_common_info', return_value={
+                    'name': 'Agent', 'avatar_url': '/avatar.png',
+                }):
+            response = PortalCustomerEmailsView.as_view()(
+                request, project_uuid=str(real_project.uuid), customer_id=customer.id,
+            )
+
+        assert response.status_code == 200
+        assert response.data['records'][0]['_pk'] == 17
+        assert response.data['records'][0]['connection_id'] == connection.id
+        assert response.data['records'][0]['ticket_pk'] == 29
+        assert response.data['records'][0]['state'] == '0001'
+        assert response.data['records'][0]['assignees'] == [{
+            'email': 'agent@example.com', 'name': 'Agent', 'avatar_url': '/avatar.png',
+        }]
+        assert response.data['records'][0]['due_date'] == '2026-02-01'
+        sql = seadb_api.query_rows.call_args.args[1]
+        assert f'email_thread.`customer_id` = {customer.id}' in sql
+        assert 'ticket.`_pk`, ticket.`state`, ticket.`assignees`, ticket.`due_date`' in sql
+        assert 'LEFT JOIN `tickets` AS ticket' in sql
+
+    def test_customer_emails_caps_the_browsable_window(self, factory, project_creator, real_project):
+        customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
+        connection = ProjectConnections(
+            project_uuid=real_project.uuid,
+            name='Support mailbox',
+            type='email',
+            config='{}',
+            modifier=project_creator.username,
+            status='{}',
+        )
+        connection.save()
+        request = factory.get(
+            f'/api/v1/portal/{real_project.uuid}/customers/{customer.id}/emails/?start=9500&limit=1000'
+        )
+        request.user = project_creator
+        table_name = f'email_thread_{connection.id}'
+        seadb_api = Mock()
+        seadb_api.query_rows.return_value = {'results': [{
+            f'{table_name}._pk': record_id,
+            f'{table_name}.title': f'Email {record_id}',
+            f'{table_name}.modified_time': '2026-01-01',
+        } for record_id in range(1, 10001)]}
+
+        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api):
+            response = PortalCustomerEmailsView.as_view()(
+                request, project_uuid=str(real_project.uuid), customer_id=customer.id,
+            )
+
+        assert response.status_code == 200
+        assert len(response.data['records']) == 500
+        assert response.data['has_more'] is False
+        assert seadb_api.query_rows.call_args.args[1].endswith('LIMIT 10000')
+
+    def test_customer_emails_allows_reload_limit_for_loaded_rows(self, factory, project_creator, real_project):
+        customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
+        connection = ProjectConnections(
+            project_uuid=real_project.uuid,
+            name='Support mailbox',
+            type='email',
+            config='{}',
+            modifier=project_creator.username,
+            status='{}',
+        )
+        connection.save()
+        request = factory.get(
+            f'/api/v1/portal/{real_project.uuid}/customers/{customer.id}/emails/?limit=2000'
+        )
+        request.user = project_creator
+        table_name = f'email_thread_{connection.id}'
+        seadb_api = Mock()
+        seadb_api.query_rows.return_value = {'results': [{
+            f'{table_name}._pk': record_id,
+            f'{table_name}.title': f'Email {record_id}',
+            f'{table_name}.modified_time': '2026-01-01',
+        } for record_id in range(1, 2001)]}
+
+        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api):
+            response = PortalCustomerEmailsView.as_view()(
+                request, project_uuid=str(real_project.uuid), customer_id=customer.id,
+            )
+
+        assert response.status_code == 200
+        assert len(response.data['records']) == 2000
+        assert response.data['has_more'] is False
+        assert seadb_api.query_rows.call_args.args[1].endswith('LIMIT 2001')
+
+    def test_customer_emails_offset_past_cap_skips_seadb_query(self, factory, project_creator, real_project):
+        customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
+        request = factory.get(f'/api/v1/portal/{real_project.uuid}/customers/{customer.id}/emails/?start=10000')
+        request.user = project_creator
+
+        with patch('seahub.portal.apis.SeaDBAPI') as seadb_api:
+            response = PortalCustomerEmailsView.as_view()(
+                request, project_uuid=str(real_project.uuid), customer_id=customer.id,
+            )
+
+        assert response.status_code == 200
+        assert response.data == {'records': [], 'has_more': False}
+        seadb_api.assert_not_called()
+
+    def test_customer_email_list_rejects_non_admin(self, factory, real_project):
+        customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
+        member = self._create_external_member(real_project, customer)
+        request = factory.get(f'/api/v1/portal/{real_project.uuid}/customers/{customer.id}/emails/')
+        request.user = _external_request_user()
+        _set_external_session(request, real_project.uuid, member.username)
+
+        with patch('seahub.portal.apis.SeaDBAPI') as seadb_api:
+            response = PortalCustomerEmailsView.as_view()(
+                request, project_uuid=str(real_project.uuid), customer_id=customer.id,
+            )
 
         assert response.status_code == 403
         seadb_api.assert_not_called()
