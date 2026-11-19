@@ -25,6 +25,7 @@ from seahub.project.utils import check_project_admin_permission, check_same_org_
 from seahub.utils import render_error
 from seahub.auth.decorators import login_required
 from seahub.settings import MEDIA_URL
+from seahub.avatar.templatetags.avatar_tags import api_avatar_url
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
 
@@ -135,6 +136,7 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
         can_access_issues = bool(active_customer)
         can_access_emails = bool(active_customer)
 
+    avatar_url = ''
     if has_ticket_access:
         if preview_username:
             username = preview_username
@@ -142,19 +144,17 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
             username = ext_username
         elif is_authenticated_user:
             username = request.user.username
+            avatar_url, _, _  = api_avatar_url(username)
         else:
             username = ext_username
     else:
         username = ''
-    from seahub.avatar.templatetags.avatar_tags import api_avatar_url
-    avatar_url, _, _  = api_avatar_url(username)
 
     return_dict = {
         'version': SEAQA_VERSION,
         'project_name': project.name,
         'project_uuid': project_uuid,
         'media_url': MEDIA_URL,
-        'avatar_url': avatar_url,
         'is_edit_mode': False,
         'workspace_id': project.workspace_id,
         'is_anonymous': is_anonymous,
@@ -176,6 +176,10 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
         'is_portal_domain': is_request_using_portal_domain(request, project_uuid),
         'portal_base_url': portal_path(request, project_uuid).rstrip('/') or '/',
     }
+
+    if avatar_url:
+        return_dict['avatar_url'] = avatar_url
+
     if not has_ticket_access:
         need_password = False
         if enable_password_protection and allow_anonymous:
