@@ -14,7 +14,7 @@ const areOptionsEqual = (options = [], nextOptions = []) => {
   return options.every((option, index) => {
     const nextOption = nextOptions[index];
     if (Object.is(option, nextOption)) return true;
-    if (!option || !nextOption || isObject(option) || isObject(nextOption)) return false;
+    if (!isObject(option) || !isObject(nextOption)) return false;
     return ObjectUtils.isSameObject(option, nextOption);
   });
 };
