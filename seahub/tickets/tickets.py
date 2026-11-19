@@ -1928,7 +1928,14 @@ class MyTicketAPIView(APIView):
         2. group member
         """
         # argument check
-        view_id = request.POST.get('view_id', 'open')
+        ticket_state = request.POST.get('view_id', 'open')
+        scope = request.POST.get('scope', 'assigned')
+        filter_column = {'assigned': 'assignees', 'created': 'creator'}.get(scope)
+        if filter_column is None:
+            return api_error(status.HTTP_400_BAD_REQUEST, 'scope invalid')
+        if ticket_state not in ('open', 'closed'):
+            ticket_state = 'open'
+
         start = request.POST.get('start', 0)
         limit = request.POST.get('limit', 1000)
         view_config = request.POST.get('config', '{}')
@@ -1941,10 +1948,6 @@ class MyTicketAPIView(APIView):
             start = 0
             limit = 1000
             view_config = {}
-
-        ticket_state = view_id
-        if ticket_state not in ['open', 'closed']:
-            ticket_state = 'open'
 
         if start < 0:
             error_msg = 'start invalid'
@@ -1969,7 +1972,7 @@ class MyTicketAPIView(APIView):
 
         seadb_api = SeaDBAPI()
         try:
-            tickets, columns = list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limit, view_config)
+            tickets, columns = list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limit, view_config, filter_column=filter_column)
         except Exception as e:
             logger.error(e)
             error_msg = 'Internal Server Error'

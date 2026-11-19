@@ -34,6 +34,7 @@ class Store {
     this.columnOrderRules = props?.columnOrderRules || null;
     this.columnWidthRules = props?.columnWidthRules || null;
     this.notDisplayColumns = props?.notDisplayColumns || [];
+    this.shouldRemoveRowAfterUpdate = props.shouldRemoveRowAfterUpdate;
     this.mounted = true;
   }
 
@@ -113,8 +114,9 @@ class Store {
 
   async loadMore(limit) {
     if (!this.data || !this.mounted) return;
-    const res = await context.getMetadata({ view_id: this.viewId, start: this.startIndex, limit });
-    if (!this.data || !this.mounted) return;
+    const start = this.startIndex;
+    const res = await context.getMetadata({ view_id: this.viewId, start, limit });
+    if (!this.data || !this.mounted || this.startIndex !== start) return;
     const linked_records = res?.data?.linked_records || {};
     let rows = res?.data?.rows || [];
     if (!Array.isArray(rows) || rows.length === 0) {
@@ -266,6 +268,14 @@ class Store {
       context.eventBus.dispatch(EVENT_BUS_TYPE.SERVER_DATA_CHANGED);
     }
     operation.success_callback && operation.success_callback(operation);
+
+    if (this.shouldRemoveRowAfterUpdate) {
+      if (operation.op_type === OPERATION_TYPE.MODIFY_ROW) {
+        this.removeRowsAfterUpdate({ [operation.row_id]: operation.row_update });
+      } else if (operation.op_type === OPERATION_TYPE.MODIFY_ROWS) {
+        this.removeRowsAfterUpdate(operation.id_row_updates);
+      }
+    }
 
     // need reload rows if has related formula columns
     this.serverOperator.handleReloadRows(this.data, operation, ({ reloadedRows, idRowNotExistMap, relatedColumnKeyMap }) => {
@@ -429,7 +439,7 @@ class Store {
     if (!Array.isArray(row_ids) || row_ids.length === 0) return;
     const type = OPERATION_TYPE.DELETE_LOCAL_ROWS;
 
-    const valid_rows_ids = row_ids.filter((rowId) => {
+    const valid_rows_ids = [...new Set(row_ids)].filter((rowId) => {
       const row = getRowById(this.data, rowId);
       return Boolean(row);
     });
@@ -441,7 +451,9 @@ class Store {
       fail_callback,
       success_callback,
     });
+    this.startIndex = Math.max(0, this.startIndex - valid_rows_ids.length);
     this.applyOperation(operation);
+    success_callback && success_callback(operation);
   }
 
   reloadRows(row_ids) {
@@ -501,6 +513,7 @@ class Store {
       updates
     });
     this.applyOperation(operation);
+    this.removeRowsAfterUpdate({ [row_id]: updates });
   }
 
   modifyLocalRows(updates) {
@@ -510,6 +523,15 @@ class Store {
       updates
     });
     this.applyOperation(operation);
+    this.removeRowsAfterUpdate(updates);
+  }
+
+  removeRowsAfterUpdate(updates) {
+    if (!this.mounted || !this.data || !this.shouldRemoveRowAfterUpdate) return;
+    const rowIds = Object.keys(updates).filter(rowId =>
+      getRowById(this.data, rowId) && this.shouldRemoveRowAfterUpdate(updates[rowId], this.data.columns)
+    );
+    if (rowIds.length > 0) context.eventBus.dispatch(EVENT_BUS_TYPE.DELETE_ROWS, rowIds);
   }
 
   // view

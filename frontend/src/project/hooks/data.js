@@ -3,6 +3,8 @@ import deepcopy from 'deep-copy';
 import _ from 'lodash';
 import userAPI from '@/api/user-api';
 import { NotificationProvider } from '@/components/common/notification/hooks/notification';
+import { username } from '@/constants';
+import { MY_TICKETS_VIEW_IDS, PREDEFINED_TICKET_COLUMN_NAME, TICKET_STATE, TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
 import { CollaboratorsProvider } from '@/sea-metadata';
 import { convertRowToKeyValue } from '@/sea-metadata/utils/row';
 import ObjectUtils, { hasOwnProperty } from '@/utils/object-utils';
@@ -17,11 +19,106 @@ import { getTableName } from '../main-panel/connections/utils';
 import { KB_TABLE_NAME } from '../main-panel/knowledge-base/constants';
 import { PortalIssuesMetadataProvider } from '../main-panel/portal-issues/hooks';
 import { TagsProvider } from '../main-panel/tags/hooks/tags';
-import { PREDEFINED_TICKET_COLUMN_NAME, TICKET_TABLE_NAME } from '../main-panel/tickets/constants';
 import { MetadataProvider, CloseLinkedIssuesProvider } from '../main-panel/tickets/hooks';
 import { shouldReload } from '../utils';
 
 const DataContext = React.createContext(null);
+
+const { ASSIGNEES, CREATOR, MODIFIED_TIME, STATE } = PREDEFINED_TICKET_COLUMN_NAME;
+const myTicketViews = [
+  { id: MY_TICKETS_VIEW_IDS.assigned.open, state: TICKET_STATE.OPEN, isAssigned: true },
+  { id: MY_TICKETS_VIEW_IDS.assigned.closed, state: TICKET_STATE.CLOSED, isAssigned: true },
+  { id: MY_TICKETS_VIEW_IDS.created.open, state: TICKET_STATE.OPEN, isAssigned: false },
+  { id: MY_TICKETS_VIEW_IDS.created.closed, state: TICKET_STATE.CLOSED, isAssigned: false },
+];
+
+const matchesMyTicketView = (row, columnKeys, { state, isAssigned }) => {
+  const ticketState = row[columnKeys[STATE]];
+  if ((ticketState === TICKET_STATE.OPEN || ticketState === TICKET_STATE.CLOSED) && ticketState !== state) return false;
+  const scopeValue = row[columnKeys[isAssigned ? ASSIGNEES : CREATOR]];
+  let scopeMatches;
+  if (username) {
+    if (scopeValue === null) scopeMatches = false;
+    else if (isAssigned && Array.isArray(scopeValue)) scopeMatches = scopeValue.includes(username);
+    else if (!isAssigned && typeof scopeValue === 'string') scopeMatches = scopeValue === username;
+  }
+  if (scopeMatches === false) return false;
+  return ticketState === state && scopeMatches === true ? true : undefined;
+};
+
+const updateCachedMyTicketView = (view, viewInfo, changes, columnKeys, idRowMap) => {
+  const expiredView = () => ({ ...view, timestamp: 0, rows: [] });
+  const cachedRowIDs = new Set(view.rows);
+  let newAssignment;
+  for (const change of changes) {
+    const { rowID, oldRow, row, stateChanged, assigneesChanged } = change;
+    if (!stateChanged && !(viewInfo.isAssigned && assigneesChanged)) continue;
+    const matches = matchesMyTicketView(row, columnKeys, viewInfo);
+    if (matches === false) {
+      cachedRowIDs.delete(rowID);
+      continue;
+    }
+    if (matches !== true) return expiredView();
+    if (!matchesMyTicketView(oldRow, columnKeys, viewInfo)) {
+      if (cachedRowIDs.has(rowID)) continue;
+      if (!viewInfo.isAssigned || stateChanged || !view.isUnfiltered || newAssignment) return expiredView();
+      newAssignment = change;
+    } else if (viewInfo.isAssigned && assigneesChanged && view.isUnfiltered === false) {
+      // The assignee edit can still change membership in a filtered view.
+      return expiredView();
+    }
+  }
+
+  if (newAssignment) {
+    const { rowID, row, oldRow } = newAssignment;
+    if (row._pk == null || !view.columns.every(key => hasOwnProperty(row, key))) return expiredView();
+    if (cachedRowIDs.size === 0 && view.has_more === false) return { ...view, rows: [rowID] };
+
+    // The default order is newest modification first. Keep the existing page order.
+    const key = columnKeys[MODIFIED_TIME];
+    const updatedTime = Date.parse(row[key]);
+    if (view.usesDefaultSort && updatedTime > Date.parse(oldRow[key])
+      && [...cachedRowIDs].every(id => updatedTime > Date.parse(idRowMap[id]?.[key]))
+      && cachedRowIDs.size > 0) {
+      return { ...view, rows: [rowID, ...cachedRowIDs] };
+    }
+    return expiredView();
+  }
+
+  return cachedRowIDs.size === view.rows.length ? view : { ...view, rows: [...cachedRowIDs] };
+};
+
+const updateCachedRows = (tableName, table, rowsUpdate) => {
+  const idRowMapUpdate = {};
+  rowsUpdate.forEach(({ row_id, row }) => {
+    const oldRow = idRowMapUpdate[row_id] || table.id_row_map[row_id] || {};
+    if (!Object.keys(row).some(key => !_.isEqual(oldRow[key], row[key]))) return;
+    idRowMapUpdate[row_id] = { ...oldRow, ...row };
+  });
+  if (Object.keys(idRowMapUpdate).length === 0) return table;
+
+  const newTable = { ...table, id_row_map: { ...table.id_row_map, ...idRowMapUpdate } };
+  if (tableName !== TICKET_TABLE_NAME) return newTable;
+  const columnKeys = Object.fromEntries(Object.values(table.key_column_map).map(({ name, key }) => [name, key]));
+  const changes = Object.entries(idRowMapUpdate).map(([rowID, row]) => {
+    const oldRow = table.id_row_map[rowID] || {};
+    const stateChanged = oldRow[columnKeys[STATE]] !== row[columnKeys[STATE]];
+    const assigneesChanged = !_.isEqual(oldRow[columnKeys[ASSIGNEES]], row[columnKeys[ASSIGNEES]]);
+    return { rowID, row, oldRow, stateChanged, assigneesChanged };
+  }).filter(({ stateChanged, assigneesChanged }) => stateChanged || assigneesChanged);
+
+  if (changes.length > 0) {
+    const builtInViews = { ...table.built_in_view_map };
+    myTicketViews.forEach(viewInfo => {
+      const view = builtInViews[viewInfo.id];
+      if (!view?.timestamp || !Array.isArray(view.rows)) return;
+      builtInViews[viewInfo.id] = updateCachedMyTicketView(view, viewInfo, changes, columnKeys, newTable.id_row_map);
+    });
+    newTable.built_in_view_map = builtInViews;
+    newTable.ticketMembershipVersion = (table.ticketMembershipVersion || 0) + 1;
+  }
+  return newTable;
+};
 
 export const DataProvider = ({
   projectUuid,
@@ -269,6 +366,7 @@ export const DataProvider = ({
     let table = use_cache ? getTableByName(tableName) : deepcopy(EMPTY_TABLE);
     const viewMapName = isBuiltIn ? 'built_in_view_map' : 'id_view_map';
     const view = table[viewMapName][view_id] || {};
+    const isMyTicketsView = tableName === TICKET_TABLE_NAME && isBuiltIn && myTicketViews.some(({ id }) => id === view_id);
     let recordsName = 'records';
     if (tableName === TICKET_TABLE_NAME) {
       recordsName = TICKET_TABLE_NAME;
@@ -281,42 +379,38 @@ export const DataProvider = ({
       const linkedRecordsGithubState = res?.data?.linked_github_issue_state_map || {};
       const relatedUsers = res?.data?.related_users || [];
       const columns = res?.data?.columns || [];
-      let rowIds = is_reload ? [] : [...(view?.rows || [])];
-      let id_row_map = { ...table.id_row_map };
-      let key_column_map = { ...table.key_column_map };
-      let linked_records = { ...table.linked_records, ...linkedRecords };
-      let linked_github_issue_state_map = { ...(table.linked_github_issue_state_map || {}), ...linkedRecordsGithubState };
-      let view_map = { ...table[viewMapName] };
-      rows.forEach(r => {
-        const rowId = String(r._pk);
-        if (!rowIds.includes(rowId)) {
-          rowIds.push(rowId);
-        }
-        id_row_map[rowId] = { ...id_row_map[rowId], ...r };
-      });
-      columns.forEach(c => {
-        key_column_map[c.key] = c;
-      });
-      view_map[view_id] = {
-        ...view,
-        rows: rowIds,
-        columns: columns.map(c => c.key),
-        timestamp: Date.now(),
-        has_more: rows.length >= limit,
-      };
       if (use_cache) {
         setData(data => {
+          const currentTable = data[tableName] || EMPTY_TABLE;
+          const currentView = currentTable[viewMapName][view_id] || {};
+          // A request started before a ticket edit must not repopulate the invalidated cache.
+          if (currentTable.ticketMembershipVersion !== table.ticketMembershipVersion) return data;
+          // Do not cache a non-contiguous page, including after local rows have been removed.
+          if (tableName === TICKET_TABLE_NAME && isBuiltIn && start > (currentView.rows?.length || 0)) return data;
+
           const newData = deepcopy(data);
-          let _table = newData[tableName] || deepcopy(EMPTY_TABLE);
-          newData[tableName] = {
-            ..._table,
-            id_row_map,
-            key_column_map,
-            [viewMapName]: view_map,
-            linked_records,
-            linked_github_issue_state_map,
-            related_users: relatedUsers,
+          const newTable = newData[tableName] || deepcopy(EMPTY_TABLE);
+          const rowIds = is_reload ? [] : [...(currentView.rows || [])];
+          rows.forEach(row => {
+            const rowId = String(row._pk);
+            if (!rowIds.includes(rowId)) rowIds.push(rowId);
+            newTable.id_row_map[rowId] = { ...newTable.id_row_map[rowId], ...row };
+          });
+          columns.forEach(column => {
+            newTable.key_column_map[column.key] = column;
+          });
+          newTable[viewMapName][view_id] = {
+            ...currentView,
+            rows: rowIds,
+            columns: columns.map(column => column.key),
+            timestamp: Date.now(),
+            has_more: rows.length >= limit,
+            ...(isMyTicketsView && { isUnfiltered: res.data.isUnfiltered, usesDefaultSort: res.data.usesDefaultSort }),
           };
+          newTable.linked_records = { ...newTable.linked_records, ...linkedRecords };
+          newTable.linked_github_issue_state_map = { ...newTable.linked_github_issue_state_map, ...linkedRecordsGithubState };
+          newTable.related_users = relatedUsers;
+          newData[tableName] = newTable;
 
           if (tableName !== TICKET_TABLE_NAME && tableName !== KB_TABLE_NAME && data[TICKET_TABLE_NAME]) {
             const ticketTable = newData[TICKET_TABLE_NAME];
@@ -341,7 +435,8 @@ export const DataProvider = ({
       return func();
     }
 
-    if (!is_reload && view && start < view?.rows?.length && !shouldReload(view.timestamp)) {
+    const isCompleteEmptyList = isMyTicketsView && start === 0 && view.rows?.length === 0 && view.has_more === false;
+    if (!is_reload && (start < view.rows?.length || isCompleteEmptyList) && !shouldReload(view.timestamp)) {
       func = () => new Promise((resolve, reject) => {
         if (tableName !== TICKET_TABLE_NAME && tableName !== KB_TABLE_NAME && data[TICKET_TABLE_NAME]) {
           const ticketTable = data[TICKET_TABLE_NAME];
@@ -382,24 +477,14 @@ export const DataProvider = ({
   const modifyLocalRows = useCallback((tableName, rowsUpdate = []) => {
     if (!tableName) return;
     if (!Array.isArray(rowsUpdate) || rowsUpdate.length === 0) return;
-    let table = data[tableName];
-    if (!table) return;
-    let id_row_map_update = {};
-    rowsUpdate.forEach(rowUpdate => {
-      const { row_id, row } = rowUpdate;
-      const rowIdString = row_id + '';
-      const oldRow = table.id_row_map[rowIdString] || {};
-      let oldValue = {};
-      Object.keys(row).forEach((key) => {
-        oldValue[key] = oldRow[key];
-      });
-      if (!ObjectUtils.isSameObject(oldValue, row)) {
-        id_row_map_update[rowIdString] = { ...oldRow, ...row };
-      }
+    setData(data => {
+      const table = data[tableName];
+      if (!table) return data;
+      const newTable = updateCachedRows(tableName, table, rowsUpdate);
+      if (newTable === table) return data;
+      return { ...data, [tableName]: newTable, version: data.version + 1 };
     });
-    if (Object.keys(id_row_map_update).length === 0) return;
-    updateTable(tableName, { id_row_map: { ...table.id_row_map, ...id_row_map_update } });
-  }, [data, updateTable]);
+  }, []);
 
   const modifyLocalRow = useCallback((tableName, rowId, rowUpdate) => {
     modifyLocalRows(tableName, [{ row_id: rowId, row: rowUpdate }]);
@@ -632,21 +717,18 @@ export const DataProvider = ({
   const insertRowByLink = useCallback((linkedTableName, tableName, linkedRecord, rowId, rowData, callback) => {
     if (!linkedTableName || !tableName) return;
     setData(data => {
-      let newData = initDataWithInsertRow(data, linkedTableName);
-      let table = newData[tableName];
-      if (table) {
-        table.linked_records = { ...table.linked_records, ...linkedRecord };
-        const rowIdString = rowId + '';
-        const row = table.id_row_map[rowIdString];
-        table.id_row_map[rowIdString] = { ...row, ...rowData };
-        newData[tableName] = table;
-
-        if (data.version !== newData.version) {
-          newData.version = newData.version + 1;
-        }
-      }
+      const newData = initDataWithInsertRow(data, linkedTableName);
+      const table = newData[tableName];
       setTimeout(() => callback && callback(), 0);
-      return newData;
+      if (!table) return newData;
+      return {
+        ...newData,
+        [tableName]: {
+          ...updateCachedRows(tableName, table, [{ row_id: rowId, row: rowData }]),
+          linked_records: { ...table.linked_records, ...linkedRecord },
+        },
+        version: data.version + 1,
+      };
     });
   }, [initDataWithInsertRow]);
 

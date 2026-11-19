@@ -17,6 +17,7 @@ import { KNOWLEDGE_PAGE_SLUG_ID } from './main-panel/knowledge-base/constants';
 import { PORTAL_ISSUE_PAGE_SLUG_ID } from './main-panel/portal-issues/constants';
 import { TICKET_PAGE_SLUG_ID } from './main-panel/tickets/constants';
 import SidePanel from './side-panel';
+import { getMyTicketsBar, getMyTicketsScope, getMyTicketsURL } from './utils';
 
 import './index.css';
 
@@ -29,13 +30,19 @@ const Project = () => {
 
   const resetURL = useCallback((isKeepSearch, [bar], ...children) => {
     const { origin, search } = location;
-    let url = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${bar}/`;
+    const projectURL = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/`;
+    const scope = getMyTicketsScope(bar);
+    if (scope) {
+      history.replaceState(null, null, getMyTicketsURL(projectURL, scope, isKeepSearch ? search : ''));
+      return;
+    }
+
+    let url = `${projectURL}${bar}/`;
     const validChildren = children.filter(i => i);
     if ((bar === BAR_TYPE.TICKET || bar === BAR_TYPE.CONNECTION || bar === BAR_TYPE.CHAT || bar === BAR_TYPE.KNOWLEDGE || bar === BAR_TYPE.PORTAL_ISSUES || bar === BAR_TYPE.SKILLS) && validChildren.length > 0) {
       url = url + validChildren.join('/') + '/';
     }
     if ((bar === BAR_TYPE.TICKET
-      || bar === BAR_TYPE.MY_TICKET
       || bar === BAR_TYPE.CONNECTION
       || bar === BAR_TYPE.KNOWLEDGE
       || bar === BAR_TYPE.PORTAL_ISSUES
@@ -104,8 +111,8 @@ const Project = () => {
         }
         return;
       }
-      if (activeBarKey === BAR_TYPE.MY_TICKET) {
-        if (!location.pathname.endsWith('my-tickets/')) {
+      if (getMyTicketsScope(activeBarKey)) {
+        if (!location.pathname.endsWith(`/${BAR_TYPE.MY_TICKET}/`)) {
           eventBus.dispatch(EVENT_BUS_TYPE.TICKET_PAGE, TICKET_PAGE_SLUG_ID.ALL);
         }
         return;
@@ -154,7 +161,7 @@ const Project = () => {
   }, [settings]);
 
   useEffect(() => {
-    const { pathname } = location;
+    const { pathname, search } = location;
     const decodePathname = decodeURIComponent(pathname);
     const part = `/project/${projectName}/`;
     const projectNameIndex = decodePathname.indexOf(part);
@@ -162,6 +169,9 @@ const Project = () => {
     const params = paramsString.split('/');
     let [barKey, ...children] = params;
     let bar = Object.values(BAR_TYPE).includes(barKey) ? barKey : BAR_TYPE.CHAT;
+    if (bar === BAR_TYPE.MY_TICKET) {
+      bar = getMyTicketsBar(search);
+    }
     // Activate the bar when the knowledge trash page refreshes
     if (bar === BAR_TYPE.KNOWLEDGE && children[0] === KNOWLEDGE_PAGE_SLUG_ID.TRASH) {
       bar = BAR_TYPE.KNOWLEDGE_TRASH;
