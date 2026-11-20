@@ -171,6 +171,7 @@ const RunLogs = ({
               <RunLog
                 key={key}
                 runLog={log}
+                isShowLogs={isShowLogs}
                 active={key === activeLogKey}
                 onClick={() => handleClick(key)}
                 onRemove={() => removeRunLog(key)}
