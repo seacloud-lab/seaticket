@@ -786,7 +786,7 @@ input.short-input {
   color: var(--bs-text-danger);
 }
 
-.password-reset-panel-wrapper .login-form-wrapper .btn-block {
+.password-reset-panel-wrapper .login-form-wrapper .btn-login {
   height: 40px;
   margin-top: 16px;
 }
@@ -867,7 +867,7 @@ input.short-input {
   margin-top: 4px;
 }
 
-.org-register-panel-wrapper .login-form-wrapper .btn-block {
+.org-register-panel-wrapper .login-form-wrapper .btn-login {
   height: 40px;
   margin-top: 24px;
 }
@@ -944,7 +944,7 @@ input.short-input {
   color: var(--bs-text-danger);
 }
 
-.individual-register-panel-wrapper .login-form-wrapper .btn-block {
+.individual-register-panel-wrapper .login-form-wrapper .btn-login {
   height: 40px;
   margin-top: 24px;
 }
@@ -1044,19 +1044,19 @@ input.short-input {
   user-select: none;
 }
 
-/* login-panel, multi-saml-sso-panel, password-reset-panel --btn-block style */
-.login-panel-wrapper .login-form-wrapper .btn-block,
-.multi-saml-sso-panel-wrapper .login-form-wrapper .btn-block {
+/* login-panel, multi-saml-sso-panel, password-reset-panel --btn-login style */
+.login-panel-wrapper .login-form-wrapper .btn-login,
+.multi-saml-sso-panel-wrapper .login-form-wrapper .btn-login {
   height: 40px;
   margin-top: 0px;
 }
 
-.login-panel-wrapper .login-form-wrapper .btn-block:focus,
-.multi-saml-sso-panel-wrapper .login-form-wrapper .btn-block:focus,
-.password-reset-panel-wrapper .login-form-wrapper .btn-block:focus,
-.individual-register-panel-wrapper .login-form-wrapper .btn-block:focus,
-.org-register-panel-wrapper .login-form-wrapper .btn-block:focus,
-.portal-login-panel-wrapper .login-form-wrapper .btn-block:focus {
+.login-panel-wrapper .login-form-wrapper .btn-login:focus,
+.multi-saml-sso-panel-wrapper .login-form-wrapper .btn-login:focus,
+.password-reset-panel-wrapper .login-form-wrapper .btn-login:focus,
+.individual-register-panel-wrapper .login-form-wrapper .btn-login:focus,
+.org-register-panel-wrapper .login-form-wrapper .btn-login:focus,
+.portal-login-panel-wrapper .login-form-wrapper .btn-login:focus {
   border-color: var(--bs-primary);
 }
 
@@ -1113,7 +1113,7 @@ input.short-input {
   color: var(--bs-body-secondary-color);
 }
 
-.portal-login-panel-wrapper .login-form-wrapper .btn-block {
+.portal-login-panel-wrapper .login-form-wrapper .btn-login {
   height: 40px;
   margin-top: 0px;
 }
