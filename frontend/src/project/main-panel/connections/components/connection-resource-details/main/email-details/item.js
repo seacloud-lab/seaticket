@@ -53,11 +53,11 @@ const ParticipantsCategory = ({ category, value, isShowEmail = true }) => {
 };
 
 const Item = ({
-  isLast, isExpand,
+  isLast, isExpand: initIsExpanded,
   detail, projectUuid, connection_id, setIsLastExpanded, recordId, permission,
   handleReplyEmailSuccess, onUnreadChange, isPortal = false, threadId,
 }) => {
-  const [isExpanded, setIsExpanded] = useState(isExpand);
+  const [isExpanded, setIsExpanded] = useState(initIsExpanded);
   const [isShowReply, setIsShowReply] = useState(false);
   const [isUpdatingUnread, setIsUpdatingUnread] = useState(false);
   const [isParticipantsExpanded, setIsParticipantsExpanded] = useState(false);
@@ -142,27 +142,16 @@ const Item = ({
     }
   }, []);
 
-  const openExpanded = useCallback(() => {
-    setIsExpanded(true);
-  }, []);
-
-  const closeExpanded = useCallback(() => {
-    setIsExpanded(false);
-    // setIsParticipantsExpanded(false);
-  }, []);
-
   const openReply = useCallback((event) => {
     if (isReadonly || isPortal) return;
     event.stopPropagation();
     event.nativeEvent.stopImmediatePropagation();
-    // setIsParticipantsExpanded(false);
     setIsShowReply(true);
   }, [isPortal, isReadonly]);
 
   const openReplyByEmail = useCallback((sendTo = '') => {
     if (isReadonly || isPortal) return;
     replySendTo.current = sendTo;
-    // setIsParticipantsExpanded(false);
     setIsShowReply(true);
   }, [isPortal, isReadonly]);
 
@@ -278,6 +267,7 @@ const Item = ({
   }, [emailTo, emailCc, isParticipantsExpanded, isExpanded, toggleParticipantsExpanded]);
 
   const renderParticipantsDetails = useCallback(() => {
+    if (!isExpanded || isShowReply) return null;
     if (!isParticipantsExpanded) return null;
     return (
       <div
@@ -291,20 +281,19 @@ const Item = ({
         )}
       </div>
     );
-  }, [isParticipantsExpanded, detail, emailTo, emailCc]);
+  }, [isExpanded, isShowReply, isParticipantsExpanded, detail, emailTo, emailCc]);
 
   const renderSimpleInfo = useCallback(() => {
-    const isShowEmailContent = isExpand && !isShowReply;
-    const simpleInfo = isShowEmailContent ? '' : contentStart;
+    const simpleInfo = isExpanded ? '' : contentStart;
     return (
       <div className="email-record-info-container">
         <span className="email-record-info-sender text-truncate" title={detail['email_from']}>{sender}</span>
         <span className="email-record-info-content text-truncate" title={simpleInfo}>{simpleInfo}</span>
-        {!isShowEmailContent && isUnread && <div className="read-status unread" />}
+        {(!isExpanded || isShowReply) && isUnread && <div className="read-status unread" />}
         <DateFormatter value={detail.modified_time} className="email-record-info-time" />
       </div>
     );
-  }, [isExpand, isShowReply, contentStart, detail, sender, isUnread]);
+  }, [isExpanded, isShowReply, contentStart, detail, sender, isUnread]);
 
   const renderParticipantsAndOp = useCallback(() => {
     return (
@@ -331,9 +320,9 @@ const Item = ({
     );
   }, [isExpanded, isPortal, isReadonly, isShowReply, isUnread, isUpdatingUnread, openReply, renderParticipants, toggleUnread]);
 
-  const renderEmailHeader = useCallback((callback) => {
+  const renderEmailHeader = useCallback(() => {
     return (
-      <div className="email-header" onClick={callback}>
+      <div className="email-header" onClick={() => setIsExpanded(value => !value)}>
         <div className="email-header-content">
           <div className="email-avatar">
             <img alt='' src={`${mediaUrl}avatars/default.png`}/>
@@ -380,44 +369,40 @@ const Item = ({
     expandedRef.current.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
   }, []);
 
-  if (!isExpanded || isShowReply) {
-    return (
-      <>
-        <div
-          className={classnames('seaqa-connection-email-record-details collapsed', { 'seaqa-connection-resource-highlight': detail.highlight })}
-        >
-          {renderEmailHeader(openExpanded)}
-        </div>
-        {isShowReply && (<>{renderReply()}</>)}
-      </>
-    );
-  }
-
   return (
-    <div
-      className={classnames('seaqa-connection-email-record-details expanded', { 'seaqa-connection-resource-highlight': detail.highlight })}
-      ref={expandedRef}
-    >
-      {renderEmailHeader(closeExpanded)}
-      <div className="email-body" ref={ref}>
-        {isHTMLContent ? (
-          <HTMLContentWrapper
-            projectUuid={projectUuid}
-            connectionId={connection_id}
-            recordId={detail._pk}
-            threadId={threadId}
-            isPortal={isPortal}
-            detail={detail}
-            value={detailContent}
-            isReadonly={isReadonly}
-            className="email-content-detail"
-            openReplyByEmail={isPortal || isReadonly ? () => {} : openReplyByEmail}
-          />
-        ) : (
-          <CustomizeMarkdownViewer value={detailContent} onLinkClick={onLinkClick} />
+    <>
+      <div
+        className={classnames('seaqa-connection-email-record-details', {
+          'seaqa-connection-resource-highlight': detail.highlight,
+          'collapsed': !isExpanded || isShowReply,
+          'expanded': isExpanded && !isShowReply,
+        })}
+        ref={detail.highlight ? expandedRef : null}
+      >
+        {renderEmailHeader()}
+        {isExpanded && !isShowReply && (
+          <div className="email-body" ref={ref}>
+            {isHTMLContent ? (
+              <HTMLContentWrapper
+                projectUuid={projectUuid}
+                connectionId={connection_id}
+                recordId={detail._pk}
+                threadId={threadId}
+                isPortal={isPortal}
+                detail={detail}
+                value={detailContent}
+                isReadonly={isReadonly}
+                className="email-content-detail"
+                openReplyByEmail={isPortal || isReadonly ? () => {} : openReplyByEmail}
+              />
+            ) : (
+              <CustomizeMarkdownViewer value={detailContent} onLinkClick={onLinkClick} />
+            )}
+          </div>
         )}
       </div>
-    </div>
+      {isShowReply && (<>{renderReply()}</>)}
+    </>
   );
 };
 
