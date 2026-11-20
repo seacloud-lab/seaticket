@@ -1,6 +1,7 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { Button } from 'reactstrap';
 import SeaEmailEditor from '@seafile/sea-email-editor';
+import classnames from 'classnames';
 import { Icon, IconTooltip, Loading, toaster } from '@/components';
 import { gettext } from '@/constants';
 import { areArraysEqual } from '@/utils/array-utils';
@@ -15,6 +16,7 @@ const ReplyEmail = ({
   initValue,
   isHtmlValue,
   assetURLPrefix,
+  className,
   onToggle,
   onSubmit,
 }) => {
@@ -68,7 +70,7 @@ const ReplyEmail = ({
   }, [emailContent, initialEmailCC, initialEmailTo, initValue, onToggle, onSubmit]);
 
   return (
-    <div className="seaqa-email-reply-container">
+    <div className={classnames('seaqa-email-reply-container', className)}>
       <div className="seaqa-email-reply-header">
         <Button color="primary" className="seaqa-email-reply-send-btn" size="sm" disabled={isSubmitting} onClick={handleSubmit}>
           {isSubmitting ? (<Loading />) : (<Icon symbol="send-stroked" />)}

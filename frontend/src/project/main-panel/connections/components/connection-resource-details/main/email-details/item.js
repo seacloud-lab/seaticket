@@ -17,11 +17,7 @@ import './index.css';
 const EmailUser = ({ emailAddress, isShowEmail = true }) => {
   const { username, email } = parseEmailAddress(emailAddress);
   return (
-    <span
-      title={emailAddress}
-      className="font-size-14"
-      onClick={(event) => {event.stopPropagation(); event.nativeEvent.stopImmediatePropagation();}}
-    >
+    <span title={emailAddress} className="font-size-14">
       {(isShowEmail && username) ? (
         <>
           <span>{username}</span>
@@ -147,6 +143,7 @@ const Item = ({
     event.stopPropagation();
     event.nativeEvent.stopImmediatePropagation();
     setIsShowReply(true);
+    setIsExpanded(false);
   }, [isPortal, isReadonly]);
 
   const openReplyByEmail = useCallback((sendTo = '') => {
@@ -226,13 +223,14 @@ const Item = ({
       <ReplyEmail
         emailTo={[replySendTo.current || detail['email_from']]}
         initValue={initValue}
+        className={isExpanded ? 'mt-0' : ''}
         onToggle={() => setIsShowReply(false)}
         onSubmit={onSubmit}
         isHtmlValue={isHTMLContent}
         assetURLPrefix={assetURLPrefix}
       />
     );
-  }, [detail, isHTMLContent, detailContent, sender, projectUuid, connection_id, onSubmit]);
+  }, [detail, isHTMLContent, isExpanded, detailContent, sender, projectUuid, connection_id, onSubmit]);
 
   const onLinkClick = useCallback((link) => {
     if (!link || !isString(link)) return;
@@ -249,7 +247,9 @@ const Item = ({
     const isValidCc = Array.isArray(emailCc) && emailCc.length > 0;
     return (
       <div className={classnames('email-record-info-participants gap-1 mr-2', { 'cc-invalid': !isValidCc })}>
-        <ParticipantsCategory category={gettext('To')} value={emailTo} isShowEmail={false} />
+        {Array.isArray(emailTo) && emailTo.length > 0 && (
+          <ParticipantsCategory category={gettext('To')} value={emailTo} isShowEmail={false} />
+        )}
         {isValidCc && (
           <ParticipantsCategory category={gettext('Cc')} value={emailCc} isShowEmail={false} />
         )}
@@ -267,7 +267,7 @@ const Item = ({
   }, [emailTo, emailCc, isParticipantsExpanded, isExpanded, toggleParticipantsExpanded]);
 
   const renderParticipantsDetails = useCallback(() => {
-    if (!isExpanded || isShowReply) return null;
+    if (!isExpanded) return null;
     if (!isParticipantsExpanded) return null;
     return (
       <div
@@ -275,13 +275,15 @@ const Item = ({
         onClick={(event) => {event.stopPropagation();event.nativeEvent?.stopImmediatePropagation?.();}}
       >
         <ParticipantsCategory category={gettext('From')} value={[detail['email_from']]} isShowEmail={true} />
-        <ParticipantsCategory category={gettext('To')} value={emailTo} isShowEmail={true} />
+        {Array.isArray(emailTo) && emailTo.length > 0 && (
+          <ParticipantsCategory category={gettext('To')} value={emailTo} isShowEmail={true} />
+        )}
         {Array.isArray(emailCc) && emailCc.length > 0 && (
           <ParticipantsCategory category={gettext('Cc')} value={emailCc} isShowEmail={true} />
         )}
       </div>
     );
-  }, [isExpanded, isShowReply, isParticipantsExpanded, detail, emailTo, emailCc]);
+  }, [isExpanded, isParticipantsExpanded, detail, emailTo, emailCc]);
 
   const renderSimpleInfo = useCallback(() => {
     const simpleInfo = isExpanded ? '' : contentStart;
@@ -289,17 +291,17 @@ const Item = ({
       <div className="email-record-info-container">
         <span className="email-record-info-sender text-truncate" title={detail['email_from']}>{sender}</span>
         <span className="email-record-info-content text-truncate" title={simpleInfo}>{simpleInfo}</span>
-        {(!isExpanded || isShowReply) && isUnread && <div className="read-status unread" />}
+        {!isExpanded && isUnread && <div className="read-status unread" />}
         <DateFormatter value={detail.modified_time} className="email-record-info-time" />
       </div>
     );
-  }, [isExpanded, isShowReply, contentStart, detail, sender, isUnread]);
+  }, [isExpanded, contentStart, detail, sender, isUnread]);
 
   const renderParticipantsAndOp = useCallback(() => {
     return (
       <div className="email-record-info-participants-container gap-1">
         {renderParticipants()}
-        {!isReadonly && !isPortal && !isShowReply && (
+        {!isReadonly && !isPortal && (
           <>
             {isExpanded && (
               <IconTooltip
@@ -313,7 +315,9 @@ const Item = ({
                 <div className={classnames('read-status', { unread: isUnread })}/>
               </IconTooltip>
             )}
-            <IconTextBtn icon="reply" color="default" text={gettext('Reply')} className="h-5" onClick={openReply} />
+            {!isShowReply && (
+              <IconTextBtn icon="reply" color="default" text={gettext('Reply')} className="h-5" onClick={openReply} />
+            )}
           </>
         )}
       </div>
@@ -322,8 +326,8 @@ const Item = ({
 
   const renderEmailHeader = useCallback(() => {
     return (
-      <div className="email-header" onClick={() => setIsExpanded(value => !value)}>
-        <div className="email-header-content">
+      <div className="email-header">
+        <div className="email-header-content" onClick={() => setIsExpanded(value => !value)}>
           <div className="email-avatar">
             <img alt='' src={`${mediaUrl}avatars/default.png`}/>
           </div>
@@ -338,7 +342,7 @@ const Item = ({
   }, [renderParticipantsAndOp, renderParticipantsDetails, renderSimpleInfo]);
 
   useEffect(() => {
-    if (!isExpanded || isShowReply) return;
+    if (!isExpanded) return;
     let timer = null;
     if (HTMLContent) {
       addQuoteToggleBtn();
@@ -351,7 +355,7 @@ const Item = ({
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [isExpanded, HTMLContent, isShowReply, addQuoteToggleBtn]);
+  }, [isExpanded, HTMLContent, addQuoteToggleBtn]);
 
   useEffect(() => {
     if (!isLast) return;
@@ -374,13 +378,13 @@ const Item = ({
       <div
         className={classnames('seaqa-connection-email-record-details', {
           'seaqa-connection-resource-highlight': detail.highlight,
-          'collapsed': !isExpanded || isShowReply,
-          'expanded': isExpanded && !isShowReply,
+          'collapsed': !isExpanded,
+          'expanded': isExpanded,
         })}
         ref={detail.highlight ? expandedRef : null}
       >
         {renderEmailHeader()}
-        {isExpanded && !isShowReply && (
+        {isExpanded && (
           <div className="email-body" ref={ref}>
             {isHTMLContent ? (
               <HTMLContentWrapper
