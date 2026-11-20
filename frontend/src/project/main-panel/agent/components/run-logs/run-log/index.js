@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef } from 'react';
+import React, { useCallback, useLayoutEffect, useRef } from 'react';
 import classnames from 'classnames';
 import { IconButton } from '@/components';
 import { gettext } from '@/constants';
@@ -10,22 +10,46 @@ import ResourceTitle from '../../resource-title';
 
 import './index.css';
 
-const RunLog = ({ active, runLog, onClick, onRemove }) => {
+const RunLog = ({ active, runLog, isShowLogs, onClick, onRemove }) => {
   const { key, num_of_runs, last_active_at, status } = runLog;
   const runLogRef = useRef(null);
+  const hasRequestedRemovalRef = useRef(false);
+
+  const onTransitionEnd = useCallback((event) => {
+    if (
+      runLog.isFiltered &&
+      isShowLogs &&
+      !hasRequestedRemovalRef.current &&
+      event.target === event.currentTarget &&
+      event.propertyName === 'height'
+    ) {
+      hasRequestedRemovalRef.current = true;
+      onRemove();
+    }
+  }, [isShowLogs, runLog, onRemove]);
 
   useLayoutEffect(() => {
-    if (!runLog.isFiltered || !runLogRef.current) return;
+    if (!runLog.isFiltered) {
+      hasRequestedRemovalRef.current = false;
+      return;
+    }
+    if (!isShowLogs || !runLogRef.current) return;
 
     const runLogElement = runLogRef.current;
     runLogElement.style.height = `${runLogElement.getBoundingClientRect().height}px`;
     runLogElement.getBoundingClientRect();
+    let isAnimationActive = true;
     const animationFrame = requestAnimationFrame(() => {
+      if (!isAnimationActive) return;
       runLogElement.style.height = '0';
     });
 
-    return () => cancelAnimationFrame(animationFrame);
-  }, [runLog.isFiltered]);
+    return () => {
+      isAnimationActive = false;
+      cancelAnimationFrame(animationFrame);
+      runLogElement.style.removeProperty('height');
+    };
+  }, [runLog.isFiltered, isShowLogs]);
 
   let runsTip = num_of_runs + ' ' + gettext('Runs');
   if (num_of_runs === 0) runsTip = '';
@@ -40,12 +64,10 @@ const RunLog = ({ active, runLog, onClick, onRemove }) => {
       ref={runLogRef}
       className={classnames('seaqa-agent-run-log w-100 d-flex flex-column position-relative', {
         'active': active,
-        'seaqa-agent-run-log-filtered': runLog.isFiltered
+        'seaqa-agent-run-log-filtered': runLog.isFiltered && isShowLogs
       })}
       onClick={onClick}
-      onTransitionEnd={(event) => {
-        if (event.target === event.currentTarget && event.propertyName === 'height') onRemove();
-      }}
+      onTransitionEnd={onTransitionEnd}
     >
       <div className="seaqa-agent-run-log-header d-flex align-items-center">
         <div className="seaqa-agent-run-log-resource-icon d-flex justify-content-center align-items-center">
