@@ -7,7 +7,6 @@
   position: relative;
   display: flex;
   align-items: center;
-  padding-right: 10px;
   background-color: #fff;
   border: 1px solid var(--bs-border-secondary-color);
   border-radius: 8px;
@@ -15,7 +14,18 @@
 }
 
 .seaqa-connection-email-record-details .email-header {
-  padding: 6px 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 6px 10px 6px 0;
+}
+
+.seaqa-connection-email-record-details .email-header .email-header-content {
+  cursor: pointer;
+  display: flex;
+  width: 100%;
+  overflow: hidden;
+  /* padding: 6px 10px 6px 0; */
 }
 
 .seaqa-connection-email-record-details .email-avatar {
@@ -65,6 +75,7 @@
   white-space: nowrap;
   display: inline-flex;
   align-items: center;
+  line-height: 24px;
 }
 
 .seaqa-connection-email-record-details .email-record-info-participants .email-record-info-participants-category {
@@ -127,33 +138,27 @@
   border-color: #fc6440;
 }
 
+.seaqa-connection-email-record-details .email-record-info-participants-details-container {
+  padding-left: 60px;
+}
+
 /* collapsed */
 .seaqa-connection-email-record-details.collapsed {
   margin-bottom: -27px;
   cursor: pointer;
-  padding: 6px 0;
   align-items: flex-start;
-  padding-right: 10px;
 }
 
 /* expanded */
 .seaqa-connection-email-record-details.expanded {
   flex-direction: column;
   margin-bottom: 16px;
-  padding-right: 0;
   box-shadow: 0 3px 8px rgba(16, 19, 24, .1);
   scroll-margin-top: 16px;
 }
 
 .seaqa-connection-email-record-details.expanded:last-child {
   margin-bottom: 0;
-}
-
-.seaqa-connection-email-record-details.expanded .email-header {
-  display: flex;
-  width: 100%;
-  padding-right: 10px;
-  cursor: pointer;
 }
 
 .seaqa-connection-email-record-details.expanded .email-record-info .email-record-info-sender {
