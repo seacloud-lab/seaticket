@@ -48,7 +48,7 @@ import './index.css';
 
 const Ticket = ({
   editorAPI, projectUuid, ticketID, permission, isAdmin, projectName, workspaceID,
-  togglePageSlugId
+  togglePageSlugId,
 }) => {
   const [isLoading, setLoading] = useState(true);
   const [comment, setComment] = useState('');

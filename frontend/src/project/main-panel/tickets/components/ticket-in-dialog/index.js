@@ -16,6 +16,7 @@ import context from '@/sea-metadata/context';
 import { getRowById, convertRowToKeyValue } from '@/sea-metadata/utils/row';
 import { isSmallContainer } from '@/utils/dialog';
 import eventBus from '@/utils/event-bus';
+import { isFunction } from '@/utils/type-detection';
 import { Utils } from '@/utils/utils';
 import { TICKET_TYPE, PREDEFINED_TICKET_COLUMN_NAME, TICKET_TABLE_NAME } from '../../constants';
 import { useCloseLinkedIssues } from '../../hooks';
@@ -25,6 +26,7 @@ import {
   generatorLinkedRecordsForClosedGitHubIssues,
 } from '../../utils';
 import Comment from '../comment';
+import TicketLog from '../ticket-log';
 import {
   CollaboratorsSettings, TypeSettings, PrioritySettings,
   StateSettings, SubStateSettings, DueDateSettings, LinkSettings
@@ -41,10 +43,12 @@ const TicketInDialog = ({
   ticketType = TICKET_TYPE,
   isReadonly = false,
   getTicket = (projectUuid, ticketID) => ticketsAPI.getProjectTicket(projectUuid, ticketID),
+  getActivities = (projectUuid, ticketID) => ticketsAPI.listProjectTicketActivities(projectUuid, ticketID),
 }) => {
   const [isLoading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
   const [ticket, setTicket] = useState(null);
+  const [logs, setLogs] = useState([]);
   const [containerWidth, setContainerWidth] = useState(0);
   const [linkedRecords, setLinkedRecords] = useState({});
   const { getTableByName, modifyLocalRow } = useData();
@@ -67,6 +71,22 @@ const TicketInDialog = ({
     };
     return !isReadonly && (ticket.creator === user.email || permission === PERMISSION_TYPES.READ_WRITE);
   }, [ticket, permission, isReadonly]);
+
+  // Merge comments and logs into an activities
+  const activities = useMemo(() => {
+    if (!ticket) return [];
+    const { comments = [] } = ticket;
+    const items = [
+      ...comments.map(c => ({ ...c, type: 'comment' })),
+      ...logs.map(a => ({ ...a, type: 'log' }))
+    ];
+    // use original time for sorting: comments use _created_time, logs use created_time
+    return items.sort((a, b) => {
+      const timeA = a.type === 'comment' ? a._created_time : a.created_time;
+      const timeB = b.type === 'comment' ? b._created_time : b.created_time;
+      return new Date(timeA) - new Date(timeB);
+    });
+  }, [ticket, logs]);
 
   const handleUpdateRowsCacheData = useCallback((currentTicketID, update) => {
     const tableName = ticketType === TICKET_TYPE ? TICKET_TABLE_NAME : PORTAL_ISSUE_TABLE_NAME;
@@ -235,6 +255,7 @@ const TicketInDialog = ({
     setLoading(true);
     setErrorMessage(null);
     setTicket(null);
+    setLogs([]);
     getTicket(projectUuid, ticketID).then(res => {
       const ticket = ticketType === TICKET_TYPE ? new TicketModel(res.data.ticket) : new IssueModel(res.data.issue);
       setTicket(ticket);
@@ -247,6 +268,18 @@ const TicketInDialog = ({
     }).finally(() => {
       setLoading(false);
     });
+
+    if (ticketType !== TICKET_TYPE) return;
+
+    // Load activities
+    isFunction(getActivities) && getActivities(projectUuid, ticketID).then(res => {
+      setLogs(res?.data?.activities || []);
+    }).catch(error => {
+      // Activities loading failure is not critical
+      // eslint-disable-next-line no-console
+      console.error('Failed to load activities:', error);
+    });
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectUuid, ticketID, ticketType]);
 
@@ -284,7 +317,7 @@ const TicketInDialog = ({
   const isSmallSize = isSmallContainer(containerWidth);
   const isPortalIssue = ticketType !== TICKET_TYPE;
 
-  const { state, comments = [], assignees = [], type, tags, priority, participants = [], substate, due_date } = ticket;
+  const { state, assignees = [], type, tags, priority, participants = [], substate, due_date } = ticket;
   return (
     <div className={classnames('seaqa-project-ticket seaqa-project-ticket-in-dialog', { 's': isSmallSize })} ref={ticketRef}>
       <div className="seaqa-project-ticket-content-wrapper">
@@ -292,17 +325,31 @@ const TicketInDialog = ({
           <Comment
             isSmallScreen={isSmallSize}
             comment={ticket}
+            className={classnames({ 'd-none-after': activities.length === 0 })}
             isShowStatus={true}
             readonly={true}
             lang={lang}
           />
-          {comments.map(comment => {
+          {activities.map((log, index) => {
+            const className = classnames({ 'd-none-after': index === (activities.length - 1) });
+            if (log.type === 'log') {
+              return (
+                <TicketLog
+                  key={`ticket-log-${log.id}`}
+                  log={log}
+                  projectUuid={projectUuid}
+                  className={className}
+                  isSmallScreen={isSmallSize}
+                  permission={permission}
+                />
+              );
+            }
             return (
               <Comment
-                key={comment.id}
+                key={log.id}
                 isSmallScreen={isSmallSize}
                 readonly={true}
-                comment={comment}
+                comment={log}
                 projectUuid={projectUuid}
               />
             );
