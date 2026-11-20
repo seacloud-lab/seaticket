@@ -222,10 +222,7 @@ class ProjectConnectionsView(APIView):
 
         new_records = []
         for record in records:
-            record_info = record.to_dict()
-            if not is_project_admin:
-                record_info.pop('config')
-            new_records.append(record_info)
+            new_records.append(record.to_dict(is_admin=is_project_admin))
 
 
         return Response({'records': new_records}, status=status.HTTP_200_OK)
@@ -359,7 +356,7 @@ class ProjectConnectionsView(APIView):
             email_oauth_data.pop('expires_at', None)
             EmailOAuthUtils.set_oauth_session(request, request.POST.get('oauth_state'), email_oauth_data)
 
-        return Response({'record': record.to_dict()}, status=status.HTTP_201_CREATED)
+        return Response({'record': record.to_dict(is_admin=True)}, status=status.HTTP_201_CREATED)
 
 
 class ProjectEmailOAuthQueryView(APIView):
@@ -403,7 +400,7 @@ class ProjectEmailOAuthQueryView(APIView):
             record = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id) if connection_id else None
             if not record:
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Connection information not found.')
-            response_data['record'] = record.to_dict()
+            response_data['record'] = record.to_dict(is_admin=True)
 
         return Response(response_data)
 
@@ -492,7 +489,7 @@ class ProjectGithubConnectionsView(APIView):
             }
             add_connection_sync_task(params)
 
-            records.append(record.to_dict())
+            records.append(record.to_dict(is_admin=True))
         return Response({'records': records}, status=status.HTTP_201_CREATED)
 
 
@@ -522,7 +519,8 @@ class ProjectConnectionView(APIView):
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        return Response({'record': project_connection.to_dict()}, status=status.HTTP_200_OK)
+        is_project_admin = check_project_admin_permission(username, workspace.owner)
+        return Response({'record': project_connection.to_dict(is_admin=is_project_admin)}, status=status.HTTP_200_OK)
 
     @require_org_context
     def put(self, request, project_uuid, connection_id):
@@ -586,7 +584,7 @@ class ProjectConnectionView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        return Response({'record': record.to_dict()}, status=status.HTTP_200_OK)
+        return Response({'record': record.to_dict(is_admin=True)}, status=status.HTTP_200_OK)
 
     @require_org_context
     def delete(self, request, project_uuid, connection_id):

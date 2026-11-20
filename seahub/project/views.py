@@ -67,12 +67,21 @@ def project_view(request, workspace_id, project_name, children_id = '', record_i
         project_settings = json.loads(project.settings) if project.settings else {}
     except ValueError:
         project_settings = {}
-    project_settings = json.dumps(merge_project_settings_defaults(project_settings))
 
     is_project_admin = check_project_admin_permission(request.user.username, workspace.owner)
     permission = check_project_permission(request.user.username, workspace.owner)
     if not permission:
         return render_error(request, _('Permission denied'))
+
+    if is_project_admin:
+        project_settings = merge_project_settings_defaults(project_settings)
+    else:
+        safe_settings = merge_project_settings_defaults(project_settings)
+        project_settings = {
+            'portal': {'enable_portal': safe_settings.get('portal', {}).get('enable_portal', False)},
+            'agent': {'enabled': safe_settings['agent'].get('enabled', False)},
+        }
+    project_settings = json.dumps(project_settings)
 
     url_name = request.resolver_match.url_name
     if url_name in ['project_portal_settings_view', 'project_settings_view'] and not is_project_admin:
