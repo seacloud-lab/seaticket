@@ -1,10 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Modal, ModalBody } from 'reactstrap';
 import { Collaborator, ModalHeader } from '@/components';
 import { gettext, PERMISSION_TYPES } from '@/constants';
 import { portalAPI } from '@/portal/api';
-import { BAR_TYPE } from '@/project/constants';
 import { TICKET_STATE_OPTIONS } from '@/project/main-panel/tickets/constants';
+import { getInternalNetworkAddress } from '@/project/utils';
 import SeaMetadata, { CellType } from '@/sea-metadata';
 import NumberFormatter from '@/sea-metadata/components/cell-formatter/number';
 import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
@@ -94,26 +94,19 @@ const EMAIL_COLUMNS = [
   },
 ];
 
-const CustomerEmailsModal = ({ projectUuid, customer, onClose, toggleBar }) => {
+const CustomerEmailsModal = ({ projectUuid, customer, onClose }) => {
   const metadataContainerRef = useRef(null);
   const metadataContentWidthRef = useRef(0);
-  const pendingThreadRef = useRef(null);
-  const [isOpen, setIsOpen] = useState(true);
 
   const openThread = useCallback((record) => {
-    pendingThreadRef.current = record;
-    setIsOpen(false);
+    const { workspaceID, projectName } = window.app.pageOptions;
+    const threadURL = getInternalNetworkAddress('connection', record.thread_id, {
+      workspaceID,
+      projectName,
+      connectionID: record.connection_id,
+    });
+    window.open(threadURL, '_blank', 'noopener,noreferrer');
   }, []);
-
-  const handleClosed = useCallback(() => {
-    const record = pendingThreadRef.current;
-    onClose();
-    if (record) {
-      toggleBar([BAR_TYPE.CONNECTION, record.connection_id, 'records', record.thread_id]);
-    }
-  }, [onClose, toggleBar]);
-
-  const closeModal = useCallback(() => setIsOpen(false), []);
 
   const listAPI = useMemo(() => ({
     getMetadata: ({ start = 0, limit = 1000 } = {}) => portalAPI.listCustomerEmails(
@@ -172,8 +165,8 @@ const CustomerEmailsModal = ({ projectUuid, customer, onClose, toggleBar }) => {
   }, []);
 
   return (
-    <Modal isOpen={isOpen} toggle={closeModal} onClosed={handleClosed} className="portal-customer-emails-dialog">
-      <ModalHeader toggle={closeModal}>
+    <Modal isOpen={true} toggle={onClose} className="portal-customer-emails-dialog">
+      <ModalHeader toggle={onClose}>
         {gettext('Emails for {customer}').replace('{customer}', customer.name)}
       </ModalHeader>
       <ModalBody>

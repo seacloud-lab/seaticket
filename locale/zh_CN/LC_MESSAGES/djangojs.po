@@ -2604,10 +2604,10 @@ msgstr "加载客户失败"
 msgid "Failed to load customer details"
 msgstr "加载客户详情失败"
 
-#: frontend/src/portal/main-panel/user-management.js:132
-#: frontend/src/project/main-panel/portal-customers-users/index.js:216
-msgid "Link generated"
-msgstr "链接已生成"
+#: frontend/src/portal/main-panel/user-management.js
+#: frontend/src/project/main-panel/portal-customers-users/index.js
+msgid "Invitation sent"
+msgstr "邀请已发送"
 
 #: frontend/src/portal/main-panel/user-management.js:140
 #: frontend/src/project/main-panel/portal-customers-users/index.js:220

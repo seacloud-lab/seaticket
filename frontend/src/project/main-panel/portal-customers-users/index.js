@@ -22,7 +22,7 @@ const Tabs = {
   USERS: 'users',
 };
 
-const PortalCustomersUsers = ({ title, toggleBar }) => {
+const PortalCustomersUsers = ({ title }) => {
   const { projectUuid } = window.app.pageOptions;
   const {
     createCustomer: createCustomerData,
@@ -215,7 +215,7 @@ const PortalCustomersUsers = ({ title, toggleBar }) => {
   const inviteUser = useCallback((email, customerId, name, onSuccess) => {
     setSubmitting(true);
     portalAPI.createExternalInvitation(projectUuid, email, customerId, name).then(() => {
-      toaster.success(gettext('Link generated'));
+      toaster.success(gettext('Invitation sent'));
       onSuccess();
       loadInvitations();
       loadUsers();
@@ -385,7 +385,6 @@ const PortalCustomersUsers = ({ title, toggleBar }) => {
           projectUuid={projectUuid}
           customer={customerToViewEmails}
           onClose={() => setCustomerToViewEmails(null)}
-          toggleBar={toggleBar}
         />
       )}
       {customerToDelete && (

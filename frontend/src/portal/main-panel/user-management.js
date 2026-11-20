@@ -129,7 +129,7 @@ const UserManagement = ({ projectUuid }) => {
     if (!inviteEmail || !name.trim()) return;
     setSubmitting(true);
     portalAPI.createExternalInvitation(projectUuid, inviteEmail, selectedInviteCustomerId || null, name.trim()).then(() => {
-      toaster.success(gettext('Link generated'));
+      toaster.success(gettext('Invitation sent'));
       loadInvites();
       loadUsers();
       setName('');
