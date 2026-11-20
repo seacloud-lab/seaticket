@@ -215,7 +215,7 @@ const PortalCustomersUsers = ({ title }) => {
   const inviteUser = useCallback((email, customerId, name, onSuccess) => {
     setSubmitting(true);
     portalAPI.createExternalInvitation(projectUuid, email, customerId, name).then(() => {
-      toaster.success(gettext('Link generated'));
+      toaster.success(gettext('Invitation sent'));
       onSuccess();
       loadInvitations();
       loadUsers();

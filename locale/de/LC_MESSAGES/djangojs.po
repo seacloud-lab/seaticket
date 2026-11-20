@@ -2604,10 +2604,10 @@ msgstr "Kunden konnten nicht geladen werden"
 msgid "Failed to load customer details"
 msgstr "Kundendetails konnten nicht geladen werden"
 
-#: frontend/src/portal/main-panel/user-management.js:132
-#: frontend/src/project/main-panel/portal-customers-users/index.js:216
-msgid "Link generated"
-msgstr "Link generiert"
+#: frontend/src/portal/main-panel/user-management.js
+#: frontend/src/project/main-panel/portal-customers-users/index.js
+msgid "Invitation sent"
+msgstr "Einladung gesendet"
 
 #: frontend/src/portal/main-panel/user-management.js:140
 #: frontend/src/project/main-panel/portal-customers-users/index.js:220

@@ -2629,9 +2629,7 @@ msgstr ""
 msgid "Failed to load customer details"
 msgstr ""
 
-#: frontend/src/portal/main-panel/user-management.js:132
-#: frontend/src/project/main-panel/portal-customers-users/index.js:216
-msgid "Link generated"
+msgid "Invitation sent"
 msgstr ""
 
 #: frontend/src/portal/main-panel/user-management.js:140
