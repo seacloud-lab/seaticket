@@ -549,7 +549,7 @@ class PortalChatView(APIView):
         if not isinstance(clear_context, bool):
             return api_error(status.HTTP_400_BAD_REQUEST, 'clear_context invalid.')
 
-        stream = request.project.to_dict()['settings'].get('streaming_response', True)
+        stream = request.project.get_settings().get('streaming_response', True)
         stream_from_request = request.data.get('stream')
         if stream_from_request is not None:
             if isinstance(stream_from_request, str):

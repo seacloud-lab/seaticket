@@ -1715,10 +1715,12 @@ def test_portal_issue_query_uses_customer_id_without_returning_it():
 
 
 @pytest.mark.django_db
-def test_customer_id_cannot_be_changed_by_bulk_issue_update(factory, project_creator, real_project):
+def test_bulk_issue_update_only_applies_explicitly_supported_fields(factory, project_creator, real_project):
     request = factory.put(
         f'/api/v1/portal/{real_project.uuid}/issues/',
-        data={'issues_data': [{'row_id': 10, 'row': {'title': 'Updated', 'customer_id': 99}}]},
+        data={'issues_data': [{'row_id': 10, 'row': {
+            'title': 'Updated', 'customer_id': 99, 'state': 'closed', 'substate': 'Resolved',
+        }}]},
         format='json',
     )
     request.user = project_creator
@@ -1731,5 +1733,7 @@ def test_customer_id_cannot_be_changed_by_bulk_issue_update(factory, project_cre
 
     assert response.status_code == 200
     updated_row = seadb_api.update_rows.call_args[0][2][0]['row']
-    assert updated_row['title'] == 'Updated'
+    assert updated_row['state'] == 'closed'
+    assert updated_row['substate'] == 'Resolved'
+    assert 'title' not in updated_row
     assert 'customer_id' not in updated_row

@@ -503,7 +503,7 @@ class ProjectView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        return Response({"project": project.to_dict()}, status=status.HTTP_200_OK)
+        return Response({"project": project.to_dict(is_admin=True)}, status=status.HTTP_200_OK)
 
     @require_org_context
     def delete(self, request, workspace_id):

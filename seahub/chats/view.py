@@ -481,7 +481,7 @@ class ChatView(APIView):
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
         
-        stream = project.to_dict()['settings'].get('streaming_response', True)
+        stream = project.get_settings().get('streaming_response', True)
         stream_from_request = request.data.get('stream')
         if stream_from_request is not None:
             if isinstance(stream_from_request, str):

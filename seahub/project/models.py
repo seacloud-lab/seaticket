@@ -338,11 +338,15 @@ class Projects(models.Model):
         unique_together = (('workspace', 'name'),)
         db_table = 'projects'
 
-    def to_dict(self, include_deleted=False):
+    def get_settings(self):
         try:
             settings = json.loads(self.settings) if self.settings else {}
         except (TypeError, ValueError, json.JSONDecodeError):
             settings = {}
+
+        return merge_project_settings_defaults(settings)
+
+    def to_dict(self, include_deleted=False, is_admin=False):
         result = {
             'id': self.pk,
             'workspace_id': self.workspace_id,
@@ -354,8 +358,9 @@ class Projects(models.Model):
             'text_color': self.text_color,
             'icon': self.icon,
             'is_encrypted': self.is_encrypted(),
-            'settings': merge_project_settings_defaults(settings),
         }
+        if is_admin:
+            result['settings'] = self.get_settings()
         if include_deleted:
             result.update({
                 'deleted': self.deleted,
@@ -611,12 +616,11 @@ class ProjectConnections(models.Model):
     class Meta:
         db_table = 'project_connection'
 
-    def to_dict(self):
-        return {
+    def to_dict(self, is_admin=False):
+        result = {
             'id': self.id,
             'name': self.name,
             'type': self.type,
-            'config': decrypt_config(json.loads(self.config)),
             'modifier': self.modifier,
             'created_at': self.created_at,
             'indexed_at': self.indexed_at,
@@ -629,6 +633,9 @@ class ProjectConnections(models.Model):
             'content_vector_indexed_at': self.content_vector_indexed_at,
             'content_vector_status': self.content_vector_status
         }
+        if is_admin:
+            result['config'] = decrypt_config(json.loads(self.config))
+        return result
 
 
 class ConnectionsView(object):

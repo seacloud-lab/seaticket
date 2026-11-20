@@ -18,6 +18,7 @@ from seahub.api2.endpoints.project import (
 )
 from seahub.constants import PERMISSION_READ_WRITE
 from seahub.organizations.models import OrgGroup
+from seahub.group.models import GroupUser
 from seahub.project.constants import ConnectionType
 from seahub.project.models import Projects, Workspaces
 from seahub.utils import uuid_str_to_32_chars
@@ -51,6 +52,37 @@ class TestWorkspacesView:
         assert personal_workspace is not None
         assert personal_workspace.get('type') == 'personal'
         assert any(p.get('id') == project.id for p in personal_workspace.get('projects', []))
+
+    def test_get_group_member_does_not_receive_project_settings(self, factory, project_creator):
+        group_owner = f'owner-{project_creator.username}'
+        group_member = project_creator.username
+        group = OrgGroup.objects.create_org_group(1, f'group-{group_member}', group_owner)
+        GroupUser.objects.group_add_member(group.group_id, group_member)
+        workspace = Workspaces.objects.create(owner=f'{group.group_id}@seafile_group', org_id=1)
+        project = Projects.objects.create_project(group_owner, workspace, 'private-settings')
+        project.settings = json.dumps({'prompt': 'internal prompt', 'portal': {'password': 'encrypted-password'}})
+        project.save(update_fields=['settings'])
+
+        request = factory.get('/api/v1/workspaces/')
+        request.user = project_creator
+        response = WorkspacesView.as_view()(request)
+
+        assert response.status_code == 200
+        group_workspace = next(item for item in response.data['workspace_list'] if item.get('group_id') == group.group_id)
+        serialized_project = next(item for item in group_workspace['projects'] if item['id'] == project.id)
+        assert 'settings' not in serialized_project
+
+    def test_get_project_owner_does_not_receive_project_settings(self, factory, project_creator, real_project):
+        real_project.settings = json.dumps({'prompt': 'admin prompt'})
+        real_project.save(update_fields=['settings'])
+        request = factory.get('/api/v1/workspaces/')
+        request.user = project_creator
+
+        response = WorkspacesView.as_view()(request)
+
+        personal_workspace = next(item for item in response.data['workspace_list'] if item.get('id') == real_project.workspace_id)
+        serialized_project = next(item for item in personal_workspace['projects'] if item['id'] == real_project.id)
+        assert 'settings' not in serialized_project
 
     def test_get_non_org_context_returns_403(self, factory, no_org_user):
         request = factory.get('/api/v1/workspaces/')
@@ -111,6 +143,7 @@ class TestProjectsView:
 
         assert resp.status_code == 201
         assert 'project' in resp.data
+        assert 'settings' not in resp.data['project']
         assert Projects.objects.filter(workspace=workspace, name='new-proj', deleted=False).exists()
 
 
@@ -558,6 +591,7 @@ class TestTrashProjectsView:
         assert resp.status_code == 200
         assert resp.data['count'] >= 1
         assert isinstance(resp.data.get('trash_project_list'), list)
+        assert all('settings' not in item for item in resp.data['trash_project_list'])
 
 
 @pytest.mark.django_db
