@@ -103,15 +103,15 @@
 				</label>
 				{% endif %}
 
-				<button type="submit" class="submit btn btn-primary btn-block">{% trans "Log in" %}</button>
+				<button type="submit" class="submit btn btn-primary btn-login w-100">{% trans "Log in" %}</button>
 			</form>
 
 			{% if enable_sso %}
-			<a id="sso" href="#" class="btn btn-secondary btn-sso btn-block">{% trans "Single Sign-On" %}</a>
+			<a id="sso" href="#" class="btn btn-secondary btn-sso btn-login w-100">{% trans "Single Sign-On" %}</a>
 			{% endif %}
 
 			{% if enable_multi_saml %}
-			<a id="multi_saml_sso" href="#" class="btn btn-secondary btn-sso btn-block">{% trans "Single Sign-On" %}</a>
+			<a id="multi_saml_sso" href="#" class="btn btn-secondary btn-sso btn-login w-100">{% trans "Single Sign-On" %}</a>
 			{% endif %}
 
 			{% if enable_signup %}
