@@ -5,6 +5,7 @@ import pytest
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.hashers import make_password
 from django.core.cache import cache
+from django.contrib.sessions.backends.db import SessionStore
 
 from seahub.portal.apis import PortalExternalInvitationsView, PortalExternalLoginSendCodeView, \
     PortalExternalLoginVerifyCodeView, PortalExternalUsersView
@@ -13,6 +14,7 @@ from seahub.portal.models import PortalExternalInvitation, ProjectExternalUser
 from seahub.portal.permissions import get_request_external_user
 from seahub.portal.utils import clear_portal_external_login_state, get_portal_external_login_code_key
 from seahub.portal.views import _get_external_session_user
+from seahub.settings import LOGIN_REMEMBER_DAYS
 
 
 @pytest.fixture
@@ -247,16 +249,27 @@ class TestPortalExternalUserAccess:
         assert 'portal_external_username' not in request.session
 
     @pytest.mark.parametrize('activated', [True, False])
+    @pytest.mark.parametrize('remember_me', [True, False])
     def test_user_can_login_and_activate(
-            self, factory, real_project, external_user, login_code, activated):
+            self, factory, real_project, external_user, login_code, activated, remember_me):
         external_user.activated = activated
         external_user.save(update_fields=['activated'])
-        request = factory.post('/', data={'email': external_user.email, 'code': '123456'}, format='json')
+        request = factory.post(
+            '/', data={
+                'email': external_user.email,
+                'code': '123456',
+                'remember_me': remember_me,
+            }, format='json',
+        )
+        request.session = SessionStore()
 
         response = PortalExternalLoginVerifyCodeView.as_view()(request, project_uuid=str(real_project.uuid))
 
         assert response.status_code == 200
         assert request.session['portal_external_username'] == external_user.username
+        assert request.session.get('_session_expiry') == (
+            LOGIN_REMEMBER_DAYS * 24 * 60 * 60 if remember_me else None
+        )
         external_user.refresh_from_db()
         assert external_user.activated is True
 

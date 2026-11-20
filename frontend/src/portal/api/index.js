@@ -115,8 +115,8 @@ class PortalAPI {
     return this._sendPostRequest(url, form);
   }
 
-  listMyEmails(projectUuid, { start = 0, limit = 1000 } = {}) {
-    const url = this.server + '/api/v1/portal/' + projectUuid + '/my-emails/';
+  listTeamEmails(projectUuid, { start = 0, limit = 1000 } = {}) {
+    const url = this.server + '/api/v1/portal/' + projectUuid + '/team-emails/';
     return this.req.get(url, { params: { start, limit } });
   }
 

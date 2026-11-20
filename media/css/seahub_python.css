@@ -1021,7 +1021,8 @@ input.short-input {
 
 /* login-panel, multi-saml-sso-panel, --login-form-pass-member style */
 .login-panel-wrapper .login-form-wrapper .login-form-pass-member,
-.multi-saml-sso-panel-wrapper .login-form-wrapper .login-form-pass-member {
+.multi-saml-sso-panel-wrapper .login-form-wrapper .login-form-pass-member,
+.portal-login-panel-wrapper .login-form-wrapper .login-form-pass-member {
   margin: 12px 0px 32px;
   font-size: 14px;
   font-weight: 400;
@@ -1030,12 +1031,14 @@ input.short-input {
 }
 
 .login-panel-wrapper .login-form-wrapper .login-form-pass-member .remember-input,
-.multi-saml-sso-panel-wrapper .login-form-wrapper .login-form-pass-member .remember-input {
+.multi-saml-sso-panel-wrapper .login-form-wrapper .login-form-pass-member .remember-input,
+.portal-login-panel-wrapper .login-form-wrapper .login-form-pass-member .remember-input {
   cursor: pointer;
 }
 
 .login-panel-wrapper .login-form-wrapper .login-form-pass-member .remember-me-text,
-.multi-saml-sso-panel-wrapper .login-form-wrapper .login-form-pass-member .remember-me-text {
+.multi-saml-sso-panel-wrapper .login-form-wrapper .login-form-pass-member .remember-me-text,
+.portal-login-panel-wrapper .login-form-wrapper .login-form-pass-member .remember-me-text {
   margin-left: 8px;
   cursor: pointer;
   user-select: none;

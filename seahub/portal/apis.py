@@ -73,6 +73,7 @@ from seahub.portal.portal_utils import get_portal_issue, get_portal_issue_commen
     send_portal_issue_update_msg, send_portal_issue_data_update_msg, check_portal_issue_comment_creation_interval
 
 from seahub.seadb_models.models import SchemaTables
+from seahub.settings import LOGIN_REMEMBER_DAYS
 
 logger = logging.getLogger(__name__)
 
@@ -731,7 +732,7 @@ class PortalMyIssuesView(APIView):
         })
 
 
-class PortalMyEmailsView(APIView):
+class PortalTeamEmailsView(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = (PortalEmailPermission,)
     throttle_classes = (UserRateThrottle,)
@@ -3299,6 +3300,8 @@ class PortalExternalLoginVerifyCodeView(APIView):
         clear_portal_external_login_state(project_uuid, email)
         request.session['portal_external_username'] = ext_user.username
         request.session['portal_external_project_uuid'] = project_uuid
+        if request.data.get('remember_me'):
+            request.session.set_expiry(LOGIN_REMEMBER_DAYS * 24 * 60 * 60)
         return Response({
             'success': True,
             'redirect_url': portal_path(request, project_uuid),

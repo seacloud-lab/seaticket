@@ -18,7 +18,13 @@ from seahub.portal.utils import (
     PORTAL_DOMAIN_TYPE_SERVICE_ALIAS,
     set_portal_preview_session,
 )
-from seahub.portal.views import portal_accounts_login_view, portal_external_logout_view, portal_view
+from seahub.portal.views import (
+    _get_portal_login_context,
+    portal_accounts_login_view,
+    portal_external_logout_view,
+    portal_view,
+)
+from seahub.settings import LOGIN_REMEMBER_DAYS
 
 
 def process_portal_domain_request(request):
@@ -62,6 +68,13 @@ def enable_portal(project, allow_anonymous=False):
     settings_dict['portal'] = portal
     project.settings = json.dumps(settings_dict)
     project.save(update_fields=['settings'])
+
+
+@pytest.mark.django_db
+def test_portal_login_context_includes_remember_days(real_project):
+    context = _get_portal_login_context(None, real_project, {})
+
+    assert context['remember_days'] == LOGIN_REMEMBER_DAYS
 
 
 @pytest.mark.django_db

@@ -1930,7 +1930,7 @@ msgstr "Benutzer hinzufügen"
 
 #: frontend/src/org-admin/users/add-user-dialog.js:109
 #: frontend/src/org-admin/users/invite-user-dialog.js:54
-#: frontend/src/portal/main-panel/my-emails/index.js:276
+#: frontend/src/portal/main-panel/team-emails/index.js:276
 #: frontend/src/portal/main-panel/user-management.js:278
 #: frontend/src/portal/main-panel/user-management/invite-users-page.js:44
 #: frontend/src/portal/main-panel/user-management/invite-users-page.js:70
@@ -2134,7 +2134,7 @@ msgid "Chat"
 msgstr "Chat"
 
 #: frontend/src/portal/constants.js:42
-#: frontend/src/portal/main-panel/my-emails/index.js:277
+#: frontend/src/portal/main-panel/team-emails/index.js:277
 #: frontend/src/project/main-panel/connections/constants.js:510
 msgid "Emails"
 msgstr "E-Mails"
@@ -2247,8 +2247,8 @@ msgid "Hey 👋, how can we help?"
 msgstr "Hallo 👋, wie können wir helfen?"
 
 #: frontend/src/portal/main-panel/index.js:83
-msgid "My emails"
-msgstr "Meine E-Mails"
+msgid "Team emails"
+msgstr "Team-E-Mails"
 
 #: frontend/src/portal/main-panel/knowledge-base/constants.js:19
 #: frontend/src/portal/main-panel/submit-issue.js:181
@@ -2338,7 +2338,7 @@ msgid "Last modifier"
 msgstr "Letzter Bearbeiter"
 
 #: frontend/src/portal/main-panel/knowledge-base/constants.js:51
-#: frontend/src/portal/main-panel/my-emails/index.js:91
+#: frontend/src/portal/main-panel/team-emails/index.js:91
 #: frontend/src/project/main-panel/connections/constants.js:695
 #: frontend/src/project/main-panel/connections/constants.js:1076
 #: frontend/src/project/main-panel/knowledge-base/constants.js:52
@@ -2394,20 +2394,20 @@ msgstr "Eintrag"
 msgid "Records"
 msgstr "Einträge"
 
-#: frontend/src/portal/main-panel/my-emails/index.js:16
+#: frontend/src/portal/main-panel/team-emails/index.js:16
 msgid "All emails"
 msgstr "Alle E-Mails"
 
-#: frontend/src/portal/main-panel/my-emails/index.js:45
+#: frontend/src/portal/main-panel/team-emails/index.js:45
 #: frontend/src/project/main-panel/connections/constants.js:894
 msgid "Subject"
 msgstr "Betreff"
 
-#: frontend/src/portal/main-panel/my-emails/index.js:55
+#: frontend/src/portal/main-panel/team-emails/index.js:55
 msgid "Ticket #"
 msgstr "Ticket #"
 
-#: frontend/src/portal/main-panel/my-emails/index.js:64
+#: frontend/src/portal/main-panel/team-emails/index.js:64
 #: frontend/src/project/main-panel/agent/components/run-log-details/run-details/action/suggestion-action/index.js:78
 #: frontend/src/project/main-panel/analyze/components/settings-panel/index.js:29
 #: frontend/src/project/main-panel/analyze/index.js:90
@@ -2421,7 +2421,7 @@ msgstr "Ticket #"
 msgid "State"
 msgstr "Status"
 
-#: frontend/src/portal/main-panel/my-emails/index.js:73
+#: frontend/src/portal/main-panel/team-emails/index.js:73
 #: frontend/src/project/main-panel/agent/components/run-log-details/suggestion-detail-panel/ticket-detail/index.js:100
 #: frontend/src/project/main-panel/connections/components/connection-resource-details/others/general-task-details/index.js:67
 #: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:166
@@ -2436,7 +2436,7 @@ msgstr "Status"
 msgid "Assignees"
 msgstr "Zuständige"
 
-#: frontend/src/portal/main-panel/my-emails/index.js:82
+#: frontend/src/portal/main-panel/team-emails/index.js:82
 #: frontend/src/project/main-panel/connections/constants.js:826
 #: frontend/src/project/main-panel/connections/constants.js:1031
 #: frontend/src/project/main-panel/connections/constants.js:1067
@@ -2446,21 +2446,21 @@ msgstr "Zuständige"
 msgid "Due date"
 msgstr "Fälligkeitsdatum"
 
-#: frontend/src/portal/main-panel/my-emails/index.js:127
+#: frontend/src/portal/main-panel/team-emails/index.js:127
 msgid "Unable to load this email thread."
 msgstr "Konnte diese E-Mail-Thread nicht laden."
 
-#: frontend/src/portal/main-panel/my-emails/index.js:181
+#: frontend/src/portal/main-panel/team-emails/index.js:181
 msgid "No emails.\n"
 "Support emails from your team will appear here."
 msgstr "Keine E-Mails.\n"
 "Support-E-Mails von Ihrem Team erscheinen hier."
 
-#: frontend/src/portal/main-panel/my-emails/index.js:274
+#: frontend/src/portal/main-panel/team-emails/index.js:274
 msgid "email"
 msgstr "E-Mail"
 
-#: frontend/src/portal/main-panel/my-emails/index.js:275
+#: frontend/src/portal/main-panel/team-emails/index.js:275
 msgid "emails"
 msgstr "E-Mails"
 

@@ -24,7 +24,7 @@ from seahub import settings
 from seahub.project.utils import check_project_admin_permission, check_same_org_permission
 from seahub.utils import render_error
 from seahub.auth.decorators import login_required
-from seahub.settings import MEDIA_URL
+from seahub.settings import LOGIN_REMEMBER_DAYS, MEDIA_URL
 from seahub.avatar.templatetags.avatar_tags import api_avatar_url
 
 SEAQA_VERSION = getattr(settings, 'SEAQA_VERSION', 'Dev')
@@ -76,6 +76,7 @@ def _get_portal_login_context(request, project, portal_settings):
         'portal_name': portal_settings.get('portal_name', ''),
         'portal_logo': portal_settings.get('portal_logo', ''),
         'media_url': MEDIA_URL,
+        'remember_days': LOGIN_REMEMBER_DAYS,
     }
 
 
