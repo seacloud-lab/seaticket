@@ -1,4 +1,3 @@
-export { default as TicketLog } from './ticket-log';
 export { default as Comment } from './comment';
 export { default as Option } from '../../../components/option';
 export { default as OptionDialog } from '../../../components/option-dialog';

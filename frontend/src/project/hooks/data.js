@@ -721,10 +721,11 @@ export const DataProvider = ({
       const table = newData[tableName];
       setTimeout(() => callback && callback(), 0);
       if (!table) return newData;
+      const rowUpdate = isFunction(rowData) ? rowData(table.id_row_map?.[rowId]) : rowData;
       return {
         ...newData,
         [tableName]: {
-          ...updateCachedRows(tableName, table, [{ row_id: rowId, row: rowData }]),
+          ...updateCachedRows(tableName, table, [{ row_id: rowId, row: rowUpdate }]),
           linked_records: { ...table.linked_records, ...linkedRecord },
         },
         version: data.version + 1,

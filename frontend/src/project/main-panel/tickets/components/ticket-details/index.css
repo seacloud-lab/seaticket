@@ -1,0 +1,105 @@
+.seaqa-project-ticket-details {
+  display: flex;
+  width: 100%;
+  padding: 16px 0 50px 0;
+}
+
+.seaqa-project-ticket-details .seaqa-project-ticket-comment-container-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: calc((100% - 24px) * 0.7);
+}
+
+.seaqa-project-ticket-details .sf-long-text-inline-editor-container:has(*:focus) {
+  border-color: var(--bs-custom-select-focus-border-color);
+}
+
+.seaqa-project-ticket-details .sf-slate-viewer-scroll-container {
+  overflow-x: hidden;
+  width: 100%;
+  padding: 0;
+}
+
+.seaqa-project-ticket-details .sf-slate-viewer-scroll-container .sf-slate-article-content {
+  width: 100%;
+}
+
+.seaqa-project-ticket-details .sf-slate-viewer-scroll-container .sf-slate-viewer-article-container {
+  width: 100%;
+  margin: 0;
+}
+
+.seaqa-project-ticket-details .sf-slate-viewer-scroll-container .article {
+  height: auto;
+  max-width: 100%;
+  min-height: 100%;
+  width: 100%;
+  padding: 10px 16px 24px 16px !important;
+  background-color: #FDFDFD;
+  border: unset;
+}
+
+.seaqa-project-ticket-details .seaqa-project-ticket-comment.seaqa-project-ticket-add-comment .seaqa-project-ticket-comment-container {
+  border: none;
+  border-radius: 0;
+}
+
+.seaqa-project-ticket-details .seaqa-project-ticket-comment.seaqa-project-ticket-add-comment .seaqa-project-ticket-comment-op {
+  height: 38px;
+  padding-left: 0;
+  padding-top: 0;
+  padding-bottom: 6px;
+  background-color: transparent;
+  border-bottom: none;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 32px;
+  color: inherit;
+}
+
+.seaqa-project-ticket-details .seaqa-project-ticket-footer {
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.seaqa-project-ticket-details .seaqa-project-ticket-footer .seaqa-project-ticket-submit-btns {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  justify-content: flex-end;
+  min-width: fit-content;
+  margin-top: 16px;
+}
+
+/* small */
+.seaqa-project-ticket-details.s {
+  flex-direction: column;
+}
+
+.seaqa-project-ticket-details.s .seaqa-project-ticket-comment-container-wrapper {
+  width: 100%;
+  padding-bottom: 50px;
+}
+
+.seaqa-project-ticket-details.s .seaqa-project-ticket-other-settings {
+  width: 100%;
+  margin-left: 0;
+}
+
+.seaqa-project-ticket-details.s .seaqa-project-ticket-footer {
+  padding-left: 0;
+}
+
+.seaqa-project-ticket-details.s .seaqa-project-ticket-footer .seaqa-project-ticket-submit-btns {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  margin-left: 0 !important;
+}
+
+/* not display timeline */
+.seaqa-project-ticket-details.d-none-timeline .seaqa-project-ticket-comment::after,
+.seaqa-project-ticket-details.d-none-timeline .seaqa-log::after {
+  display: none;
+}

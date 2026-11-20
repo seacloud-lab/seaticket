@@ -75,6 +75,7 @@
 
 .seaqa-project-new-ticket.s .seaqa-project-ticket-other-settings {
   width: 100%;
+  margin-left: 0;
 }
 
 .seaqa-project-new-ticket.s .seaqa-project-ticket-other-settings .seaqa-settings-item:last-child {
