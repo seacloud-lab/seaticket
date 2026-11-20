@@ -22,7 +22,7 @@ const Tabs = {
   USERS: 'users',
 };
 
-const PortalCustomersUsers = ({ title, toggleBar }) => {
+const PortalCustomersUsers = ({ title }) => {
   const { projectUuid } = window.app.pageOptions;
   const {
     createCustomer: createCustomerData,
@@ -385,7 +385,6 @@ const PortalCustomersUsers = ({ title, toggleBar }) => {
           projectUuid={projectUuid}
           customer={customerToViewEmails}
           onClose={() => setCustomerToViewEmails(null)}
-          toggleBar={toggleBar}
         />
       )}
       {customerToDelete && (
