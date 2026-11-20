@@ -148,21 +148,21 @@ const Item = ({
 
   const closeExpanded = useCallback(() => {
     setIsExpanded(false);
-    setIsParticipantsExpanded(false);
+    // setIsParticipantsExpanded(false);
   }, []);
 
   const openReply = useCallback((event) => {
     if (isReadonly || isPortal) return;
     event.stopPropagation();
     event.nativeEvent.stopImmediatePropagation();
-    setIsParticipantsExpanded(false);
+    // setIsParticipantsExpanded(false);
     setIsShowReply(true);
   }, [isPortal, isReadonly]);
 
   const openReplyByEmail = useCallback((sendTo = '') => {
     if (isReadonly || isPortal) return;
     replySendTo.current = sendTo;
-    setIsParticipantsExpanded(false);
+    // setIsParticipantsExpanded(false);
     setIsShowReply(true);
   }, [isPortal, isReadonly]);
 
@@ -264,21 +264,26 @@ const Item = ({
         {isValidCc && (
           <ParticipantsCategory category={gettext('Cc')} value={emailCc} isShowEmail={false} />
         )}
-        <IconButton
-          icon="arrow-down-b"
-          className={classnames('d-inline-flex', { 'rotate-icon-180': isParticipantsExpanded })}
-          aria-label={isParticipantsExpanded ? gettext('Collapse') : gettext('Expand')}
-          aria-expanded={isParticipantsExpanded}
-          onClick={toggleParticipantsExpanded}
-        />
+        {isExpanded && (
+          <IconButton
+            icon="arrow-down-b"
+            className={classnames('d-inline-flex', { 'rotate-icon-180': isParticipantsExpanded })}
+            aria-label={isParticipantsExpanded ? gettext('Collapse') : gettext('Expand')}
+            aria-expanded={isParticipantsExpanded}
+            onClick={toggleParticipantsExpanded}
+          />
+        )}
       </div>
     );
-  }, [emailTo, emailCc, isParticipantsExpanded, toggleParticipantsExpanded]);
+  }, [emailTo, emailCc, isParticipantsExpanded, isExpanded, toggleParticipantsExpanded]);
 
   const renderParticipantsDetails = useCallback(() => {
     if (!isParticipantsExpanded) return null;
     return (
-      <div className="email-record-info-participants-details-container w-100 d-flex flex-column gap-1 mt-1">
+      <div
+        className="email-record-info-participants-details-container w-100 d-flex flex-column gap-1 mt-1"
+        onClick={(event) => {event.stopPropagation();event.nativeEvent?.stopImmediatePropagation?.();}}
+      >
         <ParticipantsCategory category={gettext('From')} value={[detail['email_from']]} isShowEmail={true} />
         <ParticipantsCategory category={gettext('To')} value={emailTo} isShowEmail={true} />
         {Array.isArray(emailCc) && emailCc.length > 0 && (
@@ -287,6 +292,61 @@ const Item = ({
       </div>
     );
   }, [isParticipantsExpanded, detail, emailTo, emailCc]);
+
+  const renderSimpleInfo = useCallback(() => {
+    const isShowEmailContent = isExpand && !isShowReply;
+    const simpleInfo = isShowEmailContent ? '' : contentStart;
+    return (
+      <div className="email-record-info-container">
+        <span className="email-record-info-sender text-truncate" title={detail['email_from']}>{sender}</span>
+        <span className="email-record-info-content text-truncate" title={simpleInfo}>{simpleInfo}</span>
+        {!isShowEmailContent && isUnread && <div className="read-status unread" />}
+        <DateFormatter value={detail.modified_time} className="email-record-info-time" />
+      </div>
+    );
+  }, [isExpand, isShowReply, contentStart, detail, sender, isUnread]);
+
+  const renderParticipantsAndOp = useCallback(() => {
+    return (
+      <div className="email-record-info-participants-container gap-1">
+        {renderParticipants()}
+        {!isReadonly && !isPortal && !isShowReply && (
+          <>
+            {isExpanded && (
+              <IconTooltip
+                className={classnames('email-record-read-status-wrapper', { disabled: isUpdatingUnread })}
+                placement="bottom"
+                icon=""
+                hoverBackground={true}
+                tip={isUnread ? gettext('Mark Read') : gettext('Mark unread')}
+                onClick={toggleUnread}
+              >
+                <div className={classnames('read-status', { unread: isUnread })}/>
+              </IconTooltip>
+            )}
+            <IconTextBtn icon="reply" color="default" text={gettext('Reply')} className="h-5" onClick={openReply} />
+          </>
+        )}
+      </div>
+    );
+  }, [isExpanded, isPortal, isReadonly, isShowReply, isUnread, isUpdatingUnread, openReply, renderParticipants, toggleUnread]);
+
+  const renderEmailHeader = useCallback((callback) => {
+    return (
+      <div className="email-header" onClick={callback}>
+        <div className="email-header-content">
+          <div className="email-avatar">
+            <img alt='' src={`${mediaUrl}avatars/default.png`}/>
+          </div>
+          <div className="email-record-info">
+            {renderSimpleInfo()}
+            {renderParticipantsAndOp()}
+          </div>
+        </div>
+        {renderParticipantsDetails()}
+      </div>
+    );
+  }, [renderParticipantsAndOp, renderParticipantsDetails, renderSimpleInfo]);
 
   useEffect(() => {
     if (!isExpanded || isShowReply) return;
@@ -325,26 +385,8 @@ const Item = ({
       <>
         <div
           className={classnames('seaqa-connection-email-record-details collapsed', { 'seaqa-connection-resource-highlight': detail.highlight })}
-          onClick={openExpanded}
         >
-          <div className="email-avatar">
-            <img alt='' src={`${mediaUrl}avatars/default.png`}/>
-          </div>
-          <div className="email-record-info">
-            <div className="email-record-info-container">
-              <span className="email-record-info-sender text-truncate" title={detail['email_from']}>{sender}</span>
-              <span className="email-record-info-content text-truncate" title={contentStart}>{contentStart}</span>
-              {isUnread && <div className="read-status unread" />}
-              <DateFormatter value={detail.modified_time} className="email-record-info-time" />
-            </div>
-            <div className="email-record-info-participants-container gap-1">
-              {renderParticipants()}
-              {!isReadonly && !isPortal && !isShowReply && (
-                <IconTextBtn icon="reply" color="default" text={gettext('Reply')} className="h-5" onClick={openReply} />
-              )}
-            </div>
-            {renderParticipantsDetails()}
-          </div>
+          {renderEmailHeader(openExpanded)}
         </div>
         {isShowReply && (<>{renderReply()}</>)}
       </>
@@ -356,37 +398,7 @@ const Item = ({
       className={classnames('seaqa-connection-email-record-details expanded', { 'seaqa-connection-resource-highlight': detail.highlight })}
       ref={expandedRef}
     >
-      <div className="email-header" onClick={closeExpanded}>
-        <div className="email-avatar">
-          <img alt='' src={`${mediaUrl}avatars/default.png`}/>
-        </div>
-        <div className="email-record-info">
-          <div className="email-record-info-container">
-            <span className="email-record-info-sender text-truncate" title={detail['email_from']}>{sender}</span>
-            <span className="email-record-info-content text-truncate"></span>
-            <DateFormatter value={detail.modified_time} className="email-record-info-time" />
-          </div>
-          <div className="email-record-info-participants-container gap-1">
-            {renderParticipants()}
-            {!isReadonly && !isPortal && (
-              <IconTooltip
-                className={classnames('email-record-read-status-wrapper', { disabled: isReadonly || isUpdatingUnread })}
-                placement="bottom"
-                icon=""
-                hoverBackground={true}
-                tip={isUnread ? gettext('Mark Read') : gettext('Mark unread')}
-                onClick={toggleUnread}
-              >
-                <div className={classnames('read-status', { unread: isUnread })}/>
-              </IconTooltip>
-            )}
-            {!isReadonly && !isPortal && !isShowReply && (
-              <IconTextBtn icon="reply" color="default" text={gettext('Reply')} className="h-5" onClick={openReply} />
-            )}
-          </div>
-          {renderParticipantsDetails()}
-        </div>
-      </div>
+      {renderEmailHeader(closeExpanded)}
       <div className="email-body" ref={ref}>
         {isHTMLContent ? (
           <HTMLContentWrapper
