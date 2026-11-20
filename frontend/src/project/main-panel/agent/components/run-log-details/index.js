@@ -87,7 +87,7 @@ const RunLogDetails = ({
     showLogs();
   }, [showLogs]);
 
-  const handleRegenerateApplied = useCallback((runId, { instruction, suggestions } = {}) => {
+  const handleRegenerateApplied = useCallback((runId, { instruction, regeneration_report, suggestions, removed_suggestion_ids } = {}) => {
     const requestOwner = { owner_source_id, owner_source_type };
     const matchesCurrentOwner = () => {
       const currentOwner = ownerSourceRef.current;
@@ -101,19 +101,30 @@ const RunLogDetails = ({
       return requestVersion === runsRequestVersionRef.current && matchesCurrentOwner();
     };
 
-    return agentAPI.materializeAgentRun(projectUuid, runId, { instruction, suggestions }).then(() => {
-      if (!isCurrentRequest()) return null;
-      return agentAPI.listAgentLogRuns(projectUuid, owner_source_id, owner_source_type);
-    }).then(res => {
-      if (!res || !isCurrentRequest()) return;
-      const runs = res.data?.runs || [];
-      consumedUpdatedRunsVersionRef.current = Math.max(
-        consumedUpdatedRunsVersionRef.current,
-        latestUpdatedRunsVersionRef.current
-      );
-      setRuns(runs);
-      const status = getRunLogStatusByRuns(runs);
-      updateRunLog(owner_source_id, owner_source_type, { status });
+    return agentAPI.materializeAgentRun(projectUuid, runId, {
+      instruction,
+      regeneration_report,
+      suggestions,
+      removed_suggestion_ids,
+    }).then(result => {
+      const materialized = result.data;
+      if (!isCurrentRequest()) return materialized;
+      return agentAPI.listAgentLogRuns(projectUuid, owner_source_id, owner_source_type).then(res => {
+        if (!isCurrentRequest()) return materialized;
+        const runs = res.data?.runs || [];
+        consumedUpdatedRunsVersionRef.current = Math.max(
+          consumedUpdatedRunsVersionRef.current,
+          latestUpdatedRunsVersionRef.current
+        );
+        setRuns(runs);
+        const status = getRunLogStatusByRuns(runs);
+        updateRunLog(owner_source_id, owner_source_type, { status });
+        return materialized;
+      }).catch(error => {
+        // The save succeeded; retain its IDs even if refreshing the log fails.
+        toaster.danger(Utils.getErrorMsg(error));
+        return materialized;
+      });
     });
   }, [owner_source_id, owner_source_type, updateRunLog]);
 

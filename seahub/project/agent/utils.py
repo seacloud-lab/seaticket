@@ -1,13 +1,20 @@
 import logging
 import json
+import re
+from copy import deepcopy
+from uuid import uuid4
 
 from django.core import signing
 from django.core.signing import BadSignature
 
 from seahub.project.agent.action_executor import AgentActionExecutor
-from seahub.project.constants import ConnectionType
+from seahub.project.constants import ConnectionType, ExtraSourceType
 from seahub.project.models import ProjectConnections
-from seahub.project.utils import extract_email_addresses_to_display, get_current_table_metadata
+from seahub.project.utils import (
+    collect_github_issue_label_options,
+    extract_email_addresses_to_display,
+    get_current_table_metadata,
+)
 from seahub.seadb_models.email_seadb_api import EmailSeaDBAPI
 from seahub.seadb_models.models import SchemaTables
 from seahub.tickets.ticket_utils import get_ticket
@@ -89,14 +96,17 @@ def _reformat_actions(actions):
             continue
 
         phase_actions = phases.setdefault(phase, {'actions': []})
-        if action.get('tool_name') is not None:
-            phase_actions['actions'].append(action)
-        elif action.get('type') == phase:
+        # A phase summary has no tool name and its action type equals the phase.
+        # Tool calls stay in the step list even when tool_name is an empty string.
+        action_type = action.get('type', action.get('action_type'))
+        if not action.get('tool_name') and action_type == phase:
             phase_actions.update({
                 'prompt': action.get('prompt'),
                 'input': action.get('input'),
                 'result': action.get('result'),
             })
+        else:
+            phase_actions['actions'].append(action)
 
     return phases
 
@@ -1018,8 +1028,133 @@ class RegenerationValidationError(ValueError):
     pass
 
 
-def validate_materialize_suggestions(seadb_api, project_uuid, run, existing_suggestions, drafts):
-    if not isinstance(drafts, list) or not drafts:
+class RegenerationConflictError(RegenerationValidationError):
+    pass
+
+
+REGENERATION_FIELDS = (
+    'tool_name', 'suggestion_content', 'suggestion_reason', 'suggestion_payload',
+    'target_item_type', 'target_item_id', 'target_item_title',
+)
+TICKET_EXCLUSIVE_TOOLS = {'suggest_create_ticket', 'suggest_link_existing_ticket'}
+ACTION_SUGGESTION_ID_RE = re.compile(r'action:[1-9][0-9]*')
+SUGGESTION_ID_RE = re.compile(r'(action:[1-9][0-9]*|draft:[0-9a-f]{32})')
+
+
+def _same_regeneration_fields(left, right):
+    return all(left[field] == right[field] for field in REGENERATION_FIELDS)
+
+
+def _regeneration_key(draft):
+    return tuple(str(draft.get(field) or '') for field in ('tool_name', 'target_item_type', 'target_item_id'))
+
+
+def _regeneration_snapshot(row):
+    snapshot = {
+        field: deepcopy(row[field]) if row.get(field) is not None else ({} if field == 'suggestion_payload' else '')
+        for field in REGENERATION_FIELDS
+    }
+    snapshot['target_item_id'] = str(snapshot['target_item_id'])
+    payload = snapshot['suggestion_payload']
+    if isinstance(payload, str):
+        try:
+            payload = json.loads(payload or '{}')
+        except ValueError as error:
+            raise RegenerationValidationError('suggestion_payload must be valid JSON.') from error
+    if not isinstance(payload, dict):
+        raise RegenerationValidationError('suggestion_payload must be an object.')
+    snapshot['suggestion_payload'] = payload
+    if any(not isinstance(snapshot[field], str) for field in REGENERATION_FIELDS if field != 'suggestion_payload'):
+        raise RegenerationValidationError('Suggestion text fields must be strings.')
+    return snapshot
+
+
+def normalize_regeneration_drafts(drafts, existing_suggestions):
+    """Restore legacy IDs and verify action references without trusting client status."""
+    if not isinstance(drafts, list):
+        raise RegenerationValidationError('suggestions must be an array.')
+    existing = {f'action:{row["_pk"]}': row for row in existing_suggestions}
+    normalized = []
+    seen = set()
+    for draft in drafts:
+        if not isinstance(draft, dict):
+            raise RegenerationValidationError('Each suggestion must be an object.')
+        snapshot = _regeneration_snapshot(draft)
+        suggestion_id = draft.get('suggestion_id')
+        if suggestion_id is None:
+            matches = [key for key, row in existing.items() if _regeneration_key(row) == _regeneration_key(snapshot)]
+            if len(matches) > 1:
+                raise RegenerationConflictError('Suggestion source is ambiguous; refresh the run.')
+            suggestion_id = matches[0] if matches else f'draft:{uuid4().hex}'
+        if not isinstance(suggestion_id, str) or not SUGGESTION_ID_RE.fullmatch(suggestion_id):
+            raise RegenerationValidationError('Invalid suggestion_id.')
+        if suggestion_id in seen:
+            raise RegenerationValidationError('Duplicate suggestion_id.')
+        seen.add(suggestion_id)
+        source = existing.get(suggestion_id)
+        if suggestion_id.startswith('action:'):
+            if source is None:
+                raise RegenerationConflictError('Suggestion is unavailable or no longer editable; refresh the run.')
+            if _regeneration_key(source) != _regeneration_key(snapshot):
+                raise RegenerationValidationError('Suggestion type and target cannot be changed.')
+            snapshot['target_item_title'] = source.get('target_item_title') or ''
+            if source.get('status') not in (ACTION_STATUS_PENDING, ACTION_STATUS_FAILED):
+                original = _regeneration_snapshot(source)
+                if not _same_regeneration_fields(snapshot, original):
+                    raise RegenerationConflictError('Suggestion is unavailable or no longer editable; refresh the run.')
+                continue
+        snapshot.update({
+            'suggestion_id': suggestion_id,
+            'status': source['status'] if source else 'pending',
+            'phase': (source.get('phase') or 'regeneration') if source else 'regeneration',
+            'action_type': 'suggestion',
+        })
+        normalized.append(snapshot)
+    return normalized
+
+
+def normalize_removed_suggestion_ids(removed_suggestion_ids, existing_suggestions):
+    """Keep pending and failed removals. Already-cancelled ids are idempotent no-ops."""
+    if removed_suggestion_ids is None:
+        removed_suggestion_ids = []
+    if not isinstance(removed_suggestion_ids, list):
+        raise RegenerationValidationError('removed_suggestion_ids must be an array.')
+    existing = {f'action:{row["_pk"]}': row for row in existing_suggestions}
+    normalized = []
+    seen = set()
+    for suggestion_id in removed_suggestion_ids:
+        if not isinstance(suggestion_id, str) or not ACTION_SUGGESTION_ID_RE.fullmatch(suggestion_id):
+            raise RegenerationValidationError('Invalid removed suggestion_id.')
+        if suggestion_id in seen:
+            raise RegenerationValidationError('Duplicate removed suggestion_id.')
+        seen.add(suggestion_id)
+        source = existing.get(suggestion_id)
+        if source is None:
+            raise RegenerationConflictError('Suggestion is unavailable or no longer editable; refresh the run.')
+        status = source.get('status')
+        if status == ACTION_STATUS_CANCELLED:
+            continue
+        if status not in (ACTION_STATUS_PENDING, ACTION_STATUS_FAILED):
+            raise RegenerationConflictError('Suggestion is unavailable or no longer editable; refresh the run.')
+        normalized.append(suggestion_id)
+    return normalized
+
+
+def validate_materialize_suggestions(
+    seadb_api, project_uuid, run, existing_suggestions, drafts, removed_suggestion_ids=None,
+):
+    """Validate and sanitize regenerated drafts before persisting them to SeaDB.
+
+    Handles three draft states alongside explicit removals:
+    - Untouched persisted rows (``action:<pk>``): fast-pathed without re-querying external options.
+    - Modified persisted rows (``action:<pk>``): checked for immutable payload/content invariants,
+      then fully sanitized against allowed tools, targets, and live project data.
+    - Newly added drafts (``draft:<uuid>``): checked for duplicate keys and target-level mutual
+      exclusions against remaining active suggestions, then fully sanitized.
+    """
+    removed_ids = normalize_removed_suggestion_ids(removed_suggestion_ids, existing_suggestions)
+    # An empty drafts list is valid only when the user is cancelling existing suggestions.
+    if not isinstance(drafts, list) or (not drafts and not removed_suggestion_ids):
         raise RegenerationValidationError('suggestions are required.')
 
     event = _parse_run_event(run.get('event')) or {}
@@ -1028,25 +1163,119 @@ def validate_materialize_suggestions(seadb_api, project_uuid, run, existing_sugg
     if not allowed_tools:
         raise RegenerationValidationError('Unsupported event type for regeneration.')
 
-    allowed_targets = _build_allowed_targets(run, event, existing_suggestions)
+    # Collect authorized targets (trigger record, run owner, prior targets, and linked ticket records)
+    # and drop any untouched action:<pk> that finished or was cancelled concurrently.
+    allowed_targets = _build_allowed_targets(seadb_api, project_uuid, run, event, existing_suggestions)
+    normalized = normalize_regeneration_drafts(drafts, existing_suggestions)
+    removed = set(removed_ids)
+    existing = {f'action:{row["_pk"]}': row for row in existing_suggestions}
+    # Active (tool, target_type, target_id) slots still occupied after applying removals;
+    # removing a suggestion frees its slot so a replacement can be added in the same apply.
+    existing_keys = {
+        _regeneration_key(row) for row in existing_suggestions
+        if row.get('status') in (ACTION_STATUS_PENDING, ACTION_STATUS_FAILED)
+        and f'action:{row["_pk"]}' not in removed
+    }
     sanitized = []
-    for index, draft in enumerate(drafts):
-        if not isinstance(draft, dict):
-            raise RegenerationValidationError(f'Suggestion {index + 1} is invalid.')
-        sanitized.append(
-            _sanitize_draft(
-                seadb_api,
-                project_uuid,
-                draft,
-                allowed_tools,
-                allowed_targets,
-                index,
-            )
+    for index, draft in enumerate(normalized):
+        if draft['suggestion_id'] in removed:
+            raise RegenerationValidationError('A removed suggestion cannot also be saved.')
+        source = existing.get(draft['suggestion_id'])
+        if source is not None:
+            # Case 1: Existing DB row (action:<pk>).
+            original = _regeneration_snapshot(source)
+            if _same_regeneration_fields(draft, original):
+                # Untouched suggestion: keep as-is without revalidating labels or linked tickets.
+                sanitized.append(draft)
+                continue
+            # Modified suggestion: enforce field-level immutability rules against the DB baseline.
+            old_payload = original['suggestion_payload']
+            if set(old_payload) - set(draft['suggestion_payload']):
+                raise RegenerationValidationError('Existing payload fields cannot be removed.')
+            if draft['tool_name'] == 'suggest_modify_type' and (
+                draft['suggestion_payload'].get('current_issue_type') != old_payload.get('current_issue_type')
+            ):
+                raise RegenerationValidationError('current_issue_type cannot be changed.')
+            if draft['suggestion_content'] != original['suggestion_content'] and draft['tool_name'] not in (
+                'suggest_reply', 'suggest_notify_assignee', 'suggest_create_ticket',
+            ):
+                raise RegenerationValidationError('This suggestion does not have editable content.')
+            # Prevent structured JSON ticket drafts from being overwritten with plain text.
+            if (
+                draft['tool_name'] == 'suggest_create_ticket'
+                and draft['suggestion_content'] != original['suggestion_content']
+                and _is_json_object(original['suggestion_content'])
+                and not _is_json_object(draft['suggestion_content'])
+            ):
+                raise RegenerationValidationError('Ticket suggestion content must remain valid JSON.')
+        else:
+            # Case 2: Newly added draft (draft:<uuid>).
+            # Check uniqueness and mutual exclusions (move_to_spam is target-exclusive;
+            # create_ticket and link_existing_ticket exclude each other on the same target).
+            key = _regeneration_key(draft)
+            if key in existing_keys:
+                raise RegenerationConflictError('A suggestion already exists for this action and target; refresh the run.')
+            if any(
+                other[1:] == key[1:]
+                and ('suggest_move_to_spam' in (key[0], other[0]) or (key[0] in TICKET_EXCLUSIVE_TOOLS and other[0] in TICKET_EXCLUSIVE_TOOLS))
+                for other in existing_keys
+            ):
+                raise RegenerationValidationError('A mutually exclusive suggestion already exists for this target.')
+            # Reserve the slot so subsequent new drafts in the same request are checked against it too.
+            existing_keys.add(key)
+
+        # Shared sanitization for modified and newly added drafts (tool/target authorization,
+        # non-empty reason/content, ticket JSON schema, live GitHub labels, and ticket existence).
+        validated = _sanitize_draft(
+            seadb_api,
+            project_uuid,
+            draft,
+            allowed_tools,
+            allowed_targets,
+            index,
         )
+        validated['suggestion_id'] = draft['suggestion_id']
+        sanitized.append(validated)
     return sanitized
 
 
-def _build_allowed_targets(run, event, existing_suggestions):
+def build_regeneration_writes(
+    drafts, existing_suggestions, removed_suggestion_ids=None, cancel_result='', executed_at=None,
+):
+    """Return inserts and updates while leaving unchanged and historical rows intact."""
+    existing = {f'action:{row["_pk"]}': row for row in existing_suggestions}
+    inserts, updates = [], []
+    for draft in drafts:
+        source = existing.get(draft['suggestion_id'])
+        if source is None:
+            inserts.append(draft)
+            continue
+        original = _regeneration_snapshot(source)
+        changed = {
+            field: draft[field] for field in REGENERATION_FIELDS
+            if draft[field] != original[field]
+        }
+        if not changed:
+            continue
+        if 'suggestion_payload' in changed:
+            changed['suggestion_payload'] = json.dumps(changed['suggestion_payload'], ensure_ascii=False)
+        if source['status'] == ACTION_STATUS_FAILED:
+            changed.update({'status': ACTION_STATUS_PENDING, 'result': '', 'executed_at': None})
+        updates.append({'pk': int(source['_pk']), 'row': changed})
+    for suggestion_id in removed_suggestion_ids or []:
+        source = existing.get(suggestion_id)
+        if source is None or source.get('status') == ACTION_STATUS_CANCELLED:
+            continue
+        if source.get('status') not in (ACTION_STATUS_PENDING, ACTION_STATUS_FAILED):
+            raise RegenerationConflictError('Suggestion is unavailable or no longer editable; refresh the run.')
+        row = {'status': ACTION_STATUS_CANCELLED}
+        if source.get('status') != ACTION_STATUS_FAILED:
+            row.update({'result': cancel_result, 'executed_at': executed_at})
+        updates.append({'pk': int(source['_pk']), 'row': row})
+    return inserts, updates
+
+
+def _build_allowed_targets(seadb_api, project_uuid, run, event, existing_suggestions):
     allowed = set()
     trigger_source = event.get('trigger_source')
     if isinstance(trigger_source, dict):
@@ -1061,7 +1290,111 @@ def _build_allowed_targets(run, event, existing_suggestions):
                 suggestion.get('target_item_type'),
                 suggestion.get('target_item_id'),
             )
+    _extend_allowed_targets_from_linked_ticket(seadb_api, project_uuid, run, event, allowed)
     return allowed
+
+
+def _extend_allowed_targets_from_linked_ticket(seadb_api, project_uuid, run, event, allowed):
+    ticket_id = _ticket_id_for_regeneration(seadb_api, project_uuid, run, event)
+    if not ticket_id:
+        return
+    _add_target(allowed, ExtraSourceType.TICKET.value, ticket_id)
+    try:
+        ticket, _columns = get_ticket(seadb_api, project_uuid, ticket_id)
+    except Exception:
+        logger.warning('Failed to load ticket %s while validating regeneration targets.', ticket_id, exc_info=True)
+        return
+    if not ticket:
+        return
+    linked_records = ticket.get(SchemaTables.TICKETS.column.linked_connection_records.name) or []
+    if isinstance(linked_records, str):
+        try:
+            linked_records = json.loads(linked_records)
+        except ValueError:
+            linked_records = []
+    if not isinstance(linked_records, list):
+        return
+    for linked_key in linked_records:
+        if not isinstance(linked_key, str) or '_' not in linked_key:
+            continue
+        prefix, record_id = linked_key.split('_', 1)
+        if prefix == 'portal':
+            _add_target(allowed, ExtraSourceType.PORTAL_ISSUE.value, record_id)
+            continue
+        try:
+            connection_id = int(prefix)
+        except ValueError:
+            continue
+        connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
+        if not connection or not connection.type:
+            continue
+        _add_target(allowed, connection.type, linked_key)
+
+
+def _ticket_id_for_regeneration(seadb_api, project_uuid, run, event):
+    if str(run.get('owner_source_type') or '') == ExtraSourceType.TICKET.value:
+        try:
+            ticket_id = int(run.get('owner_source_id'))
+        except (TypeError, ValueError):
+            return None
+        return ticket_id if ticket_id > 0 else None
+    trigger_source = event.get('trigger_source') if isinstance(event, dict) else None
+    if not isinstance(trigger_source, dict):
+        return None
+    return _linked_ticket_on_source(
+        seadb_api, project_uuid, trigger_source.get('type'), trigger_source.get('id'),
+    )
+
+
+def _linked_ticket_on_source(seadb_api, project_uuid, source_type, source_id):
+    source_type = str(source_type or '').strip()
+    source_id = str(source_id or '').strip()
+    if not source_type or not source_id:
+        return None
+    table_name = None
+    record_id = None
+    if source_type == ExtraSourceType.PORTAL_ISSUE.value:
+        try:
+            record_id = int(source_id)
+        except ValueError:
+            return None
+        table_name = SchemaTables.PORTAL_ISSUES.table_name()
+    elif '_' in source_id:
+        connection_id_text, record_id_text = source_id.split('_', 1)
+        try:
+            connection_id = int(connection_id_text)
+            record_id = int(record_id_text)
+        except ValueError:
+            return None
+        connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
+        if not connection or connection.type != source_type:
+            return None
+        try:
+            from seahub.seadb_models.utils import get_connection_table_name
+
+            table_name = get_connection_table_name(source_type, connection_id)
+        except Exception:
+            return None
+    if not table_name or record_id is None:
+        return None
+    try:
+        rows = seadb_api.query_rows(
+            project_uuid,
+            f'SELECT `linked_ticket` FROM `{table_name}` WHERE `_pk` = {int(record_id)} LIMIT 1',
+        ).get('results', [])
+    except Exception:
+        logger.warning(
+            'Failed to read linked_ticket for %s %s while validating regeneration targets.',
+            source_type, source_id, exc_info=True,
+        )
+        return None
+    if not rows:
+        return None
+    try:
+        ticket_id = int(rows[0].get('linked_ticket') or 0)
+    except (TypeError, ValueError):
+        return None
+    return ticket_id if ticket_id > 0 else None
 
 
 def _add_target(allowed, target_type, target_id):
@@ -1072,12 +1405,21 @@ def _add_target(allowed, target_type, target_id):
 
 
 def _sanitize_draft(seadb_api, project_uuid, draft, allowed_tools, allowed_targets, index):
+    """Validate one modified or newly added draft against event rules and live project data.
+
+    Returns a clean suggestion dict ready for DB persistence and frontend display.
+    Note: ``status`` is normalized to ``pending`` here because both newly created drafts
+    and edited ``failed`` rows become pending once materialized.
+    """
+    # 1. Verify the action type is permitted for this run's trigger event.
     tool_name = str(draft.get('tool_name') or '').strip()
     if tool_name not in allowed_tools:
         raise RegenerationValidationError(
             f'Suggestion {index + 1} uses an unsupported tool.'
         )
 
+    # 2. Verify the target record belongs to this run's authorized target set
+    # (preventing client-tampered drafts from acting on arbitrary records).
     target_item_type = str(draft.get('target_item_type') or '').strip()
     target_item_id = str(draft.get('target_item_id') or '').strip()
     if not target_item_type or not target_item_id:
@@ -1089,13 +1431,34 @@ def _sanitize_draft(seadb_api, project_uuid, draft, allowed_tools, allowed_targe
             f'Suggestion {index + 1} targets an unauthorized record.'
         )
 
+    # 3. Validate tool-specific structured payload fields (e.g. related_ticket existence, issue type).
     payload = _sanitize_payload(
         seadb_api, project_uuid, tool_name, draft.get('suggestion_payload'), index,
     )
+
+    # 4. Validate reason, content presence, and tool-specific content/target constraints.
+    reason = draft.get('suggestion_reason') or ''
+    content = draft.get('suggestion_content') or ''
+    if not reason.strip():
+        raise RegenerationValidationError(f'Suggestion {index + 1} is missing a reason.')
+    if tool_name in ('suggest_reply', 'suggest_notify_assignee', 'suggest_create_ticket') and not content.strip():
+        raise RegenerationValidationError(f'Suggestion {index + 1} is missing content.')
+    if tool_name == 'suggest_create_ticket':
+        _validate_ticket_draft_content(content)
+    if tool_name == 'suggest_assign_labels':
+        # Extract connection_id from "<connection_id>_<record_id>" and check labels against SeaDB options.
+        try:
+            connection_id = int(target_item_id.split('_', 1)[0])
+        except ValueError as error:
+            raise RegenerationValidationError('Invalid GitHub suggestion target.') from error
+        available = collect_github_issue_label_options(seadb_api, project_uuid, [connection_id])
+        available_names = {option['name'].casefold() for option in available}
+        if any(label.casefold() not in available_names for label in payload['suggested_labels']):
+            raise RegenerationValidationError('suggested_labels must be selected from available labels.')
     return {
         'tool_name': tool_name,
-        'suggestion_reason': str(draft.get('suggestion_reason') or ''),
-        'suggestion_content': str(draft.get('suggestion_content') or ''),
+        'suggestion_reason': reason,
+        'suggestion_content': content,
         'suggestion_payload': payload,
         'target_item_type': target_item_type,
         'target_item_id': target_item_id,
@@ -1104,6 +1467,41 @@ def _sanitize_draft(seadb_api, project_uuid, draft, allowed_tools, allowed_targe
         'action_type': 'suggestion',
         'phase': 'regeneration',
     }
+
+
+def _is_json_object(content):
+    if not isinstance(content, str):
+        return False
+    try:
+        parsed = json.loads(content)
+    except ValueError:
+        return False
+    return isinstance(parsed, dict)
+
+
+def _validate_ticket_draft_content(content):
+    try:
+        ticket = json.loads(content)
+    except ValueError:
+        if content.lstrip().startswith(('{', '[')):
+            raise RegenerationValidationError('Ticket suggestion content must be valid JSON.') from None
+        return
+    if not isinstance(ticket, dict):
+        raise RegenerationValidationError('Ticket suggestion content must be an object.')
+    if not isinstance(ticket.get('title'), str) or not ticket['title'].strip():
+        raise RegenerationValidationError('Ticket suggestion title is required.')
+    if not isinstance(ticket.get('content'), str):
+        raise RegenerationValidationError('Ticket suggestion content must be a string.')
+    if 'type' in ticket and not isinstance(ticket['type'], str):
+        raise RegenerationValidationError('Ticket suggestion type must be a string.')
+    if 'priority' in ticket and (
+        isinstance(ticket['priority'], bool) or not isinstance(ticket['priority'], int) or ticket['priority'] < 0
+    ):
+        raise RegenerationValidationError('Ticket suggestion priority must be a non-negative integer.')
+    if 'tags' in ticket and (
+        not isinstance(ticket['tags'], list) or not all(isinstance(tag, str) for tag in ticket['tags'])
+    ):
+        raise RegenerationValidationError('Ticket suggestion tags must be an array of strings.')
 
 
 def _sanitize_payload(seadb_api, project_uuid, tool_name, raw_payload, index):
@@ -1117,13 +1515,15 @@ def _sanitize_payload(seadb_api, project_uuid, tool_name, raw_payload, index):
         payload = {}
 
     allowed_fields = PAYLOAD_ALLOWED_FIELDS.get(tool_name)
+    if set(payload) - set(allowed_fields or ()):
+        raise RegenerationValidationError(f'Suggestion {index + 1} has unsupported payload fields.')
     if not allowed_fields:
         return {}
 
     sanitized = {}
     if tool_name == 'suggest_assign_labels':
         labels = payload.get('suggested_labels')
-        if not isinstance(labels, list) or not all(isinstance(label, str) and label.strip() for label in labels):
+        if not isinstance(labels, list) or not labels or not all(isinstance(label, str) and label.strip() for label in labels):
             raise RegenerationValidationError(
                 f'Suggestion {index + 1} has invalid suggested_labels.'
             )
@@ -1131,13 +1531,8 @@ def _sanitize_payload(seadb_api, project_uuid, tool_name, raw_payload, index):
         return sanitized
 
     if tool_name == 'suggest_link_existing_ticket':
-        try:
-            related_ticket = int(payload.get('related_ticket'))
-        except (TypeError, ValueError):
-            raise RegenerationValidationError(
-                f'Suggestion {index + 1} has invalid related_ticket.'
-            )
-        if related_ticket <= 0:
+        related_ticket = payload.get('related_ticket')
+        if isinstance(related_ticket, bool) or not isinstance(related_ticket, int) or related_ticket <= 0:
             raise RegenerationValidationError(
                 f'Suggestion {index + 1} has invalid related_ticket.'
             )
@@ -1151,9 +1546,9 @@ def _sanitize_payload(seadb_api, project_uuid, tool_name, raw_payload, index):
 
     if tool_name == 'suggest_modify_type':
         suggested_type = str(payload.get('suggested_type') or '').strip()
-        if not suggested_type:
+        if suggested_type not in ('Bug', 'Feature', 'Question'):
             raise RegenerationValidationError(
-                f'Suggestion {index + 1} is missing suggested_type.'
+                f'Suggestion {index + 1} has an unsupported suggested_type.'
             )
         sanitized['suggested_type'] = suggested_type
         current_issue_type = payload.get('current_issue_type')

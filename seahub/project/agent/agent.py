@@ -46,6 +46,11 @@ from seahub.project.agent.utils import (
     cancel_agent_log_pending_actions,
     SUGGESTION_ACTION_TYPE,
     RegenerationValidationError,
+    RegenerationConflictError,
+    RUN_STATUS_FAILED,
+    normalize_regeneration_drafts,
+    normalize_removed_suggestion_ids,
+    build_regeneration_writes,
     validate_materialize_suggestions,
 )
 from seahub.utils.ai_client import regenerate_agent_suggestions
@@ -686,7 +691,9 @@ def _query_run_phase_actions(seadb_api, project_uuid, run_id):
 
 def _query_run_suggestions(seadb_api, project_uuid, run_id):
     actions_sql = (
-        "SELECT `_pk`, `target_item_type`, `target_item_id`, `target_item_title` "
+        "SELECT `_pk`, `status`, `phase`, `tool_name`, `suggestion_reason`, "
+        "`suggestion_content`, `suggestion_payload`, "
+        "`target_item_type`, `target_item_id`, `target_item_title` "
         f"FROM `{SchemaTables.AGENT_ACTIONS.table_name()}` "
         f"WHERE `run_id` = {int(run_id)} AND `action_type` = '{SUGGESTION_ACTION_TYPE}' "
         "ORDER BY `_pk` ASC"
@@ -708,54 +715,12 @@ class AgentRunRegenerateView(APIView):
         instruction = str(request.data.get('instruction') or '').strip()
         if not instruction:
             return api_error(status.HTTP_400_BAD_REQUEST, 'instruction is required.')
-        previous_drafts = request.data.get('previous_drafts') or []
-        if previous_drafts and not isinstance(previous_drafts, list):
+        previous_drafts = request.data.get('previous_drafts', [])
+        if not isinstance(previous_drafts, list):
             return api_error(status.HTTP_400_BAD_REQUEST, 'previous_drafts is invalid.')
-
-        project = Projects.objects.get_project_by_uuid(project_uuid)
-        if not project:
-            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
-
-        username = request.user.username
-        if not check_project_permission(username, project.workspace.owner):
-            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
-
-        try:
-            seadb_api = SeaDBAPI()
-            run = _load_agent_run(seadb_api, project_uuid, run_id)
-            if not run:
-                return api_error(status.HTTP_404_NOT_FOUND, 'Run not found.')
-            if run.get('status') == 'running':
-                return api_error(status.HTTP_400_BAD_REQUEST, 'Run is still running.')
-
-            result = regenerate_agent_suggestions({
-                'project_uuid': project_uuid,
-                'instruction': instruction,
-                'previous_drafts': previous_drafts,
-                'run': run,
-                'phase_actions': _query_run_phase_actions(seadb_api, project_uuid, run_id),
-            })
-            populate_email_reply_defaults(seadb_api, project_uuid, result.get('suggestions') or [])
-            return Response(result, status=status.HTTP_200_OK)
-        except ValueError as e:
-            return api_error(status.HTTP_400_BAD_REQUEST, str(e) or 'Failed to regenerate suggestions.')
-        except Exception as e:
-            logger.exception(e)
-            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
-
-
-class AgentRunMaterializeView(APIView):
-    """
-    Persist confirmed regeneration drafts onto the existing run.
-    POST /api/v1/project/<project_uuid>/agent/runs/<run_id>/materialize/
-    """
-    authentication_classes = (TokenAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated,)
-    throttle_classes = (UserRateThrottle,)
-
-    @require_org_context
-    def post(self, request, project_uuid, run_id):
-        drafts = request.data.get('suggestions')
+        removed_suggestion_ids = request.data.get('removed_suggestion_ids', [])
+        if not isinstance(removed_suggestion_ids, list):
+            return api_error(status.HTTP_400_BAD_REQUEST, 'removed_suggestion_ids is invalid.')
 
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -774,13 +739,90 @@ class AgentRunMaterializeView(APIView):
                 return api_error(status.HTTP_400_BAD_REQUEST, 'Run is still running.')
 
             existing_suggestions = _query_run_suggestions(seadb_api, project_uuid, run_id)
-            sanitized_drafts = validate_materialize_suggestions(
-                seadb_api, project_uuid, run, existing_suggestions, drafts,
+            previous_drafts = normalize_regeneration_drafts(previous_drafts, existing_suggestions)
+            removed_suggestion_ids = normalize_removed_suggestion_ids(
+                removed_suggestion_ids, existing_suggestions,
             )
+            result = regenerate_agent_suggestions({
+                'project_uuid': project_uuid,
+                'instruction': instruction,
+                'previous_drafts': previous_drafts,
+                'removed_suggestion_ids': removed_suggestion_ids,
+                'original_suggestions': [
+                    row for row in existing_suggestions if row.get('status') in ('pending', 'failed')
+                ],
+                'run': run,
+                'phase_actions': _query_run_phase_actions(seadb_api, project_uuid, run_id),
+            })
+            populate_email_reply_defaults(seadb_api, project_uuid, result.get('suggestions') or [])
+            return Response(result, status=status.HTTP_200_OK)
+        except RegenerationConflictError as e:
+            return api_error(status.HTTP_409_CONFLICT, str(e))
+        except ValueError as e:
+            return api_error(status.HTTP_400_BAD_REQUEST, str(e) or 'Failed to regenerate suggestions.')
+        except Exception as e:
+            logger.exception(e)
+            return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
+
+class AgentRunMaterializeView(APIView):
+    """
+    Persist confirmed regeneration drafts onto the existing run.
+    POST /api/v1/project/<project_uuid>/agent/runs/<run_id>/materialize/
+
+    Instead of deleting and recreating all suggestion rows, this endpoint applies
+    minimal incremental writes so untouched and historical actions stay intact:
+    - ``draft:<uuid>`` items are inserted as new pending ``agent_actions`` rows.
+    - Modified ``action:<pk>`` items are updated in place (resetting ``failed`` to ``pending``).
+    - ``removed_suggestion_ids`` are marked ``cancelled`` rather than physically deleted.
+    - When any write occurs, a ``regeneration`` phase audit row is appended for thought-process view.
+    """
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
+    throttle_classes = (UserRateThrottle,)
+
+    @require_org_context
+    def post(self, request, project_uuid, run_id):
+        drafts = request.data.get('suggestions')
+        if drafts is None:
+            drafts = []
+        removed_suggestion_ids = request.data.get('removed_suggestion_ids') or []
+        instruction = str(request.data.get('instruction') or '').strip()
+        regeneration_report = str(request.data.get('regeneration_report') or '').strip()
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
+
+        username = request.user.username
+        if not check_project_permission(username, project.workspace.owner):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
+
+        try:
+            seadb_api = SeaDBAPI()
+            run = _load_agent_run(seadb_api, project_uuid, run_id)
+            if not run:
+                return api_error(status.HTTP_404_NOT_FOUND, 'Run not found.')
+            if run.get('status') == 'running':
+                return api_error(status.HTTP_400_BAD_REQUEST, 'Run is still running.')
+
+            existing_suggestions = _query_run_suggestions(seadb_api, project_uuid, run_id)
             now = timezone.now().isoformat()
+
+            # 1. Validate permissions, target records, mutual exclusions, and concurrent conflicts,
+            # then compute incremental inserts and in-place updates (edits + cancellations).
+            sanitized_drafts = validate_materialize_suggestions(
+                seadb_api, project_uuid, run, existing_suggestions, drafts, removed_suggestion_ids,
+            )
+            new_drafts, updates = build_regeneration_writes(
+                sanitized_drafts,
+                existing_suggestions,
+                removed_suggestion_ids,
+                cancel_result=f'Cancelled by {email2nickname(username)}',
+                executed_at=now,
+            )
             insert_rows = []
-            for draft in sanitized_drafts:
+            for draft in new_drafts:
                 insert_rows.append({
                     'run_id': int(run_id),
                     'action_type': SUGGESTION_ACTION_TYPE,
@@ -797,51 +839,82 @@ class AgentRunMaterializeView(APIView):
                     'created_at': now,
                 })
 
-            insert_result = seadb_api.insert_rows(
-                project_uuid, SchemaTables.AGENT_ACTIONS.table_name(), insert_rows,
-            )
-            inserted_pks = insert_result.get('pks') or []
-            if len(inserted_pks) != len(insert_rows):
-                return api_error(
-                    status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    'Failed to persist regenerated suggestions.',
+            # 2. Apply updates and inserts, then backfill persisted action:<pk> IDs onto new_drafts
+            # (which share object references with sanitized_drafts) for subsequent chat turns.
+            if updates:
+                seadb_api.update_rows(
+                    project_uuid, SchemaTables.AGENT_ACTIONS.table_name(), updates,
                 )
+            if insert_rows:
+                insert_result = seadb_api.insert_rows(
+                    project_uuid, SchemaTables.AGENT_ACTIONS.table_name(), insert_rows,
+                )
+                inserted_pks = insert_result.get('pks') or []
+                if len(inserted_pks) != len(insert_rows):
+                    return api_error(
+                        status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        'Failed to persist regenerated suggestions.',
+                    )
+                for draft, pk in zip(new_drafts, inserted_pks):
+                    draft['suggestion_id'] = f'action:{pk}'
 
-            old_suggestion_ids = [
-                int(row['_pk']) for row in existing_suggestions if row.get('_pk') is not None
-            ]
-            if old_suggestion_ids:
-                seadb_api.delete_rows(
+            populate_email_reply_defaults(seadb_api, project_uuid, sanitized_drafts)
+
+            # 3. Record a regeneration phase summary row and recompute aggregate suggestion status
+            # only when at least one suggestion row actually changed.
+            has_writes = bool(updates or insert_rows)
+            if has_writes:
+                seadb_api.insert_rows(
                     project_uuid,
                     SchemaTables.AGENT_ACTIONS.table_name(),
-                    old_suggestion_ids,
+                    [{
+                        'run_id': int(run_id),
+                        'action_type': 'regeneration',
+                        'phase': 'regeneration',
+                        'status': 'completed',
+                        'result': regeneration_report,
+                        'input': json.dumps({'instruction': instruction}, ensure_ascii=False) if instruction else '',
+                        'created_at': now,
+                    }],
                 )
+                suggestions_status = _refresh_run_suggestions_status(
+                    seadb_api, project_uuid, int(run_id),
+                )
+            else:
+                suggestions_status = run.get('suggestions_status') or ''
 
-            suggestions_status = _refresh_run_suggestions_status(
-                seadb_api, project_uuid, int(run_id),
-            )
-            seadb_api.update_rows(
-                project_uuid,
-                SchemaTables.AGENT_RUNS.table_name(),
-                [{'pk': int(run_id), 'row': {
-                    'status': 'completed',
-                    'finished_at': now,
-                    'error_message': '',
-                    'suggestions_status': suggestions_status,
-                }}],
-            )
+            # 4. Promote the run to completed, unless it was a failed run and no changes were saved
+            # (preserving the original failure status and error_message on a no-op apply).
+            complete_run = has_writes or run.get('status') != RUN_STATUS_FAILED
+            run_status = 'completed' if complete_run else run.get('status')
+            error_message = '' if complete_run else (run.get('error_message') or '')
+            finished_at = now if complete_run else run.get('finished_at')
+            if complete_run:
+                seadb_api.update_rows(
+                    project_uuid,
+                    SchemaTables.AGENT_RUNS.table_name(),
+                    [{'pk': int(run_id), 'row': {
+                        'status': 'completed',
+                        'finished_at': now,
+                        'error_message': '',
+                        'suggestions_status': suggestions_status,
+                    }}],
+                )
 
             return Response({
                 'success': True,
+                'suggestions': sanitized_drafts,
                 'suggestions_status': suggestions_status,
                 'run': {
                     'id': int(run_id),
-                    'status': 'completed',
+                    'status': run_status,
                     'suggestions_status': suggestions_status,
-                    'error_message': '',
-                    'finished_at': now,
+                    'error_message': error_message,
+                    'finished_at': finished_at,
                 },
             }, status=status.HTTP_200_OK)
+        except RegenerationConflictError as e:
+            return api_error(status.HTTP_409_CONFLICT, str(e))
         except RegenerationValidationError as e:
             return api_error(status.HTTP_400_BAD_REQUEST, str(e))
         except Exception as e:
