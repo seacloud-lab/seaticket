@@ -331,7 +331,12 @@ const Item = ({
       <div className="email-header">
         <div className="email-header-content" onClick={() => setIsExpanded(value => !value)}>
           <div className="email-avatar" aria-hidden="true">
-            <span className="email-avatar-initials" data-avatar-color={avatar.color} style={{ backgroundColor: avatar.color }}>
+            <span className="email-avatar-initials" data-avatar-color={avatar.color}>
+              <svg viewBox="0 0 50 50">
+                <circle cx="25" cy="25" r="25" fill={avatar.color} />
+                <path fill="#fff" fillOpacity="var(--email-avatar-highlight)" d="M4.2,38.8A24.7,24.7,0,0,0,25,50,25,25,0,0,0,50,25a25.6,25.6,0,0,0-4.2-13.9L25,25Z" />
+                <path fill="#fff" fillOpacity="calc(var(--email-avatar-highlight) / 2)" d="M25,25,4.2,11.1A25.6,25.6,0,0,0,0,25,24.2,24.2,0,0,0,4.2,38.8Z" />
+              </svg>
               {avatar.initials}
             </span>
           </div>
