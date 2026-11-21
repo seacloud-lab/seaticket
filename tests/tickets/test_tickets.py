@@ -644,6 +644,30 @@ class TestMyTicketAPIView:
         assert resp.status_code == 200
         assert resp.data['tickets'][0][due_date_key] == '2026-08-01'
 
+    def test_post_distinguishes_query_failure_from_empty_result(self, factory, project_creator, real_project):
+        project = real_project
+        columns = [
+            {'name': 'creator', 'type': 'text', 'key': 'c123'},
+            {'name': 'state', 'type': 'single-select', 'key': 's456', 'data': {'options': [
+                {'id': '0001', 'name': 'open'},
+            ]}},
+        ]
+        form = {'scope': 'created', 'view_id': 'open'}
+        with patch('seahub.tickets.tickets.SeaDBAPI') as seadb_api:
+            seadb_api.return_value.get_base_metadata.return_value = {'tables': [{'name': 'tickets', 'columns': columns}]}
+            query_rows = seadb_api.return_value.query_rows
+            query_rows.side_effect = [ConnectionError('SeaDB unavailable'), {'results': []}]
+            request = self._make_request(factory, project, project_creator, form)
+            failed = MyTicketAPIView.as_view()(request, project_uuid=project.uuid)
+            request = self._make_request(factory, project, project_creator, form)
+            empty = MyTicketAPIView.as_view()(request, project_uuid=project.uuid)
+
+        assert failed.status_code == 500
+        assert 'error_msg' in failed.data
+        assert empty.status_code == 200
+        assert empty.data['tickets'] == []
+        assert query_rows.call_count == 2
+
     @pytest.mark.parametrize('form,ticket_state,filter_column', [
         ({'view_id': 'closed'}, 'closed', 'assignees'),
         ({'view_id': 'open', 'scope': 'assigned'}, 'open', 'assignees'),

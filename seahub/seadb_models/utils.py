@@ -376,13 +376,8 @@ def list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limi
         e.columns = display_columns
         raise
 
-    try:
-        res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
-        records = res.get('results')
-    except Exception as e:
-        logger.error(f'SeaDB query error for connection tickets: {e}')
-        records = []
-    return records, display_columns
+    res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
+    return res['results'], display_columns
 
 
 def list_trash_tickets(seadb_api, project_uuid, start, limit):
