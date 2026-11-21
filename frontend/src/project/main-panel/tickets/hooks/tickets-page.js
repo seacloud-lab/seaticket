@@ -1,11 +1,12 @@
 import React, { useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { siteRoot } from '@/constants';
+import { BAR_TYPE, EVENT_BUS_TYPE } from '@/project/constants';
+import { getMyTicketsScope, getMyTicketsURL } from '@/project/utils';
 import { EVENT_BUS_TYPE as SEAMETADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import context from '@/sea-metadata/context';
 import eventBus from '@/utils/event-bus';
 import { isNumber } from '@/utils/type-detection';
 import { Utils } from '@/utils/utils';
-import { BAR_TYPE, EVENT_BUS_TYPE } from '../../../constants';
 import { TICKET_PAGE_SLUG_ID, TICKET_CHILDREN_PAGE_SLUG_ID } from '../constants';
 
 const TicketsPageContext = React.createContext(null);
@@ -18,7 +19,8 @@ export const TicketsPageProvider = ({ workspaceID, projectName, type, children }
 
   const resetURL = useCallback((pageSlugId, childrenPageSlugId) => {
     const { origin } = location;
-    const url = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.TICKET}`;
+    const projectURL = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/`;
+    const url = `${projectURL}${BAR_TYPE.TICKET}`;
     let urlPart = pageSlugId === TICKET_PAGE_SLUG_ID.ALL || (!pageSlugId && pageSlugId !== 0) ? '/' : `/${pageSlugId}/`;
     const currentUrlParams = new URLSearchParams(window.location.search);
     const currentQueryString = currentUrlParams.toString();
@@ -29,10 +31,9 @@ export const TicketsPageProvider = ({ workspaceID, projectName, type, children }
       listQueryStringRef.current = queryString;
     }
 
-    if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL && type === BAR_TYPE.MY_TICKET) {
-      let myTicketsViewURL = `${origin}${siteRoot}workspace/${workspaceID}/project/${projectName}/${BAR_TYPE.MY_TICKET}/`;
-      myTicketsViewURL = myTicketsViewURL + (queryString ? '?' + queryString : '');
-      history.replaceState(null, null, myTicketsViewURL);
+    const scope = getMyTicketsScope(type);
+    if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL && scope) {
+      history.replaceState(null, null, getMyTicketsURL(projectURL, scope, queryString));
       return;
     }
 

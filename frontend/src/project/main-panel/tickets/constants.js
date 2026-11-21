@@ -109,6 +109,12 @@ export const TICKET_PAGE_SLUG_ID = {
   SUBSTATES: 'substates',
 };
 
+// Internal view IDs distinguish scopes without changing the API's view_id.
+export const MY_TICKETS_VIEW_IDS = {
+  assigned: { open: 'open', closed: 'closed' },
+  created: { open: 'created-open', closed: 'created-closed' },
+};
+
 export const TICKET_CHILDREN_PAGE_SLUG_ID = {
   ALL: 'all',
 };

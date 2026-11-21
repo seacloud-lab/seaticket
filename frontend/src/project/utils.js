@@ -1,4 +1,5 @@
 import { mediaUrl, siteRoot, gettext } from '@/constants';
+import { BAR_TYPE } from './constants/bar';
 import { CONNECTION_TYPES } from './main-panel/connections/constants';
 import { getConnectionIcon, getOriginalPageUrl } from './main-panel/connections/utils';
 import { KNOWLEDGE_BASE_TYPE } from './main-panel/knowledge-base/constants';
@@ -8,6 +9,33 @@ import { generatorIssueURL } from './main-panel/portal-issues/utils';
 import { TICKET_TYPE } from './main-panel/tickets/constants';
 import { generatorTicketURL } from './main-panel/tickets/utils';
 
+
+export const MY_TICKETS_SCOPE = {
+  ASSIGNED: 'assigned',
+  CREATED: 'created',
+};
+
+export const getMyTicketsScope = (bar) => {
+  if (bar === BAR_TYPE.MY_TICKET) return MY_TICKETS_SCOPE.ASSIGNED;
+  if (bar === BAR_TYPE.MY_CREATED_TICKET) return MY_TICKETS_SCOPE.CREATED;
+  return null;
+};
+
+export const getMyTicketsBar = (search) => {
+  const scope = new URLSearchParams(search).get('scope');
+  return scope === MY_TICKETS_SCOPE.CREATED ? BAR_TYPE.MY_CREATED_TICKET : BAR_TYPE.MY_TICKET;
+};
+
+export const getMyTicketsURL = (projectURL, scope, search = '') => {
+  const params = new URLSearchParams(search);
+  if (scope === MY_TICKETS_SCOPE.CREATED) {
+    params.set('scope', scope);
+  } else {
+    params.delete('scope');
+  }
+  const query = params.toString();
+  return `${projectURL}${BAR_TYPE.MY_TICKET}/${query ? `?${query}` : ''}`;
+};
 
 export const getResourceIconURL = (type) => {
   const root = `${siteRoot}${mediaUrl}`.replaceAll('//', '/');

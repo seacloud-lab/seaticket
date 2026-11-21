@@ -6,6 +6,7 @@ export const BAR_TYPE = {
   SEARCH: 'search',
   TICKET: 'tickets',
   MY_TICKET: 'my-tickets',
+  MY_CREATED_TICKET: 'my-created-tickets',
   NEW_TICKET: 'new-ticket',
   TRASH: 'tickets/trash',
   CONNECTION: 'connections',
@@ -118,8 +119,13 @@ export const BAR_TYPE_CONFIG = {
   },
   [BAR_TYPE.MY_TICKET]: {
     key: BAR_TYPE.MY_TICKET,
-    name: gettext('My tickets'),
+    name: gettext('Assigned to me'),
     icon: 'my-tickets'
+  },
+  [BAR_TYPE.MY_CREATED_TICKET]: {
+    key: BAR_TYPE.MY_CREATED_TICKET,
+    name: gettext('Created by me'),
+    icon: 'edit'
   },
   [BAR_TYPE.NEW_TICKET]: {
     key: BAR_TYPE.NEW_TICKET,

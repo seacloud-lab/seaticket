@@ -83,7 +83,10 @@ const TicketInDialog = ({
 
     // current is not table, not need to update
     const pathname = window.location.pathname;
-    if (pathname.endsWith('/tickets/') || pathname.endsWith('/portal-issues/')) {
+    const isList = ticketType === TICKET_TYPE
+      ? pathname.endsWith('/tickets/') || pathname.endsWith('/my-tickets/')
+      : pathname.endsWith('/portal-issues/');
+    if (isList) {
       const eventBus = context.eventBus;
       eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, currentTicketID, localRowUpdate);
     }
@@ -112,13 +115,18 @@ const TicketInDialog = ({
     }
 
     const modifyPromise = ticketType === TICKET_TYPE ? ticketsAPI.modifyProjectTicket(projectUuid, currentTicketID, serverData) : portalAPI.modifyPortalIssue(projectUuid, currentTicketID, serverData);
-    return modifyPromise.then(() => {
+    return modifyPromise.then(res => {
       let update = { ...data };
 
       if (ticketType === TICKET_TYPE) {
         const participants = ticket?.participants || [];
         if (!Object.prototype.hasOwnProperty.call(update, 'participants') && !participants.includes(username)) {
           update.participants = [...participants, username];
+        }
+        const { assignees, modified_time } = res.data?.row || {};
+        if (Array.isArray(assignees)) {
+          update.assignees = assignees;
+          update.modified_time = modified_time;
         }
       }
 
