@@ -29,7 +29,8 @@ from seahub.project.views import email_oauth, email_oauth_callback
 from seahub.project.oauth_utils import EmailOAuthUtils
 from seahub.project.utils import extract_email_addresses_to_display, get_email_oauth_callback_url
 from seahub.project.agent import AgentActionConfirmView
-from seahub.project.models import ProjectConnectionOauth
+from seahub.project.models import ProjectAPIToken, ProjectConnectionOauth
+from seahub.project.token_connections import ProjectConnectionListByTokenView
 from seahub.portal.models import PortalCustomer
 from seahub.project.constants import ConnectionType, EMAIL_ACCOUNT_TYPE_SHARED, EMAIL_OAUTH_CONFIGS
 from seahub.utils.storage import FileNotFound
@@ -209,6 +210,17 @@ class TestProjectConnectionsView:
         assert resp.status_code == 200
         assert 'records' in resp.data
         assert site_connection.id in [r['id'] for r in resp.data['records']]
+
+    def test_get_non_admin_does_not_return_connection_config(self, factory, project_creator, real_project, site_connection):
+        request = factory.get(f'/api/v1/project/{real_project.uuid}/connections/')
+        request.user = project_creator
+
+        with patch('seahub.project.connections.check_project_admin_permission', return_value=False):
+            resp = ProjectConnectionsView.as_view()(request, project_uuid=real_project.uuid)
+
+        assert resp.status_code == 200
+        record = next(item for item in resp.data['records'] if item['id'] == site_connection.id)
+        assert 'config' not in record
 
     def test_post_feature_not_enabled(self, factory, no_org_user, real_project):
         project = real_project
@@ -467,6 +479,46 @@ class TestProjectConnectionView:
 
         assert resp.status_code == 200
         assert resp.data['record']['id'] == site_connection.id
+
+    def test_get_non_admin_does_not_return_connection_config(self, factory, project_creator, real_project, site_connection):
+        request = factory.get(f'/api/v1/project/{real_project.uuid}/connections/{site_connection.id}/')
+        request.user = project_creator
+
+        with patch('seahub.project.connections.check_project_admin_permission', return_value=False):
+            resp = ProjectConnectionView.as_view()(
+                request, project_uuid=real_project.uuid, connection_id=str(site_connection.id)
+            )
+
+        assert resp.status_code == 200
+        assert 'config' not in resp.data['record']
+
+    def test_get_admin_includes_connection_config(self, factory, project_creator, real_project, connection_factory):
+        connection = connection_factory(config={'api_token': 'secret-token'})
+        request = factory.get(f'/api/v1/project/{real_project.uuid}/connections/{connection.id}/')
+        request.user = project_creator
+
+        resp = ProjectConnectionView.as_view()(
+            request, project_uuid=real_project.uuid, connection_id=str(connection.id)
+        )
+
+        assert resp.status_code == 200
+        assert resp.data['record']['config']['api_token'] == 'secret-token'
+
+
+class TestProjectConnectionListByTokenView:
+    def test_get_does_not_return_connection_config(self, factory, project_creator, real_project, connection_factory):
+        connection_factory(config={'api_token': 'secret-token'})
+        api_token = ProjectAPIToken.objects.add(real_project, 'test-app', project_creator.username, 'rw')
+        request = factory.get(
+            '/api/v1/project/connection-list/',
+            HTTP_AUTHORIZATION=f'Token {api_token.token}',
+        )
+
+        resp = ProjectConnectionListByTokenView.as_view()(request)
+
+        assert resp.status_code == 200
+        assert resp.data['records']
+        assert all('config' not in record for record in resp.data['records'])
 
     def test_put_role_permission_denied(self, factory, project_creator, real_project, site_connection):
         project = real_project

@@ -559,11 +559,6 @@ class PortalIssuesView(APIView):
             if 'type' in row_data:
                 updated_row[SchemaTables.PORTAL_ISSUES.column.type.name] = row_data.get('type') or None
 
-            for key, value in row_data.items():
-                if key in ('substate', 'tags', 'type', '_pk', 'modified_time', 'content', 'state', 'customer_id'):
-                    continue
-                updated_row[key] = value
-
             if not updated_row:
                 continue
 
@@ -3196,6 +3191,8 @@ class PortalExternalLoginSendCodeView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         portal_settings = get_portal_settings(project)
+        if not portal_settings.get('enable_portal'):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Portal is not enabled.')
 
         if is_user_in_the_same_team(project, email):
             next_url = portal_path(request, project_uuid)
@@ -3269,6 +3266,12 @@ class PortalExternalLoginVerifyCodeView(APIView):
         code = (request.data.get('code') or '').strip()
         if not email or not code:
             return api_error(status.HTTP_400_BAD_REQUEST, 'param invalid.')
+
+        project = Projects.objects.get_project_by_uuid(project_uuid)
+        if not project:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
+        if not get_portal_settings(project).get('enable_portal'):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Portal is not enabled.')
 
         if is_portal_external_login_locked(project_uuid, email):
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, 'Too many attempts, please try again later.')
