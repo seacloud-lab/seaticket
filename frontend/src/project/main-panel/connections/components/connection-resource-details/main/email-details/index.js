@@ -32,22 +32,26 @@ const EmailDetails = ({ details, className, ...props }) => {
     <div className={classnames('seaqa-connection-email-record', className, { 'last-record-expand': isLastExpand })}>
       {!isShowAll && (
         <div className="seaqa-connection-email-record-details collapsed more" onClick={() => setIsShowAll(true)}>
-          <div className="email-avatar">
-            <IconButton icon="more" className="no-hover-bg more-tip" />
-          </div>
-          <div className="email-record-info">
-            <div className="email-record-info-container">
-              <span className="email-record-info-sender">{username || email}</span>
-              <span className="email-record-info-content text-truncate"></span>
-              {isUnread && <div className="read-status unread"/>}
-              <span className="email-record-info-time">
-                {gettext('Show')}
-                <span className="email-record-info-more-count">{` ${details.length - 1} ${gettext('more')} `}</span>
-                {gettext('messages')}
-              </span>
-            </div>
-            <div className="email-record-info-participants">
-              {'more'}
+          <div className="email-header">
+            <div className="email-header-content">
+              <div className="email-avatar">
+                <IconButton icon="more" className="no-hover-bg more-tip" size={{ icon: 24 }} />
+              </div>
+              <div className="email-record-info">
+                <div className="email-record-info-container">
+                  <span className="email-record-info-sender">{username || email}</span>
+                  <span className="email-record-info-content text-truncate"></span>
+                  {isUnread && <div className="read-status unread"/>}
+                  <span className="email-record-info-time">
+                    {gettext('Show')}
+                    <span className="email-record-info-more-count">{` ${details.length - 1} ${gettext('more')} `}</span>
+                    {gettext('messages')}
+                  </span>
+                </div>
+                <div className="email-record-info-participants">
+                  {'more'}
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -55,9 +55,8 @@
   overflow: hidden;
   align-items: center;
   width: 100%;
-  margin-bottom: 2px;
   gap: 4px;
-  line-height: 22px;
+  line-height: 24px;
 }
 
 .seaqa-connection-email-record-details .email-record-info .email-record-info-sender {
@@ -208,17 +207,6 @@
 /* more */
 .seaqa-connection-email-record-details.more .email-avatar {
   align-items: flex-start;
-}
-
-.seaqa-connection-email-record-details.more .email-avatar .more-tip {
-  height: 20px;
-  width: 20px;
-  margin-top: 9px;
-}
-
-.seaqa-connection-email-record-details.more .email-avatar .more-tip .seaqa-icon-svg-more {
-  height: 20px;
-  width: 20px;
 }
 
 .seaqa-connection-email-record-details.more .email-record-info-more-count {
