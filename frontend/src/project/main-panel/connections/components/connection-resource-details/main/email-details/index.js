@@ -17,25 +17,13 @@ const EmailDetails = ({ details, className, ...props }) => {
   }, [details]);
 
   const moreUsers = useMemo(() => {
-    const allUsers = details.slice(0, -1).map(emailItem => {
-      const userInfo = parseEmailUserInfo(emailItem?.email_from);
-      if (!userInfo?.email) return null;
-      return userInfo;
-    }).filter(Boolean);
-    let users = [];
-    let usersInfo = {};
-    for (let i = allUsers.length - 1; i >= 0; i--) {
-      const user = allUsers[i];
-      const { email } = user;
-      if (!users.includes(email)) {
-        users.push(email);
-      }
-      if (!usersInfo[email]) {
-        usersInfo[email] = user;
-      }
+    // Details are chronological; keep first-seen order and the latest info per sender.
+    const usersByEmail = new Map();
+    for (let index = 0; index < details.length - 1; index++) {
+      const userInfo = parseEmailUserInfo(details[index]?.email_from);
+      if (userInfo?.email) usersByEmail.set(userInfo.email, userInfo);
     }
-    users.reverse();
-    return users.map(email => usersInfo[email]);
+    return Array.from(usersByEmail.values());
   }, [details]);
 
   if (details.length === 0) {

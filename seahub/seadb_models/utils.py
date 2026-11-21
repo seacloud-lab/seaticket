@@ -516,16 +516,19 @@ def list_connection_view_records(seadb_api, project_uuid, connection, view, star
         from seahub.project.utils import extract_email_addresses_to_display
         from email.utils import parseaddr
 
-        thread_ids = []
+        records_by_thread = {}
         for record in records:
+            record['participants'] = None
             try:
-                thread_ids.append(int(record['_pk']))
+                thread_id = int(record['_pk'])
             except (KeyError, TypeError, ValueError):
-                record['participants'] = None
+                continue
+            records_by_thread.setdefault(thread_id, []).append(record)
 
-        thread_ids = list(dict.fromkeys(thread_ids))
-        participants_by_thread = {thread_id: set() for thread_id in thread_ids}
+        thread_ids = list(records_by_thread)
+        participants_by_thread = {thread_id: {} for thread_id in thread_ids}
         participants_info = {}
+        participants_query_succeeded = False
 
         if thread_ids:
             email_table_name = SchemaTables.EMAIL.table_name(connection.id)
@@ -535,12 +538,13 @@ def list_connection_view_records(seadb_api, project_uuid, connection, view, star
             participants_sql = (
                 f"SELECT `thread_id`, `email_from`, `modified_time` FROM `{email_table_name}` "
                 f"WHERE `thread_id` IN ({thread_ids_sql}) AND deleted = false "
-                f"ORDER BY `modified_time` "
+                f"ORDER BY `modified_time`, `_pk` "
                 f"LIMIT 0, 1000000"
             )
             try:
                 email_res = seadb_api.query_rows(project_uuid, participants_sql, convert_keys=True)
                 emails = email_res.get('results', [])
+                participants_query_succeeded = True
             except Exception as e:
                 logger.error(f'SeaDB query error for email participants {email_table_name}: {e}')
                 emails = []
@@ -553,6 +557,7 @@ def list_connection_view_records(seadb_api, project_uuid, connection, view, star
                 if thread_id not in participants_by_thread:
                     continue
 
+                # Follow Fastmail's thread participant list: senders only, excluding To and Cc.
                 participants_columns = ('email_from', )
                 for field in participants_columns:
                     value = email.get(field)
@@ -565,15 +570,14 @@ def list_connection_view_records(seadb_api, project_uuid, connection, view, star
                             flag = False
                         if flag:
                             participants_info[email_address] = address_info
-                        participants_by_thread[thread_id].add(email_address)
+                        participants_by_thread[thread_id].setdefault(email_address, None)
 
-        for record in records:
-            try:
-                thread_id = int(record['_pk'])
-            except (KeyError, TypeError, ValueError):
-                continue
-            participant_address = list(participants_by_thread.get(thread_id, set()))
-            record['participants'] = [participants_info[email_address] for email_address in participant_address]
+            if participants_query_succeeded:
+                for thread_id, thread_records in records_by_thread.items():
+                    participant_addresses = participants_by_thread[thread_id]
+                    participants = [participants_info[email_address] for email_address in participant_addresses]
+                    for record in thread_records:
+                        record['participants'] = participants
 
         display_all_columns.append({
             'key': 'participants',

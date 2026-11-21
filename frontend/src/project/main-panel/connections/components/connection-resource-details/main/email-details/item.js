@@ -65,7 +65,7 @@ const Item = ({
   const content = useMemo(() => detail.content || '', [detail.content]);
   const HTMLContent = useMemo(() => detail.html_content || '', [detail.html_content]);
   const isHTMLContent = useMemo(() => HTMLContent ? true : false, [HTMLContent]);
-  const { sender, email, senderFullName, color } = useMemo(() => {
+  const { sender, email, fullName: senderFullName, color } = useMemo(() => {
     const { color, name, email, fullName } = parseEmailUserInfo(detail['email_from']);
     return { sender: name, email, fullName, color };
   }, [detail]);

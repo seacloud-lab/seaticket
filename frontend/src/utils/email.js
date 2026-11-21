@@ -2,6 +2,7 @@ import { isObject, isString } from './type-detection';
 
 const emailWithDisplayNamePattern = /^\s*(?:(?:"((?:[^"\\]|\\.)*)"|([^<>]*?))\s*)?<\s*([^<>]+?)\s*>\s*$/;
 const emailDomainPattern = /^[^@\s<>]+@([^@\s<>]+)$/;
+const emailAddressPattern = /^[A-Za-z0-9]+([-_.][A-Za-z0-9]+)*@([A-Za-z0-9]+[-.])+[A-Za-z0-9]{2,20}$/;
 const SVG_AVATAR_COLORS = [
   '#293857',
   '#3c4497',
@@ -31,9 +32,13 @@ export const parseEmailDomain = (value = '') => {
   return match ? match[1] : '';
 };
 
+export const isValidEmailAddress = (email) => {
+  return emailAddressPattern.test(String(email ?? ''));
+};
+
 const getEmailPrefix = (email) => {
   const atIndex = email.lastIndexOf('@');
-  return atIndex > 0 ? email.slice(0, atIndex) : '';
+  return atIndex > 0 && isValidEmailAddress(email) ? email.slice(0, atIndex) : '';
 };
 
 /**
@@ -43,20 +48,26 @@ const getEmailPrefix = (email) => {
  */
 export const parseEmailAddress = (value = '') => {
   const addressText = String(value ?? '').trim();
-  if (!addressText) return { name: '', email: '', fullName: '' };
+  if (!addressText) return { name: '', email: '', fullName: '', isCustomizedName: false };
   const match = emailWithDisplayNamePattern.exec(addressText);
   if (!match) {
-    return { name: getEmailPrefix(addressText), email: addressText, fullName: addressText };
+    return {
+      name: getEmailPrefix(addressText),
+      email: addressText,
+      fullName: addressText,
+      isCustomizedName: false,
+    };
   }
 
   const email = match[3].trim();
   const name = (match[1] ? match[1].replace(/\\(.)/g, '$1') : match[2] || '').trim() || '';
+  const isCustomizedName = Boolean(name);
 
   return {
     name: name || getEmailPrefix(email),
     email,
-    fullName: name ? `${name} <${email}>` : email,
-    isCustomizedName: Boolean(name),
+    fullName: isCustomizedName ? `${name} <${email}>` : email,
+    isCustomizedName,
   };
 };
 

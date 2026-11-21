@@ -1,4 +1,4 @@
-import React, { Fragment, useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { Collaborator, UserAvatar } from '@/components';
@@ -15,7 +15,7 @@ const CollaboratorsFormatter = ({ value, className, children: emptyFormatter, is
     return value.filter(Boolean);
   }, [value]);
 
-  const isEmailUser = useMemo(() => hasOwnProperty(column?.data || {}, 'is_email_user') && column?.data?.is_email_user, [column]);
+  const isEmailUser = column?.data?.is_email_user;
   const collaboratorsCount = useMemo(() => validValue.length, [validValue]);
 
   const renderChildren = useCallback(() => {
