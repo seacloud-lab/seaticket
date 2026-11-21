@@ -18,7 +18,7 @@ const Formatter = ({ isCellSelected, column, value, onChange, row, ...params }) 
     return (<PriorityEditor { ...params } isCellSelected={isCellSelected} value={value} column={column} onChange={onChange} row={row} />);
   }
 
-  return (<CellFormatter { ...params } readonly={true} value={value} column={column} row={row} metadata={metadata} />);
+  return (<CellFormatter isSimple={column.width < 60} { ...params } readonly={true} value={value} column={column} row={row} metadata={metadata} />);
 };
 
 Formatter.propTypes = {

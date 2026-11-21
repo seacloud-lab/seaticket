@@ -77,7 +77,7 @@ class GroupContainer extends Component {
   render() {
     const {
       group, columns, width, isExpanded, folding, summaryConfigs, height, backdropHeight, top,
-      groupOffsetLeft, lastFrozenColumnKey, maxLevel, scrollLeft, fixedColumnCount,
+      groupOffsetLeft, lastFrozenColumnKey, maxLevel, scrollLeft,
     } = this.props;
     const { left, level } = group;
     const firstLevelGroup = level === 1;
@@ -90,6 +90,7 @@ class GroupContainer extends Component {
 
     const frozenColumns = getFrozenColumns(columns);
     const groupHeaderColumns = frozenColumns.length > 0 ? frozenColumns : columns;
+    const fixedColumnCount = frozenColumns.length;
     const groupHeaderColSpanColumns = groupHeaderColumns.slice(0, fixedColumnCount);
     const groupHeaderContentWidth = groupHeaderColSpanColumns.reduce((pre, cur) => pre + (cur.width || 0), 0);
     const firstColumn = groupHeaderColumns[0];

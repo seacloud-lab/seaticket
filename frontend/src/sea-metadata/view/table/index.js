@@ -12,7 +12,7 @@ import TableMain from './table-main';
 
 import './index.css';
 
-const Table = ({ fixedColumnCount, expandRow, children }) => {
+const Table = ({ expandRow, children }) => {
   const [isLoadingMore, setLoadingMore] = useState(false);
   const [expandedRow, setExpandedRow] = useState(null);
 
@@ -172,7 +172,6 @@ const Table = ({ fixedColumnCount, expandRow, children }) => {
         isGroupView={isGroupView}
         isLoadingMore={isLoadingMore}
         isShowRowExpandBtn={Boolean(expandRow)}
-        fixedColumnCount={fixedColumnCount}
         loadMore={loadMore}
         metadata={metadata}
         tagsData={tagsData}
