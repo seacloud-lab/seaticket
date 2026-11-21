@@ -1,15 +1,15 @@
 import { CONNECTION_FIELDS, CONNECTION_TYPE } from '@/project/main-panel/connections/constants';
 import { getVisibleEmailFields, isEmailOAuthConfigValid, sanitizeEmailConfigByProvider } from '@/project/main-panel/connections/utils';
 
-jest.mock('@/constants', () => ({ gettext: value => value }), { virtual: true });
-jest.mock('@/components', () => ({}), { virtual: true });
-jest.mock('@/sea-metadata/constants', () => ({}), { virtual: true });
-jest.mock('@/sea-metadata/constants/column', () => ({ DATE_FORMAT_MAP: {} }), { virtual: true });
-jest.mock('@/sea-metadata/constants/column/type', () => ({}), { virtual: true });
-jest.mock('@/sea-metadata/utils/cell', () => ({}), { virtual: true });
-jest.mock('@/sea-metadata/utils/column', () => ({}), { virtual: true });
-jest.mock('@/sea-metadata/utils/row', () => ({}), { virtual: true });
-jest.mock('@/utils/type-detection', () => ({}), { virtual: true });
+jest.mock('@/constants', () => ({ gettext: value => value }));
+jest.mock('@/components', () => ({}));
+jest.mock('@/sea-metadata/constants', () => ({}));
+jest.mock('@/sea-metadata/constants/column', () => ({ DATE_FORMAT_MAP: {} }));
+jest.mock('@/sea-metadata/constants/column/type', () => ({}));
+jest.mock('@/sea-metadata/utils/cell', () => ({}));
+jest.mock('@/sea-metadata/utils/column', () => ({}));
+jest.mock('@/sea-metadata/utils/row', () => ({}));
+jest.mock('@/utils/type-detection', () => ({}));
 jest.mock('@/project/main-panel/tickets/constants', () => ({}));
 
 const fields = CONNECTION_FIELDS[CONNECTION_TYPE.EMAIL];
