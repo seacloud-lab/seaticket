@@ -35,6 +35,7 @@ from seahub.portal.models import PortalCustomDomain, PortalDomainAlias, PortalEx
 from seahub.portal.utils import load_portal_preview_token
 from seahub.portal.portal_issue_types import PortalIssueTypeAPIView
 from seahub.portal.portal_issue_substates import PortalIssueSubstateAPIView
+from seahub.portal.files import PortalFileView
 from seahub.constants import PORTAL_WELCOME_EMAIL_CONTENT, PORTAL_WELCOME_EMAIL_SUBJECT, \
     PORTAL_WELCOME_EMAIL_CONTENT_MAX_LENGTH, PORTAL_WELCOME_EMAIL_SUBJECT_MAX_LENGTH
 
@@ -61,6 +62,34 @@ def _set_portal_settings(project, *, enable_portal=True, allow_anonymous=False,
     settings_dict['portal'] = portal
     project.settings = json.dumps(settings_dict)
     project.save(update_fields=['settings'])
+
+
+@pytest.mark.parametrize('view', [PortalLogoView, PortalBackgroundImageView])
+def test_deleted_project_public_assets_are_unavailable(factory, real_project, view):
+    real_project.deleted = True
+    real_project.save(update_fields=['deleted'])
+    request = factory.get('/')
+    with patch('seahub.portal.apis.get_project_file_metadata') as metadata:
+        response = view.as_view()(request, project_uuid=str(real_project.uuid))
+    assert response.status_code == 404
+    metadata.assert_not_called()
+
+
+@pytest.mark.parametrize('is_file', [False, True])
+def test_deleted_project_rejects_portal_data_and_files(factory, real_project, project_creator, is_file):
+    real_project.deleted = True
+    real_project.save(update_fields=['deleted'])
+    request = factory.get('/')
+    request.user = project_creator
+    kwargs = {'project_uuid': str(real_project.uuid)}
+    view = PortalTagsView
+    if is_file:
+        view = PortalFileView
+        kwargs['file_path'] = 'attachments/knowledgebase/1/image.png'
+
+    response = view.as_view()(request, **kwargs)
+
+    assert response.status_code == 403
 
 
 class TestPortalIssuesView:
@@ -1113,6 +1142,18 @@ class TestPortalCustomDomainVerificationView:
 
 @pytest.mark.django_db
 class TestPortalCustomDomainTLSAskView:
+
+    def test_get_rejects_deleted_project_even_with_cached_allowance(self, factory, real_project):
+        real_project.deleted = True
+        real_project.save(update_fields=['deleted'])
+        domain = 'deleted-project.local.test'
+        PortalCustomDomain.objects.create(domain=domain, project_uuid=str(real_project.uuid), verified=True)
+        cache.set(get_portal_tls_ask_cache_key(domain), True, 60)
+        request = factory.get('/internal/portal/custom-domain/allow-tls', {'domain': domain})
+
+        response = PortalCustomDomainTLSAskView.as_view()(request)
+
+        assert response.status_code == 403
 
     def test_get_allows_verified_custom_domain_when_portal_enabled(self, factory, real_project):
         project = real_project

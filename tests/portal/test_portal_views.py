@@ -17,6 +17,7 @@ from seahub.portal.utils import (
     PORTAL_DOMAIN_TYPE_CUSTOM,
     PORTAL_DOMAIN_TYPE_SERVICE_ALIAS,
     set_portal_preview_session,
+    get_request_project_and_portal_settings,
 )
 from seahub.portal.views import (
     _get_portal_login_context,
@@ -29,6 +30,23 @@ from seahub.settings import LOGIN_REMEMBER_DAYS
 
 def process_portal_domain_request(request):
     return PortalDomainMiddleware(lambda _request: None).process_request(request)
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize('cached_project', [False, True])
+def test_deleted_project_is_not_available_to_portal(factory, real_project, cached_project):
+    real_project.deleted = True
+    real_project.save(update_fields=['deleted'])
+    request = factory.get('/')
+    if cached_project:
+        request.project = real_project
+        request.portal_settings = {'enable_portal': True}
+
+    assert get_request_project_and_portal_settings(request, str(real_project.uuid)) == (None, None)
+    with patch('seahub.portal.views.render_error', return_value=HttpResponse(status=404)) as render_error:
+        response = portal_view(request, str(real_project.uuid))
+    assert response.status_code == 404
+    render_error.assert_called_once()
 
 
 @pytest.mark.django_db

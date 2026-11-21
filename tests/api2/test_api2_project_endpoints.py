@@ -376,7 +376,7 @@ class TestSearchView:
         project = real_project
         request = factory.post(
             '/api/v1/search/',
-            data={'project_uuid': project.uuid, 'workspace_id': project.workspace.id, 'query': 'x', 'connection_ids': [1]},
+            data={'project_uuid': project.uuid, 'query': 'x', 'connection_ids': [1]},
             format='json',
         )
         request.user = project_creator
@@ -400,13 +400,32 @@ class TestSearchView:
         }]}
         assert Projects.objects.filter(uuid=project.uuid).exists()
 
+    def test_post_cannot_authorize_with_another_workspace(self, factory, auth_user, real_project):
+        own_workspace = Workspaces.objects.create(owner=auth_user.username, org_id=1)
+        request = factory.post(
+            '/api/v1/search/',
+            data={
+                'project_uuid': str(real_project.uuid),
+                'workspace_id': own_workspace.id,
+                'query': 'x',
+                'extra_sources': ['ticket'],
+            },
+            format='json',
+        )
+        request.user = auth_user
+
+        with patch('seahub.api2.endpoints.project.keyword_search') as search:
+            response = SearchView.as_view()(request)
+
+        assert response.status_code == 403
+        search.assert_not_called()
+
     def test_post_semantic_search_supports_portal_issue(self, factory, project_creator, real_project):
         project = real_project
         request = factory.post(
             '/api/v1/search/',
             data={
                 'project_uuid': project.uuid,
-                'workspace_id': project.workspace.id,
                 'query': 'x',
                 'extra_sources': ['portal_issue'],
                 'search_type': 'semantic_search',

@@ -24,6 +24,7 @@ from seahub.project.connections import (
     DiscourseWebhookView,
     ConnectionFileView,
     ProjectEmailOAuthQueryView,
+    QueryIOStatus,
 )
 from seahub.project.views import email_oauth, email_oauth_callback
 from seahub.project.oauth_utils import EmailOAuthUtils
@@ -40,6 +41,15 @@ from seahub import settings
 
 class DummySession(dict):
     modified = False
+
+
+def test_io_status_requires_authentication(factory):
+    request = factory.get('/api/v1/query-io-status/', {'task_id': 'task-1'})
+    with patch('seahub.project.connections.query_io_task_status') as query_status:
+        response = QueryIOStatus.as_view()(request)
+
+    assert response.status_code in (401, 403)
+    query_status.assert_not_called()
 
 
 class TestEmailOAuthUtils:

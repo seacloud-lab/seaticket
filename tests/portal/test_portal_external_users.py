@@ -223,6 +223,19 @@ def login_code(real_project, external_user):
 @pytest.mark.django_db
 class TestPortalExternalUserAccess:
 
+    @pytest.mark.parametrize('view', [PortalExternalLoginSendCodeView, PortalExternalLoginVerifyCodeView])
+    def test_deleted_project_rejects_login(self, factory, real_project, external_user, login_code, view):
+        real_project.deleted = True
+        real_project.save(update_fields=['deleted'])
+        request = factory.post('/', {'email': external_user.email, 'code': '123456'}, format='json')
+
+        with patch('seahub.portal.apis.send_html_email_with_dj_template') as send_mail:
+            response = view.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert response.status_code == 404
+        assert 'portal_external_username' not in request.session
+        send_mail.assert_not_called()
+
     @pytest.mark.parametrize('activated', [True, False])
     def test_user_receives_login_code(
             self, factory, real_project, external_user, login_code, activated):

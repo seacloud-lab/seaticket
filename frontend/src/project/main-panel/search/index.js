@@ -17,7 +17,7 @@ import ProjectSearchResultListItem from './project-search-result-list-item';
 import './index.css';
 import './search-filters.css';
 
-const { workspaceID, projectUuid } = window.app.pageOptions;
+const { projectUuid } = window.app.pageOptions;
 
 const SEARCH_STORE_KEY = 'search-project';
 
@@ -98,7 +98,7 @@ const Search = ({ title }) => {
         ...(includeKBLocal ? ['knowledge_base'] : []),
         ...(includeTicketLocal ? ['ticket'] : []),
       ];
-      searchAPI.search(workspaceID, projectUuid, value, showConnectionIds, timeFrom, timeTo, extraSources, source.token, semanticEnabled).then(res => {
+      searchAPI.search(projectUuid, value, showConnectionIds, timeFrom, timeTo, extraSources, source.token, semanticEnabled).then(res => {
         const rawResults = res.data?.results || [];
         setResults(rawResults.map(result => new SearchResult(result)));
         setSearching(false);

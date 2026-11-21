@@ -129,7 +129,7 @@ class PortalLogoView(APIView):
         return super().initialize_request(request, *args, **kwargs)
 
     def get(self, request, project_uuid):
-        project = Projects.objects.get_project_by_uuid(project_uuid)
+        project = Projects.objects.get_project_by_uuid(project_uuid, include_deleted=False)
         if not project:
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -201,7 +201,7 @@ class PortalBackgroundImageView(APIView):
         return super().initialize_request(request, *args, **kwargs)
 
     def get(self, request, project_uuid):
-        project = Projects.objects.get_project_by_uuid(project_uuid)
+        project = Projects.objects.get_project_by_uuid(project_uuid, include_deleted=False)
         if not project:
             return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
 
@@ -2576,7 +2576,7 @@ class PortalCustomDomainTLSAskView(APIView):
             cache.set(tls_ask_cache_key, False, PORTAL_TLS_ASK_CACHE_TIMEOUT)
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        project = Projects.objects.get_project_by_uuid(custom_domain.project_uuid)
+        project = Projects.objects.get_project_by_uuid(custom_domain.project_uuid, include_deleted=False)
         allowed = bool(project and get_portal_settings(project).get('enable_portal', False))
         if not allowed:
             cache.set(tls_ask_cache_key, False, PORTAL_TLS_ASK_CACHE_TIMEOUT)
@@ -3195,7 +3195,7 @@ class PortalExternalLoginSendCodeView(APIView):
         if not is_valid_email(email):
             return api_error(status.HTTP_400_BAD_REQUEST, 'email invalid.')
 
-        project = Projects.objects.get_project_by_uuid(project_uuid)
+        project = Projects.objects.get_project_by_uuid(project_uuid, include_deleted=False)
         if not project:
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -3277,7 +3277,7 @@ class PortalExternalLoginVerifyCodeView(APIView):
         if not email or not code:
             return api_error(status.HTTP_400_BAD_REQUEST, 'param invalid.')
 
-        project = Projects.objects.get_project_by_uuid(project_uuid)
+        project = Projects.objects.get_project_by_uuid(project_uuid, include_deleted=False)
         if not project:
             return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
         if not get_portal_settings(project).get('enable_portal'):

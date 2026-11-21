@@ -556,11 +556,6 @@ class SearchView(APIView):
             error_msg = 'project_uuid invalid.'
             return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
 
-        workspace_id = request.data.get('workspace_id')
-        if not workspace_id:
-            error_msg = 'workspace_id invalid.'
-            return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
-
         query = request.data.get('query')
         if not query:
             error_msg = 'query invalid.'
@@ -589,18 +584,13 @@ class SearchView(APIView):
         time_from = request.data.get('time_from')
         time_to = request.data.get('time_to')
 
-        workspace = Workspaces.objects.get_workspace_by_id(workspace_id)
-        if not workspace:
-            error_msg = f'Workspace {workspace_id} not found.'
-            return api_error(status.HTTP_404_NOT_FOUND, error_msg)
-
-        project = Projects.objects.get_project_by_uuid(project_uuid)
+        project = Projects.objects.get_project_by_uuid(project_uuid, include_deleted=False)
         if not project:
             error_msg = f'project {project_uuid} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         username = request.user.username
-        if not check_project_permission(username, workspace.owner):
+        if not check_project_permission(username, project.workspace.owner):
             error_msg = 'Permission denied.'
             return api_error(status.HTTP_403_FORBIDDEN, error_msg)
 

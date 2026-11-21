@@ -218,13 +218,15 @@ def get_portal_settings(project):
 def get_request_project_and_portal_settings(request, project_uuid):
     request_project = getattr(request, 'project', None)
     if request_project and str(getattr(request_project, 'uuid', '')) == str(project_uuid):
+        if request_project.deleted:
+            return None, None
         portal_settings = getattr(request, 'portal_settings', None)
         if portal_settings is None:
             portal_settings = get_portal_settings(request_project)
             request.portal_settings = portal_settings
         return request_project, portal_settings
 
-    project = Projects.objects.get_project_by_uuid(project_uuid)
+    project = Projects.objects.get_project_by_uuid(project_uuid, include_deleted=False)
     if not project:
         return None, None
 
@@ -241,7 +243,7 @@ def _build_visitor_session_error():
 
 
 def _get_project_or_error(project_uuid):
-    project = Projects.objects.get_project_by_uuid(project_uuid)
+    project = Projects.objects.get_project_by_uuid(project_uuid, include_deleted=False)
     if not project:
         return None, api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
     return project, None

@@ -954,9 +954,6 @@ class DiscourseWebhookView(APIView):
     throttle_classes = (UserRateThrottle,)
 
     def verify_signature(self, signature, msg, secret):
-        if not signature:
-            return True
-
         if '=' not in signature:
             return False
 
@@ -2546,6 +2543,7 @@ class ZipEmailAttachments(APIView):
 
 class QueryIOStatus(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request):
