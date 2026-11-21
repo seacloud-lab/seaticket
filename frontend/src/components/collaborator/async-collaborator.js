@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
 import { mediaUrl as appMediaUrl } from '@/constants';
+import { parseEmailAddress } from '@/utils/email';
 import { isValidEmail } from '@/utils/validate';
 import Collaborator from './collaborator';
 
@@ -9,13 +9,18 @@ const getDefaultAvatarUrl = (mediaUrl) => {
   return `${normalizedMediaUrl}/avatars/default.png`;
 };
 
-const AsyncCollaborator = ({ className, value, mediaUrl = appMediaUrl, api, collaborators, collaboratorsCache, updateCollaboratorsCache, children }) => {
+const AsyncCollaborator = ({ className, value, isEmailUser = false, mediaUrl = appMediaUrl, api, collaborators, collaboratorsCache, updateCollaboratorsCache, children }) => {
   const [collaborator, setCollaborator] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
     if (!value) {
       isMounted && setCollaborator(null);
+      return () => isMounted = false;
+    }
+    if (isEmailUser) {
+      const { name, email, fullName } = parseEmailAddress(value);
+      isMounted && setCollaborator({ name, email, fullName });
       return () => isMounted = false;
     }
     let collaborator = collaborators && collaborators.find(c => c.email === value);
@@ -67,10 +72,6 @@ const AsyncCollaborator = ({ className, value, mediaUrl = appMediaUrl, api, coll
       {children}
     </Collaborator>
   );
-};
-
-AsyncCollaborator.propTypes = {
-  value: PropTypes.string,
 };
 
 export default AsyncCollaborator;

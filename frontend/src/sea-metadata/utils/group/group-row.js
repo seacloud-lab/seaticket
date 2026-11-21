@@ -1,3 +1,4 @@
+import { parseEmailAddress } from '@/utils/email';
 import {
   CellType, DATE_COLUMN_OPTIONS, MULTIPLE_CELL_VALUE_COLUMN_TYPE_MAP, SINGLE_CELL_VALUE_COLUMN_TYPE_MAP, MAX_GROUP_LEVEL,
   SORT_COLUMN_OPTIONS, SORT_TYPE, TEXT_SORTER_COLUMN_TYPES, NUMBER_SORTER_COLUMN_TYPES,
@@ -48,14 +49,22 @@ const _getFormattedCellValue = (cellValue, groupby) => {
   }
 };
 
-const _getStrCellValue = (cellValue, columnType) => {
-  let sCellValue = null;
+const _getStrCellValue = (cellValue, column) => {
+  const { type: columnType } = column;
   if (SINGLE_CELL_VALUE_COLUMN_TYPE_MAP[columnType]) {
-    sCellValue = typeof cellValue === 'string' ? cellValue : String(cellValue);
-  } else if (MULTIPLE_CELL_VALUE_COLUMN_TYPE_MAP[columnType]) {
-    sCellValue = [...cellValue].sort().toString();
+    return typeof cellValue === 'string' ? cellValue : String(cellValue);
   }
-  return sCellValue;
+  if (MULTIPLE_CELL_VALUE_COLUMN_TYPE_MAP[columnType]) {
+    if (columnType === CellType.COLLABORATOR && column?.data?.is_email_user) {
+      const value = cellValue.map(emailAddress => {
+        const { email } = parseEmailAddress(emailAddress);
+        return email;
+      }).filter(Boolean);
+      return [...value].sort().toString();
+    }
+    return [...cellValue].sort().toString();
+  }
+  return null;
 };
 
 const _findGroupIndexWithMultipleGroupbys = (sCellValue, cellValue2GroupIndexMap, groupsLength) => {
@@ -182,11 +191,11 @@ const groupRowsWithMultipleGroupbys = (groupbys, rows, { collaborators, typesDat
     for (let level = 0; level < validGroupbys.length; level++) {
       const currentGroupby = validGroupbys[level];
       const { column, column_key } = currentGroupby;
-      const { type: columnType } = column;
       const cellValue = getCellValueByColumn(row, column, { tagsData });
       const formattedValue = _getFormattedCellValue(cellValue, currentGroupby);
-      const sCellValue = _getStrCellValue(formattedValue, columnType);
+      const cellValueStr = _getStrCellValue(formattedValue, column);
       const group = {
+        key: cellValueStr,
         cell_value: formattedValue,
         original_cell_value: cellValue,
         row_ids: null,
@@ -195,8 +204,8 @@ const groupRowsWithMultipleGroupbys = (groupbys, rows, { collaborators, typesDat
         summaries: {},
       };
       if (level === 0) {
-        let groupedRowIndex = _findGroupIndexWithMultipleGroupbys(sCellValue, cellValue2GroupIndexMap, groups.length);
-        updateCellValue2GroupIndexMap = cellValue2GroupIndexMap[sCellValue].subgroups;
+        let groupedRowIndex = _findGroupIndexWithMultipleGroupbys(cellValueStr, cellValue2GroupIndexMap, groups.length);
+        updateCellValue2GroupIndexMap = cellValue2GroupIndexMap[cellValueStr].subgroups;
         if (groupedRowIndex < 0) {
           groups.push(group);
           updatedGroup = groups[groups.length - 1];
@@ -204,8 +213,8 @@ const groupRowsWithMultipleGroupbys = (groupbys, rows, { collaborators, typesDat
           updatedGroup = groups[groupedRowIndex];
         }
       } else {
-        let groupedRowIndex = _findGroupIndexWithMultipleGroupbys(sCellValue, updateCellValue2GroupIndexMap, updatedGroup.subgroups.length);
-        updateCellValue2GroupIndexMap = updateCellValue2GroupIndexMap[sCellValue].subgroups;
+        let groupedRowIndex = _findGroupIndexWithMultipleGroupbys(cellValueStr, updateCellValue2GroupIndexMap, updatedGroup.subgroups.length);
+        updateCellValue2GroupIndexMap = updateCellValue2GroupIndexMap[cellValueStr].subgroups;
         if (groupedRowIndex < 0) {
           updatedGroup.subgroups.push(group);
           updatedGroup = updatedGroup.subgroups[updatedGroup.subgroups.length - 1];
@@ -248,18 +257,18 @@ const groupTableRows = (groupbys, rows, { collaborators = [], typesData, tagsDat
   }
   const groupby = groupbys[0];
   const { column_key, column } = groupby;
-  const { type: columnType } = column;
   let groups = [];
   let cellValue2GroupIndexMap = {};
   rows.forEach((r) => {
     const cellValue = getCellValueByColumn(r, column, { tagsData });
     const formattedValue = _getFormattedCellValue(cellValue, groupby, { tagsData });
-    const cellValueStr = _getStrCellValue(formattedValue, columnType);
+    const cellValueStr = _getStrCellValue(formattedValue, column);
     let groupedRowIndex = _findGroupIndex(cellValueStr, cellValue2GroupIndexMap, groups.length);
     if (groupedRowIndex > -1) {
       groups[groupedRowIndex].row_ids.push(r._id);
     } else {
       groups.push({
+        key: cellValueStr,
         cell_value: formattedValue,
         original_cell_value: cellValue,
         column_key,

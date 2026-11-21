@@ -683,6 +683,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
         ]}
         generatorRowClassName={(row) => generatorRowClassName(row, allColumns.current)}
         settings={{ canClearCells: false, canPasteCells: false, canDragFillCells: false }}
+        fixedColumnCount={connection?.type === CONNECTION_TYPE.EMAIL ? 3 : 1}
       />
       {isShowRowDetailsDialog && (
         <ResourceDetailsDialog

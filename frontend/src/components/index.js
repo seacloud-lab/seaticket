@@ -69,6 +69,7 @@ import TextInput from './text-input';
 import toaster from './toaster';
 import Tooltip from './tooltip';
 import UploadFile from './upload-file';
+import UserAvatar from './user-avatar';
 import UserSelect from './user-select';
 
 export {
@@ -149,4 +150,5 @@ export {
   DatePicker,
   MonthPicker,
   SaveStatus,
+  UserAvatar,
 };

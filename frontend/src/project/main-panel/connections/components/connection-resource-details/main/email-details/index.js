@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import classnames from 'classnames';
 import { EmptyTip, IconButton } from '@/components';
 import { gettext } from '@/constants';
-import { parseEmailAddress } from '@/utils/validate';
+import { parseEmailUserInfo } from '@/utils/email';
 import Item from './item';
 
 import './index.css';
@@ -16,6 +16,28 @@ const EmailDetails = ({ details, className, ...props }) => {
     return details.slice(0, -1).some(item => Boolean(item?.unread));
   }, [details]);
 
+  const moreUsers = useMemo(() => {
+    const allUsers = details.slice(0, -1).map(emailItem => {
+      const userInfo = parseEmailUserInfo(emailItem?.email_from);
+      if (!userInfo?.email) return null;
+      return userInfo;
+    }).filter(Boolean);
+    let users = [];
+    let usersInfo = {};
+    for (let i = allUsers.length - 1; i >= 0; i--) {
+      const user = allUsers[i];
+      const { email } = user;
+      if (!users.includes(email)) {
+        users.push(email);
+      }
+      if (!usersInfo[email]) {
+        usersInfo[email] = user;
+      }
+    }
+    users.reverse();
+    return users.map(email => usersInfo[email]);
+  }, [details]);
+
   if (details.length === 0) {
     return (
       <div className={classnames('seaqa-connection-email-record empty', className)}>
@@ -23,8 +45,6 @@ const EmailDetails = ({ details, className, ...props }) => {
       </div>
     );
   }
-
-  const { username, email } = parseEmailAddress(details[0]?.email_from);
 
   const highlightDetail = details.find(item => item.highlight);
 
@@ -39,7 +59,17 @@ const EmailDetails = ({ details, className, ...props }) => {
               </div>
               <div className="email-record-info">
                 <div className="email-record-info-container">
-                  <span className="email-record-info-sender">{username || email}</span>
+                  <span className="email-record-info-sender text-truncate">
+                    {moreUsers.map((user, index) => {
+                      const { name, fullName, color } = user;
+                      return (
+                        <>
+                          {index !== 0 && (<span>{', '}</span>)}
+                          <span key={index} title={fullName} style={{ color }}>{name}</span>
+                        </>
+                      );
+                    }).filter(Boolean)}
+                  </span>
                   <span className="email-record-info-content text-truncate"></span>
                   {isUnread && <div className="read-status unread"/>}
                   <span className="email-record-info-time">

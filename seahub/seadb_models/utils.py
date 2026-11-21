@@ -512,6 +512,75 @@ def list_connection_view_records(seadb_api, project_uuid, connection, view, star
         logger.error(f'SeaDB query error for connection {table_name}: {e}')
         records = []
 
+    if connection_type == ConnectionType.EMAIL.value:
+        from seahub.project.utils import extract_email_addresses_to_display
+        from email.utils import parseaddr
+
+        thread_ids = []
+        for record in records:
+            try:
+                thread_ids.append(int(record['_pk']))
+            except (KeyError, TypeError, ValueError):
+                record['participants'] = None
+
+        thread_ids = list(dict.fromkeys(thread_ids))
+        participants_by_thread = {thread_id: set() for thread_id in thread_ids}
+        participants_info = {}
+
+        if thread_ids:
+            email_table_name = SchemaTables.EMAIL.table_name(connection.id)
+            thread_ids_sql = ', '.join(f"{thread_id}" for thread_id in thread_ids)
+
+            # Using `order`: When updating sender information, it is possible to update historical sender information as well.
+            participants_sql = (
+                f"SELECT `thread_id`, `email_from`, `modified_time` FROM `{email_table_name}` "
+                f"WHERE `thread_id` IN ({thread_ids_sql}) AND deleted = false "
+                f"ORDER BY `modified_time` "
+                f"LIMIT 0, 1000000"
+            )
+            try:
+                email_res = seadb_api.query_rows(project_uuid, participants_sql, convert_keys=True)
+                emails = email_res.get('results', [])
+            except Exception as e:
+                logger.error(f'SeaDB query error for email participants {email_table_name}: {e}')
+                emails = []
+
+            for email in emails:
+                try:
+                    thread_id = int(email['thread_id'])
+                except (KeyError, TypeError, ValueError):
+                    continue
+                if thread_id not in participants_by_thread:
+                    continue
+
+                participants_columns = ('email_from', )
+                for field in participants_columns:
+                    value = email.get(field)
+                    if not value:
+                        continue
+                    for address_info in extract_email_addresses_to_display(value):
+                        email_name, email_address = parseaddr(address_info)
+                        flag = True
+                        if not email_name and participants_info.get(email_address, ''):
+                            flag = False
+                        if flag:
+                            participants_info[email_address] = address_info
+                        participants_by_thread[thread_id].add(email_address)
+
+        for record in records:
+            try:
+                thread_id = int(record['_pk'])
+            except (KeyError, TypeError, ValueError):
+                continue
+            participant_address = list(participants_by_thread.get(thread_id, set()))
+            record['participants'] = [participants_info[email_address] for email_address in participant_address]
+
+        display_all_columns.append({
+            'key': 'participants',
+            'name': 'participants',
+            'type': 'list',
+        })
+
     return records, display_all_columns + extra_query_columns
 
 
@@ -749,6 +818,7 @@ def list_seafile_record_details(seadb_api, project_uuid, connection_id, _pk):
     return record, column_metadata, linked_ticket_title
 
 
+# jira
 def get_jira_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
     from seahub.tickets.ticket_utils import get_ticket_title
     issue_table_name = SchemaTables.JIRA_ISSUES.table_name(connection_id)
@@ -905,6 +975,7 @@ def list_email_record_details(seadb_api, project_uuid, connection_id, _pk):
     return thread_record, column_metadata, linked_ticket_title
 
 
+# kb
 def list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, username):
     knowledge_base_table_name = SchemaTables.KNOWLEDGE_BASE.table_name()
     metadata = seadb_api.get_base_metadata(project_uuid)
