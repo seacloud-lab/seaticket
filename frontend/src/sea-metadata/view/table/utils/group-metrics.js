@@ -34,11 +34,11 @@ export const getGroupsRows = (
       groupPath.push(...parentGroupPath);
     }
     groupPath.push(groupIndex);
-    const { cell_value, subgroups, row_ids, column_key, summaries, original_cell_value } = group;
+    const { cell_value, subgroups, row_ids, column_key, summaries, original_cell_value, key } = group;
     const groupPathString = groupPath.join('-');
     const isExpanded = isExpandedGroup(groupPathString, pathFoldedGroupMap);
     const left = (maxLevel - currentLevel + 1) * GROUP_VIEW_OFFSET;
-    const groupKey = `${parentGroupKey ? parentGroupKey : column_key}_${cell_value}`;
+    const groupKey = `${parentGroupKey ? parentGroupKey : column_key}_${key}`;
     let groupContainer = {
       type: GROUP_ROW_TYPE.GROUP_CONTAINER,
       level: currentLevel,

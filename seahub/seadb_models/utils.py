@@ -14,6 +14,10 @@ logger = logging.getLogger(__name__)
 
 PORTAL_ISSUE_INTERNAL_COLUMN_NAMES = {'customer_id'}
 
+EMAIL_PARTICIPANT_THREAD_BATCH_SIZE = 1000
+# Limit: up to 1,000 thread IDs × 100 emails per thread.
+EMAIL_PARTICIPANTS_LIMIT = 1000 * 100
+
 
 def strip_portal_issue_internal_columns(records, columns):
     """Remove internal columns from records and column metadata before an external response."""
@@ -512,6 +516,79 @@ def list_connection_view_records(seadb_api, project_uuid, connection, view, star
         logger.error(f'SeaDB query error for connection {table_name}: {e}')
         records = []
 
+    if connection_type == ConnectionType.EMAIL.value:
+        from seahub.project.utils import extract_email_addresses_to_display
+        from email.utils import parseaddr
+
+        records_by_thread = {}
+        for record in records:
+            record['participants'] = None
+            try:
+                thread_id = int(record['_pk'])
+            except (KeyError, TypeError, ValueError):
+                continue
+            records_by_thread.setdefault(thread_id, []).append(record)
+
+        thread_ids = list(records_by_thread)
+        participants_by_thread = {thread_id: {} for thread_id in thread_ids}
+        participants_info = {}
+        participants_query_succeeded = False
+
+        if thread_ids:
+            email_table_name = SchemaTables.EMAIL.table_name(connection.id)
+            thread_ids_sql = ', '.join(f"{thread_id}" for thread_id in thread_ids)
+
+            # Using `order`: When updating sender information, it is possible to update historical sender information as well.
+            participants_sql = (
+                f"SELECT `thread_id`, `email_from`, `modified_time` FROM `{email_table_name}` "
+                f"WHERE `thread_id` IN ({thread_ids_sql}) AND deleted = false "
+                f"ORDER BY `modified_time`, `_pk` "
+                f"LIMIT 0, {EMAIL_PARTICIPANTS_LIMIT}"
+            )
+            try:
+                email_res = seadb_api.query_rows(project_uuid, participants_sql, convert_keys=True)
+                emails = email_res.get('results', [])
+                participants_query_succeeded = True
+            except Exception as e:
+                logger.error(f'SeaDB query error for email participants {email_table_name}: {e}')
+                emails = []
+
+            for email in emails:
+                try:
+                    thread_id = int(email['thread_id'])
+                except (KeyError, TypeError, ValueError):
+                    continue
+                if thread_id not in participants_by_thread:
+                    continue
+
+                # Follow Fastmail's thread participant list: senders only, excluding To and Cc.
+                participants_columns = ('email_from', )
+                for field in participants_columns:
+                    value = email.get(field)
+                    if not value:
+                        continue
+                    for address_info in extract_email_addresses_to_display(value):
+                        email_name, email_address = parseaddr(address_info)
+                        flag = True
+                        if not email_name and participants_info.get(email_address, ''):
+                            flag = False
+                        if flag:
+                            participants_info[email_address] = address_info
+                        participants_by_thread[thread_id].setdefault(email_address, None)
+
+            if participants_query_succeeded:
+                for thread_id, thread_records in records_by_thread.items():
+                    participant_addresses = participants_by_thread[thread_id]
+                    participants = [participants_info[email_address] for email_address in participant_addresses]
+                    for record in thread_records:
+                        record['participants'] = participants
+
+        display_all_columns.append({
+            'key': 'participants',
+            'name': 'participants',
+            'type': 'list',
+        })
+
     return records, display_all_columns + extra_query_columns
 
 
@@ -749,6 +826,7 @@ def list_seafile_record_details(seadb_api, project_uuid, connection_id, _pk):
     return record, column_metadata, linked_ticket_title
 
 
+# jira
 def get_jira_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
     from seahub.tickets.ticket_utils import get_ticket_title
     issue_table_name = SchemaTables.JIRA_ISSUES.table_name(connection_id)
@@ -905,6 +983,7 @@ def list_email_record_details(seadb_api, project_uuid, connection_id, _pk):
     return thread_record, column_metadata, linked_ticket_title
 
 
+# kb
 def list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, username):
     knowledge_base_table_name = SchemaTables.KNOWLEDGE_BASE.table_name()
     metadata = seadb_api.get_base_metadata(project_uuid)
