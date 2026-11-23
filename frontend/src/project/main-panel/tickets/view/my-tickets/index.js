@@ -45,7 +45,7 @@ const MyTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBa
         ));
       const usesDefaultSort = Array.isArray(sorts) && sorts.length === 0;
       const view = myTicketViewsData.views.find(v => v._id === viewID) || myTicketViewsData.views[0];
-      return ticketsAPI.listMyTickets(projectUuid, { ...params, view_id: view.state, scope, filters, filter_conjunction, basic_filters, sorts })
+      return ticketsAPI.listMyTickets(projectUuid, { ...params, ticket_state: view.state, scope, filters, filter_conjunction, basic_filters, sorts })
         .then(res => ({ ...res, data: { ...res.data, isUnfiltered, usesDefaultSort } }));
     },
 

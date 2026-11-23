@@ -652,7 +652,7 @@ class TestMyTicketAPIView:
                 {'id': '0001', 'name': 'open'},
             ]}},
         ]
-        form = {'scope': 'created', 'view_id': 'open'}
+        form = {'scope': 'created', 'ticket_state': 'open'}
         with patch('seahub.tickets.tickets.SeaDBAPI') as seadb_api:
             seadb_api.return_value.get_base_metadata.return_value = {'tables': [{'name': 'tickets', 'columns': columns}]}
             query_rows = seadb_api.return_value.query_rows
@@ -669,13 +669,13 @@ class TestMyTicketAPIView:
         assert query_rows.call_count == 2
 
     @pytest.mark.parametrize('form,ticket_state,filter_column', [
-        ({'view_id': 'closed'}, 'closed', 'assignees'),
-        ({'view_id': 'open', 'scope': 'assigned'}, 'open', 'assignees'),
-        ({'view_id': 'closed', 'scope': 'assigned'}, 'closed', 'assignees'),
-        ({'view_id': 'open', 'scope': 'created'}, 'open', 'creator'),
-        ({'view_id': 'closed', 'scope': 'created'}, 'closed', 'creator'),
-        ({'view_id': 'created-closed'}, 'open', 'assignees'),
-        ({'view_id': 'invalid', 'scope': 'created'}, 'open', 'creator'),
+        ({'ticket_state': 'closed'}, 'closed', 'assignees'),
+        ({'ticket_state': 'open', 'scope': 'assigned'}, 'open', 'assignees'),
+        ({'ticket_state': 'closed', 'scope': 'assigned'}, 'closed', 'assignees'),
+        ({'ticket_state': 'open', 'scope': 'created'}, 'open', 'creator'),
+        ({'ticket_state': 'closed', 'scope': 'created'}, 'closed', 'creator'),
+        ({'ticket_state': 'created-closed'}, 'open', 'assignees'),
+        ({'ticket_state': 'invalid', 'scope': 'created'}, 'open', 'creator'),
     ])
     def test_post_selects_scope_and_state(self, factory, project_creator, real_project, form, ticket_state, filter_column):
         project = real_project

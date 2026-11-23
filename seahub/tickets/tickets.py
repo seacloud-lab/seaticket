@@ -1928,7 +1928,7 @@ class MyTicketAPIView(APIView):
         2. group member
         """
         # argument check
-        ticket_state = request.POST.get('view_id', 'open')
+        ticket_state = request.POST.get('ticket_state', 'open')
         scope = request.POST.get('scope', 'assigned')
         filter_column = {'assigned': 'assignees', 'created': 'creator'}.get(scope)
         if filter_column is None:
