@@ -508,12 +508,28 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
         const isObjectValue = !isLegacyNumber && new_value && typeof new_value === 'object';
         const count = isLegacyNumber ? new_value : (isObjectValue ? (new_value.count || 1) : 1);
         const author = isObjectValue ? new_value.author : '';
+        let message;
+        if (author) {
+          if (count === 1) {
+            message = gettext('{count} comment added to GitHub issue {ref} by {author}');
+          } else {
+            message = gettext('{count} comments added to GitHub issue {ref} by {author}');
+          }
+        } else {
+          if (count === 1) {
+            message = gettext('{count} comment added to GitHub issue {ref}');
+          } else {
+            message = gettext('{count} comments added to GitHub issue {ref}');
+          }
+        }
+        message = message.replace('{count}', count);
         return (
           <span>
-            {gettext('GitHub issue')}{ref ? <>{' '}{ref}</> : null}{' '}
-            {count}{' '}{count === 1 ? gettext('comment') : gettext('comments')}{' '}
-            {gettext('added')}
-            {author ? <>{' '}{gettext('by')}{' '}<span>{author}</span></> : null}
+            {message.split(/(\{ref\}|\{author\})/).map((part, index) => (
+              <React.Fragment key={index}>
+                {part === '{ref}' ? ref : part === '{author}' ? <span>{author}</span> : part}
+              </React.Fragment>
+            ))}
           </span>
         );
       }
@@ -533,17 +549,40 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
       }
       case LOG_TYPE.DISCOURSE_TOPIC_COMMENT_ADDED: {
         const ref = renderLinkedRecordRef(activity);
-        const isLegacyNumber = typeof new_value === 'number';
-        const isObjectValue = !isLegacyNumber && new_value && typeof new_value === 'object';
-        const count = isLegacyNumber ? new_value : (isObjectValue ? (new_value.count || 1) : 1);
-        const author = isObjectValue ? new_value.author : '';
+        let count = 1;
+        let author = '';
+        if (typeof new_value === 'number') {
+          count = new_value;
+        } else if (new_value && typeof new_value === 'object') {
+          count = new_value.count || 1;
+          author = new_value.author;
+        }
+
+        let message;
+        if (author) {
+          if (count === 1) {
+            message = gettext('{count} reply added to Discourse topic {ref} by {author}');
+          } else {
+            message = gettext('{count} replies added to Discourse topic {ref} by {author}');
+          }
+        } else if (count === 1) {
+          message = gettext('{count} reply added to Discourse topic {ref}');
+        } else {
+          message = gettext('{count} replies added to Discourse topic {ref}');
+        }
+        message = message.replace('{count}', count);
+        const messageParts = message.split(/(\{ref\}|\{author\})/).map((part, index) => {
+          if (part === '{ref}') {
+            return <React.Fragment key={index}>{ref}</React.Fragment>;
+          }
+          if (part === '{author}') {
+            return <React.Fragment key={index}><span>{author}</span></React.Fragment>;
+          }
+          return <React.Fragment key={index}>{part}</React.Fragment>;
+        });
+
         return (
-          <span>
-            {gettext('Discourse topic')}{ref ? <>{' '}{ref}</> : null}{' '}
-            {count}{' '}{count === 1 ? gettext('reply') : gettext('replies')}{' '}
-            {gettext('added')}
-            {author ? <>{' '}{gettext('by')}{' '}<span>{author}</span></> : null}
-          </span>
+          <span>{messageParts}</span>
         );
       }
       case LOG_TYPE.DISCORD_THREAD_UPDATED: {
@@ -561,17 +600,40 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
       }
       case LOG_TYPE.DISCORD_THREAD_MESSAGE_ADDED: {
         const ref = renderLinkedRecordRef(activity);
-        const isLegacyNumber = typeof new_value === 'number';
-        const isObjectValue = !isLegacyNumber && new_value && typeof new_value === 'object';
-        const count = isLegacyNumber ? new_value : (isObjectValue ? (new_value.count || 1) : 1);
-        const author = isObjectValue ? new_value.author : '';
+        let count = 1;
+        let author = '';
+        if (typeof new_value === 'number') {
+          count = new_value;
+        } else if (new_value && typeof new_value === 'object') {
+          count = new_value.count || 1;
+          author = new_value.author;
+        }
+
+        let message;
+        if (author) {
+          if (count === 1) {
+            message = gettext('{count} message added to Discord thread {ref} by {author}');
+          } else {
+            message = gettext('{count} messages added to Discord thread {ref} by {author}');
+          }
+        } else if (count === 1) {
+          message = gettext('{count} message added to Discord thread {ref}');
+        } else {
+          message = gettext('{count} messages added to Discord thread {ref}');
+        }
+        message = message.replace('{count}', count);
+        const messageParts = message.split(/(\{ref\}|\{author\})/).map((part, index) => {
+          if (part === '{ref}') {
+            return <React.Fragment key={index}>{ref}</React.Fragment>;
+          }
+          if (part === '{author}') {
+            return <React.Fragment key={index}><span>{author}</span></React.Fragment>;
+          }
+          return <React.Fragment key={index}>{part}</React.Fragment>;
+        });
+
         return (
-          <span>
-            {gettext('Discord thread')}{ref ? <>{' '}{ref}</> : null}{' '}
-            {count}{' '}{count === 1 ? gettext('message') : gettext('messages')}{' '}
-            {gettext('added')}
-            {author ? <>{' '}{gettext('by')}{' '}<span>{author}</span></> : null}
-          </span>
+          <span>{messageParts}</span>
         );
       }
       case LOG_TYPE.EMAIL_MESSAGE_ADDED: {
