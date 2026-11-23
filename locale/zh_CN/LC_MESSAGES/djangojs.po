@@ -1140,7 +1140,7 @@ msgstr "没有已删除的项目"
 #: frontend/src/home/mobile/group-trash-view/index.js:22
 #: frontend/src/org-admin/projects/trash-projects.js:43
 msgid "Tip: projects deleted {expireDays} days ago will be cleaned automatically."
-msgstr "提示：项目在 {expireDays} 天前删除的内容将被自动清理。"
+msgstr "提示：已删除 {expireDays} 天的项目将被自动清理。"
 
 #: frontend/src/home/dialog/group-trash/group-trash-projects.js:32
 #: frontend/src/home/main-panel/pc-main-panel/my-projects-trash/index.js:85
