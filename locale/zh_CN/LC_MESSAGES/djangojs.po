@@ -150,7 +150,7 @@ msgstr "本月每日积分消费趋势"
 #: frontend/src/project/main-panel/portal-issues/view/chat-analysis/index.js:126
 #: frontend/src/project/main-panel/portal-issues/view/chat-analysis/index.js:188
 msgid "Input tokens"
-msgstr "输入 tokens"
+msgstr "输入 Token 数"
 
 #: frontend/src/components/chart/token-credit-used/index.js:16
 #: frontend/src/components/chart/token-credit-used/index.js:418
@@ -159,7 +159,7 @@ msgstr "输入 tokens"
 #: frontend/src/project/main-panel/portal-issues/view/chat-analysis/index.js:130
 #: frontend/src/project/main-panel/portal-issues/view/chat-analysis/index.js:197
 msgid "Output tokens"
-msgstr "输出 tokens"
+msgstr "输出 Token 数"
 
 #: frontend/src/components/chart/token-credit-used/index.js:17
 #: frontend/src/components/chart/token-credit-used/index.js:137
@@ -180,7 +180,7 @@ msgstr "已使用积分"
 
 #: frontend/src/components/chart/token-credit-used/index.js:117
 msgid "Tokens"
-msgstr "令牌数"
+msgstr "Token 数"
 
 #: frontend/src/components/chart/token-credit-used/index.js:165
 #: frontend/src/org-admin/statistics/index.js:50
@@ -206,12 +206,12 @@ msgstr "综合信息"
 #: frontend/src/project/main-panel/agent/components/run-log-details/run-details/run-statistics-dialog/index.js:147
 #: frontend/src/project/main-panel/agent/components/run-log-details/run-details/run-statistics-dialog/index.js:162
 msgid "Total tokens"
-msgstr "总 tokens"
+msgstr "总 Token 数"
 
 #: frontend/src/components/chart/view/bar.js:19
 #: frontend/src/components/chart/view/line.js:11
 msgid "Amount"
-msgstr "金额"
+msgstr "数量"
 
 #: frontend/src/components/clear-icon-button/index.js:12
 msgid "Clear search"
@@ -643,7 +643,7 @@ msgstr "绑定联系邮箱"
 
 #: frontend/src/components/dialog/token-credit-used-detail-dialog/index.js:228
 msgid "Credit used detail"
-msgstr "信用使用详情"
+msgstr "积分使用详情"
 
 #: frontend/src/components/dialog/token-credit-used-detail-dialog/index.js:241
 msgid "Group by"
@@ -1140,7 +1140,7 @@ msgstr "没有已删除的项目"
 #: frontend/src/home/mobile/group-trash-view/index.js:22
 #: frontend/src/org-admin/projects/trash-projects.js:43
 msgid "Tip: projects deleted {expireDays} days ago will be cleaned automatically."
-msgstr "提示：已删除 {expireDays} 天的项目将被自动清理。"
+msgstr "提示：删除超过 {expireDays} 天的项目将被自动清理。"
 
 #: frontend/src/home/dialog/group-trash/group-trash-projects.js:32
 #: frontend/src/home/main-panel/pc-main-panel/my-projects-trash/index.js:85
@@ -1392,7 +1392,7 @@ msgstr "分组"
 
 #: frontend/src/home/main-panel/pc-main-panel/my-projects-trash/index.js:112
 msgid "Note: Projects deleted {expireDays} days ago will be cleaned automatically."
-msgstr "注意：{expireDays} 天前删除的项目将被自动清理。"
+msgstr "注意：删除超过 {expireDays} 天的项目将被自动清理。"
 
 #: frontend/src/home/main-panel/pc-main-panel/my-projects-trash/index.js:123
 #: frontend/src/org-admin/projects/trash-projects.js:49
@@ -1498,7 +1498,7 @@ msgstr "联系群组管理员添加项目以跟踪问题"
 
 #: frontend/src/home/workspace/index.js:576
 msgid "Are you sure you want to delete group {placeholder} ?"
-msgstr "确定要删除群组 {placeholder} 吗？"
+msgstr "你确定要删除群组 {placeholder} 吗？"
 
 #: frontend/src/org-admin/constants.js:17
 #: frontend/src/org-admin/info/index.js:47
@@ -1575,7 +1575,7 @@ msgstr "团队名称"
 
 #: frontend/src/org-admin/info/index.js:54
 msgid "Active users"
-msgstr "激活用户"
+msgstr "活跃用户"
 
 #: frontend/src/org-admin/info/index.js:55
 #: frontend/src/sys-admin/info/index.js:86
@@ -1696,7 +1696,7 @@ msgstr "DNS TXT 记录值"
 
 #: frontend/src/org-admin/saml/index.js:200
 msgid "Copy the domain DNS TXT and add it to your domain's DNS records, then click the button to verify domain ownership. You must verify the ownership of domain before Single Sign-On."
-msgstr "复制域 DNS TXT 并将其添加到域的 DNS 记录中，然后单击按钮验证域所有权。你必须在单点登录前验证域的所有权。"
+msgstr "复制域名的 DNS TXT 记录并添加到你域名的 DNS 记录中，然后点击按钮验证域名所有权。你必须在使用单点登录之前验证域名所有权。"
 
 #: frontend/src/org-admin/saml/index.js:206
 #: frontend/src/project/main-panel/portal-settings/custom-domain-settings/index.js:217
@@ -1844,7 +1844,7 @@ msgstr "设置用户的联系邮箱"
 
 #: frontend/src/org-admin/user-profile/set-user-name.js:60
 msgid "Set user name"
-msgstr "设置用户名称"
+msgstr "设置用户名"
 
 #: frontend/src/org-admin/user-profile/user-info.js:61
 #: frontend/src/profile-settings/bind-contact-email.js:50
@@ -2054,7 +2054,7 @@ msgstr "状态"
 #: frontend/src/org-admin/users/org-admin-list.js:19
 #: frontend/src/org-admin/users/users.js:18
 msgid "Create at / Last login"
-msgstr "创建于/最后登录"
+msgstr "创建时间 / 最后登录"
 
 #: frontend/src/org-admin/users/search-users.js:111
 #: frontend/src/sys-admin/users/search-users.js:27
@@ -2108,7 +2108,7 @@ msgstr "确定要删除 {user} 吗？"
 #: frontend/src/org-admin/users/user.js:218
 #: frontend/src/sys-admin/users/users-table/user.js:283
 msgid "Set user inactive"
-msgstr "设置用户非活动状态"
+msgstr "将用户设为非活动状态"
 
 #: frontend/src/org-admin/users/user.js:219
 msgid "Are you sure you want to set xxx inactive?"
@@ -2181,7 +2181,7 @@ msgstr "门户"
 
 #: frontend/src/portal/left-bar/index.js:25
 msgid "Portal preview URL is unavailable."
-msgstr "门户预览 URL 未可用。"
+msgstr "门户预览 URL 不可用。"
 
 #: frontend/src/portal/left-bar/index.js:40
 msgid "Go to portal"
@@ -2453,8 +2453,8 @@ msgstr "无法加载此邮件线程。"
 #: frontend/src/portal/main-panel/team-emails/index.js:181
 msgid "No emails.\n"
 "Support emails from your team will appear here."
-msgstr "没有电子邮件。\n"
-"你团队的支持电子邮件将显示在此处。"
+msgstr "暂无邮件。\n"
+"来自你团队的支持邮件将显示在此处。"
 
 #: frontend/src/portal/main-panel/team-emails/index.js:274
 msgid "email"
@@ -3451,7 +3451,7 @@ msgstr "操作已确认"
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/index.js:228
 msgid "Failed to check linked GitHub issues"
-msgstr "检查关联的 GitHub issue 失败"
+msgstr "检查关联的 GitHub Issue 失败"
 
 #: frontend/src/project/main-panel/agent/components/run-log-details/index.js:243
 msgid "Failed to update content"
@@ -4476,7 +4476,7 @@ msgstr "子状态无效。"
 
 #: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:92
 msgid "Ticket created"
-msgstr "Ticket 已创建"
+msgstr "工单已创建"
 
 #: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:107
 msgid "Linked record"
@@ -4485,7 +4485,7 @@ msgstr "关联记录"
 #: frontend/src/project/main-panel/connections/components/create-ticket-dialog/index.js:125
 #: frontend/src/project/main-panel/connections/utils.js:498
 msgid "Create related ticket"
-msgstr "创建相关的 ticket"
+msgstr "创建相关的工单"
 
 #: frontend/src/project/main-panel/connections/components/modify-connection-dialog/index.js:183
 msgid "Edit connection"
@@ -6654,7 +6654,7 @@ msgstr "粘贴、拖放或点击添加文件"
 
 #: frontend/src/project/main-panel/tickets/constants.js:44
 msgid "Close ticket"
-msgstr "关闭 ticket"
+msgstr "关闭工单"
 
 #: frontend/src/project/main-panel/tickets/constants.js:62
 msgid "Working on"
@@ -6765,7 +6765,7 @@ msgstr "带评论开启"
 
 #: frontend/src/project/main-panel/tickets/view/trash-tickets/clean-tickets.js:24
 msgid "Delete tickets"
-msgstr "删除 tickets"
+msgstr "删除工单"
 
 #: frontend/src/project/main-panel/tickets/view/trash-tickets/index.js:61
 msgid "Tickets restored"
@@ -8013,11 +8013,11 @@ msgstr "当前浏览器"
 
 #: frontend/src/translation.js:16
 msgid "Support portal allows external users to self-service and obtain support information, including documentation, knowledge base articles, and ticket management. It acts as the customer-facing interface for your support services."
-msgstr "支持门户允许外部用户自助服务并获取支持信息，包括文档、知识库文章和工单管理。它充当你的支持服务的客户面向界面。"
+msgstr "支持门户允许外部用户自助获取支持信息，包括文档、知识库文章和工单管理。它是你提供支持服务的面向客户的界面。"
 
 #: frontend/src/translation.js:17
 msgid "How can I help you?"
-msgstr "我可以帮助你吗？"
+msgstr "有什么可以帮你的？"
 
 #: frontend/src/translation.js:18
 msgid "Total issues"
@@ -8025,19 +8025,19 @@ msgstr "总问题数"
 
 #: frontend/src/translation.js:19
 msgid "Included Al credits"
-msgstr "包含的 Al 信用"
+msgstr "包含的 AI 积分"
 
 #: frontend/src/translation.js:20
 msgid "Additional credits"
-msgstr "额外信用"
+msgstr "额外积分"
 
 #: frontend/src/translation.js:23
 msgid "Agent issue type to GitHub issue type"
-msgstr "智能体问题类型到 GitHub 问题类型"
+msgstr "智能体问题类型映射至 GitHub 问题类型"
 
 #: frontend/src/translation.js:24
 msgid "Please connect a GitHub repository first."
-msgstr "请先连接一个 GitHub 资料库。"
+msgstr "请先连接一个 GitHub 库。"
 
 #: frontend/src/translation.js:25
 msgid "Current GitHub connection is invalid."
