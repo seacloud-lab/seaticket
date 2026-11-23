@@ -20,7 +20,7 @@ from seahub.tickets.ticket_utils import (
     compare_ticket_changes,
     filter_tickets_by_select,
     TicketCustomerNotFound,
-    validate_ticket_customer_id,
+    get_active_portal_customer,
     build_ticket_working_on_update,
     format_ticket_activity_for_client,
 )
@@ -896,42 +896,42 @@ def get_customer_base_metadata():
     }
 
 
-class TestValidateTicketCustomerId:
+class TestGetActivePortalCustomer:
     @pytest.mark.parametrize('value', [None, ''])
     def test_rejects_an_empty_value(self, value, real_project):
         with pytest.raises(ValueError):
-            validate_ticket_customer_id(str(real_project.uuid), value)
+            get_active_portal_customer(str(real_project.uuid), value)
 
     def test_accepts_an_active_customer_of_the_project(self, real_project):
         customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
-        assert validate_ticket_customer_id(str(real_project.uuid), customer.id) == customer.id
+        assert get_active_portal_customer(str(real_project.uuid), customer.id).id == customer.id
 
     def test_rejects_a_disabled_customer(self, real_project):
         customer = PortalCustomer.objects.create(
             project_uuid=str(real_project.uuid), name='Acme', status=PortalCustomer.STATUS_DISABLED)
         with pytest.raises(TicketCustomerNotFound):
-            validate_ticket_customer_id(str(real_project.uuid), customer.id)
+            get_active_portal_customer(str(real_project.uuid), customer.id)
 
     def test_rejects_a_customer_of_another_project(self, real_project):
         other = PortalCustomer.objects.create(project_uuid='00000000-0000-0000-0000-000000000001', name='Acme')
         with pytest.raises(TicketCustomerNotFound):
-            validate_ticket_customer_id(str(real_project.uuid), other.id)
+            get_active_portal_customer(str(real_project.uuid), other.id)
 
     @pytest.mark.parametrize('value', ['Acme', '1.5', '{}', 'null'])
     def test_rejects_a_non_numeric_value(self, value, real_project):
         with pytest.raises(ValueError):
-            validate_ticket_customer_id(str(real_project.uuid), value)
+            get_active_portal_customer(str(real_project.uuid), value)
 
     def test_rejects_an_unknown_customer(self, real_project):
         with pytest.raises(TicketCustomerNotFound):
-            validate_ticket_customer_id(str(real_project.uuid), 12345)
+            get_active_portal_customer(str(real_project.uuid), 12345)
 
     @pytest.mark.parametrize('value', [True, False, 1.5])
     def test_rejects_a_bool_or_float(self, value, real_project):
         # both would otherwise coerce to a real customer id
         PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='First')
         with pytest.raises(ValueError):
-            validate_ticket_customer_id(str(real_project.uuid), value)
+            get_active_portal_customer(str(real_project.uuid), value)
 
 
 class TestTicketCustomerOnCreate:

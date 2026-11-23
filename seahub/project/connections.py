@@ -26,7 +26,6 @@ from seahub.api2.utils import api_error, to_python_boolean
 from seahub.utils import uuid_str_to_32_chars, gen_file_etag_and_modified_time
 from seahub.project.models import Projects, ProjectConnections, decrypt_config, \
     ConnectionsViews, ProjectGithubAppInstallation, ProjectConnectionOauth
-from seahub.portal.models import PortalCustomer
 from seahub.project.utils import check_project_admin_permission, check_project_permission, \
     extract_email_addresses, is_oauth_email_provider, create_connection, \
     get_connection_related_users
@@ -53,7 +52,7 @@ from seahub.project.seadb_api import SeaDBAPI
 from seahub.utils.decorators import require_org_context
 from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_ticket, \
     check_ticket_link_changes, sync_links_in_connection, TicketLinkValidationError, \
-    record_create_task_activities, record_ticket_activities, validate_ticket_customer_id, \
+    record_create_task_activities, record_ticket_activities, get_active_portal_customer, \
     TicketCustomerNotFound, build_ticket_working_on_update, format_ticket_activity_for_client, \
     notify_ticket_update, get_option_id_by_name, compare_ticket_changes
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES, send_connection_data_event, \
@@ -1427,18 +1426,17 @@ class ProjectConnectionRecordView(APIView):
                 update_row['row']['customer_id'] = None
             else:
                 try:
-                    customer_id = validate_ticket_customer_id(project_uuid, customer_id)
+                    customer = get_active_portal_customer(project_uuid, customer_id)
                 except TicketCustomerNotFound as e:
                     return api_error(status.HTTP_404_NOT_FOUND, str(e))
                 except ValueError as e:
                     return api_error(status.HTTP_400_BAD_REQUEST, str(e))
-                customer = PortalCustomer.objects.filter(id=customer_id, project_uuid=project_uuid).first()
                 email_seadb_api = EmailSeaDBAPI(project_uuid, seadb_api=seadb_api)
                 if not email_thread_customer_domain_matches(
                         email_seadb_api, connection_id, record_id, customer):
                     return api_error(status.HTTP_400_BAD_REQUEST,
                                      'Customer email domain does not match the email.')
-                update_row['row']['customer_id'] = customer_id
+                update_row['row']['customer_id'] = customer.id
             update_row['row']['record_modified_time'] = datetime.datetime.now(datetime.UTC).isoformat()
 
         if 'linked_ticket' in row_data and project_connection.type in LINKED_TICKET_SUPPORT_TYPES:
@@ -1956,18 +1954,17 @@ class ProjectConnectionRecordsView(APIView):
                     update_row['row']['customer_id'] = None
                 else:
                     try:
-                        customer_id = validate_ticket_customer_id(project_uuid, customer_id)
+                        customer = get_active_portal_customer(project_uuid, customer_id)
                     except TicketCustomerNotFound as e:
                         return api_error(status.HTTP_404_NOT_FOUND, str(e))
                     except ValueError as e:
                         return api_error(status.HTTP_400_BAD_REQUEST, str(e))
-                    customer = PortalCustomer.objects.filter(id=customer_id, project_uuid=project_uuid).first()
                     email_seadb_api = EmailSeaDBAPI(project_uuid, seadb_api=seadb_api)
                     if not email_thread_customer_domain_matches(
                             email_seadb_api, connection_id, row_id, customer):
                         return api_error(status.HTTP_400_BAD_REQUEST,
                                          'Customer email domain does not match the email.')
-                    update_row['row']['customer_id'] = customer_id
+                    update_row['row']['customer_id'] = customer.id
                 update_row['row']['record_modified_time'] = datetime.datetime.now(datetime.UTC).isoformat()
 
             if update_row['row']:
