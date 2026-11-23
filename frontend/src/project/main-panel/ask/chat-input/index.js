@@ -7,9 +7,13 @@ import { gettext } from '@/constants';
 import { chatAPI as defaultChatAPI } from '@/project/api';
 import * as CommonlyUsedHotkey from '@/utils/hotkey';
 import InputUtils from '@/utils/input-utils';
+import ObjectUtils from '@/utils/object-utils';
 import { getType } from '@/utils/type-detection';
 import { Utils } from '@/utils/utils';
-import { CHAT_ATTACHMENT_TYPE, CHAT_ATTACHMENT_SOURCE, CHAT_IMAGE_ATTACHMENT_MAX_COUNT, CHAT_MESSAGE_TYPE, DEFAULT_ALLOWED_ATTACHMENT_SOURCES } from '../constants';
+import {
+  CHAT_ATTACHMENT_TYPE, CHAT_ATTACHMENT_SOURCE, CHAT_IMAGE_ATTACHMENT_MAX_COUNT,
+  CHAT_MESSAGE_TYPE, DEFAULT_ALLOWED_ATTACHMENT_SOURCES,
+} from '../constants';
 import { useAIChatTools } from '../hooks';
 import { AttachmentObject } from '../models';
 import AIModelSelector from './ai-model-selector';
@@ -229,7 +233,10 @@ const ChatInput = forwardRef(({
       return;
     }
     const nextSkillCommandRange = getSkillCommandRange(nextValue, cursor);
-    setSkillCommandRange(nextSkillCommandRange);
+    setSkillCommandRange(currentRange => {
+      if (ObjectUtils.isSameObject(currentRange, nextSkillCommandRange)) return currentRange;
+      return nextSkillCommandRange;
+    });
     setIsShowSkillCommandSelector(Boolean(nextSkillCommandRange));
   }, [enableSkills, closeSkillCommandSelector]);
 
