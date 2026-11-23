@@ -453,6 +453,20 @@ class TestProjectConnectionsView:
 
 class TestProjectConnectionView:
 
+    def test_github_config_cannot_use_unapproved_installation(
+            self, factory, project_creator, real_project, connection_factory):
+        connection = connection_factory(connection_type='github_issue', config={
+            'installation_id': '42', 'repository': 'https://github.com/acme/repo',
+        })
+        request = factory.put('/', {'config': json.dumps({'installation_id': '99'})}, format='json')
+        request.user = project_creator
+        with patch('seahub.project.connections.ProjectConnections.objects.modify') as modify:
+            response = ProjectConnectionView.as_view()(
+                request, project_uuid=str(real_project.uuid), connection_id=str(connection.id),
+            )
+        assert response.status_code == 403
+        modify.assert_not_called()
+
     def test_get_project_not_found(self, factory, project_creator, site_connection):
         project_uuid = '00000000-0000-0000-0000-000000000000'
         request = factory.get(f"/api/v1/project/{project_uuid}/connections/{site_connection.id}/")

@@ -17,6 +17,19 @@ class GitHubRepoNotFound(Exception):
     pass
 
 
+def validate_github_connection_config(project_uuid, config):
+    from seahub.project.models import ProjectGithubAppInstallation
+
+    installation_id = str(config.get('installation_id') or '')
+    if not ProjectGithubAppInstallation.objects.get_project_installation(str(project_uuid), installation_id):
+        raise ValueError('GitHub installation authorization is required for this project.')
+    repositories = GitHubAPI(installation_id).get_installation_repositories()
+    repository = next((item for item in repositories if item.get('html_url') == config.get('repository')), None)
+    if not repository:
+        raise ValueError('Repository is not accessible to this GitHub installation.')
+    return {**config, 'installation_id': installation_id, 'repository': repository['html_url']}
+
+
 class GitHubAPI:
     def __init__(self, installation_id, timeout=60):
         self.installation_id = installation_id

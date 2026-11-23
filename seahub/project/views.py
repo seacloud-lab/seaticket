@@ -3,7 +3,8 @@ import logging
 import json
 import base64
 import secrets
-from urllib.parse import urlencode, unquote
+import hashlib
+from urllib.parse import urlencode
 
 import requests
 
@@ -18,7 +19,7 @@ from requests_oauthlib import OAuth2Session
 from seahub import settings
 from seahub.project.models import Workspaces, Projects, ProjectConnections, ProjectGithubAppInstallation, \
     ProjectConnectionOauth
-from seahub.project.utils import check_project_admin_permission, check_project_permission, update_github_connection_installation_id, \
+from seahub.project.utils import check_project_admin_permission, check_project_permission, \
     get_email_oauth_callback_url, fetch_oauth_email_sender_info, EmailOAuthProfileError
 from seahub.project.oauth_utils import CommonOAuthUtils, EmailOAuthUtils, NotionOAuthUtils
 from seahub.base.templatetags.seahub_tags import email2nickname
@@ -112,6 +113,7 @@ def project_view(request, workspace_id, project_name, children_id = '', record_i
     return render(request, 'project_view_react.html', return_dict)
 
 
+@login_required
 def github_install(request):
     return_to = request.GET.get('next') or '/'
     project_uuid = request.GET.get('project_uuid', '')
@@ -119,7 +121,7 @@ def github_install(request):
     if not project_uuid:
         return render_error(request, _('Please install through the address provided by sea-ticket.'))
 
-    project = Projects.objects.get_project_by_uuid(project_uuid)
+    project = Projects.objects.get_project_by_uuid(project_uuid, include_deleted=False)
     if not project:
         return render_error(request, _('Please install through the address provided by sea-ticket.'))
     workspace = project.workspace
@@ -128,44 +130,107 @@ def github_install(request):
     if not check_project_admin_permission(username, workspace.owner):
         return render_error(request, _('Permission denied.'))
 
-    state = base64.b64encode((return_to + '&' + project_uuid).encode()).decode()
-    install_url = f"https://github.com/apps/{GITHUB_APP_NAME}/installations/new?state={state}"
+    if not url_has_allowed_host_and_scheme(return_to, {request.get_host()}, require_https=request.is_secure()):
+        return_to = '/'
+    state = secrets.token_urlsafe(32)
+    request.session['github_installation_request'] = {
+        'state': state,
+        'username': username,
+        'project_uuid': str(project.uuid),
+        'return_url': return_to,
+        'created_at': timezone.now().timestamp(),
+        'stage': 'install',
+    }
+    install_url = f"https://github.com/apps/{GITHUB_APP_NAME}/installations/new?{urlencode({'state': state})}"
     return redirect(install_url)
 
 
+def _get_github_installation_request(request, stage):
+    data = request.session.get('github_installation_request')
+    if not isinstance(data, dict) or data.get('stage') != stage:
+        return None, None
+    if (not request.GET.get('state') or request.GET['state'] != data.get('state')
+            or data.get('username') != request.user.username
+            or data.get('created_at', 0) < timezone.now().timestamp() - 600):
+        return None, None
+    project = Projects.objects.get_project_by_uuid(data['project_uuid'], include_deleted=False)
+    if not project or not check_project_admin_permission(request.user.username, project.workspace.owner):
+        return None, None
+    return data, project
+
+
+@login_required
 def github_installation_setup(request):
-    state = request.GET.get('state')
-    installation_id = request.GET.get('installation_id')
-    setup_action = request.GET.get('setup_action')
+    data, project = _get_github_installation_request(request, 'install')
+    if not data:
+        return render(request, 'error.html', {'error_msg': _('Invalid or expired GitHub authorization request.')}, status=403)
+    request.session.pop('github_installation_request', None)
+    installation_id = request.GET.get('installation_id', '')
+    if not installation_id.isdigit() or int(installation_id) <= 0:
+        return render_error(request, _('Invalid GitHub installation.'))
+    installation_id = str(int(installation_id))
 
-    project_uuid = ''
-    if state:
-        state = unquote(state)
-        try:
-            return_url, project_uuid = base64.b64decode(state).decode().rsplit('&', 1)
-        except Exception:
-            return_url = '/'
-    else:
-        return_url = '/'
+    if ProjectGithubAppInstallation.objects.get_project_installation(str(project.uuid), installation_id):
+        return redirect(data['return_url'])
+    if not settings.GITHUB_CLIENT_ID or not settings.GITHUB_CLIENT_SECRET:
+        return render_error(request, _('GitHub OAuth is not configured.'))
 
-    if not project_uuid:
-        return render_error(request, _('Please install through the address provided by sea-ticket.'))
+    state = secrets.token_urlsafe(32)
+    verifier = secrets.token_urlsafe(64)
+    challenge = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode('ascii')).digest()).rstrip(b'=').decode('ascii')
+    callback_url = request.build_absolute_uri(settings.SITE_ROOT + 'github/oauth/callback/')
+    oauth = OAuth2Session(settings.GITHUB_CLIENT_ID, redirect_uri=callback_url, state=state)
+    auth_url = oauth.authorization_url(
+        'https://github.com/login/oauth/authorize',
+        code_challenge=challenge, code_challenge_method='S256',
+    )[0]
+    data.update({'state': state, 'stage': 'authorize', 'installation_id': installation_id,
+                 'code_verifier': verifier, 'callback_url': callback_url})
+    request.session['github_installation_request'] = data
+    return redirect(auth_url)
 
-    project = Projects.objects.get_project_by_uuid(project_uuid)
-    if not project:
-        return render_error(request, _('Please install through the address provided by sea-ticket.'))
-    workspace = project.workspace
 
-    username = request.user.username
-    if not check_project_admin_permission(username, workspace.owner):
-        return render_error(request, _('Permission denied.'))
+@login_required
+def github_oauth_callback(request):
+    data, project = _get_github_installation_request(request, 'authorize')
+    if not data:
+        return render(request, 'error.html', {'error_msg': _('Invalid or expired GitHub authorization request.')}, status=403)
+    request.session.pop('github_installation_request', None)
+    if request.GET.get('error') or not request.GET.get('code'):
+        return render_error(request, _('GitHub authorization failed.'))
 
-    github_app_installation = ProjectGithubAppInstallation.objects.get_project_installation(project_uuid, installation_id)
-    if not github_app_installation:
-        ProjectGithubAppInstallation.objects.create_app_installation(project_uuid, installation_id, username)
-        update_github_connection_installation_id(project_uuid, installation_id)
+    try:
+        oauth = OAuth2Session(settings.GITHUB_CLIENT_ID, redirect_uri=data['callback_url'], state=data['state'])
+        token = oauth.fetch_token(
+            'https://github.com/login/oauth/access_token', code=request.GET['code'],
+            client_secret=settings.GITHUB_CLIENT_SECRET, code_verifier=data['code_verifier'],
+            include_client_id=True, timeout=15,
+        )
+        headers = {'Authorization': f'Bearer {token["access_token"]}', 'Accept': 'application/vnd.github+json'}
+        page = 1
+        while True:
+            response = requests.get('https://api.github.com/user/installations', headers=headers,
+                                    params={'per_page': 100, 'page': page}, timeout=15)
+            response.raise_for_status()
+            installations = response.json()['installations']
+            installation = next((item for item in installations
+                                 if str(item['id']) == data['installation_id']
+                                 and str(item['app_id']) == str(settings.GITHUB_APP_ID)
+                                 and not item.get('suspended_at')), None)
+            if installation:
+                break
+            if len(installations) < 100:
+                return render(request, 'error.html', {'error_msg': _('Permission denied.')}, status=403)
+            page += 1
 
-    return redirect(return_url)
+        ProjectGithubAppInstallation.objects.update_or_create(
+            project_uuid=str(project.uuid), installation_id=data['installation_id'],
+            defaults={'creator': request.user.username, 'modifier': request.user.username},
+        )
+    except Exception:
+        logger.warning('GitHub installation authorization failed for project %s', project.uuid)
+        return render_error(request, _('GitHub authorization failed.'))
+    return redirect(data['return_url'])
 
 
 @login_required

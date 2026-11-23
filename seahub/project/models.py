@@ -1146,7 +1146,7 @@ class ProjectGithubAppInstallationManager(models.Manager):
 
     def get_project_installation(self, project_uuid, installation_id):
         try:
-            return self.get(project_uuid=project_uuid,installation_id=installation_id)
+            return self.get(project_uuid=project_uuid, installation_id=installation_id)
         except self.model.DoesNotExist:
             return None
 

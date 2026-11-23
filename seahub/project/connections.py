@@ -58,7 +58,7 @@ from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_tick
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES, send_connection_data_event, \
     email_thread_customer_domain_matches
 from seahub.settings import GITHUB_WEBHOOK_SECRET
-from seahub.project.github_issues_api import GitHubAPI, GitHubAppNotInstalled
+from seahub.project.github_issues_api import GitHubAPI, GitHubAppNotInstalled, validate_github_connection_config
 from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
 from seahub.utils.mailbox_manager import move_emails_to_trash
 from seahub.project.discourse_api import DiscourseForumAPI, DiscourseForumAPIException
@@ -461,6 +461,13 @@ class ProjectGithubConnectionsView(APIView):
                 'repository': repository,
             }
 
+            try:
+                config = validate_github_connection_config(project_uuid, config)
+            except ValueError as e:
+                return api_error(status.HTTP_403_FORBIDDEN, str(e))
+            except Exception:
+                return api_error(status.HTTP_502_BAD_GATEWAY, 'Failed to validate GitHub repository.')
+
             enable_create = ProjectConnections.objects.enable_create(project_uuid, connection_type, config)
             if not enable_create:
                 error_msg = 'Please check input'
@@ -566,6 +573,13 @@ class ProjectConnectionView(APIView):
                         return api_error(status.HTTP_400_BAD_REQUEST, 'Email authorization and mailbox settings cannot be changed. Create a new connection.')
             config.update(new_config)
             new_config = config
+            if project_connection.type == ConnectionType.GITHUB_ISSUE.value:
+                try:
+                    new_config = validate_github_connection_config(project_uuid, new_config)
+                except ValueError as e:
+                    return api_error(status.HTTP_403_FORBIDDEN, str(e))
+                except Exception:
+                    return api_error(status.HTTP_502_BAD_GATEWAY, 'Failed to validate GitHub repository.')
 
         if is_active is not None:
             is_active = to_python_boolean(is_active)
