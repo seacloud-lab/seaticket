@@ -134,7 +134,7 @@ export const splitEmailAddresses = (value) => {
 
 const generateInitials = (name) => {
   if (!name || !isString(name)) return '?';
-  const trimmedName = name.trim();
+  const trimmedName = name.replace(/['"]/g, '').trim();
   if (!trimmedName) return '?';
 
   const words = trimmedName.split(/[\s]+/).filter(word => word.length > 0);
@@ -145,7 +145,7 @@ const generateInitials = (name) => {
   }
 
   const word = words[0];
-  return Array.from(word).slice(0, 1).join('');
+  return Array.from(word).slice(0, 1).join('').toLocaleUpperCase();
 };
 
 export const parseEmailUserInfo = (userOrEmail) => {

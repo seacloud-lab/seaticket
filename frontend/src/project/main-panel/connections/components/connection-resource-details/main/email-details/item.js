@@ -75,7 +75,7 @@ const Item = ({
   const isHTMLContent = useMemo(() => HTMLContent ? true : false, [HTMLContent]);
   const { sender, email, fullName: senderFullName, color } = useMemo(() => {
     const { color, name, email, fullName } = parseEmailUserInfo(detail['email_from']);
-    return { sender: name, email, fullName, color };
+    return { sender: name || email, email, fullName, color };
   }, [detail]);
   const isReadonly = useMemo(() => permission === PERMISSION_TYPES.READ_ONLY, [permission]);
   const isUnread = Boolean(detail.unread);

@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import classnames from 'classnames';
 import { EmptyTip, IconButton } from '@/components';
 import { gettext } from '@/constants';
-import { parseEmailUserInfo } from '@/utils/email';
+import { normalizeEmailAddress, parseEmailUserInfo } from '@/utils/email';
 import Item from './item';
 
 import './index.css';
@@ -21,7 +21,7 @@ const EmailDetails = ({ details, className, ...props }) => {
     const usersByEmail = new Map();
     for (let index = 0; index < details.length - 1; index++) {
       const userInfo = parseEmailUserInfo(details[index]?.email_from);
-      if (userInfo?.email) usersByEmail.set(userInfo.email, userInfo);
+      if (userInfo?.email) usersByEmail.set(normalizeEmailAddress(userInfo.email), userInfo);
     }
     return Array.from(usersByEmail.values());
   }, [details]);
@@ -49,11 +49,11 @@ const EmailDetails = ({ details, className, ...props }) => {
                 <div className="email-record-info-container">
                   <span className="email-record-info-sender text-truncate">
                     {moreUsers.map((user, index) => {
-                      const { name, fullName, color } = user;
+                      const { name, email, fullName, color } = user;
                       return (
                         <>
                           {index !== 0 && (<span>{', '}</span>)}
-                          <span key={index} title={fullName} style={{ color }}>{name}</span>
+                          <span key={index} title={fullName} style={{ color }}>{name || email}</span>
                         </>
                       );
                     }).filter(Boolean)}
