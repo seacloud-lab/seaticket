@@ -49,11 +49,13 @@ const EmailDetails = ({ details, className, ...props }) => {
                 <div className="email-record-info-container">
                   <span className="email-record-info-sender text-truncate">
                     {moreUsers.map((user, index) => {
-                      const { name, email, fullName, color } = user;
+                      const { name, email, fullName, color, isCustomizedName } = user;
                       return (
                         <>
                           {index !== 0 && (<span>{', '}</span>)}
-                          <span key={index} title={fullName} style={{ color }}>{name || email}</span>
+                          <span key={index} title={fullName} style={{ color }}>
+                            {isCustomizedName && name ? name : email}
+                          </span>
                         </>
                       );
                     }).filter(Boolean)}
