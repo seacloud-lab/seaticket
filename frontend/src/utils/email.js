@@ -22,6 +22,18 @@ const SVG_AVATAR_COLORS = [
 ];
 
 /**
+ * Preserve the local part and normalize the domain's casing.
+ * @param {string} value
+ * @returns {string}
+ */
+export const normalizeEmailAddress = (value = '') => {
+  const email = String(value ?? '').trim();
+  const atIndex = email.lastIndexOf('@');
+  if (atIndex <= 0 || atIndex === email.length - 1) return email;
+  return `${email.slice(0, atIndex)}@${email.slice(atIndex + 1).toLowerCase()}`;
+};
+
+/**
  * Parse the domain from one email address.
  * @param {string} value
  * @returns {string}
@@ -147,7 +159,7 @@ export const parseEmailUserInfo = (userOrEmail) => {
   const { name, email, fullName, isCustomizedName = true } = user;
   const initials = generateInitials(name);
   let hash = 0;
-  const emailAddress = isString(email) ? email : '';
+  const emailAddress = isString(email) ? normalizeEmailAddress(email) : '';
   for (let i = 0; i < emailAddress.length; i++) {
     hash = emailAddress.charCodeAt(i) + ((hash << 5) - hash);
     hash = hash & hash;

@@ -19,6 +19,14 @@ EMAIL_PARTICIPANT_THREAD_BATCH_SIZE = 1000
 EMAIL_PARTICIPANTS_LIMIT = 1000 * 1000
 
 
+def normalize_email_address(email_address):
+    """Preserve the local part and normalize the domain's casing."""
+    local_part, separator, domain = email_address.rpartition('@')
+    if not separator or not local_part or not domain:
+        return email_address
+    return f'{local_part}@{domain.lower()}'
+
+
 def strip_portal_issue_internal_columns(records, columns):
     """Remove internal columns from records and column metadata before an external response."""
     for record in records or []:
@@ -571,13 +579,14 @@ def list_connection_view_records(seadb_api, project_uuid, connection, view, star
                         email_name, email_address = parseaddr(address_info)
                         if not email_address:
                             continue
+                        participant_key = normalize_email_address(email_address)
                         participants_info = participants_info_by_thread[thread_id]
                         flag = True
-                        if not email_name and participants_info.get(email_address, ''):
+                        if not email_name and participants_info.get(participant_key, ''):
                             flag = False
                         if flag:
-                            participants_info[email_address] = address_info
-                        participants_by_thread[thread_id].setdefault(email_address, None)
+                            participants_info[participant_key] = address_info
+                        participants_by_thread[thread_id].setdefault(participant_key, None)
 
             if participants_query_succeeded:
                 for thread_id, thread_records in records_by_thread.items():

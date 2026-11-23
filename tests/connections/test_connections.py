@@ -1457,6 +1457,32 @@ class TestProjectConfluenceOauthStatusView:
         assert resp.data == {'connected': True}
 
 
+class TestConnectionViewRecordParticipants:
+
+    def test_list_email_records_deduplicates_sender_domain_case_insensitively(self):
+        from seahub.seadb_models.utils import list_connection_view_records
+
+        connection = SimpleNamespace(type=ConnectionType.EMAIL.value, id=23)
+        seadb_api = Mock()
+        seadb_api.query_rows.side_effect = [
+            {'results': [{'_pk': 17, 'title': 'Thread'}]},
+            {'results': [
+                {'thread_id': 17, 'email_from': 'sales@EXAMPLE.com'},
+                {'thread_id': 17, 'email_from': 'sales@example.com'},
+            ]},
+        ]
+        columns = [{'name': '_pk'}, {'name': 'title'}]
+
+        with patch('seahub.seadb_models.utils.get_connection_columns', return_value=columns), \
+                patch('seahub.seadb_models.utils.view_data_2_sql', return_value='thread query'):
+            records, _ = list_connection_view_records(
+                seadb_api, 'project-uuid', connection, {}, start=0, limit=10
+            )
+
+        assert len(records) == 1
+        assert records[0]['participants'] == ['sales@EXAMPLE.com']
+
+
 class TestProjectConnectionRecordView:
 
     def test_email_address_display_decodes_names_and_quotes_special_characters(self):

@@ -15,17 +15,25 @@ import ReplyEmail from './reply-email';
 import './index.css';
 
 const EmailUser = ({ emailAddress, isShowEmail = true }) => {
-  const { name, email } = parseEmailAddress(emailAddress);
+  const { name, email, isCustomizedName } = parseEmailAddress(emailAddress);
   return (
     <span title={emailAddress} className="font-size-14">
-      {(isShowEmail && name) ? (
+      {isCustomizedName ? (
         <>
-          <span>{name}</span>
-          <span className="text-secondary">{` <${email}>`}</span>
+          {(isShowEmail && name) ? (
+            <>
+              <span>{name}</span>
+              <span className="text-secondary">{` <${email}>`}</span>
+            </>
+          ) : (
+            <>
+              {name}
+            </>
+          )}
         </>
       ) : (
         <>
-          {name}
+          {email}
         </>
       )}
     </span>
