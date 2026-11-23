@@ -318,7 +318,7 @@ msgstr "该账号未激活。"
 
 #: seahub/auth/forms.py:69
 msgid "Please enter a correct email/username and password. Note that both fields are case-sensitive."
-msgstr "请输入正确的邮箱／用户名和密码。字母请注意区分大小写。"
+msgstr "请输入正确的邮箱／用户名和密码。请注意，这两个字段均区分大小写。"
 
 #: seahub/auth/forms.py:75 seahub/auth/forms.py:145
 msgid "That e-mail address doesn't have an associated user account. Are you sure you've registered?"
@@ -1007,7 +1007,7 @@ msgstr "工单 #%(ticket_pk)s 已从门户工单 #%(issue_id)s 创建。"
 #: seahub/project/agent/action_executor.py:1361
 #, python-format
 msgid "GitHub issue %(source_id)s not found in SeaDB."
-msgstr "GitHub 工单 %(source_id)s 不存在。"
+msgstr "在 SeaDB 中未找到 GitHub 工单 %(source_id)s。"
 
 #: seahub/project/agent/action_executor.py:1368
 #, python-format
@@ -1032,7 +1032,7 @@ msgstr "邮件线程 #%(thread_id)s 不存在。"
 #: seahub/project/agent/action_executor.py:1435
 #, python-format
 msgid "No emails found for thread #%(thread_id)s."
-msgstr "邮件线程 #%(thread_id)s 不存在。"
+msgstr "未找到邮件线程 #%(thread_id)s 中的邮件。"
 
 #: seahub/project/agent/action_executor.py:1442
 #, python-format
@@ -1061,7 +1061,7 @@ msgstr "创建 Discord 回复失败：内容为空。"
 #: seahub/project/agent/action_executor.py:1486
 #, python-format
 msgid "Discord thread %(source_id)s has no thread_id."
-msgstr "Discord 线程 %(source_id)s 不存在。"
+msgstr "Discord 线程 %(source_id)s 缺少 thread_id。"
 
 #: seahub/project/agent/action_executor.py:1495
 #, python-format
@@ -1075,7 +1075,7 @@ msgstr "保存 Discord 回复失败：响应中没有消息 ID。"
 #: seahub/project/agent/action_executor.py:1527
 #, python-format
 msgid "Discord reply was posted, but failed to save local record for thread #%(record_id)s."
-msgstr "Discord 回复已发布 #%(record_id)s，但保存本地记录失败。"
+msgstr "Discord 回复已发布，但未能为线程 #%(record_id)s 保存本地记录。"
 
 #: seahub/project/agent/action_executor.py:1533
 #, python-format
@@ -1097,12 +1097,12 @@ msgstr "邮件连接配置无效。"
 #: seahub/project/agent/action_executor.py:1566
 #, python-format
 msgid "No inbound email found for thread %(source_id)s."
-msgstr "邮件线程 %(source_id)s 不存在。"
+msgstr "未找到线程 %(source_id)s 的收件邮件。"
 
 #: seahub/project/agent/action_executor.py:1578
 #, python-format
 msgid "Failed to resolve recipient for thread %(source_id)s."
-msgstr "邮件线程 %(source_id)s 不存在。"
+msgstr "无法确定线程 %(source_id)s 的收件人。"
 
 #: seahub/project/agent/action_executor.py:1584
 #, python-format
@@ -1112,7 +1112,7 @@ msgstr "无法确定线程 %(source_id)s 的主题。"
 #: seahub/project/agent/action_executor.py:1592
 #, python-format
 msgid "Cannot determine reply target for thread %(source_id)s."
-msgstr "邮件线程 %(source_id)s 不存在。"
+msgstr "无法确定线程 %(source_id)s 的回复目标。"
 
 #: seahub/project/agent/action_executor.py:1619
 #: seahub/project/agent/action_executor.py:1709
@@ -1141,7 +1141,7 @@ msgstr "邮件线程 #%(thread_id)s 已关联到工单 #%(linked_ticket)s。"
 #: seahub/project/agent/action_executor.py:1731
 #, python-format
 msgid "No inbound message id found for thread %(source_id)s."
-msgstr "邮件线程 %(source_id)s 不存在。"
+msgstr "未找到线程 %(source_id)s 的收件消息 ID。"
 
 #: seahub/project/agent/action_executor.py:1744
 msgid "Failed to move the email to the spam folder."
@@ -1992,4 +1992,3 @@ msgstr "权限错误"
 #: seahub/utils/http.py:82
 msgid "Too many requests"
 msgstr "请求过多"
-
