@@ -3,6 +3,7 @@ import json
 from unittest.mock import Mock, patch
 
 import pytest
+from django.urls import reverse
 
 from seahub.tickets.tickets import (
     TicketsAPIView,
@@ -15,6 +16,7 @@ from seahub.tickets.tickets import (
     TicketTrashAPIView,
     build_ticket_data_event,
 )
+from seahub.seadb_models.utils import list_my_tickets
 from seahub.portal.models import PortalCustomer
 from seahub.tickets.ticket_utils import (
     compare_ticket_changes,
@@ -618,17 +620,21 @@ class TestTicketsSearchAPIView:
 
 
 class TestMyTicketAPIView:
+    def _make_request(self, factory, project, user, data=None):
+        url = reverse('api-v1-project-my-tickets', kwargs={'project_uuid': project.uuid})
+        request = factory.post(url, data=data, format='multipart')
+        request.user = user
+        return request
+
     def test_feature_not_enabled(self, factory, no_org_user, real_project):
         project = real_project
-        request = factory.post(f"/api/v1/projects/{project.uuid}/tickets/my/")
-        request.user = no_org_user
+        request = self._make_request(factory, project, no_org_user)
         resp = MyTicketAPIView.as_view()(request, project_uuid=project.uuid)
         assert resp.status_code == 403
 
     def test_post_success(self, factory, project_creator, real_project):
         project = real_project
-        request = factory.post(f"/api/v1/projects/{project.uuid}/tickets/my/")
-        request.user = project_creator
+        request = self._make_request(factory, project, project_creator)
         due_date_key = 'k_due_date'
         tickets = [{'_pk': 1, due_date_key: '2026-08-01'}]
         columns = [{'key': due_date_key, 'name': 'due_date'}]
@@ -638,20 +644,87 @@ class TestMyTicketAPIView:
         assert resp.status_code == 200
         assert resp.data['tickets'][0][due_date_key] == '2026-08-01'
 
-    def test_post_invalid_view_id_default_open(self, factory, project_creator, real_project):
+    def test_post_distinguishes_query_failure_from_empty_result(self, factory, project_creator, real_project):
         project = real_project
-        request = factory.post(
-            f"/api/v1/projects/{project.uuid}/tickets/my/",
-            data={'view': 'invalid', 'config': {"filters": [], "filter_conjunction": "And", "basic_filters": [], "sorts": []}},
-            format='json',
-        )
-        request.user = project_creator
-        seadb_api = Mock()
-        with patch('seahub.tickets.tickets.SeaDBAPI', return_value=seadb_api), \
+        columns = [
+            {'name': 'creator', 'type': 'text', 'key': 'c123'},
+            {'name': 'state', 'type': 'single-select', 'key': 's456', 'data': {'options': [
+                {'id': '0001', 'name': 'open'},
+            ]}},
+        ]
+        form = {'scope': 'created', 'ticket_state': 'open'}
+        with patch('seahub.tickets.tickets.SeaDBAPI') as seadb_api:
+            seadb_api.return_value.get_base_metadata.return_value = {'tables': [{'name': 'tickets', 'columns': columns}]}
+            query_rows = seadb_api.return_value.query_rows
+            query_rows.side_effect = [ConnectionError('SeaDB unavailable'), {'results': []}]
+            request = self._make_request(factory, project, project_creator, form)
+            failed = MyTicketAPIView.as_view()(request, project_uuid=project.uuid)
+            request = self._make_request(factory, project, project_creator, form)
+            empty = MyTicketAPIView.as_view()(request, project_uuid=project.uuid)
+
+        assert failed.status_code == 500
+        assert 'error_msg' in failed.data
+        assert empty.status_code == 200
+        assert empty.data['tickets'] == []
+        assert query_rows.call_count == 2
+
+    @pytest.mark.parametrize('form,ticket_state,filter_column', [
+        ({'ticket_state': 'closed'}, 'closed', 'assignees'),
+        ({'ticket_state': 'open', 'scope': 'assigned'}, 'open', 'assignees'),
+        ({'ticket_state': 'closed', 'scope': 'assigned'}, 'closed', 'assignees'),
+        ({'ticket_state': 'open', 'scope': 'created'}, 'open', 'creator'),
+        ({'ticket_state': 'closed', 'scope': 'created'}, 'closed', 'creator'),
+        ({'ticket_state': 'created-closed'}, 'open', 'assignees'),
+        ({'ticket_state': 'invalid', 'scope': 'created'}, 'open', 'creator'),
+    ])
+    def test_post_selects_scope_and_state(self, factory, project_creator, real_project, form, ticket_state, filter_column):
+        project = real_project
+        request = self._make_request(factory, project, project_creator, form)
+        with patch('seahub.tickets.tickets.SeaDBAPI') as seadb_api, \
                 patch('seahub.tickets.tickets.list_my_tickets', return_value=([], [])) as list_my_tickets_mock:
             resp = MyTicketAPIView.as_view()(request, project_uuid=project.uuid)
         assert resp.status_code == 200
-        assert list_my_tickets_mock.call_args[0][3] == 'open'
+        list_my_tickets_mock.assert_called_once_with(
+            seadb_api.return_value, project.uuid, project_creator.username, ticket_state, 0, 1000, {},
+            filter_column=filter_column,
+        )
+
+    @pytest.mark.parametrize('scope', ['', 'unknown'])
+    def test_post_rejects_invalid_scope(self, factory, project_creator, real_project, scope):
+        project = real_project
+        request = self._make_request(factory, project, project_creator, {'scope': scope})
+        with patch('seahub.tickets.tickets.list_my_tickets') as list_my_tickets_mock:
+            resp = MyTicketAPIView.as_view()(request, project_uuid=project.uuid)
+        assert resp.status_code == 400
+        list_my_tickets_mock.assert_not_called()
+
+    def test_post_created_scope_requires_project_permission(self, factory, auth_user, real_project):
+        project = real_project
+        request = self._make_request(factory, project, auth_user, {'scope': 'created'})
+        resp = MyTicketAPIView.as_view()(request, project_uuid=project.uuid)
+        assert resp.status_code == 403
+
+
+class TestListMyTickets:
+    @pytest.mark.parametrize('ticket_state,scope_kwargs,user_filter', [
+        ('open', {}, "`assignees` in ('user@example.com')"),
+        ('closed', {'filter_column': 'creator'}, "`creator` = 'user@example.com'"),
+    ])
+    def test_query_filters_by_user_and_state(self, ticket_state, scope_kwargs, user_filter):
+        columns = [
+            {'name': 'assignees', 'type': 'list'},
+            {'name': 'creator', 'type': 'text'},
+            {'name': 'state', 'type': 'single-select', 'data': {'options': [
+                {'id': '0001', 'name': 'open'},
+                {'id': '0002', 'name': 'closed'},
+            ]}},
+        ]
+        seadb_api = Mock()
+        seadb_api.query_rows.return_value = {'results': []}
+        with patch('seahub.seadb_models.utils.get_seadb_table_columns', return_value=columns):
+            list_my_tickets(seadb_api, 'project-uuid', 'user@example.com', ticket_state, 0, 10, {}, **scope_kwargs)
+        sql = seadb_api.query_rows.call_args.args[1]
+        assert f"WHERE `state` = '{ticket_state}' AND {user_filter}" in sql
 
 
 class TestTicketMetadataAPIView:

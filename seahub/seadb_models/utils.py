@@ -332,7 +332,7 @@ def list_tickets_by_search(seadb_api, project_uuid, search_text, start, end):
     return ticket_data
 
 
-def list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limit, view_config={}):
+def list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limit, view_config={}, filter_column='assignees'):
     columns = get_seadb_table_columns(seadb_api, project_uuid, 'tickets')
     all_columns_names = TICKET_DISPLAY_ALL_COLUMNS.copy()
     if ticket_state == 'open':
@@ -357,10 +357,17 @@ def list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limi
         'filter_predicate': 'is',
         'filter_term': '0001' if ticket_state == 'open' else '0002',
     })
-    basic_filters.append({
-        'column_name': 'assignees',
-        'filter_predicate': 'include_me',
-    })
+    if filter_column == 'creator':
+        basic_filters.append({
+            'column_name': 'creator',
+            'filter_predicate': 'is',
+            'filter_term': username,
+        })
+    else:
+        basic_filters.append({
+            'column_name': 'assignees',
+            'filter_predicate': 'include_me',
+        })
 
     view_copy['basic_filters'] = basic_filters
     try:
@@ -369,13 +376,8 @@ def list_my_tickets(seadb_api, project_uuid, username, ticket_state, start, limi
         e.columns = display_columns
         raise
 
-    try:
-        res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
-        records = res.get('results')
-    except Exception as e:
-        logger.error(f'SeaDB query error for connection tickets: {e}')
-        records = []
-    return records, display_columns
+    res = seadb_api.query_rows(project_uuid, sql, convert_keys=False)
+    return res['results'], display_columns
 
 
 def list_trash_tickets(seadb_api, project_uuid, start, limit):

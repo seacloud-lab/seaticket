@@ -27,6 +27,7 @@ export const MetadataProvider = forwardRef(({
   notDisplayColumns,
   t,
   dataDidMount,
+  shouldRemoveRowAfterUpdate,
   generatorRowClassName,
   children,
   ...params
@@ -318,7 +319,10 @@ export const MetadataProvider = forwardRef(({
     context.re_set({
       localStorageName: `${localStorageNamePrefix}-${viewID}`,
     });
-    storeRef.current = new Store({ viewId: viewID, typesData, tagsData, customersData, columnOrderRules, columnWidthRules, notDisplayColumns, dataDidMount });
+    storeRef.current = new Store({
+      viewId: viewID, typesData, tagsData, customersData, columnOrderRules, columnWidthRules,
+      notDisplayColumns, dataDidMount, shouldRemoveRowAfterUpdate,
+    });
     storeRef.current.initStartIndex();
     storeRef.current.load(PER_LOAD_NUMBER).then(() => {
       if (!isCancelled) {

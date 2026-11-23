@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { server } from '@/constants';
 import { BAR_TYPE } from '@/project/constants';
+import { getMyTicketsScope } from '@/project/utils';
 import LongTextEditorUtilities from '@/utils/long-text';
 import { ticketsAPI } from '../../api';
 import TicketTopBar from './components/ticket-top-bar';
@@ -45,7 +46,8 @@ const Page = ({ toggleBar, type }) => {
     return (<SubstateTickets { ...props } substateID={childrenPageSlugId}/>);
   }
   if (pageSlugId === TICKET_PAGE_SLUG_ID.ALL) {
-    if (type === BAR_TYPE.MY_TICKET) return (<MyTickets { ...props } />);
+    const scope = getMyTicketsScope(type);
+    if (scope) return (<MyTickets { ...props } scope={scope} />);
     if (type === BAR_TYPE.TRASH) return (<TrashTickets { ...props } />);
     if (type === BAR_TYPE.NEW_TICKET) return (<NewTicket projectUuid={projectUuid} editorAPI={longtextAPI} toggleBar={toggleBar} />);
     return (<AllTickets { ...props } />);

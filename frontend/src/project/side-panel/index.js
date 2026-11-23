@@ -54,6 +54,7 @@ const SidePanel = ({ activeBar, toggleBar, settings }) => {
           <div className="seaqa-project-side-panel-subtitle">{gettext('Tickets')}</div>
           <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.TICKET]} {...commonProps} />
           <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.MY_TICKET]} {...commonProps} />
+          <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.MY_CREATED_TICKET]} {...commonProps} />
           <Nav nav={BAR_TYPE_CONFIG[BAR_TYPE.NEW_TICKET]} {...commonProps} />
           <TicketsMoreNav onClick={toggleBar} />
           <div className="seaqa-project-side-panel-subtitle">{gettext('Documents')}</div>

@@ -149,6 +149,11 @@ const Ticket = ({
       if (hasOwnProperty(res.data.row, PREDEFINED_TICKET_COLUMN_NAME.CONTENT)) {
         update[PREDEFINED_TICKET_COLUMN_NAME.CONTENT] = res.data.row[PREDEFINED_TICKET_COLUMN_NAME.CONTENT];
       }
+      const { assignees, modified_time } = res.data.row || {};
+      if (Array.isArray(assignees)) {
+        update.assignees = assignees;
+        update.modified_time = modified_time;
+      }
       const newTicket = ticket._update(update);
       handleUpdateRowsCacheData(ticketID, update);
       setTicket(deepCopy(newTicket));

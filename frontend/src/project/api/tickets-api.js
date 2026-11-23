@@ -335,10 +335,11 @@ class TicketsAPI {
     return this.req.get(url);
   }
 
-  listMyTickets(projectUuid, { view_id = 'open', start = 0, limit = 1000, filters, filter_conjunction, basic_filters, sorts }) {
+  listMyTickets(projectUuid, { ticket_state = 'open', scope = 'assigned', start = 0, limit = 1000, filters, filter_conjunction, basic_filters, sorts }) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/my-tickets/';
     let form = new FormData();
-    form.append('view_id', view_id);
+    form.append('ticket_state', ticket_state);
+    form.append('scope', scope);
     form.append('start', start);
     form.append('limit', limit);
     form.append('config', JSON.stringify({

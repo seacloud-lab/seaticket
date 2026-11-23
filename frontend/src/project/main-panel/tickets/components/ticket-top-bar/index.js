@@ -117,7 +117,7 @@ const TicketTopBar = ({ title, type, permission, toggleBar }) => {
       pageSlugId === TICKET_PAGE_SLUG_ID.NEW
     ) return null;
 
-    if (type === BAR_TYPE.MY_TICKET) return null;
+    if (type === BAR_TYPE.MY_TICKET || type === BAR_TYPE.MY_CREATED_TICKET) return null;
     if (type === BAR_TYPE.NEW_TICKET) return null;
     if (type === BAR_TYPE.TRASH) return null;
     return (
