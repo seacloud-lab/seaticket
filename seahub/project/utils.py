@@ -636,8 +636,6 @@ def extract_email_addresses_to_display(address_text):
 
 def email_thread_customer_domain_matches(email_seadb_api, connection_id, thread_id, customer):
     """A customer without an email domain does not restrict the thread."""
-    if not customer:
-        return True
     email_domain = (customer.email_domain or '').strip().lower()
     if not email_domain:
         return True
