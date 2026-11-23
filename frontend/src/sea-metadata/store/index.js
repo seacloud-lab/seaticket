@@ -3,7 +3,7 @@ import { getType, isFunction } from '@/utils/type-detection';
 import { EVENT_BUS_TYPE, PER_LOAD_NUMBER } from '../constants';
 import context from '../context';
 import { Metadata, Row } from '../models';
-import { getColumnByKey, normalizeColumns } from '../utils/column';
+import { getColumnByKey, getColumnByName, normalizeColumns } from '../utils/column';
 import { getRowById, getRowsByIds } from '../utils/row';
 import DataProcessor from './data-processor';
 import LocalOperator from './local-operator';
@@ -22,6 +22,7 @@ class Store {
     this.redos = [];
     this.undo = [];
     this.pendingOperations = [];
+    this.settledRowUpdates = {};
     this.isSendingOperation = false;
     this.isReadonly = false;
     this.serverOperator = new ServerOperator();
@@ -45,6 +46,7 @@ class Store {
     this.redos = [];
     this.undo = [];
     this.pendingOperations = [];
+    this.settledRowUpdates = {};
     this.isSendingOperation = false;
     this.dataDidMount = null;
     this.tagsData = {};
@@ -190,6 +192,7 @@ class Store {
 
   applyOperation(operation, undoRedoHandler = { handleUndo: true }) {
     const { op_type } = operation;
+    operation.undo_redo_handler = undoRedoHandler;
 
     if (NEED_LOADING_OPERATION.includes(op_type)) {
       context.eventBus.dispatch(EVENT_BUS_TYPE.LOADING, true);
@@ -205,7 +208,7 @@ class Store {
     if (LOCAL_APPLY_OPERATION_TYPE.includes(op_type)) {
       this.localOperator.applyOperation(operation);
     } else {
-      this.addPendingOperations(operation, undoRedoHandler);
+      this.addPendingOperations(operation);
     }
 
     if (op_type === OPERATION_TYPE.MODIFY_FILTERS) {
@@ -215,35 +218,37 @@ class Store {
     }
   }
 
-  addPendingOperations(operation, undoRedoHandler) {
+  addPendingOperations(operation) {
     this.pendingOperations.push(operation);
-    this.startSendOperation(undoRedoHandler);
+    this.startSendOperation();
   }
 
-  startSendOperation(undoRedoHandler) {
+  startSendOperation() {
     if (this.isSendingOperation || this.pendingOperations.length === 0) {
       return;
     }
     this.isSendingOperation = true;
     context.eventBus.dispatch(EVENT_BUS_TYPE.SAVING);
-    this.sendNextOperation(undoRedoHandler);
+    this.sendNextOperation();
   }
 
-  sendNextOperation(undoRedoHandler) {
+  sendNextOperation() {
     if (this.pendingOperations.length === 0) {
       this.isSendingOperation = false;
+      this.settledRowUpdates = {};
       context.eventBus.dispatch(EVENT_BUS_TYPE.SAVED);
       return;
     }
     const operation = this.pendingOperations.shift();
-    this.serverOperator.applyOperation(operation, { data: this.data, typesData: this.typesData, tagsData: this.tagsData }, this.sendOperationCallback.bind(this, undoRedoHandler));
+    this.rebaseOperationOldData(operation);
+    this.serverOperator.applyOperation(operation, { data: this.data, typesData: this.typesData, tagsData: this.tagsData }, this.sendOperationCallback);
   }
 
-  sendOperationCallback = (undoRedoHandler, { operation, is_restore, error }) => {
+  sendOperationCallback = ({ operation, is_restore, error }) => {
     if (is_restore) {
       this.restoreOperation(operation);
       this.undo = this.undo.filter(o => o.id !== operation.id);
-      this.sendNextOperation(undoRedoHandler);
+      this.sendNextOperation();
       return;
     }
 
@@ -253,15 +258,16 @@ class Store {
       } else {
         context.eventBus.dispatch(EVENT_BUS_TYPE.TABLE_ERROR, { error });
       }
-      this.sendNextOperation(undoRedoHandler);
+      this.sendNextOperation();
       return;
     }
 
     const isAfterServerOperation = NEED_APPLY_AFTER_SERVER_OPERATION.includes(operation.op_type);
     if (isAfterServerOperation) {
-      this.handleUndoRedos(undoRedoHandler, operation);
+      this.handleUndoRedos(operation.undo_redo_handler || { handleUndo: true }, operation);
       this.data = deepCopy(operation.apply(this.data));
       this.syncOperationOnData(operation);
+      this.recordSettledRowUpdates(operation);
     }
 
     if (isAfterServerOperation) {
@@ -288,7 +294,7 @@ class Store {
       context.eventBus.dispatch(EVENT_BUS_TYPE.SERVER_DATA_CHANGED);
     });
 
-    this.sendNextOperation(undoRedoHandler);
+    this.sendNextOperation();
   };
 
   syncOperationOnData(operation) {
@@ -352,6 +358,59 @@ class Store {
       success_callback,
     });
     this.applyOperation(operation);
+  }
+
+  getEffectiveOldRowData(oldRowData, settledUpdates) {
+    if (!oldRowData || !settledUpdates) return oldRowData;
+    const columns = this.data?.columns || [];
+    const effectiveOldRowData = { ...oldRowData };
+    Object.keys(oldRowData).forEach(key => {
+      const column = getColumnByKey(columns, key) || getColumnByName(columns, key);
+      const normalizedKey = column ? column.key : key;
+      if (Object.prototype.hasOwnProperty.call(settledUpdates, normalizedKey)) {
+        effectiveOldRowData[key] = settledUpdates[normalizedKey];
+      }
+    });
+    return effectiveOldRowData;
+  }
+
+  // Rebase queued edits on values that actually landed; undo/redo keep their own snapshots.
+  rebaseOperationOldData(operation) {
+    if (operation.undo_redo_handler && operation.undo_redo_handler.handleUndo === false) return;
+    if (operation.op_type === OPERATION_TYPE.MODIFY_ROW) {
+      operation.old_row_data = this.getEffectiveOldRowData(
+        operation.old_row_data, this.settledRowUpdates[operation.row_id]);
+      return;
+    }
+    if (operation.op_type === OPERATION_TYPE.MODIFY_ROWS) {
+      const oldRowDataByRow = {};
+      Object.keys(operation.id_old_row_data || {}).forEach(rowId => {
+        oldRowDataByRow[rowId] = this.getEffectiveOldRowData(
+          operation.id_old_row_data[rowId], this.settledRowUpdates[rowId]);
+      });
+      operation.id_old_row_data = oldRowDataByRow;
+    }
+  }
+
+  recordSettledRowUpdates(operation) {
+    let updatesByRow = null;
+    if (operation.op_type === OPERATION_TYPE.MODIFY_ROW) {
+      updatesByRow = { [operation.row_id]: operation.row_update };
+    } else if (operation.op_type === OPERATION_TYPE.MODIFY_ROWS) {
+      updatesByRow = operation.id_row_updates;
+    }
+    if (!updatesByRow) return;
+    const columns = this.data?.columns || [];
+    Object.keys(updatesByRow).forEach(rowId => {
+      const updates = updatesByRow[rowId];
+      if (!updates) return;
+      const settledUpdates = this.settledRowUpdates[rowId] || {};
+      Object.keys(updates).forEach(key => {
+        const column = getColumnByKey(columns, key) || getColumnByName(columns, key);
+        settledUpdates[column ? column.key : key] = updates[key];
+      });
+      this.settledRowUpdates[rowId] = settledUpdates;
+    });
   }
 
   modifyRow(row_id, row_update, old_row_data, is_copy_paste, { success_callback, fail_callback } = {}) {

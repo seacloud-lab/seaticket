@@ -613,7 +613,7 @@ def check_ticket_comment_creation_interval(seadb_api, project_uuid, username, ti
 
     return True
 
-def validate_ticket_customer_id(project_uuid, customer_id):
+def get_active_portal_customer(project_uuid, customer_id):
     # int(True) == 1 and int(1.5) == 1 would silently match a real customer
     if isinstance(customer_id, bool) or isinstance(customer_id, float):
         raise ValueError('customer_id invalid.')
@@ -621,14 +621,14 @@ def validate_ticket_customer_id(project_uuid, customer_id):
         customer_id = int(customer_id)
     except (TypeError, ValueError):
         raise ValueError('customer_id invalid.')
-    is_active_customer = PortalCustomer.objects.filter(
+    customer = PortalCustomer.objects.filter(
         id=customer_id,
         project_uuid=project_uuid,
         status=PortalCustomer.STATUS_ACTIVE,
-    ).exists()
-    if not is_active_customer:
+    ).first()
+    if not customer:
         raise TicketCustomerNotFound('Customer not found.')
-    return customer_id
+    return customer
 
 def get_ticket(seadb_api, project_uuid, ticket_id):
     sql = f"SELECT `_pk`, `title`, `content`, `state`, `substate`, `type`, `tags`, `assignees`, `participants`, `linked_connection_records`, `priority`, `creator`, `created_time`, `modified_time`, `due_date`, `customer_id` FROM `{TABLE_TICKETS}` WHERE `_pk` = {ticket_id} AND (`deleted` = False OR `deleted` IS NULL)"

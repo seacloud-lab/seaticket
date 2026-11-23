@@ -46,7 +46,7 @@ from seahub.tickets.ticket_utils import get_ticket, get_ticket_comments, \
     build_linked_github_issue_state_map, \
     collect_open_linked_github_issues_for_tickets, close_linked_github_issues, \
     build_ticket_close_payloads_from_client, validate_ticket_state_substate_relation, \
-    validate_ticket_customer_id
+    get_active_portal_customer
 from seahub.notifications.signal_handler import MSG_TYPE_TICKET_COMMENTED, MSG_TYPE_TICKET_ASSIGNEE_ADDED
 from seahub.portal.models import PortalCustomer
 from seahub.tickets.signals import ticket_assignees_added, ticket_commented
@@ -290,7 +290,7 @@ class TicketsAPIView(APIView):
             customer_id = None
         else:
             try:
-                customer_id = validate_ticket_customer_id(project_uuid, customer_id)
+                customer_id = get_active_portal_customer(project_uuid, customer_id).id
             except TicketCustomerNotFound as e:
                 return api_error(status.HTTP_404_NOT_FOUND, str(e))
             except ValueError as e:
@@ -607,8 +607,8 @@ class TicketsAPIView(APIView):
                     updated_row[SchemaTables.TICKETS.column.customer_id.name] = None
                 else:
                     try:
-                        updated_row[SchemaTables.TICKETS.column.customer_id.name] = validate_ticket_customer_id(
-                            project_uuid, customer_id)
+                        updated_row[SchemaTables.TICKETS.column.customer_id.name] = get_active_portal_customer(
+                            project_uuid, customer_id).id
                     except TicketCustomerNotFound as e:
                         return api_error(status.HTTP_404_NOT_FOUND, str(e))
                     except ValueError as e:
@@ -1024,7 +1024,7 @@ class TicketAPIView(APIView):
                 customer_id = None
             else:
                 try:
-                    customer_id = validate_ticket_customer_id(project_uuid, customer_id)
+                    customer_id = get_active_portal_customer(project_uuid, customer_id).id
                 except TicketCustomerNotFound as e:
                     return api_error(status.HTTP_404_NOT_FOUND, str(e))
                 except ValueError as e:
