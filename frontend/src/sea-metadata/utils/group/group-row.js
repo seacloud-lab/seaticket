@@ -1,4 +1,4 @@
-import { parseEmailAddress } from '@/utils/email';
+import { normalizeEmailAddress, parseEmailAddress } from '@/utils/email';
 import {
   CellType, DATE_COLUMN_OPTIONS, MULTIPLE_CELL_VALUE_COLUMN_TYPE_MAP, SINGLE_CELL_VALUE_COLUMN_TYPE_MAP, MAX_GROUP_LEVEL,
   SORT_COLUMN_OPTIONS, SORT_TYPE, TEXT_SORTER_COLUMN_TYPES, NUMBER_SORTER_COLUMN_TYPES,
@@ -58,7 +58,7 @@ const _getStrCellValue = (cellValue, column) => {
     if (columnType === CellType.COLLABORATOR && column?.data?.is_email_user) {
       const value = cellValue.map(emailAddress => {
         const { email } = parseEmailAddress(emailAddress);
-        return email;
+        return normalizeEmailAddress(email);
       }).filter(Boolean);
       return [...value].sort().toString();
     }

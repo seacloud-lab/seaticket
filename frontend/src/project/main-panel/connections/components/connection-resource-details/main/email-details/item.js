@@ -73,9 +73,9 @@ const Item = ({
   const content = useMemo(() => detail.content || '', [detail.content]);
   const HTMLContent = useMemo(() => detail.html_content || '', [detail.html_content]);
   const isHTMLContent = useMemo(() => HTMLContent ? true : false, [HTMLContent]);
-  const { sender, email, fullName: senderFullName, color } = useMemo(() => {
-    const { color, name, email, fullName } = parseEmailUserInfo(detail['email_from']);
-    return { sender: name || email, email, fullName, color };
+  const { sender, senderAvatarName, email, fullName: senderFullName, color } = useMemo(() => {
+    const { color, name, email, fullName, isCustomizedName } = parseEmailUserInfo(detail['email_from']);
+    return { sender: isCustomizedName && name ? name : email, senderAvatarName: name, email, fullName, color };
   }, [detail]);
   const isReadonly = useMemo(() => permission === PERMISSION_TYPES.READ_ONLY, [permission]);
   const isUnread = Boolean(detail.unread);
@@ -339,7 +339,7 @@ const Item = ({
       <div className="email-header">
         <div className="email-header-content" onClick={() => setIsExpanded(value => !value)}>
           <div className="email-avatar">
-            <UserAvatar user={{ name: sender, email, fullName: senderFullName }} size={40} />
+            <UserAvatar user={{ name: senderAvatarName, email, fullName: senderFullName }} size={40} />
           </div>
           <div className="email-record-info">
             {renderSimpleInfo()}
@@ -349,7 +349,7 @@ const Item = ({
         {renderParticipantsDetails()}
       </div>
     );
-  }, [sender, email, senderFullName, renderParticipantsAndOp, renderParticipantsDetails, renderSimpleInfo]);
+  }, [senderAvatarName, email, senderFullName, renderParticipantsAndOp, renderParticipantsDetails, renderSimpleInfo]);
 
   useEffect(() => {
     if (!isExpanded) return;
