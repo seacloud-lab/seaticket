@@ -15,8 +15,8 @@ logger = logging.getLogger(__name__)
 PORTAL_ISSUE_INTERNAL_COLUMN_NAMES = {'customer_id'}
 
 EMAIL_PARTICIPANT_THREAD_BATCH_SIZE = 1000
-# Limit: up to 1,000 thread IDs × 100 emails per thread.
-EMAIL_PARTICIPANTS_LIMIT = 1000 * 100
+# Limit: up to 1,000 thread IDs × 1000 emails per thread.
+EMAIL_PARTICIPANTS_LIMIT = 1000 * 1000
 
 
 def strip_portal_issue_internal_columns(records, columns):
@@ -531,7 +531,7 @@ def list_connection_view_records(seadb_api, project_uuid, connection, view, star
 
         thread_ids = list(records_by_thread)
         participants_by_thread = {thread_id: {} for thread_id in thread_ids}
-        participants_info = {}
+        participants_info_by_thread = {thread_id: {} for thread_id in thread_ids}
         participants_query_succeeded = False
 
         if thread_ids:
@@ -569,6 +569,9 @@ def list_connection_view_records(seadb_api, project_uuid, connection, view, star
                         continue
                     for address_info in extract_email_addresses_to_display(value):
                         email_name, email_address = parseaddr(address_info)
+                        if not email_address:
+                            continue
+                        participants_info = participants_info_by_thread[thread_id]
                         flag = True
                         if not email_name and participants_info.get(email_address, ''):
                             flag = False
@@ -579,7 +582,12 @@ def list_connection_view_records(seadb_api, project_uuid, connection, view, star
             if participants_query_succeeded:
                 for thread_id, thread_records in records_by_thread.items():
                     participant_addresses = participants_by_thread[thread_id]
-                    participants = [participants_info[email_address] for email_address in participant_addresses]
+                    participants_info = participants_info_by_thread[thread_id]
+                    participants = [
+                        participants_info[email_address]
+                        for email_address in participant_addresses
+                        if email_address in participants_info
+                    ]
                     for record in thread_records:
                         record['participants'] = participants
 
