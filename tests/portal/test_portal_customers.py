@@ -894,9 +894,9 @@ class TestPortalCustomerIssueAccess:
         request = factory.get(f'/api/v1/portal/{real_project.uuid}/team-emails/')
         request.user = _external_request_user()
         _set_external_session(request, real_project.uuid, member.username)
-        seadb_api = Mock()
+
         thread_table = f'email_thread_{connection.id}'
-        seadb_api.query_rows.return_value = {'results': [{
+        thread_results = {'results': [{
             f'{thread_table}._pk': 11,
             f'{thread_table}.title': 'A question',
             f'{thread_table}.modified_time': '2026-01-01',
@@ -906,9 +906,22 @@ class TestPortalCustomerIssueAccess:
             'tickets.due_date': '2026-02-01',
         }]}
 
+        def query_rows(_project_uuid, sql, *args, **kwargs):
+            if 'SELECT `thread_id`, `email_from`, `modified_time`' in sql:
+                return {'results': [{
+                    'thread_id': 11,
+                    'email_from': 'Sender <sender@example.com>',
+                }]}
+            return thread_results
+
+        seadb_api = Mock()
+        seadb_api.query_rows.side_effect = query_rows
+
         with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api), \
                 patch('seahub.portal.apis.get_user_common_info', return_value={
-                    'email': 'assignee@example.com', 'name': 'Assignee Nickname', 'avatar_url': '/avatar.png',
+                    'email': 'assignee@example.com',
+                    'name': 'Assignee Nickname',
+                    'avatar_url': '/avatar.png',
                 }):
             response = PortalTeamEmailsView.as_view()(request, project_uuid=str(real_project.uuid))
 
@@ -921,10 +934,20 @@ class TestPortalCustomerIssueAccess:
         assert response.data['records'][0]['ticket_pk'] == 23
         assert response.data['records'][0]['state'] == '0001'
         assert response.data['records'][0]['assignees'] == [{
-            'email': 'assignee@example.com', 'name': 'Assignee Nickname', 'avatar_url': '/avatar.png',
+            'email': 'assignee@example.com',
+            'name': 'Assignee Nickname',
+            'avatar_url': '/avatar.png',
         }]
+        assert response.data['records'][0]['participants'] == [
+            'Sender <sender@example.com>',
+        ]
         assert response.data['records'][0]['due_date'] == '2026-02-01'
-        sql = seadb_api.query_rows.call_args.args[1]
+
+        sql = next(
+            call.args[1]
+            for call in seadb_api.query_rows.call_args_list
+            if ' AS email_thread ' in call.args[1]
+        )
         assert f'email_thread.`customer_id` = {customer.id}' in sql
         assert 'email_thread.`unread`' not in sql
         assert 'email_thread.`is_replied`' not in sql
@@ -933,6 +956,64 @@ class TestPortalCustomerIssueAccess:
         assert 'ticket.`state` AS' not in sql
         assert 'ticket.`assignees` AS' not in sql
         assert 'ticket.`due_date` AS' not in sql
+
+    def test_team_emails_loads_participants_only_for_page_by_connection(self, factory, real_project):
+        customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
+        member = self._create_external_member(real_project, customer)
+        connections = []
+        for name in ('Support mailbox', 'Another mailbox'):
+            connection = ProjectConnections(
+                project_uuid=real_project.uuid,
+                name=name,
+                type='email',
+                config='{}',
+                modifier=member.username,
+                status='{}',
+            )
+            connection.save()
+            connections.append(connection)
+        request = factory.get(
+            f'/api/v1/portal/{real_project.uuid}/team-emails/?start=1&limit=2'
+        )
+        request.user = _external_request_user()
+        _set_external_session(request, real_project.uuid, member.username)
+        participant_thread_ids = {}
+
+        def query_rows(_project_uuid, sql, *args, **kwargs):
+            for index, connection in enumerate(connections):
+                if f'FROM `email_thread_{connection.id}` AS email_thread' in sql:
+                    return {'results': [
+                        {'_pk': 11, 'modified_time': f'2026-01-0{4 - index * 2}'},
+                        {'_pk': 12, 'modified_time': f'2026-01-0{3 - index * 2}'},
+                    ]}
+                if f'FROM `email_{connection.id}` ' in sql:
+                    thread_ids_sql = sql.split(' IN (', 1)[1].split(')', 1)[0]
+                    thread_ids = [int(value) for value in thread_ids_sql.split(',')]
+                    participant_thread_ids.setdefault(connection.id, []).extend(thread_ids)
+                    return {'results': [
+                        {
+                            'thread_id': thread_id,
+                            'email_from': f'sender-{connection.id}-{thread_id}@example.com',
+                        }
+                        for thread_id in thread_ids
+                    ]}
+            raise AssertionError(f'Unexpected SQL: {sql}')
+
+        seadb_api = Mock()
+        seadb_api.query_rows.side_effect = query_rows
+        with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api):
+            response = PortalTeamEmailsView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert response.status_code == 200
+        assert response.data['has_more'] is True
+        assert participant_thread_ids == {connections[0].id: [12], connections[1].id: [11]}
+        assert [
+            (record['connection_id'], record['_pk'], record['participants'])
+            for record in response.data['records']
+        ] == [
+            (connections[0].id, 12, [f'sender-{connections[0].id}-12@example.com']),
+            (connections[1].id, 11, [f'sender-{connections[1].id}-11@example.com']),
+        ]
 
     def test_team_emails_rejects_member_without_customer(self, factory, real_project):
         member = ProjectExternalUser.objects.create(
@@ -969,24 +1050,42 @@ class TestPortalCustomerIssueAccess:
             status='{}',
         )
         another_connection.save()
-        request = factory.get(f'/api/v1/portal/{real_project.uuid}/team-emails/?start=9500&limit=1000')
+
+        request = factory.get(
+            f'/api/v1/portal/{real_project.uuid}/team-emails/?start=9500&limit=1000'
+        )
         request.user = _external_request_user()
         _set_external_session(request, real_project.uuid, member.username)
+
         table_name = f'email_thread_{connection.id}'
         another_table_name = f'email_thread_{another_connection.id}'
-        seadb_api = Mock()
-        seadb_api.query_rows.side_effect = [
-            {'results': [{
+        thread_results_by_table = {
+            table_name: {'results': [{
                 f'{table_name}._pk': record_id,
                 f'{table_name}.title': f'Email {record_id}',
                 f'{table_name}.modified_time': f'2026-02-{record_id % 28 + 1:02}',
             } for record_id in range(1, 10001)]},
-            {'results': [{
+            another_table_name: {'results': [{
                 f'{another_table_name}._pk': record_id,
                 f'{another_table_name}.title': f'Another email {record_id}',
                 f'{another_table_name}.modified_time': f'2026-01-{record_id % 28 + 1:02}',
             } for record_id in range(1, 10001)]},
-        ]
+        }
+        participant_thread_ids = []
+
+        def query_rows(_project_uuid, sql, *args, **kwargs):
+            if 'SELECT `thread_id`, `email_from`, `modified_time`' in sql:
+                assert f'FROM `email_{connection.id}` ' in sql
+                thread_ids_sql = sql.split(' IN (', 1)[1].split(')', 1)[0]
+                participant_thread_ids.extend(int(value) for value in thread_ids_sql.split(','))
+                return {'results': []}
+            for source_table, result in thread_results_by_table.items():
+                if f'FROM `{source_table}` AS email_thread' in sql:
+                    return result
+            raise AssertionError(f'Unexpected SQL: {sql}')
+
+        seadb_api = Mock()
+        seadb_api.query_rows.side_effect = query_rows
 
         with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api):
             response = PortalTeamEmailsView.as_view()(request, project_uuid=str(real_project.uuid))
@@ -994,7 +1093,15 @@ class TestPortalCustomerIssueAccess:
         assert response.status_code == 200
         assert len(response.data['records']) == 500
         assert response.data['has_more'] is False
-        assert all(call.args[1].endswith('LIMIT 10000') for call in seadb_api.query_rows.call_args_list)
+        assert participant_thread_ids == [record['_pk'] for record in response.data['records']]
+
+        thread_queries = [
+            call.args[1]
+            for call in seadb_api.query_rows.call_args_list
+            if ' AS email_thread ' in call.args[1]
+        ]
+        assert len(thread_queries) == 2
+        assert all(sql.endswith('LIMIT 10000') for sql in thread_queries)
 
     def test_team_emails_allows_reload_limit_for_loaded_rows(self, factory, real_project):
         customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
@@ -1008,16 +1115,25 @@ class TestPortalCustomerIssueAccess:
             status='{}',
         )
         connection.save()
+
         request = factory.get(f'/api/v1/portal/{real_project.uuid}/team-emails/?limit=2000')
         request.user = _external_request_user()
         _set_external_session(request, real_project.uuid, member.username)
+
         table_name = f'email_thread_{connection.id}'
-        seadb_api = Mock()
-        seadb_api.query_rows.return_value = {'results': [{
+        thread_results = {'results': [{
             f'{table_name}._pk': record_id,
             f'{table_name}.title': f'Email {record_id}',
             f'{table_name}.modified_time': '2026-01-01',
         } for record_id in range(1, 2001)]}
+
+        def query_rows(_project_uuid, sql, *args, **kwargs):
+            if 'SELECT `thread_id`, `email_from`, `modified_time`' in sql:
+                return {'results': []}
+            return thread_results
+
+        seadb_api = Mock()
+        seadb_api.query_rows.side_effect = query_rows
 
         with patch('seahub.portal.apis.SeaDBAPI', return_value=seadb_api):
             response = PortalTeamEmailsView.as_view()(request, project_uuid=str(real_project.uuid))
@@ -1025,7 +1141,13 @@ class TestPortalCustomerIssueAccess:
         assert response.status_code == 200
         assert len(response.data['records']) == 2000
         assert response.data['has_more'] is False
-        assert seadb_api.query_rows.call_args.args[1].endswith('LIMIT 2001')
+
+        thread_sql = next(
+            call.args[1]
+            for call in seadb_api.query_rows.call_args_list
+            if ' AS email_thread ' in call.args[1]
+        )
+        assert thread_sql.endswith('LIMIT 2001')
 
     def test_team_emails_offset_past_cap_skips_seadb_query(self, factory, real_project):
         customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')

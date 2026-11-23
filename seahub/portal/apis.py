@@ -759,9 +759,11 @@ class PortalTeamEmailsView(APIView):
         seadb_api = SeaDBAPI()
         records = []
         fetch_limit = min(start + limit + 1, PORTAL_EMAILS_MAX_RECORDS)
+        from seahub.seadb_models.email_participants import add_email_participants
         try:
             for connection in email_connections:
-                table_name = SchemaTables.THREAD.table_name(connection.id)
+                connection_id = connection.id
+                table_name = SchemaTables.THREAD.table_name(connection_id)
                 sql = (
                     f"SELECT email_thread.`_pk`, email_thread.`title`, email_thread.`modified_time`, "
                     f"ticket.`_pk`, ticket.`state`, ticket.`assignees`, ticket.`due_date` "
@@ -772,7 +774,8 @@ class PortalTeamEmailsView(APIView):
                     f"AND (email_thread.`deleted` = false OR email_thread.`deleted` IS NULL) "
                     f"ORDER BY email_thread.`modified_time` DESC, email_thread.`_pk` DESC LIMIT {fetch_limit}"
                 )
-                for record in seadb_api.query_rows(project_uuid, sql).get('results', []):
+                connection_records = seadb_api.query_rows(project_uuid, sql).get('results', [])
+                for record in connection_records:
                     normalized_record = {}
                     for field in ('_pk', 'title', 'modified_time'):
                         normalized_record[field] = record.get(f'{table_name}.{field}', record.get(field))
@@ -783,13 +786,19 @@ class PortalTeamEmailsView(APIView):
                         normalized_record['ticket_pk' if field == '_pk' else field] = value
                     normalized_record['connection_id'] = connection.id
                     records.append(normalized_record)
+
+            records.sort(key=lambda record: (str(record.get('modified_time') or ''), int(record.get('_pk') or 0)), reverse=True)
+            records = records[:PORTAL_EMAILS_MAX_RECORDS]
+            page_records = records[start:start + limit]
+            records_by_connection = {}
+            for record in page_records:
+                records_by_connection.setdefault(record['connection_id'], []).append(record)
+            for connection_id, connection_records in records_by_connection.items():
+                add_email_participants(seadb_api, project_uuid, connection_id, connection_records, [])
         except Exception as e:
             logger.error('Failed to list portal emails for customer %s: %s', customer.id, e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
-        records.sort(key=lambda record: (str(record.get('modified_time') or ''), int(record.get('_pk') or 0)), reverse=True)
-        records = records[:PORTAL_EMAILS_MAX_RECORDS]
-        page_records = records[start:start + limit]
         assignees_by_email = {}
         for record in page_records:
             assignees = []
@@ -809,6 +818,7 @@ class PortalTeamEmailsView(APIView):
                         assignees_by_email[email] = {'email': email, 'name': email, 'avatar_url': ''}
                 assignees.append(assignees_by_email[email])
             record['assignees'] = assignees
+
         return Response({
             'records': page_records,
             'has_more': len(records) > start + limit,

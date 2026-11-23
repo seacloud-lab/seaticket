@@ -1,5 +1,6 @@
 import React from 'react';
 import classnames from 'classnames';
+import UserAvatar from '@/components/user-avatar';
 
 import './index.css';
 
@@ -8,11 +9,11 @@ const Collaborator = ({ collaborator, className, children }) => {
   if (!collaborator) return null;
 
   return (
-    <div className={classnames('collaborator', className)} title={collaborator.name}>
+    <div className={classnames('collaborator', className)} title={collaborator.fullName || collaborator.name}>
       <span className="collaborator-avatar">
-        <img className="collaborator-avatar-icon" alt={collaborator.name} src={collaborator.avatar_url} />
+        <UserAvatar user={{ ...collaborator, fullName: '' }} />
       </span>
-      <span className="collaborator-name" title={collaborator.name} aria-label={collaborator.name}>
+      <span className="collaborator-name">
         {collaborator.name}
       </span>
       {children}

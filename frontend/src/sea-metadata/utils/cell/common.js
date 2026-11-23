@@ -1,4 +1,6 @@
 import context from '@/sea-metadata/context';
+import { parseEmailAddress, parseEmailUserInfo } from '@/utils/email';
+import { isObject } from '@/utils/type-detection';
 import { CellType, DEFAULT_DATE_FORMAT } from '../../constants';
 import {
   getDateDisplayString, getNumberDisplayString, getLongtextDisplayString, getOptionDisplayName, getCollaboratorsName, getColumnOptionNamesByIds,
@@ -39,6 +41,13 @@ export const getCellValueDisplayString = (row, column, { collaborators = [], tag
       return DateUtils.format(cellValue, 'YYYY-MM-DD HH:MM:SS');
     }
     case CellType.COLLABORATOR: {
+      if (column?.data?.is_email_user) {
+        return Array.isArray(cellValue) ? cellValue.map(value => {
+          const user = isObject(value) ? parseEmailUserInfo(value) : parseEmailAddress(value);
+          return user.name;
+        }).join(', ') : '';
+      }
+
       return getCollaboratorsName(collaborators, cellValue);
     }
     case CellType.CREATOR:
@@ -118,7 +127,7 @@ export const getCellValueStringResult = (row, column, { collaborators = [], tags
       return DateUtils.format(cellValue, 'YYYY-MM-DD HH:MM:SS');
     }
     case CellType.COLLABORATOR: {
-      return getCollaboratorsName(collaborators, cellValue);
+      return getCellValueDisplayString(row, column, { collaborators, tagsData });
     }
     case CellType.CREATOR:
     case CellType.LAST_MODIFIER: {

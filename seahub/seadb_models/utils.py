@@ -512,6 +512,16 @@ def list_connection_view_records(seadb_api, project_uuid, connection, view, star
         logger.error(f'SeaDB query error for connection {table_name}: {e}')
         records = []
 
+    if connection_type == ConnectionType.EMAIL.value:
+        from seahub.seadb_models.email_participants import add_email_participants
+        records, display_all_columns = add_email_participants(
+            seadb_api,
+            project_uuid,
+            connection.id,
+            records,
+            display_all_columns,
+        )
+
     return records, display_all_columns + extra_query_columns
 
 
@@ -749,6 +759,7 @@ def list_seafile_record_details(seadb_api, project_uuid, connection_id, _pk):
     return record, column_metadata, linked_ticket_title
 
 
+# jira
 def get_jira_issue_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
     from seahub.tickets.ticket_utils import get_ticket_title
     issue_table_name = SchemaTables.JIRA_ISSUES.table_name(connection_id)
@@ -784,6 +795,7 @@ def list_jira_issue_record_details(seadb_api, project_uuid, connection_id, _pk):
         column_metadata = []
         linked_ticket_title = ''
     return issue_record, column_metadata, linked_ticket_title
+
 
 # task
 def get_general_task_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
@@ -905,6 +917,7 @@ def list_email_record_details(seadb_api, project_uuid, connection_id, _pk):
     return thread_record, column_metadata, linked_ticket_title
 
 
+# kb
 def list_knowledge_base_records(seadb_api, project_uuid, view, start, limit, username):
     knowledge_base_table_name = SchemaTables.KNOWLEDGE_BASE.table_name()
     metadata = seadb_api.get_base_metadata(project_uuid)

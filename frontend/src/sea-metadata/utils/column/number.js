@@ -135,19 +135,20 @@ const toThousands = (number, { formats, isCurrency = true }) => {
  * @returns formatted number, string
  */
 const getNumberDisplayString = (number, formats) => {
+  // formats: old version maybe 'null'
+  const { format = DEFAULT_NUMBER_FORMAT } = formats || {};
+
   const type = Object.prototype.toString.call(number);
   if (type !== '[object Number]') {
     // return formula internal errors directly.
     if (type === '[object String]' && number.startsWith('#')) {
       return number;
     }
-    return '';
+    return format === '#' ? '--' : '';
   }
 
   if (isNaN(number) || number === Infinity || number === -Infinity) return String(number);
 
-  // formats: old version maybe 'null'
-  const { format = DEFAULT_NUMBER_FORMAT } = formats || {};
   switch (format) {
     case 'number': {
       return toThousands(number, { formats, isCurrency: false });
@@ -176,6 +177,9 @@ const getNumberDisplayString = (number, formats) => {
       const i = parseInt(Math.floor(Math.log(number) / Math.log(1000)), 10);
       if (i === 0) return number + ' ' + SIZES[i];
       return (number / (1000 ** i)).toFixed(1) + ' ' + SIZES[i];
+    }
+    case '#': {
+      return number || number === 0 ? `#${number}` : '--';
     }
     default: {
       return String(number);

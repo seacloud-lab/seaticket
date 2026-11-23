@@ -1,8 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React, { Fragment, useMemo, useState } from 'react';
 import classnames from 'classnames';
 import { EmptyTip, IconButton } from '@/components';
 import { gettext } from '@/constants';
-import { parseEmailAddress } from '@/utils/validate';
+import { normalizeEmailAddress, parseEmailUserInfo } from '@/utils/email';
 import Item from './item';
 
 import './index.css';
@@ -16,6 +16,16 @@ const EmailDetails = ({ details, className, ...props }) => {
     return details.slice(0, -1).some(item => Boolean(item?.unread));
   }, [details]);
 
+  const moreUsers = useMemo(() => {
+    // Details are chronological; keep first-seen order and the latest info per sender.
+    const usersByEmail = new Map();
+    for (let index = 0; index < details.length - 1; index++) {
+      const userInfo = parseEmailUserInfo(details[index]?.email_from);
+      if (userInfo?.email) usersByEmail.set(normalizeEmailAddress(userInfo.email), userInfo);
+    }
+    return Array.from(usersByEmail.values());
+  }, [details]);
+
   if (details.length === 0) {
     return (
       <div className={classnames('seaqa-connection-email-record empty', className)}>
@@ -23,8 +33,6 @@ const EmailDetails = ({ details, className, ...props }) => {
       </div>
     );
   }
-
-  const { username, email } = parseEmailAddress(details[0]?.email_from);
 
   const highlightDetail = details.find(item => item.highlight);
 
@@ -39,7 +47,19 @@ const EmailDetails = ({ details, className, ...props }) => {
               </div>
               <div className="email-record-info">
                 <div className="email-record-info-container">
-                  <span className="email-record-info-sender">{username || email}</span>
+                  <span className="email-record-info-sender text-truncate">
+                    {moreUsers.map((user, index) => {
+                      const { name, email, fullName, color } = user;
+                      return (
+                        <Fragment key={normalizeEmailAddress(email)}>
+                          {index !== 0 && (<span>{', '}</span>)}
+                          <span title={fullName} style={{ color }}>
+                            {name}
+                          </span>
+                        </Fragment>
+                      );
+                    }).filter(Boolean)}
+                  </span>
                   <span className="email-record-info-content text-truncate"></span>
                   {isUnread && <div className="read-status unread"/>}
                   <span className="email-record-info-time">

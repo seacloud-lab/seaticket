@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState, Fragment } from 'react';
 import classnames from 'classnames';
-import { CustomizeMarkdownViewer, IconTextBtn, IconTooltip, toaster, IconButton } from '@/components';
-import { gettext, mediaUrl, PERMISSION_TYPES } from '@/constants';
+import { CustomizeMarkdownViewer, IconTextBtn, IconTooltip, toaster, IconButton, UserAvatar } from '@/components';
+import { gettext, PERMISSION_TYPES } from '@/constants';
 import { connectionsAPI } from '@/project/api';
 import dayjs from '@/utils/dayjs';
+import { parseEmailAddress, splitEmailAddresses, parseEmailUserInfo } from '@/utils/email';
 import { isString } from '@/utils/type-detection';
 import { Utils } from '@/utils/utils';
-import { parseEmailAddress, splitEmailAddresses } from '@/utils/validate';
 import { generatorConnectionAssetURLPrefix } from '../../../../utils';
 import DateFormatter from '../../../cell-formatter/date-formatter';
 import HTMLContentWrapper from './html-content';
@@ -15,17 +15,25 @@ import ReplyEmail from './reply-email';
 import './index.css';
 
 const EmailUser = ({ emailAddress, isShowEmail = true }) => {
-  const { username, email } = parseEmailAddress(emailAddress);
+  const { name, email, isCustomizedName } = parseEmailAddress(emailAddress);
   return (
     <span title={emailAddress} className="font-size-14">
-      {(isShowEmail && username) ? (
+      {isCustomizedName ? (
         <>
-          <span>{username}</span>
-          <span className="text-secondary">{` <${email}>`}</span>
+          {(isShowEmail && name) ? (
+            <>
+              <span>{name}</span>
+              <span className="text-secondary">{` <${email}>`}</span>
+            </>
+          ) : (
+            <>
+              {name}
+            </>
+          )}
         </>
       ) : (
         <>
-          {username || email}
+          {email}
         </>
       )}
     </span>
@@ -65,10 +73,8 @@ const Item = ({
   const content = useMemo(() => detail.content || '', [detail.content]);
   const HTMLContent = useMemo(() => detail.html_content || '', [detail.html_content]);
   const isHTMLContent = useMemo(() => HTMLContent ? true : false, [HTMLContent]);
-  const { sender, email } = useMemo(() => {
-    const { username, email } = parseEmailAddress(detail['email_from']);
-    return { sender: username || email, email };
-  }, [detail]);
+  const senderInfo = useMemo(() => parseEmailUserInfo(detail['email_from']), [detail]);
+  const { name: sender, email, color } = senderInfo;
   const isReadonly = useMemo(() => permission === PERMISSION_TYPES.READ_ONLY, [permission]);
   const isUnread = Boolean(detail.unread);
 
@@ -289,13 +295,15 @@ const Item = ({
     const simpleInfo = isExpanded ? '' : contentStart;
     return (
       <div className="email-record-info-container">
-        <span className="email-record-info-sender text-truncate" title={detail['email_from']}>{sender}</span>
+        <span className="email-record-info-sender text-truncate" title={detail['email_from']}>
+          <span style={{ color }}>{sender}</span>
+        </span>
         <span className="email-record-info-content text-truncate" title={simpleInfo}>{simpleInfo}</span>
         {!isExpanded && isUnread && <div className="read-status unread" />}
         <DateFormatter value={detail.modified_time} className="email-record-info-time" />
       </div>
     );
-  }, [isExpanded, contentStart, detail, sender, isUnread]);
+  }, [isExpanded, contentStart, detail, sender, isUnread, color]);
 
   const renderParticipantsAndOp = useCallback(() => {
     return (
@@ -329,7 +337,7 @@ const Item = ({
       <div className="email-header">
         <div className="email-header-content" onClick={() => setIsExpanded(value => !value)}>
           <div className="email-avatar">
-            <img alt='' src={`${mediaUrl}avatars/default.png`}/>
+            <UserAvatar user={senderInfo} size={40} />
           </div>
           <div className="email-record-info">
             {renderSimpleInfo()}
@@ -339,7 +347,7 @@ const Item = ({
         {renderParticipantsDetails()}
       </div>
     );
-  }, [renderParticipantsAndOp, renderParticipantsDetails, renderSimpleInfo]);
+  }, [senderInfo, renderParticipantsAndOp, renderParticipantsDetails, renderSimpleInfo]);
 
   useEffect(() => {
     if (!isExpanded) return;

@@ -1457,6 +1457,120 @@ class TestProjectConfluenceOauthStatusView:
         assert resp.data == {'connected': True}
 
 
+class TestConnectionViewRecordParticipants:
+
+    @staticmethod
+    def _list_records(seadb_api, limit=1000):
+        from seahub.seadb_models.utils import list_connection_view_records
+
+        connection = SimpleNamespace(type=ConnectionType.EMAIL.value, id=23)
+        columns = [{'name': '_pk'}, {'name': 'title'}]
+        with patch('seahub.seadb_models.utils.get_connection_columns', return_value=columns), \
+                patch('seahub.seadb_models.utils.view_data_2_sql', return_value='thread query'):
+            records, _ = list_connection_view_records(
+                seadb_api, 'project-uuid', connection, {}, start=0, limit=limit
+            )
+        return records
+
+    def test_list_email_records_deduplicates_sender_domain_case_insensitively(self):
+        seadb_api = Mock()
+        seadb_api.query_rows.side_effect = [
+            {'results': [{'_pk': 17, 'title': 'Thread'}]},
+            {'results': [
+                {'thread_id': 17, 'email_from': 'sales@EXAMPLE.com'},
+                {'thread_id': 17, 'email_from': 'sales@example.com'},
+            ]},
+        ]
+        records = self._list_records(seadb_api)
+
+        assert len(records) == 1
+        assert records[0]['participants'] == ['sales@EXAMPLE.com']
+
+    def test_email_participants_reads_past_seadb_select_cap(self):
+        threads = [{'_pk': thread_id} for thread_id in range(1, 12)]
+        emails = [
+            {
+                '_pk': (thread_id - 1) * 1000 + index + 1,
+                'thread_id': thread_id,
+                'email_from': f'sender-{thread_id}@example.com',
+                'modified_time': '2026-01-01 09:00:00',
+            }
+            for thread_id in range(1, 11)
+            for index in range(1000)
+        ]
+        emails.append({
+            '_pk': 10001,
+            'thread_id': 11,
+            'email_from': 'Late Sender <late@example.com>',
+            'modified_time': '2026-01-01 10:00:00',
+        })
+        requested_pages = []
+
+        def query_rows(project_uuid, sql, convert_keys):
+            if sql == 'thread query':
+                return {'results': threads}
+            assert convert_keys is True
+            assert 'ORDER BY `modified_time`, `_pk`' in sql
+            offset, limit = (int(value) for value in sql.rsplit('LIMIT ', 1)[1].split(','))
+            requested_pages.append((offset, limit))
+            # Simulate SeaDB's cap even if the caller requests a larger LIMIT.
+            return {'results': emails[offset:offset + min(limit, 10000)]}
+
+        seadb_api = Mock()
+        seadb_api.query_rows.side_effect = query_rows
+        records = self._list_records(seadb_api)
+
+        assert [record['participants'] for record in records] == [
+            [f'sender-{thread_id}@example.com'] for thread_id in range(1, 11)
+        ] + [['Late Sender <late@example.com>']]
+        assert requested_pages == [(0, 10000), (10000, 10000)]
+
+    def test_email_participants_batches_thread_ids(self):
+        threads = [{'_pk': thread_id} for thread_id in range(1, 1002)]
+        requested_batches = []
+
+        def query_rows(project_uuid, sql, convert_keys):
+            if sql == 'thread query':
+                return {'results': threads}
+            thread_ids_sql = sql.split(' IN (', 1)[1].split(')', 1)[0]
+            batch_thread_ids = [int(value) for value in thread_ids_sql.split(',')]
+            requested_batches.append(batch_thread_ids)
+            if 1001 in batch_thread_ids:
+                return {'results': [{'thread_id': 1001, 'email_from': 'last@example.com'}]}
+            return {'results': []}
+
+        seadb_api = Mock()
+        seadb_api.query_rows.side_effect = query_rows
+        records = self._list_records(seadb_api, limit=1001)
+
+        assert requested_batches == [list(range(1, 1001)), [1001]]
+        assert all(record['participants'] == [] for record in records[:-1])
+        assert records[-1]['participants'] == ['last@example.com']
+
+    def test_email_participants_discards_partial_batch_on_later_page_failure(self):
+        seadb_api = Mock()
+        seadb_api.query_rows.side_effect = [
+            {'results': [
+                {'_pk': 1, 'participants': ['stale@example.com']},
+                {'_pk': 2},
+            ]},
+            {'results': [
+                {'thread_id': 1, 'email_from': 'first@example.com'},
+                {'thread_id': 1, 'email_from': 'second@example.com'},
+            ]},
+            RuntimeError('second page failed'),
+            {'results': [{'thread_id': 2, 'email_from': 'complete@example.com'}]},
+        ]
+
+        with patch('seahub.seadb_models.email_participants.EMAIL_PARTICIPANT_THREAD_BATCH_SIZE', 1), \
+                patch('seahub.seadb_models.email_participants.EMAIL_PARTICIPANTS_PAGE_SIZE', 2):
+            records = self._list_records(seadb_api)
+
+        assert records[0]['participants'] is None
+        assert records[1]['participants'] == ['complete@example.com']
+        assert seadb_api.query_rows.call_count == 4
+
+
 class TestProjectConnectionRecordView:
 
     def test_email_address_display_decodes_names_and_quotes_special_characters(self):
