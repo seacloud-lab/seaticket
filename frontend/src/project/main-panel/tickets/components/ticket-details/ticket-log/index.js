@@ -161,6 +161,17 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
       }).filter(Boolean);
     };
 
+    const renderEmailActivity = (actionLabel) => {
+      const count = typeof new_value === 'number' ? new_value : 1;
+      return (
+        <span>
+          {gettext('Email thread')}
+          {thread_id && <>{' '}{renderLinkedRecordRef(activity)}</>}
+          {' '}{count}{' '}{count === 1 ? gettext('message') : gettext('messages')}{' '}{actionLabel}
+        </span>
+      );
+    };
+
     switch (activity_type) {
       case LOG_TYPE.PRIORITY_CHANGED: {
         const oldValueOption = PRIORITY_MAP[old_value + ''] || PRIORITY_MAP['0'];
@@ -636,16 +647,13 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
           <span>{messageParts}</span>
         );
       }
-      case LOG_TYPE.EMAIL_MESSAGE_ADDED: {
-        const count = typeof new_value === 'number' ? new_value : 1;
-        return (
-          <span>
-            {gettext('Email thread')}
-            {thread_id && <>{' '}{renderLinkedRecordRef(activity)}</>}
-            {' '}{count}{' '}{count === 1 ? gettext('message') : gettext('messages')}{' '}{gettext('added')}
-          </span>
-        );
-      }
+      case LOG_TYPE.EMAIL_THREAD_ADDED:
+      case LOG_TYPE.EMAIL_MESSAGE_RECEIVED:
+        return renderEmailActivity(gettext('received'));
+      case LOG_TYPE.EMAIL_MESSAGE_SENT:
+        return renderEmailActivity(gettext('sent'));
+      case LOG_TYPE.EMAIL_MESSAGE_ADDED:
+        return renderEmailActivity(gettext('added'));
       default:
         return <span>{gettext('made changes')}</span>;
     }

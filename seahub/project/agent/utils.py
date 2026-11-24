@@ -959,6 +959,12 @@ EVENT_REGENERATION_TOOLS = {
         'suggest_link_existing_ticket',
         'suggest_notify_assignee',
     ),
+    'email_message_received': (
+        'suggest_reply',
+        'suggest_create_ticket',
+        'suggest_link_existing_ticket',
+        'suggest_notify_assignee',
+    ),
     'email_message_added': (
         'suggest_reply',
         'suggest_create_ticket',

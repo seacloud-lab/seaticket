@@ -1280,7 +1280,7 @@ def record_email_reply_activity(seadb_api, project_uuid, connection_id, thread, 
     now = datetime.now(timezone.utc).isoformat()
     row = {
         'ticket_id': int(linked_ticket),
-        'activity_type': 'email_message_added',
+        'activity_type': 'email_message_sent',
         'detail': json.dumps({
             'connection_id': connection_id,
             'record_id': thread_id,
