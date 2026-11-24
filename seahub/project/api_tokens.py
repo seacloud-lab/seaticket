@@ -216,6 +216,7 @@ class ProjectNotificationJwtTokenView(APIView):
             payload = {
                 'user_id': username,
                 'project_uuid': uuid_str_to_36_chars(project_uuid),
+                'aud': 'notification',
                 'exp': int(time.time()) + NOTIFICATION_JWT_TOKEN_EXPIRATION_TIME
             }
             jwt_token = jwt.encode(payload, JWT_PRIVATE_KEY, algorithm='HS256')
