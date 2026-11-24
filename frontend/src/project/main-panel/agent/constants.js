@@ -124,6 +124,8 @@ const RUN_EVENT_VIEW_SOURCE_TEXT = {
   [RUN_EVENT.GENERAL_TASK_UPDATED]: gettext('View task'),
   [RUN_EVENT.LINEAR_ISSUE_UPDATED]: gettext('View task'),
   [RUN_EVENT.JIRA_ISSUE_UPDATED]: gettext('View task'),
+  [RUN_EVENT.PORTAL_ISSUE_ADDED]: gettext('View portal issue'),
+  [RUN_EVENT.PORTAL_ISSUE_COMMENT_ADDED]: gettext('View portal issue'),
 };
 
 const DEFAULT_VIEW_SOURCE_TEXT = gettext('View source');
