@@ -14,6 +14,7 @@ import {
   generateLinkAnExistingTicketOption, generateOpenOriginalPageOption,
   generateCopyOriginalLinkOption, generateMarkAsOutdatedOptions, getTableName,
 } from '@/project/main-panel/connections/utils';
+import { PORTAL_ISSUE_TYPE } from '@/project/main-panel/portal-issues/constants';
 import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
 import { TICKET_TYPE, TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
 import { normalizeContextMenuOptions } from '@/project/utils';
@@ -187,7 +188,7 @@ const ResourceTitle = ({ displayDetails = true, resource, className, trigger, ch
     });
   }, [modifyRowLink]);
 
-  const hasDetails = resource?.type === TICKET_TYPE || (resource?.connection_id && resource?._id);
+  const hasDetails = resource?.type === TICKET_TYPE || resource?.type === PORTAL_ISSUE_TYPE || (resource?.connection_id && resource?._id);
   const onClick = hasDetails && displayDetails ? openDetails : () => {};
 
   return (
