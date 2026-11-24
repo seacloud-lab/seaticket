@@ -24,7 +24,7 @@ from seahub.profile.models import Profile
 from seahub.settings import GROUP_MEMBER_LIMIT
 from seahub.utils import string2list, is_org_context
 from seahub.group.models import Group, GroupUser
-from seahub.organizations.models import OrgUser
+from seahub.organizations.models import OrgUser, Organization
 
 from .utils import api_check_group
 
@@ -122,6 +122,10 @@ class GroupMembers(APIView):
         except User.DoesNotExist:
             error_msg = 'User %s not found.' % email
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
+
+        org_id = Organization.objects.get_org_id_by_group(group_id)
+        if org_id is not None and not OrgUser.objects.org_user_exists(org_id, email):
+            return api_error(status.HTTP_404_NOT_FOUND, 'User %s not found in organization.' % email2nickname(email))
 
         try:
             if is_group_member(group_id, email):

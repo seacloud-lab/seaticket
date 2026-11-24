@@ -233,6 +233,14 @@ class OrgAdminGroup(APIView):
             error_msg = 'Group %d not found.' % group_id
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
+        try:
+            org_group = OrgGroup.objects.get(group_id=group_id)
+        except OrgGroup.DoesNotExist:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Group %s not found.' % group_id)
+
+        if org_group.org_id != org_id:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Group %s not found.' % group_id)
+
         new_owner = request.data.get('new_owner', '')
         if new_owner:
             if not is_valid_username(new_owner):
