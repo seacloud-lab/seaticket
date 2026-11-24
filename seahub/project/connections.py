@@ -968,6 +968,8 @@ class DiscourseWebhookView(APIView):
     throttle_classes = (UserRateThrottle,)
 
     def verify_signature(self, signature, msg, secret):
+        if not signature:
+            return False
         if '=' not in signature:
             return False
 
