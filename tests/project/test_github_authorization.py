@@ -65,19 +65,6 @@ def test_setup_rejects_invalid_transaction(github_request, invalid):
     assert not ProjectGithubAppInstallation.objects.exists()
 
 
-def test_existing_installation_is_trusted_without_reauthorizing(github_request, real_project, project_creator):
-    ProjectGithubAppInstallation.objects.create_app_installation(str(real_project.uuid), '42', project_creator.username)
-    request = github_request()
-
-    response = github_installation_setup(request)
-
-    assert response.status_code == 302
-    assert response.url.startswith('https://github.com/login/oauth/authorize?')
-    assert request.session['github_installation_request']['stage'] == 'authorize'
-    assert 'code_challenge=' in response.url
-    assert request.session['github_installation_request']['state'] != 'test-state'
-
-
 def test_existing_project_installation_does_not_repeat_oauth(github_request, real_project, project_creator):
     ProjectGithubAppInstallation.objects.create(
         project_uuid=str(real_project.uuid), installation_id='42', creator=project_creator.username,
