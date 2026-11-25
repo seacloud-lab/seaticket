@@ -25,7 +25,7 @@ DISCOURSE_TOPIC_ACTIVITY_TYPES = {'discourse_topic_added', 'discourse_topic_upda
 
 DISCORD_THREAD_ACTIVITY_TYPES = {'discord_thread_added', 'discord_thread_updated', 'discord_thread_message_added'}
 
-EMAIL_ACTIVITY_TYPES = {'email_thread_added', 'email_message_added'}
+EMAIL_ACTIVITY_TYPES = {'email_thread_added', 'email_thread_updated', 'email_message_added'}
 
 GENERAL_TASK_ACTIVITY_TYPES = {'general_task_added', 'general_task_updated'}
 JIRA_TASK_ACTIVITY_TYPES = {'jira_issue_added'}
