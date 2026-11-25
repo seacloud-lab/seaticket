@@ -285,9 +285,6 @@ def check_ticket_permission(username, workspace_owner, ticket=None):
     if not username or not workspace_owner or not ticket:
         return None
 
-    if ticket.get('creator') == username:
-        return PERMISSION_READ_WRITE
-
     return check_project_permission(username, workspace_owner)
 
 
@@ -295,6 +292,9 @@ def check_comment_permission(username, workspace_owner, comment=None):
     """Check comment permission of a user.
     """
     if not username or not workspace_owner or not comment:
+        return None
+
+    if not check_project_permission(username, workspace_owner):
         return None
 
     if comment.get('creator') == username:

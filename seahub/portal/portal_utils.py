@@ -41,7 +41,7 @@ def get_portal_issue_comments(seadb_api, project_uuid, issue_id, start, end):
 
 def get_portal_issue_comment_by_pk(seadb_api, project_uuid, issue_id, comment_id):
     comment_columns_join = ', '.join(PORTAL_ISSUE_COMMENT_COLUMNS)
-    sql = f"SELECT {comment_columns_join} FROM `{SchemaTables.PORTAL_ISSUE_COMMENTS.table_name()}` WHERE `issue_id` = {issue_id} AND `_pk` = {comment_id}"
+    sql = f"SELECT {comment_columns_join} FROM `{SchemaTables.PORTAL_ISSUE_COMMENTS.table_name()}` WHERE `issue_id` = {issue_id} AND `_pk` = {comment_id} AND `deleted` = False"
     rows = seadb_api.query_rows(project_uuid, sql).get('results')
     return rows[0] if rows else None
 
