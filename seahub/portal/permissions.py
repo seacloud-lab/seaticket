@@ -2,7 +2,7 @@ from django.conf import settings
 from rest_framework.permissions import BasePermission
 
 from seahub.constants import PERMISSION_READ_WRITE
-from seahub.project.utils import check_same_org_permission, check_project_admin_permission, check_project_permission
+from seahub.project.utils import check_project_admin_permission, check_project_permission
 from seahub.portal.models import ProjectExternalUser, PortalCustomer
 from seahub.portal.utils import get_portal_preview_username, get_request_project_and_portal_settings, get_request_session
 
@@ -90,14 +90,18 @@ def _is_portal_password_verified(request, project_uuid, portal_settings):
     return bool(verified_token and encoded_password and verified_token == encoded_password)
 
 
-def is_same_org_user(request, project):
+def is_project_user(request, project):
     user = getattr(request, 'user', None)
-    return bool(user and getattr(user, 'is_authenticated', False) and check_same_org_permission(user, project.workspace))
+    return bool(
+        user
+        and getattr(user, 'is_authenticated', False)
+        and check_project_permission(user.username, project.workspace.owner)
+    )
 
 
 def can_access_portal_issue(request, project, issue):
     project_uuid = str(project.uuid)
-    if is_same_org_user(request, project) or _is_portal_preview_user(request, project_uuid):
+    if is_project_user(request, project) or _is_portal_preview_user(request, project_uuid):
         return True
 
     external_user = get_request_external_user(request, project_uuid)
@@ -136,7 +140,7 @@ class PortalKnowledgeBasePermission(BasePermission):
         if not enable_portal:
             return False
 
-        if is_same_org_user(request, project):
+        if is_project_user(request, project):
             return True
 
         if settings.ENABLE_PORTAL_DOMAIN and not getattr(settings, 'IS_PORTAL_MODE', False):
@@ -169,7 +173,7 @@ class PortalAnonymousAccessPermission(BasePermission):
         if not enable_portal:
             return False
 
-        if is_same_org_user(request, project):
+        if is_project_user(request, project):
             return True
 
         if settings.ENABLE_PORTAL_DOMAIN and not getattr(settings, 'IS_PORTAL_MODE', False):
@@ -202,7 +206,7 @@ class PortalIssuePermission(BasePermission):
         if not enable_portal:
             return False
 
-        if is_same_org_user(request, project):
+        if is_project_user(request, project):
             return True
 
         if settings.ENABLE_PORTAL_DOMAIN and not getattr(settings, 'IS_PORTAL_MODE', False):
@@ -224,8 +228,6 @@ class PortalEmailPermission(BasePermission):
             return False
 
         project_uuid = str(project.uuid)
-        if is_same_org_user(request, project):
-            return False
         if settings.ENABLE_PORTAL_DOMAIN and not getattr(settings, 'IS_PORTAL_MODE', False):
             return False
 
@@ -246,7 +248,7 @@ class PortalChatPermission(BasePermission):
         if not enable_portal:
             return False
 
-        if is_same_org_user(request, project):
+        if is_project_user(request, project):
             return True
 
         if settings.ENABLE_PORTAL_DOMAIN and not getattr(settings, 'IS_PORTAL_MODE', False):

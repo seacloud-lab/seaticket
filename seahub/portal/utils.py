@@ -13,7 +13,7 @@ from seahub.organizations.models import OrgUser
 from seahub.profile.models import Profile
 from seahub.api2.utils import api_error
 from seahub.project.models import Projects
-from seahub.project.utils import check_project_admin_permission, check_same_org_permission
+from seahub.project.utils import check_project_permission
 from seahub.portal.chat.utils import get_portal_external_username
 from seahub.portal.visitor_session import (
     clear_visitor_cookie,
@@ -85,13 +85,7 @@ def set_portal_preview_session(request, project_uuid, username):
 
 
 def can_preview_portal(username, project):
-    if check_project_admin_permission(username, project.workspace.owner):
-        return True
-
-    org_id = getattr(project.workspace, 'org_id', -1)
-    if org_id == -1:
-        return False
-    return OrgUser.objects.org_user_exists(org_id, username)
+    return bool(username and check_project_permission(username, project.workspace.owner))
 
 
 def get_request_session(request):
@@ -254,7 +248,7 @@ def _get_request_identity(request, project_uuid):
     if user and getattr(user, 'is_authenticated', False):
         project = getattr(request, 'project', None) or Projects.objects.get_project_by_uuid(project_uuid)
         workspace = getattr(project, 'workspace', None)
-        if workspace and check_same_org_permission(user, workspace):
+        if workspace and check_project_permission(user.username, workspace.owner):
             return {
                 'username': user.username,
                 'is_external_user': False,

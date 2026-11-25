@@ -1728,7 +1728,7 @@ class TestPortalIssueViewCustomer:
                 patch('seahub.portal.apis.can_access_portal_issue', return_value=True), \
                 patch('seahub.portal.apis.list_portal_issue_comments_records', return_value=(issue, columns, '')), \
                 patch('seahub.portal.apis.convert_select_field_names_to_option_ids'), \
-                patch('seahub.portal.apis.is_same_org_user', return_value=True):
+                patch('seahub.portal.apis.is_project_user', return_value=True):
             resp = PortalIssueView.as_view()(request, project_uuid=str(real_project.uuid), issue_id=1)
 
         assert resp.status_code == 200
@@ -1746,7 +1746,7 @@ class TestPortalIssueViewCustomer:
                 patch('seahub.portal.apis.can_access_portal_issue', return_value=True), \
                 patch('seahub.portal.apis.list_portal_issue_comments_records', return_value=(issue, columns, '')), \
                 patch('seahub.portal.apis.convert_select_field_names_to_option_ids'), \
-                patch('seahub.portal.apis.is_same_org_user', return_value=False):
+                patch('seahub.portal.apis.is_project_user', return_value=False):
             resp = PortalIssueView.as_view()(request, project_uuid=str(real_project.uuid), issue_id=1)
 
         assert resp.status_code == 200

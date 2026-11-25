@@ -16,12 +16,13 @@ from seahub.auth import REDIRECT_FIELD_NAME
 from seahub.auth import views as auth_views
 from seahub.portal.models import PortalCustomer, PortalDomainAlias, PortalExternalInvitation, ProjectExternalUser
 from seahub.portal.paths import get_internal_portal_path
+from seahub.portal.permissions import is_project_user
 from seahub.portal.visitor_session import ensure_visitor_cookie
 from seahub.portal.utils import can_preview_portal, get_portal_preview_username, load_portal_preview_token, portal_path, \
     set_portal_preview_session, get_request_project_and_portal_settings
 from seahub.portal.custom_domain import is_request_using_portal_domain
 from seahub import settings
-from seahub.project.utils import check_project_admin_permission, check_same_org_permission
+from seahub.project.utils import check_project_admin_permission
 from seahub.utils import render_error
 from seahub.auth.decorators import login_required
 from seahub.settings import LOGIN_REMEMBER_DAYS, MEDIA_URL
@@ -107,17 +108,12 @@ def portal_view(request, project_uuid, children_id=None, session_uuid=None, issu
     preview_username = get_portal_preview_username(request, project_uuid)
     is_authenticated_user = bool(getattr(request, 'user', None) and request.user.is_authenticated)
 
-    same_org = False
-    if is_authenticated_user:
-        try:
-            same_org = check_same_org_permission(request.user, project.workspace)
-        except Exception:
-            same_org = False
+    is_internal_project_user = is_project_user(request, project)
 
-    has_ticket_access = bool(preview_username) or ext_is_valid or same_org
-    # Treat invited users from other orgs as external portal users even when
-    # they also have a normal site login in the current browser.
-    is_external_user = bool(ext_is_valid and not same_org)
+    has_ticket_access = bool(preview_username) or ext_is_valid or is_internal_project_user
+    # Treat invited users without project membership as external portal users,
+    # even when they also have a normal site login in the current browser.
+    is_external_user = bool(ext_is_valid and not is_internal_project_user)
 
     if not allow_anonymous and not has_ticket_access:
         return render(request, 'portal_login.html', _get_portal_login_context(request, project, portal_settings))
