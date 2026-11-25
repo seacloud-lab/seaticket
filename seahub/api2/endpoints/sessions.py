@@ -118,13 +118,15 @@ class OnlineSessionView(APIView):
 
     def delete(self, request, session_id):
         """ delete session """
-        log_session = SessionLog.objects.filter(id=session_id)[0]
-        if log_session:
-            session_key = log_session.session_key
-        else:
-            session_key = ''
+        log_session = SessionLog.objects.filter(
+            id=session_id,
+            user_name=request.user.username,
+        ).first()
+        if not log_session:
+            return Response({'success': True})
+
         try:
-            session = Session.objects.get(session_key=session_key)
+            session = Session.objects.get(session_key=log_session.session_key)
             session.delete()
         except Session.DoesNotExist:
             return Response({'success': True})
