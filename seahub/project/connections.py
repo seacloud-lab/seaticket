@@ -231,11 +231,6 @@ class ProjectConnectionsView(APIView):
     def post(self, request, project_uuid):
         """modify project connection
         """
-        # role permission check
-        if not request.user.permissions.can_add_project():
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # argument check
         name = request.POST.get('name', '')
         if not name:
@@ -412,11 +407,6 @@ class ProjectGithubConnectionsView(APIView):
 
     @require_org_context
     def post(self, request, project_uuid):
-        # role permission check
-        if not request.user.permissions.can_add_project():
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         try:
             config_list = request.POST.get('config_list')
             config_list = json.loads(config_list)
@@ -533,11 +523,6 @@ class ProjectConnectionView(APIView):
     def put(self, request, project_uuid, connection_id):
         """ modify connection
         """
-        # role permission check
-        if not request.user.permissions.can_add_project():
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # argument check
         name = request.data.get('name')
         new_config = request.data.get('config')
@@ -604,11 +589,6 @@ class ProjectConnectionView(APIView):
     def delete(self, request, project_uuid, connection_id):
         """delete connection
         """
-        # role permission check
-        if not request.user.permissions.can_add_project():
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:

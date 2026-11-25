@@ -184,6 +184,22 @@ class TestProjectView:
 
         assert resp.status_code == 403
 
+    def test_put_does_not_require_can_add_project(self, factory, project_creator, real_project):
+        project = real_project
+        project_creator.permissions = SimpleNamespace(can_add_project=lambda: False)
+        request = factory.put(
+            f'/api/v1/workspace/{project.workspace.id}/project/',
+            data={'name': project.name, 'new_name': 'renamed'},
+            format='json',
+        )
+        request.user = project_creator
+
+        resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
+
+        assert resp.status_code == 200
+        project.refresh_from_db()
+        assert project.name == 'renamed'
+
     def test_put_success(self, factory, project_creator, real_project):
         project = real_project
         request = factory.put(
@@ -346,6 +362,22 @@ class TestProjectView:
         project.refresh_from_db()
         assert project.deleted is True
         assert project.name.startswith(f'_(deleted_{project.id}) ')
+
+    def test_delete_does_not_require_can_add_project(self, factory, project_creator, real_project):
+        project = real_project
+        project_creator.permissions = SimpleNamespace(can_add_project=lambda: False)
+        request = factory.delete(
+            f'/api/v1/workspace/{project.workspace.id}/project/',
+            data={'name': project.name},
+            format='json',
+        )
+        request.user = project_creator
+
+        resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
+
+        assert resp.status_code == 200
+        project.refresh_from_db()
+        assert project.deleted is True
 
 
 @pytest.mark.django_db

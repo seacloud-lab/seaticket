@@ -241,16 +241,23 @@ class TestProjectConnectionsView:
 
         assert resp.status_code == 403
 
-    def test_post_role_permission_denied(self, factory, project_creator, real_project):
+    def test_post_project_admin_does_not_need_can_add_project(self, factory, project_creator, real_project):
         project = real_project
         project_creator.permissions = type(project_creator.permissions)(can_add_project=lambda: False)
 
-        request = factory.post(f"/api/v1/project/{project.uuid}/connections/", data={})
+        request = factory.post(
+            f"/api/v1/project/{project.uuid}/connections/",
+            data={'name': 'c1', 'config': '{}', 'type': 'site'},
+        )
         request.user = project_creator
 
-        resp = ProjectConnectionsView.as_view()(request, project_uuid=project.uuid)
+        record = Mock(id=11)
+        record.to_dict.return_value = {'id': 11, 'name': 'c1', 'type': 'site'}
+        with patch('seahub.project.connections.create_connection', return_value=(record, None)), \
+                patch('seahub.project.connections.add_connection_sync_task'):
+            resp = ProjectConnectionsView.as_view()(request, project_uuid=project.uuid)
 
-        assert resp.status_code == 403
+        assert resp.status_code == 201
 
     def test_post_missing_name(self, factory, project_creator, real_project):
         project = real_project
@@ -544,7 +551,7 @@ class TestProjectConnectionListByTokenView:
         assert resp.data['records']
         assert all('config' not in record for record in resp.data['records'])
 
-    def test_put_role_permission_denied(self, factory, project_creator, real_project, site_connection):
+    def test_put_project_admin_does_not_need_can_add_project(self, factory, project_creator, real_project, site_connection):
         project = real_project
         project_creator.permissions = type(project_creator.permissions)(can_add_project=lambda: False)
 
@@ -553,7 +560,9 @@ class TestProjectConnectionListByTokenView:
 
         resp = ProjectConnectionView.as_view()(request, project_uuid=project.uuid, connection_id=site_connection.id)
 
-        assert resp.status_code == 403
+        assert resp.status_code == 200
+        site_connection.refresh_from_db()
+        assert site_connection.name == 'c2'
 
     def test_put_admin_permission_denied(self, factory, auth_user, real_project, site_connection):
         project = real_project
@@ -629,8 +638,9 @@ class TestProjectConnectionListByTokenView:
 
         assert resp.status_code == 403
 
-    def test_delete_success(self, factory, project_creator, real_project, site_connection):
+    def test_delete_success_without_can_add_project(self, factory, project_creator, real_project, site_connection):
         project = real_project
+        project_creator.permissions = type(project_creator.permissions)(can_add_project=lambda: False)
         request = factory.delete(
             f"/api/v1/project/{project.uuid}/connections/{site_connection.id}/",
             data={},
