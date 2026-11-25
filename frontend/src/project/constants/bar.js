@@ -125,7 +125,7 @@ export const BAR_TYPE_CONFIG = {
   [BAR_TYPE.MY_CREATED_TICKET]: {
     key: BAR_TYPE.MY_CREATED_TICKET,
     name: gettext('Created by me'),
-    icon: 'edit'
+    icon: 'my-tickets'
   },
   [BAR_TYPE.NEW_TICKET]: {
     key: BAR_TYPE.NEW_TICKET,
