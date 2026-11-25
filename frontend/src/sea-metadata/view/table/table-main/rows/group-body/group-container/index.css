@@ -186,7 +186,7 @@
 .canvas-groups-rows .group-title {
   display: flex;
   flex-direction: column;
-  max-width: calc(100% - 108px);
+  width: calc(100% - 108px);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -194,6 +194,7 @@
 
 .canvas-groups-rows .group-title .group-cell-value {
   width: min-content;
+  max-width: calc(100% - 8px);
 }
 
 .canvas-groups-rows .group-title .group-cell-value--text {
@@ -221,6 +222,7 @@
   padding: 0;
   margin: 0;
   min-height: fit-content;
+  flex-wrap: nowrap;
 }
 
 .canvas-groups-rows .collaborator-avatar,

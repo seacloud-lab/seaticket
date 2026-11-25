@@ -1,109 +1,17 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { CenteredError, CenteredLoading, Collaborator, IconButton } from '@/components';
+import { CenteredError, CenteredLoading, IconButton } from '@/components';
 import { gettext, PERMISSION_TYPES } from '@/constants';
 import { EmailThreadDetails } from '@/project/main-panel/connections/components/connection-resource-details';
-import { TICKET_STATE_OPTIONS } from '@/project/main-panel/tickets/constants';
-import SeaMetadata, { CellType } from '@/sea-metadata';
-import NumberFormatter from '@/sea-metadata/components/cell-formatter/number';
+import SeaMetadata from '@/sea-metadata';
 import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import { CANVAS_RIGHT_INTERVAL, SEQUENCE_COLUMN_WIDTH } from '@/sea-metadata/constants/view/table';
 import context from '@/sea-metadata/context';
 import { portalAPI } from '../../api';
 import { buildPortalPath, getPortalPathSegments } from '../../path-utils';
-
-const EMAIL_TABLE_NAME = 'portal_emails';
-const EMAIL_LOCAL_STORAGE_PREFIX = 'seaqa-portal-emails';
-const EMAIL_VIEW = { _id: 'all', name: gettext('All emails') };
-const EMAIL_COLUMN_ORDER = {
-  title: 1,
-  ticket_pk: 2,
-  state: 3,
-  assignees: 4,
-  due_date: 5,
-  modified_time: 6,
-};
-const EMAIL_COLUMN_WIDTHS = {
-  title: 320,
-  ticket_pk: 120,
-  state: 120,
-  assignees: 200,
-  due_date: 200,
-  modified_time: 200,
-};
-const AssigneesFormatter = ({ value = [] }) => (
-  <div className="collaborators-formatter">
-    {value.map(assignee => <Collaborator key={assignee.email} collaborator={assignee} />)}
-  </div>
-);
-const TicketNumberFormatter = ({ value }) => value === null || value === undefined || value === ''
-  ? <div className="sea-metadata-ui cell-formatter-container text-formatter number-formatter">--</div>
-  : <NumberFormatter value={`#${value}`} />;
-const EMAIL_COLUMNS = [
-  {
-    key: 'subject',
-    name: 'title',
-    display_name: gettext('Subject'),
-    type: CellType.TEXT,
-    width: 320,
-    frozen: true,
-    is_name_column: true,
-    editable: false,
-  },
-  {
-    key: 'ticket',
-    name: 'ticket_pk',
-    display_name: gettext('Ticket #'),
-    type: CellType.NUMBER,
-    width: 120,
-    editable: false,
-    formatter: <TicketNumberFormatter />,
-  },
-  {
-    key: 'state',
-    name: 'state',
-    display_name: gettext('State'),
-    type: CellType.SINGLE_SELECT,
-    width: 120,
-    editable: false,
-    data: { options: TICKET_STATE_OPTIONS },
-  },
-  {
-    key: 'assignees',
-    name: 'assignees',
-    display_name: gettext('Assignees'),
-    type: CellType.COLLABORATOR,
-    width: 200,
-    editable: false,
-    formatter: <AssigneesFormatter />,
-  },
-  {
-    key: 'due_date',
-    name: 'due_date',
-    display_name: gettext('Due date'),
-    type: CellType.DATE,
-    width: 200,
-    editable: false,
-    data: { format: 'YYYY-MM-DD' },
-  },
-  {
-    key: 'modified_time',
-    name: 'modified_time',
-    display_name: gettext('Last modified time'),
-    type: CellType.MTIME,
-    width: 200,
-    editable: false,
-  },
-];
-
-const EMAIL_VIEWS_DATA = {
-  navigation: [{ _id: EMAIL_VIEW._id, type: 'view' }],
-  views: [EMAIL_VIEW],
-};
-
-const EMAIL_VIEW_DATA = {
-  ...EMAIL_VIEW,
-  columns_keys: EMAIL_COLUMNS.map(column => column.key),
-};
+import {
+  EMAIL_COLUMN_WIDTHS, EMAIL_COLUMNS, EMAIL_VIEWS_DATA, EMAIL_VIEW_DATA, EMAIL_TABLE_NAME,
+  EMAIL_LOCAL_STORAGE_PREFIX, EMAIL_COLUMN_ORDER,
+} from './constants';
 
 const TeamEmails = ({ projectUuid }) => {
   const metadataContainerRef = useRef(null);
@@ -205,7 +113,7 @@ const TeamEmails = ({ projectUuid }) => {
   if (isLoadingThread) return <CenteredLoading />;
   if (error && threadContext) {
     return (
-      <div className="seaqa-portal-emails-thread">
+      <div className="seaqa-portal-emails-thread d-flex o-hidden flex-1 flex-column">
         <div className="seaqa-project-panel-header seaqa-project-main-panel-header seaqa-portal-emails-thread-header">
           <div className="seaqa-project-main-panel-header-content">
             <div className="seaqa-project-main-panel-header-left">
@@ -223,7 +131,7 @@ const TeamEmails = ({ projectUuid }) => {
 
   if (thread && threadContext) {
     return (
-      <div className="seaqa-portal-emails-thread">
+      <div className="seaqa-portal-emails-thread d-flex o-hidden flex-1 flex-column">
         <div className="seaqa-project-panel-header seaqa-project-main-panel-header seaqa-portal-emails-thread-header">
           <div className="seaqa-project-main-panel-header-content">
             <div className="seaqa-project-main-panel-header-left">
@@ -234,7 +142,7 @@ const TeamEmails = ({ projectUuid }) => {
             </div>
           </div>
         </div>
-        <div className="seaqa-portal-emails-thread-content">
+        <div className="seaqa-portal-emails-thread-content p-4 gap-4 flex-1 o-auto">
           <EmailThreadDetails
             details={thread.emails || []}
             projectUuid={projectUuid}
@@ -243,7 +151,6 @@ const TeamEmails = ({ projectUuid }) => {
             threadId={threadContext.threadId}
             permission={PERMISSION_TYPES.READ_ONLY}
             isPortal={true}
-            className="pt-4 pb-4"
           />
         </div>
       </div>

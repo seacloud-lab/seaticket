@@ -79,7 +79,6 @@ const Main = forwardRef(({
                     isMobileView={isMobileView}
                   />
                   <View
-                    fixedColumnCount={fixedColumnCount}
                     expandRow={expandRow}
                     CustomView={CustomView}
                     onCustomViewRowClick={onCustomViewRowClick}

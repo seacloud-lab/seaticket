@@ -294,12 +294,14 @@
 }
 
 /* long text */
-.sea-metadata-table-cell.sea-metadata-table-long-text-cell {
+.sea-metadata-table-cell.sea-metadata-table-long-text-cell,
+.sea-metadata-table-cell.sea-metadata-table-collaborator-cell {
   padding-top: 0;
   padding-bottom: 0;
 }
 
-.sea-metadata-table-cell.sea-metadata-table-long-text-cell .sea-metadata-long-text-formatter {
+.sea-metadata-table-cell.sea-metadata-table-long-text-cell .sea-metadata-long-text-formatter,
+.sea-metadata-table-cell.sea-metadata-table-collaborator-cell .sea-metadata-collaborator-formatter {
   padding-top: 5.5px;
   padding-bottom: 5.5px;
 }

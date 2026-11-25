@@ -852,6 +852,17 @@ export const CONNECTION_PREDEFINED_COLUMN_CONFIG = {
       // customers are managed in the support portal, never created from a cell
       modify_data_able: false,
     },
+    [CONNECTION_PREDEFINED_COLUMN_NAME.PARTICIPANTS]: {
+      display_name: gettext('Participants'),
+      type: CellType.COLLABORATOR,
+      editable: false,
+      modify_data_able: false,
+      sort_able: false,
+      filter_able: false,
+      data: {
+        is_email_user: true,
+      },
+    },
     ...CONNECTION_PREDEFINED_COLUMN,
   },
   [CONNECTION_TYPE.NOTION]: {
