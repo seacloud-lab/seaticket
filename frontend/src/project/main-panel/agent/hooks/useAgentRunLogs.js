@@ -101,7 +101,7 @@ export const useAgentRunLogs = () => {
       const runLog = newRunLogs[runLogIndex];
       if ((statusFilterValueRef.current === LOG_STATUS.PROCESSED && runLog.status !== LOG_STATUS.PROCESSED) ||
         statusFilterValueRef.current !== LOG_STATUS.PROCESSED && runLog.status === LOG_STATUS.PROCESSED) {
-        newRunLogs[runLogIndex] = { ...runLog, isFiltered: true };
+        newRunLogs[runLogIndex] = { ...runLog, is_filtered: true };
       }
       return newRunLogs;
     });

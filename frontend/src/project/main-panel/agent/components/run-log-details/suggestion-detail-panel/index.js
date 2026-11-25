@@ -2,7 +2,6 @@ import React, { useRef, useCallback, useEffect, useState, useMemo } from 'react'
 import { Button } from 'reactstrap';
 import { IconButton, ResizeBar } from '@/components';
 import { gettext } from '@/constants';
-import { isFunction } from '@/utils/type-detection';
 import { isValidEmail } from '@/utils/validate';
 import { parseEmailReplySuggestion, getEmailReplyDefaultTo } from '../../../utils';
 import SuggestionTitle from '../suggestion-title';
@@ -58,20 +57,17 @@ const SuggestionDetailPanel = ({
 
   const ref = useRef(null);
 
-  const runPanelAction = useCallback((actionFn) => {
+  const handleApprove = useCallback(() => {
     const { action, runId } = suggestionDetail;
-    if (!isFunction(actionFn)) return;
     setIsSaving(true);
-    actionFn(runId, action.id, value).then((key) => {
+    onApprove(runId, action.id, value).then((key) => {
       if (key !== suggestionKey) return;
       setIsSaving(false);
     }).catch(key => {
       if (key !== suggestionKey) return;
       setIsSaving(false);
     });
-  }, [suggestionDetail, value, suggestionKey]);
-
-  const handleApprove = useCallback(() => runPanelAction(onApprove), [runPanelAction, onApprove]);
+  }, [suggestionDetail, value, suggestionKey, onApprove]);
 
   const onResize = useCallback((width) => {
     localStorage.setItem('project_agent_action_suggestion_panel_width', window.innerWidth - width - 8);

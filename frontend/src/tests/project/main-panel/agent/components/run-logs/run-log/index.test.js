@@ -22,7 +22,7 @@ const runLog = {
   num_of_runs: 1,
   last_active_at: '',
   status: 'processed',
-  isFiltered: true,
+  is_filtered: true,
 };
 
 const fireTransitionEnd = (element, propertyName) => {
@@ -170,7 +170,7 @@ describe('RunLog filtered animation', () => {
     const item = screen.getByText('Email #1').closest('.seaqa-agent-run-log');
     const firstAnimationFrameId = getAnimationFrameId(0);
 
-    rerender(<RunLog {...props} runLog={{ ...runLog, isFiltered: false }} isShowLogs={true} />);
+    rerender(<RunLog {...props} runLog={{ ...runLog, is_filtered: false }} isShowLogs={true} />);
     expect(item.style.height).toBe('');
     fireTransitionEnd(item, 'height');
     expect(onRemove).not.toHaveBeenCalled();
@@ -190,7 +190,7 @@ describe('RunLog filtered animation', () => {
   });
 
   it('does not measure or animate an unfiltered item', () => {
-    const unfilteredRunLog = { ...runLog, isFiltered: false };
+    const unfilteredRunLog = { ...runLog, is_filtered: false };
     const props = { active: true, runLog: unfilteredRunLog, onClick: jest.fn(), onRemove: jest.fn() };
     const { rerender } = render(<RunLog {...props} isShowLogs={true} />);
     const item = screen.getByText('Email #1').closest('.seaqa-agent-run-log');

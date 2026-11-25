@@ -17,7 +17,7 @@ const RunLog = ({ active, runLog, isShowLogs, onClick, onRemove }) => {
 
   const onTransitionEnd = useCallback((event) => {
     if (
-      runLog.isFiltered &&
+      runLog.is_filtered &&
       isShowLogs &&
       !hasRequestedRemovalRef.current &&
       event.target === event.currentTarget &&
@@ -29,7 +29,7 @@ const RunLog = ({ active, runLog, isShowLogs, onClick, onRemove }) => {
   }, [isShowLogs, runLog, onRemove]);
 
   useLayoutEffect(() => {
-    if (!runLog.isFiltered) {
+    if (!runLog.is_filtered) {
       hasRequestedRemovalRef.current = false;
       return;
     }
@@ -49,7 +49,7 @@ const RunLog = ({ active, runLog, isShowLogs, onClick, onRemove }) => {
       cancelAnimationFrame(animationFrame);
       runLogElement.style.removeProperty('height');
     };
-  }, [runLog.isFiltered, isShowLogs]);
+  }, [runLog.is_filtered, isShowLogs]);
 
   let runsTip = num_of_runs + ' ' + gettext('Runs');
   if (num_of_runs === 0) runsTip = '';
@@ -64,7 +64,7 @@ const RunLog = ({ active, runLog, isShowLogs, onClick, onRemove }) => {
       ref={runLogRef}
       className={classnames('seaqa-agent-run-log w-100 d-flex flex-column position-relative', {
         'active': active,
-        'seaqa-agent-run-log-filtered': runLog.isFiltered && isShowLogs
+        'seaqa-agent-run-log-filtered': runLog.is_filtered && isShowLogs
       })}
       onClick={onClick}
       onTransitionEnd={onTransitionEnd}
