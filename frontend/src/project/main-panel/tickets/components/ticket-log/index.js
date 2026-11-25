@@ -71,9 +71,6 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
     const discordLabelMap = {
       title: gettext('title'),
     };
-    const emailLabelMap = {
-      title: gettext('title'),
-    };
     const generalTaskLabelMap = {
       title: gettext('title'),
       status: gettext('status'),
@@ -637,19 +634,6 @@ const TicketLog = ({ log: activity, projectUuid, isSmallScreen = false, classNam
 
         return (
           <span>{messageParts}</span>
-        );
-      }
-      case LOG_TYPE.EMAIL_THREAD_UPDATED: {
-        const ref = renderLinkedRecordRef(activity);
-        const changeNodes = renderChangeNodes(old_value, new_value, emailLabelMap);
-        if (changeNodes.length === 0) {
-          return <span>{gettext('updated Email thread')}{ref ? <>{' '}{ref}</> : null}</span>;
-        }
-        return (
-          <>
-            {gettext('Email thread')}{ref ? <>{' '}{ref}</> : null}
-            {changeNodes}
-          </>
         );
       }
       case LOG_TYPE.EMAIL_MESSAGE_ADDED: {
