@@ -125,6 +125,18 @@ class TestBuildTicketDataEvent:
         assert event['old_value'] == {'tags': ['bug']}
         assert event['new_value'] == {'tags': ['bug', 'frontend']}
 
+    def test_ticket_added_omits_old_value(self):
+        event = build_ticket_data_event(
+            'ticket_added',
+            new_row={'title': 'New ticket', 'state': 'open', 'due_date': ''},
+        )
+
+        assert event == {
+            'type': 'ticket_added',
+            'new_value': {'title': 'New ticket', 'state': 'open'},
+        }
+        assert 'old_value' not in event
+
 
 class TestTicketsAPIView:
     def get_ticket_base_metadata(self):

@@ -467,7 +467,6 @@ class PortalIssuesView(APIView):
             portal_issue_pk,
             event={
                 'type': DataEventType.PORTAL_ISSUE_ADDED.value,
-                'old_value': None,
                 'new_value': row,
             },
         )
@@ -1626,7 +1625,6 @@ class PortalIssueCommentsView(APIView):
             issue.get('_pk'),
             event={
                 'type': DataEventType.PORTAL_ISSUE_COMMENT_ADDED.value,
-                'old_value': None,
                 'new_value': row,
             },
         )
