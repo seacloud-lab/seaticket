@@ -77,4 +77,27 @@ describe('Project linked row cache updates', () => {
 
     expect(dataAPI.getTableByName('tickets').id_row_map.A).toEqual({ links: ['existing'], title: 'Updated title' });
   });
+
+  it.each([[1, 2], [2, 1]])('preserves reverse links and titles for request completion order %j, %j', async (first, last) => {
+    const pending = {};
+    const requests = [1, 2].map(id => {
+      const key = `2_${id}`;
+      return dataAPI.modifyRowLink({
+        tableName: 'tickets', rowId: 'A',
+        rowUpdate: Object.freeze({ links: [key] }), linkedRecords: { [key]: `Record ${id}` },
+      }, {}, () => new Promise(resolve => { pending[id] = resolve; }));
+    });
+    for (const id of [first, last]) {
+      await act(async () => { pending[id]({ data: {} }); await requests[id - 1]; });
+    }
+    await act(async () => {
+      await dataAPI.modifyRowLink({
+        tableName: 'tickets', rowId: 'A', rowUpdate: { links: ['2_1'] }, linkedRecords: { '2_1': 'Record 1' },
+      }, {}, () => Promise.resolve({ data: {} }));
+    });
+
+    const table = dataAPI.getTableByName('tickets');
+    expect(table.id_row_map.A.links).toEqual(['existing', `2_${first}`, `2_${last}`]);
+    expect(table.linked_records).toEqual({ '2_1': 'Record 1', '2_2': 'Record 2' });
+  });
 });

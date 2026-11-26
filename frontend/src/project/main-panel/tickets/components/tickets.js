@@ -3,6 +3,7 @@ import { CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { useData, useTags } from '@/project/hooks';
+import { useLinkedTicketUpdate } from '@/project/hooks/link-ticket';
 import { useRelatedIssues } from '@/project/hooks/related-issues';
 import { useResourceUpdate } from '@/project/hooks/resource-dialog';
 import { useTicketCreation } from '@/project/hooks/ticket-creation';
@@ -289,6 +290,11 @@ const Tickets = ({
   useTicketTaskCreated({ projectUuid, onUpdate: ({ rowId, rowUpdate, linkedRecordTitles }) => {
     context.eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdate);
     context.eventBus.dispatch(EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: linkedRecordTitles }, false);
+  } });
+
+  useLinkedTicketUpdate({ projectUuid, tableName: TICKET_TABLE_NAME, onUpdate: ({ rowId, rowUpdateData, linkedRecords }) => {
+    context.eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdateData);
+    context.eventBus.dispatch(EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: linkedRecords }, false);
   } });
 
   const createRowsTools = useCallback((props) => {

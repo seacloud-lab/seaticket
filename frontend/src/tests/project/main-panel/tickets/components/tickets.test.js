@@ -1,8 +1,12 @@
 import React, { act } from 'react';
 import { screen } from '@testing-library/react';
 import { createRoot } from 'react-dom/client';
+import { portalAPI } from '@/portal/api';
+import { connectionsAPI } from '@/project/api';
+import { LinkTicketProvider } from '@/project/components/link-ticket-provider';
 import { TicketCreationProvider } from '@/project/components/ticket-creation-provider';
 import { useData } from '@/project/hooks';
+import { useLinkTicket } from '@/project/hooks/link-ticket';
 import Tickets from '@/project/main-panel/tickets/components/tickets';
 import context from '@/sea-metadata/context';
 import eventBus from '@/utils/event-bus';
@@ -13,6 +17,7 @@ const mockRows = [{ _id: 'A', title: 'Ticket A' }, { _id: 'B', title: 'Ticket B'
 jest.mock('@/components', () => ({
   CenteredLoading: () => <div role="status">Loading</div>,
   CenteredError: ({ children }) => <div role="alert">{children}</div>,
+  toaster: { danger: jest.fn() },
 }));
 jest.mock('@/components/toaster', () => ({ success: jest.fn() }));
 jest.mock('@/constants', () => ({
@@ -21,19 +26,26 @@ jest.mock('@/constants', () => ({
   DIALOG_SIZE_VALUE: { s: 576 },
   PERMISSION_TYPES: { READ_WRITE: 'rw' },
 }));
-jest.mock('@/portal/api', () => ({ portalAPI: {} }));
+jest.mock('@/portal/api', () => ({ portalAPI: { modifyPortalIssue: jest.fn() } }));
 jest.mock('@/project/main-panel/portal-issues/models', () => ({}));
 jest.mock('@/utils/utils', () => ({ Utils: { getErrorMsg: error => error.message } }));
 jest.mock('@/project/constants', () => ({ EVENT_BUS_TYPE: {
-  MODIFY_LOCAL_RECORD_IN_DIALOG: 'modify-dialog', TICKET_TASK_CREATED: 'task-created',
+  MODIFY_LOCAL_RECORD_IN_DIALOG: 'modify-dialog', TICKET_TASK_CREATED: 'task-created', TICKET_LINKED: 'ticket-linked',
 } }));
-jest.mock('@/project/api', () => ({ ticketsAPI: {} }));
+jest.mock('@/project/api', () => ({ ticketsAPI: {}, connectionsAPI: { modifyConnectionRecord: jest.fn() } }));
 jest.mock('@/project/hooks', () => ({ useData: jest.fn(), useTags: () => ({}) }));
 jest.mock('@/project/hooks/related-issues', () => ({
   useRelatedIssues: () => ({ openRelatedIssues: jest.fn() }),
 }));
 jest.mock('@/project/main-panel/ask/hooks', () => ({ useAIChatTools: () => ({}) }));
-jest.mock('@/project/main-panel/connections/constants', () => ({ CONNECTION_TYPE: { GENERAL_TASK: 'task' } }));
+jest.mock('@/project/main-panel/connections/constants', () => ({
+  CONNECTION_TYPE: { GENERAL_TASK: 'task' },
+  CONNECTION_PREDEFINED_COLUMN_NAME: { TITLE: 'title', STATE: 'state', LINKED_TICKET: 'linked_ticket' },
+}));
+jest.mock('@/project/main-panel/portal-issues/constants', () => ({
+  PORTAL_ISSUE_TYPE: 'portal_issue', PORTAL_ISSUE_TABLE_NAME: 'portal_issues',
+  PREDEFINED_PORTAL_ISSUE_COLUMN_NAME: { TITLE: 'title', STATE: 'state', LINKED_TICKET: 'linked_ticket' },
+}));
 jest.mock('@/project/main-panel/connections/hooks', () => ({ useConnections: () => ({}) }));
 jest.mock('@/project/main-panel/connections/utils', () => ({ getTableName: () => 'tasks' }));
 jest.mock('@/project/main-panel/tickets/hooks', () => ({
@@ -58,7 +70,7 @@ jest.mock('@/sea-metadata/constants', () => ({
   EVENT_BUS_TYPE: { LOCAL_ROW_CHANGED: 'row-changed', UPDATE_DATA_ATTRIBUTE: 'update-attribute' },
 }));
 jest.mock('@/sea-metadata/context', () => ({ eventBus: { dispatch: jest.fn() } }));
-jest.mock('@/sea-metadata/utils/cell', () => ({ getCellValueByColumn: (row, column) => row[column.key] }));
+jest.mock('@/sea-metadata/utils/cell', () => ({ getCellValueByColumn: (row, column) => row?.[column?.key] }));
 jest.mock('@/sea-metadata/utils/column', () => ({ getColumnByName: (columns, name) => columns.find(column => column.name === name) }));
 jest.mock('@/project/main-panel/tickets/components/create-kb-record-dialog', () => () => null);
 jest.mock('@/sea-metadata', () => {
@@ -88,7 +100,11 @@ jest.mock('@/project/main-panel/tickets/components/ticket-details', () => {
     }), [ticket.id]);
     return (
       <div>
-        {(ticket.linked_connection_records || []).map(key => <div key={key}>{linkedRecords[key]?.title || key}</div>)}
+        {(ticket.linked_connection_records || []).map(key => (
+          <div key={key} data-testid={`link-${key}`} data-type={linkedRecords[key]?.connection_type} data-state={linkedRecords[key]?.state}>
+            {linkedRecords[key]?.title || key}
+          </div>
+        ))}
         {activities.map(activity => <div key={activity.id}>{activity.id}</div>)}
       </div>
     );
@@ -120,6 +136,23 @@ jest.mock('@/project/main-panel/tickets/components/create-task-dialog', () => ({
     <button onClick={onClose}>Close task</button>
   </div>
 ));
+jest.mock('@/project/main-panel/connections/components/create-ticket-dialog', () => () => null);
+jest.mock('@/project/main-panel/tickets/components/tickets-dialog', () => ({ onSubmit, onToggle }) => (
+  <button onClick={() => onSubmit({ id: 'A', title: 'Ticket A' }, { key: 'links', name: 'linked_connection_records' }, onToggle)}>Confirm linking</button>
+));
+
+const SourceActions = () => {
+  const { linkAnExistingTicket } = useLinkTicket();
+  const columns = [
+    { key: 'subject', name: 'title' }, { key: 'status', name: 'state' }, { key: 'ticket', name: 'linked_ticket' },
+  ];
+  return (
+    <>
+      <button onClick={() => linkAnExistingTicket({ row: { _id: 7, subject: 'Connection record', status: 'open' }, columns, connection: { id: 2, type: 'github_issue' } })}>Link connection</button>
+      <button onClick={() => linkAnExistingTicket({ row: { _id: 8, subject: 'Portal record', status: '0001' }, columns })}>Link portal</button>
+    </>
+  );
+};
 
 const deferred = () => {
   let resolve;
@@ -138,7 +171,7 @@ const detailsResponse = (id, linkedRecords = {}) => ({ data: {
   linked_records_info: linkedRecords,
 } });
 
-describe('Creating a linked task from a ticket dialog', () => {
+describe('Ticket list and dialog link synchronization', () => {
   const originalActEnvironment = global.IS_REACT_ACT_ENVIRONMENT;
   const originalApp = window.app;
   let container;
@@ -149,6 +182,7 @@ describe('Creating a linked task from a ticket dialog', () => {
   let dispatchSpy;
   let cachedRows;
   let listRows;
+  let linkedRecordTitles;
 
   const click = name => act(() => { screen.getByRole('button', { name }).click(); });
   const finishRequest = async () => act(async () => {
@@ -172,7 +206,11 @@ describe('Creating a linked task from a ticket dialog', () => {
     request = deferred();
     cachedRows = { A: { links: ['existing'] } };
     listRows = { A: { links: ['existing'] } };
+    linkedRecordTitles = { existing: 'Existing record' };
     context.eventBus.dispatch.mockImplementation((type, id, update) => {
+      if (type === 'update-attribute') {
+        linkedRecordTitles = { ...linkedRecordTitles, ...id.linked_records };
+      }
       if (type !== 'row-changed') return;
       const changes = typeof update === 'function' ? update(listRows[id] || {}) : update;
       listRows[id] = { ...listRows[id], ...changes };
@@ -184,7 +222,12 @@ describe('Creating a linked task from a ticket dialog', () => {
       cachedRows[id] = { ...cachedRows[id], ...changes };
       callback();
     });
-    useData.mockReturnValue({ getMetadata: (_table, _view, load) => load(), insertRowByLink });
+    connectionsAPI.modifyConnectionRecord.mockResolvedValue({ data: {} });
+    portalAPI.modifyPortalIssue.mockResolvedValue({ data: {} });
+    useData.mockReturnValue({
+      getMetadata: (_table, _view, load) => load(), insertRowByLink,
+      modifyRowLink: (_target, _source, api) => api(),
+    });
     const api = { getMetadata: () => Promise.resolve({ data: {
       tickets: mockRows,
       columns: [{ key: 'links', name: 'linked_connection_records' }],
@@ -195,7 +238,10 @@ describe('Creating a linked task from a ticket dialog', () => {
     await act(async () => {
       root.render(
         <TicketCreationProvider projectUuid="project">
-          <Tickets projectUuid="project" api={api} getTicket={getTicket} />
+          <LinkTicketProvider projectUuid="project">
+            <SourceActions />
+            <Tickets projectUuid="project" api={api} getTicket={getTicket} />
+          </LinkTicketProvider>
         </TicketCreationProvider>
       );
     });
@@ -208,6 +254,87 @@ describe('Creating a linked task from a ticket dialog', () => {
   afterEach(() => {
     act(() => root.unmount());
     container.remove();
+  });
+
+  it('merges connection and portal reverse links into the mounted list and dialog without duplicates', async () => {
+    click('Close task');
+    for (const source of ['connection', 'portal', 'connection']) {
+      click(`Link ${source}`);
+      await act(async () => { click('Confirm linking'); });
+    }
+
+    expect(listRows.A.links).toEqual(['existing', '2_7', 'portal_8']);
+    expect(linkedRecordTitles).toEqual({ existing: 'Existing record', '2_7': 'Connection record', portal_8: 'Portal record' });
+    expect(screen.getAllByText('Connection record')).toHaveLength(1);
+    expect(screen.getAllByText('Portal record')).toHaveLength(1);
+    expect(screen.getByTestId('link-2_7').dataset).toMatchObject({ type: 'github_issue', state: 'open' });
+    expect(screen.getByTestId('link-portal_8').dataset.type).toBe('portal_issue');
+    expect(connectionsAPI.modifyConnectionRecord).toHaveBeenCalledWith('project', 2, '7', { linked_ticket: 'A' });
+    expect(portalAPI.modifyPortalIssue).toHaveBeenCalledWith('project', '8', { linked_ticket: 'A' });
+    expect(getTicket).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not publish reverse links when the linking request fails', async () => {
+    click('Close task');
+    connectionsAPI.modifyConnectionRecord.mockRejectedValueOnce(new Error('Link failed'));
+    click('Link connection');
+    await act(async () => { click('Confirm linking'); });
+
+    expect(listRows.A.links).toEqual(['existing']);
+    expect(screen.queryByText('Connection record')).toBeNull();
+    expect(eventBus.dispatch).not.toHaveBeenCalledWith('ticket-linked', expect.anything());
+  });
+
+  it.each(['connection', 'portal'])('preserves overlapping reverse links when %s finishes first', async first => {
+    click('Close task');
+    const connection = deferred();
+    const portal = deferred();
+    connectionsAPI.modifyConnectionRecord.mockReturnValueOnce(connection.promise);
+    portalAPI.modifyPortalIssue.mockReturnValueOnce(portal.promise);
+    for (const source of ['connection', 'portal']) {
+      click(`Link ${source}`);
+      click('Confirm linking');
+    }
+    const requests = first === 'connection' ? [connection, portal] : [portal, connection];
+    await act(async () => { requests[0].resolve({ data: {} }); await requests[0].promise; });
+    if (first === 'connection') expect(screen.getByText('Confirm linking')).not.toBeNull();
+    await act(async () => { requests[1].resolve({ data: {} }); await requests[1].promise; });
+
+    expect(new Set(listRows.A.links)).toEqual(new Set(['existing', '2_7', 'portal_8']));
+    expect(linkedRecordTitles).toEqual({ existing: 'Existing record', '2_7': 'Connection record', portal_8: 'Portal record' });
+    expect(screen.getAllByText('Connection record')).toHaveLength(1);
+    expect(screen.getAllByText('Portal record')).toHaveLength(1);
+  });
+
+  it('keeps a late reverse-link result out of another ticket dialog', async () => {
+    click('Close task');
+    const linking = deferred();
+    connectionsAPI.modifyConnectionRecord.mockReturnValueOnce(linking.promise);
+    click('Link connection');
+    click('Confirm linking');
+    await act(async () => { click('Next ticket'); });
+    await act(async () => { linking.resolve({ data: {} }); await linking.promise; });
+
+    expect(listRows.A.links).toEqual(['existing', '2_7']);
+    expect(screen.getByText('Details B')).not.toBeNull();
+    expect(screen.queryByText('Connection record')).toBeNull();
+  });
+
+  it('preserves reverse links received while dialog details are loading', async () => {
+    click('Close task');
+    click('Close details');
+    const details = deferred();
+    getTicket.mockReturnValueOnce(details.promise);
+    click('Open A');
+    click('Link portal');
+    await act(async () => { click('Confirm linking'); });
+    await act(async () => {
+      details.resolve(detailsResponse('A', { server: { title: 'Server link' } }));
+      await details.promise;
+    });
+
+    expect(screen.getByText('Server link')).not.toBeNull();
+    expect(screen.getAllByText('Portal record')).toHaveLength(1);
   });
 
   it('keeps A task activities and linked records out of B after switching', async () => {

@@ -41,6 +41,11 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const [typesData, setTypesData] = useState(null);
   const [isShowRowDetailsDialog, setIsShowRowDetailsDialog] = useState(false);
 
+  const closeAll = useCallback(() => {
+    setIsShowRowDetailsDialog(false);
+    setCurrentRow({});
+  }, []);
+
   const { handleResolveAttachmentsByAI } = useAIChatTools();
   const { toggleChildrenPageSlugId } = useConnectionsPage();
   const { connections } = useConnections();
@@ -119,6 +124,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const api = useMemo(() => {
     let _api = {
       getMetadata: (...params) => {
+        if (params[0]?.is_reload) closeAll();
         const tableName = getTableNameByConnectionID(connectionID);
         return getMetadata(tableName, params[0], () => connectionsAPI.getConnectionDetails(projectUuid, connectionID, ...params).then(res => {
           return {
@@ -303,7 +309,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   }, [
     projectUuid, connectionID, connection, getTableNameByConnectionID,
     getTableViews, getTableView, insertView, deleteView, modifyView, duplicateView, getMetadata,
-    modifyRows, modifyRow, toggleChildrenPageSlugId,
+    modifyRows, modifyRow, toggleChildrenPageSlugId, closeAll,
   ]);
 
   const localStorageName = useMemo(() => `seaqa-${projectUuid}-connection-${connectionID}`, [projectUuid, connectionID]);
@@ -566,11 +572,6 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     const row = rowsData[newIndex];
     setCurrentRow({ ...row, connection_id: connection.id, type: connection.type });
   }, [currentRow, connection, seaMetaDataRef]);
-
-  const closeAll = useCallback(() => {
-    setIsShowRowDetailsDialog(false);
-    setCurrentRow({});
-  }, []);
 
   useEffect(() => {
     const applyRecordsModify = (_updates, isNeedConvertKeyValue = true) => {

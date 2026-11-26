@@ -86,12 +86,21 @@ export const useLinkTicketWorkflow = ({ projectUuid }) => {
     const titleColumnName = connection ? CONNECTION_PREDEFINED_COLUMN_NAME.TITLE : PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.TITLE;
     const rowTitle = getCellValueByColumn(row, getColumnByName(columns, titleColumnName));
     const rowUpdate = { [linkColumn.name]: ticket._pk };
+    const linkedRecords = { [linkedRecordKey]: rowTitle };
+    const stateColumnName = connection ? CONNECTION_PREDEFINED_COLUMN_NAME.STATE : PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.STATE;
+    const linkedRecordsInfo = { [linkedRecordKey]: {
+      _pk: rowId,
+      title: rowTitle,
+      connection_type: connection ? connection.type : PORTAL_ISSUE_TYPE,
+      state: getCellValueByColumn(row, getColumnByName(columns, stateColumnName)),
+    } };
+    const appendLink = value => Array.from(new Set([...(Array.isArray(value) ? value : []), linkedRecordKey]));
 
     return modifyRowLink({
       tableName: TICKET_TABLE_NAME,
       rowId: String(ticket._pk),
       rowUpdate: { [linkedRowColumn.key]: [linkedRecordKey] },
-      linkedRecords: { [linkedRecordKey]: rowTitle },
+      linkedRecords,
     }, {
       tableName,
       rowId,
@@ -102,6 +111,16 @@ export const useLinkTicketWorkflow = ({ projectUuid }) => {
       : portalAPI.modifyPortalIssue(projectUuid, rowId, rowUpdate)
     ).then((res) => {
       notifyLinkedTicket(operation, ticket);
+      eventBus.dispatch(EVENT_BUS_TYPE.TICKET_LINKED, {
+        projectUuid,
+        tableName: TICKET_TABLE_NAME,
+        rowId: String(ticket._pk),
+        // Merge against each consumer's latest state, including concurrent links.
+        rowUpdateData: current => ({ [linkedRowColumn.key]: appendLink(getCellValueByColumn(current, linkedRowColumn)) }),
+        updateTicket: current => ({ linked_connection_records: appendLink(current?.linked_connection_records) }),
+        linkedRecords,
+        linkedRecordsInfo,
+      });
       callback && callback();
       return res;
     }).catch((error) => {

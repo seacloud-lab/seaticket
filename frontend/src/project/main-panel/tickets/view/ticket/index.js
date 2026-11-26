@@ -8,6 +8,7 @@ import {
   PERMISSION_TYPES
 } from '@/constants';
 import { useData, useTags, useMetadata } from '@/project/hooks';
+import { useLinkedTicketUpdate } from '@/project/hooks/link-ticket';
 import { useRelatedIssues } from '@/project/hooks/related-issues';
 import { useResourceUpdate } from '@/project/hooks/resource-dialog';
 import { useTicketCreation } from '@/project/hooks/ticket-creation';
@@ -63,7 +64,7 @@ const Ticket = ({
   const ticketRef = useRef(null);
   const headerRef = useRef(null);
   const detailsRef = useRef(null);
-  const pendingTaskUpdatesRef = useRef([]);
+  const pendingTicketUpdatesRef = useRef([]);
 
   const handleScroll = useCallback((event) => {
     if (!event) return;
@@ -112,13 +113,21 @@ const Ticket = ({
     openCreateTask({ ticket, connectionType });
   }, [openCreateTask, ticket]);
 
-  useTicketTaskCreated({ projectUuid, rowId: ticketID, onUpdate: ({ updateTicket, linkedRecords }) => {
-    if (isLoading) pendingTaskUpdatesRef.current.push(updateTicket);
+  const applyTicketUpdate = useCallback((updateTicket, linkedRecords) => {
+    if (isLoading) pendingTicketUpdatesRef.current.push(updateTicket);
     setTicket(current => {
       const update = updateTicket(current);
       return current?._update ? deepCopy(current._update(update)) : { ...current, ...update };
     });
     setLinkedRecords(previous => ({ ...previous, ...linkedRecords }));
+  }, [isLoading]);
+
+  useTicketTaskCreated({ projectUuid, rowId: ticketID, onUpdate: ({ updateTicket, linkedRecords }) => {
+    applyTicketUpdate(updateTicket, linkedRecords);
+  } });
+
+  useLinkedTicketUpdate({ projectUuid, tableName: TICKET_TABLE_NAME, rowId: ticketID, onUpdate: ({ updateTicket, linkedRecordsInfo }) => {
+    applyTicketUpdate(updateTicket, linkedRecordsInfo);
   } });
 
   const createMoreOptions = useCallback(() => {
@@ -190,15 +199,15 @@ const Ticket = ({
     setTicket(null);
     setLinkedRecords({});
     setLoadError('');
-    pendingTaskUpdatesRef.current = [];
+    pendingTicketUpdatesRef.current = [];
 
     ticketsAPI.getProjectTicket(projectUuid, ticketID).then(res => {
       if (!isCurrentRequest) return;
-      // Preserve task results received while the detail request was in flight.
-      const ticketData = pendingTaskUpdatesRef.current.reduce((current, updateTicket) => ({
+      // Preserve local updates received while the detail request was in flight.
+      const ticketData = pendingTicketUpdatesRef.current.reduce((current, updateTicket) => ({
         ...current, ...updateTicket(current),
       }), res.data.ticket);
-      pendingTaskUpdatesRef.current = [];
+      pendingTicketUpdatesRef.current = [];
       updateRowsCacheRef.current(ticketID, ticketData);
       const loadedTicket = new TicketModel(ticketData);
       setLoadError(res.data?.error_msg || '');

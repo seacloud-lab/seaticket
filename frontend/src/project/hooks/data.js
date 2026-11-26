@@ -576,12 +576,12 @@ export const DataProvider = ({
       if (table) {
         const idRowMap = table.id_row_map || {};
         const oldRow = idRowMap[rowId];
-        let rowData = rowUpdate;
+        let rowData = { ...rowUpdate };
         if (tableName === TICKET_TABLE_NAME && oldRow) {
           const key = Object.keys(rowUpdate)[0];
           const oldValue = oldRow[key] || [];
           const addedValue = rowUpdate[key] || [];
-          const newValue = [...oldValue, ...addedValue];
+          const newValue = Array.from(new Set([...oldValue, ...addedValue]));
           rowData[key] = newValue;
         }
         data[tableName] = {

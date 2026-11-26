@@ -20,7 +20,7 @@ jest.mock('@/components/common/notification/hooks/notification', () => ({
 }));
 jest.mock('@/constants', () => ({ gettext: text => text, PERMISSION_TYPES: { READ_WRITE: 'rw' } }));
 jest.mock('@/project/api', () => ({ ticketsAPI: { getProjectTicket: jest.fn() } }));
-jest.mock('@/project/constants', () => ({ EVENT_BUS_TYPE: { TICKET_TASK_CREATED: 'task-created', RESOURCE_UPDATED: 'resource-updated' } }));
+jest.mock('@/project/constants', () => ({ EVENT_BUS_TYPE: { TICKET_TASK_CREATED: 'task-created', TICKET_LINKED: 'ticket-linked', RESOURCE_UPDATED: 'resource-updated' } }));
 jest.mock('@/project/hooks', () => ({ useData: jest.fn(), useTags: () => ({}), useMetadata: () => ({}) }));
 jest.mock('@/project/hooks/related-issues', () => ({ useRelatedIssues: () => ({ openRelatedIssues: () => {} }) }));
 jest.mock('@/project/hooks/ticket-creation', () => ({
@@ -79,6 +79,13 @@ const taskUpdate = (rowId, linkedKey = '2_7') => ({
     linked_connection_records: Array.from(new Set([...(current?.linked_connection_records || []), linkedKey])),
   }),
   linkedRecords: { [linkedKey]: { title: `Created ${linkedKey}` } },
+});
+const linkedTicketUpdate = (rowId, linkedKey = '2_7') => ({
+  projectUuid: 'project', tableName: 'tickets', rowId,
+  updateTicket: current => ({
+    linked_connection_records: Array.from(new Set([...(current?.linked_connection_records || []), linkedKey])),
+  }),
+  linkedRecordsInfo: { [linkedKey]: { title: `Linked ${linkedKey}`, connection_type: 'github_issue' } },
 });
 
 describe('Ticket page creation actions and updates', () => {
@@ -173,6 +180,43 @@ describe('Ticket page creation actions and updates', () => {
     expect(screen.getByText('Created 2_7')).not.toBeNull();
     expect(screen.getByTestId('state').textContent).toBe('0002');
     expect(modifyLocalRow).toHaveBeenLastCalledWith('tickets', 'A', expect.objectContaining({ state: '0002', linked_connection_records: ['server', '2_7'] }));
+  });
+
+  it('merges reverse links only for the displayed project, table and ticket', async () => {
+    ticketsAPI.getProjectTicket.mockResolvedValueOnce(response('A', { server: { title: 'Server link' } }));
+    await act(async () => render('A'));
+    const update = linkedTicketUpdate('A');
+    for (const other of [
+      { ...update, projectUuid: 'other-project' },
+      { ...update, tableName: 'portal_issues' },
+      { ...update, rowId: 'B' },
+    ]) act(() => eventBus.dispatch(EVENT_BUS_TYPE.TICKET_LINKED, other));
+    expect(screen.queryByText('Linked 2_7')).toBeNull();
+
+    for (const matching of [update, linkedTicketUpdate('A', 'portal_8'), update]) {
+      act(() => eventBus.dispatch(EVENT_BUS_TYPE.TICKET_LINKED, matching));
+    }
+    expect(screen.getByText('Server link')).not.toBeNull();
+    expect(screen.getAllByText('Linked 2_7')).toHaveLength(1);
+    expect(screen.getAllByText('Linked portal_8')).toHaveLength(1);
+    expect(ticketsAPI.getProjectTicket).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps reverse links in the page and cache after an older detail response arrives', async () => {
+    const request = deferred();
+    ticketsAPI.getProjectTicket.mockReturnValueOnce(request.promise);
+    render('A');
+    act(() => eventBus.dispatch(EVENT_BUS_TYPE.TICKET_LINKED, linkedTicketUpdate('A')));
+    act(() => eventBus.dispatch(EVENT_BUS_TYPE.TICKET_LINKED, linkedTicketUpdate('A', 'portal_8')));
+    await act(async () => {
+      request.resolve(response('A', { server: { title: 'Server link' } }));
+      await request.promise;
+    });
+
+    expect(screen.getByText('Server link')).not.toBeNull();
+    expect(screen.getByText('Linked 2_7')).not.toBeNull();
+    expect(screen.getByText('Linked portal_8')).not.toBeNull();
+    expect(modifyLocalRow).toHaveBeenLastCalledWith('tickets', 'A', expect.objectContaining({ linked_connection_records: ['server', '2_7', 'portal_8'] }));
   });
 
   it.each(['resolve', 'reject'])('ignores an older detail %s and task notification after switching tickets', async outcome => {
