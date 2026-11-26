@@ -323,14 +323,11 @@ const RunLogDetails = ({
     if (!pendingMapping?.agentType || !pendingMapping?.actionId || !pendingMapping?.runId) return;
 
     const { runId, actionId, agentType } = pendingMapping;
-    const newAgentSettings = {
-      ...settings?.agent,
-      github_issue_type_mapping: {
-        ...settings?.agent?.github_issue_type_mapping,
-        [agentType]: selectedGithubType,
-      },
+    const githubIssueTypeMapping = {
+      ...settings?.agent?.github_issue_type_mapping,
+      [agentType]: selectedGithubType,
     };
-    modifySettings({ agent: newAgentSettings }).then(() => {
+    modifySettings({ agent: { github_issue_type_mapping: githubIssueTypeMapping } }).then(() => {
       setPendingMapping(null);
       return agentAPI.confirmAgentAction(projectUuid, runId, actionId);
     }).then((res) => {

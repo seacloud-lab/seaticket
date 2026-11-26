@@ -56,6 +56,23 @@ def is_safe_prompt(value):
     return PROJECT_PROMPT_TAG_LIKE_RE.search(value) is None
 
 
+def merge_project_settings_updates(current, updates, path=()):
+    if not isinstance(current, dict):
+        current = {}
+
+    merged = dict(current)
+    for key, value in updates.items():
+        current_value = current.get(key)
+        current_path = path + (key,)
+        if current_path == ('portal', 'portal_home_settings'):
+            merged[key] = value
+        elif isinstance(value, dict):
+            merged[key] = merge_project_settings_updates(current_value, value, current_path)
+        else:
+            merged[key] = value
+    return merged
+
+
 class WorkspacesView(APIView):
 
     authentication_classes = (TokenAuthentication, SessionAuthentication)
@@ -464,26 +481,36 @@ class ProjectView(APIView):
                     project_settings = json.loads(project.settings)
                 else:
                     project_settings = {}
-                update_settings = json.loads(settings)
-                project_prompt = update_settings.get('prompt')
-                if not is_safe_prompt(project_prompt):
+                try:
+                    update_settings = json.loads(settings)
+                except (TypeError, ValueError, json.JSONDecodeError):
+                    return api_error(status.HTTP_400_BAD_REQUEST, 'settings invalid.')
+                if not isinstance(update_settings, dict):
+                    return api_error(status.HTTP_400_BAD_REQUEST, 'settings invalid.')
+                if 'prompt' in update_settings and not is_safe_prompt(update_settings['prompt']):
                     error_msg = _('Project prompt contains disallowed tag-like content.')
                     return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+                for section in ('portal', 'agent', 'skills'):
+                    if section in update_settings and not isinstance(update_settings[section], dict):
+                        return api_error(status.HTTP_400_BAD_REQUEST, f'{section} settings invalid.')
                 portal_settings = update_settings.get('portal')
                 if isinstance(portal_settings, dict):
-                    portal_chat_prompt = portal_settings.get('chat_prompt')
-                    if not is_safe_prompt(portal_chat_prompt):
+                    if 'password' in portal_settings:
+                        return api_error(
+                            status.HTTP_400_BAD_REQUEST,
+                            'Portal password must be updated through Portal settings.',
+                        )
+                    if 'chat_prompt' in portal_settings and not is_safe_prompt(portal_settings['chat_prompt']):
                         error_msg = _('Portal chat prompt contains disallowed tag-like content.')
                         return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
                 agent_settings = update_settings.get('agent')
-                if isinstance(agent_settings, dict):
-                    ticket_rules = agent_settings.get('ticket_rules')
-                    if not is_safe_prompt(ticket_rules):
+                if isinstance(agent_settings, dict) and 'ticket_rules' in agent_settings:
+                    if not is_safe_prompt(agent_settings['ticket_rules']):
                         error_msg = _('Ticket processing rules must be text, and cannot contain tag-like content.')
                         return api_error(status.HTTP_400_BAD_REQUEST, error_msg)
+
                 old_enable_portal = bool((project_settings.get('portal') or {}).get('enable_portal', False))
-                for k,v in update_settings.items():
-                    project_settings[k] = v
+                project_settings = merge_project_settings_updates(project_settings, update_settings)
                 new_enable_portal = bool((project_settings.get('portal') or {}).get('enable_portal', False))
                 should_init_portal_issues = not old_enable_portal and new_enable_portal
                 project.settings = json.dumps(merge_project_settings_defaults(project_settings))

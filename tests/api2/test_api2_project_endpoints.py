@@ -242,6 +242,109 @@ class TestProjectView:
         project.refresh_from_db()
         assert json.loads(project.settings)['portal']['chat_prompt'] == 'Use a concise and helpful tone.'
 
+    def test_put_partially_merges_nested_settings_and_keeps_explicit_falsy_values(
+            self, factory, project_creator, real_project):
+        project = real_project
+        project.settings = json.dumps({
+            'portal': {
+                'enable_portal': True,
+                'allow_anonymous': True,
+                'chat_prompt': 'Old portal prompt',
+            },
+            'agent': {
+                'enabled': True,
+                'ticket_rules': 'Keep these rules',
+                'auto_confirm': {
+                    'suggest_notify_assignee': True,
+                    'suggest_create_ticket': True,
+                },
+            },
+            'skills': {'disabled_builtins': ['old-skill']},
+        })
+        project.save(update_fields=['settings'])
+        request = factory.put(
+            f'/api/v1/workspace/{project.workspace.id}/project/',
+            data={
+                'name': project.name,
+                'settings': json.dumps({
+                    'portal': {'chat_prompt': 'New portal prompt'},
+                    'agent': {
+                        'enabled': False,
+                        'auto_confirm': {'suggest_create_ticket': False},
+                    },
+                    'skills': {'disabled_builtins': []},
+                }),
+            },
+            format='multipart',
+        )
+        request.user = project_creator
+
+        resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
+
+        assert resp.status_code == 200
+        project.refresh_from_db()
+        settings_data = json.loads(project.settings)
+        assert settings_data['portal'] == {
+            'enable_portal': True,
+            'allow_anonymous': True,
+            'chat_prompt': 'New portal prompt',
+        }
+        assert settings_data['agent']['enabled'] is False
+        assert settings_data['agent']['ticket_rules'] == 'Keep these rules'
+        assert settings_data['agent']['auto_confirm'] == {'suggest_create_ticket': False}
+        assert settings_data['skills']['disabled_builtins'] == []
+
+    def test_put_replaces_portal_home_settings_as_a_complete_value(
+            self, factory, project_creator, real_project):
+        project = real_project
+        project.settings = json.dumps({
+            'portal': {
+                'portal_home_settings': {
+                    'portal_home_hero_section': {'title': 'Old title', 'description': 'Old description'},
+                    'old_section': {'enabled': True},
+                },
+            },
+        })
+        project.save(update_fields=['settings'])
+        replacement = {'portal_home_hero_section': {'title': 'New title'}}
+        request = factory.put(
+            f'/api/v1/workspace/{project.workspace.id}/project/',
+            data={
+                'name': project.name,
+                'settings': json.dumps({'portal': {'portal_home_settings': replacement}}),
+            },
+            format='multipart',
+        )
+        request.user = project_creator
+
+        resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
+
+        assert resp.status_code == 200
+        project.refresh_from_db()
+        settings_data = json.loads(project.settings)
+        assert settings_data['portal']['portal_home_settings'] == replacement
+
+    def test_put_rejects_portal_password_write(self, factory, project_creator, real_project):
+        project = real_project
+        existing_settings = {'portal': {'enable_portal': True}}
+        project.settings = json.dumps(existing_settings)
+        project.save(update_fields=['settings'])
+        request = factory.put(
+            f'/api/v1/workspace/{project.workspace.id}/project/',
+            data={
+                'name': project.name,
+                'settings': json.dumps({'portal': {'password': 'plain-text-password'}}),
+            },
+            format='multipart',
+        )
+        request.user = project_creator
+
+        resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
+
+        assert resp.status_code == 400
+        project.refresh_from_db()
+        assert json.loads(project.settings) == existing_settings
+
     def test_put_rejects_unsafe_portal_chat_prompt(self, factory, project_creator, real_project):
         project = real_project
         request = factory.put(
