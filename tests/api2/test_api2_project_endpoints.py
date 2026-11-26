@@ -255,7 +255,7 @@ class TestProjectView:
                 'enabled': True,
                 'ticket_rules': 'Keep these rules',
                 'auto_confirm': {
-                    'suggest_notify_assignee': True,
+                    'suggest_notify_assignee': False,
                     'suggest_create_ticket': True,
                 },
             },
@@ -291,7 +291,10 @@ class TestProjectView:
         }
         assert settings_data['agent']['enabled'] is False
         assert settings_data['agent']['ticket_rules'] == 'Keep these rules'
-        assert settings_data['agent']['auto_confirm'] == {'suggest_create_ticket': False}
+        assert settings_data['agent']['auto_confirm'] == {
+            'suggest_notify_assignee': False,
+            'suggest_create_ticket': False,
+        }
         assert settings_data['skills']['disabled_builtins'] == []
 
     def test_put_replaces_portal_home_settings_as_a_complete_value(

@@ -518,7 +518,7 @@ class TestProjectConnectionView:
         assert resp.data['record']['id'] == site_connection.id
 
     def test_get_non_admin_returns_connection_config_allowlist(self, factory, project_creator, real_project, connection_factory):
-        connection = connection_factory(config={
+        connection = connection_factory(connection_type='seafile', config={
             'server_url': 'https://seafile.example.com',
             'repo_id': 'repo-123',
             'api_token': 'secret-token',
