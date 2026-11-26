@@ -7,7 +7,7 @@ import { EVENT_BUS_TYPE } from '@/project/constants';
 import { useData, useMetadata } from '@/project/hooks';
 import { LinkTicketContext } from '@/project/hooks/link-ticket';
 import CreateTicketDialog from '@/project/main-panel/connections/components/create-ticket-dialog';
-import { CONNECTION_PREDEFINED_COLUMN_NAME } from '@/project/main-panel/connections/constants';
+import { CONNECTION_PREDEFINED_COLUMN_NAME, CONNECTION_TYPE } from '@/project/main-panel/connections/constants';
 import { generateCreateRelatedTicketOption, generateLinkAnExistingTicketOption, getTableName } from '@/project/main-panel/connections/utils';
 import { PORTAL_ISSUE_TABLE_NAME, PORTAL_ISSUE_TYPE, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME } from '@/project/main-panel/portal-issues/constants';
 import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
@@ -94,6 +94,9 @@ export const useLinkTicketWorkflow = ({ projectUuid }) => {
       connection_type: connection ? connection.type : PORTAL_ISSUE_TYPE,
       state: getCellValueByColumn(row, getColumnByName(columns, stateColumnName)),
     } };
+    const linkedGithubIssueStateMap = connection && connection.type === CONNECTION_TYPE.GITHUB_ISSUE && linkedRecordsInfo[linkedRecordKey].state != null
+      ? { [linkedRecordKey]: linkedRecordsInfo[linkedRecordKey].state }
+      : {};
     const appendLink = value => Array.from(new Set([...(Array.isArray(value) ? value : []), linkedRecordKey]));
 
     return modifyRowLink({
@@ -101,6 +104,7 @@ export const useLinkTicketWorkflow = ({ projectUuid }) => {
       rowId: String(ticket._pk),
       rowUpdate: { [linkedRowColumn.key]: [linkedRecordKey] },
       linkedRecords,
+      linkedGithubIssueStateMap,
     }, {
       tableName,
       rowId,
@@ -120,6 +124,7 @@ export const useLinkTicketWorkflow = ({ projectUuid }) => {
         updateTicket: current => ({ linked_connection_records: appendLink(current?.linked_connection_records) }),
         linkedRecords,
         linkedRecordsInfo,
+        linkedGithubIssueStateMap,
       });
       callback && callback();
       return res;

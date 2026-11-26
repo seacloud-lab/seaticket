@@ -12,6 +12,9 @@ import context from '@/sea-metadata/context';
 import eventBus from '@/utils/event-bus';
 
 const mockCreateTask = jest.fn();
+const mockMetadataProps = jest.fn();
+const mockOpenCloseWarning = jest.fn();
+const mockTogglePageSlugId = jest.fn();
 const mockRows = [{ _id: 'A', title: 'Ticket A' }, { _id: 'B', title: 'Ticket B' }];
 
 jest.mock('@/components', () => ({
@@ -39,7 +42,7 @@ jest.mock('@/project/hooks/related-issues', () => ({
 }));
 jest.mock('@/project/main-panel/ask/hooks', () => ({ useAIChatTools: () => ({}) }));
 jest.mock('@/project/main-panel/connections/constants', () => ({
-  CONNECTION_TYPE: { GENERAL_TASK: 'task' },
+  CONNECTION_TYPE: { GENERAL_TASK: 'task', GITHUB_ISSUE: 'github_issue' },
   CONNECTION_PREDEFINED_COLUMN_NAME: { TITLE: 'title', STATE: 'state', LINKED_TICKET: 'linked_ticket' },
 }));
 jest.mock('@/project/main-panel/portal-issues/constants', () => ({
@@ -50,7 +53,7 @@ jest.mock('@/project/main-panel/connections/hooks', () => ({ useConnections: () 
 jest.mock('@/project/main-panel/connections/utils', () => ({ getTableName: () => 'tasks' }));
 jest.mock('@/project/main-panel/tickets/hooks', () => ({
   useMetadata: () => ({}),
-  useCloseLinkedIssues: () => ({}),
+  useCloseLinkedIssues: () => ({ openCloseLinkedGitHubIssuesWarningDialog: mockOpenCloseWarning }),
 }));
 jest.mock('@/project/main-panel/tickets/constants', () => ({
   TICKET_TYPE: 'ticket',
@@ -58,7 +61,7 @@ jest.mock('@/project/main-panel/tickets/constants', () => ({
   TICKET_TABLE_NAME: 'tickets',
   TICKET_NOT_DISPLAY_COLUMNS: [],
   TICKET_PREDEFINED_COLUMN_CONFIG: {},
-  PREDEFINED_TICKET_COLUMN_NAME: { LINKED_CONNECTION_RECORDS: 'linked_connection_records' },
+  PREDEFINED_TICKET_COLUMN_NAME: { TITLE: 'title', STATE: 'state', LINKED_CONNECTION_RECORDS: 'linked_connection_records' },
 }));
 jest.mock('@/project/main-panel/tickets/utils', () => ({
   convertTicketToTask: ticket => ticket,
@@ -69,13 +72,19 @@ jest.mock('@/project/main-panel/tickets/utils', () => ({
 jest.mock('@/sea-metadata/constants', () => ({
   EVENT_BUS_TYPE: { LOCAL_ROW_CHANGED: 'row-changed', UPDATE_DATA_ATTRIBUTE: 'update-attribute' },
 }));
-jest.mock('@/sea-metadata/context', () => ({ eventBus: { dispatch: jest.fn() } }));
+jest.mock('@/sea-metadata/context', () => ({ eventBus: { dispatch: jest.fn() }, setSetting: jest.fn() }));
 jest.mock('@/sea-metadata/utils/cell', () => ({ getCellValueByColumn: (row, column) => row?.[column?.key] }));
 jest.mock('@/sea-metadata/utils/column', () => ({ getColumnByName: (columns, name) => columns.find(column => column.name === name) }));
+jest.mock('@/sea-metadata/utils/row', () => ({
+  generateRowKey: (table, id) => `${table}_${id}`,
+  getRowById: (data, id) => data.id_row_map[id],
+  convertRowToNameValue: row => ({ ...row, state: row.state === '0002' ? 'closed' : row.state }),
+}));
 jest.mock('@/project/main-panel/tickets/components/create-kb-record-dialog', () => () => null);
 jest.mock('@/sea-metadata', () => {
   const React = require('react');
   return React.forwardRef(({ api, expandRow, createContextMenuOptions }, ref) => {
+    mockMetadataProps({ api });
     React.useEffect(() => { api.getMetadata(); }, [api]);
     React.useImperativeHandle(ref, () => ({
       getOrderRows: () => mockRows,
@@ -150,6 +159,8 @@ const SourceActions = () => {
     <>
       <button onClick={() => linkAnExistingTicket({ row: { _id: 7, subject: 'Connection record', status: 'open' }, columns, connection: { id: 2, type: 'github_issue' } })}>Link connection</button>
       <button onClick={() => linkAnExistingTicket({ row: { _id: 8, subject: 'Portal record', status: '0001' }, columns })}>Link portal</button>
+      <button onClick={() => linkAnExistingTicket({ row: { _id: 9, subject: 'Closed GitHub record', status: 'closed' }, columns, connection: { id: 2, type: 'github_issue' } })}>Link closed GitHub</button>
+      <button onClick={() => linkAnExistingTicket({ row: { _id: 10, subject: 'Jira record', status: 'open' }, columns, connection: { id: 3, type: 'jira_issue' } })}>Link Jira</button>
     </>
   );
 };
@@ -183,6 +194,7 @@ describe('Ticket list and dialog link synchronization', () => {
   let cachedRows;
   let listRows;
   let linkedRecordTitles;
+  let modifyTicket;
 
   const click = name => act(() => { screen.getByRole('button', { name }).click(); });
   const finishRequest = async () => act(async () => {
@@ -205,7 +217,7 @@ describe('Ticket list and dialog link synchronization', () => {
     jest.clearAllMocks();
     request = deferred();
     cachedRows = { A: { links: ['existing'] } };
-    listRows = { A: { links: ['existing'] } };
+    listRows = { A: { title: 'Ticket A', links: ['existing'] } };
     linkedRecordTitles = { existing: 'Existing record' };
     context.eventBus.dispatch.mockImplementation((type, id, update) => {
       if (type === 'update-attribute') {
@@ -227,11 +239,16 @@ describe('Ticket list and dialog link synchronization', () => {
     useData.mockReturnValue({
       getMetadata: (_table, _view, load) => load(), insertRowByLink,
       modifyRowLink: (_target, _source, api) => api(),
+      modifyRow: (_table, _id, _update, api) => api(),
     });
-    const api = { getMetadata: () => Promise.resolve({ data: {
-      tickets: mockRows,
-      columns: [{ key: 'links', name: 'linked_connection_records' }],
-    } }) };
+    modifyTicket = jest.fn().mockResolvedValue({ data: {} });
+    const api = {
+      getMetadata: () => Promise.resolve({ data: {
+        tickets: mockRows,
+        columns: [{ key: 'links', name: 'linked_connection_records' }, { key: 'title', name: 'title' }, { key: 'state', name: 'state' }],
+      } }),
+      modifyRow: modifyTicket,
+    };
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
@@ -240,7 +257,7 @@ describe('Ticket list and dialog link synchronization', () => {
         <TicketCreationProvider projectUuid="project">
           <LinkTicketProvider projectUuid="project">
             <SourceActions />
-            <Tickets projectUuid="project" api={api} getTicket={getTicket} />
+            <Tickets projectUuid="project" api={api} getTicket={getTicket} togglePageSlugId={mockTogglePageSlugId} />
           </LinkTicketProvider>
         </TicketCreationProvider>
       );
@@ -283,6 +300,39 @@ describe('Ticket list and dialog link synchronization', () => {
     expect(listRows.A.links).toEqual(['existing']);
     expect(screen.queryByText('Connection record')).toBeNull();
     expect(eventBus.dispatch).not.toHaveBeenCalledWith('ticket-linked', expect.anything());
+  });
+
+  it('asks to close a newly linked open GitHub Issue immediately from the list', async () => {
+    click('Close task');
+    click('Link connection');
+    await act(async () => { click('Confirm linking'); });
+    const api = mockMetadataProps.mock.calls.slice(-1)[0][0].api;
+    await expect(api.modifyRow('A', { state: '0002' }, false, { data: {
+      id_row_map: listRows, linked_records: linkedRecordTitles,
+    } })).rejects.toEqual({ response: { status: 409 } });
+
+    expect(modifyTicket).not.toHaveBeenCalled();
+    expect(mockOpenCloseWarning).toHaveBeenCalledWith(expect.objectContaining({ ticket: expect.objectContaining({
+      ticket_title: 'Ticket A',
+      open_github_issues: [{ connection_id: 2, record_pk: 7, title: 'Connection record', state: 'open' }],
+    }) }));
+    await act(async () => { await mockOpenCloseWarning.mock.calls[0][0].onCloseTicketAndGitHubIssues(); });
+    expect(modifyTicket).toHaveBeenCalledWith('A', expect.objectContaining({
+      state: 'closed', linked_github_issues_to_close: expect.any(Array),
+    }), false);
+  });
+
+  it.each(['closed GitHub', 'Jira', 'portal'])('does not ask to close the newly linked %s record', async source => {
+    click('Close task');
+    click(`Link ${source}`);
+    await act(async () => { click('Confirm linking'); });
+    const api = mockMetadataProps.mock.calls.slice(-1)[0][0].api;
+    await act(async () => { await api.modifyRow('A', { state: '0002' }, false, { data: {
+      id_row_map: listRows, linked_records: linkedRecordTitles,
+    } }); });
+
+    expect(mockOpenCloseWarning).not.toHaveBeenCalled();
+    expect(modifyTicket).toHaveBeenCalledWith('A', { state: 'closed' }, false);
   });
 
   it.each(['connection', 'portal'])('preserves overlapping reverse links when %s finishes first', async first => {

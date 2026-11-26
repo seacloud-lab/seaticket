@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import deepcopy from 'deep-copy';
 import _ from 'lodash';
 import userAPI from '@/api/user-api';
@@ -132,6 +132,7 @@ export const DataProvider = ({
   children
 }) => {
   const [data, setData] = useState({ version: 0 });
+  const rowLinkVersionsRef = useRef({});
 
   const updateData = useCallback((data) => {
     data.version = data.version + 1;
@@ -373,7 +374,15 @@ export const DataProvider = ({
       recordsName = TICKET_TABLE_NAME;
     }
 
-    let func = () => api().then(res => {
+    let func = async () => {
+      let res;
+      let rowLinkVersion;
+      do {
+        rowLinkVersion = rowLinkVersionsRef.current[tableName];
+        res = await api();
+        // Retry reads that overlap a confirmed link write, for both the cache
+        // and the returned list data. Later reads remain authoritative.
+      } while (rowLinkVersionsRef.current[tableName] !== rowLinkVersion);
       const records = res.data[recordsName];
       const rows = Array.isArray(records) ? records : [];
       const linkedRecords = res?.data?.linked_records || {};
@@ -430,7 +439,7 @@ export const DataProvider = ({
         });
       }
       return _.merge(res, { data: { has_more: rows.length >= limit } });
-    });
+    };
 
     if (!use_cache) {
       return func();
@@ -570,7 +579,7 @@ export const DataProvider = ({
 
   const modifyRowLink = useCallback((table1Update, table2Update, api) => {
     const _updateTableData = (data, tableUpdate) => {
-      const { tableName = '', rowId = '', rowUpdate = {}, linkedRecords = {} } = tableUpdate || {};
+      const { tableName = '', rowId = '', rowUpdate = {}, linkedRecords = {}, linkedGithubIssueStateMap = {} } = tableUpdate || {};
 
       let table = data[tableName];
       if (table) {
@@ -588,11 +597,16 @@ export const DataProvider = ({
           ...table,
           id_row_map: { ...idRowMap, [rowId]: { ...oldRow, ...rowData } },
           linked_records: { ...table.linked_records, ...linkedRecords },
+          linked_github_issue_state_map: { ...table.linked_github_issue_state_map, ...linkedGithubIssueStateMap },
         };
       }
     };
 
     return api().then(res => {
+      [table1Update, table2Update].forEach(update => {
+        const tableName = update?.tableName;
+        if (tableName) rowLinkVersionsRef.current[tableName] = (rowLinkVersionsRef.current[tableName] || 0) + 1;
+      });
       setData(data => {
         const newData = deepcopy(data);
         _updateTableData(newData, table1Update);

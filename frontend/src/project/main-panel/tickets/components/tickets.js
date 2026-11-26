@@ -292,7 +292,8 @@ const Tickets = ({
     context.eventBus.dispatch(EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: linkedRecordTitles }, false);
   } });
 
-  useLinkedTicketUpdate({ projectUuid, tableName: TICKET_TABLE_NAME, onUpdate: ({ rowId, rowUpdateData, linkedRecords }) => {
+  useLinkedTicketUpdate({ projectUuid, tableName: TICKET_TABLE_NAME, onUpdate: ({ rowId, rowUpdateData, linkedRecords, linkedGithubIssueStateMap }) => {
+    linkedGithubStateRef.current = { ...linkedGithubStateRef.current, ...linkedGithubIssueStateMap };
     context.eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdateData);
     context.eventBus.dispatch(EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: linkedRecords }, false);
   } });
