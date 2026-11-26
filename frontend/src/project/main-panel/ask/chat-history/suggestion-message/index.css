@@ -1,3 +1,13 @@
+.seaqa-ai-suggestion-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.seaqa-ai-ask-message-content > .seaqa-ai-suggestion-messages:not(:first-child) {
+  margin-top: 12px;
+}
+
 .seaqa-ai-suggestion-message.seaqa-agent-action-suggestion-card {
   background-color: var(--bs-th-secondary-bg);
 }
