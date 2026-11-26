@@ -1,36 +1,27 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Button } from 'reactstrap';
-import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
 import classnames from 'classnames';
 import deepCopy from 'deep-copy';
 import { CenteredLoading, toaster, EmptyTip, IconButton } from '@/components';
 import {
-  gettext, name, username, avatarURL, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE, mediaUrl,
+  gettext, name, username, avatarURL, mediaUrl,
   PERMISSION_TYPES,
 } from '@/constants';
 import { portalAPI } from '@/portal/api';
 import { useData, useTags } from '@/project/hooks';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import CreateTicketDialog from '@/project/main-panel/connections/components/create-ticket-dialog';
-import TagsSettings from '@/project/main-panel/tags/tags-settings';
-import { Comment, KeyboardShortcuts, UploadFilesButton } from '@/project/main-panel/tickets/components';
-import {
-  CustomerSettings, TypeSettings, PrioritySettings,
-  StateSettings, SubStateSettings, LinkSettings,
-} from '@/project/main-panel/tickets/components/ticket-settings';
+import { KeyboardShortcuts } from '@/project/main-panel/tickets/components';
+import TicketDetails from '@/project/main-panel/tickets/components/ticket-details';
 import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
 import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
 import Header from '@/project/main-panel/tickets/view/ticket/header';
-import StatusToggleButton from '@/project/main-panel/tickets/view/ticket/status-toggle-btn';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { convertRowToKeyValue, getRowById } from '@/sea-metadata/utils/row';
-import { isLongTextValueExceedLimit } from '@/utils/long-text';
-import { hasOwnProperty } from '@/utils/object-utils';
-import { canCheckSeafileEditorBrowser } from '@/utils/seafile-editor-browser';
 import { isFunction, isObject } from '@/utils/type-detection';
 import { Utils } from '@/utils/utils';
 import {
   PORTAL_ISSUE_STATE_CONFIG, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME, PORTAL_ISSUE_TABLE_NAME, PORTAL_ISSUE_CHILDREN_PAGE_SLUG_ID,
+  PORTAL_ISSUE_TYPE,
 } from '../../constants';
 import { usePortalIssuesMetadata } from '../../hooks';
 import { Issus as IssusModel } from '../../models';
@@ -39,33 +30,31 @@ import { generatorIssuesContextMenuOptions } from '../../utils';
 import '@/project/main-panel/tickets/view/ticket/index.css';
 
 const Issue = ({
-  editorAPI, projectUuid, issueID, permission, isAdmin, projectName, workspaceID, isBuiltInView,
-  showCustomer = false,
+  projectUuid, issueID, permission, isAdmin = false, projectName, workspaceID, isBuiltInView,
   canEditAllIssues = permission === PERMISSION_TYPES.READ_WRITE,
   canChatWithAI = false,
   isMobile = false,
+  isShowCustomer = true,
   togglePageSlugId = () => {},
   generatorIssuesContextMenuOptions: customGeneratorIssuesContextMenuOptions,
 }) => {
   const [isLoading, setLoading] = useState(true);
-  const [comment, setComment] = useState('');
   const [issue, setIssue] = useState(null);
   const [loadError, setLoadError] = useState('');
   const [isShowStickyHeader, setIsShowStickyHeader] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [containerWidth, setContainerWidth] = useState(0);
   const [isShowKeyboardShortcuts, setIsShowKeyboardShortcuts] = useState(false);
   const [linkedRecords, setLinkedRecords] = useState({});
   const [isShowCreateTicketDialog, setIsShowCreateTicketDialog] = useState(false);
   const [isShowTicketsDialog, setIsShowTicketsDialog] = useState(false);
 
-  const { typesData, statesData, substatesData } = usePortalIssuesMetadata();
+  const { typesData } = usePortalIssuesMetadata();
   const { modifyLocalRow, getTableByName, deleteRow, insertRowByLink, modifyRowLink } = useData();
-  const { tagsData, createTag } = useTags();
+  const { tagsData } = useTags();
   const { handleResolveAttachmentsByAI } = useAIChatTools();
 
   const lastIssueID = useRef('');
   const allColumns = useRef([]);
+  const issueDetailsRef = useRef(null);
 
   const user = useMemo(() => {
     return {
@@ -74,13 +63,10 @@ const Issue = ({
       avatar_url: avatarURL
     };
   }, []);
+
   const editable = Boolean(issue && (issue.creator === user.email || canEditAllIssues));
+  const canModifyIssue = editable && !isBuiltInView && !isMobile;
 
-  const canCheckEditorBrowser = useMemo(() => canCheckSeafileEditorBrowser(), []);
-
-  const issueRef = useRef(null);
-  const commentEditorRef = useRef(null);
-  const containerRef = useRef(null);
   const headerRef = useRef(null);
 
   const handleScroll = useCallback((event) => {
@@ -98,59 +84,21 @@ const Issue = ({
   }, [typesData, tagsData, getTableByName, modifyLocalRow]);
 
   // api
-  const modifyIssue = useCallback((issueID, data) => {
-    let serverData = {};
+  const modifyIssue = useCallback((projectUuid, issueID, data) => {
+    return portalAPI.modifyPortalIssue(projectUuid, issueID, data);
+  }, []);
 
-    Object.keys(data).forEach(columnName => {
-      let value = data[columnName];
-      if (columnName === PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.TYPE && value) {
-        const typeOption = getRowById(typesData, value);
-        value = typeOption.name;
-      } else if (columnName === PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.STATE && value) {
-        value = getRowById(statesData, value)?.origin_name;
-      } else if (columnName === PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.SUB_STATE && value) {
-        value = getRowById(substatesData, value)?.origin_name;
-      }
-      serverData[columnName] = value;
-    });
+  const createComment = useCallback((projectUuid, issueID, comment) => {
+    return portalAPI.createPortalIssueComment(projectUuid, issueID, comment);
+  }, []);
 
-    return portalAPI.modifyPortalIssue(projectUuid, issueID, serverData).then(res => {
-      let update = { ...data };
-      if (hasOwnProperty(res.data.row, PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.CONTENT)) {
-        update[PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.CONTENT] = res.data.row[PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.CONTENT];
-      }
-      const newIssue = issue._update(update);
-      handleUpdateRowsCacheData(issueID, update);
-      setIssue(deepCopy(newIssue));
+  const modifyComment = useCallback((projectUuid, issueID, commentID, comment) => {
+    return portalAPI.modifyPortalIssueComment(projectUuid, issueID, commentID, comment);
+  }, []);
 
-      return update;
-    });
-  }, [projectUuid, issue, typesData, statesData, substatesData, handleUpdateRowsCacheData]);
-
-  const createComment = useCallback((issueID, comment) => {
-    return portalAPI.createPortalIssueComment(projectUuid, issueID, comment).then(res => {
-      let newIssue = issue._create_comment(res.data.comment);
-      setIssue(deepCopy(newIssue));
-      return res.data.comment;
-    });
-  }, [projectUuid, issue]);
-
-  const modifyComment = useCallback((issueID, commentID, comment) => {
-    return portalAPI.modifyPortalIssueComment(projectUuid, issueID, commentID, comment).then(res => {
-      let newIssue = issue._modify_comment(commentID, res.data.comment);
-      const newComment = newIssue._get_comment(commentID);
-      setIssue(deepCopy(newIssue));
-      return newComment;
-    });
-  }, [projectUuid, issue]);
-
-  const deleteComment = useCallback((issueID, commentID) => {
-    return portalAPI.deletePortalIssueComment(projectUuid, issueID, commentID).then(res => {
-      let newIssue = issue._delete_comment(commentID);
-      setIssue(deepCopy(newIssue));
-      return newIssue;
-    });
-  }, [projectUuid, issue]);
+  const deleteComment = useCallback((projectUuid, issueID, commentID) => {
+    return portalAPI.deletePortalIssueComment(projectUuid, issueID, commentID);
+  }, []);
 
   const createTicket = useCallback(() => {
     setIsShowCreateTicketDialog(true);
@@ -215,139 +163,15 @@ const Issue = ({
     createTicket, handleLinkAnExistingTicket, customGeneratorIssuesContextMenuOptions, togglePageSlugId,
   ]);
 
-  const onCommentChange = useCallback((value) => {
-    if (isLongTextValueExceedLimit(value)) {
-      toaster.closeAll();
-      toaster.danger(LONG_TEXT_EXCEED_LIMIT_MESSAGE, { duration: null });
-      return;
-    }
-    setComment(value);
-  }, []);
-
-  const onPriorityChange = useCallback((priority = 0) => {
-    modifyIssue(issue.id, { priority }).then(res => {
-      // todo
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-    });
-  }, [issue, modifyIssue]);
-
-  const onStateChange = useCallback((state = '', substate = '') => {
-    modifyIssue(issue.id, { state, substate }).then(res => {
-      // todo
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-    });
-  }, [issue, modifyIssue]);
-
-  const onSubstateChange = useCallback((substate) => {
-    modifyIssue(issue.id, { substate }).then(res => {
-      // todo
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-    });
-  }, [issue, modifyIssue]);
-
-  const onTypeChange = useCallback((type = '') => {
-    modifyIssue(issue.id, { type }).then(res => {
-      // todo
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-    });
-  }, [issue, modifyIssue]);
-
-  const onTagsChange = useCallback((tags) => {
-    if (!Array.isArray(tags)) return;
-    return modifyIssue(issue.id, { tags }).then(res => {
-      // todo
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-    });
-  }, [issue, modifyIssue]);
-
-  const onContentChange = useCallback((content, callback) => {
-    modifyIssue(issue.id, { content }).then(update => {
-      callback && callback('', update.content);
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-      callback && callback(error);
-    });
-  }, [issue, modifyIssue]);
-
   const onTitleChange = useCallback((title, callback) => {
-    modifyIssue(issue.id, { title }).then(res => {
+    issueDetailsRef.current.onChange(issue.id, { title }).then(res => {
       callback && callback();
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
       callback && callback(error);
     });
-  }, [issue, modifyIssue]);
-
-  const handleFiles = useCallback((files) => {
-    if (files.length === 0) return;
-    const editor = commentEditorRef.current.getEditor();
-    const eventBus = EventBus.getInstance();
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const isImage = /image/i.test(file.type);
-      const fileName = file.name;
-      editorAPI.uploadLocalImage(file).then(url => {
-        eventBus.dispatch(EXTERNAL_EVENTS.INSERT_ATTACHMENTS, editor, { title: fileName, url, isImage });
-      });
-    }
-  }, [editorAPI]);
-
-  const onSubmitComment = useCallback((callback) => {
-    setIsSubmitting(true);
-    createComment(issue.id, comment).then(() => {
-      const editor = commentEditorRef.current.getEditor();
-      const eventBus = EventBus.getInstance();
-      eventBus.dispatch(EXTERNAL_EVENTS.CLEAR_ARTICLE, editor);
-      callback && callback();
-      setTimeout(() => {
-        containerRef.current.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' });
-        setIsSubmitting(false);
-      }, 1);
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-      setIsSubmitting(false);
-    });
-  }, [comment, issue, commentEditorRef, createComment]);
-
-  const toggleState = useCallback((state = '', substate = '') => {
-    const modifyState = () => {
-      modifyIssue(issue.id, { state, substate }).then(res => {
-        // todo
-      }).catch(error => {
-        const errorMessage = Utils.getErrorMsg(error);
-        toaster.danger(errorMessage);
-      });
-    };
-    if (comment && comment?.text) {
-      onSubmitComment(modifyState);
-      return;
-    }
-
-    modifyState();
-  }, [issue, comment, modifyIssue, onSubmitComment]);
-
-  const handleModifyComment = useCallback((commentID, content, callback) => {
-    modifyComment(issue.id, commentID, content).then(newComment => {
-      callback && callback('', newComment?.content);
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-      callback && callback(error);
-    });
-  }, [issue, modifyComment]);
+  }, [issue, issueDetailsRef]);
 
   const createTicketCallback = useCallback((ticket) => {
     const linkedUpdateRecord = { [ticket._pk]: ticket.title };
@@ -358,7 +182,7 @@ const Issue = ({
       const newIssue = issue._update(update);
       handleUpdateRowsCacheData(issueID, rowUpdateData);
       setIssue(deepCopy(newIssue));
-      setLinkedRecords(linkedUpdateRecord);
+      setLinkedRecords({ [ticket._pk]: { title: ticket.title } });
     });
   }, [issue, issueID, insertRowByLink, handleUpdateRowsCacheData]);
 
@@ -378,8 +202,8 @@ const Issue = ({
       rowUpdate: rowUpdate,
       linkedRecords: issueLinkedUpdate,
     }, () => {
-      return modifyIssue(rowId, { [linkedTicketColumn.name]: ticket.id }).then(res => {
-        setLinkedRecords(issueLinkedUpdate);
+      return issueDetailsRef.current.onChange(rowId, { [linkedTicketColumn.name]: ticket.id }).then(res => {
+        setLinkedRecords({ [ticket.id]: { title: ticket.title } });
         callback && callback();
       }).catch(error => {
         const errorMessage = Utils.getErrorMsg(error);
@@ -387,7 +211,7 @@ const Issue = ({
         callback && callback(true);
       });
     });
-  }, [issue, modifyRowLink, modifyIssue]);
+  }, [issue, modifyRowLink]);
 
   useEffect(() => {
     if (lastIssueID.current === issueID) return;
@@ -402,7 +226,7 @@ const Issue = ({
       const issue = new IssusModel(res.data.issue);
       setLoadError(res.data?.error_msg || '');
       setIssue(issue);
-      setLinkedRecords({ [issue.linked_ticket || '']: res.data?.linked_ticket_title || '' });
+      setLinkedRecords(issue.linked_ticket ? { [issue.linked_ticket]: { title: res.data?.linked_ticket_title || '' } } : {});
       setLoading(false);
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
@@ -410,21 +234,6 @@ const Issue = ({
       setLoading(false);
     });
   }, [projectUuid, issueID, handleUpdateRowsCacheData]);
-
-  useEffect(() => {
-    if (isLoading || !issue) return;
-    const dom = issueRef.current;
-    const handleResize = () => {
-      if (!dom) return;
-      setContainerWidth(dom.offsetWidth);
-    };
-    const resizeObserver = new ResizeObserver(handleResize);
-    dom && resizeObserver.observe(dom);
-
-    return () => {
-      dom && resizeObserver.unobserve(dom);
-    };
-  }, [isLoading, issue]);
 
   if (isLoading) return (<CenteredLoading />);
   if (!issue) {
@@ -437,13 +246,9 @@ const Issue = ({
     );
   }
 
-  const { id, state, title, type, tags, priority, substate, linked_ticket, customer_id } = issue;
+  const { id, state, title, type } = issue;
   const typeOption = getRowById(typesData, type);
   const stateOption = PORTAL_ISSUE_STATE_CONFIG[state];
-
-  // 904: comment min-width(596) + others min-width(260) + gap: 16 * 3
-  const isSmallScreen = containerWidth < 904;
-  const comments = Array.isArray(issue.comments) ? issue.comments : [];
 
   const renderBackButton = () => isMobile ? (
     <IconButton
@@ -457,13 +262,12 @@ const Issue = ({
 
   return (
     <div
-      className={classnames('seaqa-project-ticket', { 's': isSmallScreen })}
+      className={classnames('seaqa-project-ticket')}
       onScroll={handleScroll}
-      ref={issueRef}
     >
       <Header
         ref={headerRef}
-        readonly={isMobile ? true : !editable}
+        readonly={!canModifyIssue}
         title={title}
         id={id}
         stateOption={stateOption}
@@ -480,105 +284,25 @@ const Issue = ({
         typeOption={typeOption}
         titlePrefix={renderBackButton()}
       />
-      <div className="seaqa-project-ticket-content-wrapper" ref={containerRef}>
-        <div className="seaqa-project-ticket-comment-container-wrapper">
-          <Comment
-            isSmallScreen={isSmallScreen}
-            comment={issue}
-            isShowStatus={true}
-            className={classnames({ 'd-none-after': comments.length === 0 })}
-            readonly={!editable}
-            lang={lang}
-            editorAPI={editorAPI}
-            onModify={onContentChange}
-          />
-          {comments.map((comment, index) => {
-            return (
-              <Comment
-                key={`comment-${comment.id}`}
-                isSmallScreen={isSmallScreen}
-                readonly={!(comment.creator === user.email || isAdmin)}
-                comment={comment}
-                className={classnames({ 'd-none-after': index === comments.length - 1 })}
-                projectUuid={projectUuid}
-                editorAPI={editorAPI}
-                onDelete={(comment) => deleteComment(id, comment.id)}
-                onModify={(content, callback) => handleModifyComment(comment.id, content, callback)}
-              />
-            );
-          })}
-          <Comment
-            className="seaqa-project-ticket-add-comment d-none-after mb-0 mt-3"
-            isSmallScreen={isSmallScreen}
-            comment={{ creator: username }}
-            onSubmitComment={onSubmitComment}
-          >
-            <span className="seaqa-project-ticket-add-comment-title">{gettext('Add a comment')}</span>
-            <LongTextInlineEditor
-              isAlwaysEnableEdit={true}
-              ref={commentEditorRef}
-              lang={lang}
-              headerName={gettext('Comment')}
-              value={comment || ''}
-              autoSave={false}
-              saveDelay={20 * 1000}
-              isCheckBrowser={canCheckEditorBrowser}
-              isImageUploadOnly={false}
-              isSupportMultipleFiles={true}
-              editorApi={editorAPI}
-              onSaveEditorValue={onCommentChange}
-            />
-          </Comment>
-          <div className="seaqa-project-ticket-footer">
-            {!isMobile && <UploadFilesButton className="mt-4" onChange={handleFiles} />}
-            <div className="seaqa-project-ticket-submit-btns ml-2">
-              {isMobile && <UploadFilesButton className="mobile mr-auto" isShowText={false} onChange={handleFiles} />}
-              {editable && !isBuiltInView && (
-                <StatusToggleButton
-                  state={state}
-                  substate={substate}
-                  comment={comment?.text}
-                  disabled={isSubmitting}
-                  useMetadataContext={usePortalIssuesMetadata}
-                  onChange={toggleState}
-                />
-              )}
-              <Button
-                className="seaqa-project-ticket-footer-confirm-btn"
-                disabled={!comment.text || isSubmitting}
-                color="primary"
-                onClick={() => onSubmitComment()}
-              >
-                {isSubmitting ? (<CenteredLoading />) : gettext('Comment')}
-              </Button>
-            </div>
-          </div>
-        </div>
-        {!isMobile && (
-          <div className="seaqa-project-ticket-other-settings">
-            <PrioritySettings isReadonly={isBuiltInView || !editable} value={priority} onChange={onPriorityChange} />
-            <TagsSettings
-              id="tags-editor-popover"
-              isReadonly={isBuiltInView || !editable}
-              value={tags}
-              tagsData={tagsData}
-              createTag={createTag}
-              onChange={onTagsChange}
-            />
-            <StateSettings isReadonly={isBuiltInView || !editable} state={state} substate={substate} useMetadataContext={usePortalIssuesMetadata} onChange={onStateChange} />
-            <SubStateSettings isReadonly={isBuiltInView || !editable} state={state} substate={substate} useMetadataContext={usePortalIssuesMetadata} onChange={onSubstateChange} />
-            <TypeSettings id="type-editor-popover" isReadonly={isBuiltInView || !editable} value={type} useMetadataContext={usePortalIssuesMetadata} onChange={onTypeChange} />
-            <LinkSettings value={[linked_ticket]} linkedRecords={linkedRecords} />
-            {showCustomer && (
-              <CustomerSettings
-                isReadonly={true}
-                value={customer_id}
-                useMetadataContext={usePortalIssuesMetadata}
-              />
-            )}
-          </div>
-        )}
-      </div>
+      <TicketDetails
+        ref={issueDetailsRef}
+        isShowOthersInfo={!isMobile}
+        isShowCustomer={isShowCustomer}
+        isMobile={isMobile}
+        ticketType={PORTAL_ISSUE_TYPE}
+        smallScreenSize={904} // 904: comment min-width(596) + others min-width(260) + gap: 16 * 3
+        isAdmin={isAdmin}
+        permission={editable ? PERMISSION_TYPES.READ_WRITE : permission}
+        projectUuid={projectUuid}
+        ticket={issue}
+        setTicket={setIssue}
+        modifyTicket={canModifyIssue ? modifyIssue : undefined}
+        linkedRecords={linkedRecords}
+        setLinkedRecords={setLinkedRecords}
+        createComment={createComment}
+        modifyComment={modifyComment}
+        deleteComment={deleteComment}
+      />
       {isShowKeyboardShortcuts && (
         <KeyboardShortcuts toggle={() => setIsShowKeyboardShortcuts(false)} />
       )}

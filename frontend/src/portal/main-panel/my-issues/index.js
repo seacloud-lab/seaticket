@@ -170,7 +170,6 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID, isTeam = 
           projectUuid={projectUuid}
           issueID={expandIssueID}
           permission={PERMISSION_TYPES.READ_WRITE}
-          isAdmin={false}
           canEditAllIssues={canEditAllIssues}
           projectName={projectName}
           workspaceID={workspaceID}
@@ -178,6 +177,7 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID, isTeam = 
           generatorIssuesContextMenuOptions={() => []}
           isMobile={isMobile}
           isBuiltInView={true}
+          isShowCustomer={false}
         />
       </>
     );
@@ -204,6 +204,7 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID, isTeam = 
       CustomView={isMobile ? MobileIssueCards : null}
       onCustomViewRowClick={openIssue}
       isMobileView={isMobile}
+      isShowCustomer={false}
     />
   );
 };

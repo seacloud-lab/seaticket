@@ -1,12 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Button } from 'reactstrap';
-import { LongTextInlineEditor, EventBus, EXTERNAL_EVENTS } from '@seafile/seafile-editor';
 import classnames from 'classnames';
 import deepCopy from 'deep-copy';
 import { CenteredLoading, toaster, EmptyTip } from '@/components';
 import { useNotification } from '@/components/common/notification/hooks/notification';
 import {
-  gettext, name, username, avatarURL, lang, LONG_TEXT_EXCEED_LIMIT_MESSAGE, mediaUrl,
+  gettext, name, username, avatarURL, mediaUrl,
   PERMISSION_TYPES
 } from '@/constants';
 import { useData, useTags, useMetadata } from '@/project/hooks';
@@ -14,50 +12,36 @@ import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import { CONNECTION_TYPE } from '@/project/main-panel/connections/constants';
 import { useConnections } from '@/project/main-panel/connections/hooks';
 import { getTableName } from '@/project/main-panel/connections/utils';
-import TagsSettings from '@/project/main-panel/tags/tags-settings';
-import { useCollaborators } from '@/sea-metadata';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { convertRowToKeyValue, getRowById } from '@/sea-metadata/utils/row';
-import { isLongTextValueExceedLimit } from '@/utils/long-text';
-import { hasOwnProperty } from '@/utils/object-utils';
+import { isFunction } from '@/utils/type-detection';
 import { Utils } from '@/utils/utils';
 import { ticketsAPI } from '../../../../api';
-import { Comment, TicketLog, KeyboardShortcuts, UploadFilesButton } from '../../components';
+import { KeyboardShortcuts } from '../../components';
 import CreateKBRecordDialog from '../../components/create-kb-record-dialog';
 import CreateTaskDialog from '../../components/create-task-dialog';
 import RelatedIssuesDialog from '../../components/related-issues-dialog';
-import {
-  CollaboratorsSettings, CustomerSettings, TypeSettings, PrioritySettings,
-  StateSettings, SubStateSettings, DueDateSettings, LinkSettings,
-} from '../../components/ticket-settings';
+import TicketDetails from '../../components/ticket-details';
 import {
   TICKET_STATE_CONFIG, PREDEFINED_TICKET_COLUMN_NAME, TICKET_TABLE_NAME, TICKET_CHILDREN_PAGE_SLUG_ID,
-  AUTO_UPDATE_PARTICIPANTS_KEY,
+  TICKET_TYPE,
 } from '../../constants';
-import { useCloseLinkedIssues } from '../../hooks';
 import { Ticket as TicketModel } from '../../models';
 import {
   convertTicketToKb, generatorTicketsContextMenuOptions,
-  convertSubstateToGitHubStateReason, generatorLinkedRecordsForClosedGitHubIssues,
 } from '../../utils';
 import Header from './header';
-import StatusToggleButton from './status-toggle-btn';
-
 
 import './index.css';
 
 const Ticket = ({
-  editorAPI, projectUuid, ticketID, permission, isAdmin, projectName, workspaceID,
-  togglePageSlugId
+  projectUuid, ticketID, permission, isAdmin = false, projectName, workspaceID,
+  togglePageSlugId,
 }) => {
   const [isLoading, setLoading] = useState(true);
-  const [comment, setComment] = useState('');
   const [ticket, setTicket] = useState(null);
-  const [activities, setActivities] = useState([]);
   const [loadError, setLoadError] = useState('');
   const [isShowStickyHeader, setIsShowStickyHeader] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [containerWidth, setContainerWidth] = useState(0);
   const [isShowKeyboardShortcuts, setIsShowKeyboardShortcuts] = useState(false);
   const [linkedRecords, setLinkedRecords] = useState({});
   const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
@@ -65,13 +49,12 @@ const Ticket = ({
   const [isShowCreateTaskDialog, setIsShowCreateTaskDialog] = useState(false);
   const [createTaskConnectionType, setCreateTaskConnectionType] = useState(CONNECTION_TYPE.GENERAL_TASK);
 
-  const { typesData, statesData, substatesData } = useMetadata();
+  const { typesData } = useMetadata();
   const { connections } = useConnections();
   const { modifyLocalRow, getTableByName, deleteRow, insertRowByLink } = useData();
-  const { tagsData, createTag } = useTags();
+  const { tagsData } = useTags();
   const { handleResolveAttachmentsByAI } = useAIChatTools();
   const { loading: isLoadingNotifications, markProjectNoticeAsReadByTicket } = useNotification();
-  const { openCloseLinkedGitHubIssuesWarningDialog } = useCloseLinkedIssues();
 
   const lastTicketID = useRef('');
 
@@ -83,26 +66,9 @@ const Ticket = ({
     };
   }, []);
 
-  // Merge comments and activities into a timeline
-  const timeline = useMemo(() => {
-    if (!ticket) return [];
-    const { comments = [] } = ticket;
-    const items = [
-      ...comments.map(c => ({ ...c, type: 'comment' })),
-      ...activities.map(a => ({ ...a, type: 'log' }))
-    ];
-    // use original time for sorting: comments use _created_time, activities use created_time
-    return items.sort((a, b) => {
-      const timeA = a.type === 'comment' ? a._created_time : a.created_time;
-      const timeB = b.type === 'comment' ? b._created_time : b.created_time;
-      return new Date(timeA) - new Date(timeB);
-    });
-  }, [ticket, activities]);
-
   const ticketRef = useRef(null);
-  const commentEditorRef = useRef(null);
-  const containerRef = useRef(null);
   const headerRef = useRef(null);
+  const detailsRef = useRef(null);
 
   const handleScroll = useCallback((event) => {
     if (!event) return;
@@ -119,95 +85,21 @@ const Ticket = ({
   }, [typesData, tagsData, getTableByName, modifyLocalRow]);
 
   // api
-  const modifyTicket = useCallback((ticketID, data, { linkedGithubIssuesToClose = null } = {}) => {
-    let serverData = {};
-    const dataKeys = Object.keys(data);
-    const isAutoUpdateParticipants = !dataKeys.includes(AUTO_UPDATE_PARTICIPANTS_KEY);
+  const modifyTicket = useCallback((projectUuid, ticketID, data) => {
+    return ticketsAPI.modifyProjectTicket(projectUuid, ticketID, data);
+  }, []);
 
-    dataKeys.filter(key => key !== AUTO_UPDATE_PARTICIPANTS_KEY).forEach(columnName => {
-      let value = data[columnName];
-      if (columnName === PREDEFINED_TICKET_COLUMN_NAME.TYPE && value) {
-        const typeOption = getRowById(typesData, value);
-        value = typeOption.name;
-      } else if (columnName === PREDEFINED_TICKET_COLUMN_NAME.STATE && value) {
-        value = getRowById(statesData, value)?.origin_name;
-      } else if (columnName === PREDEFINED_TICKET_COLUMN_NAME.SUB_STATE && value) {
-        value = getRowById(substatesData, value)?.origin_name;
-      }
-      serverData[columnName] = value;
-    });
-    if (linkedGithubIssuesToClose) {
-      serverData.linked_github_issues_to_close = linkedGithubIssuesToClose;
-    }
+  const createComment = useCallback((projectUuid, ticketID, comment) => {
+    return ticketsAPI.createProjectTicketComment(projectUuid, ticketID, comment);
+  }, []);
 
-    return ticketsAPI.modifyProjectTicket(projectUuid, ticketID, serverData).then(res => {
-      let update = { ...data };
-      const { participants = [] } = ticket;
-      if (isAutoUpdateParticipants && !participants.includes(user.email)) {
-        update['participants'] = [...participants, user.email];
-      }
-      if (hasOwnProperty(res.data.row, PREDEFINED_TICKET_COLUMN_NAME.CONTENT)) {
-        update[PREDEFINED_TICKET_COLUMN_NAME.CONTENT] = res.data.row[PREDEFINED_TICKET_COLUMN_NAME.CONTENT];
-      }
-      const { assignees, modified_time } = res.data.row || {};
-      if (Array.isArray(assignees)) {
-        update.assignees = assignees;
-        update.modified_time = modified_time;
-      }
-      const newTicket = ticket._update(update);
-      handleUpdateRowsCacheData(ticketID, update);
-      setTicket(deepCopy(newTicket));
-      const linkedRecordsInfo = res.data.linked_records_info || {};
-      if (Object.keys(linkedRecordsInfo).length > 0) {
-        setLinkedRecords(prevLinkedRecords => ({ ...prevLinkedRecords, ...linkedRecordsInfo }));
-      }
+  const modifyComment = useCallback((projectUuid, ticketID, commentID, comment) => {
+    return ticketsAPI.modifyProjectTicketComment(projectUuid, ticketID, commentID, comment);
+  }, []);
 
-      // update activities to immediately display new changes
-      const newActivities = res.data.activities || [];
-      if (newActivities.length > 0) {
-        setActivities(prevActivities => [...prevActivities, ...newActivities]);
-      }
-
-      return update;
-    });
-  }, [projectUuid, ticket, user, typesData, statesData, substatesData, handleUpdateRowsCacheData]);
-
-  const handleUpdateParticipants = useCallback((ticket) => {
-    const { participants = [] } = ticket;
-    if (!participants.includes(user.email)) {
-      const update = { 'participants': [...participants, user.email] };
-      ticket = ticket._update(update);
-      handleUpdateRowsCacheData(ticket._id, update);
-    }
-  }, [user, handleUpdateRowsCacheData]);
-
-  const createComment = useCallback((ticketID, comment) => {
-    return ticketsAPI.createProjectTicketComment(projectUuid, ticketID, comment).then(res => {
-      let newTicket = ticket._create_comment(res.data.comment);
-      handleUpdateParticipants(newTicket);
-      setTicket(deepCopy(newTicket));
-      return res.data.comment;
-    });
-  }, [projectUuid, ticket, handleUpdateParticipants]);
-
-  const modifyComment = useCallback((ticketID, commentID, comment) => {
-    return ticketsAPI.modifyProjectTicketComment(projectUuid, ticketID, commentID, comment).then(res => {
-      const newTicket = ticket._modify_comment(commentID, res.data.comment);
-      const newComment = newTicket._get_comment(commentID);
-      handleUpdateParticipants(newTicket);
-      setTicket(deepCopy(newTicket));
-      return newComment;
-    });
-  }, [projectUuid, ticket, handleUpdateParticipants]);
-
-  const deleteComment = useCallback((ticketID, commentID) => {
-    return ticketsAPI.deleteProjectTicketComment(projectUuid, ticketID, commentID).then(res => {
-      let newTicket = ticket._delete_comment(commentID);
-      handleUpdateParticipants(newTicket);
-      setTicket(deepCopy(newTicket));
-      return newTicket;
-    });
-  }, [projectUuid, ticket, handleUpdateParticipants]);
+  const deleteComment = useCallback((projectUuid, ticketID, commentID) => {
+    return ticketsAPI.deleteProjectTicketComment(projectUuid, ticketID, commentID);
+  }, []);
 
   const findRelatedIssues = useCallback(() => {
     setIsShowRelatedIssuesDialog(true);
@@ -263,8 +155,8 @@ const Ticket = ({
     setTicket(deepCopy(newTicket));
     setLinkedRecords((prev) => ({ ...prev, [newValueKey]: { _pk: task._pk, title: task.title, connection_type: connection.type } }));
 
-    if (Array.isArray(activities) && activities.length > 0) {
-      setActivities(prevActivities => [...prevActivities, ...activities]);
+    if (Array.isArray(activities) && activities.length > 0 && isFunction(detailsRef?.current?.setActivities)) {
+      detailsRef.current.setActivities(`${TICKET_TYPE}_${ticketID}`, prevActivities => [...prevActivities, ...activities]);
     }
     return;
   }, [ticket, ticketID, getTableByName, insertRowByLink]);
@@ -319,218 +211,22 @@ const Ticket = ({
     togglePageSlugId,
   ]);
 
-  const onCommentChange = useCallback((value) => {
-    if (isLongTextValueExceedLimit(value)) {
-      toaster.closeAll();
-      toaster.danger(LONG_TEXT_EXCEED_LIMIT_MESSAGE, { duration: null });
-      return;
-    }
-    setComment(value);
-  }, []);
-
-  const onPriorityChange = useCallback((priority = 0) => {
-    modifyTicket(ticket.id, { priority }).then(res => {
-      // todo
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-    });
-  }, [ticket, modifyTicket]);
-
-  const onAssigneesChange = useCallback((assignees = []) => {
-    modifyTicket(ticket.id, { assignees }).then(res => {
-      // todo
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-    });
-  }, [ticket, modifyTicket]);
-
-  const onStateChange = useCallback((state = '', substate = '') => {
-    const nextStateName = (getRowById(statesData, state)?.origin_name || '').toLowerCase();
-    const isClosing = nextStateName === 'closed';
-    const openGithubIssues = Object.entries(linkedRecords || {}).reduce((issues, [key, record]) => {
-      if (!record || record.connection_type !== 'github_issue') return issues;
-      const issueState = (record.state || '').toString().toLowerCase();
-      if (issueState === 'closed' || issueState === '0002') return issues;
-      const [connectionId, recordPk] = key.split('_', 2);
-      const parsedConnectionId = Number(connectionId);
-      const parsedRecordPk = Number(recordPk);
-      if (!Number.isInteger(parsedConnectionId) || !Number.isInteger(parsedRecordPk)) return issues;
-      issues.push({
-        connection_id: parsedConnectionId,
-        record_pk: parsedRecordPk,
-        title: record.title || '',
-        state: record.state,
-      });
-      return issues;
-    }, []);
-
-    if (isClosing && openGithubIssues.length > 0) {
-      const ticketToClose = {
-        ticket_id: Number(ticket.id),
-        ticket_title: ticket.title || '',
-        open_github_issues: openGithubIssues,
-      };
-      const closePayload = [ticketToClose];
-      const submitClose = (shouldCloseLinkedGithubIssues) => {
-        const options = shouldCloseLinkedGithubIssues ? { linkedGithubIssuesToClose: closePayload } : undefined;
-        return modifyTicket(ticket.id, { state, substate }, options).then(() => {
-          if (shouldCloseLinkedGithubIssues) {
-            setLinkedRecords(pre => generatorLinkedRecordsForClosedGitHubIssues(pre, openGithubIssues));
-          }
-        });
-      };
-      openCloseLinkedGitHubIssuesWarningDialog({
-        ticket: ticketToClose,
-        stateReason: convertSubstateToGitHubStateReason(getRowById(substatesData, substate)?.origin_name),
-        onCloseTicketOnly: () => submitClose(false),
-        onCloseTicketAndGitHubIssues: () => submitClose(true),
-      });
-      return;
-    }
-
-    modifyTicket(ticket.id, { state, substate }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-    });
-  }, [ticket, statesData, substatesData, linkedRecords, modifyTicket, openCloseLinkedGitHubIssuesWarningDialog]);
-
-  const onSubstateChange = useCallback((substate) => {
-    modifyTicket(ticket.id, { substate }).then(res => {
-      // todo
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-    });
-  }, [ticket, modifyTicket]);
-
-  const onTypeChange = useCallback((type = '') => {
-    modifyTicket(ticket.id, { type }).then(res => {
-      // todo
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-    });
-  }, [ticket, modifyTicket]);
-
-  const onCustomerChange = useCallback((customerId) => {
-    // kept as a string so it stays equal to the option values the editor holds;
-    // the server parses it back to an int
-    const value = customerId === '' || customerId === null || customerId === undefined ? '' : String(customerId);
-    modifyTicket(ticket.id, { [PREDEFINED_TICKET_COLUMN_NAME.CUSTOMER_ID]: value }).then(res => {
-      // todo
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-    });
-  }, [ticket, modifyTicket]);
-
-  const onTagsChange = useCallback((tags) => {
-    if (!Array.isArray(tags)) return;
-    return modifyTicket(ticket.id, { tags }).then(res => {
-      // todo
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-    });
-  }, [ticket, modifyTicket]);
-
-  const onContentChange = useCallback((content, callback) => {
-    modifyTicket(ticket.id, { content }).then(update => {
-      callback && callback('', update.content);
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-      callback && callback(error);
-    });
-  }, [ticket, modifyTicket]);
-
   const onTitleChange = useCallback((title, callback) => {
-    modifyTicket(ticket.id, { title }).then(res => {
+    if (!isFunction(detailsRef?.current?.onChange)) return null;
+    detailsRef.current.onChange(ticket.id, { title }).then(res => {
       callback && callback();
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
       callback && callback(error);
     });
-  }, [ticket, modifyTicket]);
-
-  const onDueDateChange = useCallback((due_date = '') => {
-    modifyTicket(ticket.id, { due_date }).then(res => {
-      // todo
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-    });
-  }, [ticket, modifyTicket]);
-
-  const onParticipantsChange = useCallback((participants = []) => {
-    modifyTicket(ticket.id, { participants, [AUTO_UPDATE_PARTICIPANTS_KEY]: true }).then(res => {
-      // todo
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-    });
-  }, [ticket, modifyTicket]);
-
-  const handleFiles = useCallback((files) => {
-    if (files.length === 0) return;
-    const editor = commentEditorRef.current.getEditor();
-    const eventBus = EventBus.getInstance();
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const isImage = /image/i.test(file.type);
-      const fileName = file.name;
-      editorAPI.uploadLocalImage(file).then(url => {
-        eventBus.dispatch(EXTERNAL_EVENTS.INSERT_ATTACHMENTS, editor, { title: fileName, url, isImage });
-      });
-    }
-  }, [editorAPI]);
-
-  const onSubmitComment = useCallback((callback) => {
-    setIsSubmitting(true);
-    createComment(ticket.id, comment).then(() => {
-      const editor = commentEditorRef.current.getEditor();
-      const eventBus = EventBus.getInstance();
-      eventBus.dispatch(EXTERNAL_EVENTS.CLEAR_ARTICLE, editor);
-      callback && callback();
-      setTimeout(() => {
-        containerRef.current.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' });
-        setIsSubmitting(false);
-      }, 1);
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-      setIsSubmitting(false);
-    });
-  }, [comment, ticket, commentEditorRef, createComment]);
-
-  const toggleState = useCallback((state = '', substate = '') => {
-    if (comment && comment?.text) {
-      onSubmitComment(() => onStateChange(state, substate));
-      return;
-    }
-
-    onStateChange(state, substate);
-  }, [comment, onSubmitComment, onStateChange]);
-
-  const handleModifyComment = useCallback((commentID, content, callback) => {
-    modifyComment(ticket.id, commentID, content).then(newComment => {
-      callback && callback('', newComment?.content);
-    }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
-      callback && callback(error);
-    });
-  }, [ticket, modifyComment]);
+  }, [ticket]);
 
   useEffect(() => {
     if (lastTicketID.current === ticketID) return;
     lastTicketID.current = ticketID;
     setLoading(true);
     setTicket(null);
-    setActivities([]);
     setLoadError('');
 
     // Load ticket data
@@ -546,15 +242,6 @@ const Ticket = ({
       toaster.danger(errorMessage);
       setLoading(false);
     });
-
-    // Load activities
-    ticketsAPI.listProjectTicketActivities(projectUuid, ticketID).then(res => {
-      setActivities(res.data.activities || []);
-    }).catch(error => {
-      // Activities loading failure is not critical
-      // eslint-disable-next-line no-console
-      console.error('Failed to load activities:', error);
-    });
   }, [projectUuid, ticketID, handleUpdateRowsCacheData, markProjectNoticeAsReadByTicket]);
 
   useEffect(() => {
@@ -562,21 +249,6 @@ const Ticket = ({
     markProjectNoticeAsReadByTicket(projectUuid, Number(ticketID));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectUuid, isLoading, isLoadingNotifications, ticketID]);
-
-  useEffect(() => {
-    if (isLoading || !ticket) return;
-    const ticketDom = ticketRef.current;
-    const handleResize = () => {
-      if (!ticketDom) return;
-      setContainerWidth(ticketDom.offsetWidth);
-    };
-    const resizeObserver = new ResizeObserver(handleResize);
-    ticketDom && resizeObserver.observe(ticketDom);
-
-    return () => {
-      ticketDom && resizeObserver.unobserve(ticketDom);
-    };
-  }, [isLoading, ticket]);
 
   if (isLoading) return (<CenteredLoading />);
   if (!ticket) {
@@ -589,18 +261,14 @@ const Ticket = ({
     );
   }
 
-  const { id, state, title, creator, assignees = [], type, tags, priority, participants = [], substate, due_date, linked_connection_records, customer_id } = ticket;
+  const { id, state, title, creator, type } = ticket;
   const typeOption = getRowById(typesData, type);
   const editable = creator === user.email || permission === PERMISSION_TYPES.READ_WRITE;
   const stateOption = TICKET_STATE_CONFIG[state];
 
-  // 904: comment min-width(596) + others min-width(260) + gap: 16 * 3
-  const isSmallScreen = containerWidth < 904;
-  const lastOpType = timeline.length > 0 ? timeline[timeline.length - 1].type : 'comment';
-
   return (
     <div
-      className={classnames('seaqa-project-ticket', { 's': isSmallScreen })}
+      className="seaqa-project-ticket"
       onScroll={handleScroll}
       ref={ticketRef}
     >
@@ -621,125 +289,22 @@ const Ticket = ({
         stateOption={stateOption}
         typeOption={typeOption}
       />
-      <div className="seaqa-project-ticket-content-wrapper" ref={containerRef}>
-        <div className="seaqa-project-ticket-comment-container-wrapper">
-          <Comment
-            isSmallScreen={isSmallScreen}
-            comment={ticket}
-            isShowStatus={true}
-            className={classnames({ 'd-none-after': timeline.length === 0 })}
-            readonly={!editable}
-            lang={lang}
-            editorAPI={editorAPI}
-            onModify={onContentChange}
-          />
-          {timeline.map((item, index) => {
-            const className = classnames({ 'd-none-after': index === (timeline.length - 1) });
-            if (item.type === 'log') {
-              return (
-                <TicketLog
-                  key={`ticket-log-${item.id}`}
-                  log={item}
-                  projectUuid={projectUuid}
-                  className={className}
-                  isSmallScreen={isSmallScreen}
-                  permission={permission}
-                />
-              );
-            }
-            return (
-              <Comment
-                key={`comment-${item.id}`}
-                isSmallScreen={isSmallScreen}
-                readonly={!(item.creator === user.email || isAdmin)}
-                comment={item}
-                className={className}
-                projectUuid={projectUuid}
-                editorAPI={editorAPI}
-                onDelete={(comment) => deleteComment(id, comment.id)}
-                onModify={(content, callback) => handleModifyComment(item.id, content, callback)}
-              />
-            );
-          })}
-          <Comment
-            className={classnames('seaqa-project-ticket-add-comment d-none-after mb-0', { 'mt-4': lastOpType === 'log', 'mt-3': lastOpType === 'comment' })}
-            isSmallScreen={isSmallScreen}
-            comment={{ creator: username }}
-            onSubmitComment={onSubmitComment}
-          >
-            <span className="seaqa-project-ticket-add-comment-title">{gettext('Add a comment')}</span>
-            <LongTextInlineEditor
-              isAlwaysEnableEdit={true}
-              ref={commentEditorRef}
-              lang={lang}
-              headerName={gettext('Comment')}
-              value={comment || ''}
-              autoSave={false}
-              saveDelay={20 * 1000}
-              isCheckBrowser={true}
-              isImageUploadOnly={false}
-              isSupportMultipleFiles={true}
-              editorApi={editorAPI}
-              onSaveEditorValue={onCommentChange}
-            />
-          </Comment>
-          <div className="seaqa-project-ticket-footer">
-            <UploadFilesButton className="mt-4" onChange={handleFiles} />
-            <div className="seaqa-project-ticket-submit-btns ml-2">
-              <StatusToggleButton
-                state={state}
-                substate={substate}
-                comment={comment?.text}
-                disabled={isSubmitting}
-                useMetadataContext={useMetadata}
-                onChange={toggleState}
-              />
-              <Button
-                className="seaqa-project-ticket-footer-confirm-btn"
-                disabled={!comment.text || isSubmitting}
-                color="primary"
-                onClick={() => onSubmitComment()}
-              >
-                {isSubmitting ? (<CenteredLoading />) : gettext('Comment')}
-              </Button>
-            </div>
-          </div>
-        </div>
-        <div className="seaqa-project-ticket-other-settings">
-          <PrioritySettings isReadonly={!editable} value={priority} onChange={onPriorityChange} />
-          <CollaboratorsSettings
-            id="assignees-editor-popover"
-            isReadonly={!editable}
-            title={gettext('Assignees')}
-            value={assignees}
-            tip={gettext('No one assigned')}
-            useCollaborators={useCollaborators}
-            onChange={onAssigneesChange}
-          />
-          <TagsSettings
-            id="tags-editor-popover"
-            isReadonly={!editable}
-            value={tags}
-            tagsData={tagsData}
-            createTag={createTag}
-            onChange={onTagsChange}
-          />
-          <StateSettings isReadonly={!editable} state={state} substate={substate} useMetadataContext={useMetadata} onChange={onStateChange} />
-          <SubStateSettings isReadonly={!editable} state={state} substate={substate} useMetadataContext={useMetadata} onChange={onSubstateChange} />
-          <TypeSettings id="type-editor-popover" isReadonly={!editable} value={type} useMetadataContext={useMetadata} onChange={onTypeChange} />
-          <DueDateSettings isReadonly={!editable} value={due_date} onChange={onDueDateChange} />
-          <CollaboratorsSettings
-            isReadonly={!editable}
-            title={gettext('Participants')}
-            value={participants}
-            useCollaborators={useCollaborators}
-            tip={gettext('No participants')}
-            onChange={onParticipantsChange}
-          />
-          <LinkSettings value={linked_connection_records} linkedRecords={linkedRecords} />
-          <CustomerSettings id="customer-editor-popover" isReadonly={!editable} value={customer_id} useMetadataContext={useMetadata} onChange={onCustomerChange} />
-        </div>
-      </div>
+      <TicketDetails
+        ref={detailsRef}
+        ticketType={TICKET_TYPE}
+        smallScreenSize={904} // 904: comment min-width(596) + others min-width(260) + gap: 16 * 3
+        permission={permission}
+        isAdmin={isAdmin}
+        projectUuid={projectUuid}
+        ticket={ticket}
+        setTicket={setTicket}
+        modifyTicket={editable ? modifyTicket : undefined}
+        linkedRecords={linkedRecords}
+        setLinkedRecords={setLinkedRecords}
+        createComment={createComment}
+        modifyComment={modifyComment}
+        deleteComment={deleteComment}
+      />
       {isShowKeyboardShortcuts && (
         <KeyboardShortcuts toggle={() => setIsShowKeyboardShortcuts(false)} />
       )}

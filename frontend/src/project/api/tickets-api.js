@@ -170,9 +170,9 @@ class TicketsAPI {
     return this.req.delete(url);
   }
 
-  listProjectTicketActivities(projectUuid, ticketNumber, page = 1, perPage = 100) {
+  listProjectTicketActivities(projectUuid, ticketNumber, page = 1, perPage = 100, signal) {
     const url = this.server + '/api/v1/project/' + projectUuid + '/tickets/' + ticketNumber + '/activities/';
-    return this.req.get(url, { params: { page, per_page: perPage } });
+    return this.req.get(url, { params: { page, per_page: perPage }, signal });
   }
 
   // upload file

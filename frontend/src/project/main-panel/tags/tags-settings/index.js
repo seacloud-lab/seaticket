@@ -47,8 +47,8 @@ const TagsSettings = ({
   }, [isReadonly]);
 
   const closeEditor = useCallback(() => {
-    let newValue = optionEditorContainerRef.current.getValue();
-    if (isCellValueChanged(value, newValue)) {
+    let newValue = optionEditorContainerRef.current?.getValue();
+    if (optionEditorContainerRef.current && isCellValueChanged(value, newValue)) {
       if (newValue.length > 0) {
         const tags = getRowsByIds(tagsData, newValue);
         newValue = tags.map(tag => Number(tag._id));

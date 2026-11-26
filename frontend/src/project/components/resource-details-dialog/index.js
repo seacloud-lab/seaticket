@@ -1,4 +1,4 @@
-import { useCallback, useState, useMemo, useEffect } from 'react';
+import { useCallback, useState, useMemo, useEffect, forwardRef, useImperativeHandle, useRef } from 'react';
 import { Modal, ModalBody, Dropdown, DropdownToggle, DropdownItem } from 'reactstrap';
 import classnames from 'classnames';
 import copy from 'copy-to-clipboard';
@@ -40,7 +40,7 @@ const SUPPORT_COPY_RECORD_LINK_TYPES = [
   PORTAL_ISSUE_TYPE,
 ];
 
-const ResourceDetailsDialog = ({
+const ResourceDetailsDialog = forwardRef(({
   projectUuid, resource, columns = initColumns, isShowIcon, highlight,
   switchResource, onToggle,
   createMoreOptions,
@@ -49,7 +49,8 @@ const ResourceDetailsDialog = ({
   isSupportPortal = false,
   isReadonly = false,
   getIssue = (projectUuid, issueID) => portalAPI.getPortalIssue(projectUuid, issueID),
-}) => {
+  ...params
+}, ref) => {
   const [resourceDetails, setResourceDetails] = useState(null);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [innerWidth, setInnerWidth] = useState(window.innerWidth);
@@ -103,6 +104,8 @@ const ResourceDetailsDialog = ({
 
   const size = useMemo(() => getDialogSize(innerWidth), [innerWidth]);
 
+  const resourceDetailsRef = useRef(null);
+
   const handleSwitchResource = Utils.debounce(useCallback((step) => {
     switchResource(step);
   }, [switchResource]), 300);
@@ -135,11 +138,18 @@ const ResourceDetailsDialog = ({
     };
   }, []);
 
+  useImperativeHandle(ref, () => ({
+    setActivities: (...args) => resourceDetailsRef.current?.setActivities?.(...args),
+    onChange: (...args) => resourceDetailsRef.current?.onChange?.(...args),
+  }), []);
+
   const props = {
+    ref: resourceDetailsRef,
     columns,
     projectUuid,
     permission,
     highlight,
+    ...params,
   };
 
   return (
@@ -199,7 +209,7 @@ const ResourceDetailsDialog = ({
             />
           )}
         </div>
-        {moreOptions.length > 0 && (
+        {currentResourceDetails && moreOptions.length > 0 && (
           <Dropdown className="ticket-create-more-options-dropdown" isOpen={isMoreMenuOpen} toggle={() => setIsMoreMenuOpen(!isMoreMenuOpen)}>
             <DropdownToggle tag="span">
               <IconButton className="more-btn" icon="more" title={gettext('More')}/>
@@ -227,14 +237,26 @@ const ResourceDetailsDialog = ({
           <KBInDialog knowledgeID={resource._id} updateKB={(kb) => setResourceDetails(kb)} getKB={getKB} { ...props } />
         )}
         {type === TICKET_TYPE && (
-          <TicketInDialog ticketID={resource._id} updateTicket={handleUpdateTicket} getTicket={getTicket} { ...props } />
+          <TicketInDialog
+            ticketID={resource._id}
+            updateTicket={handleUpdateTicket}
+            getTicket={getTicket}
+            { ...props }
+          />
         )}
         {type === PORTAL_ISSUE_TYPE && (
-          <TicketInDialog ticketType={PORTAL_ISSUE_TYPE} ticketID={resource._id} updateTicket={handleUpdateIssue} getTicket={getIssue} isReadonly={isReadonly} { ...props } />
+          <TicketInDialog
+            ticketType={PORTAL_ISSUE_TYPE}
+            ticketID={resource._id}
+            updateTicket={handleUpdateIssue}
+            getTicket={getIssue}
+            isReadonly={isReadonly}
+            { ...props }
+          />
         )}
       </ModalBody>
     </Modal>
   );
-};
+});
 
 export default ResourceDetailsDialog;

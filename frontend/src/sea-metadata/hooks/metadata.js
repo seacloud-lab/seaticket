@@ -132,7 +132,8 @@ export const MetadataProvider = forwardRef(({
   }, [storeRef]);
 
   const updateLocalRow = useCallback((rowId, update) => {
-    storeRef.current.modifyLocalRow(rowId, update);
+    const rowUpdate = isFunction(update) ? update(getRowById(storeRef.current.data, rowId)) : update;
+    storeRef.current.modifyLocalRow(rowId, rowUpdate);
   }, [storeRef]);
 
   const updateLocalRows = useCallback((updates) => {

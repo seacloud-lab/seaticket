@@ -31,7 +31,7 @@ class CustomizeMarkdownViewer extends React.PureComponent {
       const index = appVersionList.findIndex((version) => version.indexOf('Chrome') >= 0);
       if (index === -1) return;
       let chromeVersion = appVersionList[index];
-      chromeVersion = parseInt(chromeVersion.slice(chromeVersion.indexOf('/') + 1));
+      chromeVersion = parseInt(chromeVersion?.slice(chromeVersion.indexOf('/') + 1));
       if (chromeVersion === 53 && navigator.appVersion && navigator.appVersion.includes('WindowsWechat')) {
         this.convertMarkdown(this.props.value);
         this.isWindowsWechat = true;

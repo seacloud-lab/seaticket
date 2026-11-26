@@ -4,6 +4,7 @@ import toaster from '@/components/toaster';
 import { gettext } from '@/constants';
 import { portalAPI } from '@/portal/api';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
+import { EVENT_BUS_TYPE as GLOBAL_EVENT_BUS_TYPE } from '@/project/constants';
 import { useData, useTags } from '@/project/hooks';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import CreateTicketDialog from '@/project/main-panel/connections/components/create-ticket-dialog';
@@ -15,6 +16,7 @@ import context from '@/sea-metadata/context';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { convertRowToNameValue, convertRowsToNameValue } from '@/sea-metadata/utils/row';
+import eventBus from '@/utils/event-bus';
 import { isFunction, isObject } from '@/utils/type-detection';
 import { Utils } from '@/utils/utils';
 import { ticketsAPI } from '../../../api';
@@ -33,6 +35,7 @@ import {
 
 const Issues = ({
   canCreateRelatedTickets = true, isBuiltInView = false, canOpenIssue = true, canChatWithAI = false, isShowViewInURL = true,
+  isShowCustomer = true,
   projectUuid, workspaceID, projectName, permission,
   api,
   localStorageNamePrefix: customizeLocalStorageNamePrefix,
@@ -66,6 +69,15 @@ const Issues = ({
   const [isShowIssueDetailsDialog, setIsShowIssueDetailsDialog] = useState(false);
   const [isShowCreateTicketDialog, setIsShowCreateTicketDialog] = useState(false);
   const [isShowTicketsDialog, setIsShowTicketsDialog] = useState(false);
+
+  const updateIssueDetails = useCallback((issueID, ticket) => {
+    eventBus.dispatch(
+      GLOBAL_EVENT_BUS_TYPE.MODIFY_LOCAL_RECORD_IN_DIALOG,
+      `${PORTAL_ISSUE_TYPE}_${issueID}`,
+      { linked_ticket: ticket.id },
+      { [ticket.id]: { title: ticket.title } },
+    );
+  }, []);
 
   const handleExpandRow = useCallback((issue) => {
     setCurrentIssue({ ...issue, type: PORTAL_ISSUE_TYPE });
@@ -196,13 +208,13 @@ const Issues = ({
 
   const createTicket = useCallback((issue) => {
     if (!issue) return;
-    setCurrentIssue(issue);
+    setCurrentIssue({ ...issue, type: PORTAL_ISSUE_TYPE });
     setIsShowCreateTicketDialog(true);
   }, []);
 
   const handleLinkAnExistingTicket = useCallback((issue) => {
     if (!issue) return;
-    setCurrentIssue(issue);
+    setCurrentIssue({ ...issue, type: PORTAL_ISSUE_TYPE });
     setIsShowTicketsDialog(true);
   }, []);
 
@@ -227,6 +239,7 @@ const Issues = ({
         const eventBus = context.eventBus;
         eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdate);
         eventBus.dispatch(EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: issueLinkedUpdate }, false);
+        updateIssueDetails(rowId, ticket);
         callback && callback();
       }).catch(error => {
         const errorMessage = Utils.getErrorMsg(error);
@@ -234,7 +247,7 @@ const Issues = ({
         callback && callback(true);
       });
     });
-  }, [projectUuid, currentIssue, modifyRowLink]);
+  }, [projectUuid, currentIssue, modifyRowLink, updateIssueDetails]);
 
   const createRowsTools = useCallback((props) => {
     let params = { ...props, projectName, workspaceID, togglePageSlugId };
@@ -338,8 +351,9 @@ const Issues = ({
       const eventBus = context.eventBus;
       eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, currentRow._id, rowUpdateData);
       eventBus.dispatch(EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: linkedUpdateRecord }, false);
+      updateIssueDetails(currentRow._id, { id: ticket._pk, title: ticket.title });
     });
-  }, [insertRowByLink]);
+  }, [insertRowByLink, updateIssueDetails]);
 
   if (isLoading) return (<CenteredLoading />);
 
@@ -396,6 +410,7 @@ const Issues = ({
           onToggle={() => setIsShowIssueDetailsDialog(false)}
           getIssue={getIssue}
           createMoreOptions={createMoreOptions}
+          isShowCustomer={isShowCustomer}
         />
       )}
       {isShowTicketsDialog && (

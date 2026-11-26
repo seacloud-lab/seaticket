@@ -66,6 +66,7 @@ const Tickets = ({
   const metadataRef = useRef(null);
   const allColumns = useRef([]);
   const linkedGithubStateRef = useRef({});
+  const resourceDetailsRef = useRef(null);
 
   const isGithubIssueClosed = useCallback((issueState) => {
     const state = (issueState || '').toString().trim().toLowerCase();
@@ -292,16 +293,14 @@ const Tickets = ({
     setIsShowCreateTaskDialog(true);
   }, []);
 
-  const handleTaskCreated = useCallback(({ task, connection, ticket: ticketUpdate = null }) => {
+  const handleTaskCreated = useCallback(({ task, connection, activities = [], ticket: ticketUpdate = null }) => {
     if (!currentTicket) return;
     const linkedConnectionRecordsColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.LINKED_CONNECTION_RECORDS);
     if (!linkedConnectionRecordsColumn) return;
 
     const newValueKey = `${connection.id}_${task._pk}`;
-    const oldValue = getCellValueByColumn(currentTicket, linkedConnectionRecordsColumn);
-    const newValue = Array.isArray(oldValue) ? Array.from(new Set([...oldValue, newValueKey])) : [newValueKey];
-    const update = { [linkedConnectionRecordsColumn.key]: newValue };
-    const dialogUpdate = { [linkedConnectionRecordsColumn.name]: newValue };
+    const update = {};
+    const dialogUpdate = {};
 
     if (ticketUpdate) {
       const stateColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.STATE);
@@ -324,19 +323,39 @@ const Tickets = ({
       }
     }
 
+    const updateRow = row => {
+      const oldValue = getCellValueByColumn(row || currentTicket, linkedConnectionRecordsColumn);
+      return {
+        ...update,
+        [linkedConnectionRecordsColumn.key]: Array.from(new Set([...(Array.isArray(oldValue) ? oldValue : []), newValueKey])),
+      };
+    };
+
     // update cache
     const connectionTableName = getTableName(connection);
     const linked_records = { [newValueKey]: task.title };
-    insertRowByLink(connectionTableName, TICKET_TABLE_NAME, linked_records, currentTicket._id, update, () => {
+    const ticketKey = `${TICKET_TYPE}_${currentTicket._id}`;
+    insertRowByLink(connectionTableName, TICKET_TABLE_NAME, linked_records, currentTicket._id, updateRow, () => {
       // update current details dialog
-      eventBus.dispatch(GLOBAL_EVENT_BUS_TYPE.MODIFY_LOCAL_RECORD_IN_DIALOG, dialogUpdate, { [newValueKey]: { _pk: task._pk, title: task.title, connection_type: connection.type } });
+      eventBus.dispatch(
+        GLOBAL_EVENT_BUS_TYPE.MODIFY_LOCAL_RECORD_IN_DIALOG,
+        ticketKey,
+        ticket => ({
+          ...dialogUpdate,
+          [linkedConnectionRecordsColumn.name]: Array.from(new Set([...(ticket?.linked_connection_records || []), newValueKey])),
+        }),
+        { [newValueKey]: { _pk: task._pk, title: task.title, connection_type: connection.type } }
+      );
 
       // update current view display
       const metadataEventBus = context.eventBus;
-      metadataEventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, currentTicket._id, update);
+      metadataEventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, currentTicket._id, updateRow);
       metadataEventBus.dispatch(EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records }, false);
+
+      if (activities.length > 0 && isFunction(resourceDetailsRef?.current?.setActivities)) {
+        resourceDetailsRef.current.setActivities(ticketKey, prevActivities => [...prevActivities, ...activities]);
+      }
     });
-    return;
   }, [currentTicket, insertRowByLink]);
 
   const createRowsTools = useCallback((props) => {
@@ -478,6 +497,7 @@ const Tickets = ({
       )}
       {isShowTicketDetailsDialog && (
         <ResourceDetailsDialog
+          ref={resourceDetailsRef}
           projectUuid={projectUuid}
           resource={{ ...currentTicket, type: TICKET_TYPE }}
           columns={allColumns.current}
