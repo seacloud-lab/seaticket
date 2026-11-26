@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import deepcopy from 'deep-copy';
 import _ from 'lodash';
 import userAPI from '@/api/user-api';
@@ -21,8 +21,9 @@ import { PortalIssuesMetadataProvider } from '../main-panel/portal-issues/hooks'
 import { TagsProvider } from '../main-panel/tags/hooks/tags';
 import { MetadataProvider, CloseLinkedIssuesProvider } from '../main-panel/tickets/hooks';
 import { shouldReload } from '../utils';
+import { DataContext } from './data-context';
 
-const DataContext = React.createContext(null);
+export { useData } from './data-context';
 
 const { ASSIGNEES, CREATOR, MODIFIED_TIME, STATE } = PREDEFINED_TICKET_COLUMN_NAME;
 const myTicketViews = [
@@ -839,12 +840,4 @@ export const DataProvider = ({
       </AIChatToolsProvider>
     </DataContext.Provider>
   );
-};
-
-export const useData = () => {
-  const context = useContext(DataContext);
-  if (!context) {
-    throw new Error('\'DataContext\' is null');
-  }
-  return context;
 };

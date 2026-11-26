@@ -15,7 +15,7 @@ import ResolvedTag from './resolved-tag';
 import './index.css';
 
 const RelatedIssuesDialog = ({ projectUuid, connectionId, row, onClose }) => {
-  const [status, setStatus] = useState(''); // 'loading', 'error', 'loaded'
+  const [status, setStatus] = useState('loading'); // 'loading', 'error', 'loaded'
   const [relatedIssues, setRelatedIssues] = useState([]);
   const [errMessage, setErrMessage] = useState('');
   const [activeResultIndex, setActiveResultIndex] = useState(-1);
@@ -50,24 +50,27 @@ const RelatedIssuesDialog = ({ projectUuid, connectionId, row, onClose }) => {
     setActiveResultIndex(nextActiveResultIndex);
   }, [activeResultIndex, relatedIssues]);
 
-  const getDetails = useCallback(() => {
+  const rowId = row._id;
+  useEffect(() => {
+    let isCurrentRequest = true;
     setStatus('loading');
-    connectionsAPI.findRelatedRecords(projectUuid, connectionId, row._id)
+    setErrMessage('');
+    setRelatedIssues([]);
+    setActiveResultIndex(-1);
+    connectionsAPI.findRelatedRecords(projectUuid, connectionId, rowId)
       .then(res => {
-        const relatedRecords = res.data.related_records || [];
+        if (!isCurrentRequest) return;
+        const relatedRecords = Array.isArray(res.data.related_records) ? res.data.related_records : [];
         setRelatedIssues(relatedRecords);
         setStatus('loaded');
       }).catch((error) => {
+        if (!isCurrentRequest) return;
         const errMessage = Utils.getErrorMsg(error);
         setErrMessage(errMessage);
         setStatus('error');
       });
-  }, [projectUuid, row, connectionId]);
-
-  useEffect(() => {
-    getDetails();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    return () => { isCurrentRequest = false; };
+  }, [projectUuid, connectionId, rowId]);
 
   return (
     <>
@@ -84,7 +87,7 @@ const RelatedIssuesDialog = ({ projectUuid, connectionId, row, onClose }) => {
                     const connectionType = issue.type;
                     const connectionOption = CONNECTION_TYPES.find(c => c.type === connectionType);
                     return (
-                      <div className='issues-list-item' key={issue._id} onClick={() => expandItem(index)}>
+                      <div className='issues-list-item' key={`${issue.type}_${issue.connection_id}_${issue._id}`} onClick={() => expandItem(index)}>
                         <div className='issues-list-item-icon'>
                           <img src={getResourceIconURL(connectionType)} alt={connectionOption?.name} className='seaqa-project-connection-type-icon' />
                         </div>

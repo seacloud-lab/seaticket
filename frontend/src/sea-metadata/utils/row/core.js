@@ -163,6 +163,10 @@ const convertRowsToKeyValue = (rowsUpdate, { data, typesData, tagsData }) => {
   }).filter(rowUpdate => rowUpdate.row && !ObjectUtils.isEmpty(rowUpdate.row));
 };
 
+const generateRowKey = (tableName, rowId) => {
+  return `${tableName}_${rowId}`;
+};
+
 export {
   isTableRows,
   updateTableRowsWithRowsData,
@@ -174,4 +178,5 @@ export {
   convertRowsToNameValue,
   convertRowToKeyValue,
   convertRowsToKeyValue,
+  generateRowKey,
 };

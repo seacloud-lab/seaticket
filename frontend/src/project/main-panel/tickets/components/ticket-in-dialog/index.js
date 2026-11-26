@@ -30,6 +30,7 @@ const TicketInDialog = forwardRef(({
   const [isLoading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
   const [ticket, setTicket] = useState(null);
+  const [columns, setColumns] = useState([]);
 
   const [linkedRecords, setLinkedRecords] = useState({});
 
@@ -48,9 +49,11 @@ const TicketInDialog = forwardRef(({
     setErrorMessage(null);
     setTicket(null);
     setLinkedRecords({});
+    setColumns([]);
     getTicket(projectUuid, ticketID).then(res => {
       if (requestId !== requestIdRef.current) return;
       const ticket = ticketType === TICKET_TYPE ? new TicketModel(res.data.ticket) : new IssueModel(res.data.issue);
+      setColumns(res.data.columns || []);
       const linkedRecords = ticketType === TICKET_TYPE
         ? res.data?.linked_records_info
         : ticket.linked_ticket ? { [ticket.linked_ticket]: { title: res.data?.linked_ticket_title || '' } } : {};
@@ -80,9 +83,9 @@ const TicketInDialog = forwardRef(({
   }, [projectUuid, ticketID, ticketType]);
 
   useEffect(() => {
-    updateTicket(ticket);
+    updateTicket(isLoading ? null : ticket, { columns });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ticket]);
+  }, [ticket, columns, isLoading]);
 
   useEffect(() => {
     const localChanged = (key, ticketUpdate, linkedRecords = {}) => {

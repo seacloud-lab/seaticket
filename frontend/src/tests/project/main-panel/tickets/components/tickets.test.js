@@ -1,6 +1,7 @@
 import React, { act } from 'react';
 import { screen } from '@testing-library/react';
 import { createRoot } from 'react-dom/client';
+import { TicketCreationProvider } from '@/project/components/ticket-creation-provider';
 import { useData } from '@/project/hooks';
 import Tickets from '@/project/main-panel/tickets/components/tickets';
 import context from '@/sea-metadata/context';
@@ -23,9 +24,14 @@ jest.mock('@/constants', () => ({
 jest.mock('@/portal/api', () => ({ portalAPI: {} }));
 jest.mock('@/project/main-panel/portal-issues/models', () => ({}));
 jest.mock('@/utils/utils', () => ({ Utils: { getErrorMsg: error => error.message } }));
-jest.mock('@/project/constants', () => ({ EVENT_BUS_TYPE: { MODIFY_LOCAL_RECORD_IN_DIALOG: 'modify-dialog' } }));
+jest.mock('@/project/constants', () => ({ EVENT_BUS_TYPE: {
+  MODIFY_LOCAL_RECORD_IN_DIALOG: 'modify-dialog', TICKET_TASK_CREATED: 'task-created',
+} }));
 jest.mock('@/project/api', () => ({ ticketsAPI: {} }));
 jest.mock('@/project/hooks', () => ({ useData: jest.fn(), useTags: () => ({}) }));
+jest.mock('@/project/hooks/related-issues', () => ({
+  useRelatedIssues: () => ({ openRelatedIssues: jest.fn() }),
+}));
 jest.mock('@/project/main-panel/ask/hooks', () => ({ useAIChatTools: () => ({}) }));
 jest.mock('@/project/main-panel/connections/constants', () => ({ CONNECTION_TYPE: { GENERAL_TASK: 'task' } }));
 jest.mock('@/project/main-panel/connections/hooks', () => ({ useConnections: () => ({}) }));
@@ -55,20 +61,26 @@ jest.mock('@/sea-metadata/context', () => ({ eventBus: { dispatch: jest.fn() } }
 jest.mock('@/sea-metadata/utils/cell', () => ({ getCellValueByColumn: (row, column) => row[column.key] }));
 jest.mock('@/sea-metadata/utils/column', () => ({ getColumnByName: (columns, name) => columns.find(column => column.name === name) }));
 jest.mock('@/project/main-panel/tickets/components/create-kb-record-dialog', () => () => null);
-jest.mock('@/project/main-panel/tickets/components/related-issues-dialog', () => () => null);
 jest.mock('@/sea-metadata', () => {
   const React = require('react');
-  return React.forwardRef(({ api, expandRow }, ref) => {
+  return React.forwardRef(({ api, expandRow, createContextMenuOptions }, ref) => {
     React.useEffect(() => { api.getMetadata(); }, [api]);
-    React.useImperativeHandle(ref, () => ({ getOrderRows: () => mockRows }));
+    React.useImperativeHandle(ref, () => ({
+      getOrderRows: () => mockRows,
+      createMoreOptions: row => createContextMenuOptions({ rowGetterByIndex: () => row }),
+    }));
     return <button onClick={() => expandRow(mockRows[0])}>Open A</button>;
   });
 });
 jest.mock('@/project/main-panel/tickets/components/ticket-details', () => {
   const React = require('react');
   return React.forwardRef(({ ticket, linkedRecords }, ref) => {
+    const { useTicketTaskCreated } = require('@/project/hooks/ticket-task-created');
     const [activities, setActivities] = React.useState([]);
     React.useEffect(() => { setActivities([]); }, [ticket.id]);
+    useTicketTaskCreated({ projectUuid: 'project', rowId: ticket.id, onUpdate: ({ activities }) => {
+      setActivities(previous => [...previous, ...activities]);
+    } });
     React.useImperativeHandle(ref, () => ({
       setActivities: (key, update) => {
         if (key === `ticket_${ticket.id}`) setActivities(update);
@@ -84,13 +96,13 @@ jest.mock('@/project/main-panel/tickets/components/ticket-details', () => {
 });
 jest.mock('@/project/components/resource-details-dialog', () => {
   const React = require('react');
-  return React.forwardRef(({ projectUuid, resource, getTicket, createMoreOptions, switchResource, onToggle }, ref) => {
+  return React.forwardRef(({ projectUuid, resource, getTicket, switchResource, onToggle, createMoreOptions }, ref) => {
     const TicketInDialog = require('@/project/main-panel/tickets/components/ticket-in-dialog').default;
     return (
       <div>
         <div>Details {resource._id}</div>
         <TicketInDialog ref={ref} projectUuid={projectUuid} ticketID={resource._id} permission="rw" getTicket={getTicket} updateTicket={() => {}} />
-        <button onClick={() => createMoreOptions(resource)[0].callback()}>Create task</button>
+        <button onClick={() => createMoreOptions(resource).find(option => option.key === 'create-task').callback()}>Create task</button>
         <button onClick={() => switchResource(1)}>Next ticket</button>
         <button onClick={onToggle}>Close details</button>
       </div>
@@ -180,7 +192,13 @@ describe('Creating a linked task from a ticket dialog', () => {
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
-    await act(async () => { root.render(<Tickets projectUuid="project" api={api} getTicket={getTicket} />); });
+    await act(async () => {
+      root.render(
+        <TicketCreationProvider projectUuid="project">
+          <Tickets projectUuid="project" api={api} getTicket={getTicket} />
+        </TicketCreationProvider>
+      );
+    });
     await act(async () => { click('Open A'); });
     click('Create task');
     click('Submit task');

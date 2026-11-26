@@ -101,7 +101,7 @@ const Main = forwardRef(({
     }).finally(() => {
       setReply(false);
     });
-  }, [chatHistories, updateChatHistories, sendMessageAPI]);
+  }, [chatHistories, updateChatHistories, sendMessageAPI, showThoughtProcess]);
 
   useEffect(() => {
     if (!resizable) return;

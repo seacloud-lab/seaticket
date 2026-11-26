@@ -459,9 +459,10 @@ class Store {
     this.applyOperation(operation);
   }
 
-  deleteRow(row_id, { fail_callback, success_callback }) {
+  deleteRow(row_id, { fail_callback, success_callback, row_data }) {
     if (!row_id) return;
-    const row = getRowById(this.data, row_id);
+    // A detail dialog can outlive its row's membership in the current view.
+    const row = getRowById(this.data, row_id) || (row_data && String(row_data._id) === String(row_id) ? row_data : null);
     if (!row) return;
     if (!context.canDeleteRow(row)) return;
     const type = OPERATION_TYPE.DELETE_ROW;

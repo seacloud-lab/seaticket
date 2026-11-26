@@ -175,6 +175,7 @@ const TrashTickets = ({ projectUuid, workspaceID, projectName, permission, toggl
         createRowsTools={createRowsTools}
         createContextMenuOptions={createContextMenuOptions}
         isBuiltInView={true}
+        isReadonly={true}
         isLoading={isLoading}
         togglePageSlugId={togglePageSlugId}
       />

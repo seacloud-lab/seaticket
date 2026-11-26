@@ -11,6 +11,7 @@ import {
 import { portalAPI } from '@/portal/api';
 import { ticketsAPI } from '@/project/api';
 import { useData, useTags, useMetadata, usePortalIssuesMetadata } from '@/project/hooks';
+import { useTicketTaskCreated } from '@/project/hooks/ticket-task-created';
 import { PORTAL_ISSUE_TABLE_NAME } from '@/project/main-panel/portal-issues/constants';
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
 import { useCollaborators } from '@/sea-metadata';
@@ -117,6 +118,11 @@ const TicketDetails = forwardRef(({
       return Array.from(new Map(nextActivities.map(activity => [activity.id, activity])).values());
     });
   }, [ticketKey]);
+
+  useTicketTaskCreated({ projectUuid, rowId: ticket?.id, onUpdate: ({ rowId, activities }) => {
+    if (ticketType !== TICKET_TYPE || !ticket?.id || !Array.isArray(activities)) return;
+    updateActivities(`${TICKET_TYPE}_${rowId}`, previous => [...previous, ...activities]);
+  } });
 
   const canCheckEditorBrowser = canCheckSeafileEditorBrowser();
 

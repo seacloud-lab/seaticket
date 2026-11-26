@@ -39,13 +39,16 @@ jest.mock('@/constants', () => ({
 }));
 jest.mock('@/portal/api', () => ({ portalAPI: { getPortalIssue: jest.fn(), modifyPortalIssue: jest.fn() } }));
 jest.mock('@/project/api', () => ({ ticketsAPI: { getProjectTicket: jest.fn(), listProjectTicketActivities: jest.fn() } }));
-jest.mock('@/project/constants', () => ({ EVENT_BUS_TYPE: { MODIFY_LOCAL_RECORD_IN_DIALOG: 'modify-dialog' } }));
+jest.mock('@/project/constants', () => ({ EVENT_BUS_TYPE: { MODIFY_LOCAL_RECORD_IN_DIALOG: 'modify-dialog', TICKET_LINKED: 'ticket-linked' } }));
 jest.mock('@/project/hooks', () => ({
   useData: jest.fn(),
   useTags: () => ({}),
   useMetadata: () => ({}),
   usePortalIssuesMetadata: () => ({}),
 }));
+jest.mock('@/project/hooks/related-issues', () => ({ useRelatedIssues: () => ({}) }));
+jest.mock('@/project/hooks/data-context', () => ({ useData: () => require('@/project/hooks').useData() }));
+jest.mock('@/project/hooks/ticket-creation', () => ({ useTicketCreation: () => ({}) }));
 jest.mock('@/project/main-panel/ask/hooks', () => ({ useAIChatTools: () => ({}) }));
 jest.mock('@/project/main-panel/connections/constants', () => ({
   SUPPORT_ROW_DETAILS_CONNECTION_TYPES: [],
@@ -72,7 +75,7 @@ jest.mock('@/project/main-panel/tickets/constants', () => ({
   PREDEFINED_TICKET_COLUMN_NAME: { CONTENT: 'content' },
 }));
 jest.mock('@/project/main-panel/tickets/hooks', () => ({ useCloseLinkedIssues: () => ({}) }));
-jest.mock('@/project/main-panel/tickets/utils', () => ({}));
+jest.mock('@/project/main-panel/tickets/utils', () => ({ generatorTicketsContextMenuOptions: () => [] }));
 jest.mock('@/project/main-panel/tickets/components/comment', () => ({ comment }) => <div>{comment.title}</div>);
 jest.mock('@/project/main-panel/tickets/components/ticket-settings', () => ({
   CollaboratorsSettings: () => null,
@@ -95,9 +98,17 @@ jest.mock('@/project/utils', () => ({
 }));
 jest.mock('@/sea-metadata', () => {
   const React = require('react');
-  return { __esModule: true, default: React.forwardRef(({ api, expandRow }, ref) => {
+  return { __esModule: true, default: React.forwardRef(({ api, expandRow, createContextMenuOptions }, ref) => {
     React.useEffect(() => { api.getMetadata(); }, [api]);
-    React.useImperativeHandle(ref, () => ({ getOrderRows: () => mockRows }));
+    React.useImperativeHandle(ref, () => ({
+      getOrderRows: () => mockRows,
+      createMoreOptions: row => createContextMenuOptions({
+        selectedPosition: { rowIdx: 0 },
+        rowGetterByIndex: () => row,
+        table: { columns: [{ key: 'title', name: 'title' }, { key: 'ticket', name: 'linked_ticket' }] },
+        context: { canDeleteRow: () => false },
+      }),
+    }));
     return <button onClick={() => expandRow(mockRows[0])}>Open A</button>;
   }) };
 });
@@ -139,6 +150,7 @@ describe('Linking a Ticket from the Project Issue list dialog', () => {
   const originalResizeObserver = global.ResizeObserver;
   const originalActEnvironment = global.IS_REACT_ACT_ENVIRONMENT;
   let Issues;
+  let LinkTicketProvider;
   let root;
   let container;
   let request;
@@ -161,6 +173,7 @@ describe('Linking a Ticket from the Project Issue list dialog', () => {
     global.IS_REACT_ACT_ENVIRONMENT = true;
     global.ResizeObserver = class { observe() {} unobserve() {} };
     Issues = require('@/project/main-panel/portal-issues/components/issues').default;
+    LinkTicketProvider = require('@/project/components/link-ticket-provider').LinkTicketProvider;
   });
 
   afterAll(() => {
@@ -192,7 +205,7 @@ describe('Linking a Ticket from the Project Issue list dialog', () => {
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
-    await act(async () => { root.render(<Issues projectUuid="project" api={api} />); });
+    await act(async () => { root.render(<LinkTicketProvider projectUuid="project"><Issues projectUuid="project" api={api} /></LinkTicketProvider>); });
     await click('Open A');
   });
 
@@ -237,7 +250,7 @@ describe('Linking a Ticket from the Project Issue list dialog', () => {
         expect(screen.queryByRole('button', { name: 'Link an existing ticket' })).toBeNull();
       }
       expect(dispatchSpy).toHaveBeenCalledWith('modify-dialog', 'portal_issue_5', { linked_ticket: 73 }, { 73: { title: 'Linked Ticket' } });
-      expect(context.eventBus.dispatch).toHaveBeenCalledWith('row-changed', '5', { ticket: operation === 'creation' ? [73] : 73 });
+      expect(context.eventBus.dispatch).toHaveBeenCalledWith('row-changed', '5', { ticket: [73] });
       if (operation === 'creation') {
         expect(data.insertRowByLink.mock.calls[0][3]).toBe('5');
       } else {

@@ -436,8 +436,8 @@ export const generatorTicketsContextMenuOptions = ({
   return list;
 };
 
-export const convertTicketToKb = (ticket, columns) => {
-  if (!ticket || !Array.isArray(columns) || columns.length === 0) return {};
+export const convertTicketToKb = (ticket, columns = []) => {
+  if (!ticket) return {};
   const titleColumn = getColumnByName(columns, PREDEFINED_TICKET_COLUMN_NAME.TITLE);
   const contentColumn = getColumnByName(columns, PREDEFINED_TICKET_COLUMN_NAME.CONTENT);
 
@@ -448,14 +448,14 @@ export const convertTicketToKb = (ticket, columns) => {
   }
 
   return {
-    _id: ticket._id,
+    _id: String(ticket._pk ?? ticket._id ?? ticket.id),
     title,
     content,
   };
 };
 
-export const convertTicketToTask = (ticket, columns) => {
-  if (!ticket || !Array.isArray(columns) || columns.length === 0) return {};
+export const convertTicketToTask = (ticket, columns = []) => {
+  if (!ticket) return {};
   const titleColumn = getColumnByName(columns, PREDEFINED_TICKET_COLUMN_NAME.TITLE);
   const contentColumn = getColumnByName(columns, PREDEFINED_TICKET_COLUMN_NAME.CONTENT);
   const assigneesColumn = getColumnByName(columns, PREDEFINED_TICKET_COLUMN_NAME.ASSIGNEES);
@@ -473,13 +473,15 @@ export const convertTicketToTask = (ticket, columns) => {
   const statusOption = getOption(statusOptions, status);
 
   return {
-    _id: ticket._id,
+    _id: String(ticket._pk ?? ticket._id ?? ticket.id),
     title: getCellValueByColumn(ticket, titleColumn) || ticket?.title || '',
     content,
     assignees: getCellValueByColumn(ticket, assigneesColumn) || ticket.assignees || [],
     due_date: getCellValueByColumn(ticket, dueDateColumn) || ticket?.due_date || null,
-    priority: getCellValueByColumn(ticket, priorityColumn) || ticket?.priority || null,
-    status: statusOption?.name || null,
+    priority: getCellValueByColumn(ticket, priorityColumn) ?? ticket?.priority ?? null,
+    status: statusOption?.name || ticket.status || null,
+    size: ticket.size,
+    version: ticket.version,
   };
 };
 

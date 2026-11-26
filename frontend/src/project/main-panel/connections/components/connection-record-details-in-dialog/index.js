@@ -4,10 +4,9 @@ import { toaster } from '@/components';
 import { PERMISSION_TYPES } from '@/constants';
 import User from '@/models/user';
 import { connectionsAPI } from '@/project/api';
-import { useData, useMetadata, useTags } from '@/project/hooks';
-import CreateTicketDialog from '@/project/main-panel/connections/components/create-ticket-dialog';
-import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
-import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
+import { useData, useTags } from '@/project/hooks';
+import { useLinkedTicketUpdate, useLinkTicket } from '@/project/hooks/link-ticket';
+import { useResourceUpdate } from '@/project/hooks/resource-dialog';
 import { CellType, EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import context from '@/sea-metadata/context';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
@@ -16,33 +15,41 @@ import { isSmallContainer } from '@/utils/dialog';
 import { Utils } from '@/utils/utils';
 import { SUPPORT_ROW_DETAILS_SETTINGS_CONNECTION_TYPES, CONNECTION_PREDEFINED_COLUMN_NAME, CONNECTION_TYPE, } from '../../constants';
 import { useConnections } from '../../hooks';
-import { formatColumns, generateCreateRelatedTicketOption, generateLinkAnExistingTicketOption, getTableName, } from '../../utils';
+import { formatColumns, getTableName, } from '../../utils';
 import ConnectionResourceDetails, { ConnectionResourceOtherDetails } from '../connection-resource-details';
 
 import './index.css';
 
 const ConnectionRecordDetailsInDialog = ({ projectUuid, resource, columns, permission, highlight, onUpdateResourceDetails }) => {
   const [connectionDetails, setConnectionDetails] = useState(null);
-  const [isTicketDialogOpen, setTicketDialogOpen] = useState(false);
-  const [isShowTicketsDialog, setIsShowTicketsDialog] = useState(false);
   const [containerWidth, setContainerWidth] = useState(0);
 
   const { connections } = useConnections();
-  const { modifyRow, modifyRowLink, modifyLocalRow, insertRowByLink } = useData();
+  const { modifyRow, modifyLocalRow } = useData();
   const { tagsData } = useTags();
+  const { generateConnectionLinkTicketOptions } = useLinkTicket();
 
   const detailsRef = useRef(null);
   const resizeObserverRef = useRef(null);
+  // null means details have loaded; otherwise collect updates until they arrive.
+  const pendingDetailsRef = useRef({});
 
   const connection = useMemo(() => connections.find(c => c.id === resource?.connection_id), [connections, resource?.connection_id]);
   const connectionTableName = useMemo(() => connection ? getTableName(connection) : '', [connection]);
 
   useEffect(() => {
+    pendingDetailsRef.current = {};
     setConnectionDetails(null);
   }, [resource?._id, resource?.connection_id]);
 
   const updateResourceDetails = useCallback(({ record, columns, linked_ticket_title, related_users }) => {
-    const details = { record, columns, linked_ticket_title, related_users };
+    const pending = pendingDetailsRef.current;
+    const details = {
+      columns, linked_ticket_title, related_users,
+      ...pending,
+      record: { ...record, ...pending?.record },
+    };
+    pendingDetailsRef.current = null;
     setConnectionDetails(details);
     onUpdateResourceDetails && onUpdateResourceDetails(details);
   }, [onUpdateResourceDetails]);
@@ -55,6 +62,12 @@ const ConnectionRecordDetailsInDialog = ({ projectUuid, resource, columns, permi
   }, [connection, connectionDetails]);
 
   const syncRecordDetails = useCallback((recordUpdate = {}, linkedTicketTitle) => {
+    if (pendingDetailsRef.current) {
+      const pending = pendingDetailsRef.current;
+      pending.record = { ...pending.record, ...recordUpdate };
+      if (linkedTicketTitle !== undefined) pending.linked_ticket_title = linkedTicketTitle;
+      return;
+    }
     setConnectionDetails((current) => {
       if (!current) return current;
       const nextDetails = {
@@ -66,6 +79,17 @@ const ConnectionRecordDetailsInDialog = ({ projectUuid, resource, columns, permi
       return nextDetails;
     });
   }, [onUpdateResourceDetails]);
+
+  useLinkedTicketUpdate({
+    projectUuid,
+    tableName: connectionTableName,
+    rowId: resource?._id,
+    onUpdate: ({ rowUpdate, ticket }) => syncRecordDetails(rowUpdate, ticket.title),
+  });
+
+  useResourceUpdate({ projectUuid, tableName: connectionTableName, rowId: resource?._id, onUpdate: ({ rowUpdate }) => {
+    if (rowUpdate) syncRecordDetails(rowUpdate);
+  } });
 
   const handleThreadUnreadChange = useCallback((nextUnread) => {
     if (!connection || connection.type !== CONNECTION_TYPE.EMAIL) return;
@@ -133,65 +157,16 @@ const ConnectionRecordDetailsInDialog = ({ projectUuid, resource, columns, permi
     });
   }, [connection, targetColumns, tagsData, modifyRow, projectUuid, resource?._id, connectionTableName, connectionDetails, syncRecordDetails]);
 
-  const createTicketCallback = useCallback((ticket) => {
-    const linkedUpdateRecord = { [ticket._pk]: ticket.title };
-    const linkColumn = getColumnByName(targetColumns, CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET);
-    if (!linkColumn) return;
-
-    const rowId = resource._id;
-    const rowUpdateData = { [linkColumn.key]: [ticket._pk] };
-    insertRowByLink(TICKET_TABLE_NAME, connectionTableName, linkedUpdateRecord, rowId, rowUpdateData, () => {
-      const nextRecordUpdate = { [CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET]: ticket._pk };
-      syncRecordDetails(nextRecordUpdate, ticket.title);
-      const eventBus = context.eventBus;
-      eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdateData);
-      eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: linkedUpdateRecord }, false);
-    });
-  }, [targetColumns, insertRowByLink, resource?._id, connectionTableName, syncRecordDetails]);
-
-  const linkAnExistingTicket = useCallback((ticket, linkedConnectionRecordsColumn, callback) => {
-    const linkedTicketColumn = getColumnByName(targetColumns, CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET);
-    const rowUpdate = { [linkedTicketColumn.key]: ticket.id };
-    const rowId = resource._id;
-    const connectionLinkedUpdate = { [ticket.id]: ticket.title };
-
-    modifyRowLink({
-      tableName: TICKET_TABLE_NAME,
-      rowId: String(ticket.id),
-      rowUpdate: { [linkedConnectionRecordsColumn.key]: [`${connection.id}_${rowId}`] },
-      linkedRecords: { [`${connection.id}_${rowId}`]: connectionDetails.record.title }
-    }, {
-      tableName: connectionTableName,
-      rowId,
-      rowUpdate,
-      linkedRecords: connectionLinkedUpdate,
-    }, () => {
-      return connectionsAPI.modifyConnectionRecord(projectUuid, connection.id, rowId, { [linkedTicketColumn.name]: ticket.id }).then((res) => {
-        const nextRecordUpdate = { [CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET]: ticket.id };
-        syncRecordDetails(nextRecordUpdate, ticket.title);
-        const eventBus = context.eventBus;
-        eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdate);
-        eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: connectionLinkedUpdate }, false);
-        callback && callback();
-        return res;
-      }).catch((error) => {
-        const errorMessage = Utils.getErrorMsg(error);
-        toaster.danger(errorMessage);
-        callback && callback(true);
-        throw error;
-      });
-    });
-  }, [connection, connectionDetails, targetColumns, modifyRowLink, projectUuid, connectionTableName, resource._id, syncRecordDetails]);
-
   const linkedTicketTools = useMemo(() => {
     if (!connectionDetails?.record) return [];
     const row = { ...connectionDetails.record, _id: resource?._id + '', _pk: resource?._id };
-    const isRw = permission === PERMISSION_TYPES.READ_WRITE;
-    return [
-      isRw && generateCreateRelatedTicketOption({ row, columns: targetColumns, connection }, () => setTicketDialogOpen(true)),
-      isRw && generateLinkAnExistingTicketOption({ row, columns: targetColumns, connection }, () => setIsShowTicketsDialog(true)),
-    ].filter(Boolean);
-  }, [connection, connectionDetails, permission, targetColumns, resource]);
+
+    const params = { row, columns: targetColumns, connection, permission };
+    return generateConnectionLinkTicketOptions(params);
+  }, [
+    connection, connectionDetails, permission, targetColumns, resource,
+    generateConnectionLinkTicketOptions
+  ]);
 
   useEffect(() => {
     const dom = detailsRef.current;
@@ -240,55 +215,35 @@ const ConnectionRecordDetailsInDialog = ({ projectUuid, resource, columns, permi
   const isSmallSize = isSmallContainer(containerWidth);
 
   return (
-    <>
-      <div className={classnames('seaqa-connection-record-details-in-dialog', { 's': isSmallSize })} ref={detailsRef}>
-        <div className="seaqa-connection-record-details-in-dialog-main">
-          <ConnectionResourceDetails
-            resource={resource}
-            columns={columns}
+    <div className={classnames('seaqa-connection-record-details-in-dialog', { 's': isSmallSize })} ref={detailsRef}>
+      <div className="seaqa-connection-record-details-in-dialog-main">
+        <ConnectionResourceDetails
+          resource={resource}
+          columns={columns}
+          projectUuid={projectUuid}
+          permission={permission}
+          highlight={highlight}
+          isSmallScreen={isSmallSize}
+          updateResource={updateResourceDetails}
+          onThreadUnreadChange={handleThreadUnreadChange}
+        />
+      </div>
+      {SUPPORT_ROW_DETAILS_SETTINGS_CONNECTION_TYPES.includes(resource?.type) && connectionDetails?.record && (
+        <div className="seaqa-connection-record-details-in-dialog-others">
+          <ConnectionResourceOtherDetails
+            connection={connection}
+            record={connectionDetails.record}
+            columns={targetColumns}
             projectUuid={projectUuid}
-            permission={permission}
-            highlight={highlight}
-            isSmallScreen={isSmallSize}
-            updateResource={updateResourceDetails}
-            onThreadUnreadChange={handleThreadUnreadChange}
+            linkedTicketTitle={connectionDetails.linked_ticket_title || ''}
+            tagsData={tagsData}
+            onChange={handleOthersChange}
+            isReadonly={permission === PERMISSION_TYPES.READ_ONLY}
+            linkedTicketTools={linkedTicketTools}
           />
         </div>
-        {SUPPORT_ROW_DETAILS_SETTINGS_CONNECTION_TYPES.includes(resource?.type) && connectionDetails?.record && (
-          <div className="seaqa-connection-record-details-in-dialog-others">
-            <ConnectionResourceOtherDetails
-              connection={connection}
-              record={connectionDetails.record}
-              columns={targetColumns}
-              projectUuid={projectUuid}
-              linkedTicketTitle={connectionDetails.linked_ticket_title || ''}
-              tagsData={tagsData}
-              onChange={handleOthersChange}
-              isReadonly={permission === PERMISSION_TYPES.READ_ONLY}
-              linkedTicketTools={linkedTicketTools}
-            />
-          </div>
-        )}
-      </div>
-      {isTicketDialogOpen && (
-        <CreateTicketDialog
-          projectUuid={projectUuid}
-          row={{ _id: resource._id }}
-          linkedRecordPrefix={connection.id}
-          useMetadataContext={useMetadata}
-          onClose={() => setTicketDialogOpen(false)}
-          convertToTicket={() => connectionsAPI.convertRecordToTicket(projectUuid, connection.id, resource._id)}
-          onSubmitCallback={createTicketCallback}
-        />
       )}
-      {isShowTicketsDialog && (
-        <TicketsDialog
-          projectUuid={projectUuid}
-          onSubmit={linkAnExistingTicket}
-          onToggle={() => setIsShowTicketsDialog(false)}
-        />
-      )}
-    </>
+    </div>
   );
 };
 

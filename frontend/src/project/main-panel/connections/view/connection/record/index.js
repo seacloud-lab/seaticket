@@ -6,10 +6,11 @@ import { gettext, PERMISSION_TYPES } from '@/constants';
 import User from '@/models/user';
 import { connectionsAPI } from '@/project/api';
 import { EVENT_BUS_TYPE } from '@/project/constants';
-import { useData, useMetadata, useTags } from '@/project/hooks';
+import { useData, useTags } from '@/project/hooks';
+import { useLinkedTicketUpdate, useLinkTicket } from '@/project/hooks/link-ticket';
+import { useRelatedIssues } from '@/project/hooks/related-issues';
+import { useResourceUpdate } from '@/project/hooks/resource-dialog';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
-import TicketsDialog from '@/project/main-panel/tickets/components/tickets-dialog';
-import { TICKET_TABLE_NAME } from '@/project/main-panel/tickets/constants';
 import { getResourceOriginalURL } from '@/project/utils';
 import { CellType, context as seaMetadataContext, EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
@@ -18,13 +19,10 @@ import { convertRowToKeyValue } from '@/sea-metadata/utils/row';
 import eventBus from '@/utils/event-bus';
 import { Utils } from '@/utils/utils';
 import ConnectionResourceDetails, { ConnectionResourceOtherDetails } from '../../../components/connection-resource-details';
-import CreateTicketDialog from '../../../components/create-ticket-dialog';
-import RelatedIssuesDialog from '../../../components/related-issues-dialog';
 import { CONNECTION_PREDEFINED_COLUMN_NAME, CONNECTION_TYPE } from '../../../constants';
 import { useConnectionsPage, useConnections } from '../../../hooks';
 import {
   getTableName, generateAIOptions, generateFindRelatedIssuesOption,
-  generateCreateRelatedTicketOption, generateLinkAnExistingTicketOption,
   generateOpenOriginalPageOption, generateCopyOriginalLinkOption,
   generateMarkAsOutdatedOptions, formatColumns,
 } from '../../../utils';
@@ -45,18 +43,17 @@ const initColumns = [
 
 const Record = ({ projectUuid, permission }) => {
   const { isLoading: isConnectionsPageLoading, pageSlugId, childrenPageSlugId, toggleChildrenPageSlugId } = useConnectionsPage();
-  const { getRow, modifyRow, modifyRowLink, modifyLocalRow, insertRowByLink, deleteRows } = useData();
+  const { getRow, modifyRow, modifyLocalRow, deleteRows } = useData();
   const { connections } = useConnections();
   const { handleResolveAttachmentsByAI } = useAIChatTools();
   const { tagsData } = useTags();
+  const { generateConnectionLinkTicketOptions } = useLinkTicket();
+  const { openRelatedIssues } = useRelatedIssues();
 
   const [containerWidth, setContainerWidth] = useState(0);
   const [record, setRecord] = useState(null);
   const [columns, setColumns] = useState(initColumns);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
-  const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
-  const [isShowTicketsDialog, setIsShowTicketsDialog] = useState(false);
-  const [isTicketDialogOpen, setTicketDialogOpen] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
   const [isContentEmpty, setIsContentEmpty] = useState(false);
 
@@ -66,6 +63,19 @@ const Record = ({ projectUuid, permission }) => {
   const connection = useMemo(() => connections.find(c => c.id === pageSlugId), [pageSlugId, connections]);
   const resource = useMemo(() => ({ type: connection?.type, connection_id: pageSlugId, _id: childrenPageSlugId }), [connection, pageSlugId, childrenPageSlugId]);
   const connectionTableName = useMemo(() => connection ? getTableName(connection) : '', [connection]);
+  useLinkedTicketUpdate({
+    projectUuid,
+    tableName: connectionTableName,
+    rowId: childrenPageSlugId,
+    onUpdate: ({ rowUpdate, ticket }) => {
+      linkedTicketTitle.current = ticket.title;
+      setRecord(current => current ? { ...current, ...rowUpdate } : current);
+    },
+  });
+  useResourceUpdate({ projectUuid, tableName: connectionTableName, rowId: childrenPageSlugId, onUpdate: ({ rowUpdate, deleted }) => {
+    if (deleted) toggleChildrenPageSlugId('');
+    else if (rowUpdate) setRecord(current => current ? { ...current, ...rowUpdate } : current);
+  } });
   const cacheRecord = useMemo(() => {
     if (!connection) return '';
     const row = getRow(connectionTableName, childrenPageSlugId);
@@ -74,12 +84,12 @@ const Record = ({ projectUuid, permission }) => {
   const linkedTicketTools = useMemo(() => {
     if (!record) return [];
     const row = { ...record, _id: childrenPageSlugId + '', _pk: childrenPageSlugId };
-    const isRw = permission === PERMISSION_TYPES.READ_WRITE;
-    return [
-      isRw && generateCreateRelatedTicketOption({ row, columns, connection }, () => setTicketDialogOpen(true)),
-      isRw && generateLinkAnExistingTicketOption({ row, columns, connection }, () => setIsShowTicketsDialog(true)),
-    ].filter(Boolean);
-  }, [record, connection, permission, columns, childrenPageSlugId]);
+    const params = { row, columns, connection, permission };
+    return generateConnectionLinkTicketOptions(params);
+  }, [
+    record, connection, permission, columns, childrenPageSlugId,
+    generateConnectionLinkTicketOptions
+  ]);
 
   const deleteEmailRecord = useCallback(() => {
     if (!connection || connection.type !== CONNECTION_TYPE.EMAIL || !childrenPageSlugId) return;
@@ -105,7 +115,7 @@ const Record = ({ projectUuid, permission }) => {
     const isRw = permission === PERMISSION_TYPES.READ_WRITE;
     let _tools = [
       generateAIOptions({ rows: [row], columns, connection }, handleResolveAttachmentsByAI),
-      isRw && generateFindRelatedIssuesOption({ row, connection }, () => setIsShowRelatedIssuesDialog(true)),
+      isRw && generateFindRelatedIssuesOption({ row, connection }, () => openRelatedIssues({ row, connection })),
       ...linkedTicketTools,
       { key: 'divider' },
       generateOpenOriginalPageOption({ row, columns, connection }),
@@ -158,7 +168,7 @@ const Record = ({ projectUuid, permission }) => {
     return _tools;
   }, [
     projectUuid, record, connection, permission, cacheRecord, columns, childrenPageSlugId, linkedTicketTools,
-    handleResolveAttachmentsByAI, deleteEmailRecord, modifyRow,
+    handleResolveAttachmentsByAI, deleteEmailRecord, modifyRow, openRelatedIssues,
   ]);
 
   const title = useMemo(() => {
@@ -172,37 +182,6 @@ const Record = ({ projectUuid, permission }) => {
     if (!record) return '';
     return getResourceOriginalURL(connection.type, { ...record, ...resource }, connections, initColumns);
   }, [connection, connections, resource, record]);
-
-  const linkAnExistingTicket = useCallback((ticket, linkedConnectionRecordsColumn, callback) => {
-    const linkedTicketColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET);
-    const rowUpdate = { [linkedTicketColumn.key]: ticket.id };
-    const rowId = childrenPageSlugId;
-    const connectionLinkedUpdate = { [ticket.id]: ticket.title };
-    modifyRowLink({
-      tableName: TICKET_TABLE_NAME,
-      rowId: String(ticket.id),
-      rowUpdate: { [linkedConnectionRecordsColumn.key]: [`${connection?.id}_${rowId}`] },
-      linkedRecords: { [`${connection?.id}_${rowId}`]: title }
-    }, {
-      tableName: connectionTableName,
-      rowId: rowId,
-      rowUpdate: rowUpdate,
-      linkedRecords: connectionLinkedUpdate
-    }, () => {
-      return connectionsAPI.modifyConnectionRecord(projectUuid, connection?.id, rowId, { [linkedTicketColumn.name]: ticket.id }).then(res => {
-        setRecord({ ...record, [CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET]: ticket.id });
-        linkedTicketTitle.current = ticket.title;
-        callback && callback();
-      }).catch(error => {
-        const errorMessage = Utils.getErrorMsg(error);
-        toaster.danger(errorMessage);
-        callback && callback(true);
-      });
-    });
-  }, [
-    title, columns, childrenPageSlugId, connection, record, connectionTableName, projectUuid,
-    modifyRowLink
-  ]);
 
   const updateResource = useCallback(({ record, columns, linked_ticket_title, related_users }) => {
     linkedTicketTitle.current = linked_ticket_title;
@@ -309,18 +288,6 @@ const Record = ({ projectUuid, permission }) => {
 
     modifyLocalRow(connectionTableName, childrenPageSlugId, { [unreadColumn.key]: recordUnread });
   }, [connection?.type, record, cacheRecord, unreadColumn, modifyLocalRow, connectionTableName, childrenPageSlugId]);
-
-  const createTicketCallback = useCallback((ticket) => {
-    const linkedUpdateRecord = {
-      [ticket._pk]: ticket.title,
-    };
-    const linkColumn = getColumnByName(columns, CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET);
-    const rowUpdateData = { [linkColumn.key]: [ticket._pk] };
-    insertRowByLink(TICKET_TABLE_NAME, connectionTableName, linkedUpdateRecord, childrenPageSlugId, rowUpdateData, () => {
-      setRecord({ ...record, [CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET]: ticket._pk });
-      linkedTicketTitle.current = ticket.title;
-    });
-  }, [columns, childrenPageSlugId, connectionTableName, insertRowByLink, record]);
 
   useEffect(() => {
     if (isConnectionsPageLoading || !record) return;
@@ -444,32 +411,6 @@ const Record = ({ projectUuid, permission }) => {
           )}
         </div>
       </div>
-      {isShowRelatedIssuesDialog && (
-        <RelatedIssuesDialog
-          projectUuid={projectUuid}
-          row={{ _id: childrenPageSlugId }}
-          connectionId={connection?.id}
-          onClose={() => setIsShowRelatedIssuesDialog(false)}
-        />
-      )}
-      {isTicketDialogOpen && (
-        <CreateTicketDialog
-          projectUuid={projectUuid}
-          row={{ _id: childrenPageSlugId }}
-          linkedRecordPrefix={connection.id}
-          useMetadataContext={useMetadata}
-          onClose={() => setTicketDialogOpen(false)}
-          convertToTicket={() => connectionsAPI.convertRecordToTicket(projectUuid, connection.id, childrenPageSlugId)}
-          onSubmitCallback={createTicketCallback}
-        />
-      )}
-      {isShowTicketsDialog && (
-        <TicketsDialog
-          projectUuid={projectUuid}
-          onSubmit={linkAnExistingTicket}
-          onToggle={() => setIsShowTicketsDialog(false)}
-        />
-      )}
     </>
   );
 };

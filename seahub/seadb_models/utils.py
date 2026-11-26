@@ -744,7 +744,7 @@ def list_linear_issue_record_details(seadb_api, project_uuid, connection_id, _pk
 # seafile
 def get_seafile_record_by_pk(seadb_api, project_uuid, connection_id, _pk):
     seafile_table_name = SchemaTables.SEAFILE.table_name(connection_id)
-    sql = f"SELECT `_pk`, `path`, `title`, `modified_time`, `content` FROM `{seafile_table_name}` WHERE _pk = {_pk}"
+    sql = f"SELECT `_pk`, `path`, `title`, `modified_time`, `content`, `outdated` FROM `{seafile_table_name}` WHERE _pk = {_pk}"
     try:
         res = seadb_api.query_rows(project_uuid, sql)
         record = res.get('results')[0] if res.get('results') else {}

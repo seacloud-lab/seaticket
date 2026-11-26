@@ -1,21 +1,19 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { CenteredLoading } from '@/components';
-import toaster from '@/components/toaster';
 import { gettext } from '@/constants';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
-import { EVENT_BUS_TYPE as GLOBAL_EVENT_BUS_TYPE } from '@/project/constants';
 import { useData, useTags } from '@/project/hooks';
+import { useRelatedIssues } from '@/project/hooks/related-issues';
+import { useResourceUpdate } from '@/project/hooks/resource-dialog';
+import { useTicketCreation } from '@/project/hooks/ticket-creation';
+import { useTicketTaskCreated } from '@/project/hooks/ticket-task-created';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
-import { CONNECTION_TYPE } from '@/project/main-panel/connections/constants';
 import { useConnections } from '@/project/main-panel/connections/hooks';
-import { getTableName } from '@/project/main-panel/connections/utils';
 import SeaMetadata from '@/sea-metadata';
 import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import context from '@/sea-metadata/context';
-import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { convertRowToNameValue, convertRowsToNameValue, getRowById as getTableRowById } from '@/sea-metadata/utils/row';
-import eventBus from '@/utils/event-bus';
 import { isFunction } from '@/utils/type-detection';
 import { ticketsAPI } from '../../../api';
 import {
@@ -28,14 +26,10 @@ import { useCloseLinkedIssues, useMetadata } from '../hooks';
 import {
   generatorTicketsRowsTools,
   cascadeUpdate, generatorTicketsContextMenuOptions,
-  convertTicketToTask, convertTicketToKb,
 } from '../utils';
-import CreateKBRecordDialog from './create-kb-record-dialog';
-import CreateTaskDialog from './create-task-dialog';
-import RelatedIssuesDialog from './related-issues-dialog';
 
 const Tickets = ({
-  canFindRelatedIssues = true, isBuiltInView = false,
+  canFindRelatedIssues = true, isBuiltInView = false, isReadonly = false,
   projectUuid, workspaceID, projectName, permission,
   api,
   localStorageNamePrefix: customizeLocalStorageNamePrefix,
@@ -50,6 +44,8 @@ const Tickets = ({
   ...props
 }) => {
   const { handleResolveAttachmentsByAI } = useAIChatTools();
+  const { openRelatedIssues } = useRelatedIssues();
+  const { createKnowledgeBaseRecord: openCreateKB, createTask: openCreateTask } = useTicketCreation();
   const {
     typesData, createType,
     customersData,
@@ -59,7 +55,7 @@ const Tickets = ({
   const { tagsData, createTag } = useTags();
   const {
     getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
-    getMetadata, modifyRow, modifyRows, deleteRow, deleteRows, insertRowByLink,
+    getMetadata, modifyRow, modifyRows, deleteRow, deleteRows,
   } = useData();
   const { openCloseLinkedGitHubIssuesWarningDialog } = useCloseLinkedIssues();
 
@@ -111,17 +107,22 @@ const Tickets = ({
     }];
   }, [isGithubIssueClosed]);
 
-  const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
   const [currentTicket, setCurrentTicket] = useState(null);
   const [isShowTicketDetailsDialog, setIsShowTicketDetailsDialog] = useState(false);
-  const [isShowCreateKBRecordDialog, setIsShowCreateKBRecordDialog] = useState(false);
-  const [isShowCreateTaskDialog, setIsShowCreateTaskDialog] = useState(false);
-  const [createTaskConnectionType, setCreateTaskConnectionType] = useState(CONNECTION_TYPE.GENERAL_TASK);
 
   const handleExpandRow = useCallback((ticket) => {
     setCurrentTicket(ticket);
     setIsShowTicketDetailsDialog(true);
   }, []);
+
+  useResourceUpdate({ projectUuid, tableName: TICKET_TABLE_NAME, onUpdate: ({ rowId, rowUpdateData, deleted, updateList = true }) => {
+    if (!updateList) return;
+    if (deleted) {
+      context.eventBus.dispatch(EVENT_BUS_TYPE.DELETE_ROWS, [rowId]);
+    } else if (rowUpdateData) {
+      context.eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdateData);
+    }
+  } });
 
   const metadataAPI = useMemo(() => {
     let _api = {};
@@ -274,89 +275,21 @@ const Tickets = ({
   }, []);
 
   const findRelatedIssues = useCallback((ticket) => {
-    if (!ticket) return;
-    setCurrentTicket(ticket);
-    setIsShowRelatedIssuesDialog(true);
-  }, []);
+    openRelatedIssues({ row: ticket });
+  }, [openRelatedIssues]);
 
-  const createKnowledgeBaseRecord = useCallback((ticket) => {
-    if (!ticket) return;
+  const createKnowledgeBaseRecord = useCallback(ticket => {
+    openCreateKB({ ticket, columns: allColumns.current });
+  }, [openCreateKB]);
 
-    setCurrentTicket(ticket);
-    setIsShowCreateKBRecordDialog(true);
-  }, []);
+  const createTask = useCallback((ticket, connectionType) => {
+    openCreateTask({ ticket, columns: allColumns.current, connectionType });
+  }, [openCreateTask]);
 
-  const createTask = useCallback((ticket, connectionType = CONNECTION_TYPE.GENERAL_TASK) => {
-    if (!ticket) return;
-    setCurrentTicket(ticket);
-    setCreateTaskConnectionType(connectionType);
-    setIsShowCreateTaskDialog(true);
-  }, []);
-
-  const handleTaskCreated = useCallback(({ task, connection, activities = [], ticket: ticketUpdate = null }) => {
-    if (!currentTicket) return;
-    const linkedConnectionRecordsColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.LINKED_CONNECTION_RECORDS);
-    if (!linkedConnectionRecordsColumn) return;
-
-    const newValueKey = `${connection.id}_${task._pk}`;
-    const update = {};
-    const dialogUpdate = {};
-
-    if (ticketUpdate) {
-      const stateColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.STATE);
-      const substateColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.SUB_STATE);
-      const modifiedTimeColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.MODIFIED_TIME);
-      const closedTimeColumn = getColumnByName(allColumns.current, PREDEFINED_TICKET_COLUMN_NAME.CLOSED_TIME);
-      if (ticketUpdate.state !== undefined && stateColumn) {
-        update[stateColumn.key] = ticketUpdate.state;
-        dialogUpdate[PREDEFINED_TICKET_COLUMN_NAME.STATE] = ticketUpdate.state;
-      }
-      if (ticketUpdate.substate !== undefined && substateColumn) {
-        update[substateColumn.key] = ticketUpdate.substate;
-        dialogUpdate[PREDEFINED_TICKET_COLUMN_NAME.SUB_STATE] = ticketUpdate.substate;
-      }
-      if (ticketUpdate.modified_time !== undefined && modifiedTimeColumn) {
-        update[modifiedTimeColumn.key] = ticketUpdate.modified_time;
-      }
-      if (ticketUpdate.closed_time !== undefined && closedTimeColumn) {
-        update[closedTimeColumn.key] = ticketUpdate.closed_time;
-      }
-    }
-
-    const updateRow = row => {
-      const oldValue = getCellValueByColumn(row || currentTicket, linkedConnectionRecordsColumn);
-      return {
-        ...update,
-        [linkedConnectionRecordsColumn.key]: Array.from(new Set([...(Array.isArray(oldValue) ? oldValue : []), newValueKey])),
-      };
-    };
-
-    // update cache
-    const connectionTableName = getTableName(connection);
-    const linked_records = { [newValueKey]: task.title };
-    const ticketKey = `${TICKET_TYPE}_${currentTicket._id}`;
-    insertRowByLink(connectionTableName, TICKET_TABLE_NAME, linked_records, currentTicket._id, updateRow, () => {
-      // update current details dialog
-      eventBus.dispatch(
-        GLOBAL_EVENT_BUS_TYPE.MODIFY_LOCAL_RECORD_IN_DIALOG,
-        ticketKey,
-        ticket => ({
-          ...dialogUpdate,
-          [linkedConnectionRecordsColumn.name]: Array.from(new Set([...(ticket?.linked_connection_records || []), newValueKey])),
-        }),
-        { [newValueKey]: { _pk: task._pk, title: task.title, connection_type: connection.type } }
-      );
-
-      // update current view display
-      const metadataEventBus = context.eventBus;
-      metadataEventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, currentTicket._id, updateRow);
-      metadataEventBus.dispatch(EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records }, false);
-
-      if (activities.length > 0 && isFunction(resourceDetailsRef?.current?.setActivities)) {
-        resourceDetailsRef.current.setActivities(ticketKey, prevActivities => [...prevActivities, ...activities]);
-      }
-    });
-  }, [currentTicket, insertRowByLink]);
+  useTicketTaskCreated({ projectUuid, onUpdate: ({ rowId, rowUpdate, linkedRecordTitles }) => {
+    context.eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdate);
+    context.eventBus.dispatch(EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: linkedRecordTitles }, false);
+  } });
 
   const createRowsTools = useCallback((props) => {
     let params = {
@@ -404,34 +337,9 @@ const Tickets = ({
     handleResolveAttachmentsByAI, findRelatedIssues, customizeCreateContextMenuOptions, togglePageSlugId, createKnowledgeBaseRecord, createTask,
   ]);
 
-  const createMoreOptions = useCallback((resource) => {
-    const row = resource;
-    return generatorTicketsContextMenuOptions({
-      isGroupView: false,
-      selectedPosition: { groupRowIndex: 0, rowIdx: 0 },
-      table: { id_row_map: { [row._id]: row }, columns: allColumns.current },
-      rowMetrics: { idSelectedRowMap: {} },
-      deleteRow: (rowId) => {
-        metadataAPI.deleteRow(rowId);
-        setIsShowTicketDetailsDialog(false);
-        toaster.success(context.translate('{Row} deleted'));
-        context.eventBus.dispatch(EVENT_BUS_TYPE.DELETE_ROWS, [row._id]);
-      },
-      rowGetterByIndex: () => row,
-      context,
-      chatTicketsByAI: handleResolveAttachmentsByAI,
-      togglePageSlugId,
-      workspaceID,
-      projectName,
-      findRelatedIssues: canFindRelatedIssues ? findRelatedIssues : undefined,
-      createKnowledgeBaseRecord,
-      connections,
-      createTask,
-    });
-  }, [
-    workspaceID, projectName, canFindRelatedIssues, connections,
-    handleResolveAttachmentsByAI, findRelatedIssues, togglePageSlugId, createKnowledgeBaseRecord, metadataAPI, createTask,
-  ]);
+  const createMoreOptions = useCallback((row, _details, options) => {
+    return metadataRef.current?.createMoreOptions(row, options) || [];
+  }, []);
 
   const handleSwitchTicket = useCallback((step) => {
     const ticketsData = metadataRef.current.getOrderRows();
@@ -448,12 +356,6 @@ const Tickets = ({
     const ticket = ticketsData[newIndex];
     setCurrentTicket(ticket);
   }, [currentTicket, metadataRef]);
-
-  const onCloseRelatedIssuesDialog = useCallback(() => {
-    setIsShowRelatedIssuesDialog(false);
-    if (isShowTicketDetailsDialog) return;
-    setCurrentTicket(null);
-  }, [isShowTicketDetailsDialog]);
 
   if (isLoading) return (<CenteredLoading />);
 
@@ -486,51 +388,19 @@ const Tickets = ({
         settings={{ ...settings, canClearCells: false, canPasteCells: false, canDragFillCells: false }}
         { ...props }
       />
-      {isShowRelatedIssuesDialog && currentTicket && (
-        <RelatedIssuesDialog
-          projectUuid={projectUuid}
-          ticketId={currentTicket._id}
-          workspaceID={workspaceID}
-          projectName={projectName}
-          onClose={onCloseRelatedIssuesDialog}
-        />
-      )}
       {isShowTicketDetailsDialog && (
         <ResourceDetailsDialog
           ref={resourceDetailsRef}
           projectUuid={projectUuid}
           resource={{ ...currentTicket, type: TICKET_TYPE }}
+          permission={permission}
+          isReadonly={isReadonly}
+          canFindRelatedIssues={canFindRelatedIssues}
           columns={allColumns.current}
           switchResource={handleSwitchTicket}
           onToggle={() => setIsShowTicketDetailsDialog(false)}
           getTicket={getTicket}
           createMoreOptions={createMoreOptions}
-        />
-      )}
-      {isShowCreateKBRecordDialog && currentTicket && (
-        <CreateKBRecordDialog
-          projectUuid={projectUuid}
-          ticket={convertTicketToKb(currentTicket, allColumns.current)}
-          onClose={() => {
-            setIsShowCreateKBRecordDialog(false);
-            if (isShowTicketDetailsDialog) return;
-            setCurrentTicket(null);
-          }}
-        />
-      )}
-      {isShowCreateTaskDialog && currentTicket && (
-        <CreateTaskDialog
-          projectUuid={projectUuid}
-          workspaceID={workspaceID}
-          projectName={projectName}
-          ticket={convertTicketToTask(currentTicket, allColumns.current)}
-          connectionType={createTaskConnectionType}
-          onClose={() => {
-            setIsShowCreateTaskDialog(false);
-            if (isShowTicketDetailsDialog) return;
-            setCurrentTicket(null);
-          }}
-          onSubmitCallback={handleTaskCreated}
         />
       )}
     </>

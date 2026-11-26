@@ -17,6 +17,7 @@ const CreateKBRecordDialog = ({ projectUuid, ticket, onClose }) => {
   const { markTablesViewExpired } = useData();
 
   useEffect(() => {
+    let isCurrentRequest = true;
     const ticketTitle = ticket?.title || '';
     const ticketContent = ticket?.content || '';
     const ticketId = ticket?._id;
@@ -36,17 +37,22 @@ const CreateKBRecordDialog = ({ projectUuid, ticket, onClose }) => {
     }).catch(() => []) : Promise.resolve([]);
 
     commentsPromise.then((ticketComments) => {
+      if (!isCurrentRequest) return;
       return ticketsAPI.convertTicketToKnowledgeBaseRecord(projectUuid, ticketTitle, ticketContent, ticketComments);
     }).then(res => {
+      if (!isCurrentRequest) return;
       const { kb_title, kb_content } = res?.data || {};
       setKBTitle(kb_title || ticketTitle || '');
       setKBContent(kb_content || ticketContent || '');
     }).catch(error => {
+      if (!isCurrentRequest) return;
       const msg = Utils.getErrorMsg(error);
       setErrMessage(msg);
     }).finally(() => {
+      if (!isCurrentRequest) return;
       setLoading(false);
     });
+    return () => { isCurrentRequest = false; };
   }, [projectUuid, ticket]);
 
   const handleSubmit = () => {
