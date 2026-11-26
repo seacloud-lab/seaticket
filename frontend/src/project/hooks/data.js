@@ -134,6 +134,12 @@ export const DataProvider = ({
   const [data, setData] = useState({ version: 0 });
   const rowLinkVersionsRef = useRef({});
 
+  const invalidateRowLinkReads = useCallback((tableNames) => {
+    new Set(tableNames.filter(Boolean)).forEach(tableName => {
+      rowLinkVersionsRef.current[tableName] = (rowLinkVersionsRef.current[tableName] || 0) + 1;
+    });
+  }, []);
+
   const updateData = useCallback((data) => {
     data.version = data.version + 1;
     setData(data);
@@ -603,10 +609,7 @@ export const DataProvider = ({
     };
 
     return api().then(res => {
-      [table1Update, table2Update].forEach(update => {
-        const tableName = update?.tableName;
-        if (tableName) rowLinkVersionsRef.current[tableName] = (rowLinkVersionsRef.current[tableName] || 0) + 1;
-      });
+      invalidateRowLinkReads([table1Update?.tableName, table2Update?.tableName]);
       setData(data => {
         const newData = deepcopy(data);
         _updateTableData(newData, table1Update);
@@ -616,7 +619,7 @@ export const DataProvider = ({
       });
       return res;
     });
-  }, []);
+  }, [invalidateRowLinkReads]);
 
   const modifyRows = useCallback((tableName, rowsUpdate = [], api) => {
     return api().then(res => {
@@ -731,6 +734,7 @@ export const DataProvider = ({
 
   const insertRowByLink = useCallback((linkedTableName, tableName, linkedRecord, rowId, rowData, callback) => {
     if (!linkedTableName || !tableName) return;
+    invalidateRowLinkReads([linkedTableName, tableName]);
     setData(data => {
       const newData = initDataWithInsertRow(data, linkedTableName);
       const table = newData[tableName];
@@ -746,7 +750,7 @@ export const DataProvider = ({
         version: data.version + 1,
       };
     });
-  }, [initDataWithInsertRow]);
+  }, [initDataWithInsertRow, invalidateRowLinkReads]);
 
   const restoreRows = useCallback((tableName, rowIds = []) => {
     if (!tableName) return;

@@ -1,5 +1,5 @@
 import React, { act } from 'react';
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import { createRoot } from 'react-dom/client';
 import { connectionsAPI, ticketsAPI } from '@/project/api';
 import { RelatedIssuesProvider } from '@/project/components/related-issues-provider';
@@ -23,16 +23,25 @@ jest.mock('@/project/api', () => ({
   connectionsAPI: { findRelatedRecords: jest.fn() },
   ticketsAPI: { findRelatedIssues: jest.fn() },
 }));
-jest.mock('@/project/components', () => ({
-  ResourceDetailsDialog: ({ resource, switchResource, onToggle }) => (
-    <div>
-      <div data-testid="details">{resource.connection_id}:{resource._id}</div>
-      {switchResource && <button onClick={() => switchResource(-1)}>Previous result</button>}
-      {switchResource && <button onClick={() => switchResource(1)}>Next result</button>}
-      <button onClick={onToggle}>Close details</button>
-    </div>
-  ),
-}));
+jest.mock('@/project/components', () => {
+  const React = require('react');
+  const { useRelatedIssues } = require('@/project/hooks/related-issues');
+  return { ResourceDetailsDialog: ({ resource, switchResource, onToggle }) => {
+    const { openRelatedIssues } = useRelatedIssues();
+    const [draft, setDraft] = React.useState('Original draft');
+    return (
+      <div data-testid="resource-details">
+        <div data-testid="details">{resource.connection_id}:{resource._id}</div>
+        <span>{draft}</span>
+        <button onClick={() => setDraft('Edited draft')}>Edit details</button>
+        <button onClick={() => openRelatedIssues({ row: resource, connection: { id: resource.connection_id } })}>Find related from details</button>
+        {switchResource && <button onClick={() => switchResource(-1)}>Previous result</button>}
+        {switchResource && <button onClick={() => switchResource(1)}>Next result</button>}
+        <button onClick={onToggle}>Close details</button>
+      </div>
+    );
+  } };
+});
 jest.mock('@/project/main-panel/connections/constants', () => ({ CONNECTION_TYPES: [] }));
 jest.mock('@/project/main-panel/connections/components/related-issues-dialog/resolved-tag', () => () => <span>Resolved</span>);
 jest.mock('@/project/utils', () => ({ getResourceIconURL: () => '/icon.png' }));
@@ -233,5 +242,70 @@ describe('Related issues workflow', () => {
 
     expect(screen.getByText('Current result')).not.toBeNull();
     expect(screen.queryByText('Old result')).toBeNull();
+  });
+
+  it.each(['ticket', 'connection'])('restores the %s results and selected record after closing a nested search', async source => {
+    const original = deferred();
+    const nested = deferred();
+    const api = source === 'ticket' ? ticketsAPI.findRelatedIssues : connectionsAPI.findRelatedRecords;
+    api.mockReturnValueOnce(original.promise);
+    open({ row: { _id: 'A' }, ...(source === 'connection' ? { connection: { id: 1 } } : {}) });
+    await finish(original, [issue('First result', 1), issue('Second result', 2)]);
+    act(() => screen.getByText('Second result').click());
+    click('Edit details');
+    connectionsAPI.findRelatedRecords.mockReturnValueOnce(nested.promise);
+    click('Find related from details');
+    await finish(nested, [issue('Nested result', 3)]);
+    act(() => screen.getByText('Nested result').click());
+    expect(screen.getAllByTestId('details').map(node => node.textContent)).toEqual(['2:same-id', '3:same-id']);
+
+    act(() => screen.getAllByRole('button', { name: 'Close related issues' }).slice(-1)[0].click());
+
+    expect(screen.getAllByRole('dialog')).toHaveLength(1);
+    expect(screen.getByText('First result')).not.toBeNull();
+    expect(screen.getByText('Second result')).not.toBeNull();
+    expect(screen.queryByText('Nested result')).toBeNull();
+    expect(screen.getByTestId('details').textContent).toBe('2:same-id');
+    expect(screen.getByText('Edited draft')).not.toBeNull();
+    click('Next result');
+    expect(screen.getByTestId('details').textContent).toBe('1:same-id');
+    expect(ticketsAPI.findRelatedIssues).toHaveBeenCalledTimes(source === 'ticket' ? 1 : 0);
+    expect(connectionsAPI.findRelatedRecords).toHaveBeenCalledTimes(source === 'connection' ? 2 : 1);
+  });
+
+  it('only closes the current search and ignores requests from a covered parent layer', async () => {
+    const original = deferred();
+    const nested = deferred();
+    ticketsAPI.findRelatedIssues.mockReturnValueOnce(original.promise);
+    connectionsAPI.findRelatedRecords.mockReturnValueOnce(nested.promise);
+    open({ row: { _id: 'A' } });
+    await finish(original, [issue('Original result', 1)]);
+    act(() => screen.getByText('Original result').click());
+    click('Find related from details');
+    await finish(nested, [issue('Nested result', 2)]);
+
+    act(() => screen.getAllByRole('button', { name: 'Close related issues' })[0].click());
+    click('Find related from details');
+    expect(screen.getAllByRole('dialog')).toHaveLength(2);
+    expect(connectionsAPI.findRelatedRecords).toHaveBeenCalledTimes(1);
+
+    act(() => screen.getByText('Nested result').click());
+    const deepest = deferred();
+    connectionsAPI.findRelatedRecords.mockReturnValueOnce(deepest.promise);
+    const details = screen.getAllByTestId('resource-details');
+    act(() => within(details[1]).getByRole('button', { name: 'Find related from details' }).click());
+    expect(screen.getAllByRole('dialog')).toHaveLength(3);
+    act(() => screen.getAllByRole('button', { name: 'Close related issues' }).slice(-1)[0].click());
+    await finish(deepest, [issue('Closed search result', 3)]);
+
+    expect(screen.queryByText('Closed search result')).toBeNull();
+    expect(screen.getAllByRole('dialog')).toHaveLength(2);
+    expect(screen.getAllByTestId('details').map(node => node.textContent)).toEqual(['1:same-id', '2:same-id']);
+    act(() => screen.getAllByRole('button', { name: 'Close related issues' }).slice(-1)[0].click());
+    expect(screen.getAllByRole('dialog')).toHaveLength(1);
+    expect(screen.getByTestId('details').textContent).toBe('1:same-id');
+    click('Close related issues');
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByTestId('details')).toBeNull();
   });
 });

@@ -141,7 +141,10 @@ const Tickets = ({
         }), isBuiltInView).then(res => {
           const rows = Array.isArray(res.data.tickets) ? res.data.tickets : [];
           const linked_records = res?.data?.linked_records || {};
-          linkedGithubStateRef.current = res?.data?.linked_github_issue_state_map || {};
+          const linkedGithubStates = res?.data?.linked_github_issue_state_map || {};
+          linkedGithubStateRef.current = params[0]?.start > 0
+            ? { ...linkedGithubStateRef.current, ...linkedGithubStates }
+            : linkedGithubStates;
           let columns = res?.data?.columns || [];
           const othersConfig = {
             [PREDEFINED_TICKET_COLUMN_NAME.TITLE]: { click: (row) => togglePageSlugId(row._id) },

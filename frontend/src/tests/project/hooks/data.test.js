@@ -186,4 +186,49 @@ describe('Project linked row cache updates', () => {
     expect(load).toHaveBeenCalledTimes(1);
     expect(dataAPI.getTableByName('tickets').id_row_map.A.links).toEqual(['existing']);
   });
+
+  it.each([
+    ['custom view', false, true], ['built-in view', true, true], ['uncached view', false, false],
+  ])('preserves a new task when older %s and task-list responses arrive after its success callback', async (_view, isBuiltIn, useCache) => {
+    jest.useFakeTimers();
+    try {
+      const oldTickets = deferred();
+      const oldTasks = deferred();
+      const freshTickets = { data: {
+        ...listResponse(true).data,
+        linked_records: { '2_7': 'Created task' }, linked_github_issue_state_map: {},
+      } };
+      const freshTasks = { data: { records: [{ _pk: 7, title: 'Created task' }], columns: [{ key: 'title', name: 'title' }] } };
+      const loadTickets = jest.fn().mockReturnValueOnce(oldTickets.promise).mockResolvedValue(freshTickets);
+      const loadTasks = jest.fn().mockReturnValueOnce(oldTasks.promise).mockResolvedValue(freshTasks);
+      const params = { view_id: 'all', start: 0, limit: 20, is_reload: true, use_cache: useCache };
+      const ticketRequest = dataAPI.getMetadata('tickets', params, loadTickets, isBuiltIn);
+      // Start the first task-table read before that table has entered the cache.
+      const taskRequest = dataAPI.getMetadata('tasks', { ...params, use_cache: true }, loadTasks);
+      const onSuccess = jest.fn();
+
+      act(() => dataAPI.insertRowByLink('tasks', 'tickets', { '2_7': 'Created task' }, 'A', current => ({
+        links: Array.from(new Set([...current.links, '2_7'])),
+      }), onSuccess));
+      act(() => jest.runOnlyPendingTimers());
+      expect(onSuccess).toHaveBeenCalledTimes(1);
+      expect(dataAPI.getTableByName('tickets').id_row_map.A.links).toEqual(['existing', '2_7']);
+
+      let result;
+      await act(async () => {
+        oldTickets.resolve(listResponse(false));
+        oldTasks.resolve({ data: { records: [], columns: [] } });
+        [result] = await Promise.all([ticketRequest, taskRequest]);
+      });
+      expect(loadTickets).toHaveBeenCalledTimes(2);
+      expect(loadTasks).toHaveBeenCalledTimes(2);
+      expect(result.data.tickets[0].links).toEqual(['existing', '2_7']);
+      expect(result.data.linked_records['2_7']).toBe('Created task');
+      expect(dataAPI.getTableByName('tickets').id_row_map.A.links).toEqual(['existing', '2_7']);
+      expect(dataAPI.getTableByName('tickets').linked_records['2_7']).toBe('Created task');
+      expect(dataAPI.getTableByName('tasks').id_row_map['7'].title).toBe('Created task');
+    } finally {
+      jest.useRealTimers();
+    }
+  });
 });

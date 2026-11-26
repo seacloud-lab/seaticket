@@ -195,6 +195,7 @@ describe('Ticket list and dialog link synchronization', () => {
   let listRows;
   let linkedRecordTitles;
   let modifyTicket;
+  let loadTickets;
 
   const click = name => act(() => { screen.getByRole('button', { name }).click(); });
   const finishRequest = async () => act(async () => {
@@ -242,11 +243,12 @@ describe('Ticket list and dialog link synchronization', () => {
       modifyRow: (_table, _id, _update, api) => api(),
     });
     modifyTicket = jest.fn().mockResolvedValue({ data: {} });
+    loadTickets = jest.fn().mockImplementation(() => Promise.resolve({ data: {
+      tickets: mockRows,
+      columns: [{ key: 'links', name: 'linked_connection_records' }, { key: 'title', name: 'title' }, { key: 'state', name: 'state' }],
+    } }));
     const api = {
-      getMetadata: () => Promise.resolve({ data: {
-        tickets: mockRows,
-        columns: [{ key: 'links', name: 'linked_connection_records' }, { key: 'title', name: 'title' }, { key: 'state', name: 'state' }],
-      } }),
+      getMetadata: loadTickets,
       modifyRow: modifyTicket,
     };
     container = document.createElement('div');
@@ -327,6 +329,44 @@ describe('Ticket list and dialog link synchronization', () => {
     click(`Link ${source}`);
     await act(async () => { click('Confirm linking'); });
     const api = mockMetadataProps.mock.calls.slice(-1)[0][0].api;
+    await act(async () => { await api.modifyRow('A', { state: '0002' }, false, { data: {
+      id_row_map: listRows, linked_records: linkedRecordTitles,
+    } }); });
+
+    expect(mockOpenCloseWarning).not.toHaveBeenCalled();
+    expect(modifyTicket).toHaveBeenCalledWith('A', { state: 'closed' }, false);
+  });
+
+  it.each([{}, { '3_10': 'open' }])('keeps an earlier ticket GitHub state when the next page only includes %j', async nextPageStates => {
+    click('Close task');
+    click('Link connection');
+    await act(async () => { click('Confirm linking'); });
+    const api = mockMetadataProps.mock.calls.slice(-1)[0][0].api;
+    loadTickets.mockResolvedValueOnce({ data: {
+      tickets: [mockRows[1]], columns: [{ key: 'links', name: 'linked_connection_records' }],
+      linked_github_issue_state_map: nextPageStates,
+    } });
+    await act(async () => { await api.getMetadata({ view_id: 'all', start: 20, limit: 20 }); });
+    await expect(api.modifyRow('A', { state: '0002' }, false, { data: {
+      id_row_map: listRows, linked_records: linkedRecordTitles,
+    } })).rejects.toEqual({ response: { status: 409 } });
+
+    expect(mockOpenCloseWarning).toHaveBeenCalledWith(expect.objectContaining({ ticket: expect.objectContaining({
+      open_github_issues: [{ connection_id: 2, record_pk: 7, title: 'Connection record', state: 'open' }],
+    }) }));
+    expect(modifyTicket).not.toHaveBeenCalled();
+  });
+
+  it.each([[20, { '2_7': 'closed' }], [0, {}]])('uses current states after loading start=%j with %j', async (start, currentStates) => {
+    click('Close task');
+    click('Link connection');
+    await act(async () => { click('Confirm linking'); });
+    const api = mockMetadataProps.mock.calls.slice(-1)[0][0].api;
+    loadTickets.mockResolvedValueOnce({ data: {
+      tickets: mockRows, columns: [{ key: 'links', name: 'linked_connection_records' }],
+      linked_github_issue_state_map: currentStates,
+    } });
+    await act(async () => { await api.getMetadata({ view_id: 'all', start, limit: 20, is_reload: start === 0 }); });
     await act(async () => { await api.modifyRow('A', { state: '0002' }, false, { data: {
       id_row_map: listRows, linked_records: linkedRecordTitles,
     } }); });

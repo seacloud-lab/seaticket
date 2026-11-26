@@ -4,42 +4,54 @@ import ConnectionRelatedIssuesDialog from '@/project/main-panel/connections/comp
 import TicketRelatedIssuesDialog from '@/project/main-panel/tickets/components/related-issues-dialog';
 
 export const useRelatedIssuesWorkflow = ({ projectUuid }) => {
-  const [target, setTarget] = useState(null);
+  const [targets, setTargets] = useState([]);
   const operationId = useRef(0);
 
-  const openRelatedIssues = useCallback(({ row, connection }) => {
+  const openDialog = useCallback(({ row, connection }, parentOperationId) => {
     const rowId = row?._pk ?? row?._id ?? row?.id;
     if (rowId == null || (connection && connection.id == null)) return;
-    setTarget({
+    const target = {
       operationId: ++operationId.current,
       row: { _id: String(rowId) },
       connectionId: connection?.id,
+    };
+    setTargets(current => {
+      if (parentOperationId == null) return [target];
+      if (current[current.length - 1]?.operationId !== parentOperationId) return current;
+      return [...current, target];
     });
   }, []);
 
+  const openRelatedIssues = useCallback(params => openDialog(params), [openDialog]);
+
   const closeDialog = useCallback((targetOperationId) => {
-    setTarget(current => current?.operationId === targetOperationId ? null : current);
+    setTargets(current => current[current.length - 1]?.operationId === targetOperationId ? current.slice(0, -1) : current);
   }, []);
 
   return {
     value: { openRelatedIssues },
     dialogs: (
       <>
-        {target && (target.connectionId != null ? (
-          <ConnectionRelatedIssuesDialog
+        {targets.map(target => (
+          <RelatedIssuesContext.Provider
             key={target.operationId}
-            projectUuid={projectUuid}
-            row={target.row}
-            connectionId={target.connectionId}
-            onClose={() => closeDialog(target.operationId)}
-          />
-        ) : (
-          <TicketRelatedIssuesDialog
-            key={target.operationId}
-            projectUuid={projectUuid}
-            ticketId={target.row._id}
-            onClose={() => closeDialog(target.operationId)}
-          />
+            value={{ openRelatedIssues: params => openDialog(params, target.operationId) }}
+          >
+            {target.connectionId != null ? (
+              <ConnectionRelatedIssuesDialog
+                projectUuid={projectUuid}
+                row={target.row}
+                connectionId={target.connectionId}
+                onClose={() => closeDialog(target.operationId)}
+              />
+            ) : (
+              <TicketRelatedIssuesDialog
+                projectUuid={projectUuid}
+                ticketId={target.row._id}
+                onClose={() => closeDialog(target.operationId)}
+              />
+            )}
+          </RelatedIssuesContext.Provider>
         ))}
       </>
     ),
