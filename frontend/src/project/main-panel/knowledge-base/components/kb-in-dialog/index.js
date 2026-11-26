@@ -12,9 +12,9 @@ const KBInDialog = ({ projectUuid, knowledgeID, updateKB, getKB = (...params) =>
   const [errorMessage, setErrorMessage] = useState('');
   const [knowledge, setKnowledge] = useState('');
 
-  const onLinkClick = useCallback((link) => {
+  const onLinkClick = useCallback((link, fileName) => {
     if (link.includes(`/project/${projectUuid}/`)) {
-      downloadFile(link);
+      downloadFile(link, fileName);
       return;
     }
     window.open(link, '_blank');

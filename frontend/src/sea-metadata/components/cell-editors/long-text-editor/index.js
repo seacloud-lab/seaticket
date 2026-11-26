@@ -91,9 +91,9 @@ class LongTextEditor extends React.PureComponent {
     this.props.onCommitCancel();
   };
 
-  onLinkClick = (link) => {
+  onLinkClick = (link, fileName) => {
     if (link.includes(`/project/${projectUuid}/`)) {
-      downloadFile(link);
+      downloadFile(link, fileName);
       return;
     }
     window.open(link, '_blank');

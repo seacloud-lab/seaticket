@@ -184,6 +184,40 @@ def test_attachment_response_keeps_raster_preview_inline():
     assert response['X-Content-Type-Options'] == 'nosniff'
 
 
+def test_attachment_response_uses_requested_download_filename():
+    response = get_attachment_file_response(
+        BytesIO(b'file contents'),
+        'attachments/ticket/12/4f9b8a.zip',
+        force_download=True,
+        download_filename='report.zip',
+    )
+
+    assert response['Content-Disposition'] == 'attachment; filename="report.zip"'
+
+
+def test_attachment_response_sanitizes_requested_download_filename():
+    response = get_attachment_file_response(
+        BytesIO(b'file contents'),
+        'attachments/ticket/12/4f9b8a.zip',
+        force_download=True,
+        download_filename='../../report\r\n.zip',
+    )
+
+    assert response['Content-Disposition'] == 'attachment; filename="report.zip"'
+
+
+def test_attachment_response_ignores_requested_filename_for_inline_preview():
+    response = get_attachment_file_response(
+        BytesIO(b'png'),
+        'attachments/ticket/12/4f9b8a.png',
+        content_type='image/png',
+        download_filename='report.png',
+    )
+
+    assert response['Content-Type'] == 'image/png'
+    assert 'Content-Disposition' not in response
+
+
 def test_attachment_response_does_not_trust_uploaded_mime_for_active_extension():
     response = get_attachment_file_response(
         BytesIO(b'<script>unsafe()</script>'),

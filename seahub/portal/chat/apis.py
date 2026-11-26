@@ -827,12 +827,18 @@ class PortalChatImageView(APIView):
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
+        is_download = request.query_params.get('download') == '1'
         try:
             file = get_project_file(project_uuid, file_path)
         except Exception as e:
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
-        response = get_attachment_file_response(file, file_path)
+        response = get_attachment_file_response(
+            file,
+            file_path,
+            force_download=is_download,
+            download_filename=request.query_params.get('filename') if is_download else None,
+        )
         response['Cache-Control'] = 'private, max-age=300'
         return response

@@ -494,6 +494,7 @@ const TicketDetails = forwardRef(({
         <Comment
           isSmallScreen={isSmallScreen}
           comment={ticket}
+          projectUuid={projectUuid}
           isShowStatus={true}
           className={classnames({ 'd-none-after': timeline.length === 0 })}
           readonly={!canModifyTicket}
@@ -536,6 +537,7 @@ const TicketDetails = forwardRef(({
               className={classnames('seaqa-project-ticket-add-comment d-none-after mb-0', { 'mt-4': lastOpType === 'log', 'mt-3': lastOpType === 'comment' })}
               isSmallScreen={isSmallScreen}
               comment={{ creator: username }}
+              projectUuid={projectUuid}
               onSubmitComment={onSubmitComment}
             >
               <span className="seaqa-project-ticket-add-comment-title">{gettext('Add a comment')}</span>

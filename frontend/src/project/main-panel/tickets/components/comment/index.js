@@ -42,9 +42,13 @@ const Comment = ({
   const commentEditorRef = useRef(null);
   const isChangeRef = useRef(false);
 
-  const onLinkClick = useCallback((link) => {
-    if (link.includes(`/project/${projectUuid}/`)) {
-      downloadFile(link);
+  const onLinkClick = useCallback((link, fileName) => {
+    if (
+      link.includes(`/project/${projectUuid}/`)
+      || link.includes(`/portal/${projectUuid}/`)
+      || link.includes(`/file/portal/${projectUuid}/`)
+    ) {
+      downloadFile(link, fileName);
       return;
     }
     window.open(link, '_blank');
