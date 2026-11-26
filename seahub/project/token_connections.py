@@ -58,7 +58,7 @@ class ProjectConnectionListByTokenView(APIView):
             deleted=False
         )[start:end]
 
-        records = [conn.to_dict() for conn in connections_qs]
+        records = [conn.to_dict(include_config=False) for conn in connections_qs]
 
         return Response({'records': records})
 

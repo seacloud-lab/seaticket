@@ -66,6 +66,16 @@ def generate_views_unique_id(length, folders_views_ids=None):
 
 
 ENCRYPT_KEYS = ['api_token', 'access_token', 'webhook_secret', 'api_key', 'password', 'integration_secret', 'client_secret', 'refresh_token', 'bot_token']
+NON_ADMIN_CONNECTION_CONFIG_KEYS = {
+    ConnectionType.DISCOURSE_FORUM.value: {'url'},
+    ConnectionType.SEAFILE.value: {'server_url', 'repo_id'},
+    ConnectionType.EMAIL.value: {'smtp_host'},
+    ConnectionType.JIRA_ISSUE.value: {'site_url'},
+    ConnectionType.CONFLUENCE.value: {'workspace_url'},
+    ConnectionType.LINEAR.value: {'workspace_name'},
+    ConnectionType.DISCORD.value: {'guild_id', 'channel_id'},
+    ConnectionType.GITHUB_ISSUE.value: {'repository'},
+}
 
 
 def encrypt_config(config):
@@ -88,7 +98,6 @@ def decrypt_config(config):
     }
     config_clone.update(decrypted_details)
     return config_clone
-
 
 
 class WorkspacesManager(models.Manager):
@@ -616,7 +625,7 @@ class ProjectConnections(models.Model):
     class Meta:
         db_table = 'project_connection'
 
-    def to_dict(self, is_admin=False):
+    def to_dict(self, is_admin=False, include_config=True):
         result = {
             'id': self.id,
             'name': self.name,
@@ -633,8 +642,12 @@ class ProjectConnections(models.Model):
             'content_vector_indexed_at': self.content_vector_indexed_at,
             'content_vector_status': self.content_vector_status
         }
-        if is_admin:
-            result['config'] = decrypt_config(json.loads(self.config))
+        if include_config:
+            config = decrypt_config(json.loads(self.config))
+            if not is_admin:
+                allowed_keys = NON_ADMIN_CONNECTION_CONFIG_KEYS.get(self.type, set())
+                config = {key: value for key, value in config.items() if key in allowed_keys}
+            result['config'] = config
         return result
 
 

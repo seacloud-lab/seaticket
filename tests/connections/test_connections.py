@@ -221,7 +221,13 @@ class TestProjectConnectionsView:
         assert 'records' in resp.data
         assert site_connection.id in [r['id'] for r in resp.data['records']]
 
-    def test_get_non_admin_does_not_return_connection_config(self, factory, project_creator, real_project, site_connection):
+    def test_get_non_admin_returns_connection_config_allowlist(self, factory, project_creator, real_project, connection_factory):
+        connection = connection_factory(connection_type='discourse_forum', config={
+            'url': 'https://forum.example.com',
+            'api_token': 'secret-token',
+            'server_provider': 'Gmail',
+            'unknown_public_field': 'not-allowed',
+        })
         request = factory.get(f'/api/v1/project/{real_project.uuid}/connections/')
         request.user = project_creator
 
@@ -229,8 +235,8 @@ class TestProjectConnectionsView:
             resp = ProjectConnectionsView.as_view()(request, project_uuid=real_project.uuid)
 
         assert resp.status_code == 200
-        record = next(item for item in resp.data['records'] if item['id'] == site_connection.id)
-        assert 'config' not in record
+        record = next(item for item in resp.data['records'] if item['id'] == connection.id)
+        assert record['config'] == {'url': 'https://forum.example.com'}
 
     def test_post_feature_not_enabled(self, factory, no_org_user, real_project):
         project = real_project
@@ -511,17 +517,46 @@ class TestProjectConnectionView:
         assert resp.status_code == 200
         assert resp.data['record']['id'] == site_connection.id
 
-    def test_get_non_admin_does_not_return_connection_config(self, factory, project_creator, real_project, site_connection):
-        request = factory.get(f'/api/v1/project/{real_project.uuid}/connections/{site_connection.id}/')
+    def test_get_non_admin_returns_connection_config_allowlist(self, factory, project_creator, real_project, connection_factory):
+        connection = connection_factory(config={
+            'server_url': 'https://seafile.example.com',
+            'repo_id': 'repo-123',
+            'api_token': 'secret-token',
+            'unknown_public_field': 'not-allowed',
+        })
+        request = factory.get(f'/api/v1/project/{real_project.uuid}/connections/{connection.id}/')
         request.user = project_creator
 
         with patch('seahub.project.connections.check_project_admin_permission', return_value=False):
             resp = ProjectConnectionView.as_view()(
-                request, project_uuid=real_project.uuid, connection_id=str(site_connection.id)
+                request, project_uuid=real_project.uuid, connection_id=str(connection.id)
             )
 
         assert resp.status_code == 200
-        assert 'config' not in resp.data['record']
+        assert resp.data['record']['config'] == {
+            'server_url': 'https://seafile.example.com',
+            'repo_id': 'repo-123',
+        }
+
+    def test_get_non_admin_can_see_github_repository_not_installation_id(
+            self, factory, project_creator, real_project, connection_factory):
+        connection = connection_factory(connection_type='github_issue', config={
+            'repository': 'https://github.com/example/repo',
+            'installation_id': '12345',
+            'webhook_secret': 'secret',
+        })
+        request = factory.get(f'/api/v1/project/{real_project.uuid}/connections/{connection.id}/')
+        request.user = project_creator
+
+        with patch('seahub.project.connections.check_project_admin_permission', return_value=False):
+            resp = ProjectConnectionView.as_view()(
+                request, project_uuid=real_project.uuid, connection_id=str(connection.id)
+            )
+
+        assert resp.status_code == 200
+        assert resp.data['record']['config'] == {
+            'repository': 'https://github.com/example/repo',
+        }
 
     def test_get_admin_includes_connection_config(self, factory, project_creator, real_project, connection_factory):
         connection = connection_factory(config={'api_token': 'secret-token'})
