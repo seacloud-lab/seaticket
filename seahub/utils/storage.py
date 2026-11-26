@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+import uuid
 from datetime import datetime, timezone
 
 from django.utils.http import parse_etags
@@ -120,6 +121,9 @@ def upload_file_to_tmp_dir(project_uuid, file, subdir=''):
     subdir = subdir.strip('/') if subdir else ''
     if not isinstance(file_name, str) or '/' in file_name or '\\' in file_name:
         raise ValueError('Invalid upload file path.')
+
+    _, extension = os.path.splitext(file_name)
+    file_name = f'{uuid.uuid4().hex}{extension}'
 
     file_path = '/'.join(filter(None, (
         subdir, datetime.now(timezone.utc).strftime('%Y-%m'), file_name,
