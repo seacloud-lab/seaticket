@@ -7,6 +7,7 @@ import pytest
 import pytz
 from django.contrib.auth.models import AnonymousUser
 from django.core.cache import cache
+from requests.exceptions import ReadTimeout
 
 from seahub.portal.apis import PortalCustomerMemberView, PortalCustomerMembersView, PortalCustomerView, PortalCustomersView, PortalCustomerEmailsView, PortalExternalInvitationsView, \
     PortalExternalLoginSendCodeView, PortalExternalUsersView, PortalIssueCommentsView, PortalIssueView, PortalIssuesView, PortalMyIssuesView, \
@@ -968,13 +969,15 @@ class TestPortalCustomerIssueAccess:
         assert 'ticket.`assignees` AS' not in sql
         assert 'ticket.`due_date` AS' not in sql
 
-    @pytest.mark.parametrize('run_status, expected_status', [
-        ('completed', 'processed'),
-        ('failed', 'unprocessed'),
-        (None, 'unprocessed'),
+    @pytest.mark.parametrize('run_status, run_query_error, expected_statuses', [
+        ('completed', None, ['unprocessed', 'processed']),
+        ('failed', None, ['unprocessed', 'unprocessed']),
+        (None, None, ['unprocessed', 'unprocessed']),
+        pytest.param(None, ConnectionError('no such table: agent_runs'), [None, None], id='missing-run-table'),
+        pytest.param(None, ReadTimeout('Run query timed out'), [None, None], id='run-query-timeout'),
     ])
     def test_team_emails_loads_participants_and_statuses_only_for_page(
-        self, factory, real_project, run_status, expected_status,
+        self, factory, real_project, run_status, run_query_error, expected_statuses,
     ):
         customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
         member = self._create_external_member(real_project, customer)
@@ -999,8 +1002,10 @@ class TestPortalCustomerIssueAccess:
 
         def query_rows(_project_uuid, sql, params=None, **_kwargs):
             if 'FROM `agent_runs`' in sql:
+                if run_query_error is not None:
+                    raise run_query_error
                 if run_status is None:
-                    raise ConnectionError('no such table: agent_runs')
+                    return {'results': []}
                 return {'results': [{
                     'owner_source_id': f'{connections[1].id}_11',
                     'status': run_status,
@@ -1035,7 +1040,7 @@ class TestPortalCustomerIssueAccess:
         assert participant_thread_ids == {connections[0].id: [12], connections[1].id: [11]}
         run_query = next(call for call in seadb_api.query_rows.call_args_list if 'FROM `agent_runs`' in call.args[1])
         assert run_query.kwargs['params'] == ['email', f'{connections[0].id}_12', f'{connections[1].id}_11']
-        assert [record['processing_status'] for record in response.data['records']] == ['unprocessed', expected_status]
+        assert [record['processing_status'] for record in response.data['records']] == expected_statuses
         assert [
             (record['connection_id'], record['_pk'], record['participants'])
             for record in response.data['records']

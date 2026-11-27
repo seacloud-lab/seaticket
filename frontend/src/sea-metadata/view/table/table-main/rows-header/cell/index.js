@@ -156,12 +156,11 @@ const Cell = ({
     onColumnSelectNone && onColumnSelectNone(column);
   }, [column, onColumnSelectNone]);
 
-  const { key, display_name: name, type } = column;
-  const headerIconTooltip = COLUMNS_ICON_NAME[type];
+  const { key, display_name: name, type, header_icon_only: headerIcon } = column;
+  const headerIconTooltip = headerIcon ? name : COLUMNS_ICON_NAME[type];
   const canModifyColumnOrder = context.canModifyColumnOrder();
   const isPriorityColumn = checkIsPriorityColumn(column);
-  const isProcessingStatusColumn = type === CellType.PROCESSING_STATUS;
-  const isIconOnlyColumn = isPriorityColumn || isProcessingStatusColumn || type === CellType.UNREAD_STATUS || type === CellType.REPLY_STATUS;
+  const isIconOnlyColumn = isPriorityColumn || headerIcon || type === CellType.UNREAD_STATUS || type === CellType.REPLY_STATUS;
   const contentClassName = 'sea-metadata-table-column-content sea-metadata-row-header-cell-left d-flex align-items-center text-truncate';
 
   const cell = (
@@ -170,23 +169,23 @@ const Cell = ({
       ref={headerCellRef}
       style={style}
       id={`sea-metadata-column-${key}`}
-      onClick={() => handleHeaderCellClick(column, frozen)}
+      onClick={headerIcon ? undefined : () => handleHeaderCellClick(column)}
       onContextMenu={onContextMenu}
     >
       <div className={classnames(contentClassName, { 'justify-content-center': isIconOnlyColumn })}>
         <span
           className={classnames({
             'mr-2': !isIconOnlyColumn,
-            'w-100 h-100 d-flex align-items-center justify-content-center': isProcessingStatusColumn,
+            'w-100 h-100 d-flex align-items-center justify-content-center': headerIcon,
           })}
-          id={isProcessingStatusColumn ? undefined : `header-icon-${key}`}
-          ref={isProcessingStatusColumn ? headerIconRef : undefined}
-          role={isProcessingStatusColumn ? 'img' : undefined}
-          aria-label={isProcessingStatusColumn ? headerIconTooltip : undefined}
+          id={headerIcon ? undefined : `header-icon-${key}`}
+          ref={headerIcon ? headerIconRef : undefined}
+          role={headerIcon ? 'img' : undefined}
+          aria-label={headerIcon ? headerIconTooltip : undefined}
         >
-          <Icon symbol={COLUMNS_ICON_CONFIG[type]} className="sea-metadata-icon sea-metadata-column-icon" />
+          <Icon symbol={headerIcon || COLUMNS_ICON_CONFIG[type]} className="sea-metadata-icon sea-metadata-column-icon" />
         </span>
-        <Tooltip placement="bottom" target={isProcessingStatusColumn ? headerIconRef : `header-icon-${key}`} trigger="hover">
+        <Tooltip placement="bottom" target={headerIcon ? headerIconRef : `header-icon-${key}`} trigger="hover">
           {headerIconTooltip}
         </Tooltip>
         {!isIconOnlyColumn && (

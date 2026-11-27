@@ -21,7 +21,6 @@ const CellType = {
   PRIORITY: 'priority',
   UNREAD_STATUS: 'unread-status',
   REPLY_STATUS: 'reply-status',
-  PROCESSING_STATUS: 'processing-status',
   LINK: 'link',
 };
 

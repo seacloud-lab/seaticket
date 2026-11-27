@@ -72,16 +72,16 @@ export const MetadataProvider = forwardRef(({
   }, []);
 
   const recalculateData = useCallback(() => {
-    if (!storeRef.current?.data) return;
+    const store = storeRef.current;
+    if (!store?.data) return;
     setLoading(true);
     setErrorMessage('');
-    storeRef.current.recalculate().then(() => {
-      setMetadata(storeRef.current.data);
-      setLoading(false);
+    store.recalculateView().then(() => {
+      if (store.mounted) setMetadata(store.data);
     }).catch(error => {
-      const errorMsg = Utils.getErrorMsg(error);
-      setErrorMessage(errorMsg);
-      setLoading(false);
+      if (store.mounted) setErrorMessage(Utils.getErrorMsg(error));
+    }).finally(() => {
+      if (store.mounted) setLoading(false);
     });
   }, []);
 

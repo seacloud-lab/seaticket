@@ -34,11 +34,18 @@ export const EMAIL_COLUMNS = [
     key: 'processing_status',
     name: 'processing_status',
     display_name: gettext('Processing status'),
-    type: CellType.PROCESSING_STATUS,
+    type: CellType.SINGLE_SELECT,
+    header_icon_only: 'processing-status',
     width: EMAIL_COLUMN_WIDTHS.processing_status,
     is_width_fixed: true,
     frozen: true,
     editable: false,
+    data: {
+      options: [
+        { id: 'unprocessed', name: gettext('Processing'), color: '#6c757d', text_color: '#FFF' },
+        { id: 'processed', name: gettext('Processed'), color: '#1a7f37', text_color: '#FFF' },
+      ],
+    },
     formatter: <ProcessingStatusFormatter />,
   },
   {
