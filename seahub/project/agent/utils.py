@@ -1499,9 +1499,10 @@ def _validate_ticket_draft_content(content):
     ):
         raise RegenerationValidationError('Ticket suggestion priority must be a non-negative integer.')
     if 'tags' in ticket and (
-        not isinstance(ticket['tags'], list) or not all(isinstance(tag, str) for tag in ticket['tags'])
+        not isinstance(ticket['tags'], list)
+        or not all(not isinstance(tag, bool) and isinstance(tag, int) and tag > 0 for tag in ticket['tags'])
     ):
-        raise RegenerationValidationError('Ticket suggestion tags must be an array of strings.')
+        raise RegenerationValidationError('Ticket suggestion tags must be an array of positive integers.')
 
 
 def _sanitize_payload(seadb_api, project_uuid, tool_name, raw_payload, index):

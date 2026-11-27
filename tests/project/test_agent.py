@@ -6,6 +6,7 @@ from django.core import signing
 import pytest
 
 from seahub.project.agent.utils import (
+    RegenerationValidationError,
     _build_items_map_from_actions,
     _calculate_log_status,
     _calculate_suggestions_status,
@@ -16,6 +17,7 @@ from seahub.project.agent.utils import (
     get_agent_log_runs,
     list_agent_logs,
     populate_email_reply_defaults,
+    validate_materialize_suggestions,
 )
 from seahub.seadb_models.models import SchemaTables
 
@@ -1003,3 +1005,59 @@ def test_refresh_suggestions_includes_status_after_first_100(limited_seadb, last
     ).fetchone()[0]
     assert stored_status == expected
     assert 'GROUP BY `status` ORDER BY `status` ASC LIMIT 0, 100' in api.query_rows.call_args.args[1]
+
+
+def test_validate_materialize_suggestions_accepts_positive_integer_ticket_tags():
+    run = {
+        'owner_source_type': 'portal_issue',
+        'owner_source_id': '9',
+        'event': {'type': 'portal_issue_added', 'trigger_source': {'type': 'portal_issue', 'id': '9'}},
+    }
+    draft = {
+        'suggestion_id': 'draft:0123456789abcdef0123456789abcdef',
+        'tool_name': 'suggest_create_ticket',
+        'suggestion_reason': 'Investigate reported crash.',
+        'suggestion_content': '{"title": "Crash on startup", "content": "Details", "type": "opt1", "priority": 2, "tags": [1, 3]}',
+        'suggestion_payload': {},
+        'target_item_type': 'portal_issue',
+        'target_item_id': '9',
+        'target_item_title': 'Issue 9',
+    }
+    seadb_api = Mock()
+    seadb_api.query_rows.return_value = {'results': []}
+
+    sanitized = validate_materialize_suggestions(seadb_api, 'project-1', run, [], [draft])
+
+    assert len(sanitized) == 1
+    assert sanitized[0]['suggestion_content'] == draft['suggestion_content']
+
+
+@pytest.mark.parametrize('invalid_tags', [['bug'], [0], [-1], [True], 'not-a-list'])
+def test_validate_materialize_suggestions_rejects_non_positive_integer_ticket_tags(invalid_tags):
+    import json
+
+    run = {
+        'owner_source_type': 'portal_issue',
+        'owner_source_id': '9',
+        'event': {'type': 'portal_issue_added', 'trigger_source': {'type': 'portal_issue', 'id': '9'}},
+    }
+    draft = {
+        'suggestion_id': 'draft:0123456789abcdef0123456789abcdef',
+        'tool_name': 'suggest_create_ticket',
+        'suggestion_reason': 'Investigate reported crash.',
+        'suggestion_content': json.dumps({
+            'title': 'Crash on startup',
+            'content': 'Details',
+            'tags': invalid_tags,
+        }),
+        'suggestion_payload': {},
+        'target_item_type': 'portal_issue',
+        'target_item_id': '9',
+        'target_item_title': 'Issue 9',
+    }
+    seadb_api = Mock()
+    seadb_api.query_rows.return_value = {'results': []}
+
+    with pytest.raises(RegenerationValidationError, match='Ticket suggestion tags must be an array of positive integers'):
+        validate_materialize_suggestions(seadb_api, 'project-1', run, [], [draft])
+
