@@ -10,6 +10,7 @@
   background: var(--bs-body-bg);
   border-top: 1px solid var(--bs-border-secondary-color);
   border-bottom: 1px solid var(--bs-border-secondary-color);
+  padding-bottom: 4px;
 }
 
 .sea-metadata-table-footer.at-border {
@@ -22,7 +23,6 @@
 }
 
 .sea-metadata-table-footer .rows-row > span {
-  padding-bottom: 4px;
   line-height: 32px;
   text-align: center;
 }
