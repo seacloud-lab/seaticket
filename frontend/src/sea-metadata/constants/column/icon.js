@@ -24,6 +24,7 @@ const COLUMNS_ICON_CONFIG = {
   [CellType.PRIORITY]: 'flag',
   [CellType.UNREAD_STATUS]: 'read-state',
   [CellType.REPLY_STATUS]: 'reply-status',
+  [CellType.PROCESSING_STATUS]: 'processing-status',
   [CellType.LINK]: 'link',
 };
 
@@ -50,6 +51,7 @@ const COLUMNS_ICON_NAME = {
   [CellType.PRIORITY]: gettext('Priority'),
   [CellType.UNREAD_STATUS]: gettext('Read status'),
   [CellType.REPLY_STATUS]: gettext('Reply status'),
+  [CellType.PROCESSING_STATUS]: gettext('Processing status'),
   [CellType.LINK]: gettext('Link'),
 };
 

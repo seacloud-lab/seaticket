@@ -1,22 +1,26 @@
+import React from 'react';
 import { gettext } from '@/constants';
 import { TICKET_STATE_OPTIONS } from '@/project/main-panel/tickets/constants';
 import { CellType } from '@/sea-metadata';
+import ProcessingStatusFormatter from './processing-status-formatter';
 
 export const EMAIL_TABLE_NAME = 'portal_emails';
 export const EMAIL_LOCAL_STORAGE_PREFIX = 'seaqa-portal-emails';
 export const EMAIL_VIEW = { _id: 'all', name: gettext('All emails') };
 
 export const EMAIL_COLUMN_ORDER = {
-  title: 1,
-  ticket_pk: 2,
-  state: 3,
-  assignees: 4,
-  participants: 5,
-  due_date: 6,
-  modified_time: 7,
+  processing_status: 1,
+  title: 2,
+  ticket_pk: 3,
+  state: 4,
+  assignees: 5,
+  participants: 6,
+  due_date: 7,
+  modified_time: 8,
 };
 
 export const EMAIL_COLUMN_WIDTHS = {
+  processing_status: 32,
   title: 320,
   ticket_pk: 120,
   state: 120,
@@ -26,6 +30,17 @@ export const EMAIL_COLUMN_WIDTHS = {
 };
 
 export const EMAIL_COLUMNS = [
+  {
+    key: 'processing_status',
+    name: 'processing_status',
+    display_name: gettext('Processing status'),
+    type: CellType.PROCESSING_STATUS,
+    width: EMAIL_COLUMN_WIDTHS.processing_status,
+    is_width_fixed: true,
+    frozen: true,
+    editable: false,
+    formatter: <ProcessingStatusFormatter />,
+  },
   {
     key: 'subject',
     name: 'title',

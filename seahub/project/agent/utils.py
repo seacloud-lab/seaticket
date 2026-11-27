@@ -503,6 +503,36 @@ def _build_agent_logs(summary_rows, status_counts):
     return logs
 
 
+def get_portal_email_processing_statuses(seadb_api, project_uuid, source_ids):
+    """Use the latest run's execution status, independent of suggestions."""
+    statuses = dict.fromkeys(source_ids, LOG_STATUS_UNPROCESSED)
+    runs_table = SchemaTables.AGENT_RUNS.table_name()
+    batch_size = 100
+    for offset in range(0, len(source_ids), batch_size):
+        batch = source_ids[offset:offset + batch_size]
+        placeholders = ', '.join('?' for _ in batch)
+        # Run IDs follow creation order. Group by status to avoid returning the full history.
+        sql = (
+            "SELECT `owner_source_id`, `status`, MAX(`_pk`) AS `latest_run_id` "
+            f"FROM `{runs_table}` "
+            f"WHERE `owner_source_type` = ? AND `owner_source_id` IN ({placeholders}) "
+            "GROUP BY `owner_source_id`, `status` LIMIT 0, 10000"
+        )
+        rows = seadb_api.query_rows(project_uuid, sql, params=[ConnectionType.EMAIL.value, *batch]).get('results', [])
+        latest_run_ids = {}
+
+        for row in rows:
+            source_id = row['owner_source_id']
+            run_id = int(row['latest_run_id'])
+            if run_id <= latest_run_ids.get(source_id, -1):
+                continue
+            latest_run_ids[source_id] = run_id
+            run_status = str(row.get('status') or '').strip()
+            statuses[source_id] = LOG_STATUS_PROCESSED if run_status == RUN_STATUS_COMPLETED else LOG_STATUS_UNPROCESSED
+
+    return statuses
+
+
 def _is_matched_log_status(log, log_status):
     if log_status == LOG_STATUS_PROCESSED:
         return log['status'] == LOG_STATUS_PROCESSED

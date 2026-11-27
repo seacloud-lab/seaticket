@@ -27,6 +27,7 @@ from django.template.defaultfilters import filesizeformat
 from seahub.api2.authentication import TokenAuthentication
 from seahub.api2.throttling import UserRateThrottle, PortalTLSAskRateThrottle
 from seahub.api2.utils import api_error, get_user_common_info
+from seahub.project.agent.utils import LOG_STATUS_UNPROCESSED, get_portal_email_processing_statuses
 from seahub.project.models import Projects, ProjectConnections
 from seahub.project.utils import replace_file_url_in_content, get_current_table_metadata, check_project_admin_permission, \
     check_project_permission, check_comment_permission
@@ -794,8 +795,16 @@ class PortalTeamEmailsView(APIView):
             logger.error('Failed to list portal emails for customer %s: %s', customer.id, e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
+        source_ids = [f"{record['connection_id']}_{record['_pk']}" for record in page_records]
+        try:
+            processing_statuses = get_portal_email_processing_statuses(seadb_api, project_uuid, source_ids)
+        except Exception:
+            logger.exception('Failed to load processing statuses for portal customer %s', customer.id)
+            processing_statuses = {}
+
         assignees_by_email = {}
-        for record in page_records:
+        for record, source_id in zip(page_records, source_ids):
+            record['processing_status'] = processing_statuses.get(source_id, LOG_STATUS_UNPROCESSED)
             assignees = []
             for email in record.get('assignees') or []:
                 if not isinstance(email, str) or not email:

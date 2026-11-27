@@ -48,10 +48,12 @@ const TeamEmails = ({ projectUuid }) => {
       const otherColumnsWidth = data.columns
         .filter(column => column !== subjectColumn)
         .reduce((total, column) => total + column.width, 0);
-      subjectColumn.width = Math.max(
+      const availableWidth = metadataContentWidthRef.current;
+      const minSubjectWidth = availableWidth ? Math.min(
         EMAIL_COLUMN_WIDTHS.title,
-        metadataContentWidthRef.current - otherColumnsWidth
-      );
+        Math.max(120, availableWidth - EMAIL_COLUMN_WIDTHS.processing_status - EMAIL_COLUMN_WIDTHS.ticket_pk),
+      ) : EMAIL_COLUMN_WIDTHS.title;
+      subjectColumn.width = Math.max(minSubjectWidth, availableWidth - otherColumnsWidth);
       subjectColumn.click = openThread;
     }
   }, [openThread]);
@@ -167,7 +169,7 @@ const TeamEmails = ({ projectUuid }) => {
         viewTools={[]}
         isShowViewInURL={false}
         dataDidMount={dataDidMount}
-        fixedColumnCount={1}
+        fixedColumnCount={2}
         settings={{
           canManageView: false,
           canClearCells: false,

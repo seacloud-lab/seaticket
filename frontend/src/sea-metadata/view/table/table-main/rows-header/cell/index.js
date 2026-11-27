@@ -37,6 +37,7 @@ const Cell = ({
   onColumnSelectNone,
 }) => {
   const headerCellRef = useRef(null);
+  const headerIconRef = useRef(null);
   const dropdownRef = useRef(null);
 
   const { toggleAllTypes } = useTypesData();
@@ -159,7 +160,8 @@ const Cell = ({
   const headerIconTooltip = COLUMNS_ICON_NAME[type];
   const canModifyColumnOrder = context.canModifyColumnOrder();
   const isPriorityColumn = checkIsPriorityColumn(column);
-  const isIconOnlyColumn = isPriorityColumn || column.type === CellType.UNREAD_STATUS || column.type === CellType.REPLY_STATUS;
+  const isProcessingStatusColumn = type === CellType.PROCESSING_STATUS;
+  const isIconOnlyColumn = isPriorityColumn || isProcessingStatusColumn || type === CellType.UNREAD_STATUS || type === CellType.REPLY_STATUS;
   const contentClassName = 'sea-metadata-table-column-content sea-metadata-row-header-cell-left d-flex align-items-center text-truncate';
 
   const cell = (
@@ -172,10 +174,19 @@ const Cell = ({
       onContextMenu={onContextMenu}
     >
       <div className={classnames(contentClassName, { 'justify-content-center': isIconOnlyColumn })}>
-        <span className={classnames('', { 'mr-2': !isIconOnlyColumn })} id={`header-icon-${key}`}>
+        <span
+          className={classnames({
+            'mr-2': !isIconOnlyColumn,
+            'w-100 h-100 d-flex align-items-center justify-content-center': isProcessingStatusColumn,
+          })}
+          id={isProcessingStatusColumn ? undefined : `header-icon-${key}`}
+          ref={isProcessingStatusColumn ? headerIconRef : undefined}
+          role={isProcessingStatusColumn ? 'img' : undefined}
+          aria-label={isProcessingStatusColumn ? headerIconTooltip : undefined}
+        >
           <Icon symbol={COLUMNS_ICON_CONFIG[type]} className="sea-metadata-icon sea-metadata-column-icon" />
         </span>
-        <Tooltip placement="bottom" target={`header-icon-${key}`} trigger="hover">
+        <Tooltip placement="bottom" target={isProcessingStatusColumn ? headerIconRef : `header-icon-${key}`} trigger="hover">
           {headerIconTooltip}
         </Tooltip>
         {!isIconOnlyColumn && (

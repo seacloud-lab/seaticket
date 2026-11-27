@@ -15,6 +15,7 @@ from seahub.project.agent.utils import (
     _refresh_run_suggestions_status,
     cancel_agent_log_pending_actions,
     get_agent_log_runs,
+    get_portal_email_processing_statuses,
     list_agent_logs,
     populate_email_reply_defaults,
     validate_materialize_suggestions,
@@ -340,6 +341,43 @@ def test_query_run_status_counts_buckets_incomplete_runs_first():
         'open_suggestion_runs': 0,
         'resolved_runs': 3,
     }
+
+
+def test_portal_email_processing_status_uses_only_the_latest_email_run(limited_seadb):
+    api, connection = limited_seadb
+    runs_table = SchemaTables.AGENT_RUNS.table_name()
+    connection.execute(f'DELETE FROM `{runs_table}`')
+    connection.executemany(
+        f'INSERT INTO `{runs_table}` '
+        '(`_pk`, `owner_source_id`, `owner_source_type`, `status`, `suggestions_status`) '
+        'VALUES (?, ?, ?, ?, ?)',
+        [
+            (1, '2_9', 'email', 'completed', 'resolved'),
+            (2, '3_9', 'email', 'running', 'none'),
+            (3, '2_10', 'email', 'completed', 'pending'),
+            (4, '2_11', 'email', 'completed', 'none'),
+            (5, '2_12', 'email', 'failed', 'pending'),
+            (6, '2_13', 'github_issue', 'completed', 'resolved'),
+            (7, '2_12', 'email', 'completed', 'resolved'),
+            (8, '2_11', 'email', 'failed', 'none'),
+            (9, '3_9', 'email', 'completed', 'none'),
+            (10, '3_9', 'email', 'running', 'none'),
+        ],
+    )
+    statuses = get_portal_email_processing_statuses(api, 'project-1', [
+        '2_9', '3_9', '2_10', '2_11', '2_12', '2_13', '2_14',
+    ])
+    assert statuses == {
+        '2_9': 'processed',
+        '3_9': 'unprocessed',
+        '2_10': 'processed',
+        '2_11': 'unprocessed',
+        '2_12': 'processed',
+        '2_13': 'unprocessed',
+        '2_14': 'unprocessed',
+    }
+    assert api.query_rows.call_count == 1
+    assert api.update_rows.call_count == 0
 
 
 @pytest.mark.parametrize('completed_runs', [0, 1])
