@@ -72,6 +72,7 @@ const RUN_EVENT = {
 
   // email
   EMAIL_THREAD_ADDED: 'email_thread_added',
+  EMAIL_MESSAGE_RECEIVED: 'email_message_received',
   EMAIL_MESSAGE_ADDED: 'email_message_added',
 
   // discord
@@ -100,6 +101,7 @@ const RUN_EVENT_NAME = {
   [RUN_EVENT.PORTAL_ISSUE_ADDED]: gettext('New portal issue'),
   [RUN_EVENT.PORTAL_ISSUE_COMMENT_ADDED]: gettext('New portal issue comment'),
   [RUN_EVENT.EMAIL_THREAD_ADDED]: gettext('New email thread'),
+  [RUN_EVENT.EMAIL_MESSAGE_RECEIVED]: gettext('New email message'),
   [RUN_EVENT.EMAIL_MESSAGE_ADDED]: gettext('New email message'),
   [RUN_EVENT.DISCORD_THREAD_ADDED]: gettext('New Discord thread'),
   [RUN_EVENT.DISCORD_THREAD_MESSAGE_ADDED]: gettext('New Discord message'),
@@ -112,6 +114,7 @@ const RUN_EVENT_NAME = {
 
 const RUN_EVENT_VIEW_SOURCE_TEXT = {
   [RUN_EVENT.EMAIL_THREAD_ADDED]: gettext('View email'),
+  [RUN_EVENT.EMAIL_MESSAGE_RECEIVED]: gettext('View email'),
   [RUN_EVENT.EMAIL_MESSAGE_ADDED]: gettext('View email'),
   [RUN_EVENT.GITHUB_ISSUE_ADDED]: gettext('View issue'),
   [RUN_EVENT.GITHUB_ISSUE_COMMENT_ADDED]: gettext('View comment'),

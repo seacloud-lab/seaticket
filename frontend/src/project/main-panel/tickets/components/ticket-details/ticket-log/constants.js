@@ -40,7 +40,10 @@ export const LOG_TYPE = {
   DISCORD_THREAD_MESSAGE_ADDED: 'discord_thread_message_added',
 
   // email
+  EMAIL_THREAD_ADDED: 'email_thread_added',
   EMAIL_MESSAGE_ADDED: 'email_message_added',
+  EMAIL_MESSAGE_RECEIVED: 'email_message_received',
+  EMAIL_MESSAGE_SENT: 'email_message_sent',
 };
 
 export const LOG_ICONS = {
@@ -79,7 +82,10 @@ export const LOG_ICONS = {
   [LOG_TYPE.DISCORD_THREAD_UPDATED]: 'discord-filled',
   [LOG_TYPE.DISCORD_THREAD_MESSAGE_ADDED]: 'discord-filled',
 
+  [LOG_TYPE.EMAIL_THREAD_ADDED]: 'email-filled',
   [LOG_TYPE.EMAIL_MESSAGE_ADDED]: 'email-filled',
+  [LOG_TYPE.EMAIL_MESSAGE_RECEIVED]: 'email-filled',
+  [LOG_TYPE.EMAIL_MESSAGE_SENT]: 'email-filled',
 };
 
 export const LINKED_ACTIVITY_TYPES = [
@@ -101,5 +107,8 @@ export const LINKED_ACTIVITY_TYPES = [
   LOG_TYPE.DISCORD_THREAD_UPDATED,
   LOG_TYPE.DISCORD_THREAD_MESSAGE_ADDED,
 
+  LOG_TYPE.EMAIL_THREAD_ADDED,
   LOG_TYPE.EMAIL_MESSAGE_ADDED,
+  LOG_TYPE.EMAIL_MESSAGE_RECEIVED,
+  LOG_TYPE.EMAIL_MESSAGE_SENT,
 ];

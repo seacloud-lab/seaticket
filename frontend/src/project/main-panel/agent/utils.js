@@ -14,6 +14,7 @@ export const getTriggerInfoFromRun = (run) => {
     case RUN_EVENT.DISCORD_THREAD_ADDED: {
       return { key: 'index', value: 0 };
     }
+    case RUN_EVENT.EMAIL_MESSAGE_RECEIVED:
     case RUN_EVENT.EMAIL_MESSAGE_ADDED:
     case RUN_EVENT.DISCORD_THREAD_MESSAGE_ADDED: {
       return { key: 'value', value: newValue?.message_id };

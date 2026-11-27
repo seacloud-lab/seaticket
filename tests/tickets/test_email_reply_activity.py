@@ -20,7 +20,7 @@ class TestRecordEmailReplyActivity:
         assert table_name == SchemaTables.TICKET_ACTIVITIES.table_name()
         row = rows[0]
         assert row['ticket_id'] == 5
-        assert row['activity_type'] == 'email_message_added'
+        assert row['activity_type'] == 'email_message_sent'
         detail = json.loads(row['detail'])
         assert detail['connection_id'] == 3
         assert detail['record_id'] == 10
@@ -56,6 +56,11 @@ class TestSaveReplyEmailActivity:
         assert pk == 99
         inserted_tables = [call.args[1] for call in seadb_api.insert_rows.call_args_list]
         assert SchemaTables.TICKET_ACTIVITIES.table_name() in inserted_tables
+        activity_call = next(
+            call for call in seadb_api.insert_rows.call_args_list
+            if call.args[1] == SchemaTables.TICKET_ACTIVITIES.table_name()
+        )
+        assert activity_call.args[2][0]['activity_type'] == 'email_message_sent'
 
     def test_skips_activity_for_unlinked_thread(self):
         seadb_api = Mock()
