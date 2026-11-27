@@ -66,6 +66,16 @@ def generate_views_unique_id(length, folders_views_ids=None):
 
 
 ENCRYPT_KEYS = ['api_token', 'access_token', 'webhook_secret', 'api_key', 'password', 'integration_secret', 'client_secret', 'refresh_token', 'bot_token']
+NON_ADMIN_CONNECTION_CONFIG_KEYS = {
+    ConnectionType.DISCOURSE_FORUM.value: {'url'},
+    ConnectionType.SEAFILE.value: {'server_url', 'repo_id'},
+    ConnectionType.EMAIL.value: {'smtp_host'},
+    ConnectionType.JIRA_ISSUE.value: {'site_url'},
+    ConnectionType.CONFLUENCE.value: {'workspace_url'},
+    ConnectionType.LINEAR.value: {'workspace_name'},
+    ConnectionType.DISCORD.value: {'guild_id', 'channel_id'},
+    ConnectionType.GITHUB_ISSUE.value: {'repository'},
+}
 
 
 def encrypt_config(config):
@@ -88,7 +98,6 @@ def decrypt_config(config):
     }
     config_clone.update(decrypted_details)
     return config_clone
-
 
 
 class WorkspacesManager(models.Manager):
@@ -338,11 +347,15 @@ class Projects(models.Model):
         unique_together = (('workspace', 'name'),)
         db_table = 'projects'
 
-    def to_dict(self, include_deleted=False):
+    def get_settings(self):
         try:
             settings = json.loads(self.settings) if self.settings else {}
         except (TypeError, ValueError, json.JSONDecodeError):
             settings = {}
+
+        return merge_project_settings_defaults(settings)
+
+    def to_dict(self, include_deleted=False, is_admin=False):
         result = {
             'id': self.pk,
             'workspace_id': self.workspace_id,
@@ -354,8 +367,9 @@ class Projects(models.Model):
             'text_color': self.text_color,
             'icon': self.icon,
             'is_encrypted': self.is_encrypted(),
-            'settings': merge_project_settings_defaults(settings),
         }
+        if is_admin:
+            result['settings'] = self.get_settings()
         if include_deleted:
             result.update({
                 'deleted': self.deleted,
@@ -611,12 +625,11 @@ class ProjectConnections(models.Model):
     class Meta:
         db_table = 'project_connection'
 
-    def to_dict(self):
-        return {
+    def to_dict(self, is_admin=False, include_config=True):
+        result = {
             'id': self.id,
             'name': self.name,
             'type': self.type,
-            'config': decrypt_config(json.loads(self.config)),
             'modifier': self.modifier,
             'created_at': self.created_at,
             'indexed_at': self.indexed_at,
@@ -629,6 +642,13 @@ class ProjectConnections(models.Model):
             'content_vector_indexed_at': self.content_vector_indexed_at,
             'content_vector_status': self.content_vector_status
         }
+        if include_config:
+            config = decrypt_config(json.loads(self.config))
+            if not is_admin:
+                allowed_keys = NON_ADMIN_CONNECTION_CONFIG_KEYS.get(self.type, set())
+                config = {key: value for key, value in config.items() if key in allowed_keys}
+            result['config'] = config
+        return result
 
 
 class ConnectionsView(object):
@@ -1139,7 +1159,7 @@ class ProjectGithubAppInstallationManager(models.Manager):
 
     def get_project_installation(self, project_uuid, installation_id):
         try:
-            return self.get(project_uuid=project_uuid,installation_id=installation_id)
+            return self.get(project_uuid=project_uuid, installation_id=installation_id)
         except self.model.DoesNotExist:
             return None
 

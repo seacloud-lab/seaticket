@@ -139,6 +139,15 @@ def create_connection(project, username, connection_type, name, config):
     from seahub.project.connections import add_connection_sync_task
 
     project_uuid = project.uuid
+    if connection_type == ConnectionType.GITHUB_ISSUE.value:
+        from seahub.project.github_issues_api import validate_github_connection_config
+        try:
+            config = validate_github_connection_config(project_uuid, config)
+        except ValueError as e:
+            return None, api_error(status.HTTP_403_FORBIDDEN, str(e))
+        except Exception:
+            logger.warning('Failed to validate GitHub repository for project %s', project_uuid)
+            return None, api_error(status.HTTP_502_BAD_GATEWAY, 'Failed to validate GitHub repository.')
     enable_create = ProjectConnections.objects.enable_create(project_uuid, connection_type, config)
     if not enable_create:
         return None, api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Please check input')
@@ -276,9 +285,6 @@ def check_ticket_permission(username, workspace_owner, ticket=None):
     if not username or not workspace_owner or not ticket:
         return None
 
-    if ticket.get('creator') == username:
-        return PERMISSION_READ_WRITE
-
     return check_project_permission(username, workspace_owner)
 
 
@@ -286,6 +292,9 @@ def check_comment_permission(username, workspace_owner, comment=None):
     """Check comment permission of a user.
     """
     if not username or not workspace_owner or not comment:
+        return None
+
+    if not check_project_permission(username, workspace_owner):
         return None
 
     if comment.get('creator') == username:

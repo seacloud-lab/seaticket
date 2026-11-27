@@ -61,9 +61,9 @@ from seahub.utils.storage import FileNotFound, get_project_file, get_project_fil
 logger = logging.getLogger(__name__)
 
 
-def _get_session_or_error(session_uuid, username):
+def _get_session_or_error(project_uuid, session_uuid, username):
     session = PortalChatSessions.objects.get_session_by_uuid(session_uuid)
-    if not session:
+    if not session or str(session.project_uuid) != str(project_uuid):
         return None, api_error(status.HTTP_404_NOT_FOUND, 'Session not found.')
     if session.username != username:
         return None, api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
@@ -171,7 +171,7 @@ class PortalChatSessionView(APIView):
         if not session_name:
             return api_error(status.HTTP_400_BAD_REQUEST, 'session_name parameter is required.')
 
-        session, error = _get_session_or_error(session_uuid, request.identity['username'])
+        session, error = _get_session_or_error(project_uuid, session_uuid, request.identity['username'])
         if error:
             return error
 
@@ -186,7 +186,7 @@ class PortalChatSessionView(APIView):
     @portal_endpoint
     def delete(self, request, project_uuid, session_uuid):
         """Delete portal chat session"""
-        _, error = _get_session_or_error(session_uuid, request.identity['username'])
+        _, error = _get_session_or_error(project_uuid, session_uuid, request.identity['username'])
         if error:
             return error
 
@@ -213,7 +213,7 @@ class PortalChatSessionTitleView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, 'ai_reply parameter is required.')
         ai_reply = request.data.get('ai_reply', '')
 
-        _, error = _get_session_or_error(session_uuid, request.identity['username'])
+        _, error = _get_session_or_error(project_uuid, session_uuid, request.identity['username'])
         if error:
             return error
 
@@ -240,7 +240,7 @@ class PortalChatMessagesView(APIView):
     @portal_endpoint
     def get(self, request, project_uuid, session_uuid):
         """Retrieve the message list of the portal chat session"""
-        _, error = _get_session_or_error(session_uuid, request.identity['username'])
+        _, error = _get_session_or_error(project_uuid, session_uuid, request.identity['username'])
         if error:
             return error
 
@@ -502,7 +502,7 @@ class PortalChatView(APIView):
             return api_error(status.HTTP_400_BAD_REQUEST, 'session_uuid parameter is required.')
 
         try:
-            _, error = _get_session_or_error(session_uuid, request.identity['username'])
+            _, error = _get_session_or_error(project_uuid, session_uuid, request.identity['username'])
             if error:
                 return error
 
@@ -549,7 +549,7 @@ class PortalChatView(APIView):
         if not isinstance(clear_context, bool):
             return api_error(status.HTTP_400_BAD_REQUEST, 'clear_context invalid.')
 
-        stream = request.project.to_dict()['settings'].get('streaming_response', True)
+        stream = request.project.get_settings().get('streaming_response', True)
         stream_from_request = request.data.get('stream')
         if stream_from_request is not None:
             if isinstance(stream_from_request, str):
@@ -561,7 +561,7 @@ class PortalChatView(APIView):
         portal_settings = get_portal_chat_settings(request.project)
         username = request.identity['username']
 
-        session, error = _get_session_or_error(session_uuid, username)
+        session, error = _get_session_or_error(project_uuid, session_uuid, username)
         if error:
             return error
 
@@ -803,13 +803,13 @@ class PortalChatImageView(APIView):
             if payload.get('username') != request.user.username:
                 return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
             
-            session, error = _get_session_or_error(session_uuid, payload.get('session_username'))
+            session, error = _get_session_or_error(project_uuid, session_uuid, payload.get('session_username'))
             if error:
                 return error
         else:
             if payload.get('username') != username:
                 return api_error(status.HTTP_403_FORBIDDEN, 'Permission denied.')
-            session, error = _get_session_or_error(session_uuid, username)
+            session, error = _get_session_or_error(project_uuid, session_uuid, username)
             if error:
                 return error
         if str(session.project_uuid) != str(project_uuid):
@@ -827,12 +827,18 @@ class PortalChatImageView(APIView):
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
+        is_download = request.query_params.get('download') == '1'
         try:
             file = get_project_file(project_uuid, file_path)
         except Exception as e:
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
-        response = get_attachment_file_response(file, file_path)
+        response = get_attachment_file_response(
+            file,
+            file_path,
+            force_download=is_download,
+            download_filename=request.query_params.get('filename') if is_download else None,
+        )
         response['Cache-Control'] = 'private, max-age=300'
         return response

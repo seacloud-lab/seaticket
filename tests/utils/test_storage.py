@@ -1,4 +1,6 @@
 import json
+import os
+import uuid
 from io import BytesIO
 from types import SimpleNamespace
 
@@ -8,8 +10,35 @@ from seahub.utils.storage import (
     upload_portal_background_image_file,
     upload_portal_files,
     upload_portal_logo_file,
+    upload_file_to_tmp_dir,
 )
 from django.core.files.uploadedfile import SimpleUploadedFile
+
+
+def test_tmp_upload_uses_unique_name_and_preserves_extension(tmp_path, monkeypatch):
+    project_uuid = "d5439489-198f-4f54-9bb2-0261dd582ea3"
+    monkeypatch.setattr(
+        "seahub.utils.storage._resolve_tmp_upload_path",
+        lambda _project_uuid, file_path: (str(tmp_path), str(tmp_path / file_path)),
+    )
+
+    first_path = upload_file_to_tmp_dir(
+        project_uuid,
+        SimpleUploadedFile("same-name.png", b"first", content_type="image/png"),
+    )
+    second_path = upload_file_to_tmp_dir(
+        project_uuid,
+        SimpleUploadedFile("same-name.png", b"second", content_type="image/png"),
+    )
+
+    assert first_path != second_path
+    assert first_path.endswith(".png")
+    assert second_path.endswith(".png")
+    uuid.UUID(os.path.splitext(os.path.basename(first_path))[0])
+    uuid.UUID(os.path.splitext(os.path.basename(second_path))[0])
+    with open(first_path, "rb") as first_file, open(second_path, "rb") as second_file:
+        assert first_file.read() == b"first"
+        assert second_file.read() == b"second"
 
 
 def test_upload_portal_logo_file_uses_project_path(tmp_path, monkeypatch):
@@ -153,6 +182,40 @@ def test_attachment_response_keeps_raster_preview_inline():
     assert response['Content-Type'] == 'image/png'
     assert 'Content-Disposition' not in response
     assert response['X-Content-Type-Options'] == 'nosniff'
+
+
+def test_attachment_response_uses_requested_download_filename():
+    response = get_attachment_file_response(
+        BytesIO(b'file contents'),
+        'attachments/ticket/12/4f9b8a.zip',
+        force_download=True,
+        download_filename='report.zip',
+    )
+
+    assert response['Content-Disposition'] == 'attachment; filename="report.zip"'
+
+
+def test_attachment_response_sanitizes_requested_download_filename():
+    response = get_attachment_file_response(
+        BytesIO(b'file contents'),
+        'attachments/ticket/12/4f9b8a.zip',
+        force_download=True,
+        download_filename='../../report\r\n.zip',
+    )
+
+    assert response['Content-Disposition'] == 'attachment; filename="report.zip"'
+
+
+def test_attachment_response_ignores_requested_filename_for_inline_preview():
+    response = get_attachment_file_response(
+        BytesIO(b'png'),
+        'attachments/ticket/12/4f9b8a.png',
+        content_type='image/png',
+        download_filename='report.png',
+    )
+
+    assert response['Content-Type'] == 'image/png'
+    assert 'Content-Disposition' not in response
 
 
 def test_attachment_response_does_not_trust_uploaded_mime_for_active_extension():

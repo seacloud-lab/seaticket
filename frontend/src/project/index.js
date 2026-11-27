@@ -23,6 +23,22 @@ import './index.css';
 
 const { projectName, projectUuid, workspaceID, settings: initSettings } = window.app.pageOptions;
 
+const mergeSettings = (current = {}, updates = {}, path = []) => {
+  const merged = { ...current };
+  Object.entries(updates).forEach(([key, value]) => {
+    const currentPath = [...path, key];
+    if (currentPath.join('.') === 'portal.portal_home_settings' || Array.isArray(value)) {
+      merged[key] = value;
+    } else if (value && typeof value === 'object' && current[key]
+      && typeof current[key] === 'object' && !Array.isArray(current[key])) {
+      merged[key] = mergeSettings(current[key], value, currentPath);
+    } else {
+      merged[key] = value;
+    }
+  });
+  return merged;
+};
+
 const Project = () => {
   const [isLoading, setLoading] = useState(true);
   const [activeBar, setActiveBar] = useState([BAR_TYPE.CHAT]);
@@ -151,14 +167,14 @@ const Project = () => {
 
   const modifySettings = useCallback((update, callback) => {
     return projectAPI.updateProject(workspaceID, projectName, { settings: update }).then(res => {
-      setSettings({ ...settings, ...update });
+      setSettings(current => mergeSettings(current, update));
       callback && callback();
     }).catch(error => {
       const errorMessage = Utils.getErrorMsg(error);
       toaster.danger(errorMessage);
       callback && callback({ error });
     });
-  }, [settings]);
+  }, [projectName, workspaceID]);
 
   useEffect(() => {
     const { pathname, search } = location;

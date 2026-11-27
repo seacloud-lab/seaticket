@@ -55,7 +55,7 @@ const Settings = ({
                   placeholder={gettext('Support portal')}
                   tip={gettext('Enable support portal')}
                   value={settings.portal?.enable_portal || false}
-                  onChange={(value, callback) => modifySettings({ portal: Object.assign({}, settings.portal, { 'enable_portal': value }) }, callback)}
+                  onChange={(value, callback) => modifySettings({ portal: { enable_portal: value } }, callback)}
                 />
               </SettingsItem>
               {settings.portal?.enable_portal && (
@@ -67,7 +67,7 @@ const Settings = ({
                   placeholder={gettext('Define rules for AI conversations with external support portal users. Specify response tone, information boundaries, escalation guidance, and any topics the AI should avoid.')}
                   validationMessage={gettext('Portal chat prompt cannot contain tag-like content such as <system-reminder>.')}
                   onChange={(value, callback) => modifySettings({
-                    portal: Object.assign({}, settings.portal, { chat_prompt: value }),
+                    portal: { chat_prompt: value },
                   }, callback)}
                 />
               )}
@@ -84,7 +84,7 @@ const Settings = ({
                   placeholder={gettext('Enable Agent')}
                   tip={gettext('Enable agent to automatically analyze and process tickets, GitHub issues, etc.')}
                   value={settings.agent?.enabled}
-                  onChange={(value, callback) => modifySettings({ agent: Object.assign({}, settings.agent, { enabled: value }) }, callback)}
+                  onChange={(value, callback) => modifySettings({ agent: { enabled: value } }, callback)}
                 />
               </SettingsItem>
               {settings.agent?.enabled && (
@@ -92,7 +92,7 @@ const Settings = ({
                   <PromptSettings
                     value={settings?.agent?.ticket_rules || ''}
                     onChange={(value, callback) => modifySettings({
-                      agent: Object.assign({}, settings.agent, { ticket_rules: value }),
+                      agent: { ticket_rules: value },
                     }, callback)}
                     className='ticket-agent-rules-settings'
                     title={gettext('Ticket processing rules')}
@@ -105,13 +105,13 @@ const Settings = ({
                   <AgentAutoConfirmSettings
                     value={settings?.agent?.auto_confirm || {}}
                     onChange={(value, callback) => modifySettings({
-                      agent: Object.assign({}, settings.agent, { auto_confirm: value }),
+                      agent: { auto_confirm: value },
                     }, callback)}
                   />
                   <GitHubIssueTypeMappingSettings
                     value={settings?.agent?.github_issue_type_mapping || {}}
                     onChange={(value, callback) => modifySettings({
-                      agent: Object.assign({}, settings.agent, { github_issue_type_mapping: value }),
+                      agent: { github_issue_type_mapping: value },
                     }, callback)}
                   />
                 </>

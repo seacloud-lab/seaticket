@@ -96,13 +96,17 @@ class GetPortalUploadFileView(APIView):
             return api_error(status.HTTP_404_NOT_FOUND, 'File not exist.')
 
         etag, last_modified_time = gen_file_etag_and_modified_time(tmp_upload_file_path)
-        if if_none_match_hit(request, etag):
+        is_download = request.query_params.get('download') == '1'
+        if not is_download and if_none_match_hit(request, etag):
             not_modified = HttpResponseNotModified()
             not_modified['Cache-Control'] = 'max-age=604800, private'
             return not_modified
 
         response = get_attachment_file_response(
-            open(tmp_upload_file_path, 'rb'), file_path
+            open(tmp_upload_file_path, 'rb'),
+            file_path,
+            force_download=is_download,
+            download_filename=request.query_params.get('filename') if is_download else None,
         )
         response['Cache-Control'] = 'max-age=604800, private'
         response['ETag'] = etag
@@ -165,7 +169,8 @@ class PortalFileView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
         etag = s3_meta.get('ETag')
-        if etag and if_none_match_hit(request, etag):
+        is_download = request.query_params.get('download') == '1'
+        if etag and not is_download and if_none_match_hit(request, etag):
             not_modified = HttpResponseNotModified()
             not_modified['Cache-Control'] = 'max-age=604800, private'
             return not_modified
@@ -176,7 +181,12 @@ class PortalFileView(APIView):
             logger.error(e)
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
-        response = get_attachment_file_response(file, file_path)
+        response = get_attachment_file_response(
+            file,
+            file_path,
+            force_download=is_download,
+            download_filename=request.query_params.get('filename') if is_download else None,
+        )
         response['Cache-Control'] = 'max-age=604800, private'
         if etag:
             response['ETag'] = etag

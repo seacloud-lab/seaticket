@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+import uuid
 from datetime import datetime, timezone
 
 from django.utils.http import parse_etags
@@ -120,6 +121,9 @@ def upload_file_to_tmp_dir(project_uuid, file, subdir=''):
     subdir = subdir.strip('/') if subdir else ''
     if not isinstance(file_name, str) or '/' in file_name or '\\' in file_name:
         raise ValueError('Invalid upload file path.')
+
+    _, extension = os.path.splitext(file_name)
+    file_name = f'{uuid.uuid4().hex}{extension}'
 
     file_path = '/'.join(filter(None, (
         subdir, datetime.now(timezone.utc).strftime('%Y-%m'), file_name,
@@ -282,7 +286,7 @@ def is_safe_inline_attachment(file_path, content_type=None):
     return content_type in INLINE_ATTACHMENT_CONTENT_TYPES.values()
 
 
-def get_attachment_file_response(file, file_path, content_type=None, force_download=False):
+def get_attachment_file_response(file, file_path, content_type=None, force_download=False, download_filename=None):
     safe_inline = is_safe_inline_attachment(file_path, content_type)
     as_attachment = force_download or not safe_inline
     inline_content_type = INLINE_ATTACHMENT_CONTENT_TYPES.get(
@@ -291,11 +295,19 @@ def get_attachment_file_response(file, file_path, content_type=None, force_downl
     response = FileResponse(
         file,
         as_attachment=as_attachment,
-        filename=os.path.basename(file_path) if as_attachment else None,
+        filename=(sanitize_download_filename(download_filename) or os.path.basename(file_path)) if as_attachment else None,
         content_type='application/octet-stream' if as_attachment else inline_content_type,
     )
     response['X-Content-Type-Options'] = 'nosniff'
     return response
+
+
+def sanitize_download_filename(filename):
+    if not isinstance(filename, str):
+        return ''
+    filename = os.path.basename(filename.replace('\\', '/')).strip()
+    filename = ''.join(char for char in filename if ord(char) >= 32 and ord(char) != 127)
+    return filename[:255]
 
 
 def get_project_file(project_uuid, file_path):

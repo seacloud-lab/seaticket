@@ -223,6 +223,19 @@ def login_code(real_project, external_user):
 @pytest.mark.django_db
 class TestPortalExternalUserAccess:
 
+    @pytest.mark.parametrize('view', [PortalExternalLoginSendCodeView, PortalExternalLoginVerifyCodeView])
+    def test_deleted_project_rejects_login(self, factory, real_project, external_user, login_code, view):
+        real_project.deleted = True
+        real_project.save(update_fields=['deleted'])
+        request = factory.post('/', {'email': external_user.email, 'code': '123456'}, format='json')
+
+        with patch('seahub.portal.apis.send_html_email_with_dj_template') as send_mail:
+            response = view.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert response.status_code == 404
+        assert 'portal_external_username' not in request.session
+        send_mail.assert_not_called()
+
     @pytest.mark.parametrize('activated', [True, False])
     def test_user_receives_login_code(
             self, factory, real_project, external_user, login_code, activated):
@@ -237,6 +250,19 @@ class TestPortalExternalUserAccess:
         assert response.status_code == 200
         send_mail.assert_called_once()
         assert cache.get(login_code) is not None
+
+    def test_send_login_code_rejected_when_portal_disabled(
+            self, factory, real_project, external_user):
+        real_project.settings = '{"portal": {"enable_portal": false}}'
+        real_project.save(update_fields=['settings'])
+        request = factory.post('/', data={'email': external_user.email}, format='json')
+
+        with patch('seahub.portal.apis.send_html_email_with_dj_template') as send_mail:
+            response = PortalExternalLoginSendCodeView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert response.status_code == 403
+        assert response.data['error_msg'] == 'Portal is not enabled.'
+        send_mail.assert_not_called()
 
     def test_invalid_code_is_rejected(
             self, factory, real_project, external_user, login_code):
@@ -272,6 +298,22 @@ class TestPortalExternalUserAccess:
         )
         external_user.refresh_from_db()
         assert external_user.activated is True
+
+    def test_verify_login_code_rejected_when_portal_disabled(
+            self, factory, real_project, external_user, login_code):
+        external_user.activated = False
+        external_user.save(update_fields=['activated'])
+        real_project.settings = '{"portal": {"enable_portal": false}}'
+        real_project.save(update_fields=['settings'])
+        request = factory.post('/', data={'email': external_user.email, 'code': '123456'}, format='json')
+
+        response = PortalExternalLoginVerifyCodeView.as_view()(request, project_uuid=str(real_project.uuid))
+
+        assert response.status_code == 403
+        assert response.data['error_msg'] == 'Portal is not enabled.'
+        assert 'portal_external_username' not in request.session
+        external_user.refresh_from_db()
+        assert external_user.activated is False
 
     def test_missing_mail_configuration_is_rejected_before_transaction(
             self, factory, project_creator, real_project, external_user):

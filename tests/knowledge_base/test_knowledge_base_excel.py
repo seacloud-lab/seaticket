@@ -7,6 +7,9 @@ import os
 from unittest.mock import Mock, patch
 
 from django.core.files.uploadedfile import SimpleUploadedFile
+from rest_framework.test import APIRequestFactory
+
+from seahub.knowledge_base.knowledge_base_excel import KnowledgeBaseIOStatus
 
 
 def get_kb_convert_view_url(project_uuid):
@@ -80,6 +83,14 @@ class TestKnowledgeBaseConvertViewToExcel:
 
 
 class TestKnowledgeBaseIOStatus:
+    def test_anonymous_request_is_rejected_before_querying_task(self):
+        request = APIRequestFactory().get(get_kb_io_status_url(), {'task_id': 'task-1'})
+        with patch('seahub.knowledge_base.knowledge_base_excel.query_io_task_status') as query_status:
+            response = KnowledgeBaseIOStatus.as_view()(request)
+
+        assert response.status_code in (401, 403)
+        query_status.assert_not_called()
+
     def test_get_missing_task_id_returns_400(self, api_client):
         url = get_kb_io_status_url()
 

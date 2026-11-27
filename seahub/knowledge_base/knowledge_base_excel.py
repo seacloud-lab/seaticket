@@ -95,6 +95,7 @@ class KnowledgeBaseImportExcelExample(APIView):
 
 class KnowledgeBaseIOStatus(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request):

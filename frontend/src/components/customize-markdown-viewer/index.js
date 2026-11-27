@@ -45,6 +45,21 @@ class CustomizeMarkdownViewer extends React.PureComponent {
       this.setState({ innerHtml });
     });
   };
+
+  handleLinkClickCapture = (event) => {
+    const target = event.target;
+    const link = target instanceof Element ? target.closest('[data-url]') : null;
+    this.clickedLinkText = link?.textContent?.trim() || '';
+  };
+
+  handleLinkClick = (link) => {
+    const { onLinkClick } = this.props;
+    if (onLinkClick) {
+      onLinkClick(link, this.clickedLinkText);
+    }
+    this.clickedLinkText = '';
+  };
+
   render() {
     const { showTOC, value, beforeRenderCallback, onLinkClick, options, className, ...props } = this.props;
     const validClassName = classnames('longtext-preview-container', className);
@@ -56,12 +71,12 @@ class CustomizeMarkdownViewer extends React.PureComponent {
       );
     }
     return (
-      <div className={validClassName}>
+      <div className={validClassName} onClickCapture={this.handleLinkClickCapture}>
         <MarkdownViewer
           value={value}
           isShowOutline={showTOC}
           beforeRenderCallback={beforeRenderCallback}
-          onLinkClick={onLinkClick}
+          onLinkClick={onLinkClick ? this.handleLinkClick : undefined}
           options={options}
           { ...props }
         />

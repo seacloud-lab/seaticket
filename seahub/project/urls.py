@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.urls import re_path
 
-from .views import project_view, github_install, github_installation_setup, linear_oauth, linear_oauth_callback, \
+from .views import project_view, github_install, github_installation_setup, github_oauth_callback, linear_oauth, linear_oauth_callback, \
     confluence_oauth, confluence_oauth_callback, discord_oauth, discord_oauth_callback, jira_oauth, jira_oauth_callback, \
     email_oauth, email_oauth_callback, notion_oauth, notion_oauth_callback
 
@@ -58,6 +58,7 @@ urlpatterns = [
 
     re_path(r'^github/install/$', github_install, name='project_github_install'),
     re_path(r'^github/installation-setup/$', github_installation_setup, name='project_github_installation_setup'),
+    re_path(r'^github/oauth/callback/$', github_oauth_callback, name='project_github_oauth_callback'),
     re_path(r'^linear/oauth/$', linear_oauth, name='project_linear_oauth'),
     re_path(r'^linear/oauth/callback/$', linear_oauth_callback, name='project_linear_oauth_callback'),
     re_path(r'^confluence/oauth/$', confluence_oauth, name='project_confluence_oauth'),

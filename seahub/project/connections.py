@@ -58,7 +58,7 @@ from seahub.tickets.ticket_utils import build_linked_ticket_titles_map, get_tick
 from seahub.project.utils import LINKED_TICKET_SUPPORT_TYPES, send_connection_data_event, \
     email_thread_customer_domain_matches
 from seahub.settings import GITHUB_WEBHOOK_SECRET
-from seahub.project.github_issues_api import GitHubAPI, GitHubAppNotInstalled
+from seahub.project.github_issues_api import GitHubAPI, GitHubAppNotInstalled, validate_github_connection_config
 from seahub.utils.email_sender import toggle_send_email, EmailSendError, EmailConfigError
 from seahub.utils.mailbox_manager import move_emails_to_trash
 from seahub.project.discourse_api import DiscourseForumAPI, DiscourseForumAPIException
@@ -222,10 +222,7 @@ class ProjectConnectionsView(APIView):
 
         new_records = []
         for record in records:
-            record_info = record.to_dict()
-            if not is_project_admin:
-                record_info.pop('config')
-            new_records.append(record_info)
+            new_records.append(record.to_dict(is_admin=is_project_admin))
 
 
         return Response({'records': new_records}, status=status.HTTP_200_OK)
@@ -234,11 +231,6 @@ class ProjectConnectionsView(APIView):
     def post(self, request, project_uuid):
         """modify project connection
         """
-        # role permission check
-        if not request.user.permissions.can_add_project():
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # argument check
         name = request.POST.get('name', '')
         if not name:
@@ -359,7 +351,7 @@ class ProjectConnectionsView(APIView):
             email_oauth_data.pop('expires_at', None)
             EmailOAuthUtils.set_oauth_session(request, request.POST.get('oauth_state'), email_oauth_data)
 
-        return Response({'record': record.to_dict()}, status=status.HTTP_201_CREATED)
+        return Response({'record': record.to_dict(is_admin=True)}, status=status.HTTP_201_CREATED)
 
 
 class ProjectEmailOAuthQueryView(APIView):
@@ -403,7 +395,7 @@ class ProjectEmailOAuthQueryView(APIView):
             record = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id) if connection_id else None
             if not record:
                 return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Connection information not found.')
-            response_data['record'] = record.to_dict()
+            response_data['record'] = record.to_dict(is_admin=True)
 
         return Response(response_data)
 
@@ -415,11 +407,6 @@ class ProjectGithubConnectionsView(APIView):
 
     @require_org_context
     def post(self, request, project_uuid):
-        # role permission check
-        if not request.user.permissions.can_add_project():
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         try:
             config_list = request.POST.get('config_list')
             config_list = json.loads(config_list)
@@ -464,6 +451,13 @@ class ProjectGithubConnectionsView(APIView):
                 'repository': repository,
             }
 
+            try:
+                config = validate_github_connection_config(project_uuid, config)
+            except ValueError as e:
+                return api_error(status.HTTP_403_FORBIDDEN, str(e))
+            except Exception:
+                return api_error(status.HTTP_502_BAD_GATEWAY, 'Failed to validate GitHub repository.')
+
             enable_create = ProjectConnections.objects.enable_create(project_uuid, connection_type, config)
             if not enable_create:
                 error_msg = 'Please check input'
@@ -492,7 +486,7 @@ class ProjectGithubConnectionsView(APIView):
             }
             add_connection_sync_task(params)
 
-            records.append(record.to_dict())
+            records.append(record.to_dict(is_admin=True))
         return Response({'records': records}, status=status.HTTP_201_CREATED)
 
 
@@ -522,17 +516,13 @@ class ProjectConnectionView(APIView):
             error_msg = f'project_connection {connection_id} not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
-        return Response({'record': project_connection.to_dict()}, status=status.HTTP_200_OK)
+        is_project_admin = check_project_admin_permission(username, workspace.owner)
+        return Response({'record': project_connection.to_dict(is_admin=is_project_admin)}, status=status.HTTP_200_OK)
 
     @require_org_context
     def put(self, request, project_uuid, connection_id):
         """ modify connection
         """
-        # role permission check
-        if not request.user.permissions.can_add_project():
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # argument check
         name = request.data.get('name')
         new_config = request.data.get('config')
@@ -568,6 +558,13 @@ class ProjectConnectionView(APIView):
                         return api_error(status.HTTP_400_BAD_REQUEST, 'Email authorization and mailbox settings cannot be changed. Create a new connection.')
             config.update(new_config)
             new_config = config
+            if project_connection.type == ConnectionType.GITHUB_ISSUE.value:
+                try:
+                    new_config = validate_github_connection_config(project_uuid, new_config)
+                except ValueError as e:
+                    return api_error(status.HTTP_403_FORBIDDEN, str(e))
+                except Exception:
+                    return api_error(status.HTTP_502_BAD_GATEWAY, 'Failed to validate GitHub repository.')
 
         if is_active is not None:
             is_active = to_python_boolean(is_active)
@@ -586,17 +583,12 @@ class ProjectConnectionView(APIView):
             error_msg = 'Internal Server Error'
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
-        return Response({'record': record.to_dict()}, status=status.HTTP_200_OK)
+        return Response({'record': record.to_dict(is_admin=True)}, status=status.HTTP_200_OK)
 
     @require_org_context
     def delete(self, request, project_uuid, connection_id):
         """delete connection
         """
-        # role permission check
-        if not request.user.permissions.can_add_project():
-            error_msg = 'Permission denied.'
-            return api_error(status.HTTP_403_FORBIDDEN, error_msg)
-
         # resource check
         project = Projects.objects.get_project_by_uuid(project_uuid)
         if not project:
@@ -957,8 +949,7 @@ class DiscourseWebhookView(APIView):
 
     def verify_signature(self, signature, msg, secret):
         if not signature:
-            return True
-
+            return False
         if '=' not in signature:
             return False
 
@@ -2548,6 +2539,7 @@ class ZipEmailAttachments(APIView):
 
 class QueryIOStatus(APIView):
     authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = (IsAuthenticated,)
     throttle_classes = (UserRateThrottle,)
 
     def get(self, request):

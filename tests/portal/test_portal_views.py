@@ -12,11 +12,18 @@ from django.test import RequestFactory, override_settings
 from seahub.portal.middleware import PortalDomainMiddleware
 from seahub.portal.files import GetPortalUploadFileView
 from seahub.portal.models import PortalCustomer, PortalCustomDomain, PortalDomainAlias, ProjectExternalUser
-from seahub.portal.permissions import PortalAnonymousAccessPermission
+from seahub.portal.permissions import (
+    PortalAnonymousAccessPermission,
+    PortalChatPermission,
+    PortalIssuePermission,
+    PortalKnowledgeBasePermission,
+)
 from seahub.portal.utils import (
     PORTAL_DOMAIN_TYPE_CUSTOM,
     PORTAL_DOMAIN_TYPE_SERVICE_ALIAS,
+    can_preview_portal,
     set_portal_preview_session,
+    get_request_project_and_portal_settings,
 )
 from seahub.portal.views import (
     _get_portal_login_context,
@@ -29,6 +36,23 @@ from seahub.settings import LOGIN_REMEMBER_DAYS
 
 def process_portal_domain_request(request):
     return PortalDomainMiddleware(lambda _request: None).process_request(request)
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize('cached_project', [False, True])
+def test_deleted_project_is_not_available_to_portal(factory, real_project, cached_project):
+    real_project.deleted = True
+    real_project.save(update_fields=['deleted'])
+    request = factory.get('/')
+    if cached_project:
+        request.project = real_project
+        request.portal_settings = {'enable_portal': True}
+
+    assert get_request_project_and_portal_settings(request, str(real_project.uuid)) == (None, None)
+    with patch('seahub.portal.views.render_error', return_value=HttpResponse(status=404)) as render_error:
+        response = portal_view(request, str(real_project.uuid))
+    assert response.status_code == 404
+    render_error.assert_called_once()
 
 
 @pytest.mark.django_db
@@ -243,6 +267,20 @@ def test_portal_anonymous_permission_allows_preview_session(factory, real_projec
     view = SimpleNamespace(kwargs={'project_uuid': str(real_project.uuid)})
 
     assert PortalAnonymousAccessPermission().has_permission(request, view) is True
+
+
+@pytest.mark.django_db
+@override_settings(IS_PORTAL_MODE=True, ENABLE_PORTAL_DOMAIN=False)
+def test_same_org_non_member_cannot_use_internal_portal_access(factory, auth_user, project_creator, real_project):
+    request = factory.get(f'/api/v1/portal/{real_project.uuid}/issues/')
+    request.user = auth_user
+    view = SimpleNamespace(kwargs={'project_uuid': str(real_project.uuid)})
+
+    assert PortalIssuePermission().has_permission(request, view) is False
+    assert PortalChatPermission().has_permission(request, view) is False
+    assert PortalKnowledgeBasePermission().has_permission(request, view) is False
+    assert can_preview_portal(auth_user.username, real_project) is False
+    assert can_preview_portal(project_creator.username, real_project) is True
 
 
 @pytest.mark.django_db

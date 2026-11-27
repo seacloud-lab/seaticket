@@ -39,9 +39,9 @@ const EditKnowledge = ({ editorAPI, knowledgeID, projectUuid }) => {
     });
   }, [projectUuid, knowledgeID, knowledge, handleUpdateRowsCacheData]);
 
-  const onLinkClick = useCallback((link) => {
+  const onLinkClick = useCallback((link, fileName) => {
     if (link.includes(`/project/${projectUuid}/`)) {
-      downloadFile(link);
+      downloadFile(link, fileName);
       return;
     }
     window.open(link, '_blank');

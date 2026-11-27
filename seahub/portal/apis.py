@@ -48,7 +48,7 @@ from seahub.knowledge_base.models import KnowledgeBaseViews
 from seahub.utils.decorators import require_org_context
 from seahub.portal.permissions import PortalKnowledgeBasePermission, PortalIssuePermission, PortalEmailPermission, PortalAnonymousAccessPermission, \
     can_access_portal_issue, check_portal_issue_permission, get_request_external_user, get_request_portal_customer, \
-    is_same_org_user, PortalAdminPermission
+    is_project_user, PortalAdminPermission
 from seahub.portal.models import PortalCustomer, ProjectExternalUser, PortalCustomDomain, PortalDomainAlias, get_portal_tls_ask_cache_key,\
     PORTAL_TLS_ASK_CACHE_TIMEOUT, get_preferred_portal_domain, get_service_portal_domain
 from seahub.portal.utils import PORTAL_EXTERNAL_LOGIN_CODE_TTL, PORTAL_EXTERNAL_LOGIN_SEND_COOLDOWN, PORTAL_EXTERNAL_LOGIN_VERIFY_FAIL_LIMIT, \
@@ -129,7 +129,7 @@ class PortalLogoView(APIView):
         return super().initialize_request(request, *args, **kwargs)
 
     def get(self, request, project_uuid):
-        project = Projects.objects.get_project_by_uuid(project_uuid)
+        project = Projects.objects.get_project_by_uuid(project_uuid, include_deleted=False)
         if not project:
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
@@ -201,7 +201,7 @@ class PortalBackgroundImageView(APIView):
         return super().initialize_request(request, *args, **kwargs)
 
     def get(self, request, project_uuid):
-        project = Projects.objects.get_project_by_uuid(project_uuid)
+        project = Projects.objects.get_project_by_uuid(project_uuid, include_deleted=False)
         if not project:
             return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
 
@@ -558,11 +558,6 @@ class PortalIssuesView(APIView):
 
             if 'type' in row_data:
                 updated_row[SchemaTables.PORTAL_ISSUES.column.type.name] = row_data.get('type') or None
-
-            for key, value in row_data.items():
-                if key in ('substate', 'tags', 'type', '_pk', 'modified_time', 'content', 'state', 'customer_id'):
-                    continue
-                updated_row[key] = value
 
             if not updated_row:
                 continue
@@ -1271,7 +1266,7 @@ class PortalIssueView(APIView):
                 error_msg = 'Issue not found.'
                 return api_error(status.HTTP_404_NOT_FOUND, error_msg)
             convert_select_field_names_to_option_ids(columns, issue)
-            if not is_same_org_user(request, project):
+            if not is_project_user(request, project):
                 columns = strip_portal_issue_internal_columns([issue], columns)
         except Exception as e:
             logger.error(e)
@@ -2013,7 +2008,7 @@ class PortalIssueMetadataView(APIView):
                 if return_name:
                     column_data = column.get('data', {}) or {}
                     select_option_metadata[return_name] = column_data
-            if is_same_org_user(request, project):
+            if is_project_user(request, project):
                 select_option_metadata['customers'] = {
                     'options': [
                         {'id': customer.id, 'name': customer.name, 'status': customer.status}
@@ -2581,7 +2576,7 @@ class PortalCustomDomainTLSAskView(APIView):
             cache.set(tls_ask_cache_key, False, PORTAL_TLS_ASK_CACHE_TIMEOUT)
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        project = Projects.objects.get_project_by_uuid(custom_domain.project_uuid)
+        project = Projects.objects.get_project_by_uuid(custom_domain.project_uuid, include_deleted=False)
         allowed = bool(project and get_portal_settings(project).get('enable_portal', False))
         if not allowed:
             cache.set(tls_ask_cache_key, False, PORTAL_TLS_ASK_CACHE_TIMEOUT)
@@ -3200,12 +3195,14 @@ class PortalExternalLoginSendCodeView(APIView):
         if not is_valid_email(email):
             return api_error(status.HTTP_400_BAD_REQUEST, 'email invalid.')
 
-        project = Projects.objects.get_project_by_uuid(project_uuid)
+        project = Projects.objects.get_project_by_uuid(project_uuid, include_deleted=False)
         if not project:
             error_msg = 'Project not found.'
             return api_error(status.HTTP_404_NOT_FOUND, error_msg)
 
         portal_settings = get_portal_settings(project)
+        if not portal_settings.get('enable_portal'):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Portal is not enabled.')
 
         if is_user_in_the_same_team(project, email):
             next_url = portal_path(request, project_uuid)
@@ -3279,6 +3276,12 @@ class PortalExternalLoginVerifyCodeView(APIView):
         code = (request.data.get('code') or '').strip()
         if not email or not code:
             return api_error(status.HTTP_400_BAD_REQUEST, 'param invalid.')
+
+        project = Projects.objects.get_project_by_uuid(project_uuid, include_deleted=False)
+        if not project:
+            return api_error(status.HTTP_404_NOT_FOUND, 'Project not found.')
+        if not get_portal_settings(project).get('enable_portal'):
+            return api_error(status.HTTP_403_FORBIDDEN, 'Portal is not enabled.')
 
         if is_portal_external_login_locked(project_uuid, email):
             return api_error(status.HTTP_429_TOO_MANY_REQUESTS, 'Too many attempts, please try again later.')

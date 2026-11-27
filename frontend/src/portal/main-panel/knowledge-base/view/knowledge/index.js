@@ -4,6 +4,7 @@ import { portalAPI } from '@/portal/api';
 import { useData, useTags } from '@/project/hooks';
 import Preview from '@/project/main-panel/knowledge-base/view/knowledge/preview';
 import { convertRowToKeyValue } from '@/sea-metadata/utils/row';
+import { downloadFile } from '@/utils/download';
 import { Utils } from '@/utils/utils';
 import { KB_TABLE_NAME, KNOWLEDGE_PAGE_SLUG_ID } from '../../constants';
 import { usePortalKnowledgePage } from '../../hooks/knowledge-page';
@@ -25,6 +26,14 @@ const Knowledge = ({ editorAPI, projectUuid }) => {
     modifyLocalRow(KB_TABLE_NAME, ticketID, convertRowToKeyValue(update, { data: { columns }, tagsData }));
   }, [tagsData, getTableByName, modifyLocalRow]);
 
+  const onLinkClick = useCallback((link, fileName) => {
+    if (link.includes(`/portal/${projectUuid}/`) || link.includes(`/file/portal/${projectUuid}/`)) {
+      downloadFile(link, fileName);
+      return;
+    }
+    window.open(link, '_blank');
+  }, [projectUuid]);
+
   useEffect(() => {
     if (Object.values(KNOWLEDGE_PAGE_SLUG_ID).includes(pageSlugId)) return;
     if (lastRecordId.current === pageSlugId) return;
@@ -44,7 +53,7 @@ const Knowledge = ({ editorAPI, projectUuid }) => {
 
   if (isLoading) return (<CenteredLoading />);
 
-  return (<Preview knowledge={knowledge} />);
+  return (<Preview knowledge={knowledge} onLinkClick={onLinkClick} />);
 
 };
 

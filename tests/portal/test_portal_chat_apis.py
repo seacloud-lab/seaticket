@@ -2,6 +2,7 @@ import json
 from io import BytesIO
 from datetime import date, datetime, timedelta
 from datetime import timezone as datetime_timezone
+from uuid import uuid4
 from unittest.mock import Mock, patch
 
 import pytest
@@ -18,6 +19,7 @@ from seahub.portal.chat.apis import (
     PortalChatSessionsView,
     PortalChatView,
     PortalChatSessionTitleView,
+    PortalChatSessionView,
 )
 from seahub.portal.chat.constants import PORTAL_ANON_CHAT_SESSION_DAILY_LIMIT
 from seahub.portal.chat.utils import (
@@ -43,6 +45,42 @@ def _set_portal_settings(project, **kwargs):
 
 def _utc_midnight(day):
     return datetime.combine(day, datetime.min.time(), tzinfo=datetime_timezone.utc)
+
+
+@pytest.mark.parametrize('action', ['messages', 'rename', 'delete', 'title', 'poll', 'send'])
+def test_chat_session_must_belong_to_requested_project(factory, real_project, project_creator, action):
+    session = PortalChatSessions.objects.create_session(
+        project_uuid=str(uuid4()), session_name='other project', username=project_creator.username,
+    )
+    path = f'/api/v1/portal/{real_project.uuid}/chat/'
+    if action == 'messages':
+        request = factory.get(path)
+        view = PortalChatMessagesView
+    elif action == 'rename':
+        request = factory.put(path, {'session_name': 'renamed'}, format='json')
+        view = PortalChatSessionView
+    elif action == 'delete':
+        request = factory.delete(path)
+        view = PortalChatSessionView
+    elif action == 'title':
+        request = factory.post(path, {'query': 'hello', 'ai_reply': 'reply'}, format='json')
+        view = PortalChatSessionTitleView
+    elif action == 'poll':
+        request = factory.get(path, {'session_uuid': session.session_uuid})
+        view = PortalChatView
+    else:
+        request = factory.post(path, {'query': 'hello', 'session_uuid': session.session_uuid}, format='json')
+        view = PortalChatView
+    request.user = project_creator
+    kwargs = {'project_uuid': str(real_project.uuid)}
+    if action not in ('poll', 'send'):
+        kwargs['session_uuid'] = session.session_uuid
+
+    response = view.as_view()(request, **kwargs)
+
+    assert response.status_code == 404
+    session.refresh_from_db()
+    assert session.session_name == 'other project'
 
 
 @pytest.fixture

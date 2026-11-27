@@ -297,7 +297,7 @@ class AdminGroupMember(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, error_msg)
 
         try:
-            GroupUser.objects.remove_group_user(email)
+            GroupUser.objects.remove_group_member(group_id, email)
             admin_op_detail = {
                 'group_id': group_id,
                 'group_name': group.group_name,

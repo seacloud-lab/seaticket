@@ -18,6 +18,7 @@ from seahub.api2.endpoints.project import (
 )
 from seahub.constants import PERMISSION_READ_WRITE
 from seahub.organizations.models import OrgGroup
+from seahub.group.models import GroupUser
 from seahub.project.constants import ConnectionType
 from seahub.project.models import Projects, Workspaces
 from seahub.utils import uuid_str_to_32_chars
@@ -51,6 +52,37 @@ class TestWorkspacesView:
         assert personal_workspace is not None
         assert personal_workspace.get('type') == 'personal'
         assert any(p.get('id') == project.id for p in personal_workspace.get('projects', []))
+
+    def test_get_group_member_does_not_receive_project_settings(self, factory, project_creator):
+        group_owner = f'owner-{project_creator.username}'
+        group_member = project_creator.username
+        group = OrgGroup.objects.create_org_group(1, f'group-{group_member}', group_owner)
+        GroupUser.objects.group_add_member(group.group_id, group_member)
+        workspace = Workspaces.objects.create(owner=f'{group.group_id}@seafile_group', org_id=1)
+        project = Projects.objects.create_project(group_owner, workspace, 'private-settings')
+        project.settings = json.dumps({'prompt': 'internal prompt', 'portal': {'password': 'encrypted-password'}})
+        project.save(update_fields=['settings'])
+
+        request = factory.get('/api/v1/workspaces/')
+        request.user = project_creator
+        response = WorkspacesView.as_view()(request)
+
+        assert response.status_code == 200
+        group_workspace = next(item for item in response.data['workspace_list'] if item.get('group_id') == group.group_id)
+        serialized_project = next(item for item in group_workspace['projects'] if item['id'] == project.id)
+        assert 'settings' not in serialized_project
+
+    def test_get_project_owner_does_not_receive_project_settings(self, factory, project_creator, real_project):
+        real_project.settings = json.dumps({'prompt': 'admin prompt'})
+        real_project.save(update_fields=['settings'])
+        request = factory.get('/api/v1/workspaces/')
+        request.user = project_creator
+
+        response = WorkspacesView.as_view()(request)
+
+        personal_workspace = next(item for item in response.data['workspace_list'] if item.get('id') == real_project.workspace_id)
+        serialized_project = next(item for item in personal_workspace['projects'] if item['id'] == real_project.id)
+        assert 'settings' not in serialized_project
 
     def test_get_non_org_context_returns_403(self, factory, no_org_user):
         request = factory.get('/api/v1/workspaces/')
@@ -111,6 +143,7 @@ class TestProjectsView:
 
         assert resp.status_code == 201
         assert 'project' in resp.data
+        assert 'settings' not in resp.data['project']
         assert Projects.objects.filter(workspace=workspace, name='new-proj', deleted=False).exists()
 
 
@@ -150,6 +183,22 @@ class TestProjectView:
         resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
 
         assert resp.status_code == 403
+
+    def test_put_does_not_require_can_add_project(self, factory, project_creator, real_project):
+        project = real_project
+        project_creator.permissions = SimpleNamespace(can_add_project=lambda: False)
+        request = factory.put(
+            f'/api/v1/workspace/{project.workspace.id}/project/',
+            data={'name': project.name, 'new_name': 'renamed'},
+            format='json',
+        )
+        request.user = project_creator
+
+        resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
+
+        assert resp.status_code == 200
+        project.refresh_from_db()
+        assert project.name == 'renamed'
 
     def test_put_success(self, factory, project_creator, real_project):
         project = real_project
@@ -192,6 +241,112 @@ class TestProjectView:
         assert resp.status_code == 200
         project.refresh_from_db()
         assert json.loads(project.settings)['portal']['chat_prompt'] == 'Use a concise and helpful tone.'
+
+    def test_put_partially_merges_nested_settings_and_keeps_explicit_falsy_values(
+            self, factory, project_creator, real_project):
+        project = real_project
+        project.settings = json.dumps({
+            'portal': {
+                'enable_portal': True,
+                'allow_anonymous': True,
+                'chat_prompt': 'Old portal prompt',
+            },
+            'agent': {
+                'enabled': True,
+                'ticket_rules': 'Keep these rules',
+                'auto_confirm': {
+                    'suggest_notify_assignee': False,
+                    'suggest_create_ticket': True,
+                },
+            },
+            'skills': {'disabled_builtins': ['old-skill']},
+        })
+        project.save(update_fields=['settings'])
+        request = factory.put(
+            f'/api/v1/workspace/{project.workspace.id}/project/',
+            data={
+                'name': project.name,
+                'settings': json.dumps({
+                    'portal': {'chat_prompt': 'New portal prompt'},
+                    'agent': {
+                        'enabled': False,
+                        'auto_confirm': {'suggest_create_ticket': False},
+                    },
+                    'skills': {'disabled_builtins': []},
+                }),
+            },
+            format='multipart',
+        )
+        request.user = project_creator
+
+        resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
+
+        assert resp.status_code == 200
+        project.refresh_from_db()
+        settings_data = json.loads(project.settings)
+        assert settings_data['portal'] == {
+            'enable_portal': True,
+            'allow_anonymous': True,
+            'chat_prompt': 'New portal prompt',
+        }
+        assert settings_data['agent']['enabled'] is False
+        assert settings_data['agent']['ticket_rules'] == 'Keep these rules'
+        assert settings_data['agent']['auto_confirm'] == {
+            'suggest_notify_assignee': False,
+            'suggest_create_ticket': False,
+        }
+        assert settings_data['skills']['disabled_builtins'] == []
+
+    def test_put_replaces_portal_home_settings_as_a_complete_value(
+            self, factory, project_creator, real_project):
+        project = real_project
+        project.settings = json.dumps({
+            'portal': {
+                'portal_home_settings': {
+                    'portal_home_hero_section': {'title': 'Old title', 'description': 'Old description'},
+                    'old_section': {'enabled': True},
+                },
+            },
+        })
+        project.save(update_fields=['settings'])
+        replacement = {'portal_home_hero_section': {'title': 'New title'}}
+        request = factory.put(
+            f'/api/v1/workspace/{project.workspace.id}/project/',
+            data={
+                'name': project.name,
+                'settings': json.dumps({'portal': {'portal_home_settings': replacement}}),
+            },
+            format='multipart',
+        )
+        request.user = project_creator
+
+        resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
+
+        assert resp.status_code == 200
+        project.refresh_from_db()
+        settings_data = json.loads(project.settings)
+        assert settings_data['portal']['portal_home_settings'] == replacement
+
+    def test_put_rejects_portal_password_write(self, factory, project_creator, real_project):
+        project = real_project
+        existing_settings = {'portal': {'enable_portal': True}}
+        project.settings = json.dumps(existing_settings)
+        project.save(update_fields=['settings'])
+        request = factory.put(
+            f'/api/v1/workspace/{project.workspace.id}/project/',
+            data={
+                'name': project.name,
+                'settings': json.dumps({'portal': {'password': 'plain-text-password'}}),
+            },
+            format='multipart',
+        )
+        request.user = project_creator
+
+        resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
+
+        assert resp.status_code == 400
+        project.refresh_from_db()
+        assert json.loads(project.settings) == existing_settings
 
     def test_put_rejects_unsafe_portal_chat_prompt(self, factory, project_creator, real_project):
         project = real_project
@@ -314,6 +469,22 @@ class TestProjectView:
         assert project.deleted is True
         assert project.name.startswith(f'_(deleted_{project.id}) ')
 
+    def test_delete_does_not_require_can_add_project(self, factory, project_creator, real_project):
+        project = real_project
+        project_creator.permissions = SimpleNamespace(can_add_project=lambda: False)
+        request = factory.delete(
+            f'/api/v1/workspace/{project.workspace.id}/project/',
+            data={'name': project.name},
+            format='json',
+        )
+        request.user = project_creator
+
+        resp = ProjectView.as_view()(request, workspace_id=str(project.workspace.id))
+
+        assert resp.status_code == 200
+        project.refresh_from_db()
+        assert project.deleted is True
+
 
 @pytest.mark.django_db
 class TestSearchView:
@@ -343,7 +514,7 @@ class TestSearchView:
         project = real_project
         request = factory.post(
             '/api/v1/search/',
-            data={'project_uuid': project.uuid, 'workspace_id': project.workspace.id, 'query': 'x', 'connection_ids': [1]},
+            data={'project_uuid': project.uuid, 'query': 'x', 'connection_ids': [1]},
             format='json',
         )
         request.user = project_creator
@@ -367,13 +538,32 @@ class TestSearchView:
         }]}
         assert Projects.objects.filter(uuid=project.uuid).exists()
 
+    def test_post_cannot_authorize_with_another_workspace(self, factory, auth_user, real_project):
+        own_workspace = Workspaces.objects.create(owner=auth_user.username, org_id=1)
+        request = factory.post(
+            '/api/v1/search/',
+            data={
+                'project_uuid': str(real_project.uuid),
+                'workspace_id': own_workspace.id,
+                'query': 'x',
+                'extra_sources': ['ticket'],
+            },
+            format='json',
+        )
+        request.user = auth_user
+
+        with patch('seahub.api2.endpoints.project.keyword_search') as search:
+            response = SearchView.as_view()(request)
+
+        assert response.status_code == 403
+        search.assert_not_called()
+
     def test_post_semantic_search_supports_portal_issue(self, factory, project_creator, real_project):
         project = real_project
         request = factory.post(
             '/api/v1/search/',
             data={
                 'project_uuid': project.uuid,
-                'workspace_id': project.workspace.id,
                 'query': 'x',
                 'extra_sources': ['portal_issue'],
                 'search_type': 'semantic_search',
@@ -558,6 +748,7 @@ class TestTrashProjectsView:
         assert resp.status_code == 200
         assert resp.data['count'] >= 1
         assert isinstance(resp.data.get('trash_project_list'), list)
+        assert all('settings' not in item for item in resp.data['trash_project_list'])
 
 
 @pytest.mark.django_db
