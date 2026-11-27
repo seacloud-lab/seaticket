@@ -2,9 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import classNames from 'classnames';
 import { IconButton, CustomizeNameDialog } from '@/components';
 import { gettext } from '@/constants';
-import context from '@/sea-metadata/context';
 import { useViewsData } from '@/sea-metadata/hooks';
 import { isFunction } from '@/utils/type-detection';
+import { useSeaMetadataContext } from '../../../context-provider';
 import AllViews from './all-views';
 import ViewItem from './view-item';
 
@@ -12,6 +12,7 @@ import './index.css';
 import './view-buttons.css';
 
 const Views = ({ view, toggleView, hideScrollControls = false }) => {
+  const context = useSeaMetadataContext();
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
   const [canViewsScroll, setViewsScroll] = useState(true);
@@ -137,7 +138,7 @@ const Views = ({ view, toggleView, hideScrollControls = false }) => {
       viewsNavContainerRef.current.scrollLeft = scrollWidth - offsetWidth;
       return;
     }
-    const targetViewElement = document.getElementById(`sea-metadata-view-${viewID}`);
+    const targetViewElement = document.getElementById(`${context.id}-view-${viewID}`);
     if (!targetViewElement) return;
     const { left: viewsLeft } = viewsNavContainerRef.current.getBoundingClientRect();
     const { left: viewLeft } = targetViewElement.getBoundingClientRect();
@@ -153,7 +154,7 @@ const Views = ({ view, toggleView, hideScrollControls = false }) => {
       }
       viewsNavContainerRef.current.scrollLeft = totalWidth > offsetWidth ? totalWidth - offsetWidth : 0;
     }
-  }, [allViews]);
+  }, [allViews, context]);
 
   useEffect(() => {
     checkAvailableScrollType();

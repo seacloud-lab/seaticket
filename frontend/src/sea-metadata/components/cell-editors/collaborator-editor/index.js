@@ -1,8 +1,9 @@
 import React, { forwardRef, useImperativeHandle, useCallback, useRef, useEffect, useMemo } from 'react';
-import { gettext } from '@constants';
 import PropTypes from 'prop-types';
 import Container from '@/components/collaborator-editor/container';
+import { gettext } from '@/constants';
 import { hasOwnProperty } from '@/utils/object-utils';
+import { useSeaMetadataContext } from '../../../context-provider';
 import { useCollaborators } from '../../../hooks';
 
 import './index.css';
@@ -16,6 +17,7 @@ const CollaboratorEditor = forwardRef(({
   onPressTab,
   onClose,
 }, ref) => {
+  const context = useSeaMetadataContext();
   const editorRef = useRef(null);
   const mainRef = useRef(null);
 
@@ -60,6 +62,7 @@ const CollaboratorEditor = forwardRef(({
       ref={editorRef}
     >
       <Container
+        shouldHandleEvent={context.ownsEvent}
         innerRef={mainRef}
         placeholder={gettext('Search users')}
         value={value}

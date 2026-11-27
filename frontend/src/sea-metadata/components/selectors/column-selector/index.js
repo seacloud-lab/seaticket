@@ -1,8 +1,9 @@
 import React, { useMemo } from 'react';
-import { CustomizeSelect, IconButton } from '@/components';
+import { IconButton } from '@/components';
 import { gettext } from '@/constants';
 import { COLUMNS_ICON_CONFIG } from '@/sea-metadata/constants';
-import context from '@/sea-metadata/context';
+import { useSeaMetadataContext } from '../../../context-provider';
+import CustomizeSelect from '../scoped-select';
 
 import './index.css';
 
@@ -12,6 +13,7 @@ const ColumnSelector = ({
   columns,
   onChange,
 }) => {
+  const context = useSeaMetadataContext();
   const options = useMemo(() => {
     return Array.isArray(columns) && columns.length > 0 ? columns.map(c => {
       const name = c.display_name || c.name || '';

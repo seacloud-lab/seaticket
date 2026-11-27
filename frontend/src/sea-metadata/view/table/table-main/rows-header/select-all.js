@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Icon from '@/components/icon';
 import { gettext } from '@/constants';
+import { withSeaMetadataContext } from '../../../../context-provider';
 
 class SelectAll extends Component {
 
@@ -63,7 +64,7 @@ class SelectAll extends Component {
             {isSelectedParts ?
               <Icon symbol="partially-selected" /> :
               <input
-                id="select-all-checkbox"
+                id={`${this.props.metadataContext.id}-select-all-checkbox`}
                 className="select-all-checkbox"
                 type="checkbox"
                 name={gettext('Select all')}
@@ -76,7 +77,7 @@ class SelectAll extends Component {
           </>
         }
         <label
-          htmlFor="select-all-checkbox"
+          htmlFor={`${this.props.metadataContext.id}-select-all-checkbox`}
           name={gettext('Select all')}
           title={gettext('Select all')}
           aria-label={gettext('Select all')}
@@ -95,4 +96,4 @@ SelectAll.propTypes = {
   selectAllRows: PropTypes.func,
 };
 
-export default SelectAll;
+export default withSeaMetadataContext(SelectAll);

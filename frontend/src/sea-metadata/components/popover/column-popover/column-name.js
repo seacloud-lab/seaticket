@@ -2,10 +2,11 @@ import React, { useState, forwardRef, useImperativeHandle, useCallback, useEffec
 import { FormGroup, FormFeedback, Input } from 'reactstrap';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
-import context from '../../../context';
+import { useSeaMetadataContext } from '../../../context-provider';
 
 // eslint-disable-next-line react/display-name
 const ColumnName = forwardRef(({ readOnly, value }, ref) => {
+  const context = useSeaMetadataContext();
   const [error, setError] = useState('');
   const [name, setName] = useState(value || '');
 

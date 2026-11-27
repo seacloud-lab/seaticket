@@ -4,13 +4,15 @@ import isHotkey from 'is-hotkey';
 import PropTypes from 'prop-types';
 import SearchInput from '@/components/search-input';
 import { gettext, KeyCodes } from '@/constants';
-import context from '@/sea-metadata/context';
 import { getEventClassName } from '@/utils/dom';
+import { useSeaMetadataContext } from '../../../context-provider';
+import { isPopoverKeyEvent, ScopedPopoverContent } from '../scoped-popover';
 import HiddenColumns from './hidden-columns';
 
 import './index.css';
 
 const HideColumnPopover = ({ hidePopover, onChange, readOnly, target, placement, columns, hiddenColumns: oldHiddenColumns, canReorder, modifyColumnOrder }) => {
+  const context = useSeaMetadataContext();
   const [searchValue, setSearchValue] = useState('');
   const [hiddenColumns, setHiddenColumns] = useState(oldHiddenColumns);
   const displayColumns = useMemo(() => {
@@ -22,20 +24,22 @@ const HideColumnPopover = ({ hidePopover, onChange, readOnly, target, placement,
   const popoverRef = useRef(null);
 
   const hide = useCallback((event) => {
+    if (!context.ownsEvent(event, { allowOutside: true })) return;
     if (popoverRef.current && !getEventClassName(event).includes('popover') && !popoverRef.current.contains(event.target)) {
       hidePopover(event);
       event.preventDefault();
       event.stopPropagation();
       return false;
     }
-  }, [hidePopover]);
+  }, [hidePopover, context]);
 
   const onHotKey = useCallback((event) => {
+    if (!context.ownsEvent(event) || !isPopoverKeyEvent(event, popoverRef.current)) return;
     if (isHotkey('esc', event)) {
       event.preventDefault();
       hidePopover();
     }
-  }, [hidePopover]);
+  }, [hidePopover, context]);
 
   useEffect(() => {
     document.addEventListener('click', hide, true);
@@ -101,7 +105,8 @@ const HideColumnPopover = ({ hidePopover, onChange, readOnly, target, placement,
       className="seaqa-hide-columns-popover"
       boundariesElement={document.body}
     >
-      <div
+      <ScopedPopoverContent
+        target={target}
         onClick={onPopoverInsideClick}
         ref={popoverRef}
         className="d-flex flex-column align-items-center w-100 p-2"
@@ -134,7 +139,7 @@ const HideColumnPopover = ({ hidePopover, onChange, readOnly, target, placement,
             <div className="d-flex align-items-center justify-content-center w-100 border-radius-4 cursor-pointer h-6" onClick={showAll} aria-label={gettext('Show all')}>{gettext('Show all')}</div>
           </div>
         )}
-      </div>
+      </ScopedPopoverContent>
     </UncontrolledPopover>
   );
 

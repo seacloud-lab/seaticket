@@ -1,9 +1,9 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import context from '@/sea-metadata/context';
 import { isShiftKeyDown } from '@/utils/keyboard-utils';
 import { RightScrollbar } from '../../../../components/scrollbar';
 import { EVENT_BUS_TYPE, SEQUENCE_COLUMN_WIDTH, ROW_HEIGHT_MAP } from '../../../../constants';
+import { withSeaMetadataContext } from '../../../../context-provider';
 import { isColumnSupportDirectEdit, checkIsColumnEditable } from '../../../../utils/column';
 import InteractionMasks from '../../masks/interaction-masks';
 import RowMetrics from '../../utils/row-metrics';
@@ -38,8 +38,8 @@ class RowsBody extends Component {
 
   componentDidMount() {
     this.props.onRef(this);
-    window.seaMetadataBody = this;
-    this.unsubscribeFocus = context.eventBus.subscribe(EVENT_BUS_TYPE.FOCUS_CANVAS, this.onFocus);
+    this.props.metadataContext.body = this;
+    this.unsubscribeFocus = this.props.metadataContext.eventBus.subscribe(EVENT_BUS_TYPE.FOCUS_CANVAS, this.onFocus);
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -50,6 +50,7 @@ class RowsBody extends Component {
   }
 
   componentWillUnmount() {
+    if (this.props.metadataContext.body === this) this.props.metadataContext.body = null;
     this.clearHorizontalScroll();
     this.clearScrollbarTimer();
     this.unsubscribeFocus();
@@ -265,19 +266,19 @@ class RowsBody extends Component {
   };
 
   selectCell = (cell, openEditor) => {
-    context.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_CELL, cell, openEditor);
+    this.props.metadataContext.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_CELL, cell, openEditor);
   };
 
   selectStart = (cellPosition) => {
-    context.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_START, cellPosition);
+    this.props.metadataContext.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_START, cellPosition);
   };
 
   selectUpdate = (cellPosition, isFromKeyboard, callback) => {
-    context.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_UPDATE, cellPosition, isFromKeyboard, callback);
+    this.props.metadataContext.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_UPDATE, cellPosition, isFromKeyboard, callback);
   };
 
   selectEnd = () => {
-    context.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_END);
+    this.props.metadataContext.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_END);
   };
 
   onCellClick = (cell, e) => {
@@ -428,7 +429,7 @@ class RowsBody extends Component {
   };
 
   handleDragEnter = ({ overRowIdx, overGroupRowIndex }) => {
-    context.eventBus.dispatch(EVENT_BUS_TYPE.DRAG_ENTER, { overRowIdx, overGroupRowIndex });
+    this.props.metadataContext.eventBus.dispatch(EVENT_BUS_TYPE.DRAG_ENTER, { overRowIdx, overGroupRowIndex });
   };
 
   setRightScrollbar = (ref) => {
@@ -531,7 +532,7 @@ class RowsBody extends Component {
     return (
       <Fragment>
         <div
-          id="canvas"
+          id={`${this.props.metadataContext.id}-canvas`}
           className="sea-metadata-table-canvas"
           ref={this.setResultContentRef}
           onScroll={this.onScroll}
@@ -650,4 +651,4 @@ RowsBody.propTypes = {
   getTableCanvasContainerRect: PropTypes.func,
 };
 
-export default RowsBody;
+export default withSeaMetadataContext(RowsBody);

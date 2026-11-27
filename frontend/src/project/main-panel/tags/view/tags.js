@@ -4,12 +4,12 @@ import { gettext } from '@/constants';
 import OptionDialog from '@/project/components/option-dialog';
 import { EVENT_BUS_TYPE } from '@/project/constants';
 import { useTags } from '@/project/hooks';
-import SeaMetadata, { CellType, VIEW_TOOL } from '@/sea-metadata';
-import context from '@/sea-metadata/context';
+import SeaMetadata, { CellType, VIEW_TOOL, useMetadataController } from '@/sea-metadata';
 import { getRowById } from '@/sea-metadata/utils/row';
 import eventBus from '@/utils/event-bus';
 
 const Tags = ({ projectUuid, permission }) => {
+  const controller = useMetadataController();
   const [isLoading, setIsLoading] = useState(true);
   const { tagsData, createTag, modifyTag, deleteTag, deleteTags, loadTags } = useTags();
 
@@ -65,7 +65,7 @@ const Tags = ({ projectUuid, permission }) => {
 
         resolve({ data: { view: {
           ...view,
-          sorts: context.localStorage.getItem('sorts') || [],
+          sorts: controller.storage.getItem('sorts') || [],
         } } });
       });
     },
@@ -73,7 +73,7 @@ const Tags = ({ projectUuid, permission }) => {
     modifyView: (viewID, viewData) => {
       return new Promise((resolve, reject) => {
         Object.keys(viewData).forEach(key => {
-          context.localStorage.setItem(key, viewData[key]);
+          controller.storage.setItem(key, viewData[key]);
         });
         resolve({ data: { success: true } });
       });
@@ -85,7 +85,7 @@ const Tags = ({ projectUuid, permission }) => {
     deleteRow: (...params) => deleteTag(...params),
     deleteRows: (...params) => deleteTags(...params),
 
-  }), [columns, viewsData, createTag, tagsData, deleteTag, deleteTags, modifyTag]);
+  }), [columns, viewsData, createTag, tagsData, deleteTag, deleteTags, modifyTag, controller]);
 
   const createContextMenuOptions = useCallback(({
     isGroupView,
@@ -215,17 +215,19 @@ const Tags = ({ projectUuid, permission }) => {
 
   useEffect(() => {
     const unsubscribeNewTag = eventBus.subscribe(EVENT_BUS_TYPE.NEW_TAG, () => {
-      context.eventBus.dispatch('expand_row', {});
+      controller.events.dispatch('expand_row', {});
     });
     return () => {
       unsubscribeNewTag();
     };
-  }, []);
+  }, [controller]);
 
   if (isLoading) return (<CenteredLoading />);
 
   return (
     <SeaMetadata
+      controller={controller}
+      storageNamespace="primary"
       className="sea-tags-metadata"
       fixedColumnCount={2}
       api={api}

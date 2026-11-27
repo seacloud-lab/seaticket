@@ -69,9 +69,8 @@ jest.mock('@/project/main-panel/tickets/components/ticket-settings', () => ({
 jest.mock('@/project/main-panel/tickets/components/upload-files-btn', () => () => null);
 jest.mock('@/project/main-panel/tickets/components/ticket-details/status-toggle-btn', () => () => null);
 jest.mock('@/project/main-panel/tickets/components/ticket-details/ticket-log', () => () => null);
-jest.mock('@/sea-metadata', () => ({}));
+jest.mock('@/sea-metadata', () => jest.requireActual('@/sea-metadata/controller-provider'));
 jest.mock('@/sea-metadata/constants', () => ({}));
-jest.mock('@/sea-metadata/context', () => ({}));
 jest.mock('@/sea-metadata/utils/column', () => ({ getColumnByName: (columns, name) => columns.find(column => column.name === name) }));
 jest.mock('@/sea-metadata/utils/row', () => ({ convertRowToKeyValue: row => row, getRowById: () => null, generateRowKey: (table, id) => `${table}_${id}` }));
 jest.mock('@/sea-metadata/utils/cell', () => ({ getCellValueByColumn: (row, column) => column ? row[column.key] ?? row[column.name] : null }));

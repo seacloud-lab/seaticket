@@ -4,12 +4,12 @@ import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { ModalPortal, Icon, CustomizeDropdownMenu, CustomizeDropdownItem, CustomizeDropdownItemText } from '@/components';
 import { gettext } from '@/constants';
-import context from '@/sea-metadata/context';
 import { useTypesData, useSubstatesData } from '@/sea-metadata/hooks';
 import { isFunction } from '@/utils/type-detection';
 import { isMobile } from '@/utils/utils';
 import { RenamePopover } from '../../../../../../components/popover';
 import { CellType, DEFAULT_DATE_FORMAT, EVENT_BUS_TYPE } from '../../../../../../constants';
+import { useSeaMetadataContext } from '../../../../../../context-provider';
 import { checkIsPredefinedColumn, getDateDisplayString } from '../../../../../../utils/column';
 import DropdownItem from './dropdown-item';
 
@@ -18,6 +18,7 @@ const HeaderDropdownMenu = forwardRef(({
   renameColumn, modifyColumnData, deleteColumn,
   onDropDownToggle,
 }, ref) => {
+  const context = useSeaMetadataContext();
   const menuRef = createRef();
   const dropdownDomRef = createRef();
   const [isMenuShow, setMenuShow] = useState(false);
@@ -124,7 +125,7 @@ const HeaderDropdownMenu = forwardRef(({
       return (
         <DropdownItem
           disabled={true}
-          target="sea-metadata-edit-column-format"
+          target={`${context.id}-sea-metadata-edit-column-format`}
           title={gettext('Edit format settings')}
           tip={isPrivateColumn ? context.translate('This {column} is not editable') : gettext('You do not have permission')}
           iconName="set-up"
@@ -172,7 +173,7 @@ const HeaderDropdownMenu = forwardRef(({
         </CustomizeDropdownMenu>
       </Dropdown>
     );
-  }, [today, column, isMenuShow, isSubMenuShow, onChangeDateFormat, openSubMenu, isPrivateColumn]);
+  }, [today, column, isMenuShow, isSubMenuShow, onChangeDateFormat, openSubMenu, isPrivateColumn, context]);
 
   // eslint-disable-next-line no-unused-vars
   const modifySort = useCallback((type, event) => {
@@ -198,7 +199,7 @@ const HeaderDropdownMenu = forwardRef(({
       return;
     }
     eventBus.dispatch(EVENT_BUS_TYPE.DISPLAY_SORTS);
-  }, [view, column]);
+  }, [view, column, context]);
 
   useImperativeHandle(ref, () => ({
     isPopoverShow: () => {
@@ -220,7 +221,7 @@ const HeaderDropdownMenu = forwardRef(({
             <>
               <DropdownItem
                 disabled={!canModifyColumnData}
-                target="sea-metadata-edit-column-options"
+                target={`${context.id}-sea-metadata-edit-column-options`}
                 iconName="single-select"
                 title={gettext('Edit single select')}
                 tip={isPrivateColumn ? gettext('This property is not editable') : gettext('You do not have permission')}
@@ -231,7 +232,7 @@ const HeaderDropdownMenu = forwardRef(({
           {type === CellType.MULTIPLE_SELECT && (
             <DropdownItem
               disabled={!canModifyColumnData}
-              target="sea-metadata-edit-column-options"
+              target={`${context.id}-sea-metadata-edit-column-options`}
               iconName="multiple-select"
               title={gettext('Edit multiple select')}
               tip={isPrivateColumn ? gettext('This property is not editable') : gettext('You do not have permission')}
@@ -246,7 +247,7 @@ const HeaderDropdownMenu = forwardRef(({
           )}
           <DropdownItem
             disabled={!canRenameColumn}
-            target="sea-metadata-rename-column"
+            target={`${context.id}-sea-metadata-rename-column`}
             iconName="rename"
             title={gettext('Rename')}
             tip={isPrivateColumn ? gettext('This is not editable') : gettext('You do not have permission')}
@@ -257,7 +258,7 @@ const HeaderDropdownMenu = forwardRef(({
             <>
               <DropdownItem
                 disabled={!canModifyView || SHOW_DISABLED_SORT_COLUMNS.includes(column.type)}
-                target="sea-metadata-sort-ascending-column"
+                target={`${context.id}-sea-metadata-sort-ascending-column`}
                 iconName="sort-ascending"
                 title={gettext('Sort ascending')}
                 tip={!canModifyView ? gettext('You do not have permission') : context.translate('This {column} does not support sorting')}
@@ -266,7 +267,7 @@ const HeaderDropdownMenu = forwardRef(({
               />
               <DropdownItem
                 disabled={!canModifyView || SHOW_DISABLED_SORT_COLUMNS.includes(column.type)}
-                target="sea-metadata-sort-descending-column"
+                target={`${context.id}-sea-metadata-sort-descending-column`}
                 iconName="sort-descending"
                 title={gettext('Sort descending')}
                 tip={!canModifyView ? gettext('You do not have permission') : context.translate('This {column} does not support sorting')}
@@ -311,14 +312,14 @@ const HeaderDropdownMenu = forwardRef(({
         </DropdownToggle>
         {isMenuShow && !isMobile &&
           <ModalPortal>
-            <div className="sea-metadata-dropdown-menu large">{renderDropdownMenu()}</div>
+            <div data-sea-metadata-instance={context.id} className="sea-metadata-dropdown-menu large">{renderDropdownMenu()}</div>
           </ModalPortal>
         }
       </Dropdown>
       {isRenamePopoverShow && (
         <ModalPortal>
           <RenamePopover
-            target={`sea-metadata-column-${column.key}`}
+            target={`${context.id}-column-${column.key}`}
             value={column.name}
             onToggle={closeRenamePopover}
             onSubmit={onRename}

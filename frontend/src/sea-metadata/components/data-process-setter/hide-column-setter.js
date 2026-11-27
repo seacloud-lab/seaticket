@@ -2,12 +2,14 @@ import React, { useMemo, useState, useCallback } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import IconBtn from '@/components/icon-button';
-import context from '@/sea-metadata/context';
 import { isEnter, isSpace } from '@/utils/hotkey';
 import { TABLE_NOT_DISPLAY_COLUMN_KEYS } from '../../constants';
+import { useSeaMetadataContext } from '../../context-provider';
 import { HideColumnPopover } from '../popover';
 
 const HideColumnSetter = ({ readOnly, columns, wrapperClass, target, hiddenColumns, modifyHiddenColumns, modifyColumnOrder }) => {
+  const context = useSeaMetadataContext();
+  const translate = context.translate;
   const [isShowSetter, setShowSetter] = useState(false);
 
   const validColumns = useMemo(() => columns.filter(column => !TABLE_NOT_DISPLAY_COLUMN_KEYS.includes(column.key)), [columns]);
@@ -18,10 +20,10 @@ const HideColumnSetter = ({ readOnly, columns, wrapperClass, target, hiddenColum
 
   const message = useMemo(() => {
     const hiddenColumnsLength = validHiddenColumns.length;
-    if (hiddenColumnsLength === 1) return context.translate('1 hidden {column}');
-    if (hiddenColumnsLength > 1) return context.translate('{count} hidden {columns}', { count: hiddenColumnsLength });
-    return context.translate('Hide {columns}');
-  }, [validHiddenColumns]);
+    if (hiddenColumnsLength === 1) return translate('1 hidden {column}');
+    if (hiddenColumnsLength > 1) return translate('{count} hidden {columns}', { count: hiddenColumnsLength });
+    return translate('Hide {columns}');
+  }, [validHiddenColumns, translate]);
 
   const onSetterToggle = useCallback(() => {
     setShowSetter(!isShowSetter);

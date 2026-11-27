@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { siteRoot } from '@/constants';
+import { useMetadataController } from '@/sea-metadata';
 import { EVENT_BUS_TYPE as SEAMETADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
-import context from '@/sea-metadata/context';
 import eventBus from '@/utils/event-bus';
 import { isNumber } from '@/utils/type-detection';
 import { Utils } from '@/utils/utils';
@@ -11,6 +11,7 @@ import { KNOWLEDGE_PAGE_SLUG_ID, KNOWLEDGE_CHILDREN_PAGE_SLUG_ID } from '../cons
 const KnowledgePageContext = React.createContext(null);
 
 export const KnowledgePageProvider = ({ workspaceID, projectName, children }) => {
+  const controller = useMetadataController();
   const [isLoading, setLoading] = useState(true);
   const [pageSlugId, setPageSlugId] = useState(KNOWLEDGE_PAGE_SLUG_ID.ALL);
   const [childrenPageSlugId, setChildrenPageSlugId] = useState(KNOWLEDGE_CHILDREN_PAGE_SLUG_ID.ALL);
@@ -49,9 +50,9 @@ export const KnowledgePageProvider = ({ workspaceID, projectName, children }) =>
   }, [pageSlugId, childrenPageSlugId, resetURL]);
 
   const onRefresh = Utils.debounce(useCallback(() => {
-    const eventBus = context.eventBus;
+    const eventBus = controller.events;
     eventBus.dispatch(SEAMETADATA_EVENT_BUS_TYPE.RELOAD_DATA);
-  }, []), 300);
+  }, [controller]), 300);
 
   // init page
   useEffect(() => {

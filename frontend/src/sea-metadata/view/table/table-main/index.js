@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useRef } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { GROUP_VIEW_OFFSET } from '../../../constants';
+import { useSeaMetadataContext } from '../../../context-provider';
 import GridUtils from '../utils/grid-utils';
 import Rows from './rows';
 
@@ -14,6 +15,7 @@ const TableMain = ({
   modifyColumnData,
   ...props
 }) => {
+  const context = useSeaMetadataContext();
   const ref = useRef(null);
 
   const gridUtils = useMemo(() => {
@@ -23,8 +25,8 @@ const TableMain = ({
       rowGetterByIndex,
       rowGetterById,
       modifyColumnData,
-    }, { tagsData });
-  }, [metadata, modifyRow, tagsData, modifyRows, rowGetterByIndex, rowGetterById, modifyColumnData]);
+    }, { tagsData, context });
+  }, [metadata, modifyRow, tagsData, modifyRows, rowGetterByIndex, rowGetterById, modifyColumnData, context]);
 
   const groupbysCount = useMemo(() => {
     if (!isGroupView) return 0;

@@ -2,11 +2,11 @@ import React, { useRef, useCallback, useMemo } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { Tooltip, Icon } from '@/components';
-import context from '@/sea-metadata/context';
 import { useTypesData, useSubstatesData } from '@/sea-metadata/hooks';
 import { checkIsNameColumn, checkIsPriorityColumn } from '@/sea-metadata/utils/column';
 import { isFunction } from '@/utils/type-detection';
 import { CellType, COLUMNS_ICON_CONFIG, COLUMNS_ICON_NAME, EVENT_BUS_TYPE } from '../../../../../constants';
+import { useSeaMetadataContext } from '../../../../../context-provider';
 import HeaderDropdownMenu from './dropdown-menu';
 import ResizeColumn from './resize-column';
 
@@ -36,19 +36,20 @@ const Cell = ({
   updateDragOverKey,
   onColumnSelectNone,
 }) => {
+  const context = useSeaMetadataContext();
   const headerCellRef = useRef(null);
   const dropdownRef = useRef(null);
 
   const { toggleAllTypes } = useTypesData();
   const { toggleAllSubstates } = useSubstatesData();
 
-  const canEditColumnInfo = useMemo(() => {
+  const canEditColumnInfo = (() => {
     if (isHideTriangle) return false;
     if (column.type === CellType.TAGS) return false;
     if (column.type === CellType.TYPE && !isFunction(toggleAllTypes)) return false;
     if (column.type === CellType.SINGLE_SELECT && column?.name === 'substate' && !isFunction(toggleAllSubstates)) return false;
     return context.canModifyColumnData(column);
-  }, [isHideTriangle, column, toggleAllTypes, toggleAllSubstates]);
+  })();
 
   const style = useMemo(() => {
     const { left, width } = column;
@@ -85,7 +86,7 @@ const Cell = ({
 
   const handleHeaderCellClick = useCallback((column) => {
     context.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_COLUMN, column);
-  }, []);
+  }, [context]);
 
   const onContextMenu = useCallback((event) => {
     event.preventDefault();
@@ -94,11 +95,11 @@ const Cell = ({
 
   const onDragStart = useCallback((event) => {
     if (dropdownRef.current && dropdownRef.current.isPopoverShow()) return false;
-    const dragData = JSON.stringify({ type: 'sea-metadata-column-order', column_key: column.key, column_frozen: column.frozen });
+    const dragData = JSON.stringify({ instanceId: context.id, type: 'sea-metadata-column-order', column_key: column.key, column_frozen: column.frozen });
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData('application/drag-sea-metadata-column-order', dragData);
     updateDraggingKey(column.key);
-  }, [column, dropdownRef, updateDraggingKey]);
+  }, [column, dropdownRef, updateDraggingKey, context]);
 
   const onDragEnter = useCallback(() => {
     if (!draggingColumnKey) return;
@@ -115,22 +116,23 @@ const Cell = ({
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
     updateDragOverKey(column.key);
-    if (!window.seaMetadataBody) return;
+    if (!context.body) return;
     let defaultColumnWidth = 200;
     const offsetX = event.clientX;
-    const width = document.querySelector('#sea-metadata-wrapper')?.clientWidth;
-    const left = window.innerWidth - width;
+    const bounds = context.root?.querySelector('.sea-metadata')?.getBoundingClientRect();
+    if (!bounds) return;
+    const { width, left, right } = bounds;
     if (width <= 800) {
       defaultColumnWidth = 20;
     }
-    if (offsetX > window.innerWidth - defaultColumnWidth) {
-      window.seaMetadataBody.scrollToRight();
+    if (offsetX > right - defaultColumnWidth) {
+      context.body.scrollToRight();
     } else if (offsetX < frozenColumnsWidth + defaultColumnWidth + left) {
-      window.seaMetadataBody.scrollToLeft();
+      context.body.scrollToLeft();
     } else {
-      window.seaMetadataBody.clearHorizontalScroll();
+      context.body?.clearHorizontalScroll();
     }
-  }, [column, frozenColumnsWidth, updateDragOverKey, draggingColumnKey]);
+  }, [column, frozenColumnsWidth, updateDragOverKey, draggingColumnKey, context]);
 
   const onDrop = useCallback((event) => {
     if (!dropdownRef.current || !dropdownRef.current.isPopoverShow()) {
@@ -138,18 +140,18 @@ const Cell = ({
       let dragData = event.dataTransfer.getData('application/drag-sea-metadata-column-order');
       if (!dragData) return false;
       dragData = JSON.parse(dragData);
-      if (dragData.type !== 'sea-metadata-column-order' || !dragData.column_key) return false;
+      if (dragData.instanceId !== context.id || dragData.type !== 'sea-metadata-column-order' || !dragData.column_key) return false;
       if (dragData.column_key !== column.key && dragData.column_frozen === column.frozen) {
         onMove && onMove({ key: dragData.column_key }, { key: column.key });
       }
     }
-  }, [column, onMove]);
+  }, [column, onMove, context]);
 
   const onDragEnd = useCallback(() => {
     updateDraggingKey(null);
     updateDragOverKey(null);
-    window.seaMetadataBody.clearHorizontalScroll();
-  }, [updateDraggingKey, updateDragOverKey]);
+    context.body?.clearHorizontalScroll();
+  }, [updateDraggingKey, updateDragOverKey, context]);
 
   const onDropDownToggle = useCallback(() => {
     onColumnSelectNone && onColumnSelectNone(column);
@@ -167,15 +169,15 @@ const Cell = ({
       className={classnames('sea-metadata-table-cell column', { 'table-last--frozen': isLastFrozenCell, 'name-column': checkIsNameColumn(column) })}
       ref={headerCellRef}
       style={style}
-      id={`sea-metadata-column-${key}`}
+      id={`${context.id}-column-${key}`}
       onClick={() => handleHeaderCellClick(column, frozen)}
       onContextMenu={onContextMenu}
     >
       <div className={classnames(contentClassName, { 'justify-content-center': isIconOnlyColumn })}>
-        <span className={classnames('', { 'mr-2': !isIconOnlyColumn })} id={`header-icon-${key}`}>
+        <span className={classnames('', { 'mr-2': !isIconOnlyColumn })} id={`${context.id}-header-icon-${key}`}>
           <Icon symbol={COLUMNS_ICON_CONFIG[type]} className="sea-metadata-icon sea-metadata-column-icon" />
         </span>
-        <Tooltip placement="bottom" target={`header-icon-${key}`} trigger="hover">
+        <Tooltip placement="bottom" target={`${context.id}-header-icon-${key}`} trigger="hover">
           {headerIconTooltip}
         </Tooltip>
         {!isIconOnlyColumn && (

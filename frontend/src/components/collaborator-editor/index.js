@@ -23,6 +23,8 @@ const CollaboratorEditor = ({
   ],
   onChange,
   onClose: onToggle,
+  PopoverComponent = CustomizePopover,
+  shouldHandleEvent,
   ...props
 }) => {
   const containerRef = useRef(null);
@@ -46,7 +48,7 @@ const CollaboratorEditor = ({
   }, [isMultiple, isCloseSubmit, value, onChange, onToggle]);
 
   return (
-    <CustomizePopover
+    <PopoverComponent
       target={target}
       className={classnames('options-editor-popover', className)}
       placement={placement}
@@ -54,10 +56,12 @@ const CollaboratorEditor = ({
       sameWidthWithTarget={sameWidthWithTarget}
       hidePopover={handleClose}
       hidePopoverWithEsc={handleClose}
+      shouldHandleEvent={shouldHandleEvent}
     >
       <Container
         id={id}
         innerRef={containerRef}
+        shouldHandleEvent={shouldHandleEvent}
         isMultiple={isMultiple}
         placeholder={placeholder}
         isSearchEnabled={isSearchEnabled}
@@ -68,7 +72,7 @@ const CollaboratorEditor = ({
         onToggle={onToggle}
         { ...props }
       />
-    </CustomizePopover>
+    </PopoverComponent>
   );
 };
 

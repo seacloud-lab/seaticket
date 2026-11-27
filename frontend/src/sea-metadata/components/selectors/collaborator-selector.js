@@ -5,6 +5,8 @@ import { CollaboratorEditor, Collaborator } from '@/components';
 import SelectTrigger from '@/components/customize-select/select-trigger';
 import { gettext } from '@/constants';
 import { isFilterTermArray } from '@/sea-metadata/utils/filter';
+import { useSeaMetadataContext } from '../../context-provider';
+import ScopedPopover from '../popover/scoped-popover';
 
 const COLLABORATOR_SELECTOR_TEXT_MAP = {
   default: {
@@ -52,6 +54,7 @@ const CollaboratorSelector = ({
   column,
   onChange,
 }) => {
+  const context = useSeaMetadataContext();
   const [isShowEditor, setIsShowEditor] = useState(false);
   const collaboratorSelectorRef = useRef(null);
 
@@ -107,6 +110,8 @@ const CollaboratorSelector = ({
       />
       {isShowEditor && (
         <CollaboratorEditor
+          PopoverComponent={ScopedPopover}
+          shouldHandleEvent={context.ownsEvent}
           sameWidthWithTarget={300}
           target={collaboratorSelectorRef}
           value={value}

@@ -20,7 +20,7 @@ const ManageSetter = ({ readOnly, view, modifyViewLock }) => {
       isOpen={isOpen}
       className="sea-metadata-manage-dropdown"
       toggle={(e) => {
-        if (e.currentTarget.id === 'lock-view-dropdown-item') return;
+        if (e.target.closest('.sea-metadata-lock-view-item')) return;
         setIsOpen(!isOpen);
       }}
     >
@@ -31,7 +31,7 @@ const ManageSetter = ({ readOnly, view, modifyViewLock }) => {
         className="position-fixed"
         modifiers={[{ name: 'preventOverflow', options: { boundary: document.body } }]}
       >
-        <DropdownItem id='lock-view-dropdown-item' className="sea-metadata-lock-view-item">
+        <DropdownItem className="sea-metadata-lock-view-item">
           <Switch
             checked={view.is_locked}
             onChange={handleLockView}

@@ -24,8 +24,8 @@ class Operation {
     return new Operation(this);
   }
 
-  apply(pageData) {
-    return apply(pageData, this);
+  apply(pageData, context) {
+    return apply(pageData, this, context);
   }
 
   invert() {

@@ -1,6 +1,8 @@
 import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { EVENT_BUS_TYPE } from '@/project/constants';
+import { useData } from '@/project/hooks';
+import { useResourceUpdate } from '@/project/hooks/resource-dialog';
 import ConnectionRecordDetailsInDialog from '@/project/main-panel/connections/components/connection-record-details-in-dialog';
 import eventBus from '@/utils/event-bus';
 
@@ -9,18 +11,18 @@ const mockOthers = jest.fn();
 jest.mock('@/components', () => ({}));
 jest.mock('@/constants', () => ({ PERMISSION_TYPES: { READ_ONLY: 'r' } }));
 jest.mock('@/models/user', () => jest.fn());
-jest.mock('@/project/api', () => ({}));
+jest.mock('@/project/api', () => ({ connectionsAPI: { modifyGithubIssue: jest.fn(async () => ({ data: {} })) } }));
 jest.mock('@/project/constants', () => ({ EVENT_BUS_TYPE: { TICKET_LINKED: 'linked', RESOURCE_UPDATED: 'updated' } }));
-jest.mock('@/project/hooks', () => ({ useData: () => ({}), useTags: () => ({}) }));
+jest.mock('@/project/hooks', () => ({ useData: jest.fn(), useTags: () => ({}) }));
 jest.mock('@/project/hooks/link-ticket', () => ({
   ...jest.requireActual('@/project/hooks/link-ticket'),
   useLinkTicket: () => ({ generateConnectionLinkTicketOptions: () => [] }),
 }));
 jest.mock('@/project/main-panel/connections/constants', () => ({
   SUPPORT_ROW_DETAILS_SETTINGS_CONNECTION_TYPES: ['github_issue'],
-  CONNECTION_PREDEFINED_COLUMN_NAME: {}, CONNECTION_TYPE: {},
+  CONNECTION_PREDEFINED_COLUMN_NAME: { UNREAD: 'unread' }, CONNECTION_TYPE: { GITHUB_ISSUE: 'github_issue', EMAIL: 'email' },
 }));
-jest.mock('@/project/main-panel/connections/hooks', () => ({ useConnections: () => ({ connections: [{ id: 1, type: 'github_issue' }] }) }));
+jest.mock('@/project/main-panel/connections/hooks', () => ({ useConnections: () => ({ connections: [{ id: 1, type: 'github_issue' }, { id: 2, type: 'email' }] }) }));
 jest.mock('@/project/main-panel/connections/utils', () => ({
   formatColumns: (_connection, columns) => columns,
   getTableName: connection => connection ? `${connection.type}_${connection.id}` : '',
@@ -30,16 +32,20 @@ jest.mock('@/project/main-panel/connections/components/connection-resource-detai
   default: props => { mockMain(props); return null; },
   ConnectionResourceOtherDetails: props => { mockOthers(props); return null; },
 }));
-jest.mock('@/sea-metadata/constants', () => ({ CellType: {}, EVENT_BUS_TYPE: {} }));
-jest.mock('@/sea-metadata/context', () => ({}));
-jest.mock('@/sea-metadata/utils/cell', () => ({}));
-jest.mock('@/sea-metadata/utils/column', () => ({}));
+jest.mock('@/sea-metadata/constants', () => ({ CellType: { SINGLE_SELECT: 'single-select' } }));
+jest.mock('@/sea-metadata/utils/cell', () => ({ getCellValueByColumn: (row, column) => row[column.key] }));
+jest.mock('@/sea-metadata/utils/column', () => ({ getColumnByName: (columns, name) => columns.find(column => column.name === name) }));
 jest.mock('@/utils/dialog', () => ({ isSmallContainer: () => false }));
 jest.mock('@/utils/utils', () => ({}));
 
 const lastProps = mock => mock.mock.calls[mock.mock.calls.length - 1][0];
-const columns = [{ key: 'link', name: 'linked_ticket' }];
+const columns = [{ key: 'link', name: 'linked_ticket' }, { key: 'outdated', name: 'outdated' }, { key: 'unread', name: 'unread' }];
 const resource = { type: 'github_issue', connection_id: 1, _id: '7' };
+
+const ResourceSubscriber = props => {
+  useResourceUpdate(props);
+  return null;
+};
 
 describe('Connection detail updates during loading', () => {
   const originalActEnvironment = global.IS_REACT_ACT_ENVIRONMENT;
@@ -65,6 +71,7 @@ describe('Connection detail updates during loading', () => {
     global.IS_REACT_ACT_ENVIRONMENT = true;
     global.ResizeObserver = class { observe() {} disconnect() {} };
     jest.clearAllMocks();
+    useData.mockReturnValue({ modifyLocalRow: jest.fn(), modifyRow: (_table, _id, _update, api) => api() });
     onUpdateResourceDetails = jest.fn();
     root = createRoot(document.createElement('div'));
     render();
@@ -107,5 +114,36 @@ describe('Connection detail updates during loading', () => {
 
     expect(lastProps(mockOthers).record.linked_ticket).toBe(73);
     expect(lastProps(mockOthers).linkedTicketTitle).toBe('Linked ticket');
+  });
+
+  it.each(['settings', 'unread'])('updates only the matching list after changing %s outside its controller provider', async source => {
+    const isUnread = source === 'unread';
+    const tableName = isUnread ? 'email_2' : 'github_issue_1';
+    const matching = jest.fn();
+    const otherProject = jest.fn();
+    const otherTable = jest.fn();
+    await act(async () => root.render(
+      <>
+        <ResourceSubscriber projectUuid="project" tableName={tableName} onUpdate={matching} />
+        <ResourceSubscriber projectUuid="other-project" tableName={tableName} onUpdate={otherProject} />
+        <ResourceSubscriber projectUuid="project" tableName="other-table" onUpdate={otherTable} />
+        <ConnectionRecordDetailsInDialog projectUuid="project"
+          resource={isUnread ? { ...resource, type: 'email', connection_id: 2 } : resource}
+          columns={columns} onUpdateResourceDetails={onUpdateResourceDetails} />
+      </>
+    ));
+    load();
+    const rowUpdateData = isUnread ? { unread: true } : { outdated: true };
+
+    await act(async () => isUnread
+      ? lastProps(mockMain).onThreadUnreadChange(true)
+      : lastProps(mockOthers).onChange(rowUpdateData));
+
+    expect(matching).toHaveBeenCalledTimes(1);
+    expect(matching).toHaveBeenCalledWith(expect.objectContaining({
+      projectUuid: 'project', tableName, rowId: '7', rowUpdateData,
+    }));
+    expect(otherProject).not.toHaveBeenCalled();
+    expect(otherTable).not.toHaveBeenCalled();
   });
 });

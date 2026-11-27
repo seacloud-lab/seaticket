@@ -1,4 +1,3 @@
-import context from '@/sea-metadata/context';
 import { parseEmailAddress, parseEmailUserInfo } from '@/utils/email';
 import { isObject } from '@/utils/type-detection';
 import { CellType, DEFAULT_DATE_FORMAT } from '../../constants';
@@ -139,7 +138,7 @@ export const getCellValueStringResult = (row, column, { collaborators = [], tags
   }
 };
 
-export const canEditCell = (col, row, enableCellSelect) => {
+export const canEditCell = (col, row, enableCellSelect, context) => {
   if (!col) return false;
   if (context.canModifyCell(col, row) === false) return false;
   if (col.editable != null && typeof (col.editable) === 'function') {

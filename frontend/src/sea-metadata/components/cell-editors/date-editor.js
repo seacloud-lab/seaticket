@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import { DatePicker } from '@/components';
 import { getEventClassName } from '@/utils/dom';
 import { isFunction } from '@/utils/type-detection';
-import context from '../../context';
+import { withSeaMetadataContext } from '../../context-provider';
 import dayjs from '../../utils/dayjs';
 
 import 'dayjs/locale/zh-cn';
@@ -26,7 +26,8 @@ class DateEditor extends Component {
       value: null,
     };
     const { format = 'YYYY-MM-DD' } = props;
-    this.lang = context.getSetting('lang') || 'zh-cn';
+    this.lang = props.metadataContext.getSetting('lang') || 'zh-cn';
+    this.calendarClassName = `${props.metadataContext.id}-date-editor-calendar`;
     this.format = format;
     this.calendarContainerRef = React.createRef();
     const isZhcn = this.lang === 'zh-cn';
@@ -49,7 +50,7 @@ class DateEditor extends Component {
     if (value && dayjs(value).isValid()) {
       if (typeof value === 'string' && value.length === 1 && !isNaN(Number(value, 10))) {
         this.timer = setTimeout(() => {
-          let inputDom = document.getElementsByClassName('rc-calendar-input')[0];
+          const inputDom = document.querySelector(`.${this.calendarClassName} .rc-calendar-input`);
           if (inputDom) {
             inputDom.value = value;
           }
@@ -133,10 +134,18 @@ class DateEditor extends Component {
   };
 
   onHotKey = (e) => {
+    if (!this.props.metadataContext.ownsEvent(e) && !e.target?.closest?.(`.${this.calendarClassName}`)) return;
     if (e.keyCode === 27) {
+      e.preventDefault();
       e.stopPropagation();
       this.props.onClose && this.props.onClose(true);
     }
+  };
+
+  getCalendarContainer = (trigger) => {
+    // The portal host owns events without trapping the calendar under the
+    // positioned editor's z-index, which is below an enclosing modal.
+    return trigger.closest('[data-sea-metadata-instance]') || document.body;
   };
 
   getCalendarFormat = () => {
@@ -189,6 +198,7 @@ class DateEditor extends Component {
           format={this.format}
           value={state.value}
           calendarProps={{
+            className: this.calendarClassName,
             style: { zIndex: 1060 },
             format: this.getCalendarFormat(),
             showDateInput: true,
@@ -197,7 +207,7 @@ class DateEditor extends Component {
             onClear: this.onClear,
             onClickRightPanelTime: this.onClickRightPanelTime
           }}
-          calendarContainer={document.body}
+          getCalendarContainer={this.getCalendarContainer}
           onChange={this.onChange}
           onOpenChange={this.onOpenChange}
         />
@@ -213,4 +223,4 @@ DateEditor.propTypes = {
   onChange: PropTypes.func,
 };
 
-export default DateEditor;
+export default withSeaMetadataContext(DateEditor);

@@ -6,14 +6,15 @@ import PropTypes from 'prop-types';
 import CustomizeButton from '@/components/btn/customize-button';
 import Icon from '@/components/icon';
 import { gettext } from '@/constants';
-import context from '@/sea-metadata/context';
 import { getEventClassName } from '@/utils/dom';
 import ObjectUtils from '@/utils/object-utils';
 import {
   EVENT_BUS_TYPE, VIEW_SORT_COLUMN_RULES, VIEW_FIRST_SORT_COLUMN_RULES, VIEW_TYPE,
 } from '../../../constants';
+import { withSeaMetadataContext } from '../../../context-provider';
 import { getColumnByKey } from '../../../utils/column';
 import { ColumnSelector, SortSelector } from '../../selectors';
+import { hasScopedSelector, isPopoverKeyEvent, ScopedPopoverContent } from '../scoped-popover';
 import { execSortsOperation, getDisplaySorts, isSortsEmpty, SORT_OPERATION } from './utils';
 
 import './index.css';
@@ -46,7 +47,7 @@ class SortPopover extends Component {
   componentDidMount() {
     document.addEventListener('click', this.hidePopover, true);
     document.addEventListener('keydown', this.onHotKey);
-    this.unsubscribeOpenSelect = context.eventBus.subscribe(EVENT_BUS_TYPE.OPEN_SELECT, this.setSelectStatus);
+    this.unsubscribeOpenSelect = this.props.metadataContext.eventBus.subscribe(EVENT_BUS_TYPE.OPEN_SELECT, this.setSelectStatus);
   }
 
   componentWillUnmount() {
@@ -56,7 +57,8 @@ class SortPopover extends Component {
   }
 
   hidePopover = (e) => {
-    if (document.getElementsByClassName('seaqa-select-options-container').length > 0) return;
+    if (!this.props.metadataContext.ownsEvent(e, { allowOutside: true })) return;
+    if (hasScopedSelector(this.props.metadataContext, '.seaqa-select-options-container')) return;
     if (this.sortPopoverRef && !getEventClassName(e).includes('popover') && !this.sortPopoverRef.contains(e.target)) {
       this.onClosePopover();
       e.preventDefault();
@@ -66,6 +68,7 @@ class SortPopover extends Component {
   };
 
   onHotKey = (e) => {
+    if (!this.props.metadataContext.ownsEvent(e) || !isPopoverKeyEvent(e, this.sortPopoverRef)) return;
     if (isHotkey('esc', e) && !this.isSelectOpen) {
       e.preventDefault();
       this.onClosePopover();
@@ -193,7 +196,7 @@ class SortPopover extends Component {
         className={classnames('sea-metadata-sort-popover', { 'disabled': readOnly })}
         boundariesElement={document.body}
       >
-        <div ref={ref => this.sortPopoverRef = ref} onClick={this.onPopoverInsideClick}>
+        <ScopedPopoverContent target={target} ref={ref => this.sortPopoverRef = ref} onClick={this.onPopoverInsideClick}>
           <div
             className={classnames('sorts-list', { 'empty-sorts-container d-flex align-items-center justify-content-center': isEmpty })}
             ref={ref => this.sortsListRef = ref}
@@ -211,7 +214,7 @@ class SortPopover extends Component {
               />
             </div>
           }
-        </div>
+        </ScopedPopoverContent>
       </UncontrolledPopover>
     );
   }
@@ -219,4 +222,4 @@ class SortPopover extends Component {
 
 SortPopover.propTypes = propTypes;
 
-export default SortPopover;
+export default withSeaMetadataContext(SortPopover);

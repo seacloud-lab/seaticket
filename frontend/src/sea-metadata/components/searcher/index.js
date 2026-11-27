@@ -2,11 +2,12 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { IconButton, SearchInput } from '@/components';
 import { gettext, KeyCodes } from '@/constants';
 import { EVENT_BUS_TYPE } from '../../constants';
-import context from '../../context';
+import { useSeaMetadataContext } from '../../context-provider';
 
 import './index.css';
 
 const Searcher = ({ viewId, onChange }) => {
+  const context = useSeaMetadataContext();
   const [isSearchActive, setIsSearchActive] = useState(false);
   const searchInputRef = useRef(null);
   const lastViewId = useRef('');
@@ -44,7 +45,7 @@ const Searcher = ({ viewId, onChange }) => {
       unsubscribeClearSearch();
       unsubscribeReSearch();
     };
-  }, [onClear, onReSearch]);
+  }, [onClear, onReSearch, context]);
 
   useEffect(() => {
     if (lastViewId.current === viewId) return;

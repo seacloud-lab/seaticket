@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import EmptyTip from '@/components/empty-tip';
 import { gettext, mediaUrl } from '@/constants';
-import context from '@/sea-metadata/context';
 import { addClassName, removeClassName, getEventClassName } from '@/utils/dom';
 import { isShiftKeyDown } from '@/utils/keyboard-utils';
 import { isFunction } from '@/utils/type-detection';
@@ -10,6 +9,7 @@ import { isMobile } from '@/utils/utils';
 import ContextMenu from '../../../../components/context-menu';
 import { HorizontalScrollbar } from '../../../../components/scrollbar';
 import { SEQUENCE_COLUMN_WIDTH, CANVAS_RIGHT_INTERVAL, GROUP_ROW_TYPE, EVENT_BUS_TYPE } from '../../../../constants';
+import { withSeaMetadataContext } from '../../../../context-provider';
 import { isWindowsBrowser, isWebkitBrowser } from '../../../../utils';
 import { recalculate } from '../../../../utils/column';
 import { getColOverScanEndIdx, getColOverScanStartIdx } from '../../utils/grid';
@@ -59,8 +59,8 @@ class Rows extends Component {
     } else {
       document.addEventListener('mousedown', this.onMouseDown);
     }
-    this.unsubscribeSelectNone = context.eventBus.subscribe(EVENT_BUS_TYPE.SELECT_NONE, this.selectNone);
-    this.unsubscribeSelectCell = context.eventBus.subscribe(EVENT_BUS_TYPE.SELECT_CELL, this.selectCell);
+    this.unsubscribeSelectNone = this.props.metadataContext.eventBus.subscribe(EVENT_BUS_TYPE.SELECT_NONE, this.selectNone);
+    this.unsubscribeSelectCell = this.props.metadataContext.eventBus.subscribe(EVENT_BUS_TYPE.SELECT_CELL, this.selectCell);
     this.initScroll();
   }
 
@@ -125,8 +125,8 @@ class Rows extends Component {
 
   initScroll = () => {
     this.setState({}, () => {
-      let scrollLeft = context.localStorage.getItem('scroll_left') + '';
-      let scrollTop = context.localStorage.getItem('scroll_top') + '';
+      let scrollLeft = this.props.metadataContext.localStorage.getItem('scroll_left') + '';
+      let scrollTop = this.props.metadataContext.localStorage.getItem('scroll_top') + '';
       if (scrollLeft && scrollTop) {
         if (this.bodyRef) {
           scrollLeft = Number(scrollLeft);
@@ -148,12 +148,12 @@ class Rows extends Component {
   storeScrollPosition = () => {
     const scrollTop = this.bodyRef.getScrollTop();
     const scrollLeft = this.getScrollLeft();
-    context.localStorage.setItem('scroll_left', scrollLeft);
+    this.props.metadataContext.localStorage.setItem('scroll_left', scrollLeft);
     this.storeScrollTop(scrollTop);
   };
 
   storeScrollTop = (scrollTop) => {
-    context.localStorage.setItem('scroll_top', scrollTop);
+    this.props.metadataContext.localStorage.setItem('scroll_top', scrollTop);
   };
 
   onContentScroll = (e) => {
@@ -171,7 +171,7 @@ class Rows extends Component {
       this.handleHorizontalScroll(scrollLeft, scrollTop);
     }
     this.storeScrollPosition();
-    context.eventBus.dispatch(EVENT_BUS_TYPE.CLOSE_EDITOR);
+    this.props.metadataContext.eventBus.dispatch(EVENT_BUS_TYPE.CLOSE_EDITOR);
   };
 
   handleHorizontalScroll = (scrollLeft, scrollTop) => {
@@ -324,7 +324,7 @@ class Rows extends Component {
   onClickContainer = (e) => {
     let classNames = getEventClassName(e);
     if (classNames.includes('sea-metadata-table-content') || classNames.includes('sea-metadata-table-canvas')) {
-      context.eventBus.dispatch(EVENT_BUS_TYPE.CLOSE_EDITOR);
+      this.props.metadataContext.eventBus.dispatch(EVENT_BUS_TYPE.CLOSE_EDITOR);
     }
   };
 
@@ -344,19 +344,23 @@ class Rows extends Component {
   };
 
   onCopyCells = (e) => {
-    context.eventBus.dispatch(EVENT_BUS_TYPE.COPY_CELLS, e);
+    if (!this.props.metadataContext.ownsEvent(e)) return;
+    this.props.metadataContext.eventBus.dispatch(EVENT_BUS_TYPE.COPY_CELLS, e);
   };
 
   onPasteCells = (e) => {
-    context.eventBus.dispatch(EVENT_BUS_TYPE.PASTE_CELLS, e);
+    if (!this.props.metadataContext.ownsEvent(e)) return;
+    this.props.metadataContext.eventBus.dispatch(EVENT_BUS_TYPE.PASTE_CELLS, e);
   };
 
   onCutCells = (e) => {
-    context.eventBus.dispatch(EVENT_BUS_TYPE.CUT_CELLS, e);
+    if (!this.props.metadataContext.ownsEvent(e)) return;
+    this.props.metadataContext.eventBus.dispatch(EVENT_BUS_TYPE.CUT_CELLS, e);
   };
 
   onTouchStart = (e) => {
-    const outsideDom = ['canvas', 'group-canvas'];
+    if (!this.props.metadataContext.ownsEvent(e)) return;
+    const outsideDom = [`${this.props.metadataContext.id}-canvas`, `${this.props.metadataContext.id}-group-canvas`];
     if (e.target && outsideDom.includes(e.target.id)) {
       let touchStartPosition = {
         startX: e.changedTouches[0].clientX,
@@ -367,24 +371,26 @@ class Rows extends Component {
   };
 
   onTouchEnd = (e) => {
-    const outsideDom = ['canvas', 'group-canvas'];
+    if (!this.props.metadataContext.ownsEvent(e)) return;
+    const outsideDom = [`${this.props.metadataContext.id}-canvas`, `${this.props.metadataContext.id}-group-canvas`];
     if (e.target && outsideDom.includes(e.target.id)) {
       let { clientX, clientY } = e.changedTouches[0];
       let { touchStartPosition } = this.state;
       if (Math.abs(touchStartPosition.startX - clientX) < 5 && Math.abs(touchStartPosition.startY - clientY) < 5) {
-        context.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_NONE);
+        this.props.metadataContext.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_NONE);
       }
     }
   };
 
   onMouseDown = (e) => {
+    if (!this.props.metadataContext.ownsEvent(e)) return;
     const validClassName = getEventClassName(e);
     if (validClassName.indexOf('sea-metadata-table-cell') > -1) {
       return;
     }
-    const outsideDom = ['canvas', 'group-canvas'];
+    const outsideDom = [`${this.props.metadataContext.id}-canvas`, `${this.props.metadataContext.id}-group-canvas`];
     if (outsideDom.includes(e.target.id) || validClassName.includes('sea-metadata-table-content')) {
-      context.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_NONE);
+      this.props.metadataContext.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_NONE);
     }
   };
 
@@ -438,10 +444,10 @@ class Rows extends Component {
     const { lastRowIdxUiSelected, rowMetrics } = this.state;
     let selectedRowIds = [];
     if (isGroupView) {
-      if (!window.seaMetadataBody || !window.seaMetadataBody.getGroupMetrics) {
+      if (!this.props.metadataContext.body || !this.props.metadataContext.body.getGroupMetrics) {
         return;
       }
-      const groupMetrics = window.seaMetadataBody.getGroupMetrics();
+      const groupMetrics = this.props.metadataContext.body.getGroupMetrics();
       const { groupRows } = groupMetrics;
       const groupRowIndexes = [groupRowIndex, lastRowIdxUiSelected.groupRowIndex].sort((a, b) => a - b);
       for (let i = groupRowIndexes[0]; i <= groupRowIndexes[1]; i++) {
@@ -544,10 +550,10 @@ class Rows extends Component {
     let updatedRowMetrics = { ...rowMetrics };
     let selectedRowIds = [];
     if (isGroupView) {
-      if (!window.seaMetadataBody || !window.seaMetadataBody.getGroupMetrics) {
+      if (!this.props.metadataContext.body || !this.props.metadataContext.body.getGroupMetrics) {
         return;
       }
-      const groupMetrics = window.seaMetadataBody.getGroupMetrics();
+      const groupMetrics = this.props.metadataContext.body.getGroupMetrics();
       const { groupRows } = groupMetrics;
       groupRows.forEach(groupRow => {
         const { type } = groupRow;
@@ -643,7 +649,7 @@ class Rows extends Component {
 
     // select cell when click out of selectRange
     if (this.isOutSelectedRange({ rowIndex, idx })) {
-      context.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_CELL, cell, false);
+      this.props.metadataContext.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_CELL, cell, false);
     }
   };
 
@@ -653,12 +659,12 @@ class Rows extends Component {
 
   handleDeleteRows = (rowIds) => {
     this.props.deleteRows(rowIds);
-    context.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_NONE);
+    this.props.metadataContext.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_NONE);
   };
 
   handleDeleteRow = (rowId) => {
     this.props.deleteRow(rowId);
-    context.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_NONE);
+    this.props.metadataContext.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_NONE);
   };
 
   renderRowsBody = ({ containerWidth }) => {
@@ -671,6 +677,7 @@ class Rows extends Component {
       rowMetrics, colOverScanStartIdx, colOverScanEndIdx,
       contextMenu: (
         <ContextMenu
+          context={this.props.metadataContext}
           isGroupView={isGroupView}
           rowGetterByIndex={this.props.rowGetterByIndex}
           deleteRow={this.handleDeleteRow}
@@ -824,4 +831,4 @@ Rows.propTypes = {
   getCopiedRowsAndColumnsFromRange: PropTypes.func,
 };
 
-export default Rows;
+export default withSeaMetadataContext(Rows);

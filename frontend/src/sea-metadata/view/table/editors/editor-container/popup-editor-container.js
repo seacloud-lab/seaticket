@@ -3,9 +3,9 @@ import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import ClickOutside from '@/components/click-outside';
 import { Z_INDEX } from '@/constants/zIndexes';
-import eventBus from '@/utils/event-bus';
 import { isFunction } from '@/utils/type-detection';
 import { EVENT_BUS_TYPE } from '../../../../constants/event-bus-type';
+import { withSeaMetadataContext } from '../../../../context-provider';
 import { getCellValueByColumn, isCellValueChanged, isValidCellValue } from '../../../../utils/cell';
 import Editor from './editor';
 
@@ -177,7 +177,7 @@ class PopupEditorContainer extends React.Component {
     this.isClosed = true;
     this.commit();
     this.props.onCommitCancel();
-    !isEscapeKeydown && eventBus.dispatch(EVENT_BUS_TYPE.SELECT_NONE);
+    !isEscapeKeydown && this.props.metadataContext.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_NONE);
   };
 
   render() {
@@ -221,4 +221,4 @@ PopupEditorContainer.propTypes = {
   onPressTab: PropTypes.func,
 };
 
-export default PopupEditorContainer;
+export default withSeaMetadataContext(PopupEditorContainer);

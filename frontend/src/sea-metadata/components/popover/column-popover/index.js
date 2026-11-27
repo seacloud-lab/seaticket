@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import { gettext } from '@/constants';
 import ObjectUtils from '@/utils/object-utils';
 import { CellType, DEFAULT_DATE_FORMAT } from '../../../constants';
+import { useSeaMetadataContext } from '../../../context-provider';
 import { useMetadata } from '../../../hooks';
 import ColumnName from './column-name';
 import ColumnType from './column-type';
@@ -18,6 +19,7 @@ const DEFAULT_POPOVER_INNER_WIDTH = 350;
 const COLUMN_TYPE_POPOVER_INNER_WIDTH = {};
 
 const ColumnPopover = ({ target, column, onSelect, onCancel, onSubmit }) => {
+  const context = useSeaMetadataContext();
   const popoverInnerRef = useRef(null);
   const nameRef = useRef(null);
   const typeRef = useRef(null);
@@ -43,13 +45,13 @@ const ColumnPopover = ({ target, column, onSelect, onCancel, onSubmit }) => {
     typeRef.current.setError('');
     let flag = 1;
     const columnName = nameRef.current.getName();
-    const columnNameError = ValidateColumnFormColumns[COMMON_FORM_COLUMN_TYPE.COLUMN_NAME]({ columnName, metadata, gettext });
+    const columnNameError = ValidateColumnFormColumns[COMMON_FORM_COLUMN_TYPE.COLUMN_NAME]({ columnName, metadata, gettext, context });
     if (columnNameError) {
       nameRef.current.setError(columnNameError.tips);
       flag = 0;
     }
 
-    const columnTypeError = ValidateColumnFormColumns[COMMON_FORM_COLUMN_TYPE.COLUMN_TYPE]({ column, metadata, gettext });
+    const columnTypeError = ValidateColumnFormColumns[COMMON_FORM_COLUMN_TYPE.COLUMN_TYPE]({ column, metadata, gettext, context });
     if (columnTypeError) {
       typeRef.current.setError(columnTypeError.tips);
       flag = 0;
@@ -68,7 +70,7 @@ const ColumnPopover = ({ target, column, onSelect, onCancel, onSubmit }) => {
       }
     }
     onSubmit(column.unique ? column.key : columnName, column.type, { key: column.unique ? column.key : '', data });
-  }, [nameRef, column, metadata, onSubmit]);
+  }, [nameRef, column, metadata, onSubmit, context]);
 
   return (
     <Popover
@@ -79,7 +81,7 @@ const ColumnPopover = ({ target, column, onSelect, onCancel, onSubmit }) => {
       fade={false}
       className="sea-metadata-column-popover"
     >
-      <div className="sea-metadata-column-popover-inner" ref={popoverInnerRef} style={{ width: popoverInnerWidth }}>
+      <div data-sea-metadata-instance={context.id} className="sea-metadata-column-popover-inner" ref={popoverInnerRef} style={{ width: popoverInnerWidth }}>
         <div>
           <ColumnName ref={nameRef} readOnly={column?.unique} value={column?.unique ? column.name : ''} />
           <ColumnType ref={typeRef} column={column} onChange={onColumnChange} />

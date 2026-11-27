@@ -4,10 +4,10 @@ import { LongTextEditorDialog, getPreviewContent } from '@seafile/seafile-editor
 import PropTypes from 'prop-types';
 import i18n from '@/_i18n/i18n-seafile-editor';
 import toaster from '@/components/toaster';
-import context from '@/sea-metadata/context';
 import { downloadFile } from '@/utils/download';
 import LongTextEditorUtilities from '@/utils/long-text';
 import { LONG_TEXT_EXCEED_LIMIT_MESSAGE, LONG_TEXT_EXCEED_LIMIT_SUGGEST } from '../../../constants';
+import { withSeaMetadataContext } from '../../../context-provider';
 import { getValidLongTextValue, isLongTextValueExceedLimit } from '../../../utils/column';
 
 const { projectUuid } = window.app.pageOptions;
@@ -18,9 +18,9 @@ class LongTextEditor extends React.PureComponent {
     super(props);
     this.isLongTextValueChanged = false;
     this.value = this.initEditorValue();
-    this.lang = context.getSetting('lang') || 'zh-cn';
-    const server = context.getSetting('server');
-    this.editorAPI = new LongTextEditorUtilities({ server, api: context });
+    this.lang = props.metadataContext.getSetting('lang') || 'zh-cn';
+    const server = props.metadataContext.getSetting('server');
+    this.editorAPI = new LongTextEditorUtilities({ server, api: props.metadataContext });
   }
 
   initEditorValue = () => {
@@ -131,4 +131,4 @@ LongTextEditor.propTypes = {
   onCommitCancel: PropTypes.func,
 };
 
-export default LongTextEditor;
+export default withSeaMetadataContext(LongTextEditor);

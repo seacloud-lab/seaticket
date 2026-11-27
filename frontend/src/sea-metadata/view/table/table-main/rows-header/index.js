@@ -1,10 +1,10 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Z_INDEX } from '@/constants/zIndexes';
-import context from '@/sea-metadata/context';
 import { isMobile } from '@/utils/utils';
 import { EVENT_BUS_TYPE, GRID_HEADER_DEFAULT_HEIGHT, GRID_HEADER_DOUBLE_HEIGHT, HEADER_HEIGHT_TYPE, SEQUENCE_COLUMN_WIDTH,
 } from '../../../../constants';
+import { useSeaMetadataContext } from '../../../../context-provider';
 import { checkIsColumnFrozen, recalculateColumnMetricsByResizeColumn, getFrozenColumns } from '../../../../utils/column';
 import { isEmptyObject } from '../../../../utils/common';
 import ActionsCell from './actions-cell';
@@ -31,6 +31,7 @@ const RowsHeader = ({
   insertColumn,
   ...props
 }) => {
+  const context = useSeaMetadataContext();
   const [resizingColumnMetrics, setResizingColumnMetrics] = useState(null);
   const [draggingColumnKey, setDraggingCellKey] = useState(null);
   const [dragOverColumnKey, setDragOverCellKey] = useState(null);

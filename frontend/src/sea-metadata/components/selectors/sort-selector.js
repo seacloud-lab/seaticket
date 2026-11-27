@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
-import { CustomizeSelect } from '@/components';
 import { SORT_TYPES } from '@/sea-metadata/constants';
+import CustomizeSelect from './scoped-select';
 
 const SortSelector = ({ disabled, value, onChange }) => {
 

@@ -80,7 +80,7 @@ test.each(labels.map((label, index) => [label, String(index)]))(
   'searching by the visible label %s finds the matching sender',
   (value, rowId) => {
     const table = { rows, view: { columns: [column], groupbys: [] } };
-    DataProcessor.syncOperationOnData(
+    new DataProcessor({}).syncOperationOnData(
       table, { op_type: OPERATION_TYPE.SEARCH_ROWS, value }, { collaborators: [] }
     );
 

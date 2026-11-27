@@ -7,7 +7,7 @@ import { isModF } from '@/utils/hotkey';
 import { isFunction } from '@/utils/type-detection';
 import { Utils } from '@/utils/utils';
 import { EVENT_BUS_TYPE, PER_LOAD_NUMBER } from '../constants';
-import context from '../context';
+import { useSeaMetadataContext } from '../context-provider';
 import Store from '../store';
 import { getRowById, getRowsByIds } from '../utils/row';
 import { useCollaborators } from './collaborators';
@@ -34,6 +34,7 @@ export const MetadataProvider = forwardRef(({
   children,
   ...params
 }, ref) => {
+  const context = useSeaMetadataContext();
   const [isLoading, setLoading] = useState(true);
   const [metadata, setMetadata] = useState({ rows: [], columns: [], view: {} });
   const [errorMessage, setErrorMessage] = useState(null);
@@ -44,7 +45,7 @@ export const MetadataProvider = forwardRef(({
   const { selectedRowIds, updateSelectedRowIdsByDelete } = useSelectedRows();
 
   const tableChanged = useCallback(() => {
-    setMetadata(storeRef.current.data);
+    if (storeRef.current?.data) setMetadata(storeRef.current.data);
   }, []);
 
   const handleTableError = useCallback((error) => {
@@ -56,29 +57,36 @@ export const MetadataProvider = forwardRef(({
   }, []);
 
   const reloadMetadata = useCallback((isShowLoading = true) => {
-    if (!storeRef.current?.data) return;
+    const store = storeRef.current;
+    if (!store?.data) return;
     if (isShowLoading) {
       setLoading(true);
       setErrorMessage('');
     }
-    storeRef.current.reload(Math.max(storeRef.current.data.rows.length, PER_LOAD_NUMBER)).then(() => {
-      setMetadata(storeRef.current.data);
+    store.reload(Math.max(store.data.rows.length, PER_LOAD_NUMBER)).then(() => {
+      if (storeRef.current !== store) return;
+      setMetadata(store.data);
     }).catch(error => {
+      if (storeRef.current !== store) return;
       const errorMsg = Utils.getErrorMsg(error);
       setErrorMessage(errorMsg);
     }).finally(() => {
+      if (storeRef.current !== store) return;
       setLoading(false);
     });
   }, []);
 
   const recalculateData = useCallback(() => {
-    if (!storeRef.current?.data) return;
+    const store = storeRef.current;
+    if (!store?.data) return;
     setLoading(true);
     setErrorMessage('');
-    storeRef.current.recalculate().then(() => {
-      setMetadata(storeRef.current.data);
+    store.recalculate().then(() => {
+      if (storeRef.current !== store) return;
+      setMetadata(store.data);
       setLoading(false);
     }).catch(error => {
+      if (storeRef.current !== store) return;
       const errorMsg = Utils.getErrorMsg(error);
       setErrorMessage(errorMsg);
       setLoading(false);
@@ -91,9 +99,11 @@ export const MetadataProvider = forwardRef(({
   }, []);
 
   const updateDataAttribute = useCallback((update, isReplace) => {
-    if (!storeRef.current?.data) return;
-    storeRef.current.updateDataAttribute(update, isReplace).then(() => {
-      setMetadata(storeRef.current.data);
+    const store = storeRef.current;
+    if (!store?.data) return;
+    store.updateDataAttribute(update, isReplace).then(() => {
+      if (storeRef.current !== store) return;
+      setMetadata(store.data);
     });
   }, []);
 
@@ -134,15 +144,18 @@ export const MetadataProvider = forwardRef(({
   }, [storeRef]);
 
   const updateLocalRow = useCallback((rowId, update) => {
+    if (!storeRef.current?.data) return;
     const rowUpdate = isFunction(update) ? update(getRowById(storeRef.current.data, rowId)) : update;
     storeRef.current.modifyLocalRow(rowId, rowUpdate);
   }, [storeRef]);
 
   const updateLocalRows = useCallback((updates) => {
+    if (!storeRef.current?.data) return;
     storeRef.current.modifyLocalRows(updates);
   }, [storeRef]);
 
   const updateLocalColumnData = useCallback((columnKey, newData, oldData) => {
+    if (!storeRef.current?.data) return;
     storeRef.current.modifyLocalColumnData(columnKey, newData, oldData);
   }, []);
 
@@ -172,7 +185,7 @@ export const MetadataProvider = forwardRef(({
         success_callback && success_callback();
       },
     });
-  }, [metadata, storeRef, cascadeUpdateCells]);
+  }, [metadata, storeRef, cascadeUpdateCells, context]);
 
   const deleteRow = useCallback((rowId, { success_callback, fail_callback, row_data } = {}) => {
     storeRef.current.deleteRow(rowId, {
@@ -186,7 +199,7 @@ export const MetadataProvider = forwardRef(({
         success_callback && success_callback();
       },
     });
-  }, [storeRef]);
+  }, [storeRef, context]);
 
   const deleteRows = useCallback((rowIds, { success_callback, fail_callback } = {}) => {
     if (!Array.isArray(rowIds) || rowIds.length === 0) return;
@@ -206,9 +219,10 @@ export const MetadataProvider = forwardRef(({
         updateSelectedRowIdsByDelete(successRows);
       },
     });
-  }, [updateSelectedRowIdsByDelete]);
+  }, [updateSelectedRowIdsByDelete, context]);
 
   const deleteLocalRows = useCallback((rowIds, { success_callback, fail_callback } = {}) => {
+    if (!storeRef.current?.data) return;
     if (!Array.isArray(rowIds) || rowIds.length === 0) return;
     storeRef.current.deleteLocalRows(rowIds, {
       fail_callback: (error) => {
@@ -251,7 +265,7 @@ export const MetadataProvider = forwardRef(({
     const rowId = row._id;
     let previousRow = deepCopy(getRowById(store.data, rowId));
     const notifyRowChange = () => {
-      if (!store.data) return;
+      if (storeRef.current !== store || !store.data) return;
       const currentRow = getRowById(store.data, rowId);
       const rowUpdate = {};
       Object.keys(currentRow || {}).forEach(key => {
@@ -302,7 +316,7 @@ export const MetadataProvider = forwardRef(({
         return result?.then ? result.then(value => { notifyRowChange(); return value; }) : result;
       }),
     });
-  }, [createContextMenuOptions, modifyRow, modifyRows, deleteRow, deleteRows, updateLocalRow]);
+  }, [createContextMenuOptions, modifyRow, modifyRows, deleteRow, deleteRows, updateLocalRow, context]);
 
   const moveRow = useCallback(() => {
     // todo
@@ -341,29 +355,28 @@ export const MetadataProvider = forwardRef(({
   }, [storeRef]);
 
   const onKeydown = useCallback((event) => {
-    if (isModF(event) && (!event.target || event.target.className.indexOf('modal') < 0)) {
-      event.preventDefault();
-      context.eventBus && context.eventBus.dispatch(EVENT_BUS_TYPE.START_SEARCH_ROWS);
-    }
-  }, []);
+    if (event.defaultPrevented || !isModF(event) || !context.ownsSearchShortcut(event)) return;
+    event.preventDefault();
+    context.eventBus.dispatch(EVENT_BUS_TYPE.START_SEARCH_ROWS);
+  }, [context]);
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || !storeRef.current) return;
     storeRef.current.tagsData = tagsData;
   }, [isLoading, tagsData]);
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || !storeRef.current) return;
     storeRef.current.typesData = typesData;
   }, [isLoading, typesData]);
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || !storeRef.current) return;
     storeRef.current.customersData = customersData;
   }, [isLoading, customersData]);
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || !storeRef.current) return;
     storeRef.current.collaborators = [...collaborators, ...Object.values(collaboratorsCache)];
   }, [isLoading, collaborators, collaboratorsCache]);
 
@@ -380,16 +393,22 @@ export const MetadataProvider = forwardRef(({
     setLoading(true);
     setErrorMessage('');
     context.re_set({
-      localStorageName: `${localStorageNamePrefix}-${viewID}`,
+      localStorageName: context.storageName(localStorageNamePrefix, viewID),
+      legacyLocalStorageName: context.useLegacyStorage ? `${localStorageNamePrefix}-${viewID}` : undefined,
     });
     storeRef.current = new Store({
-      viewId: viewID, typesData, tagsData, customersData, columnOrderRules, columnWidthRules,
+      context, viewId: viewID, typesData, tagsData, customersData, columnOrderRules, columnWidthRules,
       notDisplayColumns, dataDidMount, shouldRemoveRowAfterUpdate,
+      collaborators: [...collaborators, ...Object.values(collaboratorsCache)],
+      // This notification outlives a view; stale Store callbacks still cannot
+      // update selection, dialogs, or the replacement Store.
+      onOperationError: error => toaster.danger(error),
     });
-    storeRef.current.initStartIndex();
-    storeRef.current.load(PER_LOAD_NUMBER).then(() => {
+    const store = storeRef.current;
+    store.initStartIndex();
+    store.load(PER_LOAD_NUMBER).then(() => {
       if (!isCancelled) {
-        setMetadata(storeRef.current.data);
+        if (storeRef.current?.data) setMetadata(storeRef.current.data);
         setLoading(false);
       }
     }).catch(error => {
@@ -402,10 +421,11 @@ export const MetadataProvider = forwardRef(({
 
     return () => {
       isCancelled = true;
-      storeRef.current.destroy();
+      store.destroy();
+      if (storeRef.current === store) storeRef.current = null;
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [localStorageNamePrefix, viewID]);
+  }, [localStorageNamePrefix, viewID, context]);
 
   useEffect(() => {
     const eventBus = context.eventBus;
@@ -443,7 +463,7 @@ export const MetadataProvider = forwardRef(({
       unsubscribeClearData();
       unsubscribeUpdateDataAttribute();
     };
-  }, [tableChanged, handleTableError, updateMetadata, reloadMetadata, recalculateData, updateLocalRow, updateLocalRows, updateLocalColumnData, moveRow, clearData, updateDataAttribute, deleteLocalRows]);
+  }, [tableChanged, handleTableError, updateMetadata, reloadMetadata, recalculateData, updateLocalRow, updateLocalRows, updateLocalColumnData, moveRow, clearData, updateDataAttribute, deleteLocalRows, context]);
 
   useImperativeHandle(ref, () => ({
     getData: () => metadata,

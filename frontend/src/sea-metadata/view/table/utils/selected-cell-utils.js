@@ -1,7 +1,6 @@
 import { Z_INDEX } from '@/constants/zIndexes';
 import { isFunction } from '@/utils/type-detection';
 import { SUPPORT_PREVIEW_COLUMN_TYPES, NOT_SUPPORT_EDIT_COLUMN_TYPE_MAP } from '../../../constants';
-import context from '../../../context';
 import { getCellValueByColumn, canEditCell } from '../../../utils/cell';
 import { getColumnByIndex, checkIsColumnEditable } from '../../../utils/column';
 import { getGroupByPath } from '../../../utils/view';
@@ -77,15 +76,15 @@ export const isSelectedCellSupportOpenEditor = (cell, columns, isGroupView, rowG
   return true;
 };
 
-export const isSelectedCellEditable = ({ enableCellSelect, selectedPosition, columns, isGroupView, rowGetterByIndex, onCheckCellIsEditable }) => {
+export const isSelectedCellEditable = ({ enableCellSelect, selectedPosition, columns, isGroupView, rowGetterByIndex, onCheckCellIsEditable, context }) => {
   const column = getSelectedColumn({ selectedPosition, columns });
   const row = getSelectedRow({ selectedPosition, isGroupView, rowGetterByIndex });
   if (!context.canModifyCell(column, row)) return false;
   let isCellEditable = isFunction(onCheckCellIsEditable) ? onCheckCellIsEditable({ row, column, ...selectedPosition }) : true;
-  return isCellEditable && canEditCell(column, row, enableCellSelect);
+  return isCellEditable && canEditCell(column, row, enableCellSelect, context);
 };
 
-export const checkIsSelectedCellEditable = ({ enableCellSelect, selectedPosition, columns, isGroupView, rowGetterByIndex }) => {
+export const checkIsSelectedCellEditable = ({ enableCellSelect, selectedPosition, columns, isGroupView, rowGetterByIndex, context }) => {
   const column = getSelectedColumn({ selectedPosition, columns });
   if (!checkIsColumnEditable(column)) return false;
   const row = getSelectedRow({ selectedPosition, isGroupView, rowGetterByIndex });

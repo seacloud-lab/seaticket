@@ -1,6 +1,5 @@
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import context from '@/sea-metadata/context';
 import { Row } from '@/sea-metadata/models';
 import { UTC_FORMAT_DEFAULT } from '../../constants';
 import Column from '../../models/column';
@@ -11,7 +10,7 @@ import { OPERATION_TYPE } from './constants';
 
 dayjs.extend(utc);
 
-export default function apply(data, operation) {
+export default function apply(data, operation, context) {
   const { op_type } = operation;
 
   const updateDataByModifyRows = ({ id_row_updates = {} } = {}) => {

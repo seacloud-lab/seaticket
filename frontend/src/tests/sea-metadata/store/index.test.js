@@ -1,12 +1,11 @@
-import context from '@/sea-metadata/context';
 import Store from '@/sea-metadata/store';
 
-jest.mock('@/sea-metadata/context', () => ({ canDeleteRow: jest.fn() }));
+const context = { canDeleteRow: jest.fn() };
 jest.mock('@/sea-metadata/constants', () => ({}));
 jest.mock('@/sea-metadata/models', () => ({}));
 jest.mock('@/sea-metadata/utils/column', () => ({}));
 jest.mock('@/sea-metadata/utils/row', () => ({ getRowById: (data, id) => data.id_row_map[id] }));
-jest.mock('@/sea-metadata/store/data-processor', () => ({}));
+jest.mock('@/sea-metadata/store/data-processor', () => jest.fn());
 jest.mock('@/sea-metadata/store/local-operator', () => jest.fn());
 jest.mock('@/sea-metadata/store/server-operator', () => jest.fn());
 jest.mock('@/sea-metadata/store/operations', () => ({ OPERATION_TYPE: { DELETE_ROW: 'delete_row' } }));
@@ -18,7 +17,7 @@ describe('Deleting a row from a detail dialog', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     context.canDeleteRow.mockReturnValue(true);
-    store = new Store({});
+    store = new Store({ context });
     store.data = { id_row_map: {} };
     store.createOperation = jest.fn(operation => operation);
     store.applyOperation = jest.fn();

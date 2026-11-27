@@ -2,10 +2,11 @@ import React, { useCallback, useMemo } from 'react';
 import { FormGroup, Label } from 'reactstrap';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
-import { CustomizeSelect, Switch } from '@/components';
+import { Switch } from '@/components';
 import { gettext } from '@/constants';
 import { DEFAULT_DATE_FORMAT } from '../../../../../constants';
 import { getDateDisplayString } from '../../../../../utils/column';
+import CustomizeSelect from '../../../../selectors/scoped-select';
 
 import './index.css';
 

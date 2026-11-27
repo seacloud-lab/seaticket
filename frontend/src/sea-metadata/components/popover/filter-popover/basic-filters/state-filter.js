@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from 'react';
-import { CustomizeSelect } from '@/components';
 import { gettext } from '@/constants';
 import { getColumnOptions, getOptionDisplayNameByOption } from '@/sea-metadata/utils/column';
+import CustomizeSelect from '../../../selectors/scoped-select';
 
 const StateFilter = ({ readOnly = true, value = [], column, onChange: onChangeAPI }) => {
 

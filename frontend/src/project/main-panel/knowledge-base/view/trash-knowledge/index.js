@@ -3,11 +3,11 @@ import { toaster } from '@/components';
 import { gettext } from '@/constants';
 import { knowledgeBaseAPI } from '@/project/api';
 import { useData, useTags } from '@/project/hooks';
-import SeaMetadata, { VIEW_TOOL } from '@/sea-metadata';
-import context from '@/sea-metadata/context';
+import SeaMetadata, { VIEW_TOOL, useMetadataController } from '@/sea-metadata';
 import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KB_TABLE_NAME } from '../../constants';
 
 const TrashKnowledge = ({ projectUuid, permission }) => {
+  const controller = useMetadataController();
   const { modifyView, getMetadata, restoreRows } = useData();
   const { tagsData } = useTags();
 
@@ -26,22 +26,22 @@ const TrashKnowledge = ({ projectUuid, permission }) => {
           .map(c => ({ ...c, ...KNOWLEDGE_PREDEFINED_COLUMN_CONFIG[c.name] }));
         const tagsColumn = columns.find(c => c.name === 'tags');
         if (tagsColumn) {
-          context.setSetting('tagsColumnKey', tagsColumn.key);
+          controller.setSetting('tagsColumnKey', tagsColumn.key);
         }
         return { data: { rows, columns } };
       });
     },
     getViews: () => Promise.resolve({ data: viewsData }),
     getView: () => Promise.resolve({
-      data: { view: { ...viewsData.views[0], sorts: context.localStorage.getItem('sorts') || [] } }
+      data: { view: { ...viewsData.views[0], sorts: controller.storage.getItem('sorts') || [] } }
     }),
     modifyView: (viewID, viewData) => modifyView(KB_TABLE_NAME, viewID, viewData, () => new Promise((resolve, reject) => {
       Object.keys(viewData).forEach(key => {
-        context.localStorage.setItem(key, viewData[key]);
+        controller.storage.setItem(key, viewData[key]);
       });
       resolve({ data: { success: true } });
     }), true),
-  }), [projectUuid, viewsData, modifyView, getMetadata]);
+  }), [projectUuid, viewsData, modifyView, getMetadata, controller]);
 
   const t = useMemo(() => ({
     row: gettext('record'),
@@ -121,6 +121,8 @@ const TrashKnowledge = ({ projectUuid, permission }) => {
 
   return (
     <SeaMetadata
+      controller={controller}
+      storageNamespace="primary"
       className="sea-kb-metadata"
       api={api}
       isShowViewInURL={false}

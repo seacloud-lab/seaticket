@@ -1,6 +1,5 @@
 import ViewToolBar from './components/view-toolbar';
 import { CellType, VIEW_TOOL, EVENT_BUS_TYPE } from './constants';
-import context from './context';
 import {
   CollaboratorsProvider, useCollaborators,
   MetadataProvider, useMetadata,
@@ -22,6 +21,11 @@ export {
   DataCacheProvider, useDataCache,
   CustomersDataProvider, useCustomersData,
   ViewToolBar, View,
-  CellType, context,
+  CellType,
   VIEW_TOOL, EVENT_BUS_TYPE,
 };
+
+export { createSeaMetadataController } from './controller';
+export { useSeaMetadataController, useMetadataController, SeaMetadataControllerProvider, withSeaMetadataController } from './controller-provider';
+
+export { SeaMetadataScope } from './context-provider';

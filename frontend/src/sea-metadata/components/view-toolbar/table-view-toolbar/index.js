@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { CustomizeDropdownMenu, CustomizeDropdownMoreToggle } from '@/components';
 import { gettext } from '@/constants';
 import { VIEW_TOOL, VIEW_TOOLS } from '../../../constants';
+import { useSeaMetadataContext } from '../../../context-provider';
 import { FilterSetter, GroupbySetter, SortSetter, HideColumnSetter, RowColorSetter, RowHeightSetter, ManageSetter } from '../../data-process-setter';
 import Searcher from '../../searcher';
 
@@ -12,6 +13,7 @@ const TableViewToolbar = ({
   readOnly, view, collaborators, fixedColumnCount, isMobileView = false,
   modifyFilters, modifySorts, modifyGroupbys, modifyRowColor, modifyRowHeight, modifyHiddenColumns, modifyColumnOrder, modifyViewLock, searchRows
 }) => {
+  const context = useSeaMetadataContext();
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const viewType = useMemo(() => view.type, [view]);
   const viewId = useMemo(() => view._id, [view._id]);
@@ -43,7 +45,7 @@ const TableViewToolbar = ({
       {tools.includes(VIEW_TOOL.FILTERS) && (
         <FilterSetter
           wrapperClass="sea-metadata-view-tool-filter"
-          target="sea-metadata-filter-popover"
+          target={`${context.id}-sea-metadata-filter-popover`}
           readOnly={isReadOnly}
           filterConjunction={view.filter_conjunction}
           basicFilters={view.basic_filters}
@@ -57,7 +59,7 @@ const TableViewToolbar = ({
       {tools.includes(VIEW_TOOL.SORTS) && (
         <SortSetter
           wrapperClass="sea-metadata-view-tool-sort"
-          target="sea-metadata-sort-popover"
+          target={`${context.id}-sea-metadata-sort-popover`}
           readOnly={isReadOnly}
           sorts={view.sorts}
           type={viewType}
@@ -68,7 +70,7 @@ const TableViewToolbar = ({
       {tools.includes(VIEW_TOOL.GROUPBYS) && !isMobileView && (
         <GroupbySetter
           wrapperClass="sea-metadata-view-tool-groupby"
-          target="sea-metadata-groupby-popover"
+          target={`${context.id}-sea-metadata-groupby-popover`}
           readOnly={isReadOnly}
           columns={viewColumns}
           groupbys={view.groupbys}
@@ -78,7 +80,7 @@ const TableViewToolbar = ({
       {tools.includes(VIEW_TOOL.ROW_HEIGHT) && !isMobileView && (
         <RowHeightSetter
           wrapperClass="sea-metadata-view-tool-row-height"
-          target="sea-metadata-row-height-popover"
+          target={`${context.id}-sea-metadata-row-height-popover`}
           readOnly={isReadOnly}
           rowHeight={view.row_height}
           modifyRowHeight={modifyRowHeight}
@@ -87,7 +89,7 @@ const TableViewToolbar = ({
       {tools.includes(VIEW_TOOL.ORDER_HIDDEN) && !isMobileView && (
         <HideColumnSetter
           wrapperClass="sea-metadata-view-tool-hide-column"
-          target="sea-metadata-hide-column-popover"
+          target={`${context.id}-sea-metadata-hide-column-popover`}
           readOnly={isReadOnly}
           columns={viewColumns.slice(fixedColumnCount)}
           hiddenColumns={view.hidden_columns || []}
@@ -98,7 +100,7 @@ const TableViewToolbar = ({
       {tools.includes(VIEW_TOOL.ROW_COLOR) && !isMobileView && (
         <RowColorSetter
           wrapperClass="sea-metadata-view-tool-row-color"
-          target="seaqa-row-color-popover"
+          target={`${context.id}-seaqa-row-color-popover`}
           readOnly={isReadOnly}
           columns={viewColumns}
           colorbys={view.colorbys}

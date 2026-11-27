@@ -4,10 +4,12 @@ import { createRoot } from 'react-dom/client';
 import { portalAPI } from '@/portal/api';
 import { ticketsAPI } from '@/project/api';
 import { useData } from '@/project/hooks';
-import context from '@/sea-metadata/context';
+import { createSeaMetadataController } from '@/sea-metadata/controller';
 import eventBus from '@/utils/event-bus';
 
 const mockCreateTicket = jest.fn();
+const mockController = createSeaMetadataController();
+jest.spyOn(mockController.events, 'dispatch');
 const mockRows = [{ _id: '5', title: 'Issue A', ticket: null }, { _id: '6', title: 'Issue B', ticket: null }];
 
 jest.mock('reactstrap', () => ({
@@ -74,7 +76,7 @@ jest.mock('@/project/main-panel/tickets/constants', () => ({
   TICKET_STATE: { OPEN: '0001' },
   PREDEFINED_TICKET_COLUMN_NAME: { CONTENT: 'content' },
 }));
-jest.mock('@/project/main-panel/tickets/hooks', () => ({ useCloseLinkedIssues: () => ({}) }));
+jest.mock('@/project/main-panel/tickets/hooks', () => ({ useCloseLinkedIssues: () => ({}), useMetadata: () => ({}) }));
 jest.mock('@/project/main-panel/tickets/utils', () => ({ generatorTicketsContextMenuOptions: () => [] }));
 jest.mock('@/project/main-panel/tickets/components/comment', () => ({ comment }) => <div>{comment.title}</div>);
 jest.mock('@/project/main-panel/tickets/components/ticket-settings', () => ({
@@ -96,9 +98,11 @@ jest.mock('@/project/utils', () => ({
   getInternalNetworkAddress: () => '',
   getResourceIconURL: () => 'ticket.png',
 }));
+// The rendering entry can be partially initialized through the resource-dialog
+// import cycle. Hosts must get their eager controller wrapper independently.
 jest.mock('@/sea-metadata', () => {
   const React = require('react');
-  return { __esModule: true, default: React.forwardRef(({ api, expandRow, createContextMenuOptions }, ref) => {
+  return Object.assign({ __esModule: true, default: React.forwardRef(({ api, expandRow, createContextMenuOptions }, ref) => {
     React.useEffect(() => { api.getMetadata(); }, [api]);
     React.useImperativeHandle(ref, () => ({
       getOrderRows: () => mockRows,
@@ -110,12 +114,11 @@ jest.mock('@/sea-metadata', () => {
       }),
     }));
     return <button onClick={() => expandRow(mockRows[0])}>Open A</button>;
-  }) };
+  }) }, { useMetadataController: () => mockController });
 });
 jest.mock('@/sea-metadata/constants', () => ({
   EVENT_BUS_TYPE: { LOCAL_ROW_CHANGED: 'row-changed', UPDATE_DATA_ATTRIBUTE: 'update-attribute' },
 }));
-jest.mock('@/sea-metadata/context', () => ({ eventBus: { dispatch: jest.fn() }, canDeleteRow: () => false }));
 jest.mock('@/sea-metadata/utils/cell', () => ({ getCellValueByColumn: (row, column) => column ? row[column.key] ?? row[column.name] : null }));
 jest.mock('@/sea-metadata/utils/column', () => ({ getColumnByName: (columns, name) => columns.find(column => column.name === name) }));
 jest.mock('@/utils/long-text', () => ({ __esModule: true, default: class {} }));
@@ -214,6 +217,26 @@ describe('Linking a Ticket from the Project Issue list dialog', () => {
     container.remove();
   });
 
+  it('routes linked-ticket updates through the Tickets controller events', async () => {
+    const Tickets = require('@/project/main-panel/tickets/components/tickets').default;
+    await act(async () => root.render(<Tickets projectUuid="project" api={{}} isLoading />));
+    mockController.events.dispatch.mockClear();
+    const payload = {
+      projectUuid: 'project', tableName: 'tickets', rowId: '5',
+      rowUpdateData: { linked_issues: ['73'] }, linkedRecords: { 73: 'Issue' },
+    };
+    act(() => eventBus.dispatch('ticket-linked', { ...payload, projectUuid: 'other-project' }));
+    act(() => eventBus.dispatch('ticket-linked', { ...payload, tableName: 'portal_issues' }));
+    expect(mockController.events.dispatch).not.toHaveBeenCalled();
+
+    act(() => eventBus.dispatch('ticket-linked', payload));
+
+    expect(mockController.events.dispatch.mock.calls).toEqual([
+      ['row-changed', '5', payload.rowUpdateData],
+      ['update-attribute', { linked_records: payload.linkedRecords }, false],
+    ]);
+  });
+
   it.each(['creation', 'linking'])('updates local details and menus after %s without refetching', async operation => {
     await startOperation(operation);
     await finishOperation(operation);
@@ -250,7 +273,7 @@ describe('Linking a Ticket from the Project Issue list dialog', () => {
         expect(screen.queryByRole('button', { name: 'Link an existing ticket' })).toBeNull();
       }
       expect(dispatchSpy).toHaveBeenCalledWith('modify-dialog', 'portal_issue_5', { linked_ticket: 73 }, { 73: { title: 'Linked Ticket' } });
-      expect(context.eventBus.dispatch).toHaveBeenCalledWith('row-changed', '5', { ticket: [73] });
+      expect(mockController.events.dispatch).toHaveBeenCalledWith('row-changed', '5', { ticket: [73] });
       if (operation === 'creation') {
         expect(data.insertRowByLink.mock.calls[0][3]).toBe('5');
       } else {
@@ -272,7 +295,7 @@ describe('Linking a Ticket from the Project Issue list dialog', () => {
     expect(portalAPI.getPortalIssue).toHaveBeenCalledTimes(detailRequestCount);
     expect(screen.queryByTitle('Linked Ticket')).toBeNull();
     expect(dispatchSpy).toHaveBeenCalledWith('modify-dialog', 'portal_issue_5', { linked_ticket: 73 }, { 73: { title: 'Linked Ticket' } });
-    expect(context.eventBus.dispatch).toHaveBeenCalledWith('row-changed', '5', { ticket: [73] });
+    expect(mockController.events.dispatch).toHaveBeenCalledWith('row-changed', '5', { ticket: [73] });
   });
 
   it.each(['creation', 'linking'])('keeps the local association after a later field save following %s', async operation => {

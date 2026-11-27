@@ -3,13 +3,14 @@ import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import IconBtn from '@/components/icon-button';
 import { gettext } from '@/constants';
-import context from '@/sea-metadata/context';
 import { isEnter, isSpace } from '@/utils/hotkey';
 import { EVENT_BUS_TYPE } from '../../constants';
+import { useSeaMetadataContext } from '../../context-provider';
 import { getValidSorts } from '../../utils/sort';
 import { SortPopover } from '../popover';
 
 const SortSetter = ({ target = 'sea-metadata-sort-popover', type, sorts: propsSorts, readOnly, columns, wrapperClass, modifySorts }) => {
+  const context = useSeaMetadataContext();
   const [isShowSetter, setShowSetter] = useState(false);
 
   const sorts = useMemo(() => {
@@ -34,7 +35,7 @@ const SortSetter = ({ target = 'sea-metadata-sort-popover', type, sorts: propsSo
       unsubscribeDisplaySorts();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [context]);
 
   const onSetterToggle = useCallback(() => {
     setShowSetter(!isShowSetter);

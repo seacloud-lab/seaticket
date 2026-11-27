@@ -4,6 +4,8 @@ import { PriorityEditor } from '@/components';
 import SelectTrigger from '@/components/customize-select/select-trigger';
 import PriorityFormatter from '@/sea-metadata/components/cell-formatter/priority';
 import { PRIORITIES } from '@/sea-metadata/constants';
+import { useSeaMetadataContext } from '../../context-provider';
+import ScopedPopover from '../popover/scoped-popover';
 
 const PrioritySelector = ({
   readOnly,
@@ -11,6 +13,7 @@ const PrioritySelector = ({
   value,
   onChange,
 }) => {
+  const context = useSeaMetadataContext();
   const [isShowEditor, setIsShowEditor] = useState(false);
   const prioritySelectorRef = useRef(null);
 
@@ -38,6 +41,8 @@ const PrioritySelector = ({
       />
       {!readOnly && isShowEditor && (
         <PriorityEditor
+          PopoverComponent={ScopedPopover}
+          shouldHandleEvent={context.ownsEvent}
           className={classnames('sea-metadata-data-filter-popover', className)}
           target={prioritySelectorRef}
           priorities={PRIORITIES}

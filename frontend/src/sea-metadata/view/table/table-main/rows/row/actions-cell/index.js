@@ -5,6 +5,7 @@ import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { gettext } from '@/constants';
 import { SEQUENCE_COLUMN_WIDTH } from '../../../../../../constants';
+import { withSeaMetadataContext } from '../../../../../../context-provider';
 
 import './index.css';
 
@@ -53,7 +54,7 @@ class ActionsCell extends Component {
           'table-last--frozen': isLastFrozenCell,
           'justify-content-center': !isShowRowExpandBtn
         })}
-        id={`action-cell-${rowId}`}
+        id={`${this.props.metadataContext.id}-action-cell-${rowId}`}
         style={{ ...cellStyle }}
         onMouseEnter={this.onCellMouseEnter}
         onMouseLeave={this.onCellMouseLeave}
@@ -62,7 +63,7 @@ class ActionsCell extends Component {
         <div className="sea-metadata-table-column-content actions-checkbox">
           <div className="select-cell-checkbox-container" onClick={this.props.onSelectRow}>
             <input
-              id={`select-cell-checkbox-${rowId}`}
+              id={`${this.props.metadataContext.id}-select-cell-checkbox-${rowId}`}
               className="select-cell-checkbox"
               type="checkbox"
               name="row-selection"
@@ -70,7 +71,7 @@ class ActionsCell extends Component {
               readOnly
             />
             <label
-              htmlFor={`select-cell-checkbox-${rowId}`}
+              htmlFor={`${this.props.metadataContext.id}-select-cell-checkbox-${rowId}`}
               name={gettext('Select')}
               title={gettext('Select')}
               aria-label={gettext('Select')}
@@ -106,4 +107,4 @@ ActionsCell.propTypes = {
   onRowExpand: PropTypes.func,
 };
 
-export default ActionsCell;
+export default withSeaMetadataContext(ActionsCell);

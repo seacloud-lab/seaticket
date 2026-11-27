@@ -1,11 +1,11 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback } from 'react';
 import { FormGroup, Label } from 'reactstrap';
 import PropTypes from 'prop-types';
 import { gettext } from '@/constants';
-import context from '@/sea-metadata/context';
 import { useTagsData, useTypesData } from '@/sea-metadata/hooks';
 import { getColumnByKey } from '@/sea-metadata/utils/column';
 import { VIEW_TYPE } from '../../../../constants';
+import { useSeaMetadataContext } from '../../../../context-provider';
 import StateFilter from './state-filter';
 import TagsFilter from './tags-filter';
 import TypeFilter from './type-filter';
@@ -13,13 +13,14 @@ import TypeFilter from './type-filter';
 import './index.css';
 
 const BasicFilters = ({ readOnly, filters = [], columns, onChange }) => {
+  const context = useSeaMetadataContext();
 
   const { tagsData } = useTagsData();
   const { typesData } = useTypesData();
 
-  const stateColumnKey = useMemo(() => context.getSetting('stateColumnKey', 'status'), []);
-  const typeColumnKey = useMemo(() => context.getSetting('typeColumnKey', 'type'), []);
-  const tagsColumnKey = useMemo(() => context.getSetting('tagsColumnKey', 'tags'), []);
+  const stateColumnKey = context.getSetting('stateColumnKey', 'status');
+  const typeColumnKey = context.getSetting('typeColumnKey', 'type');
+  const tagsColumnKey = context.getSetting('tagsColumnKey', 'tags');
 
   const onStatusChange = useCallback((newValue) => {
     const filterIndex = filters.findIndex(filter => filter.column_key === stateColumnKey);

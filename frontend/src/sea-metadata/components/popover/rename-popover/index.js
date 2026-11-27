@@ -1,16 +1,18 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Input, PopoverBody } from 'reactstrap';
 import PropTypes from 'prop-types';
-import CustomizePopover from '@/components/customize-popover';
 import toaster from '@/components/toaster';
 import { gettext, KeyCodes } from '@/constants';
+import { useSeaMetadataContext } from '../../../context-provider';
 import { useMetadata } from '../../../hooks';
 import { COMMON_FORM_COLUMN_TYPE } from '../column-popover/constants';
 import { ValidateColumnFormColumns } from '../column-popover/utils';
+import CustomizePopover from '../scoped-popover';
 
 import './index.css';
 
 const RenamePopover = ({ value: oldValue, target, onToggle, onSubmit }) => {
+  const context = useSeaMetadataContext();
   const [value, setValue] = useState(oldValue);
   const inputRef = useRef(null);
   const { metadata } = useMetadata();
@@ -26,20 +28,21 @@ const RenamePopover = ({ value: oldValue, target, onToggle, onSubmit }) => {
       onToggle();
       return;
     }
-    const valueError = ValidateColumnFormColumns[COMMON_FORM_COLUMN_TYPE.COLUMN_NAME]({ columnName: value, metadata, gettext });
+    const valueError = ValidateColumnFormColumns[COMMON_FORM_COLUMN_TYPE.COLUMN_NAME]({ columnName: value, metadata, gettext, context });
     if (valueError) {
       toaster.danger(valueError.tips);
       return;
     }
     onSubmit(value);
-  }, [value, oldValue, metadata, onSubmit, onToggle]);
+  }, [value, oldValue, metadata, onSubmit, onToggle, context]);
 
   const onHotKey = useCallback((event) => {
+    if (!context.ownsEvent(event)) return;
     if (event.keyCode === KeyCodes.Enter) {
       event.preventDefault();
       handleSubmit();
     }
-  }, [handleSubmit]);
+  }, [handleSubmit, context]);
 
   const onClick = useCallback((event) => {
     event.preventDefault();

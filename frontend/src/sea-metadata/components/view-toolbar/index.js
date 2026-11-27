@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { getRowsByIds } from '@/sea-metadata/utils/row';
 import { EVENT_BUS_TYPE, VIEW_TYPE, VIEW_TOOLS, VIEW_TOOL } from '../../constants';
-import context from '../../context';
+import { useSeaMetadataContext } from '../../context-provider';
 import { useCollaborators, useMetadata, useSelectedRows } from '../../hooks';
 import RowsToolbar from './rows-toolbar';
 import TableViewToolbar from './table-view-toolbar';
@@ -10,6 +10,7 @@ import Views from './views';
 import './index.css';
 
 const ViewToolBar = ({ fixedColumnCount, tools = VIEW_TOOLS, createRowsTools, toggleView, viewTabs, isMobileView = false }) => {
+  const context = useSeaMetadataContext();
 
   const { collaborators } = useCollaborators();
   const { metadata, modifyFilters, modifySorts, modifyGroupbys, modifyRowColor, modifyRowHeight, modifyHiddenColumns, modifyColumnOrder,
@@ -22,7 +23,7 @@ const ViewToolBar = ({ fixedColumnCount, tools = VIEW_TOOLS, createRowsTools, to
     event && event.nativeEvent && event.nativeEvent.stopImmediatePropagation();
     updateSelectedRowIds([]);
     context.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_NONE);
-  }, [updateSelectedRowIds]);
+  }, [updateSelectedRowIds, context]);
 
   const onHeaderClick = useCallback(() => {
     selectNone();

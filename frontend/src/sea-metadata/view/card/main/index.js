@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { KeyCodes } from '@/constants';
 import { useSelectedRows } from '@/sea-metadata/hooks';
+import { useSeaMetadataContext } from '../../../context-provider';
 import Header from './header';
 import Row from './row';
 
@@ -24,6 +25,7 @@ const Main = ({
   onRowClick,
   loadMore,
 }) => {
+  const context = useSeaMetadataContext();
   const [scrollLeft, setScrollLeft] = useState(0);
   const [startRenderIndex, setStartRenderIndex] = useState(0);
   const [endRenderIndex, setEndRenderIndex] = useState(Math.ceil(window.innerHeight / CARD_ITEM_HEIGHT) + RENDER_MORE_NUMBER);
@@ -121,6 +123,7 @@ const Main = ({
 
   useEffect(() => {
     const onHotKey = (event) => {
+      if (!context.ownsEvent(event)) return;
       switch (event.keyCode) {
         case KeyCodes.LeftArrow:
         case KeyCodes.RightArrow: {
@@ -162,12 +165,12 @@ const Main = ({
     return () => {
       document.removeEventListener('keydown', onHotKey, true);
     };
-  }, [rowsCount, updateScrollTop]);
+  }, [rowsCount, updateScrollTop, context]);
 
   const renderColumns = columns.filter(c => c.key !== titleColumnKey);
 
   return (
-    <div className="sea-metadata-card-container">
+    <div className="sea-metadata-card-container" tabIndex={-1}>
       {isShowHeader && (
         <Header
           ref={headerRef}

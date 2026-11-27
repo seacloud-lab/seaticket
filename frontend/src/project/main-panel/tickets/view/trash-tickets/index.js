@@ -2,9 +2,8 @@ import React, { useCallback, useMemo } from 'react';
 import { toaster } from '@/components';
 import { gettext } from '@/constants';
 import { useData } from '@/project/hooks';
-import { VIEW_TOOL } from '@/sea-metadata';
+import { VIEW_TOOL, useMetadataController } from '@/sea-metadata';
 import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
-import context from '@/sea-metadata/context';
 import { ticketsAPI } from '../../../../api';
 import Tickets from '../../components/tickets';
 import { TICKET_TABLE_NAME } from '../../constants';
@@ -14,6 +13,7 @@ import CleanTickets from './clean-tickets';
 const viewTools = [VIEW_TOOL.ROWS_TOOLS, VIEW_TOOL.VIEWS, VIEW_TOOL.SEARCH, VIEW_TOOL.SORTS, VIEW_TOOL.GROUPBYS];
 
 const TrashTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBar }) => {
+  const controller = useMetadataController();
 
   const { clearViewRows, restoreRows } = useData();
   const { isLoading, togglePageSlugId } = useTicketsPage();
@@ -39,18 +39,18 @@ const TrashTickets = ({ projectUuid, workspaceID, projectName, permission, toggl
         const view = viewsData.views[0];
         resolve({ data: { view: {
           ...view,
-          sorts: context.localStorage.getItem('sorts') || [],
-          groupbys: context.localStorage.getItem('groupbys') || [],
+          sorts: controller.storage.getItem('sorts') || [],
+          groupbys: controller.storage.getItem('groupbys') || [],
         } } });
       });
     },
     modifyView: (viewID, viewData) => new Promise((resolve, reject) => {
       Object.keys(viewData).forEach(key => {
-        context.localStorage.setItem(key, viewData[key]);
+        controller.storage.setItem(key, viewData[key]);
       });
       resolve({ data: { success: true } });
     }),
-  }), [projectUuid, viewsData]);
+  }), [projectUuid, viewsData, controller]);
 
   const localStorageNamePrefix = useMemo(() => `seaqa-${projectUuid}-deleted-tickets`, [projectUuid]);
 
@@ -152,16 +152,17 @@ const TrashTickets = ({ projectUuid, workspaceID, projectName, permission, toggl
 
   const cleanTickets = useCallback(() => {
     clearViewRows(TICKET_TABLE_NAME, 'trash', () => ticketsAPI.cleanTicketsTrash(projectUuid), true).then(() => {
-      context.eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.CLEAR_DATA);
+      controller.events.dispatch(SEA_METADATA_EVENT_BUS_TYPE.CLEAR_DATA);
       toaster.success(gettext('The ticket trash cleaned'));
     }).catch(() => {
       toaster.danger(gettext('Failed to clean the ticket trash'));
     });
-  }, [projectUuid, clearViewRows]);
+  }, [projectUuid, clearViewRows, controller]);
 
   return (
     <>
       <Tickets
+        controller={controller}
         localStorageNamePrefix={localStorageNamePrefix}
         projectUuid={projectUuid}
         workspaceID={workspaceID}

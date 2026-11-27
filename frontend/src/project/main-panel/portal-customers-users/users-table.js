@@ -1,8 +1,8 @@
 import React, { useCallback, useMemo } from 'react';
 import { gettext } from '@/constants';
-import SeaMetadata from '@/sea-metadata';
+import SeaMetadata, { useMetadataController } from '@/sea-metadata';
 import { CellType, VIEW_TOOL } from '@/sea-metadata/constants';
-import context from '@/sea-metadata/context';
+import { withSeaMetadataController } from '@/sea-metadata/controller-provider';
 import { STATUS_OPTIONS } from './constants';
 
 const CustomerFormatter = ({ value, row, onCustomerClick }) => {
@@ -16,8 +16,10 @@ const CustomerFormatter = ({ value, row, onCustomerClick }) => {
   );
 };
 
-const UsersTable = ({ users, onEditUser, onDeleteUser, onCustomerClick, viewTabs }) => {
-  const metadataID = useMemo(() => {
+const UsersTable = ({ users, onEditUser, onDeleteUser, onCustomerClick, viewTabs, projectUuid = window.app.pageOptions.projectUuid }) => {
+  const controller = useMetadataController();
+  const metadataID = controller.metadataID ?? `project-${projectUuid}-portal-users-main`;
+  const dataVersion = useMemo(() => {
     return users.map(user => `${user.name || ''}:${user.email}:${user.activated ? '1' : '0'}:${user.customer_id || ''}`).join('|') || 'users-empty';
   }, [users]);
 
@@ -35,13 +37,13 @@ const UsersTable = ({ users, onEditUser, onDeleteUser, onCustomerClick, viewTabs
           type: 'table',
           name: gettext('Users'),
           columns_keys: ['name', 'user', 'customer', 'status'],
-          sorts: context.localStorage?.getItem('sorts') || [],
+          sorts: controller.storage?.getItem('sorts') || [],
         },
       },
     }),
     modifyView: (viewID, viewData) => {
       Object.keys(viewData).forEach(key => {
-        context.localStorage?.setItem(key, viewData[key]);
+        controller.storage?.setItem(key, viewData[key]);
       });
       return Promise.resolve({ data: { success: true } });
     },
@@ -99,7 +101,7 @@ const UsersTable = ({ users, onEditUser, onDeleteUser, onCustomerClick, viewTabs
         error_msg: users.length === 0 ? gettext('No users') : '',
       },
     }),
-  }), [onCustomerClick, users]);
+  }), [onCustomerClick, users, controller]);
 
   const createContextMenuOptions = useCallback(({ selectedPosition, rowMetrics, table, rowGetterByIndex, isGroupView }) => {
     const selectedRowIds = rowMetrics ? Object.keys(rowMetrics.idSelectedRowMap || {}) : [];
@@ -116,7 +118,9 @@ const UsersTable = ({ users, onEditUser, onDeleteUser, onCustomerClick, viewTabs
 
   return (
     <SeaMetadata
-      key={metadataID}
+      controller={controller}
+      storageNamespace="primary"
+      key={dataVersion}
       className="portal-customers-sea-metadata"
       metadataID={metadataID}
       api={api}
@@ -145,4 +149,4 @@ const UsersTable = ({ users, onEditUser, onDeleteUser, onCustomerClick, viewTabs
   );
 };
 
-export default UsersTable;
+export default withSeaMetadataController(UsersTable);

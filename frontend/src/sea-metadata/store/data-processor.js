@@ -1,5 +1,4 @@
 import { CellType, SUPPORT_SEARCH_COLUMNS } from '../constants';
-import context from '../context';
 import { isValidCellValue, getCellValueByColumn, getCellValueDisplayString } from '../utils/cell';
 import { getColumnByKey, getColumnOriginName, getOption, checkIsPredefinedOption, getColumnOptionIdsByNames,
   getColumnOptionNamesByIds } from '../utils/column';
@@ -19,36 +18,40 @@ import { COLUMN_DATA_OPERATION_TYPE, OPERATION_TYPE } from './operations';
 // get rendered rows depend on filters/sorts etc.
 class DataProcessor {
 
-  static getSortedRows(table, rows, sorts, { collaborators, typesData, tagsData }) {
+  constructor(context) {
+    this.context = context;
+  }
+
+  getSortedRows(table, rows, sorts, { collaborators, typesData, tagsData }) {
     const tableRows = isTableRows(rows) ? rows : getRowsByIds(table, rows);
     return sortTableRows(table, tableRows, sorts, { collaborators, typesData, tagsData });
   }
 
-  static getGroupedRows(table, rows, groupbys, { collaborators, typesData, tagsData }) {
+  getGroupedRows(table, rows, groupbys, { collaborators, typesData, tagsData }) {
     const tableRows = isTableRows(rows) ? rows : getRowsByIds(table, rows);
     const groups = getGroupRows(table, tableRows, groupbys, { collaborators, typesData, tagsData });
     return groups;
   }
 
-  static updateSummaries(table, rows) {
+  updateSummaries(table, rows) {
     // todo
   }
 
-  static hasRelatedFilters = (view, updatedColumnKeyMap) => {
+  hasRelatedFilters = (view, updatedColumnKeyMap) => {
     const { filters, basic_filters = [] } = view;
     return (Array.isArray(filters) && filters.some(filter => updatedColumnKeyMap[filter.column_key])) ||
       (Array.isArray(basic_filters) && basic_filters.some(filter => updatedColumnKeyMap[filter.column_key]));
   };
 
-  static hasRelatedSort = (sorts, updatedColumnKeyMap) => {
+  hasRelatedSort = (sorts, updatedColumnKeyMap) => {
     return sorts.some(sort => updatedColumnKeyMap[sort.column_key]);
   };
 
-  static hasRelatedGroupby(groupbys, updatedColumnKeyMap) {
+  hasRelatedGroupby(groupbys, updatedColumnKeyMap) {
     return groupbys.some(groupby => updatedColumnKeyMap[groupby.column_key]);
   }
 
-  static hasRelatedRowColor(colorbys, updatedColumnKeyMap) {
+  hasRelatedRowColor(colorbys, updatedColumnKeyMap) {
     const colorRules = colorbys?.color_by_rules;
     if (!Array.isArray(colorRules) || colorRules.length === 0) return false;
     return colorRules.some(rule => {
@@ -57,7 +60,7 @@ class DataProcessor {
     });
   }
 
-  static deleteGroupRows(groups, idDeletedRowMap) {
+  deleteGroupRows(groups, idDeletedRowMap) {
     groups.forEach(group => {
       const { subgroups, row_ids } = group;
       if (Array.isArray(subgroups) && subgroups.length > 0) {
@@ -68,7 +71,7 @@ class DataProcessor {
     });
   }
 
-  static deleteEmptyGroups = (groups) => {
+  deleteEmptyGroups = (groups) => {
     return groups.filter(group => {
       const { subgroups, row_ids } = group;
       if (subgroups && subgroups.length > 0) {
@@ -85,12 +88,12 @@ class DataProcessor {
     });
   };
 
-  static run(table, { collaborators, username, userId, typesData, tagsData }) {
+  run(table, { collaborators, username, userId, typesData, tagsData }) {
     let rows = table.rows;
     const { filters, filter_conjunction, basic_filters, sorts, groupbys } = table.view;
     const availableColumns = table.view.columns || table.columns;
-    const isFilterComputedOnServer = context.getSetting('isFilterComputedOnServer', true);
-    const isSortComputedOnServer = context.getSetting('isSortComputedOnServer', true);
+    const isFilterComputedOnServer = this.context.getSetting('isFilterComputedOnServer', true);
+    const isSortComputedOnServer = this.context.getSetting('isSortComputedOnServer', true);
     if (!isFilterComputedOnServer && isFilterView(table.view, availableColumns)) {
       const { rows: filterRows } = getFilteredRows(
         { columns: availableColumns },
@@ -119,12 +122,12 @@ class DataProcessor {
     table.view.groups = groups;
   }
 
-  static updateDataWithInsertRows(table, newRowIds, { collaborators, username, userId, typesData, tagsData }) {
+  updateDataWithInsertRows(table, newRowIds, { collaborators, username, userId, typesData, tagsData }) {
     const { basic_filters, filters, filter_conjunction, sorts, groupbys } = table.view;
     const availableColumns = table.view.columns || table.columns;
     let rows = getRowsByIds(table, table.view.rows);
-    const isFilterComputedOnServer = context.getSetting('isFilterComputedOnServer', true);
-    const isSortComputedOnServer = context.getSetting('isSortComputedOnServer', true);
+    const isFilterComputedOnServer = this.context.getSetting('isFilterComputedOnServer', true);
+    const isSortComputedOnServer = this.context.getSetting('isSortComputedOnServer', true);
     if (!isFilterComputedOnServer) {
       let newRows = getRowsByIds(table, newRowIds);
       if (isFilterView(table.view, availableColumns)) {
@@ -154,12 +157,12 @@ class DataProcessor {
     table.view.groups = groups;
   }
 
-  static updateDataWithModifyRows(table, relatedColumnKeyMap, rowIds, { collaborators, username, userId, typesData, tagsData }) {
+  updateDataWithModifyRows(table, relatedColumnKeyMap, rowIds, { collaborators, username, userId, typesData, tagsData }) {
     const { basic_filters, filters, filter_conjunction, sorts, groupbys, colorbys } = table.view;
     const availableColumns = table.view.columns || table.columns;
     let rows = getRowsByIds(table, table.view.rows);
-    const isFilterComputedOnServer = context.getSetting('isFilterComputedOnServer', true);
-    const isSortComputedOnServer = context.getSetting('isSortComputedOnServer', true);
+    const isFilterComputedOnServer = this.context.getSetting('isFilterComputedOnServer', true);
+    const isSortComputedOnServer = this.context.getSetting('isSortComputedOnServer', true);
     if (!isFilterComputedOnServer) {
       let newRows = getRowsByIds(table, rowIds);
       if (isFilterView(table.view, availableColumns) && this.hasRelatedFilters(table.view, relatedColumnKeyMap)) {
@@ -194,7 +197,7 @@ class DataProcessor {
     }
   }
 
-  static updateDataWithDeleteRows(deletedRowsIds, table) {
+  updateDataWithDeleteRows(deletedRowsIds, table) {
     const { columns, groupbys, groups, rows } = table.view;
     const idNeedDeletedMap = deletedRowsIds.reduce((currIdNeedDeletedMap, rowId) => ({ ...currIdNeedDeletedMap, [rowId]: true }), {});
     table.view.rows = rows.filter(rowId => !idNeedDeletedMap[rowId]);
@@ -208,7 +211,7 @@ class DataProcessor {
     table.view.colors = getRowColors(table.rows, table.view, columns);
   }
 
-  static handleReloadedRows(table, reloadedRows, relatedColumnKeyMap) {
+  handleReloadedRows(table, reloadedRows, relatedColumnKeyMap) {
     const idReloadedRowMap = reloadedRows.reduce((map, row) => {
       map[row._id] = row;
       return map;
@@ -227,7 +230,7 @@ class DataProcessor {
     this.updateSummaries();
   }
 
-  static handleNotExistRows(table, idRowNotExistMap) {
+  handleNotExistRows(table, idRowNotExistMap) {
     let notExistRows = [];
     let existRows = [];
     table.rows.forEach((row) => {
@@ -245,7 +248,7 @@ class DataProcessor {
     this.updateSummaries();
   }
 
-  static updateRowsWithModifyColumnData(table, column, operation, { tagsData } = {}) {
+  updateRowsWithModifyColumnData(table, column, operation, { tagsData } = {}) {
     const { old_data, new_data } = operation;
     const columnName = getColumnOriginName(column);
     const columnType = column.type;
@@ -273,7 +276,7 @@ class DataProcessor {
     }
   }
 
-  static syncOperationOnData(table, operation, { collaborators, username, tagsData, typesData, customersData }) {
+  syncOperationOnData(table, operation, { collaborators, username, tagsData, typesData, customersData }) {
     switch (operation.op_type) {
       case OPERATION_TYPE.INSERT_ROW: {
         const { row } = operation;

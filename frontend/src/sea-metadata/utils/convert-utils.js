@@ -1,5 +1,4 @@
 import { CellType, DEFAULT_DATE_FORMAT } from '../constants';
-import context from '../context';
 import { COLUMN_DATA_OPERATION_TYPE } from '../store/operations';
 import {
   getDateDisplayString, getNumberDisplayString, formatStringToNumber, getOptionDisplayName, getCollaboratorsName, getFloatNumber, getColumnOptionNamesByIds,
@@ -317,7 +316,7 @@ const _getPasteMultipleSelect = (copiedCellVal, pasteCellVal, copiedColumn, past
   return { pasteOptions, newCellOptions, selectedOptionIds };
 };
 
-const convert2MultipleSelect = (copiedCellVal, pasteCellVal, copiedColumn, pasteColumn, api) => {
+const convert2MultipleSelect = (copiedCellVal, pasteCellVal, copiedColumn, pasteColumn, api, context) => {
   const { newCellOptions, pasteOptions, selectedOptionIds } = _getPasteMultipleSelect(copiedCellVal, pasteCellVal, copiedColumn, pasteColumn);
   let newColumn = pasteColumn;
 
@@ -348,7 +347,7 @@ const convert2Type = (cellValue, oldCellValue, fromColumn, targetColumn, api) =>
   return null;
 };
 
-function convertCellValue(cellValue, oldCellValue, targetColumn, fromColumn, { collaborators, tagsData, api }) {
+function convertCellValue(cellValue, oldCellValue, targetColumn, fromColumn, { collaborators, tagsData, api, context }) {
   const { type: fromColumnType, data: fromColumnData } = fromColumn;
   const { type: targetColumnType, data: targetColumnData } = targetColumn;
   switch (targetColumnType) {
@@ -366,7 +365,7 @@ function convertCellValue(cellValue, oldCellValue, targetColumn, fromColumn, { c
       return convert2SingleSelect(cellValue, oldCellValue, fromColumn, targetColumn, api);
     }
     case CellType.MULTIPLE_SELECT: {
-      return convert2MultipleSelect(cellValue, oldCellValue, fromColumn, targetColumn, api);
+      return convert2MultipleSelect(cellValue, oldCellValue, fromColumn, targetColumn, api, context);
     }
     case CellType.LONG_TEXT: {
       return convert2LongText(cellValue, oldCellValue, fromColumn);

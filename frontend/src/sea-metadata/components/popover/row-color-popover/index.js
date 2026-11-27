@@ -3,15 +3,15 @@ import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { ColorSelectorPopover, IconButton } from '@/components';
 import CustomizeButton from '@/components/btn/customize-button';
-import CustomizePopover from '@/components/customize-popover';
 import { gettext, SELECT_OPTION_COLORS } from '@/constants';
 import { CellType } from '@/sea-metadata/constants';
-import context from '@/sea-metadata/context';
 import { FILTER_COLUMN_OPTIONS, ROW_COLOR_TYPE } from '../../../constants';
+import { useSeaMetadataContext } from '../../../context-provider';
 import { getFilterByColumn } from '../../../utils/filter';
 import { ValidateFilter } from '../../../utils/validate/filter';
 import { getDefaultRowColorRule } from '../../../utils/view';
 import AdvancedFilters from '../filter-popover/advanced-filters';
+import CustomizePopover, { hasScopedSelector } from '../scoped-popover';
 
 import './index.css';
 
@@ -28,6 +28,10 @@ const getValidRules = (rules = []) => {
 };
 
 const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = [], hidePopover, modifyRowColor }) => {
+  const context = useSeaMetadataContext();
+  const stateColumnKey = context.getSetting('stateColumnKey', 'status');
+  const typeColumnKey = context.getSetting('typeColumnKey', 'type');
+  const tagsColumnKey = context.getSetting('tagsColumnKey', 'tags');
   const [editingRuleIndex, setEditingRuleIndex] = useState(null);
   const [colorSelectorIndex, setColorSelectorIndex] = useState(null);
 
@@ -36,11 +40,9 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
 
   const excludedColumnKeys = useMemo(() => {
     return new Set([
-      context.getSetting('stateColumnKey', 'status'),
-      context.getSetting('typeColumnKey', 'type'),
-      context.getSetting('tagsColumnKey', 'tags'),
+      stateColumnKey, typeColumnKey, tagsColumnKey,
     ]);
-  }, []);
+  }, [stateColumnKey, typeColumnKey, tagsColumnKey]);
 
   const validColumns = useMemo(() => {
     return (columns || []).filter((column) => {
@@ -170,10 +172,9 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
   }, [validColumns, updateRules]);
 
   const handleHide = useCallback(() => {
-    if (document.getElementsByClassName('sea-metadata-data-filter-popover').length > 0) return;
-    if (document.getElementsByClassName('seaqa-select-options-container').length > 0) return;
+    if (hasScopedSelector(context, '.sea-metadata-data-filter-popover, .seaqa-select-options-container')) return;
     hidePopover && hidePopover();
-  }, [hidePopover]);
+  }, [hidePopover, context]);
 
   return (
     <CustomizePopover
@@ -196,7 +197,7 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
           <div className="seaqa-row-color-empty d-flex justify-content-center align-items-center">{gettext('No rules')}</div>
         }
         {rules.map((rule, ruleIndex) => {
-          const colorTarget = `seaqa-row-color-selector-${ruleIndex}`;
+          const colorTarget = `${context.id}-row-color-selector-${ruleIndex}`;
           const currentColorOption = SELECT_OPTION_COLORS.find(option => option.COLOR === rule.color);
           return (
             <div
@@ -220,6 +221,8 @@ const RowColorPopover = ({ target, readOnly, columns, colorbys, collaborators = 
                   />
                   {colorSelectorIndex === ruleIndex && (
                     <ColorSelectorPopover
+                      PopoverComponent={CustomizePopover}
+                      shouldHandleEvent={context.ownsEvent}
                       target={colorTarget}
                       color={rule.color}
                       onToggle={() => setColorSelectorIndex(null)}

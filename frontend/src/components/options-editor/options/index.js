@@ -38,6 +38,7 @@ const Options = React.memo(({
   onToggleOption,
   onPressTab,
   onToggle,
+  shouldHandleEvent,
 }) => {
   const maxItemNum = useMemo(() => isNumber(optionHeight) ? Math.floor(parseInt(maxHeight) / parseInt(optionHeight)) - 1 : 30, [maxHeight, optionHeight]);
 
@@ -113,6 +114,7 @@ const Options = React.memo(({
   }, [onToggle]);
 
   const onHotKey = useCallback((event) => {
+    if (shouldHandleEvent && !shouldHandleEvent(event)) return;
     if (isEnter(event)) {
       onEnter(event);
     } else if (isUpArrow(event)) {
@@ -126,7 +128,7 @@ const Options = React.memo(({
     } else if (isEsc(event)) {
       onEsc(event);
     }
-  }, [onEnter, onUpArrow, onDownArrow, onPressTab, onEsc]);
+  }, [onEnter, onUpArrow, onDownArrow, onPressTab, onEsc, shouldHandleEvent]);
 
   useEffect(() => {
     document.addEventListener('keydown', onHotKey, true);
@@ -190,6 +192,7 @@ const Options = React.memo(({
     props.optionHeight !== nextProps.optionHeight ||
     props.optionClassName !== nextProps.optionClassName ||
     props.onToggleOption !== nextProps.onToggleOption ||
+    props.shouldHandleEvent !== nextProps.shouldHandleEvent ||
     props.onPressTab !== nextProps.onPressTab ||
     props.onToggle !== nextProps.onToggle
   );

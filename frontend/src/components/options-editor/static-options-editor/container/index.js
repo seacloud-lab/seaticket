@@ -33,6 +33,7 @@ const Container = forwardRef(({
   onToggle,
   onCreate,
   onPressTab,
+  shouldHandleEvent,
   isShowClearIcon = true,
   isShowSearchIcon = false,
   defaultHighlightIndex = 0,
@@ -136,6 +137,7 @@ const Container = forwardRef(({
         </div>
       )}
       <Options
+        shouldHandleEvent={shouldHandleEvent}
         options={displayOptions}
         maxHeight={validMaxHeight}
         isAsyncSearch={isAsyncSearch}

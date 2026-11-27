@@ -1,6 +1,7 @@
 import React from 'react';
 import { CenteredLoading } from '@/components';
 import { useNotification } from '@/components/common/notification/hooks/notification';
+import { SeaMetadataControllerProvider } from '@/sea-metadata';
 import { BAR_TYPE, BAR_TYPE_CONFIG } from '../constants';
 import { useTags, useMetadata } from '../hooks';
 import Agent from './agent';
@@ -111,4 +112,10 @@ const MainPanel = (props) => {
   );
 };
 
-export default MainPanel;
+const ScopedMainPanel = (props) => (
+  <SeaMetadataControllerProvider key={props.activeBar?.[0]}>
+    <MainPanel {...props} />
+  </SeaMetadataControllerProvider>
+);
+
+export default ScopedMainPanel;

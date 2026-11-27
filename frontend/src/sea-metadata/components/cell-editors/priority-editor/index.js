@@ -2,8 +2,11 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { PriorityEditor, IconButton } from '@/components';
 import { PRIORITIES, PRIORITY_MAP } from '../../../constants/column';
+import { useSeaMetadataContext } from '../../../context-provider';
+import ScopedPopover from '../../popover/scoped-popover';
 
 const SeaMetadataPriorityEditor = ({ row, column, value: oldValue, onChange, isCellSelected }) => {
+  const context = useSeaMetadataContext();
   const [value, setValue] = useState(oldValue || 0);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -23,6 +26,7 @@ const SeaMetadataPriorityEditor = ({ row, column, value: oldValue, onChange, isC
 
   useEffect(() => {
     const handleKeyDown = (e) => {
+      if (!context.ownsEvent(e)) return;
       if (isOpen && Number(e.key) >= 0 && Number(e.key) <= 4) {
         e.preventDefault();
         e.stopPropagation();
@@ -45,7 +49,7 @@ const SeaMetadataPriorityEditor = ({ row, column, value: oldValue, onChange, isC
     return () => {
       window.removeEventListener('keydown', handleKeyDown, true);
     };
-  }, [isOpen, value, column, isCellSelected, onChange]);
+  }, [isOpen, value, column, isCellSelected, onChange, context]);
 
   return (
     <>
@@ -59,6 +63,8 @@ const SeaMetadataPriorityEditor = ({ row, column, value: oldValue, onChange, isC
       </div>
       {isOpen && (
         <PriorityEditor
+          PopoverComponent={ScopedPopover}
+          shouldHandleEvent={context.ownsEvent}
           target={ref}
           priorities={PRIORITIES}
           value={value}

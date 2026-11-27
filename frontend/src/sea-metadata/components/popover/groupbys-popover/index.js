@@ -4,16 +4,18 @@ import isHotkey from 'is-hotkey';
 import PropTypes from 'prop-types';
 import CustomizeButton from '@/components/btn/customize-button';
 import { gettext } from '@/constants';
-import context from '@/sea-metadata/context';
 import { getEventClassName } from '@/utils/dom';
 import ObjectUtils from '@/utils/object-utils';
 import { EVENT_BUS_TYPE, MAX_GROUP_LEVEL } from '../../../constants';
+import { useSeaMetadataContext } from '../../../context-provider';
 import { generateDefaultGroupby, getGroupbyColumns } from '../../../utils/group';
+import { hasScopedSelector, isPopoverKeyEvent, ScopedPopoverContent } from '../scoped-popover';
 import Groupbys from './groupbys';
 
 import './index.css';
 
 const GroupbysPopover = ({ groupbys: propsGroupBys, readOnly, hidePopover, onChange, target, placement, columns }) => {
+  const context = useSeaMetadataContext();
   const [groupbys, setGroupbys] = useState(propsGroupBys);
   const isSelectOpenRef = useState(false);
   const popoverRef = useRef(null);
@@ -27,21 +29,23 @@ const GroupbysPopover = ({ groupbys: propsGroupBys, readOnly, hidePopover, onCha
   }, [propsGroupBys, groupbys, onChange, hidePopover]);
 
   const hide = useCallback((event) => {
-    if (document.getElementsByClassName('seaqa-select-options-container').length > 0) return;
+    if (!context.ownsEvent(event, { allowOutside: true })) return;
+    if (hasScopedSelector(context, '.seaqa-select-options-container')) return;
     if (popoverRef.current && !getEventClassName(event).includes('popover') && !popoverRef.current.contains(event.target)) {
       onClosePopover();
       event.preventDefault();
       event.stopPropagation();
       return false;
     }
-  }, [onClosePopover]);
+  }, [onClosePopover, context]);
 
   const onHotKey = useCallback((event) => {
+    if (!context.ownsEvent(event) || !isPopoverKeyEvent(event, popoverRef.current)) return;
     if (isHotkey('esc', event) && !isSelectOpenRef.current) {
       event.preventDefault();
       onClosePopover();
     }
-  }, [isSelectOpenRef, onClosePopover]);
+  }, [isSelectOpenRef, onClosePopover, context]);
 
   const setSelectStatus = useCallback((status) => {
     isSelectOpenRef.current = status;
@@ -56,7 +60,7 @@ const GroupbysPopover = ({ groupbys: propsGroupBys, readOnly, hidePopover, onCha
       document.removeEventListener('keydown', onHotKey);
       unsubscribeOpenSelect();
     };
-  }, [hide, onHotKey, setSelectStatus]);
+  }, [hide, onHotKey, setSelectStatus, context]);
 
   const updateGroups = useCallback((newGroupBys) => {
     setGroupbys(newGroupBys);
@@ -93,11 +97,11 @@ const GroupbysPopover = ({ groupbys: propsGroupBys, readOnly, hidePopover, onCha
 
   const hideAllGroups = useCallback(() => {
     context.eventBus.dispatch(EVENT_BUS_TYPE.COLLAPSE_ALL_GROUPS);
-  }, []);
+  }, [context]);
 
   const showAllGroups = useCallback(() => {
     context.eventBus.dispatch(EVENT_BUS_TYPE.EXPAND_ALL_GROUPS);
-  }, []);
+  }, [context]);
 
   const onPopoverInsideClick = useCallback((event) => {
     event.stopPropagation();
@@ -113,7 +117,7 @@ const GroupbysPopover = ({ groupbys: propsGroupBys, readOnly, hidePopover, onCha
       className="sea-metadata-groupbys-popover"
       boundariesElement={document.body}
     >
-      <div ref={popoverRef} onClick={onPopoverInsideClick} className="sea-metadata-groupbys">
+      <ScopedPopoverContent target={target} ref={popoverRef} onClick={onPopoverInsideClick} className="sea-metadata-groupbys">
         <Groupbys
           readOnly={readOnly}
           groupbys={groupbys}
@@ -138,7 +142,7 @@ const GroupbysPopover = ({ groupbys: propsGroupBys, readOnly, hidePopover, onCha
             )}
           </div>
         )}
-      </div>
+      </ScopedPopoverContent>
     </UncontrolledPopover>
   );
 };

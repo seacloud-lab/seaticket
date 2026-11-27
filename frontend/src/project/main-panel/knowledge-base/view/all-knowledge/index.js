@@ -3,17 +3,17 @@ import { gettext } from '@/constants';
 import { knowledgeBaseAPI } from '@/project/api';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { useData, useTags } from '@/project/hooks';
-import SeaMetadata from '@/sea-metadata';
-import context from '@/sea-metadata/context';
+import SeaMetadata, { useMetadataController } from '@/sea-metadata';
 import { convertRowToNameValue } from '@/sea-metadata/utils/row';
 import {
-  KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KB_TABLE_NAME,
+  KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KB_MAIN_METADATA_ID_PREFIX, KB_TABLE_NAME,
   KNOWLEDGE_PREDEFINED_COLUMN_NAME, KNOWLEDGE_BASE_TYPE,
 } from '../../constants';
 import { useKnowledgePage } from '../../hooks/knowledge-page';
 import { generatorKnowledgeContextMenuOptions } from '../../utils';
 
 const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
+  const controller = useMetadataController();
   const { togglePageSlugId } = useKnowledgePage();
   const { tagsData, createTag } = useTags();
   const {
@@ -53,7 +53,7 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
           });
           const tagsColumn = columns.find(c => c.name === 'tags');
           if (tagsColumn) {
-            context.setSetting('tagsColumnKey', tagsColumn.key);
+            controller.setSetting('tagsColumnKey', tagsColumn.key);
           }
           return { data: { ...res?.data, rows, columns } };
         });
@@ -85,7 +85,7 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
     };
   }, [
     projectUuid, getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
-    getMetadata, modifyRow, deleteRow, deleteRows, togglePageSlugId,
+    getMetadata, modifyRow, deleteRow, deleteRows, togglePageSlugId, controller,
   ]);
 
   const createContextMenuOptions = useCallback((props) => {
@@ -120,6 +120,10 @@ const AllKnowledge = ({ projectUuid, permission, editorAPI }) => {
   return (
     <>
       <SeaMetadata
+        metadataID={`${KB_MAIN_METADATA_ID_PREFIX}-${projectUuid}`}
+        controller={controller}
+        storageNamespace="primary"
+        isShowViewInURL={true}
         className="sea-kb-metadata"
         api={api}
         ref={metadataRef}

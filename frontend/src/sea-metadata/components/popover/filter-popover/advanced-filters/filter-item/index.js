@@ -3,7 +3,6 @@ import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import {
   Tooltip,
-  CustomizeSelect,
   SearchInput,
   IconButton,
 } from '@/components';
@@ -22,6 +21,7 @@ import {
   getFilterByColumn, getColumnOptions, getUpdatedFilterByPredicate,
 } from '../../../../../utils/filter';
 import UnreadStatusFormatter from '../../../../cell-formatter/unread-status';
+import CustomizeSelect from '../../../../selectors/scoped-select';
 import FilterCalendar from '../filter-calendar';
 import FilterItemUtils from '../filter-item-utils';
 import TagsFilter from './tags-filter';
@@ -416,8 +416,8 @@ class FilterItem extends React.Component {
     if (isRenderErrorTips) return null;
     return (
       <div className="ml-2" >
-        <IconButton id={`filter-tool-tip-${filterColumn.key}`} icon="exclamation-triangle-filled" iconStyle={{ color: '#FFC92C' }} />
-        <Tooltip placement="bottom" target={`filter-tool-tip-${filterColumn.key}`}>
+        <IconButton ref={this.filterToolTip} icon="exclamation-triangle-filled" iconStyle={{ color: '#FFC92C' }} />
+        <Tooltip placement="bottom" target={this.filterToolTip}>
           {gettext('If there are multiple items in the cell, a random one will be chosen and be compared with the filter value.')}
         </Tooltip>
       </div>

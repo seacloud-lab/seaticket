@@ -2,11 +2,11 @@ import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { DropdownItem } from 'reactstrap';
 import PropTypes from 'prop-types';
 import { SubDropdown, ModalPortal } from '@/components';
-import context from '@/sea-metadata/context';
 import { getTarget } from '@/utils/dom';
 import { isFunction } from '@/utils/type-detection';
 
 const ContextMenu = ({
+  context,
   createContextMenuOptions,
   target,
   ignoredTriggerElements,
@@ -21,7 +21,7 @@ const ContextMenu = ({
   const options = useMemo(() => {
     if (!isFunction(createContextMenuOptions)) return [];
     return createContextMenuOptions({ ...props, hideMenu: setVisible, position, context });
-  }, [props, createContextMenuOptions, position]);
+  }, [props, createContextMenuOptions, position, context]);
 
   const hideSubMenu = useCallback(() => {
     setIsSubOpen(false);
@@ -110,6 +110,7 @@ const ContextMenu = ({
 
   useEffect(() => {
     const handleShow = (event) => {
+      if (context && !context.ownsEvent(event)) return;
       event.preventDefault();
       if (menuRef.current && menuRef.current.contains(event.target)) return;
 
@@ -127,7 +128,7 @@ const ContextMenu = ({
     return () => {
       targetDom && targetDom.removeEventListener('contextmenu', handleShow);
     };
-  }, [target, getMenuPosition, ignoredTriggerElements]);
+  }, [target, getMenuPosition, ignoredTriggerElements, context]);
 
   useEffect(() => {
     if (visible) {
@@ -144,7 +145,7 @@ const ContextMenu = ({
 
   return (
     <ModalPortal>
-      <div className="dropdown-menu d-block" style={position} ref={menuRef}>
+      <div data-sea-metadata-instance={context?.id} className="dropdown-menu d-block" style={position} ref={menuRef}>
         {options.map((option, index) => {
           if (option === 'Divider') {
             return <DropdownItem key={index} divider />;

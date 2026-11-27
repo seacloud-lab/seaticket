@@ -1,6 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
+import { withSeaMetadataContext } from '../../../context-provider';
 
 class EditorPortal extends React.Component {
   static propTypes = {
@@ -16,6 +17,7 @@ class EditorPortal extends React.Component {
   el = document.createElement('div');
 
   componentDidMount() {
+    this.el.setAttribute('data-sea-metadata-instance', this.props.metadataContext.id);
     this.props.target.appendChild(this.el);
     // eslint-disable-next-line react/no-did-mount-set-state
     this.setState({ isMounted: true });
@@ -39,4 +41,4 @@ class EditorPortal extends React.Component {
   }
 }
 
-export default EditorPortal;
+export default withSeaMetadataContext(EditorPortal);

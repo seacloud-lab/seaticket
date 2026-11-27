@@ -3,9 +3,9 @@ import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import IconBtn from '@/components/icon-button';
 import { gettext } from '@/constants';
-import context from '@/sea-metadata/context';
 import { isEnter, isSpace } from '@/utils/hotkey';
 import { SUPPORT_GROUP_COLUMN_TYPES } from '../../constants';
+import { useSeaMetadataContext } from '../../context-provider';
 import { getValidGroupbys } from '../../utils/group';
 import { GroupbysPopover } from '../popover';
 
@@ -17,6 +17,8 @@ const GroupbySetter = ({
   wrapperClass,
   modifyGroupbys
 }) => {
+  const context = useSeaMetadataContext();
+  const translate = context.translate;
   const [isShowSetter, setShowSetter] = useState(false);
 
   const columns = useMemo(() => {
@@ -29,10 +31,10 @@ const GroupbySetter = ({
 
   const message = useMemo(() => {
     const groupbysLength = groupbys ? groupbys.length : 0;
-    if (groupbysLength === 1) return context.translate('Grouped by 1 {column}');
-    if (groupbysLength > 1) return context.translate('Grouped by {count} {columns}', { count: groupbysLength });
+    if (groupbysLength === 1) return translate('Grouped by 1 {column}');
+    if (groupbysLength > 1) return translate('Grouped by {count} {columns}', { count: groupbysLength });
     return gettext('Group');
-  }, [groupbys]);
+  }, [groupbys, translate]);
 
   const onSetterToggle = useCallback(() => {
     setShowSetter(!isShowSetter);

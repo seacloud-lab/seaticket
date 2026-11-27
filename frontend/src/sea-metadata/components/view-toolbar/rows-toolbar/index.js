@@ -5,9 +5,10 @@ import { Icon, IconButton, SubDropdown,
 } from '@/components';
 import { gettext } from '@/constants';
 import { isFunction } from '@/utils/type-detection';
-import context from '../../../context';
+import { useSeaMetadataContext } from '../../../context-provider';
 
 const RowsToolbar = ({ rows, columns, selectNone, deleteRow, deleteRows, modifyRows, createTools, updateLocalRow, deleteLocalRows }) => {
+  const context = useSeaMetadataContext();
   const [isOpen, setIsOpen] = useState(false);
   const [isSubOpen, setIsSubOpen] = useState(false);
   const [subMenuKey, setSubMenuKey] = useState('');
@@ -55,9 +56,10 @@ const RowsToolbar = ({ rows, columns, selectNone, deleteRow, deleteRows, modifyR
 
   useEffect(() => {
     if (!isOpen) return;
-    document.addEventListener('contextmenu', () => onMoreToggle());
+    const onContextMenu = () => onMoreToggle();
+    document.addEventListener('contextmenu', onContextMenu);
     return () => {
-      document.removeEventListener('contextmenu', () => onMoreToggle());
+      document.removeEventListener('contextmenu', onContextMenu);
     };
   }, [isOpen, onMoreToggle]);
 

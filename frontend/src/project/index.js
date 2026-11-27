@@ -175,7 +175,7 @@ const Project = () => {
       toaster.danger(errorMessage);
       callback && callback({ error });
     });
-  }, [projectName, workspaceID]);
+  }, []);
 
   useEffect(() => {
     const { pathname, search } = location;

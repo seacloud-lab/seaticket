@@ -3,8 +3,8 @@ import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Input } from 'rea
 import PropTypes from 'prop-types';
 import Icon from '@/components/icon';
 import { gettext } from '@/constants';
-import context from '@/sea-metadata/context';
 import { CellType, COLUMNS_ICON_CONFIG, DEFAULT_DATE_FORMAT, DEFAULT_RATE_DATA } from '../../../../constants';
+import { useSeaMetadataContext } from '../../../../context-provider';
 
 import './index.css';
 
@@ -78,6 +78,7 @@ const COLUMNS = [
 ];
 
 const CustomDropdownMenu = ({ modifiers, onSelect }) => {
+  const context = useSeaMetadataContext();
   const [searchValue, setSearchValue] = useState('');
   const [isCustomPropertiesOpen, setCustomPropertiesOpen] = useState(false);
   const inputRef = useRef(null);
@@ -120,7 +121,7 @@ const CustomDropdownMenu = ({ modifiers, onSelect }) => {
   }, [onSelect]);
 
   return (
-    <DropdownMenu className="sea-metadata-column-type-dropdown-menu" modifiers={modifiers} style={{ zIndex: 1061 }}>
+    <DropdownMenu data-sea-metadata-instance={context.id} className="sea-metadata-column-type-dropdown-menu" modifiers={modifiers} style={{ zIndex: 1061 }}>
       <div className="search-column-container">
         <Input onChange={onSearchColumn} placeholder={context.translate('Search {column}')} value={searchValue} onClick={onSearchClick} ref={inputRef} />
       </div>

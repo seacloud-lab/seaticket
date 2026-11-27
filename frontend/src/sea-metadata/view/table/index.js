@@ -5,7 +5,7 @@ import { isModZ, isModShiftZ } from '@/utils/hotkey';
 import { isFunction } from '@/utils/type-detection';
 import { Utils } from '@/utils/utils';
 import { EVENT_BUS_TYPE, PER_LOAD_NUMBER } from '../../constants';
-import context from '../../context';
+import { useSeaMetadataContext } from '../../context-provider';
 import { useMetadata, useCollaborators, useTagsData, useSelectedRows } from '../../hooks';
 import { getValidGroupbys } from '../../utils/group';
 import TableMain from './table-main';
@@ -13,6 +13,7 @@ import TableMain from './table-main';
 import './index.css';
 
 const Table = ({ expandRow, children }) => {
+  const context = useSeaMetadataContext();
   const [isLoadingMore, setLoadingMore] = useState(false);
   const [expandedRow, setExpandedRow] = useState(null);
 
@@ -46,13 +47,14 @@ const Table = ({ expandRow, children }) => {
 
   const { collaborators } = useCollaborators();
 
-  const canModify = useMemo(() => context.canModify(), []);
+  const canModify = context.canModify();
 
   const focusDataGrid = useCallback(() => {
     setTimeout(() => context.eventBus.dispatch(EVENT_BUS_TYPE.FOCUS_CANVAS), 0);
-  }, []);
+  }, [context]);
 
   const onHotKey = useCallback((event) => {
+    if (!context.ownsEvent(event)) return;
     if (event.keyCode === toKeyCode('mod+shift')) return;
     if (event.target.className.includes('sea-metadata-editor-main')) return;
 
@@ -70,11 +72,12 @@ const Table = ({ expandRow, children }) => {
       store.redoOperation();
       focusDataGrid();
     }
-  }, [canModify, store, focusDataGrid]);
+  }, [canModify, store, focusDataGrid, context]);
 
   const onHotKeyUp = useCallback((event) => {
+    if (!context.ownsEvent(event)) return;
     if (event.target.className.includes('sea-metadata-editor-main')) return;
-  }, []);
+  }, [context]);
 
   const isGroupView = useMemo(() => {
     if (isLoading || !metadata) return false;
@@ -130,11 +133,11 @@ const Table = ({ expandRow, children }) => {
   }, [metadata, rowGetterById]);
 
   const groupRowGetter = useCallback((groupRowIndex) => {
-    if (!window.seaMetadataBody || !window.seaMetadataBody.getGroupRowByIndex) return null;
-    const groupRow = window.seaMetadataBody.getGroupRowByIndex(groupRowIndex);
+    if (!context.body || !context.body.getGroupRowByIndex) return null;
+    const groupRow = context.body.getGroupRowByIndex(groupRowIndex);
     const rowId = groupRow.rowId;
     return rowId && rowGetterById(rowId);
-  }, [rowGetterById]);
+  }, [rowGetterById, context]);
 
   const rowGetterByIndex = useCallback(({ isGroupView, groupRowIndex, rowIndex }) => {
     if (isGroupView) return groupRowGetter(groupRowIndex);
@@ -164,7 +167,7 @@ const Table = ({ expandRow, children }) => {
     return () => {
       expandRowSubscribe();
     };
-  }, []);
+  }, [context]);
 
   return (
     <div className="sea-metadata-container sea-metadata-container-transform" ref={containerRef}>

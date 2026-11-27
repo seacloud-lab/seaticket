@@ -5,7 +5,7 @@ import IconButton from '../icon-button';
 
 import './index.css';
 
-const ColorSelectorPopover = ({ target, onToggle, color, onChange }) => {
+const ColorSelectorPopover = ({ target, onToggle, color, onChange, PopoverComponent = CustomizePopover, shouldHandleEvent }) => {
 
   const onClick = useCallback((event, colorOption) => {
     event.stopPropagation();
@@ -18,11 +18,12 @@ const ColorSelectorPopover = ({ target, onToggle, color, onChange }) => {
   }, [color, onChange, onToggle]);
 
   return (
-    <CustomizePopover
+    <PopoverComponent
       target={target}
       className="seaqa-color-selector-popover"
       hidePopover={onToggle}
       hidePopoverWithEsc={onToggle}
+      shouldHandleEvent={shouldHandleEvent}
       modifiers={[
         {
           name: 'offset',
@@ -46,7 +47,7 @@ const ColorSelectorPopover = ({ target, onToggle, color, onChange }) => {
           );
         })}
       </div>
-    </CustomizePopover>
+    </PopoverComponent>
   );
 };
 

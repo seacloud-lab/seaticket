@@ -4,14 +4,15 @@ import { toaster } from '@/components';
 import { PERMISSION_TYPES } from '@/constants';
 import User from '@/models/user';
 import { connectionsAPI } from '@/project/api';
+import { EVENT_BUS_TYPE } from '@/project/constants';
 import { useData, useTags } from '@/project/hooks';
 import { useLinkedTicketUpdate, useLinkTicket } from '@/project/hooks/link-ticket';
 import { useResourceUpdate } from '@/project/hooks/resource-dialog';
-import { CellType, EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
-import context from '@/sea-metadata/context';
+import { CellType } from '@/sea-metadata/constants';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { getColumnByName, getColumnOptions, getOption } from '@/sea-metadata/utils/column';
 import { isSmallContainer } from '@/utils/dialog';
+import eventBus from '@/utils/event-bus';
 import { Utils } from '@/utils/utils';
 import { SUPPORT_ROW_DETAILS_SETTINGS_CONNECTION_TYPES, CONNECTION_PREDEFINED_COLUMN_NAME, CONNECTION_TYPE, } from '../../constants';
 import { useConnections } from '../../hooks';
@@ -106,9 +107,11 @@ const ConnectionRecordDetailsInDialog = ({ projectUuid, resource, columns, permi
     const rowId = resource._id;
     const localRowUpdate = { [unreadColumn.key]: nextUnread };
     modifyLocalRow(connectionTableName, rowId, localRowUpdate);
-    context.eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, localRowUpdate);
+    eventBus.dispatch(EVENT_BUS_TYPE.RESOURCE_UPDATED, {
+      projectUuid, tableName: connectionTableName, rowId: String(rowId), rowUpdateData: localRowUpdate,
+    });
     syncRecordDetails({ [unreadColumn.name]: nextUnread });
-  }, [connection, connectionDetails, targetColumns, columns, resource?._id, modifyLocalRow, connectionTableName, syncRecordDetails]);
+  }, [projectUuid, connection, connectionDetails, targetColumns, columns, resource?._id, modifyLocalRow, connectionTableName, syncRecordDetails]);
 
   const handleOthersChange = useCallback((update, callback) => {
     if (!connection || !connectionDetails?.record || targetColumns.length === 0) return;
@@ -138,8 +141,9 @@ const ConnectionRecordDetailsInDialog = ({ projectUuid, resource, columns, permi
         : connectionsAPI.modifyConnectionRecord(projectUuid, connection.id, recordID, update);
 
       return request.then((res) => {
-        const eventBus = context.eventBus;
-        eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, recordID, localRowUpdate);
+        eventBus.dispatch(EVENT_BUS_TYPE.RESOURCE_UPDATED, {
+          projectUuid, tableName: connectionTableName, rowId: String(recordID), rowUpdateData: localRowUpdate,
+        });
         syncRecordDetails(
           update,
           Object.prototype.hasOwnProperty.call(update, CONNECTION_PREDEFINED_COLUMN_NAME.LINKED_TICKET) ? '' : undefined

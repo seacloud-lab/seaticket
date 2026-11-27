@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import { getEventClassName } from '@/utils/dom';
 import { isFunction } from '@/utils/type-detection';
 import { TABLE_SUPPORT_EDIT_TYPE_MAP } from '../../../../../../constants';
-import context from '../../../../../../context';
+import { useSeaMetadataContext } from '../../../../../../context-provider';
 import { isCellValueChanged, getCellValueByColumn } from '../../../../../../utils/cell';
 import Formatter from './formatter';
 import CellOperationBtn from './operation-btn';
@@ -28,12 +28,8 @@ const Cell = React.memo(({
   frozen,
   height,
 }) => {
-  const canEditable = useMemo(() => {
-    if (!context.canModifyCell(column, row)) return false;
-    const { type } = column;
-    if (!TABLE_SUPPORT_EDIT_TYPE_MAP[type]) return false;
-    return true;
-  }, [column, row]);
+  const context = useSeaMetadataContext();
+  const canEditable = context.canModifyCell(column, row) && Boolean(TABLE_SUPPORT_EDIT_TYPE_MAP[column.type]);
 
   const className = useMemo(() => {
     const { type } = column;

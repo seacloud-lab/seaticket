@@ -4,8 +4,7 @@ import { server, gettext, PERMISSION_TYPES } from '@/constants';
 import Issues from '@/project/main-panel/portal-issues/components/issues';
 import Issue from '@/project/main-panel/portal-issues/view/issue';
 import TopBar from '@/project/main-panel/top-bar';
-import { VIEW_TOOL } from '@/sea-metadata';
-import context from '@/sea-metadata/context';
+import { VIEW_TOOL, useMetadataController } from '@/sea-metadata';
 import { default as LongTextEditorUtilities } from '@/utils/long-text';
 import { portalAPI } from '../../api';
 import { PORTAL_PAGE } from '../../constants';
@@ -20,6 +19,7 @@ const viewTools = [
 ];
 
 const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID, isTeam = false }) => {
+  const controller = useMetadataController();
   const [expandIssueID, setExpandIssueId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -45,10 +45,10 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID, isTeam = 
 
   const api = useMemo(() => ({
     getMetadata: (...params) => {
-      const sorts = context.localStorage.getItem('sorts') || [];
-      const filters = context.localStorage.getItem('filters') || [];
-      const filter_conjunction = context.localStorage.getItem('filter_conjunction') || 'And';
-      const basic_filters = context.localStorage.getItem('basic_filters') || [];
+      const sorts = controller.storage.getItem('sorts') || [];
+      const filters = controller.storage.getItem('filters') || [];
+      const filter_conjunction = controller.storage.getItem('filter_conjunction') || 'And';
+      const basic_filters = controller.storage.getItem('basic_filters') || [];
       const listIssues = isTeam ? portalAPI.listTeamIssues.bind(portalAPI) : portalAPI.listMyIssues.bind(portalAPI);
       const requestParams = {
         ...params[0],
@@ -70,15 +70,15 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID, isTeam = 
           data: {
             view: {
               ...view,
-              sorts: context.localStorage.getItem('sorts') || [],
-              groupbys: context.localStorage.getItem('groupbys') || [],
-              filters: context.localStorage.getItem('filters') || [],
-              filter_conjunction: context.localStorage.getItem('filter_conjunction') || 'And',
-              basic_filters: context.localStorage.getItem('basic_filters') || [],
-              colorbys: context.localStorage.getItem('colorbys') || {},
-              row_height: context.localStorage.getItem('row_height') || '',
-              hidden_columns: context.localStorage.getItem('hidden_columns') || [],
-              columns_keys: context.localStorage.getItem('columns_keys') || [],
+              sorts: controller.storage.getItem('sorts') || [],
+              groupbys: controller.storage.getItem('groupbys') || [],
+              filters: controller.storage.getItem('filters') || [],
+              filter_conjunction: controller.storage.getItem('filter_conjunction') || 'And',
+              basic_filters: controller.storage.getItem('basic_filters') || [],
+              colorbys: controller.storage.getItem('colorbys') || {},
+              row_height: controller.storage.getItem('row_height') || '',
+              hidden_columns: controller.storage.getItem('hidden_columns') || [],
+              columns_keys: controller.storage.getItem('columns_keys') || [],
             }
           }
         });
@@ -86,14 +86,14 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID, isTeam = 
     },
     modifyView: (viewID, viewData) => new Promise((resolve, reject) => {
       Object.keys(viewData).forEach(key => {
-        context.localStorage.setItem(key, viewData[key]);
+        controller.storage.setItem(key, viewData[key]);
       });
       resolve({ data: { success: true } });
     }),
 
     // file
     uploadFile: (...params) => portalAPI.uploadFile(projectUuid, ...params),
-  }), [projectUuid, myIssueViewsData, isTeam]);
+  }), [projectUuid, myIssueViewsData, isTeam, controller]);
 
   const localStorageNamePrefix = useMemo(() => `seaqa-${projectUuid}-${isTeam ? 'team-issues' : 'my-issues'}`, [projectUuid, isTeam]);
 
@@ -104,11 +104,11 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID, isTeam = 
   const dataDidMount = useCallback((data) => {
     if (data.view.basic_filters.length !== 2) {
       data.view.basic_filters = [
-        { column_key: context.getSetting('typeColumnKey'), filter_predicate: 'is_any_of', filter_term: [] },
-        { column_key: context.getSetting('tagsColumnKey'), filter_predicate: 'has_any_of', filter_term: [] },
+        { column_key: controller.getSetting('typeColumnKey'), filter_predicate: 'is_any_of', filter_term: [] },
+        { column_key: controller.getSetting('tagsColumnKey'), filter_predicate: 'has_any_of', filter_term: [] },
       ];
     }
-  }, []);
+  }, [controller]);
 
   const openIssue = useCallback((issueID) => {
     const { search } = window.location;
@@ -185,6 +185,7 @@ const MyIssues = ({ isEditMode, projectUuid, projectName, workspaceID, isTeam = 
 
   return (
     <Issues
+      controller={controller}
       key={isMobile ? 'mobile-card-view' : 'desktop-table-view'}
       projectUuid={projectUuid}
       workspaceID={workspaceID}
