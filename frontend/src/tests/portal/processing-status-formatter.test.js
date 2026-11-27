@@ -11,6 +11,7 @@ jest.mock('@/components', () => ({
 test.each([
   ['unprocessed', 'clock-filled', 'Processing：Your email is being processed by our supporter.'],
   ['processed', 'check-circle-filled', 'Processed：Your email has been processed by our supporter. If it has been assigned a ticket, you can check the ticket’s status. If it has not been assigned a ticket, the process is complete.'],
+  ['unavailable', 'question-circle-filled', 'Status temporarily unavailable'],
 ])('shows the icon and tooltip for %s', async (value, icon, tooltip) => {
   render(<ProcessingStatusFormatter value={value} />);
 

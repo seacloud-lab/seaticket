@@ -44,6 +44,7 @@ export const EMAIL_COLUMNS = [
       options: [
         { id: 'unprocessed', name: gettext('Processing'), color: '#6c757d', text_color: '#FFF' },
         { id: 'processed', name: gettext('Processed'), color: '#1a7f37', text_color: '#FFF' },
+        { id: 'unavailable', name: gettext('Status temporarily unavailable'), color: '#e9ecef', text_color: '#495057' },
       ],
     },
     formatter: <ProcessingStatusFormatter />,

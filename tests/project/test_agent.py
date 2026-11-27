@@ -4,6 +4,7 @@ from unittest.mock import Mock, patch
 
 from django.core import signing
 import pytest
+from requests.exceptions import ReadTimeout
 
 from seahub.project.agent.utils import (
     RegenerationValidationError,
@@ -378,6 +379,27 @@ def test_portal_email_processing_status_uses_only_the_latest_email_run(limited_s
     }
     assert api.query_rows.call_count == 1
     assert api.update_rows.call_count == 0
+
+
+def test_portal_email_processing_status_keeps_successful_batches_on_timeout():
+    source_ids = [f'2_{thread_id}' for thread_id in range(1, 202)]
+    api = Mock()
+    api.query_rows.side_effect = [
+        {'results': [{'owner_source_id': source_ids[0], 'status': 'completed', 'latest_run_id': 1}]},
+        ReadTimeout('Run query timed out'),
+        {'results': [{'owner_source_id': source_ids[200], 'status': 'completed', 'latest_run_id': 2}]},
+    ]
+
+    statuses = get_portal_email_processing_statuses(api, 'project-1', source_ids)
+
+    assert [statuses[source_id] for source_id in source_ids] == (
+        ['processed'] + ['unprocessed'] * 99 + ['unavailable'] * 100 + ['processed']
+    )
+    assert [call.kwargs['params'] for call in api.query_rows.call_args_list] == [
+        ['email', *source_ids[:100]],
+        ['email', *source_ids[100:200]],
+        ['email', *source_ids[200:]],
+    ]
 
 
 @pytest.mark.parametrize('completed_runs', [0, 1])

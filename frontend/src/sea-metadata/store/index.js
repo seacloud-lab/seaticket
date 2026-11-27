@@ -74,7 +74,15 @@ class Store {
 
   async recalculateView() {
     while (this.shouldLoadRemainingRows()) {
-      if (!await this.appendNextPage(PER_LOAD_NUMBER)) break;
+      try {
+        if (!await this.appendNextPage(PER_LOAD_NUMBER)) break;
+      } catch {
+        if (this.data) this.data.hasIncompleteResults = true;
+        break;
+      }
+    }
+    if (this.data?.hasIncompleteResults && !this.shouldLoadRemainingRows()) {
+      this.data.hasIncompleteResults = false;
     }
     return this.recalculate();
   }
@@ -125,7 +133,10 @@ class Store {
   }
 
   async loadMore(limit) {
-    if (!await this.appendNextPage(limit)) return;
+    const appended = await this.appendNextPage(limit);
+    const completedPartialView = this.data?.hasIncompleteResults && !this.data.hasMore;
+    if (!appended && !completedPartialView) return;
+    if (completedPartialView) this.data = { ...this.data, hasIncompleteResults: false };
     this.recalculate();
     context.eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_DATA_CHANGED);
     context.eventBus.dispatch(EVENT_BUS_TYPE.RE_SEARCH_ROWS);
@@ -138,7 +149,10 @@ class Store {
 
     const page = { start };
     this.pendingPage = page;
-    page.promise = this.appendPage(page, limit);
+    page.promise = this.appendPage(page, limit).catch(error => {
+      if (this.pendingPage === page && this.startIndex === start) throw error;
+      return false;
+    });
     try {
       return await page.promise;
     } finally {

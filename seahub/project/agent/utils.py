@@ -242,6 +242,7 @@ SUGGESTIONS_STATUS_FAILED = 'failed'
 LOG_STATUS_PROCESSED = 'processed'
 LOG_STATUS_UNPROCESSED = 'unprocessed'
 LOG_STATUS = (LOG_STATUS_PROCESSED, LOG_STATUS_UNPROCESSED)
+PORTAL_EMAIL_STATUS_UNAVAILABLE = 'unavailable'
 AGENT_LOG_CURSOR_SALT = 'seahub.project.agent.logs'
 
 
@@ -504,7 +505,7 @@ def _build_agent_logs(summary_rows, status_counts):
 
 
 def get_portal_email_processing_statuses(seadb_api, project_uuid, source_ids):
-    """Use the latest run's execution status, independent of suggestions."""
+    """Use the latest run's execution status and isolate failed batches."""
     statuses = dict.fromkeys(source_ids, LOG_STATUS_UNPROCESSED)
     runs_table = SchemaTables.AGENT_RUNS.table_name()
     batch_size = 100
@@ -518,17 +519,20 @@ def get_portal_email_processing_statuses(seadb_api, project_uuid, source_ids):
             f"WHERE `owner_source_type` = ? AND `owner_source_id` IN ({placeholders}) "
             "GROUP BY `owner_source_id`, `status` LIMIT 0, 10000"
         )
-        rows = seadb_api.query_rows(project_uuid, sql, params=[ConnectionType.EMAIL.value, *batch]).get('results', [])
-        latest_run_ids = {}
-
-        for row in rows:
-            source_id = row['owner_source_id']
-            run_id = int(row['latest_run_id'])
-            if run_id <= latest_run_ids.get(source_id, -1):
-                continue
-            latest_run_ids[source_id] = run_id
-            run_status = str(row.get('status') or '').strip()
-            statuses[source_id] = LOG_STATUS_PROCESSED if run_status == RUN_STATUS_COMPLETED else LOG_STATUS_UNPROCESSED
+        try:
+            rows = seadb_api.query_rows(project_uuid, sql, params=[ConnectionType.EMAIL.value, *batch]).get('results', [])
+            latest_run_ids = {}
+            for row in rows:
+                source_id = row['owner_source_id']
+                run_id = int(row['latest_run_id'])
+                if run_id <= latest_run_ids.get(source_id, -1):
+                    continue
+                latest_run_ids[source_id] = run_id
+                run_status = str(row.get('status') or '').strip()
+                statuses[source_id] = LOG_STATUS_PROCESSED if run_status == RUN_STATUS_COMPLETED else LOG_STATUS_UNPROCESSED
+        except Exception:
+            logger.exception('Failed to load portal email statuses for project %s at batch offset %s', project_uuid, offset)
+            statuses.update(dict.fromkeys(batch, PORTAL_EMAIL_STATUS_UNAVAILABLE))
 
     return statuses
 

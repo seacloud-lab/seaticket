@@ -4,11 +4,15 @@ import toaster from '@/components/toaster';
 import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import context from '@/sea-metadata/context';
 import { MetadataProvider } from '@/sea-metadata/hooks/metadata';
+import View from '@/sea-metadata/view';
 
 let mockStore;
+const mockLoad = jest.fn().mockResolvedValue(undefined);
 jest.mock('@/components/toaster', () => ({ success: jest.fn(), danger: jest.fn() }));
+jest.mock('@/components/centered-loading', () => () => null);
+jest.mock('@/constants', () => ({ gettext: text => text }));
 jest.mock('@/utils/hotkey', () => ({}));
-jest.mock('@/utils/utils', () => ({}));
+jest.mock('@/utils/utils', () => ({ Utils: { getErrorMsg: error => error.message } }));
 jest.mock('@/sea-metadata/constants', () => ({ EVENT_BUS_TYPE: new Proxy({}, { get: (_target, key) => key }) }));
 jest.mock('@/sea-metadata/context', () => ({
   re_set: jest.fn(),
@@ -16,16 +20,21 @@ jest.mock('@/sea-metadata/context', () => ({
   eventBus: jest.requireActual('@/utils/event-bus').default,
 }));
 jest.mock('@/sea-metadata/utils/row', () => ({ getRowById: (data, id) => data.id_row_map[id] }));
+jest.mock('@/sea-metadata/hooks', () => jest.requireActual('@/sea-metadata/hooks/metadata'));
 jest.mock('@/sea-metadata/hooks/collaborators', () => ({ useCollaborators: () => ({ collaborators: [], collaboratorsCache: {} }) }));
 jest.mock('@/sea-metadata/hooks/selected-rows', () => ({ useSelectedRows: () => ({ selectedRowIds: [] }) }));
+jest.mock('@/sea-metadata/view/card', () => () => null);
+jest.mock('@/sea-metadata/view/statistic', () => () => null);
+jest.mock('@/sea-metadata/view/table', () => () => null);
 jest.mock('@/sea-metadata/store', () => class {
   constructor() {
     this.data = { id_row_map: { A: { links: ['existing'] } } };
+    this.mounted = true;
     mockStore = this;
   }
   initStartIndex() {}
-  load() { return Promise.resolve(); }
-  destroy() {}
+  load() { return mockLoad(); }
+  destroy() { this.mounted = false; }
   modifyLocalRow(id, update) {
     this.data.id_row_map[id] = { ...this.data.id_row_map[id], ...update };
   }
@@ -128,5 +137,61 @@ describe('Local metadata row events', () => {
     expect(onRowChange).not.toHaveBeenCalled();
     expect(failCallback).toHaveBeenCalledWith('Delete failed');
     expect(toaster.danger).toHaveBeenCalledWith('Delete failed');
+  });
+});
+
+describe('Metadata pagination errors', () => {
+  const originalActEnvironment = global.IS_REACT_ACT_ENVIRONMENT;
+  const EmailRows = ({ metadata }) => <div>{metadata.rows?.join(', ')}</div>;
+  let container;
+  let root;
+
+  beforeAll(() => { global.IS_REACT_ACT_ENVIRONMENT = true; });
+  afterAll(() => { global.IS_REACT_ACT_ENVIRONMENT = originalActEnvironment; });
+  beforeEach(() => {
+    container = document.createElement('div');
+    root = createRoot(container);
+  });
+  afterEach(() => { act(() => root.unmount()); });
+
+  const renderView = () => act(async () => {
+    root.render(
+      <MetadataProvider>
+        <View CustomView={EmailRows} />
+      </MetadataProvider>
+    );
+  });
+
+  it('shows the loaded emails and retries an incomplete view', async () => {
+    await renderView();
+    mockStore.shouldLoadRemainingRows = () => mockStore.data.hasMore;
+    mockStore.recalculateView = jest.fn()
+      .mockImplementationOnce(async () => {
+        mockStore.data = { rows: ['First email', 'Second email'], hasMore: true, hasIncompleteResults: true };
+      })
+      .mockImplementationOnce(async () => {
+        mockStore.data = { rows: ['First email', 'Second email', 'Third email'], hasMore: false, hasIncompleteResults: false };
+      });
+
+    await act(async () => { context.eventBus.dispatch(EVENT_BUS_TYPE.RECALCULATE_DATA); });
+
+    expect(container.textContent).toContain('First email, Second email');
+    expect(container.querySelector('[role="alert"]').textContent).toContain('The list may be incomplete.');
+    const retryButton = container.querySelector('button');
+    expect(retryButton.textContent).toBe('Retry');
+
+    await act(async () => { retryButton.click(); });
+
+    expect(mockStore.recalculateView).toHaveBeenCalledTimes(2);
+    expect(container.textContent).toContain('First email, Second email, Third email');
+    expect(container.querySelector('[role="alert"]')).toBeNull();
+  });
+
+  it('still shows a blocking error if the first page fails', async () => {
+    mockLoad.mockRejectedValueOnce(new Error('First page timed out'));
+    await renderView();
+
+    expect(container.textContent).toBe('First page timed out');
+    expect(container.querySelector('button')).toBeNull();
   });
 });

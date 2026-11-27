@@ -148,6 +148,55 @@ describe('Loading remaining rows for a local view', () => {
     expect(store.recalculate).toHaveBeenCalledTimes(1);
   });
 
+  test.each(['filters', 'sorts', 'groupbys'])('keeps available rows and retries the failed page when %s is set', async option => {
+    store.data.view[option] = [{}];
+    context.getMetadata
+      .mockResolvedValueOnce(page('12:2', true))
+      .mockRejectedValueOnce(new Error('Page timed out'))
+      .mockResolvedValueOnce(page('12:3', false));
+
+    await store.recalculateView();
+
+    expect(store.data.row_ids).toEqual(['12:1', '12:2']);
+    expect(store.data.hasMore).toBe(true);
+    expect(store.data.hasIncompleteResults).toBe(true);
+    expect(store.recalculate).toHaveBeenCalledTimes(1);
+
+    await store.recalculateView();
+
+    expect(context.getMetadata.mock.calls.map(([params]) => params.start)).toEqual([1, 2, 2]);
+    expect(store.data.row_ids).toEqual(['12:1', '12:2', '12:3']);
+    expect(store.data.hasIncompleteResults).toBe(false);
+    expect(store.recalculate).toHaveBeenCalledTimes(2);
+  });
+
+  test('publishes a complete view when regular pagination reaches the end', async () => {
+    store.data.view.sorts = [{}];
+    store.data.hasIncompleteResults = true;
+    const previousData = store.data;
+    context.getMetadata.mockResolvedValueOnce(page('12:2', false));
+
+    await store.loadMore(PER_LOAD_NUMBER);
+
+    expect(store.data).not.toBe(previousData);
+    expect(store.data.hasIncompleteResults).toBe(false);
+    expect(context.eventBus.dispatch).toHaveBeenCalledWith(EVENT_BUS_TYPE.LOCAL_DATA_CHANGED);
+  });
+
+  test.each([false, true])('preserves incomplete=%s when a superseded page fails', async hasIncompleteResults => {
+    store.data.view.groupbys = [{}];
+    let rejectPage;
+    context.getMetadata.mockReturnValueOnce(new Promise((_resolve, reject) => { rejectPage = reject; }));
+    const pending = store.recalculateView();
+
+    store.initStartIndex();
+    store.data = { ...store.data, hasIncompleteResults };
+    rejectPage(new Error('Superseded page timed out'));
+    await pending;
+
+    expect(store.data.hasIncompleteResults).toBe(hasIncompleteResults);
+  });
+
   test('does not fetch more rows when there are no active view options', async () => {
     await store.recalculateView();
 

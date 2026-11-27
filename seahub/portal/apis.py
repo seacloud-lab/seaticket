@@ -796,16 +796,11 @@ class PortalTeamEmailsView(APIView):
             return api_error(status.HTTP_500_INTERNAL_SERVER_ERROR, 'Internal Server Error')
 
         source_ids = [f"{record['connection_id']}_{record['_pk']}" for record in page_records]
-        try:
-            processing_statuses = get_portal_email_processing_statuses(seadb_api, project_uuid, source_ids)
-        except Exception:
-            logger.exception('Failed to load processing statuses for portal customer %s', customer.id)
-            # Leave statuses unknown rather than treating them as unprocessed.
-            processing_statuses = {}
+        processing_statuses = get_portal_email_processing_statuses(seadb_api, project_uuid, source_ids)
 
         assignees_by_email = {}
         for record, source_id in zip(page_records, source_ids):
-            record['processing_status'] = processing_statuses.get(source_id)
+            record['processing_status'] = processing_statuses[source_id]
             assignees = []
             for email in record.get('assignees') or []:
                 if not isinstance(email, str) or not email:

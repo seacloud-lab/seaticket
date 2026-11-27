@@ -973,8 +973,8 @@ class TestPortalCustomerIssueAccess:
         ('completed', None, ['unprocessed', 'processed']),
         ('failed', None, ['unprocessed', 'unprocessed']),
         (None, None, ['unprocessed', 'unprocessed']),
-        pytest.param(None, ConnectionError('no such table: agent_runs'), [None, None], id='missing-run-table'),
-        pytest.param(None, ReadTimeout('Run query timed out'), [None, None], id='run-query-timeout'),
+        pytest.param(None, ConnectionError('no such table: agent_runs'), ['unavailable', 'unavailable'], id='missing-run-table'),
+        pytest.param(None, ReadTimeout('Run query timed out'), ['unavailable', 'unavailable'], id='run-query-timeout'),
     ])
     def test_team_emails_loads_participants_and_statuses_only_for_page(
         self, factory, real_project, run_status, run_query_error, expected_statuses,

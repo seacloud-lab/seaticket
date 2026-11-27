@@ -460,6 +460,7 @@ export const MetadataProvider = forwardRef(({
         errorMessage,
         metadata,
         store: storeRef.current,
+        recalculateData,
         modifySettings,
         modifyFilters,
         modifySorts,
