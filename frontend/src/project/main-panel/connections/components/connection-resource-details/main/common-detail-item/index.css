@@ -21,6 +21,22 @@
   word-wrap: break-word;
 }
 
+.seaqa-resource-detail-item .seaqa-resource-detail-item-content img {
+  max-width: 100%;
+  height: auto;
+}
+
+.seaqa-resource-detail-item .seaqa-resource-detail-item-content .lightbox-wrapper,
+.seaqa-resource-detail-item .seaqa-resource-detail-item-content .lightbox-wrapper > a {
+  display: inline-block;
+  max-width: 100%;
+}
+
+/* Discourse lightbox .meta needs its own CSS; without it each svg takes 300x150 */
+.seaqa-resource-detail-item .seaqa-resource-detail-item-content .lightbox-wrapper > a.lightbox > .meta {
+  display: none;
+}
+
 .seaqa-resource-detail-item .seaqa-resource-detail-item-content :last-child {
   margin-bottom: 0;
 }
