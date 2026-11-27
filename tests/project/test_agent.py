@@ -757,6 +757,99 @@ def test_email_reply_default_lookup_failure_does_not_hide_suggestions():
     logger.exception.assert_called_once()
 
 
+def test_email_reply_defaults_prefer_suggestion_payload_and_skip_email_lookup():
+    encoded_russian_name = (
+        '=?utf-8?b?0JjQstCw0L0g0KLQtdGB0YLQvtCy?= <origin@example.invalid>'
+    )
+    actions = [
+        {
+            'tool_name': 'suggest_reply',
+            'target_item_type': 'email',
+            'target_item_id': '3_9',
+            'suggestion_payload': {'reply_to': [encoded_russian_name]},
+        },
+        {
+            'tool_name': 'suggest_reply',
+            'target_item_type': 'email',
+            'target_item_id': '3_10',
+            'suggestion_payload': '{}',
+        },
+    ]
+    with patch('seahub.project.agent.utils.ProjectConnections.objects.get_connection_in_project_by_id',
+               return_value=Mock(type='email')), \
+            patch('seahub.project.agent.utils.EmailSeaDBAPI') as email_api:
+        email_api.return_value.get_emails_by_thread_ids.return_value = {
+            10: [{'email_from': 'bob@example.com', 'is_sender': False}],
+        }
+        populate_email_reply_defaults(Mock(), 'project-1', actions)
+
+    assert actions[0]['default_reply_to'] == ['Иван Тестов <origin@example.invalid>']
+    assert actions[1]['default_reply_to'] == ['bob@example.com']
+    email_api.return_value.get_emails_by_thread_ids.assert_called_once_with(3, [10])
+
+
+def test_email_reply_defaults_ignore_payload_when_connection_is_invalid():
+    action = {
+        'tool_name': 'suggest_reply',
+        'target_item_type': 'email',
+        'target_item_id': '3_9',
+        'suggestion_payload': {'reply_to': ['origin@example.com']},
+    }
+    with patch('seahub.project.agent.utils.ProjectConnections.objects.get_connection_in_project_by_id',
+               return_value=None), \
+            patch('seahub.project.agent.utils.EmailSeaDBAPI') as email_api:
+        populate_email_reply_defaults(Mock(), 'project-1', [action])
+
+    email_api.return_value.get_emails_by_thread_ids.assert_not_called()
+    assert action['default_reply_to'] == []
+
+
+def test_validate_materialize_suggestions_preserves_and_validates_email_reply_to():
+    run = {
+        'event': '{"type": "email_thread_added", "trigger_source": {"type": "email", "id": "3_9"}}',
+        'owner_source_type': 'email',
+        'owner_source_id': '3_9',
+    }
+    with patch(
+        'seahub.project.agent.utils.ProjectConnections.objects.get_connection_in_project_by_id',
+        return_value=None,
+    ):
+        sanitized = validate_materialize_suggestions(
+            Mock(),
+            'project-1',
+            run,
+            [],
+            [{
+                'tool_name': 'suggest_reply',
+                'target_item_type': 'email',
+                'target_item_id': '3_9',
+                'target_item_title': 'Fwd: Help',
+                'suggestion_reason': 'Reply to original customer',
+                'suggestion_content': 'Hello!',
+                'suggestion_payload': {'reply_to': ['Customer <customer@example.com>']},
+            }],
+        )
+        assert sanitized[0]['suggestion_payload'] == {
+            'reply_to': ['Customer <customer@example.com>'],
+        }
+
+        with pytest.raises(RegenerationValidationError):
+            validate_materialize_suggestions(
+                Mock(),
+                'project-1',
+                run,
+                [],
+                [{
+                    'tool_name': 'suggest_reply',
+                    'target_item_type': 'email',
+                    'target_item_id': '3_9',
+                    'suggestion_reason': 'Bad recipient',
+                    'suggestion_content': 'Hello!',
+                    'suggestion_payload': {'reply_to': ['not-an-email']},
+                }],
+            )
+
+
 def test_cancel_agent_log_pending_actions_selects_pending_actions_and_failed_suggestions():
     seadb_api = Mock()
     seadb_api.query_rows.side_effect = [

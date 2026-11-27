@@ -1,7 +1,7 @@
 import logging
 import json
 import requests
-from email.utils import make_msgid
+from email.utils import make_msgid, parseaddr
 from urllib.parse import urlparse
 
 from django.utils import timezone
@@ -307,7 +307,7 @@ class AgentActionExecutor:
         auto_executed=False,
     ):
         if tool_name == 'suggest_reply':
-            return self._execute_email_suggest_reply(seadb_api, project_uuid, source_id, suggestion_content)
+            return self._execute_email_suggest_reply(seadb_api, project_uuid, source_id, suggestion_content, suggestion_payload=suggestion_payload)
         if tool_name == 'suggest_create_ticket':
             return self._execute_email_create_ticket(seadb_api, project, project_uuid, source_id, suggestion_content, operator, request=request, auto_executed=auto_executed)
         if tool_name == 'suggest_move_to_spam':
@@ -1056,6 +1056,25 @@ class AgentActionExecutor:
         except ValueError:
             return []
 
+    @staticmethod
+    def _is_valid_email_address(address):
+        _, addr = parseaddr(str(address or ''))
+        addr = (addr or '').strip()
+        local, sep, domain = addr.partition('@')
+        return bool(sep and local and '.' in domain and not any(ch.isspace() for ch in addr))
+
+    @classmethod
+    def reply_to_from_suggestion_payload(cls, suggestion_payload):
+        payload = cls._parse_suggestion_payload(suggestion_payload)
+        raw_reply_to = payload.get('reply_to')
+        if not raw_reply_to:
+            return []
+        try:
+            normalized = cls._normalize_email_address_list(raw_reply_to)
+        except ValueError:
+            return []
+        return [addr for addr in normalized if cls._is_valid_email_address(addr)]
+
     def _create_ticket(
         self,
         seadb_api,
@@ -1541,7 +1560,7 @@ class AgentActionExecutor:
             _('Reply posted to Discord thread #%(record_id)s.') % {'record_id': record_id}
         )
 
-    def _execute_email_suggest_reply(self, seadb_api, project_uuid, source_id, reply_content):
+    def _execute_email_suggest_reply(self, seadb_api, project_uuid, source_id, reply_content, suggestion_payload=None):
         try:
             draft = self._parse_email_suggestion_content(reply_content)
         except ValueError as e:
@@ -1577,7 +1596,8 @@ class AgentActionExecutor:
                 _('No inbound email found for thread %(source_id)s.') % {'source_id': source_id}
             )
 
-        default_to = self.default_reply_to_from_emails(emails)
+        payload_to = self.reply_to_from_suggestion_payload(suggestion_payload)
+        default_to = payload_to or self.default_reply_to_from_emails(emails)
         to_emails = (draft.get('to') if draft else None) or default_to
         cc_emails = draft.get('cc') if draft else []
         if not to_emails:

@@ -381,3 +381,73 @@ def test_portal_issue_create_ticket_uses_portal_link_key():
         SchemaTables.PORTAL_ISSUES.table_name(),
         [{'pk': 42, 'row': {'linked_ticket': 88}}],
     )
+
+
+def test_email_action_passes_suggestion_payload_to_suggest_reply():
+    executor = AgentActionExecutor()
+    seadb_api = Mock()
+    executor._execute_email_suggest_reply = Mock(return_value={'success': True, 'status': 'executed'})
+
+    result = executor._execute_email_action(
+        seadb_api=seadb_api,
+        project=Mock(),
+        project_uuid='project-uuid',
+        source_id='3_9',
+        tool_name='suggest_reply',
+        suggestion_content='Hello!',
+        suggestion_payload={'reply_to': ['origin@example.com']},
+        operator='user@example.com',
+    )
+
+    assert result['success'] is True
+    executor._execute_email_suggest_reply.assert_called_once_with(
+        seadb_api, 'project-uuid', '3_9', 'Hello!',
+        suggestion_payload={'reply_to': ['origin@example.com']},
+    )
+
+
+def test_email_suggest_reply_recipient_priority():
+    def _run(reply_content, suggestion_payload):
+        executor = AgentActionExecutor()
+        seadb_api = Mock()
+        project_connection = Mock(id=3, config='{}')
+        emails = [{
+            '_pk': 1,
+            'email_from': 'forwarder@company.com',
+            'title': 'Fwd: Need help',
+            'message_id': '<msg-1@company.com>',
+            'origin_thread_id': 'orig-thread',
+            'is_sender': False,
+        }]
+        with patch.object(
+            executor,
+            '_get_email_thread_context',
+            return_value=(project_connection, {'_pk': 9}, emails, None),
+        ), patch(
+            'seahub.project.agent.action_executor.decrypt_config',
+            return_value={'sender_email': 'support@company.com', 'server_provider': 'SMTP'},
+        ), patch(
+            'seahub.project.agent.action_executor.toggle_send_email',
+            return_value={'email_id': 'e-1', 'origin_thread_id': 'orig-thread'},
+        ) as send_email, patch(
+            'seahub.project.agent.action_executor.EmailSeaDBAPI',
+        ):
+            result = executor._execute_email_suggest_reply(
+                seadb_api,
+                'project-uuid',
+                '3_9',
+                reply_content,
+                suggestion_payload=suggestion_payload,
+            )
+        assert result['success'] is True
+        return send_email.call_args.args[1]['send_to']
+
+    # 1. Direct confirm uses suggestion_payload.reply_to over header email_from
+    assert _run('Hi customer!', {'reply_to': ['customer@example.com']}) == ['customer@example.com']
+
+    # 2. Edited draft.to overrides suggestion_payload.reply_to
+    edited_draft = json.dumps({'to': ['override@example.com'], 'cc': [], 'content': 'Hi override!'})
+    assert _run(edited_draft, {'reply_to': ['customer@example.com']}) == ['override@example.com']
+
+    # 3. Missing payload reply_to falls back to header email_from
+    assert _run('Hi forwarder!', {}) == ['forwarder@company.com']

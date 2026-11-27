@@ -109,7 +109,10 @@ const normalizeEmailAddressList = (value) => {
 
 export const getEmailReplyDefaultTo = (action) => {
   if (action?.tool_name !== 'suggest_reply' || action?.target_item_type !== 'email') return [];
-  return normalizeEmailAddressList(action.default_reply_to);
+  const defaultReplyTo = normalizeEmailAddressList(action.default_reply_to);
+  if (defaultReplyTo.length > 0) return defaultReplyTo;
+  const payload = parseSuggestionPayload(action.suggestion_payload);
+  return normalizeEmailAddressList(payload.reply_to);
 };
 
 export const extractEmailAddresses = (addressText) => {

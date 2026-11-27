@@ -44,8 +44,23 @@ def populate_email_reply_defaults(seadb_api, project_uuid, actions):
             connection = ProjectConnections.objects.get_connection_in_project_by_id(project_uuid, connection_id)
             if not connection or connection.type != ConnectionType.EMAIL.value:
                 continue
-            emails_by_thread = email_api.get_emails_by_thread_ids(connection_id, list(targets))
+            fallback_targets = {}
             for thread_id, target_actions in targets.items():
+                for action in target_actions:
+                    payload_to = AgentActionExecutor.reply_to_from_suggestion_payload(action.get('suggestion_payload'))
+                    if payload_to:
+                        action['default_reply_to'] = [
+                            display_address
+                            for address in payload_to
+                            for display_address in extract_email_addresses_to_display(address)
+                        ]
+                    else:
+                        fallback_targets.setdefault(thread_id, []).append(action)
+
+            if not fallback_targets:
+                continue
+            emails_by_thread = email_api.get_emails_by_thread_ids(connection_id, list(fallback_targets))
+            for thread_id, target_actions in fallback_targets.items():
                 default_to = AgentActionExecutor.default_reply_to_from_emails(emails_by_thread.get(thread_id, []))
                 default_to = [
                     display_address
@@ -1021,6 +1036,7 @@ PAYLOAD_ALLOWED_FIELDS = {
     'suggest_assign_labels': ('suggested_labels',),
     'suggest_link_existing_ticket': ('related_ticket',),
     'suggest_modify_type': ('current_issue_type', 'suggested_type'),
+    'suggest_reply': ('reply_to',),
 }
 
 
@@ -1433,7 +1449,7 @@ def _sanitize_draft(seadb_api, project_uuid, draft, allowed_tools, allowed_targe
 
     # 3. Validate tool-specific structured payload fields (e.g. related_ticket existence, issue type).
     payload = _sanitize_payload(
-        seadb_api, project_uuid, tool_name, draft.get('suggestion_payload'), index,
+        seadb_api, project_uuid, tool_name, target_item_type, draft.get('suggestion_payload'), index,
     )
 
     # 4. Validate reason, content presence, and tool-specific content/target constraints.
@@ -1505,7 +1521,7 @@ def _validate_ticket_draft_content(content):
         raise RegenerationValidationError('Ticket suggestion tags must be an array of positive integers.')
 
 
-def _sanitize_payload(seadb_api, project_uuid, tool_name, raw_payload, index):
+def _sanitize_payload(seadb_api, project_uuid, tool_name, target_item_type, raw_payload, index):
     payload = raw_payload
     if isinstance(payload, str):
         try:
@@ -1522,6 +1538,28 @@ def _sanitize_payload(seadb_api, project_uuid, tool_name, raw_payload, index):
         return {}
 
     sanitized = {}
+    if tool_name == 'suggest_reply':
+        if target_item_type != ConnectionType.EMAIL.value:
+            return {}
+        raw_reply_to = payload.get('reply_to')
+        if raw_reply_to is None or raw_reply_to == []:
+            return {}
+        if not isinstance(raw_reply_to, list) or not all(isinstance(item, str) and item.strip() for item in raw_reply_to):
+            raise RegenerationValidationError(
+                f'Suggestion {index + 1} has invalid reply_to.'
+            )
+        try:
+            normalized = AgentActionExecutor._normalize_email_address_list(raw_reply_to)
+        except ValueError as e:
+            raise RegenerationValidationError(
+                f'Suggestion {index + 1} has invalid reply_to: {e}'
+            ) from e
+        if not normalized or not all(AgentActionExecutor._is_valid_email_address(addr) for addr in normalized):
+            raise RegenerationValidationError(
+                f'Suggestion {index + 1} has invalid reply_to.'
+            )
+        sanitized['reply_to'] = normalized
+        return sanitized
     if tool_name == 'suggest_assign_labels':
         labels = payload.get('suggested_labels')
         if not isinstance(labels, list) or not labels or not all(isinstance(label, str) and label.strip() for label in labels):
