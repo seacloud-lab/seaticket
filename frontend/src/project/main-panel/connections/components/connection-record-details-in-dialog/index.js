@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import classnames from 'classnames';
 import { toaster } from '@/components';
 import { PERMISSION_TYPES } from '@/constants';
@@ -21,7 +21,7 @@ import ConnectionResourceDetails, { ConnectionResourceOtherDetails } from '../co
 
 import './index.css';
 
-const ConnectionRecordDetailsInDialog = ({ projectUuid, resource, columns, permission, highlight, onUpdateResourceDetails }) => {
+const ConnectionRecordDetailsInDialog = forwardRef(({ projectUuid, resource, columns, permission, highlight, onUpdateResourceDetails }, ref) => {
   const [connectionDetails, setConnectionDetails] = useState(null);
   const [containerWidth, setContainerWidth] = useState(0);
 
@@ -249,6 +249,6 @@ const ConnectionRecordDetailsInDialog = ({ projectUuid, resource, columns, permi
       )}
     </div>
   );
-};
+});
 
 export default ConnectionRecordDetailsInDialog;

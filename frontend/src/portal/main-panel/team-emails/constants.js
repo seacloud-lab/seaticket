@@ -17,10 +17,11 @@ export const EMAIL_COLUMN_ORDER = {
 };
 
 export const EMAIL_COLUMN_WIDTHS = {
-  title: 320,
+  title: 400,
   ticket_pk: 120,
   state: 120,
   assignees: 200,
+  participants: 200,
   due_date: 200,
   modified_time: 200,
 };

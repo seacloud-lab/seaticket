@@ -1,0 +1,16 @@
+.portal-customer-emails-dialog {
+  max-width: 960px;
+  width: 960px;
+  max-height: calc(100% - 56px);
+  margin: 28px auto;
+  overflow: hidden;
+}
+
+.portal-customer-emails-dialog .modal-content {
+  max-height: calc(100vh - 56px);
+  overflow: hidden;
+}
+
+.portal-customer-emails-dialog .sea-metadata-table-data {
+  padding-bottom: 48px;
+}

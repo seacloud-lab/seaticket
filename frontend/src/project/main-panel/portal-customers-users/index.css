@@ -51,33 +51,6 @@
   outline-offset: 2px;
 }
 
-.portal-customers-sea-metadata {
-  align-self: flex-start;
-  flex: 1 1 auto;
-  min-height: 360px;
-  min-width: 0;
-  width: 100%;
-}
-
-.portal-customers-sea-metadata .sea-metadata-wrapper,
-.portal-customers-sea-metadata .sea-metadata-main {
-  min-height: 0;
-}
-
-.portal-customers-sea-metadata .sea-metadata-table-main-container {
-  min-height: 360px;
-}
-
-.portal-customers-sea-metadata .sea-metadata-table-main-container > .empty-tip .no-items-img-tip {
-  height: 72px;
-  width: 72px;
-}
-
-.portal-customers-sea-metadata .sea-metadata-table-main-container > .empty-tip .empty-tip-text {
-  margin-top: 16px;
-  color: var(--bs-icon-color) !important;
-}
-
 .portal-invite-users-dialog {
   max-width: 900px;
   margin: 8vh auto 0;

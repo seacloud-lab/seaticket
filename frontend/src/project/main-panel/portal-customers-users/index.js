@@ -304,24 +304,22 @@ const PortalCustomersUsers = ({ title }) => {
       <div className="portal-customers-users-page">
         <div className="portal-customers-users-content" role="tabpanel">
           {activeTab === Tabs.CUSTOMERS ? (
-            customerToViewEmails ? null : (
-              <CustomersTables
-                customers={customers}
-                onEdit={setCustomerToEdit}
-                onManageUsers={manageUsers}
-                onInviteUsers={(customer) => { setInviteCustomerId(customer.id); setInviteDialogOpen(true); }}
-                onViewEmails={setCustomerToViewEmails}
-                onDelete={setCustomerToDelete}
-                viewTabs={(
-                  <CustomerUsersTabs
-                    activeTab={activeTab}
-                    onChange={setActiveTab}
-                    customersTab={Tabs.CUSTOMERS}
-                    usersTab={Tabs.USERS}
-                  />
-                )}
-              />
-            )
+            <CustomersTables
+              customers={customers}
+              onEdit={setCustomerToEdit}
+              onManageUsers={manageUsers}
+              onInviteUsers={(customer) => { setInviteCustomerId(customer.id); setInviteDialogOpen(true); }}
+              onViewEmails={setCustomerToViewEmails}
+              onDelete={setCustomerToDelete}
+              viewTabs={(
+                <CustomerUsersTabs
+                  activeTab={activeTab}
+                  onChange={setActiveTab}
+                  customersTab={Tabs.CUSTOMERS}
+                  usersTab={Tabs.USERS}
+                />
+              )}
+            />
           ) : (
             <UsersTab
               onEditUser={openUserEditor}

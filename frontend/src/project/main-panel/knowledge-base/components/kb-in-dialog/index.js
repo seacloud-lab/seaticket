@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, forwardRef } from 'react';
 import { CenteredLoading, CenteredError } from '@/components';
 import { knowledgeBaseAPI } from '@/project/api';
 import { downloadFile } from '@/utils/download';
@@ -7,7 +7,7 @@ import Preview from '../../view/knowledge/preview';
 
 import './index.css';
 
-const KBInDialog = ({ projectUuid, knowledgeID, updateKB, getKB = (...params) => knowledgeBaseAPI.getRecord(...params) }) => {
+const KBInDialog = forwardRef(({ projectUuid, knowledgeID, updateKB, getKB = (...params) => knowledgeBaseAPI.getRecord(...params) }, ref) => {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
   const [knowledge, setKnowledge] = useState('');
@@ -41,6 +41,6 @@ const KBInDialog = ({ projectUuid, knowledgeID, updateKB, getKB = (...params) =>
   return (
     <Preview className="seaqa-kb-in-dialog" knowledge={knowledge} onLinkClick={onLinkClick} />
   );
-};
+});
 
 export default KBInDialog;
