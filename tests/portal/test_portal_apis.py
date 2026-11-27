@@ -215,7 +215,6 @@ class TestPortalIssuesView:
             1,
             event={
                 'type': 'portal_issue_added',
-                'old_value': None,
                 'new_value': resp.data['portal_issue'],
             },
         )
@@ -259,7 +258,6 @@ class TestPortalIssueCommentsView:
             42,
             event={
                 'type': 'portal_issue_comment_added',
-                'old_value': None,
                 'new_value': {
                     '_pk': 9,
                     'issue_id': 42,

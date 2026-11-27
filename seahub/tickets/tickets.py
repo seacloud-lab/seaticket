@@ -83,6 +83,7 @@ def _format_ticket_event_value(field_name, field_value, tag_id_to_name=None):
 
 
 def build_ticket_data_event(event_type, old_row=None, new_row=None, seadb_api=None, project_uuid=None):
+    is_new_row = not old_row
     old_row = old_row or {}
     new_row = new_row or {}
     old_value = {}
@@ -108,14 +109,16 @@ def build_ticket_data_event(event_type, old_row=None, new_row=None, seadb_api=No
         new_field_value = _format_ticket_event_value(field_name, field_value, tag_id_to_name)
         if old_field_value == new_field_value:
             continue
-        old_value[field_name] = old_field_value
+        if not is_new_row:
+            old_value[field_name] = old_field_value
         new_value[field_name] = new_field_value
 
-    return {
-        'type': event_type,
-        'old_value': old_value or None,
-        'new_value': new_value or None,
-    }
+    event = {'type': event_type}
+    if old_value:
+        event['old_value'] = old_value
+    if new_value:
+        event['new_value'] = new_value
+    return event
 
 
 def has_ticket_event_changes(event):
@@ -1512,7 +1515,6 @@ class TicketCommentsAPIView(APIView):
             ticket.get('_pk'),
             event={
                 'type': DataEventType.TICKET_COMMENT_ADDED.value,
-                'old_value': None,
                 'new_value': {
                     'comment_id': pk,
                     'content': content,
