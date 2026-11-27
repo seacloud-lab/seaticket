@@ -8,6 +8,8 @@ import { isFilterTermArray } from '@/sea-metadata/utils/filter';
 import {
   DELETED_OPTION_BACKGROUND_COLOR, DELETED_OPTION_TIPS,
 } from '../../constants';
+import { useSeaMetadataContext } from '../../context-provider';
+import ScopedPopover from '../popover/scoped-popover';
 
 const OptionSelector = ({
   readOnly,
@@ -18,6 +20,7 @@ const OptionSelector = ({
   predicate,
   onChange,
 }) => {
+  const context = useSeaMetadataContext();
   const [isShowEditor, setIsShowEditor] = useState(false);
 
   const optionSelectorRef = useRef(null);
@@ -77,6 +80,8 @@ const OptionSelector = ({
       />
       {isShowEditor && (
         <OptionsEditor
+          PopoverComponent={ScopedPopover}
+          shouldHandleEvent={context.ownsEvent}
           className={classnames('sea-metadata-data-filter-popover', className)}
           value={filterTerm}
           isMultiple={isMultiple}

@@ -5,12 +5,14 @@ import CheckboxEditor from '../../../../../../components/cell-editors/checkbox-e
 import PriorityEditor from '../../../../../../components/cell-editors/priority-editor';
 import CellFormatter from '../../../../../../components/cell-formatter';
 import { CellType } from '../../../../../../constants';
+import { useSeaMetadataContext } from '../../../../../../context-provider';
 import { canEditCell } from '../../../../../../utils/cell';
 
 const Formatter = ({ isCellSelected, column, value, onChange, row, ...params }) => {
+  const context = useSeaMetadataContext();
   const { metadata } = useMetadata();
   const { type } = column;
-  const cellEditAble = canEditCell(column, row, true);
+  const cellEditAble = canEditCell(column, row, true, context);
   if (type === CellType.CHECKBOX && cellEditAble) {
     return (<CheckboxEditor isCellSelected={isCellSelected} value={value} column={column} onChange={onChange} />);
   }

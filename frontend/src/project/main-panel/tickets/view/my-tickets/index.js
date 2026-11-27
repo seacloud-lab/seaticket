@@ -2,8 +2,7 @@ import React, { useCallback, useMemo } from 'react';
 import { username } from '@/constants';
 import { ticketsAPI } from '@/project/api';
 import { MY_TICKETS_SCOPE } from '@/project/utils';
-import { VIEW_TOOL } from '@/sea-metadata';
-import context from '@/sea-metadata/context';
+import { VIEW_TOOL, useMetadataController } from '@/sea-metadata';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import Tickets from '../../components/tickets';
 import { MY_TICKETS_VIEW_IDS, PREDEFINED_TICKET_COLUMN_NAME } from '../../constants';
@@ -21,6 +20,7 @@ const isUnassignedFromMe = (update, columns) => {
 };
 
 const MyTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBar, scope }) => {
+  const controller = useMetadataController();
   const { isLoading, togglePageSlugId } = useTicketsPage();
   const isCreated = scope === MY_TICKETS_SCOPE.CREATED;
   const viewIDs = isCreated ? MY_TICKETS_VIEW_IDS.created : MY_TICKETS_VIEW_IDS.assigned;
@@ -35,10 +35,10 @@ const MyTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBa
 
   const api = useMemo(() => ({
     getMetadata: ({ view_id: viewID, ...params }) => {
-      const sorts = context.localStorage.getItem('sorts') || [];
-      const filters = context.localStorage.getItem('filters') || [];
-      const filter_conjunction = context.localStorage.getItem('filter_conjunction') || 'And';
-      const basic_filters = context.localStorage.getItem('basic_filters') || [];
+      const sorts = controller.storage.getItem('sorts') || [];
+      const filters = controller.storage.getItem('filters') || [];
+      const filter_conjunction = controller.storage.getItem('filter_conjunction') || 'And';
+      const basic_filters = controller.storage.getItem('basic_filters') || [];
       const isUnfiltered = Array.isArray(filters) && filters.length === 0 && Array.isArray(basic_filters)
         && basic_filters.every(filter => (
           ['is_any_of', 'has_any_of'].includes(filter?.filter_predicate) && Array.isArray(filter.filter_term) && filter.filter_term.length === 0
@@ -59,15 +59,15 @@ const MyTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBa
           data: {
             view: {
               ...view,
-              sorts: context.localStorage.getItem('sorts') || [],
-              groupbys: context.localStorage.getItem('groupbys') || [],
-              filters: context.localStorage.getItem('filters') || [],
-              filter_conjunction: context.localStorage.getItem('filter_conjunction') || 'And',
-              basic_filters: context.localStorage.getItem('basic_filters') || [],
-              colorbys: context.localStorage.getItem('colorbys') || {},
-              row_height: context.localStorage.getItem('row_height') || '',
-              hidden_columns: context.localStorage.getItem('hidden_columns') || [],
-              columns_keys: context.localStorage.getItem('columns_keys') || [],
+              sorts: controller.storage.getItem('sorts') || [],
+              groupbys: controller.storage.getItem('groupbys') || [],
+              filters: controller.storage.getItem('filters') || [],
+              filter_conjunction: controller.storage.getItem('filter_conjunction') || 'And',
+              basic_filters: controller.storage.getItem('basic_filters') || [],
+              colorbys: controller.storage.getItem('colorbys') || {},
+              row_height: controller.storage.getItem('row_height') || '',
+              hidden_columns: controller.storage.getItem('hidden_columns') || [],
+              columns_keys: controller.storage.getItem('columns_keys') || [],
             }
           }
         });
@@ -75,7 +75,7 @@ const MyTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBa
     },
     modifyView: (viewID, viewData) => new Promise((resolve, reject) => {
       Object.keys(viewData).forEach(key => {
-        context.localStorage.setItem(key, viewData[key]);
+        controller.storage.setItem(key, viewData[key]);
       });
       resolve({ data: { success: true } });
     }),
@@ -88,21 +88,22 @@ const MyTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBa
 
     // file
     uploadFile: (...params) => ticketsAPI.uploadFile(projectUuid, ...params),
-  }), [projectUuid, scope, myTicketViewsData]);
+  }), [projectUuid, scope, myTicketViewsData, controller]);
 
   const localStorageNamePrefix = useMemo(() => `seaqa-${projectUuid}-my-tickets`, [projectUuid]);
 
   const dataDidMount = useCallback((data) => {
     if (data.view.basic_filters.length !== 2) {
       data.view.basic_filters = [
-        { column_key: context.getSetting('typeColumnKey'), filter_predicate: 'is_any_of', filter_term: [] },
-        { column_key: context.getSetting('tagsColumnKey'), filter_predicate: 'has_any_of', filter_term: [] },
+        { column_key: controller.getSetting('typeColumnKey'), filter_predicate: 'is_any_of', filter_term: [] },
+        { column_key: controller.getSetting('tagsColumnKey'), filter_predicate: 'has_any_of', filter_term: [] },
       ];
     }
-  }, []);
+  }, [controller]);
 
   return (
     <Tickets
+      controller={controller}
       projectUuid={projectUuid}
       workspaceID={workspaceID}
       projectName={projectName}

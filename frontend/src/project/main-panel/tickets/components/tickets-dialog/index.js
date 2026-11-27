@@ -5,6 +5,8 @@ import { ModalHeader, CenteredLoading, EmptyTip, SearchInput, toaster } from '@/
 import { gettext, KeyCodes, mediaUrl } from '@/constants';
 import { searchAPI } from '@/project/api';
 import { useMetadata, useTags } from '@/project/hooks';
+import { SeaMetadataScope } from '@/sea-metadata';
+import { useSeaMetadataContext } from '@/sea-metadata/context-provider';
 import { TagsDataProvider, TypesDataProvider, SubstatesDataProvider, SelectedRowsProvider, CustomersDataProvider, useSelectedRows } from '@/sea-metadata/hooks';
 import { Metadata } from '@/sea-metadata/models';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
@@ -31,6 +33,7 @@ const Main = ({
   onToggle,
   onSubmit,
 }) => {
+  const context = useSeaMetadataContext();
   const [searchValue, setSearchValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [ticketsData, setTicketsData] = useState(DEFAULT_TICKETS_DATA);
@@ -176,7 +179,7 @@ const Main = ({
   }, []);
 
   return (
-    <Modal className="seaqa-tickets-dialog" isOpen={true} toggle={onToggle} style={{ minWidth: 900 }}>
+    <Modal data-sea-metadata-instance={context.id} className="seaqa-tickets-dialog" isOpen={true} toggle={onToggle} style={{ minWidth: 900 }}>
       <ModalHeader toggle={onToggle}>{gettext('Tickets')}</ModalHeader>
       <ModalBody>
         <div className="seaqa-tickets-search-wrapper">
@@ -209,9 +212,11 @@ const Main = ({
 
 const TicketsDialog = (props) => {
   return (
-    <SelectedRowsProvider>
-      <Main { ...props } />
-    </SelectedRowsProvider>
+    <SeaMetadataScope>
+      <SelectedRowsProvider>
+        <Main { ...props } />
+      </SelectedRowsProvider>
+    </SeaMetadataScope>
   );
 };
 

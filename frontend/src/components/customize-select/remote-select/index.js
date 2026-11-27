@@ -17,6 +17,7 @@ const RemoteSelect = ({
   value,
   className,
   containerClassName,
+  menuAttributes,
   placeholder,
   api,
   isInModal,
@@ -135,6 +136,7 @@ const RemoteSelect = ({
           {isShowSelector && (
             <OptionsShell>
               <Options
+                menuAttributes={menuAttributes}
                 isInModal={isInModal}
                 className={containerClassName}
                 offset={offset}

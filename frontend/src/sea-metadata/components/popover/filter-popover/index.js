@@ -6,11 +6,12 @@ import isHotkey from 'is-hotkey';
 import PropTypes from 'prop-types';
 import CustomizeButton from '@/components/btn/customize-button';
 import { gettext } from '@/constants';
-import context from '@/sea-metadata/context';
 import { getEventClassName } from '@/utils/dom';
 import ObjectUtils from '@/utils/object-utils';
 import { EVENT_BUS_TYPE, FILTER_COLUMN_OPTIONS } from '../../../constants';
+import { withSeaMetadataContext } from '../../../context-provider';
 import { getValidFilters, getFilterByColumn } from '../../../utils/filter';
+import { hasScopedSelector, isPopoverKeyEvent, ScopedPopoverContent } from '../scoped-popover';
 import AdvancedFilters from './advanced-filters';
 import BasicFilters from './basic-filters';
 
@@ -49,7 +50,7 @@ class FilterPopover extends Component {
     this.popoverInnerRef && this.popoverInnerRef.click();
     document.addEventListener('click', this.hidePopoverByClick, true);
     document.addEventListener('keydown', this.onHotKey);
-    this.unsubscribeOpenSelect = context.eventBus.subscribe(EVENT_BUS_TYPE.OPEN_SELECT, this.setSelectStatus);
+    this.unsubscribeOpenSelect = this.props.metadataContext.eventBus.subscribe(EVENT_BUS_TYPE.OPEN_SELECT, this.setSelectStatus);
   }
 
   componentWillUnmount() {
@@ -73,6 +74,7 @@ class FilterPopover extends Component {
   };
 
   onHotKey = (e) => {
+    if (!this.props.metadataContext.ownsEvent(e) || !isPopoverKeyEvent(e, this.popoverInnerRef)) return;
     if (isHotkey('esc', e) && !this.isSelectOpen) {
       e.preventDefault();
       this.onClosePopover();
@@ -84,8 +86,8 @@ class FilterPopover extends Component {
   };
 
   hidePopoverByClick = (e) => {
-    if (document.getElementsByClassName('sea-metadata-data-filter-popover').length > 0) return;
-    if (document.getElementsByClassName('seaqa-select-options-container').length > 0) return;
+    if (!this.props.metadataContext.ownsEvent(e, { allowOutside: true })) return;
+    if (hasScopedSelector(this.props.metadataContext, '.sea-metadata-data-filter-popover, .seaqa-select-options-container')) return;
     if (this.popoverInnerRef && !getEventClassName(e).includes('popover') && !this.popoverInnerRef.contains(e.target)) {
       e.preventDefault();
       e.stopPropagation();
@@ -163,7 +165,8 @@ class FilterPopover extends Component {
         boundariesElement={document.body}
       >
         {({ update: scheduleUpdate }) => (
-          <div
+          <ScopedPopoverContent
+            target={target}
             ref={ref => this.popoverInnerRef = ref}
             onClick={this.onPopoverInsideClick}
             className="sea-metadata-filters"
@@ -206,7 +209,7 @@ class FilterPopover extends Component {
                 />
               </div>
             )}
-          </div>
+          </ScopedPopoverContent>
         )}
       </UncontrolledPopover>
     );
@@ -229,4 +232,4 @@ FilterPopover.propTypes = {
   viewType: PropTypes.string,
 };
 
-export default FilterPopover;
+export default withSeaMetadataContext(FilterPopover);

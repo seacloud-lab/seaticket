@@ -27,6 +27,7 @@ class CustomizePopover extends React.Component {
   };
 
   onKeyDown = (e) => {
+    if (this.props.shouldHandleEvent && !this.props.shouldHandleEvent(e)) return;
     const { canHidePopover = true, hidePopoverWithEsc } = this.props;
     if (e.keyCode === Utils.keyCodes.esc && typeof hidePopoverWithEsc === 'function') {
       e.preventDefault();
@@ -40,6 +41,7 @@ class CustomizePopover extends React.Component {
   };
 
   onMousedown = (e) => {
+    if (this.props.shouldHandleEvent && !this.props.shouldHandleEvent(e)) return;
     const { canHidePopover = true } = this.props;
     if (!canHidePopover) return;
     if (this.popoverRef && e && getEventClassName(e).indexOf('popover') === -1 && !this.popoverRef.contains(e.target)) {
@@ -81,6 +83,7 @@ CustomizePopover.propTypes = {
   hidePopoverWithEsc: PropTypes.func,
   hideArrow: PropTypes.bool,
   canHidePopover: PropTypes.bool,
+  shouldHandleEvent: PropTypes.func,
   placement: PropTypes.string,
   modifiers: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
 };

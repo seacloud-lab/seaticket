@@ -2,6 +2,7 @@ import React, { forwardRef, useMemo, useImperativeHandle, useCallback, useRef, u
 import PropTypes from 'prop-types';
 import Container from '@/components/options-editor/static-options-editor/container';
 import { gettext } from '@/constants';
+import { useSeaMetadataContext } from '../../../context-provider';
 import { useCustomersData } from '../../../hooks';
 import { getCustomersOptions } from '../../../utils/column';
 import { isEmptyCustomerId } from '../../../utils/row';
@@ -16,6 +17,7 @@ const CustomerEditor = forwardRef(({
   onCommit,
   onPressTab,
 }, ref) => {
+  const context = useSeaMetadataContext();
   const editorRef = useRef(null);
   const optionEditorContainerRef = useRef(null);
 
@@ -79,6 +81,7 @@ const CustomerEditor = forwardRef(({
   return (
     <div className="sea-metadata-single-select-editor options-editor-popover" style={style} ref={editorRef}>
       <Container
+        shouldHandleEvent={context.ownsEvent}
         ref={optionEditorContainerRef}
         isMultiple={false}
         isSearchEnabled={true}

@@ -1,7 +1,6 @@
 import deepCopy from 'deep-copy';
 import { getType, isFunction } from '@/utils/type-detection';
 import { EVENT_BUS_TYPE, PER_LOAD_NUMBER } from '../constants';
-import context from '../context';
 import { Metadata, Row } from '../models';
 import { getColumnByKey, getColumnByName, normalizeColumns } from '../utils/column';
 import { getRowById, getRowsByIds } from '../utils/row';
@@ -16,6 +15,8 @@ import ServerOperator from './server-operator';
 class Store {
 
   constructor(props) {
+    this.context = props.context;
+    this.dataProcessor = new DataProcessor(this.context);
     this.viewId = props.viewId;
     this.data = null;
     this.startIndex = 0;
@@ -25,8 +26,8 @@ class Store {
     this.settledRowUpdates = {};
     this.isSendingOperation = false;
     this.isReadonly = false;
-    this.serverOperator = new ServerOperator();
-    this.localOperator = new LocalOperator();
+    this.serverOperator = new ServerOperator(this.context);
+    this.localOperator = new LocalOperator(this.context);
     this.collaborators = props.collaborators || [];
     this.dataDidMount = props.dataDidMount || null;
     this.tagsData = props?.tagsData || {};
@@ -36,10 +37,14 @@ class Store {
     this.columnWidthRules = props?.columnWidthRules || null;
     this.notDisplayColumns = props?.notDisplayColumns || [];
     this.shouldRemoveRowAfterUpdate = props.shouldRemoveRowAfterUpdate;
+    this.onOperationError = props.onOperationError;
     this.mounted = true;
+    this.loadVersion = 0;
   }
 
   destroy = () => {
+    this.loadVersion += 1;
+    this.serverOperator.destroy();
     this.viewId = '';
     this.data = null;
     this.startIndex = 0;
@@ -62,9 +67,9 @@ class Store {
 
   async recalculate() {
     if (!this.mounted) return;
-    DataProcessor.run(this.data, {
+    this.dataProcessor.run(this.data, {
       collaborators: this.collaborators,
-      username: context.getUsername(),
+      username: this.context.getUsername(),
       typesData: this.typesData,
       tagsData: this.tagsData
     });
@@ -75,9 +80,11 @@ class Store {
       throw Error('View_not_exist');
     }
     if (!this.mounted) return;
-    return context.getMetadata({ view_id: this.viewId, start: this.startIndex, limit, is_reload: isForceReload })?.then(res => {
+    const version = ++this.loadVersion;
+    return this.context.getMetadata({ view_id: this.viewId, start: this.startIndex, limit, is_reload: isForceReload })?.then(res => {
+      if (!this.mounted || version !== this.loadVersion) return;
       const rows = res?.data?.rows || [];
-      const columnsWidth = context.localStorage.getItem('columns_width') || {};
+      const columnsWidth = this.context.localStorage.getItem('columns_width') || {};
       const columns = normalizeColumns(res?.data?.columns || [], columnsWidth, this.columnOrderRules);
       const linked_records = res?.data?.linked_records || {};
       const errorMsg = res?.data?.error_msg || '';
@@ -103,22 +110,26 @@ class Store {
   }
 
   async load(limit = PER_LOAD_NUMBER) {
-    return context.getView(this.viewId).then(res => {
+    if (!this.mounted) return;
+    return this.context.getView(this.viewId).then(res => {
+      if (!this.mounted) return;
       const view = res?.data?.view;
       return this.loadMetadata(view, limit);
     });
   }
 
   async reload(limit = PER_LOAD_NUMBER) {
+    if (!this.mounted || !this.data) return;
     this.startIndex = 0;
     return this.loadMetadata(this.data.view, limit, true);
   }
 
   async loadMore(limit) {
     if (!this.data || !this.mounted) return;
+    const version = this.loadVersion;
     const start = this.startIndex;
-    const res = await context.getMetadata({ view_id: this.viewId, start, limit });
-    if (!this.data || !this.mounted || this.startIndex !== start) return;
+    const res = await this.context.getMetadata({ view_id: this.viewId, start, limit });
+    if (!this.data || !this.mounted || this.startIndex !== start || version !== this.loadVersion) return;
     const linked_records = res?.data?.linked_records || {};
     let rows = res?.data?.rows || [];
     if (!Array.isArray(rows) || rows.length === 0) {
@@ -140,13 +151,13 @@ class Store {
     this.data.linked_records = { ...this.data.linked_records, ...linked_records };
     this.startIndex = this.startIndex + loadedCount;
     this.recalculate();
-    context.eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_DATA_CHANGED);
-    context.eventBus.dispatch(EVENT_BUS_TYPE.RE_SEARCH_ROWS);
+    this.context.eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_DATA_CHANGED);
+    this.context.eventBus.dispatch(EVENT_BUS_TYPE.RE_SEARCH_ROWS);
   }
 
   async updateRowData(newRowId) {
-    const res = await context.getRowsByIds(this.repoId, [newRowId]);
-    if (!res || !res.data) {
+    const res = await this.context.getRowsByIds(this.repoId, [newRowId]);
+    if (!this.mounted || !this.data || !res || !res.data) {
       return;
     }
     const newRow = res.data.results[0];
@@ -168,8 +179,8 @@ class Store {
     this.startIndex = 0;
     this.recalculate();
     this.data = deepCopy(this.data);
-    context.eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_DATA_CHANGED);
-    context.eventBus.dispatch(EVENT_BUS_TYPE.RE_SEARCH_ROWS);
+    this.context.eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_DATA_CHANGED);
+    this.context.eventBus.dispatch(EVENT_BUS_TYPE.RE_SEARCH_ROWS);
   }
 
   async updateDataAttribute(attribute, isReplace = false) {
@@ -191,18 +202,19 @@ class Store {
   }
 
   applyOperation(operation, undoRedoHandler = { handleUndo: true }) {
+    if (!this.mounted || !this.data) return;
     const { op_type } = operation;
     operation.undo_redo_handler = undoRedoHandler;
 
     if (NEED_LOADING_OPERATION.includes(op_type)) {
-      context.eventBus.dispatch(EVENT_BUS_TYPE.LOADING, true);
+      this.context.eventBus.dispatch(EVENT_BUS_TYPE.LOADING, true);
     }
 
     if (!NEED_APPLY_AFTER_SERVER_OPERATION.includes(op_type)) {
       this.handleUndoRedos(undoRedoHandler, operation);
-      this.data = deepCopy(operation.apply(this.data));
+      this.data = deepCopy(operation.apply(this.data, this.context));
       this.syncOperationOnData(operation);
-      context.eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_DATA_CHANGED);
+      this.context.eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_DATA_CHANGED);
     }
 
     if (LOCAL_APPLY_OPERATION_TYPE.includes(op_type)) {
@@ -212,9 +224,9 @@ class Store {
     }
 
     if (op_type === OPERATION_TYPE.MODIFY_FILTERS) {
-      context.eventBus.dispatch(EVENT_BUS_TYPE.CLEAR_SEARCH_ROWS);
+      this.context.eventBus.dispatch(EVENT_BUS_TYPE.CLEAR_SEARCH_ROWS);
     } else if (RE_SEARCH_ROWS_OPERATION.includes(op_type)) {
-      context.eventBus.dispatch(EVENT_BUS_TYPE.RE_SEARCH_ROWS);
+      this.context.eventBus.dispatch(EVENT_BUS_TYPE.RE_SEARCH_ROWS);
     }
   }
 
@@ -228,15 +240,16 @@ class Store {
       return;
     }
     this.isSendingOperation = true;
-    context.eventBus.dispatch(EVENT_BUS_TYPE.SAVING);
+    this.context.eventBus.dispatch(EVENT_BUS_TYPE.SAVING);
     this.sendNextOperation();
   }
 
   sendNextOperation() {
+    if (!this.mounted) return;
     if (this.pendingOperations.length === 0) {
       this.isSendingOperation = false;
       this.settledRowUpdates = {};
-      context.eventBus.dispatch(EVENT_BUS_TYPE.SAVED);
+      this.context.eventBus.dispatch(EVENT_BUS_TYPE.SAVED);
       return;
     }
     const operation = this.pendingOperations.shift();
@@ -245,6 +258,10 @@ class Store {
   }
 
   sendOperationCallback = ({ operation, is_restore, error }) => {
+    if (!this.mounted || !this.data) {
+      if (error) this.onOperationError?.(error);
+      return;
+    }
     if (is_restore) {
       this.restoreOperation(operation);
       this.undo = this.undo.filter(o => o.id !== operation.id);
@@ -256,7 +273,7 @@ class Store {
       if (operation && operation.fail_callback) {
         operation.fail_callback(error);
       } else {
-        context.eventBus.dispatch(EVENT_BUS_TYPE.TABLE_ERROR, { error });
+        this.context.eventBus.dispatch(EVENT_BUS_TYPE.TABLE_ERROR, { error });
       }
       this.sendNextOperation();
       return;
@@ -265,13 +282,13 @@ class Store {
     const isAfterServerOperation = NEED_APPLY_AFTER_SERVER_OPERATION.includes(operation.op_type);
     if (isAfterServerOperation) {
       this.handleUndoRedos(operation.undo_redo_handler || { handleUndo: true }, operation);
-      this.data = deepCopy(operation.apply(this.data));
+      this.data = deepCopy(operation.apply(this.data, this.context));
       this.syncOperationOnData(operation);
       this.recordSettledRowUpdates(operation);
     }
 
     if (isAfterServerOperation) {
-      context.eventBus.dispatch(EVENT_BUS_TYPE.SERVER_DATA_CHANGED);
+      this.context.eventBus.dispatch(EVENT_BUS_TYPE.SERVER_DATA_CHANGED);
     }
     operation.success_callback && operation.success_callback(operation);
 
@@ -285,22 +302,23 @@ class Store {
 
     // need reload rows if has related formula columns
     this.serverOperator.handleReloadRows(this.data, operation, ({ reloadedRows, idRowNotExistMap, relatedColumnKeyMap }) => {
+      if (!this.mounted || !this.data) return;
       if (reloadedRows.length > 0) {
-        DataProcessor.handleReloadedRows(this.data, reloadedRows, relatedColumnKeyMap);
+        this.dataProcessor.handleReloadedRows(this.data, reloadedRows, relatedColumnKeyMap);
       }
       if (Object.keys(idRowNotExistMap).length > 0) {
-        DataProcessor.handleNotExistRows(this.data, idRowNotExistMap);
+        this.dataProcessor.handleNotExistRows(this.data, idRowNotExistMap);
       }
-      context.eventBus.dispatch(EVENT_BUS_TYPE.SERVER_DATA_CHANGED);
+      this.context.eventBus.dispatch(EVENT_BUS_TYPE.SERVER_DATA_CHANGED);
     });
 
     this.sendNextOperation();
   };
 
   syncOperationOnData(operation) {
-    DataProcessor.syncOperationOnData(this.data, operation, {
+    this.dataProcessor.syncOperationOnData(this.data, operation, {
       collaborators: this.collaborators,
-      username: context.getUsername(),
+      username: this.context.getUsername(),
       tagsData: this.tagsData,
       typesData: this.typesData,
       customersData: this.customersData,
@@ -438,7 +456,7 @@ class Store {
     let valid_id_row_updates = {};
     let valid_id_old_row_data = {};
     originalRows.forEach(row => {
-      if (row && context.canModifyRow(row)) {
+      if (row && this.context.canModifyRow(row)) {
         const rowId = row._id;
         valid_row_ids.push(rowId);
         valid_id_row_updates[rowId] = id_row_updates[rowId];
@@ -464,7 +482,7 @@ class Store {
     // A detail dialog can outlive its row's membership in the current view.
     const row = getRowById(this.data, row_id) || (row_data && String(row_data._id) === String(row_id) ? row_data : null);
     if (!row) return;
-    if (!context.canDeleteRow(row)) return;
+    if (!this.context.canDeleteRow(row)) return;
     const type = OPERATION_TYPE.DELETE_ROW;
     const operation = this.createOperation({
       type,
@@ -482,7 +500,7 @@ class Store {
 
     const valid_rows_ids = row_ids.filter((rowId) => {
       const row = getRowById(this.data, rowId);
-      return row && context.canDeleteRow(row);
+      return row && this.context.canDeleteRow(row);
     });
 
     if (valid_rows_ids.length === 0) return;
@@ -591,7 +609,7 @@ class Store {
     const rowIds = Object.keys(updates).filter(rowId =>
       getRowById(this.data, rowId) && this.shouldRemoveRowAfterUpdate(updates[rowId], this.data.columns)
     );
-    if (rowIds.length > 0) context.eventBus.dispatch(EVENT_BUS_TYPE.DELETE_ROWS, rowIds);
+    if (rowIds.length > 0) this.context.eventBus.dispatch(EVENT_BUS_TYPE.DELETE_ROWS, rowIds);
   }
 
   // view
@@ -604,9 +622,9 @@ class Store {
       basic_filters: basicFilters,
       view_id: this.viewId,
       success_callback: () => {
-        const isFilterComputedOnServer = context.getSetting('isFilterComputedOnServer', true);
+        const isFilterComputedOnServer = this.context.getSetting('isFilterComputedOnServer', true);
         const eventName = isFilterComputedOnServer ? EVENT_BUS_TYPE.RELOAD_DATA : EVENT_BUS_TYPE.RECALCULATE_DATA;
-        context.eventBus.dispatch(eventName);
+        this.context.eventBus.dispatch(eventName);
       }
     });
     this.applyOperation(operation);
@@ -619,10 +637,10 @@ class Store {
       sorts,
       view_id: this.viewId,
       success_callback: () => {
-        const isSortComputedOnServer = context.getSetting('isSortComputedOnServer', true);
+        const isSortComputedOnServer = this.context.getSetting('isSortComputedOnServer', true);
         const eventName = isSortComputedOnServer ? EVENT_BUS_TYPE.RELOAD_DATA : EVENT_BUS_TYPE.RECALCULATE_DATA;
-        context.eventBus.dispatch(eventName);
-        displaySorts && context.eventBus.dispatch(EVENT_BUS_TYPE.DISPLAY_SORTS);
+        this.context.eventBus.dispatch(eventName);
+        displaySorts && this.context.eventBus.dispatch(EVENT_BUS_TYPE.DISPLAY_SORTS);
       }
     });
     this.applyOperation(operation);

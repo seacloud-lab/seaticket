@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Container from '@/components/options-editor/static-options-editor/container';
 import { gettext } from '@/constants';
 import { PREDEFINED_TICKET_COLUMN_NAME } from '@/project/main-panel/tickets/constants';
-import context from '@/sea-metadata/context';
+import { useSeaMetadataContext } from '../../../context-provider';
 import { getCellValueByColumn } from '../../../utils/cell';
 import { getColumnByKey, getColumnOptions, generateNewOption } from '../../../utils/column';
 
@@ -20,6 +20,7 @@ const SingleSelectEditor = forwardRef(({
   onPressTab,
   modifyColumnData,
 }, ref) => {
+  const context = useSeaMetadataContext();
   const editorRef = useRef(null);
   const optionEditorContainerRef = useRef(null);
   const canEditData = context.canModifyColumnData(column);
@@ -98,6 +99,7 @@ const SingleSelectEditor = forwardRef(({
   return (
     <div className="sea-metadata-single-select-editor options-editor-popover" style={style} ref={editorRef}>
       <Container
+        shouldHandleEvent={context.ownsEvent}
         ref={optionEditorContainerRef}
         isMultiple={false}
         placeholder={gettext('Search options')}

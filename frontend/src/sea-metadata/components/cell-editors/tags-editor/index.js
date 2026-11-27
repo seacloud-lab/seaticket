@@ -5,10 +5,10 @@ import { RemoveButton } from '@/components';
 import Container from '@/components/options-editor/static-options-editor/container';
 import { gettext } from '@/constants';
 import Tag from '@/sea-metadata/components/tag';
-import context from '@/sea-metadata/context';
 import { isCellValueChanged } from '@/sea-metadata/utils/cell';
 import { getRowById } from '@/sea-metadata/utils/row';
 import { SELECT_OPTION_COLORS } from '../../../constants';
+import { useSeaMetadataContext } from '../../../context-provider';
 import { useTagsData } from '../../../hooks';
 
 import './index.css';
@@ -21,6 +21,7 @@ const TagsEditor = forwardRef(({
   onCommit,
   onPressTab,
 }, ref) => {
+  const context = useSeaMetadataContext();
   const [value, setValue] = useState(propsValue || []);
 
   const editorRef = useRef(null);
@@ -102,6 +103,7 @@ const TagsEditor = forwardRef(({
       ref={editorRef}
     >
       <Container
+        shouldHandleEvent={context.ownsEvent}
         ref={optionEditorContainerRef}
         isMultiple={true}
         placeholder={gettext('Search tags')}

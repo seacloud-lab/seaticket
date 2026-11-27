@@ -2,7 +2,6 @@ import { gettext } from '@/constants';
 import ObjectUtils from '@/utils/object-utils';
 import { Utils } from '@/utils/utils';
 import { CellType } from '../constants';
-import context from '../context';
 import { getColumnByKey, getServerOptions } from '../utils/column';
 import { OPERATION_TYPE } from './operations';
 
@@ -10,13 +9,18 @@ const MAX_LOAD_ROWS = 100;
 
 class ServerOperator {
 
+  constructor(context) {
+    this.context = context;
+    this.destroyed = false;
+  }
+
   applyOperation(operation, { data, typesData, tagsData }, callback) {
     const { op_type } = operation;
 
     switch (op_type) {
       case OPERATION_TYPE.INSERT_ROW: {
         const { row_data } = operation;
-        context.insertRow(row_data).then(row => {
+        this.context.insertRow(row_data).then(row => {
           operation.row = row;
           callback({ operation });
         }).catch(error => {
@@ -27,7 +31,7 @@ class ServerOperator {
       }
       case OPERATION_TYPE.MODIFY_ROW: {
         const { row_id, row_update, is_copy_paste = false } = operation;
-        context.modifyRow(row_id, row_update, is_copy_paste, { data, typesData, tagsData }).then(res => {
+        this.context.modifyRow(row_id, row_update, is_copy_paste, { data, typesData, tagsData }).then(res => {
           if (res?.data?.row) {
             operation.row_update = { ...row_update, ...res.data.row };
             operation.is_update_local = true;
@@ -37,7 +41,7 @@ class ServerOperator {
           if (error?.response?.status === 409) {
             callback({ operation, is_restore: true });
           } else {
-            const errorMsg = error?.response?.data?.error_msg || context.translate('Failed to modify {row}');
+            const errorMsg = error?.response?.data?.error_msg || this.context.translate('Failed to modify {row}');
             callback({ operation, error: errorMsg });
           }
         });
@@ -51,7 +55,7 @@ class ServerOperator {
         if (rowsData.length === 0) {
           callback({ operation });
         } else {
-          context.modifyRows(rowsData, is_copy_paste, { data, typesData, tagsData }).then(res => {
+          this.context.modifyRows(rowsData, is_copy_paste, { data, typesData, tagsData }).then(res => {
             callback({ operation });
           }).catch(error => {
             if (error?.response?.status === 409) {
@@ -59,7 +63,7 @@ class ServerOperator {
             } else if (error.response && error.response.status === 413) {
               callback({ operation, error: gettext('Number of rows exceeds the limit of 1000') });
             } else {
-              callback({ operation, error: context.translate('Failed to modify {rows}') });
+              callback({ operation, error: this.context.translate('Failed to modify {rows}') });
             }
           });
         }
@@ -67,17 +71,17 @@ class ServerOperator {
       }
       case OPERATION_TYPE.DELETE_ROW: {
         const { row_id } = operation;
-        context.deleteRow(row_id).then(res => {
+        this.context.deleteRow(row_id).then(res => {
           callback({ operation });
         }).catch(error => {
-          callback({ operation, error: context.translate('Failed to delete {row}') });
+          callback({ operation, error: this.context.translate('Failed to delete {row}') });
         });
         break;
       }
       case OPERATION_TYPE.DELETE_ROWS: {
         const { row_ids } = operation;
         const rowIds = row_ids.filter(Boolean);
-        context.deleteRows(rowIds).then(res => {
+        this.context.deleteRows(rowIds).then(res => {
           const { success, failed = [] } = res.data;
           const successRows = success === true ? rowIds : success;
           const failedRows = failed;
@@ -85,20 +89,20 @@ class ServerOperator {
           operation.failed_rows = failedRows;
           callback({ operation });
         }).catch(error => {
-          callback({ operation, error: context.translate('Failed to delete {rows}') });
+          callback({ operation, error: this.context.translate('Failed to delete {rows}') });
         });
         break;
       }
       case OPERATION_TYPE.RESTORE_ROWS: {
         const { rows_data } = operation;
         if (!Array.isArray(rows_data) || rows_data.length === 0) {
-          callback({ operation, error: context.translate('Failed to restore {rows}') });
+          callback({ operation, error: this.context.translate('Failed to restore {rows}') });
           break;
         }
-        context.restoreRows(rows_data).then(res => {
+        this.context.restoreRows(rows_data).then(res => {
           callback({ operation });
         }).catch(error => {
-          callback({ operation, error: context.translate('Failed to restore {rows}') });
+          callback({ operation, error: this.context.translate('Failed to restore {rows}') });
         });
         break;
       }
@@ -108,31 +112,31 @@ class ServerOperator {
       }
       case OPERATION_TYPE.INSERT_COLUMN: {
         const { name, column_type, column_key, data } = operation;
-        context.insertColumn(name, column_type, { key: column_key, data }).then(res => {
+        this.context.insertColumn(name, column_type, { key: column_key, data }).then(res => {
           operation.column = res.data.column;
           operation.column_key = operation.column.key;
           operation.data = operation.column.data;
           callback({ operation });
         }).catch(error => {
-          callback({ operation, error: context.translate('Failed to insert {column}') });
+          callback({ operation, error: this.context.translate('Failed to insert {column}') });
         });
         break;
       }
       case OPERATION_TYPE.DELETE_COLUMN: {
         const { column_key } = operation;
-        context.deleteColumn(column_key).then(res => {
+        this.context.deleteColumn(column_key).then(res => {
           callback({ operation });
         }).catch(error => {
-          callback({ operation, error: context.translate('Failed to delete {column}') });
+          callback({ operation, error: this.context.translate('Failed to delete {column}') });
         });
         break;
       }
       case OPERATION_TYPE.RENAME_COLUMN: {
         const { column_key, new_name } = operation;
-        context.renameColumn(column_key, new_name).then(res => {
+        this.context.renameColumn(column_key, new_name).then(res => {
           callback({ operation });
         }).catch(error => {
-          callback({ operation, error: context.translate('Failed to rename {column}') });
+          callback({ operation, error: this.context.translate('Failed to rename {column}') });
         });
         break;
       }
@@ -144,25 +148,25 @@ class ServerOperator {
         if (column.type === CellType.SINGLE_SELECT) {
           origin_data.options = getServerOptions({ key: column_key, data: origin_data });
         }
-        context.modifyColumnData(column_key, origin_data).then(res => {
+        this.context.modifyColumnData(column_key, origin_data).then(res => {
           callback({ operation });
         }).catch(error => {
-          callback({ operation, error: context.translate('Failed to modify {column} data') });
+          callback({ operation, error: this.context.translate('Failed to modify {column} data') });
         });
         break;
       }
       case OPERATION_TYPE.MODIFY_COLUMN_ORDER: {
         const { view_id, new_columns_keys } = operation;
-        context.modifyView(view_id, { columns_keys: new_columns_keys }).then(res => {
+        this.context.modifyView(view_id, { columns_keys: new_columns_keys }).then(res => {
           callback({ operation });
         }).catch(error => {
-          callback({ operation, error: context.translate('Failed to modify {column} order') });
+          callback({ operation, error: this.context.translate('Failed to modify {column} order') });
         });
         break;
       }
       case OPERATION_TYPE.MODIFY_FILTERS: {
         const { view_id, filter_conjunction, filters, basic_filters } = operation;
-        context.modifyView(view_id, { filters, filter_conjunction, basic_filters }).then(res => {
+        this.context.modifyView(view_id, { filters, filter_conjunction, basic_filters }).then(res => {
           callback({ operation });
         }).catch(error => {
           callback({ operation, error: gettext('Failed to modify filter') });
@@ -171,7 +175,7 @@ class ServerOperator {
       }
       case OPERATION_TYPE.MODIFY_SORTS: {
         const { view_id, sorts } = operation;
-        context.modifyView(view_id, { sorts }).then(res => {
+        this.context.modifyView(view_id, { sorts }).then(res => {
           callback({ operation });
         }).catch(error => {
           callback({ operation, error: gettext('Failed to modify sort') });
@@ -180,7 +184,7 @@ class ServerOperator {
       }
       case OPERATION_TYPE.MODIFY_GROUPBYS: {
         const { view_id, groupbys } = operation;
-        context.modifyView(view_id, { groupbys }).then(res => {
+        this.context.modifyView(view_id, { groupbys }).then(res => {
           callback({ operation });
         }).catch(error => {
           callback({ operation, error: gettext('Failed to modify group') });
@@ -189,7 +193,7 @@ class ServerOperator {
       }
       case OPERATION_TYPE.MODIFY_ROW_COLOR: {
         const { view_id, colorbys } = operation;
-        context.modifyView(view_id, { colorbys }).then(res => {
+        this.context.modifyView(view_id, { colorbys }).then(res => {
           callback({ operation });
         }).catch(error => {
           callback({ operation, error: gettext('Failed to modify row color') });
@@ -198,7 +202,7 @@ class ServerOperator {
       }
       case OPERATION_TYPE.MODIFY_ROW_HEIGHT: {
         const { view_id, row_height } = operation;
-        context.modifyView(view_id, { row_height }).then(res => {
+        this.context.modifyView(view_id, { row_height }).then(res => {
           callback({ operation });
         }).catch(error => {
           callback({ operation, error: gettext('Failed to modify row height') });
@@ -207,16 +211,16 @@ class ServerOperator {
       }
       case OPERATION_TYPE.MODIFY_HIDDEN_COLUMNS: {
         const { view_id, hidden_columns } = operation;
-        context.modifyView(view_id, { hidden_columns }).then(res => {
+        this.context.modifyView(view_id, { hidden_columns }).then(res => {
           callback({ operation });
         }).catch(error => {
-          callback({ operation, error: context.translate('Failed to modify hidden {columns}') });
+          callback({ operation, error: this.context.translate('Failed to modify hidden {columns}') });
         });
         break;
       }
       case OPERATION_TYPE.MODIFY_SETTINGS: {
         const { view_id, settings } = operation;
-        context.modifyView(view_id, { settings }).then(res => {
+        this.context.modifyView(view_id, { settings }).then(res => {
           callback({ operation });
         }).catch(error => {
           callback({ operation, error: gettext('Failed to modify settings') });
@@ -229,7 +233,7 @@ class ServerOperator {
       }
       case OPERATION_TYPE.MODIFY_VIEW_LOCK: {
         const { view_id, is_locked } = operation;
-        context.modifyView(view_id, { is_locked }).then(res => {
+        this.context.modifyView(view_id, { is_locked }).then(res => {
           callback({ operation });
         }).catch(error => {
           callback({ operation, error: gettext('Failed to modify view lock') });
@@ -255,6 +259,10 @@ class ServerOperator {
     }
   };
 
+  destroy() {
+    this.destroyed = true;
+  }
+
   handleReloadRows(table, operation, callback) {
     const { relatedColumnKeyMap } = this.getOperationRelatedColumns(table, operation);
     const isReloadRowsOp = this.checkReloadRowsOperation(operation);
@@ -265,11 +273,13 @@ class ServerOperator {
   }
 
   asyncReloadRows(rowsIds, relatedColumnKeyMap, callback) {
+    if (this.destroyed) return;
     if (!Array.isArray(rowsIds) || rowsIds.length === 0) return;
     const restRowsIds = [...rowsIds];
     const currentRowsIds = restRowsIds.splice(0, MAX_LOAD_ROWS);
 
-    context.getRowsByIds(currentRowsIds).then(res => {
+    this.context.getRowsByIds(currentRowsIds).then(res => {
+      if (this.destroyed) return;
       if (!res || !res.data || !res.data.results) {
         this.asyncReloadRows(restRowsIds, relatedColumnKeyMap, callback);
         return;

@@ -3,8 +3,7 @@ import { CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
 import OptionDialog from '@/project/components/option-dialog';
 import { EVENT_BUS_TYPE } from '@/project/constants/event-bus-type';
-import SeaMetadata, { CellType, VIEW_TOOL } from '@/sea-metadata';
-import context from '@/sea-metadata/context';
+import SeaMetadata, { CellType, VIEW_TOOL, useMetadataController } from '@/sea-metadata';
 import { getRowById } from '@/sea-metadata/utils/row';
 import eventBus from '@/utils/event-bus';
 import { TICKET_TYPE } from '../../constants';
@@ -41,6 +40,7 @@ const AllSubstates = ({
   useMetadataContext,
   type = TICKET_TYPE,
 }) => {
+  const controller = useMetadataController();
   const [isLoading, setIsLoading] = useState(true);
   const { statesData, substatesData, createSubstate, modifySubstate, deleteSubstate, deleteSubstates, loadSubStates } = useMetadataContext();
 
@@ -71,13 +71,13 @@ const AllSubstates = ({
       const view = viewsData.views[0];
       resolve({ data: { view: {
         ...view,
-        sorts: context.localStorage.getItem('sorts') || [],
+        sorts: controller.storage.getItem('sorts') || [],
       } } });
     }),
 
     modifyView: (viewID, viewData) => new Promise((resolve) => {
       Object.keys(viewData).forEach(key => {
-        context.localStorage.setItem(key, viewData[key]);
+        controller.storage.setItem(key, viewData[key]);
       });
       resolve({ data: { success: true } });
     }),
@@ -88,7 +88,7 @@ const AllSubstates = ({
     deleteRow: (...params) => deleteSubstate(...params),
     deleteRows: deleteSubstates,
 
-  }), [columns, viewsData, createSubstate, modifySubstate, deleteSubstate, deleteSubstates, substatesData]);
+  }), [columns, viewsData, createSubstate, modifySubstate, deleteSubstate, deleteSubstates, substatesData, controller]);
 
   const localStorageName = useMemo(() => `sea-${type}-${projectUuid}-substates`, [projectUuid, type]);
 
@@ -217,18 +217,20 @@ const AllSubstates = ({
 
   useEffect(() => {
     const unsubscribeNew = eventBus.subscribe(EVENT_BUS_TYPE.NEW_SUBSTATE, () => {
-      context.eventBus.dispatch('expand_row', {});
+      controller.events.dispatch('expand_row', {});
     });
     return () => {
       unsubscribeNew && unsubscribeNew();
     };
-  }, []);
+  }, [controller]);
 
   if (isLoading) return (<CenteredLoading />);
 
   return (
     <>
       <SeaMetadata
+        controller={controller}
+        storageNamespace="primary"
         className="sea-substates-metadata"
         api={api}
         isShowViewInURL={false}

@@ -1,13 +1,14 @@
 /* eslint-disable react/prop-types */
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { EVENT_BUS_TYPE } from '../constants';
-import context from '../context';
+import { useSeaMetadataContext } from '../context-provider';
 
 const SelectedRowsContext = React.createContext(null);
 
 export const SelectedRowsProvider = ({
   children,
 }) => {
+  const context = useSeaMetadataContext();
   const [selectedRowIds, setSelectedRowIds] = useState([]);
 
   const updateSelectedRowIdsByDelete = useCallback((deletedRowIds = []) => {
@@ -23,7 +24,7 @@ export const SelectedRowsProvider = ({
     return () => {
       unsubscribeSelectNone();
     };
-  }, []);
+  }, [context]);
 
   return (
     <SelectedRowsContext.Provider

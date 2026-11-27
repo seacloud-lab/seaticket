@@ -1,11 +1,11 @@
 import React, { Component, Fragment } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
-import context from '@/sea-metadata/context';
 import { isShiftKeyDown } from '@/utils/keyboard-utils';
 import { addClassName, removeClassName } from '../../../../../../utils/dom';
 import { RightScrollbar } from '../../../../../components/scrollbar';
 import { CellType, GROUP_HEADER_HEIGHT, GROUP_ROW_TYPE, GROUP_VIEW_OFFSET, SEQUENCE_COLUMN_WIDTH, EVENT_BUS_TYPE, ROW_HEIGHT_MAP } from '../../../../../constants';
+import { withSeaMetadataContext } from '../../../../../context-provider';
 import { checkIsColumnFrozen, checkIsNameColumn, isColumnSupportDirectEdit, checkIsColumnEditable } from '../../../../../utils/column';
 import InteractionMasks from '../../../masks/interaction-masks';
 import { createGroupMetrics, getGroupRowByIndex, isNestedGroupRow } from '../../../utils/group-metrics';
@@ -49,12 +49,12 @@ class GroupBody extends Component {
   }
 
   componentDidMount() {
-    window.seaMetadataBody = this;
+    this.props.metadataContext.body = this;
     window.addEventListener('resize', this.onResize);
     this.props.onRef(this);
-    this.unSubscribeCollapseAllGroups = context.eventBus.subscribe(EVENT_BUS_TYPE.COLLAPSE_ALL_GROUPS, this.collapseAllGroups);
-    this.unSubscribeExpandAllGroups = context.eventBus.subscribe(EVENT_BUS_TYPE.EXPAND_ALL_GROUPS, this.expandAllGroups);
-    this.unsubscribeFocus = context.eventBus.subscribe(EVENT_BUS_TYPE.FOCUS_CANVAS, this.onFocus);
+    this.unSubscribeCollapseAllGroups = this.props.metadataContext.eventBus.subscribe(EVENT_BUS_TYPE.COLLAPSE_ALL_GROUPS, this.collapseAllGroups);
+    this.unSubscribeExpandAllGroups = this.props.metadataContext.eventBus.subscribe(EVENT_BUS_TYPE.EXPAND_ALL_GROUPS, this.expandAllGroups);
+    this.unsubscribeFocus = this.props.metadataContext.eventBus.subscribe(EVENT_BUS_TYPE.FOCUS_CANVAS, this.onFocus);
   }
 
   componentDidUpdate(prevProps) {
@@ -84,6 +84,7 @@ class GroupBody extends Component {
   }
 
   componentWillUnmount() {
+    if (this.props.metadataContext.body === this) this.props.metadataContext.body = null;
     window.removeEventListener('resize', this.onResize);
     this.unSubscribeCollapseAllGroups();
     this.unSubscribeExpandAllGroups();
@@ -321,7 +322,7 @@ class GroupBody extends Component {
   };
 
   handleDragEnter = ({ overRowIdx, overGroupRowIndex }) => {
-    context.eventBus.dispatch(EVENT_BUS_TYPE.DRAG_ENTER, { overRowIdx, overGroupRowIndex });
+    this.props.metadataContext.eventBus.dispatch(EVENT_BUS_TYPE.DRAG_ENTER, { overRowIdx, overGroupRowIndex });
   };
 
   getGroupMetrics = () => {
@@ -488,19 +489,19 @@ class GroupBody extends Component {
   };
 
   selectCell = (cell, openEditor) => {
-    context.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_CELL, cell, openEditor);
+    this.props.metadataContext.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_CELL, cell, openEditor);
   };
 
   selectStart = (cellPosition) => {
-    context.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_START, cellPosition);
+    this.props.metadataContext.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_START, cellPosition);
   };
 
   selectUpdate = (cellPosition, isFromKeyboard, callback) => {
-    context.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_UPDATE, cellPosition, isFromKeyboard, callback);
+    this.props.metadataContext.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_UPDATE, cellPosition, isFromKeyboard, callback);
   };
 
   selectEnd = () => {
-    context.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_END);
+    this.props.metadataContext.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_END);
   };
 
   onCloseContextMenu = () => {
@@ -599,7 +600,7 @@ class GroupBody extends Component {
   };
 
   getFoldedGroups = () => {
-    const localConfigs = context.localStorage.getItem(LOCAL_FOLDED_GROUP_KEY);
+    const localConfigs = this.props.metadataContext.localStorage.getItem(LOCAL_FOLDED_GROUP_KEY);
     if (!localConfigs) return {};
     return localConfigs;
   };
@@ -609,7 +610,7 @@ class GroupBody extends Component {
   };
 
   updateFoldedGroups = (pathFoldedGroupMap) => {
-    context.localStorage.setItem(LOCAL_FOLDED_GROUP_KEY, pathFoldedGroupMap);
+    this.props.metadataContext.localStorage.setItem(LOCAL_FOLDED_GROUP_KEY, pathFoldedGroupMap);
     this.selectNoneCells();
   };
 
@@ -879,7 +880,7 @@ class GroupBody extends Component {
     return (
       <Fragment>
         <div
-          id='group-canvas'
+          id={`${this.props.metadataContext.id}-group-canvas`}
           className='sea-metadata-table-canvas'
           ref={this.setResultContentRef}
           onScroll={this.onScroll}
@@ -1002,4 +1003,4 @@ GroupBody.propTypes = {
   getTableCanvasContainerRect: PropTypes.func,
 };
 
-export default GroupBody;
+export default withSeaMetadataContext(GroupBody);

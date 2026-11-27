@@ -4,8 +4,11 @@ import SelectTrigger from '@/components/customize-select/select-trigger';
 import { gettext } from '@/constants';
 import { useTypesData } from '@/sea-metadata/hooks';
 import { getTypesOptions } from '@/sea-metadata/utils/column';
+import { useSeaMetadataContext } from '../../../../context-provider';
+import ScopedPopover from '../../scoped-popover';
 
 const TypeFilter = ({ readOnly = true, value = [], onChange: onChangeAPI }) => {
+  const context = useSeaMetadataContext();
   const [isShowEditor, setIsShowEditor] = useState(false);
   const typeFilterRef = useRef(null);
   const { typesData } = useTypesData();
@@ -45,6 +48,8 @@ const TypeFilter = ({ readOnly = true, value = [], onChange: onChangeAPI }) => {
       />
       {isShowEditor && (
         <OptionsEditor
+          PopoverComponent={ScopedPopover}
+          shouldHandleEvent={context.ownsEvent}
           className="sea-metadata-data-filter-popover"
           value={validValue}
           isMultiple={true}

@@ -8,7 +8,7 @@ function SelectionRangeMask({ selectedRange, innerRef, getSelectedRangeDimension
     <CellMask
       {...dimensions}
       className="rdg-selected-range"
-      id="sea-metadata-table-rdg-selected-range"
+
       innerRef={innerRef}
     >
       {children}

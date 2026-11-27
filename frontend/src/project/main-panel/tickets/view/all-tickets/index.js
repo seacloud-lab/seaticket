@@ -1,9 +1,11 @@
 import React, { useMemo } from 'react';
+import { useMetadataController } from '@/sea-metadata';
 import { ticketsAPI } from '../../../../api';
 import Tickets from '../../components/tickets';
 import { useTicketsPage } from '../../hooks';
 
 const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleBar }) => {
+  const controller = useMetadataController();
   const { isLoading, togglePageSlugId, onRefresh } = useTicketsPage();
 
   const api = useMemo(() => ({
@@ -24,6 +26,7 @@ const AllTickets = ({ projectUuid, workspaceID, projectName, permission, toggleB
 
   return (
     <Tickets
+      controller={controller}
       projectUuid={projectUuid}
       workspaceID={workspaceID}
       projectName={projectName}

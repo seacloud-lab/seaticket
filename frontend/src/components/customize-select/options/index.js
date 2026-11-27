@@ -67,16 +67,16 @@ class Options extends Component {
   }
 
   componentDidMount() {
+    this.previousFocus = document.activeElement;
     window.addEventListener('keydown', this.onHotKey);
     if (this.props.isInModal) {
       window.addEventListener('resize', this.onWindowResize);
       document.addEventListener('scroll', this.onDocumentScroll, true);
       this.observeTarget();
     }
-    setTimeout(() => {
-      this.resetMenuStyle(false);
-      this.searchInputRef.current && this.searchInputRef.current.inputRef.focus();
-    }, 1);
+    const focusTarget = this.searchInputRef.current?.inputRef || this.optionsContainerRef;
+    focusTarget?.focus({ preventScroll: true });
+    setTimeout(() => this.resetMenuStyle(false), 1);
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -89,6 +89,11 @@ class Options extends Component {
   }
 
   componentWillUnmount() {
+    if (this.optionsContainerRef?.contains(document.activeElement)) {
+      const target = getTarget(this.props.target);
+      const restore = target?.closest('input, button, select, textarea, a[href], [tabindex]') || this.previousFocus;
+      if (restore?.isConnected) restore.focus({ preventScroll: true });
+    }
     this.filterOptions = null;
     this.timer && clearTimeout(this.timer);
     window.removeEventListener('keydown', this.onHotKey);
@@ -173,6 +178,9 @@ class Options extends Component {
   };
 
   onHotKey = (event) => {
+    if (event.defaultPrevented) return;
+    const target = getTarget(this.props.target);
+    if (!this.optionsContainerRef?.contains(event.target) && !target?.contains(event.target)) return;
     const keyCode = event.keyCode;
     if (keyCode === KeyCodes.UpArrow) {
       this.onPressUp();
@@ -187,6 +195,7 @@ class Options extends Component {
         }
       }
     } else if (keyCode === KeyCodes.Tab || keyCode === KeyCodes.Escape) {
+      if (keyCode === KeyCodes.Escape) event.preventDefault();
       this.props.closeSelector();
     }
   };
@@ -293,6 +302,8 @@ class Options extends Component {
     return (
       <ClickOutside onClickOutside={this.props.onClickOutside}>
         <div
+          {...this.props.menuAttributes}
+          tabIndex={-1}
           className={classnames('seaqa-select-options-container', className, { 'searchable': searchable })}
           ref={ref => this.optionsContainerRef = ref}
           style={this.initStyle}
@@ -335,6 +346,7 @@ Options.propTypes = {
   isInModal: PropTypes.bool,
   target: PropTypes.object.isRequired,
   className: PropTypes.string,
+  menuAttributes: PropTypes.object,
 };
 
 export default Options;

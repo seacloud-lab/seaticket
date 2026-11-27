@@ -2,10 +2,9 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CenteredError, CenteredLoading, IconButton } from '@/components';
 import { gettext, PERMISSION_TYPES } from '@/constants';
 import { EmailThreadDetails } from '@/project/main-panel/connections/components/connection-resource-details';
-import SeaMetadata from '@/sea-metadata';
+import SeaMetadata, { useMetadataController } from '@/sea-metadata';
 import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import { CANVAS_RIGHT_INTERVAL, SEQUENCE_COLUMN_WIDTH } from '@/sea-metadata/constants/view/table';
-import context from '@/sea-metadata/context';
 import { portalAPI } from '../../api';
 import { buildPortalPath, getPortalPathSegments } from '../../path-utils';
 import {
@@ -14,6 +13,7 @@ import {
 } from './constants';
 
 const TeamEmails = ({ projectUuid }) => {
+  const controller = useMetadataController();
   const metadataContainerRef = useRef(null);
   const metadataContentWidthRef = useRef(0);
   const [thread, setThread] = useState(null);
@@ -67,12 +67,12 @@ const TeamEmails = ({ projectUuid }) => {
       );
       if (availableColumnWidth === metadataContentWidthRef.current) return;
       metadataContentWidthRef.current = availableColumnWidth;
-      setTimeout(() => context.eventBus.dispatch(EVENT_BUS_TYPE.RELOAD_DATA), 0);
+      setTimeout(() => controller.events.dispatch(EVENT_BUS_TYPE.RELOAD_DATA), 0);
     });
 
     observer.observe(container);
     return () => observer.disconnect();
-  }, []);
+  }, [controller]);
 
   const listAPI = useMemo(() => ({
     getMetadata: ({ start = 0, limit = 1000 } = {}) => portalAPI.listTeamEmails(projectUuid, { start, limit }).then((response) => {
@@ -160,6 +160,8 @@ const TeamEmails = ({ projectUuid }) => {
   return (
     <div className="seaqa-portal-team-emails-metadata" ref={metadataContainerRef}>
       <SeaMetadata
+        controller={controller}
+        storageNamespace="primary"
         metadataID={`${EMAIL_TABLE_NAME}-${projectUuid}`}
         api={listAPI}
         permission={PERMISSION_TYPES.READ_ONLY}

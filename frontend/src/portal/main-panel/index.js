@@ -2,6 +2,7 @@ import React from 'react';
 import { CenteredLoading, CustomizeTabs } from '@/components';
 import { gettext } from '@/constants';
 import { useMetadata, useTags } from '@/project/hooks';
+import { SeaMetadataControllerProvider } from '@/sea-metadata';
 import { PORTAL_PAGE, TICKETS_TAB, TICKET_SECONDARY_TABS } from '../constants';
 import PortalChat from './chat';
 import PortalHome from './home';
@@ -93,4 +94,10 @@ const MainPanel = ({ activePage, onPageChange, onHomeChatSend, isAnonymous, isEx
   );
 };
 
-export default MainPanel;
+const ScopedMainPanel = (props) => (
+  <SeaMetadataControllerProvider key={props.activePage}>
+    <MainPanel {...props} />
+  </SeaMetadataControllerProvider>
+);
+
+export default ScopedMainPanel;

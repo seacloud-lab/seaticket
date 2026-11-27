@@ -40,6 +40,7 @@ jest.mock('@/sea-metadata', () => {
   const React = require('react');
   return {
     __esModule: true,
+    ...jest.requireActual('@/sea-metadata/controller-provider'),
     default: React.forwardRef((props, ref) => {
       mockMetadataProps(props);
       return (
@@ -51,7 +52,6 @@ jest.mock('@/sea-metadata', () => {
     }),
   };
 });
-jest.mock('@/sea-metadata/context', () => ({}));
 jest.mock('@/sea-metadata/utils/cell', () => ({}));
 jest.mock('@/sea-metadata/utils/column', () => ({}));
 jest.mock('@/sea-metadata/utils/row', () => ({}));

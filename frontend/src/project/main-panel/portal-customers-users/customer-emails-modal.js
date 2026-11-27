@@ -1,15 +1,16 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Modal, ModalBody } from 'reactstrap';
 import { Collaborator, ModalHeader } from '@/components';
 import { gettext, PERMISSION_TYPES } from '@/constants';
 import { portalAPI } from '@/portal/api';
 import { TICKET_STATE_OPTIONS } from '@/project/main-panel/tickets/constants';
 import { getInternalNetworkAddress } from '@/project/utils';
-import SeaMetadata, { CellType } from '@/sea-metadata';
+import SeaMetadata, { CellType, useMetadataController } from '@/sea-metadata';
 import NumberFormatter from '@/sea-metadata/components/cell-formatter/number';
 import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import { CANVAS_RIGHT_INTERVAL, SEQUENCE_COLUMN_WIDTH } from '@/sea-metadata/constants/view/table';
-import context from '@/sea-metadata/context';
+import { withSeaMetadataController } from '@/sea-metadata/controller-provider';
+
 
 import './customer-emails-modal.css';
 
@@ -95,8 +96,11 @@ const EMAIL_COLUMNS = [
 ];
 
 const CustomerEmailsModal = ({ projectUuid, customer, onClose }) => {
-  const metadataContainerRef = useRef(null);
+  const controller = useMetadataController();
+  const modalRef = useRef(null);
+  const [modalElement, setModalElement] = useState(null);
   const metadataContentWidthRef = useRef(0);
+  const onOpened = useCallback(() => setModalElement(modalRef.current), []);
 
   const openThread = useCallback((record) => {
     const { workspaceID, projectName } = window.app.pageOptions;
@@ -147,9 +151,10 @@ const CustomerEmailsModal = ({ projectUuid, customer, onClose }) => {
   }, [openThread]);
 
   useEffect(() => {
-    const container = metadataContainerRef.current;
+    const container = modalElement?.querySelector('.modal-body');
     if (!container || typeof ResizeObserver === 'undefined') return undefined;
 
+    let reloadTimer;
     const observer = new ResizeObserver(() => {
       const availableColumnWidth = Math.max(
         0,
@@ -157,38 +162,42 @@ const CustomerEmailsModal = ({ projectUuid, customer, onClose }) => {
       );
       if (availableColumnWidth === metadataContentWidthRef.current) return;
       metadataContentWidthRef.current = availableColumnWidth;
-      setTimeout(() => context.eventBus.dispatch(EVENT_BUS_TYPE.RELOAD_DATA), 0);
+      clearTimeout(reloadTimer);
+      reloadTimer = setTimeout(() => controller.events.dispatch(EVENT_BUS_TYPE.RELOAD_DATA), 0);
     });
 
     observer.observe(container);
-    return () => observer.disconnect();
-  }, []);
+    return () => {
+      observer.disconnect();
+      clearTimeout(reloadTimer);
+    };
+  }, [controller, modalElement]);
 
   return (
-    <Modal isOpen={true} toggle={onClose} className="portal-customer-emails-dialog">
+    <Modal innerRef={modalRef} onOpened={onOpened} isOpen={true} toggle={onClose} className="portal-customer-emails-dialog">
       <ModalHeader toggle={onClose}>
         {gettext('Emails for {customer}').replace('{customer}', customer.name)}
       </ModalHeader>
-      <ModalBody>
-        <div className="portal-customer-emails-list" ref={metadataContainerRef}>
-          <SeaMetadata
-            metadataID={`customer-emails-${projectUuid}-${customer.id}`}
-            api={listAPI}
-            permission={PERMISSION_TYPES.READ_ONLY}
-            localStorageNamePrefix={`seaqa-customer-emails-${projectUuid}-${customer.id}`}
-            viewTools={[]}
-            isShowViewInURL={false}
-            dataDidMount={dataDidMount}
-            fixedColumnCount={1}
-            settings={{ canManageView: false, canClearCells: false, canPasteCells: false, canDragFillCells: false, isShowViews: false }}
-            columnOrderRules={EMAIL_COLUMN_ORDER}
-            columnWidthRules={EMAIL_COLUMN_WIDTHS}
-            t={{ row: gettext('email'), rows: gettext('emails'), Row: gettext('Email'), Rows: gettext('Emails') }}
-          />
-        </div>
+      <ModalBody className="p-0">
+        <SeaMetadata
+          controller={controller}
+          storageNamespace="primary"
+          metadataID={`customer-emails-${projectUuid}-${customer.id}`}
+          api={listAPI}
+          permission={PERMISSION_TYPES.READ_ONLY}
+          localStorageNamePrefix={`seaqa-customer-emails-${projectUuid}-${customer.id}`}
+          viewTools={[]}
+          isShowViewInURL={false}
+          dataDidMount={dataDidMount}
+          fixedColumnCount={1}
+          settings={{ canManageView: false, canClearCells: false, canPasteCells: false, canDragFillCells: false, isShowViews: false }}
+          columnOrderRules={EMAIL_COLUMN_ORDER}
+          columnWidthRules={EMAIL_COLUMN_WIDTHS}
+          t={{ row: gettext('email'), rows: gettext('emails'), Row: gettext('Email'), Rows: gettext('Emails') }}
+        />
       </ModalBody>
     </Modal>
   );
 };
 
-export default CustomerEmailsModal;
+export default withSeaMetadataController(CustomerEmailsModal);

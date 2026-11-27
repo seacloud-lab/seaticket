@@ -2,8 +2,7 @@ import React, { useMemo } from 'react';
 import { CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
 import { useTags } from '@/project/hooks';
-import { VIEW_TOOL } from '@/sea-metadata';
-import context from '@/sea-metadata/context';
+import { VIEW_TOOL, useMetadataController } from '@/sea-metadata';
 import { getRowById } from '@/sea-metadata/utils/row';
 import { ticketsAPI } from '../../../../api';
 import Tickets from '../../../tickets/components/tickets';
@@ -11,6 +10,7 @@ import { TICKET_CHILDREN_PAGE_SLUG_ID } from '../../../tickets/constants';
 import { useTicketsPage } from '../../../tickets/hooks';
 
 const TagTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) => {
+  const controller = useMetadataController();
 
   const { isLoading, pageSlugId, childrenPageSlugId, togglePageSlugId, toggleView } = useTicketsPage();
   const { isLoading: isTagsLoading, tagsData } = useTags();
@@ -41,7 +41,7 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) => {
 
         resolve({ data: { view: {
           ...view,
-          sorts: context.localStorage.getItem('sorts') || [],
+          sorts: controller.storage.getItem('sorts') || [],
         } } });
       });
     },
@@ -49,13 +49,13 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) => {
     modifyView: (viewID, viewData) => {
       return new Promise((resolve, reject) => {
         Object.keys(viewData).forEach(key => {
-          context.localStorage.setItem(key, viewData[key]);
+          controller.storage.setItem(key, viewData[key]);
         });
         resolve({ data: { success: true } });
       });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [projectUuid, childrenPageSlugId, viewsData, togglePageSlugId]);
+  }), [projectUuid, childrenPageSlugId, viewsData, togglePageSlugId, controller]);
 
   const localStorageNamePrefix = useMemo(() => `seaqa-${projectUuid}-tag-tickets`, [projectUuid]);
 
@@ -68,6 +68,7 @@ const TagTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) => {
 
   return (
     <Tickets
+      controller={controller}
       projectUuid={projectUuid}
       workspaceID={workspaceID}
       projectName={projectName}

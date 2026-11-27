@@ -2,12 +2,14 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
-import { CustomizeSelect, Icon } from '@/components';
+import { Icon } from '@/components';
 import { gettext } from '@/constants';
 import { ColumnSelector, SortSelector } from '@/sea-metadata/components/selectors';
 import { SORT_TYPE, SORT_COLUMN_OPTIONS } from '../../../../constants';
+import { useSeaMetadataContext } from '../../../../context-provider';
 import { getColumnByKey } from '../../../../utils/column';
 import { getGroupbyGranularityByColumn, isShowGroupCountType, getSelectedCountType, getDefaultCountType } from '../../../../utils/group';
+import CustomizeSelect from '../../../selectors/scoped-select';
 
 /*
   groupby: {
@@ -17,12 +19,14 @@ import { getGroupbyGranularityByColumn, isShowGroupCountType, getSelectedCountTy
   }
 */
 const GroupbyItem = ({ showDragBtn, index, readOnly, groupby, columns, onDelete, onUpdate, onMove }) => {
+  const context = useSeaMetadataContext();
   const ref = useRef(null);
+  const dragType = `sfMetadataGroupbyItem-${context.id}`;
 
   const [dropPosition, setDropPosition] = useState(null);
 
   const [, drag, preview] = useDrag({
-    type: 'sfMetadataGroupbyItem',
+    type: dragType,
     item: () => ({
       idx: index,
       data: groupby,
@@ -30,7 +34,7 @@ const GroupbyItem = ({ showDragBtn, index, readOnly, groupby, columns, onDelete,
   });
 
   const [{ isOver, canDrop }, drop] = useDrop({
-    accept: 'sfMetadataGroupbyItem',
+    accept: dragType,
     hover: (item, monitor) => {
       if (!ref.current) return;
 

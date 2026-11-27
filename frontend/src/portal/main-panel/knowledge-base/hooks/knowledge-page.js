@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { buildPortalPath, getPortalPathSegments } from '@/portal/path-utils';
 import { BAR_TYPE, EVENT_BUS_TYPE } from '@/project/constants';
+import { useMetadataController } from '@/sea-metadata';
 import { EVENT_BUS_TYPE as SEAMETADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
-import context from '@/sea-metadata/context';
 import eventBus from '@/utils/event-bus';
 import { isNumber } from '@/utils/type-detection';
 import { Utils } from '@/utils/utils';
@@ -11,6 +11,7 @@ import { KNOWLEDGE_PAGE_SLUG_ID } from '../constants';
 const PortalKnowledgePageContext = React.createContext(null);
 
 export const PortalKnowledgePageProvider = ({ projectName, projectUuid, children }) => {
+  const controller = useMetadataController();
   const [isLoading, setLoading] = useState(true);
   const [pageSlugId, setPageSlugId] = useState(KNOWLEDGE_PAGE_SLUG_ID.ALL);
   const listQueryStringRef = useRef('');
@@ -41,9 +42,9 @@ export const PortalKnowledgePageProvider = ({ projectName, projectUuid, children
   }, [pageSlugId, resetURL]);
 
   const onRefresh = Utils.debounce(useCallback(() => {
-    const eventBus = context.eventBus;
+    const eventBus = controller.events;
     eventBus.dispatch(SEAMETADATA_EVENT_BUS_TYPE.RELOAD_DATA);
-  }, []), 300);
+  }, [controller]), 300);
 
   // init page
   useEffect(() => {

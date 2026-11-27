@@ -1,9 +1,11 @@
 import React, { useMemo } from 'react';
 import { portalAPI } from '@/portal/api';
+import { useMetadataController } from '@/sea-metadata';
 import Issues from '../../components/issues';
 import { usePortalIssuesPage } from '../../hooks';
 
 const AllIssues = ({ projectUuid, workspaceID, projectName, permission, toggleBar }) => {
+  const controller = useMetadataController();
   const { isLoading, togglePageSlugId, onRefresh } = usePortalIssuesPage();
 
   const api = useMemo(() => ({
@@ -24,6 +26,7 @@ const AllIssues = ({ projectUuid, workspaceID, projectName, permission, toggleBa
 
   return (
     <Issues
+      controller={controller}
       projectUuid={projectUuid}
       workspaceID={workspaceID}
       projectName={projectName}

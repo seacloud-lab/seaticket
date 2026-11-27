@@ -11,9 +11,8 @@ import { useRelatedIssues } from '@/project/hooks/related-issues';
 import { useResourceUpdate } from '@/project/hooks/resource-dialog';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import { normalizeContextMenuOptions } from '@/project/utils';
-import SeaMetadata from '@/sea-metadata';
+import SeaMetadata, { useMetadataController } from '@/sea-metadata';
 import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
-import context from '@/sea-metadata/context';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { convertRowToNameValue, convertRowsToNameValue, convertRowToKeyValue } from '@/sea-metadata/utils/row';
@@ -34,6 +33,7 @@ import {
 import './index.css';
 
 const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
+  const controller = useMetadataController();
   const seaMetaDataRef = useRef(null);
   const allColumns = useRef([]);
 
@@ -64,17 +64,17 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     projectUuid,
     tableName: getTableName(connection),
     onUpdate: ({ rowId, rowUpdateData, linkedRecords }) => {
-      context.eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdateData);
-      context.eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: linkedRecords }, false);
+      controller.events.dispatch(SEA_METADATA_EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdateData);
+      controller.events.dispatch(SEA_METADATA_EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: linkedRecords }, false);
     },
   });
 
   useResourceUpdate({ projectUuid, tableName: getTableName(connection), onUpdate: ({ rowId, rowUpdateData, deleted, updateList = true }) => {
     if (!updateList) return;
     if (deleted) {
-      context.eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.DELETE_ROWS, [rowId]);
+      controller.events.dispatch(SEA_METADATA_EVENT_BUS_TYPE.DELETE_ROWS, [rowId]);
     } else if (rowUpdateData) {
-      context.eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdateData);
+      controller.events.dispatch(SEA_METADATA_EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdateData);
     }
   } });
 
@@ -193,11 +193,11 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
           const targetColumns = formatColumns(connection, columns, { collaborators });
           const tagsColumn = targetColumns.find(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.TAGS);
           if (tagsColumn) {
-            context.setSetting('tagsColumnKey', tagsColumn.key);
+            controller.setSetting('tagsColumnKey', tagsColumn.key);
           }
           const stateColumn = targetColumns.find(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.STATE);
           if (stateColumn) {
-            context.setSetting('stateColumnKey', stateColumn.key);
+            controller.setSetting('stateColumnKey', stateColumn.key);
           }
           const typeColumn = targetColumns.find(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.ISSUE_TYPE);
           if (typeColumn) {
@@ -210,7 +210,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
                 return pre;
               }, {})
             });
-            context.setSetting('typeColumnKey', typeColumn.key);
+            controller.setSetting('typeColumnKey', typeColumn.key);
           }
           const titleColumnIndex = targetColumns.findIndex(c => c.name === CONNECTION_PREDEFINED_COLUMN_NAME.TITLE);
           if (titleColumnIndex > -1) {
@@ -309,7 +309,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   }, [
     projectUuid, connectionID, connection, getTableNameByConnectionID,
     getTableViews, getTableView, insertView, deleteView, modifyView, duplicateView, getMetadata,
-    modifyRows, modifyRow, toggleChildrenPageSlugId, closeAll,
+    modifyRows, modifyRow, toggleChildrenPageSlugId, controller, closeAll
   ]);
 
   const localStorageName = useMemo(() => `seaqa-${projectUuid}-connection-${connectionID}`, [projectUuid, connectionID]);
@@ -330,8 +330,8 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     return deleteRows(getTableName(connection), threadIds, () =>
       connectionsAPI.deleteConnectionEmail(projectUuid, connectionID, { thread_ids: threadIds })
     ).then(() => {
-      context.eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.DELETE_ROWS, threadIds);
-      context.eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.SELECT_NONE);
+      controller.events.dispatch(SEA_METADATA_EVENT_BUS_TYPE.DELETE_ROWS, threadIds);
+      controller.events.dispatch(SEA_METADATA_EVENT_BUS_TYPE.SELECT_NONE);
       const successMessage = rows.length === 1
         ? gettext('Email thread has been moved to trash.')
         : gettext('Email threads have been moved to trash.');
@@ -340,7 +340,7 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
     }).catch(error => {
       toaster.danger(Utils.getErrorMsg(error));
     });
-  }, [projectUuid, connectionID, connection, deleteRows]);
+  }, [projectUuid, connectionID, connection, deleteRows, controller]);
 
   const getMarkAsReadOption = useCallback((rows, modifyRows) => {
     if (connection?.type !== CONNECTION_TYPE.EMAIL) return null;
@@ -580,17 +580,20 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
         const record = _updates[recordId];
         idRecordUpdates[recordId] = convertRowToKeyValue(record, { data: { columns: allColumns.current } });
       });
-      context.eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.LOCAL_ROWS_CHANGED, idRecordUpdates);
+      controller.events.dispatch(SEA_METADATA_EVENT_BUS_TYPE.LOCAL_ROWS_CHANGED, idRecordUpdates);
     };
     const unsubscribe = eventBus.subscribe(EVENT_BUS_TYPE.MODIFY_LOCAL_RECORDS, applyRecordsModify);
     return () => {
       unsubscribe();
     };
-  }, []);
+  }, [controller]);
 
   return (
     <>
       <SeaMetadata
+        controller={controller}
+        storageNamespace="primary"
+        isShowViewInURL={true}
         metadataID={connectionID}
         api={api}
         ref={seaMetaDataRef}

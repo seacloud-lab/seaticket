@@ -7,7 +7,7 @@ function SelectionMask({ innerRef, selectedPosition, getSelectedDimensions, chil
   return (
     <CellMask
       className="rdg-selected"
-      id="sea-metadata-table-rdg-selected"
+
       tabIndex="0"
       innerRef={innerRef}
       {...dimensions}

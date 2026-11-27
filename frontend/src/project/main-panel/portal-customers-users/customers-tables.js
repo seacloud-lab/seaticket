@@ -1,12 +1,14 @@
 import React, { useCallback, useMemo } from 'react';
 import { gettext } from '@/constants';
-import SeaMetadata from '@/sea-metadata';
+import SeaMetadata, { useMetadataController } from '@/sea-metadata';
 import { CellType, VIEW_TOOL } from '@/sea-metadata/constants';
-import context from '@/sea-metadata/context';
+import { withSeaMetadataController } from '@/sea-metadata/controller-provider';
 import { STATUS_OPTIONS } from './constants';
 
-const CustomersTables = ({ customers, onEdit, onManageUsers, onInviteUsers, onViewEmails, onDelete, viewTabs }) => {
-  const metadataID = useMemo(() => {
+const CustomersTables = ({ customers, onEdit, onManageUsers, onInviteUsers, onViewEmails, onDelete, viewTabs, projectUuid = window.app.pageOptions.projectUuid }) => {
+  const controller = useMetadataController();
+  const metadataID = controller.metadataID ?? `project-${projectUuid}-portal-customers-main`;
+  const dataVersion = useMemo(() => {
     return customers.map(customer => `${customer.id}:${customer.updated_at || ''}`).join('|') || 'customers-empty';
   }, [customers]);
 
@@ -24,13 +26,13 @@ const CustomersTables = ({ customers, onEdit, onManageUsers, onInviteUsers, onVi
           type: 'table',
           name: gettext('Customers'),
           columns_keys: ['name', 'email_domain', 'status', 'updated_at'],
-          sorts: context.localStorage?.getItem('sorts') || [],
+          sorts: controller.storage?.getItem('sorts') || [],
         },
       },
     }),
     modifyView: (viewID, viewData) => {
       Object.keys(viewData).forEach(key => {
-        context.localStorage?.setItem(key, viewData[key]);
+        controller.storage?.setItem(key, viewData[key]);
       });
       return Promise.resolve({ data: { success: true } });
     },
@@ -84,7 +86,7 @@ const CustomersTables = ({ customers, onEdit, onManageUsers, onInviteUsers, onVi
         error_msg: customers.length === 0 ? gettext('No customer') : '',
       },
     }),
-  }), [customers]);
+  }), [customers, controller]);
 
   const createContextMenuOptions = useCallback(({ selectedPosition, rowMetrics, table, rowGetterByIndex, isGroupView }) => {
     const selectedRowIds = rowMetrics ? Object.keys(rowMetrics.idSelectedRowMap || {}) : [];
@@ -105,7 +107,9 @@ const CustomersTables = ({ customers, onEdit, onManageUsers, onInviteUsers, onVi
 
   return (
     <SeaMetadata
-      key={metadataID}
+      controller={controller}
+      storageNamespace="primary"
+      key={dataVersion}
       className="portal-customers-sea-metadata"
       metadataID={metadataID}
       api={api}
@@ -134,4 +138,4 @@ const CustomersTables = ({ customers, onEdit, onManageUsers, onInviteUsers, onVi
   );
 };
 
-export default CustomersTables;
+export default withSeaMetadataController(CustomersTables);

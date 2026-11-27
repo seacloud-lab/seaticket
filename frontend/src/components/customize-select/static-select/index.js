@@ -8,6 +8,7 @@ import SelectTrigger from '../select-trigger';
 const StaticSelect = ({
   className,
   containerClassName,
+  menuAttributes,
   value,
   options = [],
   searchable,
@@ -98,6 +99,7 @@ const StaticSelect = ({
       {isShowSelector && (
         <OptionsShell>
           <Options
+            menuAttributes={menuAttributes}
             className={containerClassName}
             isInModal={isInModal}
             offset={offset}

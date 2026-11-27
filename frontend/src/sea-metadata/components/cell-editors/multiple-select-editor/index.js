@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { RemoveButton, Option } from '@/components';
 import Container from '@/components/options-editor/static-options-editor/container';
 import { gettext } from '@/constants';
-import context from '@/sea-metadata/context';
+import { useSeaMetadataContext } from '../../../context-provider';
 import { getColumnOptions, generateNewOption, getOption } from '../../../utils/column';
 
 import '../single-select-editor/index.css';
@@ -19,6 +19,7 @@ const MultipleSelectEditor = forwardRef(({
   onPressTab,
   modifyColumnData,
 }, ref) => {
+  const context = useSeaMetadataContext();
   const editorRef = useRef(null);
   const optionEditorContainerRef = useRef(null);
   const canEditData = context.canModifyColumnData(column);
@@ -75,6 +76,7 @@ const MultipleSelectEditor = forwardRef(({
   return (
     <div className="sea-metadata-single-select-editor options-editor-popover sea-metadata-multiple-select-editor" style={style} ref={editorRef}>
       <Container
+        shouldHandleEvent={context.ownsEvent}
         ref={optionEditorContainerRef}
         isMultiple={true}
         placeholder={gettext('Search options')}

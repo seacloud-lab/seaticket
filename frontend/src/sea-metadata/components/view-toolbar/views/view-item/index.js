@@ -2,8 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import classnames from 'classnames';
 import { Icon, CommonOperationConfirmationDialog, ClickOutside, ModalPortal } from '@/components';
 import { gettext } from '@/constants';
-import context from '@/sea-metadata/context';
 import { isFunction } from '@/utils/type-detection';
+import { useSeaMetadataContext } from '../../../../context-provider';
 
 import './index.css';
 
@@ -20,6 +20,7 @@ const ViewItem = ({
   onDelete,
   onDuplicate,
 }) => {
+  const context = useSeaMetadataContext();
   const [isShowDropdownMenu, setIsShowDropdownMenu] = useState(false);
   const [dropRelativePosition, setDropRelativePosition] = useState('');
   const [isShowDeleteConfirmationDialog, setIsShowDeleteConfirmationDialog] = useState(false);
@@ -36,7 +37,8 @@ const ViewItem = ({
     event.dataTransfer.setDragImage(containerRef.current, 10, 10);
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData('text/plain', view._id);
-  }, [view]);
+    event.dataTransfer.setData('application/sea-metadata-view-instance', context.id);
+  }, [view, context]);
 
   const onDragEnter = useCallback((event) => {
     event.stopPropagation();
@@ -60,18 +62,18 @@ const ViewItem = ({
   }, []);
 
   const onDrop = useCallback((event) => {
+    enteredCounter.current = 0;
+    setDropRelativePosition('');
+    if (event.dataTransfer.getData('application/sea-metadata-view-instance') !== context.id) return;
     event.stopPropagation();
     event.preventDefault();
-
-    enteredCounter.current = 0;
 
     const moveViewID = event.dataTransfer.getData('text/plain');
     const { _id } = view;
     if (moveViewID !== _id) {
       onMove && onMove(moveViewID, _id, dropRelativePosition);
     }
-    setDropRelativePosition('');
-  }, [view, dropRelativePosition, onMove]);
+  }, [view, dropRelativePosition, onMove, context]);
 
   const openDropdownMenu = useCallback(() => {
     const { left, bottom } = viewRef.current.getBoundingClientRect();
@@ -132,7 +134,7 @@ const ViewItem = ({
       };
       poll();
     }).catch(() => {});
-  }, [view]);
+  }, [view, context]);
 
 
   const props = moveAble ? { onDragStart, onDragEnter, onDragOver, onDragLeave, onDrop, draggable: 'true' } : {};
@@ -145,7 +147,7 @@ const ViewItem = ({
           'sea-metadata-view-next-position-after': dropRelativePosition === 'after'
         })}
         ref={containerRef}
-        id={`sea-metadata-view-${view._id}`}
+        id={`${context.id}-view-${view._id}`}
         { ...props }
       >
         <div
@@ -181,6 +183,7 @@ const ViewItem = ({
         <ModalPortal>
           <ClickOutside onClickOutside={closeDropdown}>
             <div
+              data-sea-metadata-instance={context.id}
               className="dropdown-menu position-fixed d-block"
               style={menuStyle.current}
             >

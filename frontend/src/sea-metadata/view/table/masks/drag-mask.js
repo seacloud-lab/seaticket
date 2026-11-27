@@ -15,7 +15,7 @@ function DragMask({ draggedRange, getSelectedRangeDimensions, getSelectedDimensi
       <CellMask
         {...dimensions}
         className="react-grid-cell-dragged-over-down"
-        id="sea-metadata-table-cell-dragged-over-down"
+
       />
     );
   }

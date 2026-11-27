@@ -5,10 +5,11 @@ import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS, KB_T
 import { usePortalKnowledgePage } from '@/portal/main-panel/knowledge-base/hooks/knowledge-page';
 import ResourceDetailsDialog from '@/project/components/resource-details-dialog';
 import { useData, useTags } from '@/project/hooks';
-import SeaMetadata from '@/sea-metadata';
-import context from '@/sea-metadata/context';
+import SeaMetadata, { useMetadataController } from '@/sea-metadata';
+
 
 const PortalAllKnowledge = ({ projectUuid }) => {
+  const controller = useMetadataController();
   const { togglePageSlugId } = usePortalKnowledgePage();
   const metadataRef = useRef(null);
   const allColumns = useRef([]);
@@ -38,7 +39,7 @@ const PortalAllKnowledge = ({ projectUuid }) => {
         });
         const tagsColumn = columns.find(c => c.name === 'tags');
         if (tagsColumn) {
-          context.setSetting('tagsColumnKey', tagsColumn.key);
+          controller.setSetting('tagsColumnKey', tagsColumn.key);
         }
         allColumns.current = columns;
         return { data: { rows, columns } };
@@ -48,26 +49,26 @@ const PortalAllKnowledge = ({ projectUuid }) => {
     getViews: () => portalAPI.listKBViews(projectUuid),
 
     getView: (id) => {
-      const sorts = context.localStorage.getItem('sorts') || [];
-      const groupbys = context.localStorage.getItem('groupbys') || [];
-      const filters = context.localStorage.getItem('filters') || [];
-      const filter_conjunction = context.localStorage.getItem('filter_conjunction') || 'And';
-      const basic_filters = context.localStorage.getItem('basic_filters') || [];
-      const row_height = context.localStorage.getItem('row_height') || '';
-      const hidden_columns = context.localStorage.getItem('hidden_columns') || [];
-      const columns_keys = context.localStorage.getItem('columns_keys') || [];
+      const sorts = controller.storage.getItem('sorts') || [];
+      const groupbys = controller.storage.getItem('groupbys') || [];
+      const filters = controller.storage.getItem('filters') || [];
+      const filter_conjunction = controller.storage.getItem('filter_conjunction') || 'And';
+      const basic_filters = controller.storage.getItem('basic_filters') || [];
+      const row_height = controller.storage.getItem('row_height') || '';
+      const hidden_columns = controller.storage.getItem('hidden_columns') || [];
+      const columns_keys = controller.storage.getItem('columns_keys') || [];
       return Promise.resolve({ data: { view: { _id: id, sorts, groupbys, filters, filter_conjunction, basic_filters, row_height, hidden_columns, columns_keys } } });
     },
 
     modifyView: (_id, viewData) => {
       return new Promise((resolve) => {
         Object.keys(viewData).forEach(key => {
-          context.localStorage.setItem(key, viewData[key]);
+          controller.storage.setItem(key, viewData[key]);
         });
         resolve({ data: { success: true } });
       });
     },
-  }), [projectUuid, getMetadata, togglePageSlugId]);
+  }), [projectUuid, getMetadata, togglePageSlugId, controller]);
 
   const localStorageName = useMemo(() => `seaqa-portal-${projectUuid}-knowledge-base`, [projectUuid]);
 
@@ -102,6 +103,9 @@ const PortalAllKnowledge = ({ projectUuid }) => {
   return (
     <>
       <SeaMetadata
+        controller={controller}
+        storageNamespace="primary"
+        isShowViewInURL={true}
         ref={metadataRef}
         api={api}
         t={t}

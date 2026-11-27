@@ -4,8 +4,8 @@ import { Icon, IconButton, toaster, CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
 import { AddButton, RefreshBtn } from '@/project/components';
 import { EVENT_BUS_TYPE } from '@/project/constants';
+import { useMetadataController } from '@/sea-metadata';
 import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
-import context from '@/sea-metadata/context';
 import dayjs from '@/utils/dayjs';
 import eventBus from '@/utils/event-bus';
 import { Utils } from '@/utils/utils';
@@ -21,6 +21,7 @@ import './index.css';
 const { projectUuid, isProjectAdmin } = window.app.pageOptions;
 
 const TopBar = ({ title, modifyLocalBar }) => {
+  const controller = useMetadataController();
   const { pageSlugId, childrenPageSlugId, togglePageSlugId, toggleChildrenPageSlugId, onRefresh } = useConnectionsPage();
   const { modifyLocalConnectionsSyncStatus, connections } = useConnections();
   const timer = useRef(null);
@@ -84,7 +85,7 @@ const TopBar = ({ title, modifyLocalBar }) => {
             let callback = null;
             if (last_sync_status === CONNECTION_SYNC_STATUS.COMPLETED && last_sync_count > 0) {
               callback = () => {
-                const eventBus = context.eventBus;
+                const eventBus = controller.events;
                 eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.RELOAD_DATA, false);
               };
             }
@@ -133,7 +134,7 @@ const TopBar = ({ title, modifyLocalBar }) => {
       setIsSyncing(false);
       toaster.danger(error_msg);
     });
-  }, [modifyLocalConnectionsSyncStatus]);
+  }, [modifyLocalConnectionsSyncStatus, controller]);
 
   const renderRightChildren = useCallback(() => {
     if (pageSlugId === CONNECTION_PAGE_SLUG_ID.ALL) {

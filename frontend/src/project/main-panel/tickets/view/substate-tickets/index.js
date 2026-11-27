@@ -1,8 +1,7 @@
 import React, { useMemo } from 'react';
 import { CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
-import { VIEW_TOOL } from '@/sea-metadata';
-import context from '@/sea-metadata/context';
+import { VIEW_TOOL, useMetadataController } from '@/sea-metadata';
 import { getRowById } from '@/sea-metadata/utils/row';
 import { ticketsAPI } from '../../../../api';
 import Tickets from '../../components/tickets';
@@ -10,6 +9,7 @@ import { TICKET_CHILDREN_PAGE_SLUG_ID } from '../../constants';
 import { useTicketsPage, useMetadata } from '../../hooks';
 
 const SubstateTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) => {
+  const controller = useMetadataController();
 
   const { isLoading, pageSlugId, childrenPageSlugId, togglePageSlugId, toggleView } = useTicketsPage();
   const { substatesData } = useMetadata();
@@ -35,7 +35,7 @@ const SubstateTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) =
         const view = viewsData.views[0];
         resolve({ data: { view: {
           ...view,
-          sorts: context.localStorage.getItem('sorts') || [],
+          sorts: controller.storage.getItem('sorts') || [],
         } } });
       });
     },
@@ -43,12 +43,12 @@ const SubstateTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) =
     modifyView: (viewID, viewData) => {
       return new Promise((resolve) => {
         Object.keys(viewData).forEach(key => {
-          context.localStorage.setItem(key, viewData[key]);
+          controller.storage.setItem(key, viewData[key]);
         });
         resolve({ data: { success: true } });
       });
     },
-  }), [projectUuid, childrenPageSlugId, viewsData]);
+  }), [projectUuid, childrenPageSlugId, viewsData, controller]);
 
   const localStorageNamePrefix = useMemo(() => `seaqa-${projectUuid}-substate-tickets`, [projectUuid]);
 
@@ -62,6 +62,7 @@ const SubstateTickets = ({ projectUuid, workspaceID, projectName, toggleBar }) =
 
   return (
     <Tickets
+      controller={controller}
       projectUuid={projectUuid}
       workspaceID={workspaceID}
       projectName={projectName}

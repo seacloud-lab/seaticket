@@ -10,9 +10,9 @@ import { useTicketCreation } from '@/project/hooks/ticket-creation';
 import { useTicketTaskCreated } from '@/project/hooks/ticket-task-created';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import { useConnections } from '@/project/main-panel/connections/hooks';
-import SeaMetadata from '@/sea-metadata';
+import SeaMetadata, { useMetadataController } from '@/sea-metadata';
 import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
-import context from '@/sea-metadata/context';
+import { withSeaMetadataController } from '@/sea-metadata/controller-provider';
 import { getColumnByName } from '@/sea-metadata/utils/column';
 import { convertRowToNameValue, convertRowsToNameValue, getRowById as getTableRowById } from '@/sea-metadata/utils/row';
 import { isFunction } from '@/utils/type-detection';
@@ -44,6 +44,7 @@ const Tickets = ({
   onRefresh,
   ...props
 }) => {
+  const controller = useMetadataController();
   const { handleResolveAttachmentsByAI } = useAIChatTools();
   const { openRelatedIssues } = useRelatedIssues();
   const { createKnowledgeBaseRecord: openCreateKB, createTask: openCreateTask } = useTicketCreation();
@@ -119,9 +120,9 @@ const Tickets = ({
   useResourceUpdate({ projectUuid, tableName: TICKET_TABLE_NAME, onUpdate: ({ rowId, rowUpdateData, deleted, updateList = true }) => {
     if (!updateList) return;
     if (deleted) {
-      context.eventBus.dispatch(EVENT_BUS_TYPE.DELETE_ROWS, [rowId]);
+      controller.events.dispatch(EVENT_BUS_TYPE.DELETE_ROWS, [rowId]);
     } else if (rowUpdateData) {
-      context.eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdateData);
+      controller.events.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdateData);
     }
   } });
 
@@ -161,15 +162,15 @@ const Tickets = ({
           });
           const typeColumn = columns.find(c => c.name === PREDEFINED_TICKET_COLUMN_NAME.TYPE);
           if (typeColumn) {
-            context.setSetting('typeColumnKey', typeColumn.key);
+            controller.setSetting('typeColumnKey', typeColumn.key);
           }
           const stateColumn = columns.find(c => c.name === PREDEFINED_TICKET_COLUMN_NAME.STATE);
           if (stateColumn) {
-            context.setSetting('stateColumnKey', stateColumn.key);
+            controller.setSetting('stateColumnKey', stateColumn.key);
           }
           const tagsColumn = columns.find(c => c.name === PREDEFINED_TICKET_COLUMN_NAME.TAGS);
           if (tagsColumn) {
-            context.setSetting('tagsColumnKey', tagsColumn.key);
+            controller.setSetting('tagsColumnKey', tagsColumn.key);
           }
 
           allColumns.current = columns;
@@ -228,7 +229,7 @@ const Tickets = ({
               () => api.modifyRow(row_id, updateData, isCopyPaste),
               { typesData }
             ).then(() => {
-              const eventBus = context.eventBus;
+              const eventBus = controller.events;
               eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, row_id, row_update);
             });
           };
@@ -264,7 +265,7 @@ const Tickets = ({
   }, [
     projectUuid, isBuiltInView, api, getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView,
     getMetadata, modifyRow, modifyRows, deleteRow, deleteRows, openCloseLinkedGitHubIssuesWarningDialog, buildOpenGithubIssuesPayload,
-    togglePageSlugId,
+    togglePageSlugId, controller,
   ]);
 
   const localStorageName = useMemo(() => customizeLocalStorageNamePrefix || `seaqa-${projectUuid}-tickets`, [projectUuid, customizeLocalStorageNamePrefix]);
@@ -291,14 +292,14 @@ const Tickets = ({
   }, [openCreateTask]);
 
   useTicketTaskCreated({ projectUuid, onUpdate: ({ rowId, rowUpdate, linkedRecordTitles }) => {
-    context.eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdate);
-    context.eventBus.dispatch(EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: linkedRecordTitles }, false);
+    controller.events.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdate);
+    controller.events.dispatch(EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: linkedRecordTitles }, false);
   } });
 
   useLinkedTicketUpdate({ projectUuid, tableName: TICKET_TABLE_NAME, onUpdate: ({ rowId, rowUpdateData, linkedRecords, linkedGithubIssueStateMap }) => {
     linkedGithubStateRef.current = { ...linkedGithubStateRef.current, ...linkedGithubIssueStateMap };
-    context.eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdateData);
-    context.eventBus.dispatch(EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: linkedRecords }, false);
+    controller.events.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdateData);
+    controller.events.dispatch(EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: linkedRecords }, false);
   } });
 
   const createRowsTools = useCallback((props) => {
@@ -372,6 +373,8 @@ const Tickets = ({
   return (
     <>
       <SeaMetadata
+        controller={controller}
+        storageNamespace="primary"
         className="seaqa-tickets-metadata"
         ref={metadataRef}
         api={metadataAPI}
@@ -417,4 +420,4 @@ const Tickets = ({
   );
 };
 
-export default Tickets;
+export default withSeaMetadataController(Tickets);

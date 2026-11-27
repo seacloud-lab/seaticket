@@ -1,14 +1,17 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useId, useMemo, useRef, useState } from 'react';
 import { FormGroup, Label } from 'reactstrap';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
-import { CustomizePopover, CustomizeSelect, Icon, IconButton } from '@/components';
+import { Icon, IconButton } from '@/components';
 import { gettext } from '@/constants';
 import { RATE_MAX_NUMBER, RATE_COLORS, RATE_TYPES, DEFAULT_RATE_DATA } from '../../../../../constants';
+import CustomizeSelect from '../../../../selectors/scoped-select';
+import CustomizePopover from '../../../scoped-popover';
 
 import './index.css';
 
 const RateData = ({ value, onChange, updatePopoverState }) => {
+  const id = useId();
   const initValue = { ...DEFAULT_RATE_DATA, ...value };
   const { max, color, type } = initValue;
   const [isShowStylePopover, setIsShowStylePopover] = useState(false);
@@ -52,7 +55,7 @@ const RateData = ({ value, onChange, updatePopoverState }) => {
           <Label>{gettext('Style')}</Label>
           <div
             className={classnames('seaqa-customize-select rate-column-data-style-setting-wrapper', { 'focus': isShowStylePopover })}
-            id="sea-metadata-rate-column-data-style-setting-wrapper"
+            id={id}
             onClick={openStylePopover}
             ref={selectedBtnRef}
           >
@@ -63,7 +66,7 @@ const RateData = ({ value, onChange, updatePopoverState }) => {
           </div>
           {isShowStylePopover && (
             <CustomizePopover
-              target="sea-metadata-rate-column-data-style-setting-wrapper"
+              target={selectedBtnRef}
               popoverClassName="sea-metadata-rate-column-data-style-setting-popover"
               hidePopover={closeStylePopover}
               hidePopoverWithEsc={closeStylePopover}

@@ -10,14 +10,14 @@ import {
 } from '@/constants';
 import { portalAPI } from '@/portal/api';
 import { ticketsAPI } from '@/project/api';
+import { EVENT_BUS_TYPE } from '@/project/constants';
 import { useData, useTags, useMetadata, usePortalIssuesMetadata } from '@/project/hooks';
 import { useTicketTaskCreated } from '@/project/hooks/ticket-task-created';
 import { PORTAL_ISSUE_TABLE_NAME } from '@/project/main-panel/portal-issues/constants';
 import TagsSettings from '@/project/main-panel/tags/tags-settings';
 import { useCollaborators } from '@/sea-metadata';
-import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
-import context from '@/sea-metadata/context';
 import { convertRowToKeyValue, getRowById } from '@/sea-metadata/utils/row';
+import eventBus from '@/utils/event-bus';
 import LongTextEditorUtilities, { isLongTextValueExceedLimit } from '@/utils/long-text';
 import { hasOwnProperty } from '@/utils/object-utils';
 import { canCheckSeafileEditorBrowser } from '@/utils/seafile-editor-browser';
@@ -137,15 +137,11 @@ const TicketDetails = forwardRef(({
 
     modifyLocalRow(tableName, ticketID, localRowUpdate);
 
-    const pathname = window.location.pathname;
-    const isTicketsView = ticketType === TICKET_TYPE
-      ? pathname.endsWith('/tickets/') || pathname.endsWith('/my-tickets/')
-      : pathname.endsWith('/portal-issues/');
-    if (isTicketsView) {
-      const eventBus = context.eventBus;
-      eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, ticketID, localRowUpdate);
-    }
-  }, [ticketType, typesData, tagsData, getTableByName, modifyLocalRow]);
+    // Global resource dialogs can render outside the list's controller scope.
+    eventBus.dispatch(EVENT_BUS_TYPE.RESOURCE_UPDATED, {
+      projectUuid, tableName, rowId: String(ticketID), rowUpdateData: localRowUpdate,
+    });
+  }, [projectUuid, ticketType, typesData, tagsData, getTableByName, modifyLocalRow]);
 
   // api
   const handleModifyTicket = useCallback((ticketID, data, { linkedGithubIssuesToClose = null } = {}) => {

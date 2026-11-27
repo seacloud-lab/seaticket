@@ -1,8 +1,9 @@
 import { useCallback, useRef, useState, useMemo, useEffect } from 'react';
 import classnames from 'classnames';
-import { SearchInput, IconButton, CustomizeDropdownItemText, CustomizePopover, EmptyTip } from '@/components';
+import { SearchInput, IconButton, CustomizeDropdownItemText, EmptyTip } from '@/components';
 import { gettext, KeyCodes, mediaUrl } from '@/constants';
-import context from '@/sea-metadata/context';
+import { useSeaMetadataContext } from '../../../../context-provider';
+import CustomizePopover from '../../../popover/scoped-popover';
 
 import './index.css';
 
@@ -12,6 +13,7 @@ const AllViews = ({
   onMove,
   toggleView,
 }) => {
+  const context = useSeaMetadataContext();
   const [isShowAllViewsPopover, setIsShowAllViewsPopover] = useState(false);
   const [dropRelativePosition, setDropRelativePosition] = useState('');
   const [currentOverViewId, setCurrentOverViewId] = useState('');
@@ -28,7 +30,8 @@ const AllViews = ({
     event.dataTransfer.setDragImage(event.target.parentNode, 10, 10);
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData('text/plain', viewId);
-  }, []);
+    event.dataTransfer.setData('application/sea-metadata-view-instance', context.id);
+  }, [context]);
 
   const onDragEnter = useCallback((event) => {
     event.stopPropagation();
@@ -55,17 +58,17 @@ const AllViews = ({
   }, []);
 
   const onDrop = useCallback((event, viewId) => {
+    enteredCounter.current = 0;
+    setDropRelativePosition('');
+    setCurrentOverViewId('');
+    if (event.dataTransfer.getData('application/sea-metadata-view-instance') !== context.id) return;
     event.stopPropagation();
     event.preventDefault();
-    enteredCounter.current = 0;
-
     const moveViewID = event.dataTransfer.getData('text/plain');
     if (moveViewID !== viewId) {
       onMove && onMove(moveViewID, viewId, dropRelativePosition);
     }
-    setDropRelativePosition('');
-    setCurrentOverViewId('');
-  }, [dropRelativePosition, onMove]);
+  }, [dropRelativePosition, onMove, context]);
 
   const openAllViewsPopover = useCallback(() => {
     setMaxHeight(window.innerHeight - 100);

@@ -6,9 +6,9 @@ import { siteRoot } from '@/constants/config';
 import { knowledgeBaseAPI } from '@/project/api';
 import { BAR_TYPE } from '@/project/constants';
 import { useData } from '@/project/hooks';
-import { KB_TABLE_NAME } from '@/project/main-panel/knowledge-base/constants';
+import { KB_MAIN_METADATA_ID_PREFIX, KB_TABLE_NAME } from '@/project/main-panel/knowledge-base/constants';
 import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
-import context from '@/sea-metadata/context';
+import { useSeaMetadataController } from '@/sea-metadata/controller-provider';
 import { getFileExtension } from '@/utils/download';
 import { Utils } from '@/utils/utils';
 
@@ -20,6 +20,7 @@ const HOVER_BACKGROUND = 'rgba(237, 113, 9, 0.1)';
 const DEFAULT_BACKGROUND = 'transparent';
 
 const ImportDialog = ({ activeBar, onToggle, onClickBar }) => {
+  const controller = useSeaMetadataController(`${KB_MAIN_METADATA_ID_PREFIX}-${projectUuid}`);
   const [isLoading, setIsLoading] = useState(false);
   const [isFileSelected, setIsFileSelected] = useState(false);
   const [previewData, setPreviewData] = useState([]);
@@ -101,7 +102,7 @@ const ImportDialog = ({ activeBar, onToggle, onClickBar }) => {
       toaster.success(gettext('The records have been imported'));
       markTablesViewExpired([KB_TABLE_NAME], () => {
         if (activeBar[0] === BAR_TYPE.KNOWLEDGE) {
-          const eventBus = context.eventBus;
+          const eventBus = controller.events;
           eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.RELOAD_DATA);
           return;
         }
@@ -113,7 +114,7 @@ const ImportDialog = ({ activeBar, onToggle, onClickBar }) => {
       toaster.danger(errorMsg);
       setIsLoading(false);
     });
-  }, [activeBar, previewFileName, markTablesViewExpired, onClickBar, onToggle]);
+  }, [activeBar, previewFileName, markTablesViewExpired, onClickBar, onToggle, controller]);
 
   return (
     <Modal isOpen={true} autoFocus={false} className="seaqa-import-dialog" toggle={onToggle}>

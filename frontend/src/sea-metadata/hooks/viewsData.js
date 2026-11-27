@@ -1,15 +1,17 @@
 /* eslint-disable react/prop-types */
-import React, { forwardRef, useCallback, useContext, useEffect, useState, useImperativeHandle } from 'react';
+import React, { forwardRef, useCallback, useContext, useEffect, useRef, useState, useImperativeHandle } from 'react';
 import { toaster } from '@/components';
 import { Utils } from '@/utils/utils';
-import context from '../context';
+import { useSeaMetadataContext } from '../context-provider';
 
 const ViewsDataContext = React.createContext(null);
 
-export const ViewsDataProvider = forwardRef(({ isShowViewInURL, children }, ref) => {
+export const ViewsDataProvider = forwardRef(({ isShowViewInURL = false, viewURLParam = 'view', children }, ref) => {
+  const context = useSeaMetadataContext();
   const [isLoading, setLoading] = useState(true);
   const [viewsData, setViewsData] = useState({});
   const [viewID, toggleView] = useState('');
+  const hasLoadedViews = useRef(false);
 
   const getViewById = useCallback((viewID) => {
     return viewsData.views.find(v => v._id === viewID);
@@ -25,7 +27,7 @@ export const ViewsDataProvider = forwardRef(({ isShowViewInURL, children }, ref)
       toggleView(view._id);
       return view;
     });
-  }, [viewsData]);
+  }, [viewsData, context]);
 
   const deleteView = useCallback((viewID) => {
     return context.deleteView(viewID).then(res => {
@@ -41,7 +43,7 @@ export const ViewsDataProvider = forwardRef(({ isShowViewInURL, children }, ref)
       setViewsData(newViewsData);
       toggleView(nextView._id);
     });
-  }, [viewsData]);
+  }, [viewsData, context]);
 
   const modifyView = useCallback((viewID, update) => {
     return context.modifyView(viewID, update).then(res => {
@@ -50,7 +52,7 @@ export const ViewsDataProvider = forwardRef(({ isShowViewInURL, children }, ref)
       newViewsData.views[viewIndex] = { ...newViewsData.views[viewIndex], ...update };
       setViewsData(newViewsData);
     });
-  }, [viewsData]);
+  }, [viewsData, context]);
 
   const duplicateView = useCallback((viewID) => {
     return context.duplicateView(viewID).then(res => {
@@ -62,7 +64,7 @@ export const ViewsDataProvider = forwardRef(({ isShowViewInURL, children }, ref)
       toggleView(view._id);
       return view;
     });
-  }, [viewsData]);
+  }, [viewsData, context]);
 
   const moveView = useCallback((sourceViewID, targetViewID, relativePosition) => {
     const newViewsData = { ...viewsData };
@@ -81,43 +83,46 @@ export const ViewsDataProvider = forwardRef(({ isShowViewInURL, children }, ref)
       newViewsData.navigation.splice(newTargetViewIndex, 0, sourceViewNav);
       setViewsData(newViewsData);
     });
-  }, [viewsData]);
+  }, [viewsData, context]);
 
   useEffect(() => {
+    let active = true;
+    // Block URL writes in this effect pass, before setLoading takes effect.
+    hasLoadedViews.current = false;
     setLoading(true);
     context.getViews().then(res => {
+      if (!active) return;
       const viewsData = res.data;
       setViewsData(viewsData);
       const { search } = window.location;
       const currentUrlParams = new URLSearchParams(search);
-      const currentViewID = currentUrlParams.get('view');
+      const currentViewID = isShowViewInURL ? currentUrlParams.get(viewURLParam) : null;
       let view = viewsData.views.find(v => v._id === currentViewID);
       if (!view) {
         const viewsNavigation = viewsData.navigation.filter(v => v.type === 'view');
         view = viewsNavigation[0];
       }
       toggleView(view?._id);
+      hasLoadedViews.current = true;
     }).catch(error => {
+      if (!active) return;
       const errorMsg = Utils.getErrorMsg(error);
       toaster.danger(errorMsg);
     }).finally(() => {
-      setTimeout(() => setLoading(false), 1);
+      if (active) setLoading(false);
     });
-  }, []);
+    return () => { active = false; };
+  }, [context, isShowViewInURL, viewURLParam]);
 
   useEffect(() => {
-    if (!viewID) return;
+    if (isLoading || !hasLoadedViews.current || !viewID || !isShowViewInURL) return;
     const { search, origin, pathname } = window.location;
     const currentUrlParams = new URLSearchParams(search);
-    if (isShowViewInURL) {
-      currentUrlParams.set('view', viewID);
-    } else {
-      currentUrlParams.delete('view');
-    }
+    currentUrlParams.set(viewURLParam, viewID);
     const queryString = currentUrlParams.toString();
     const url = origin + pathname + (queryString ? '?' + queryString : '');
     history.replaceState(null, null, url);
-  }, [isShowViewInURL, viewID]);
+  }, [isLoading, isShowViewInURL, viewID, viewURLParam]);
 
   useImperativeHandle(ref, () => ({
     getData: () => viewsData,

@@ -1,4 +1,4 @@
-class EventBus {
+export class EventBus {
   subscribers = {};
 
   subscribe(type, handler) {
@@ -20,8 +20,11 @@ class EventBus {
   dispatch(type, ...data) {
     const handlers = this.subscribers[type];
     if (Array.isArray(handlers)) {
-      handlers.forEach(handler => handler(...data));
+      [...handlers].forEach(handler => handler(...data));
     }
+  }
+  destroy() {
+    this.subscribers = {};
   }
 }
 

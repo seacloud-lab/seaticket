@@ -4,10 +4,10 @@ import PropTypes from 'prop-types';
 import ClickOutside from '@/components/click-outside';
 import { Z_INDEX } from '@/constants/zIndexes';
 import { getEventClassName } from '@/utils/dom';
-import eventBus from '@/utils/event-bus';
 import { isCtrlKeyHeldDown, isKeyPrintable } from '@/utils/keyboard-utils';
 import { isFunction } from '@/utils/type-detection';
 import { EVENT_BUS_TYPE } from '../../../../constants/event-bus-type';
+import { withSeaMetadataContext } from '../../../../context-provider';
 import { getCellValueByColumn, isCellValueChanged, isValidCellValue } from '../../../../utils/cell';
 import Editor from './editor';
 
@@ -321,7 +321,7 @@ class NormalEditorContainer extends React.Component {
     if (className && className.includes('drag-handle')) return;
     this.commit();
     this.props.onCommitCancel();
-    eventBus.dispatch(EVENT_BUS_TYPE.SELECT_NONE);
+    this.props.metadataContext.eventBus.dispatch(EVENT_BUS_TYPE.SELECT_NONE);
   };
 
   render() {
@@ -365,4 +365,4 @@ NormalEditorContainer.propTypes = {
   onCommitCancel: PropTypes.func,
 };
 
-export default NormalEditorContainer;
+export default withSeaMetadataContext(NormalEditorContainer);

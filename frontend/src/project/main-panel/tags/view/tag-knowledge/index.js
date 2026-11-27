@@ -4,12 +4,12 @@ import { gettext } from '@/constants';
 import { knowledgeBaseAPI } from '@/project/api';
 import { KNOWLEDGE_PREDEFINED_COLUMN_CONFIG, KNOWLEDGE_NOT_DISPLAY_COLUMNS } from '@/project/main-panel/knowledge-base/constants';
 import { generatorKnowledgeContextMenuOptions } from '@/project/main-panel/knowledge-base/utils';
-import SeaMetadata, { VIEW_TOOL } from '@/sea-metadata';
-import context from '@/sea-metadata/context';
+import SeaMetadata, { VIEW_TOOL, useMetadataController } from '@/sea-metadata';
 import { convertRowToNameValue } from '@/sea-metadata/utils/row';
 import { useTags } from '../../hooks';
 
 const TagKnowledge = ({ tagID, projectUuid, permission }) => {
+  const controller = useMetadataController();
   const { isLoading: isTagsLoading, tagsData, createTag } = useTags();
 
   const viewsData = useMemo(() => ({
@@ -37,7 +37,7 @@ const TagKnowledge = ({ tagID, projectUuid, permission }) => {
         });
         const tagsColumn = columns.find(c => c.name === 'tags');
         if (tagsColumn) {
-          context.setSetting('tagsColumnKey', tagsColumn.key);
+          controller.setSetting('tagsColumnKey', tagsColumn.key);
         }
         return { data: { rows, columns } };
       });
@@ -56,7 +56,7 @@ const TagKnowledge = ({ tagID, projectUuid, permission }) => {
 
         resolve({ data: { view: {
           ...view,
-          sorts: context.localStorage.getItem('sorts') || [],
+          sorts: controller.storage.getItem('sorts') || [],
         } } });
       });
     },
@@ -64,7 +64,7 @@ const TagKnowledge = ({ tagID, projectUuid, permission }) => {
     modifyView: (viewID, viewData) => {
       return new Promise((resolve, reject) => {
         Object.keys(viewData).forEach(key => {
-          context.localStorage.setItem(key, viewData[key]);
+          controller.storage.setItem(key, viewData[key]);
         });
         resolve({ data: { success: true } });
       });
@@ -78,7 +78,7 @@ const TagKnowledge = ({ tagID, projectUuid, permission }) => {
     deleteRows: (recordIds) => knowledgeBaseAPI.deleteRecords(projectUuid, recordIds),
     uploadFile: (file) => knowledgeBaseAPI.uploadFile(projectUuid, file),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [projectUuid, viewsData]);
+  }), [projectUuid, viewsData, controller]);
 
   const createContextMenuOptions = useCallback((props) => {
     return generatorKnowledgeContextMenuOptions({ ...props });
@@ -97,6 +97,8 @@ const TagKnowledge = ({ tagID, projectUuid, permission }) => {
 
   return (
     <SeaMetadata
+      controller={controller}
+      storageNamespace="primary"
       api={api}
       isShowViewInURL={false}
       settings={{ isFilterComputedOnServer: false, isSortComputedOnServer: false, canManageView: false }}

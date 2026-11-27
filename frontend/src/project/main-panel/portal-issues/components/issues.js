@@ -7,9 +7,9 @@ import { useData, useTags } from '@/project/hooks';
 import { useLinkedTicketUpdate, useLinkTicket } from '@/project/hooks/link-ticket';
 import { useResourceUpdate } from '@/project/hooks/resource-dialog';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
-import SeaMetadata from '@/sea-metadata';
+import SeaMetadata, { useMetadataController } from '@/sea-metadata';
 import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
-import context from '@/sea-metadata/context';
+import { withSeaMetadataController } from '@/sea-metadata/controller-provider';
 import { convertRowToNameValue, convertRowsToNameValue } from '@/sea-metadata/utils/row';
 import { isFunction } from '@/utils/type-detection';
 import { ticketsAPI } from '../../../api';
@@ -42,6 +42,7 @@ const Issues = ({
   useCache = true,
   ...props
 }) => {
+  const controller = useMetadataController();
   const { handleResolveAttachmentsByAI } = useAIChatTools();
   const {
     typesData, createType,
@@ -63,8 +64,8 @@ const Issues = ({
     projectUuid,
     tableName: PORTAL_ISSUE_TABLE_NAME,
     onUpdate: ({ rowId, rowUpdateData, linkedRecords }) => {
-      context.eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdateData);
-      context.eventBus.dispatch(EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: linkedRecords }, false);
+      controller.events.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdateData);
+      controller.events.dispatch(EVENT_BUS_TYPE.UPDATE_DATA_ATTRIBUTE, { linked_records: linkedRecords }, false);
     },
   });
 
@@ -79,9 +80,9 @@ const Issues = ({
   useResourceUpdate({ projectUuid, tableName: PORTAL_ISSUE_TABLE_NAME, onUpdate: ({ rowId, rowUpdateData, deleted, updateList = true }) => {
     if (!updateList) return;
     if (deleted) {
-      context.eventBus.dispatch(EVENT_BUS_TYPE.DELETE_ROWS, [rowId]);
+      controller.events.dispatch(EVENT_BUS_TYPE.DELETE_ROWS, [rowId]);
     } else if (rowUpdateData) {
-      context.eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdateData);
+      controller.events.dispatch(EVENT_BUS_TYPE.LOCAL_ROW_CHANGED, rowId, rowUpdateData);
     }
   } });
 
@@ -117,18 +118,18 @@ const Issues = ({
           });
           const typeColumn = columns.find(c => c.name === PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.TYPE);
           if (typeColumn) {
-            context.setSetting('typeColumnKey', typeColumn.key);
+            controller.setSetting('typeColumnKey', typeColumn.key);
             if (isBuiltInView) {
               typeColumn.modify_data_able = false;
             }
           }
           const stateColumn = columns.find(c => c.name === PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.STATE);
           if (stateColumn) {
-            context.setSetting('stateColumnKey', stateColumn.key);
+            controller.setSetting('stateColumnKey', stateColumn.key);
           }
           const tagsColumn = columns.find(c => c.name === PREDEFINED_PORTAL_ISSUE_COLUMN_NAME.TAGS);
           if (tagsColumn) {
-            context.setSetting('tagsColumnKey', tagsColumn.key);
+            controller.setSetting('tagsColumnKey', tagsColumn.key);
           }
 
           allColumns.current = columns;
@@ -193,7 +194,7 @@ const Issues = ({
     return _api;
   }, [
     projectUuid, isBuiltInView, api, getTableViews, getTableView, insertView, deleteView, modifyView, moveView, duplicateView, useCache,
-    getMetadata, modifyRow, modifyRows, deleteRow, deleteRows, togglePageSlugId,
+    getMetadata, modifyRow, modifyRows, deleteRow, deleteRows, togglePageSlugId, controller,
   ]);
 
   const localStorageName = useMemo(() => customizeLocalStorageNamePrefix || `seaqa-${projectUuid}-issues`, [projectUuid, customizeLocalStorageNamePrefix]);
@@ -271,6 +272,8 @@ const Issues = ({
   return (
     <>
       <SeaMetadata
+        controller={controller}
+        storageNamespace="primary"
         className="seaqa-issues-metadata"
         ref={metadataRef}
         isShowViewInURL={isShowViewInURL}
@@ -319,4 +322,4 @@ const Issues = ({
   );
 };
 
-export default Issues;
+export default withSeaMetadataController(Issues);

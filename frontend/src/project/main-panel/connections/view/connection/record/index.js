@@ -12,7 +12,7 @@ import { useRelatedIssues } from '@/project/hooks/related-issues';
 import { useResourceUpdate } from '@/project/hooks/resource-dialog';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
 import { getResourceOriginalURL } from '@/project/utils';
-import { CellType, context as seaMetadataContext, EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata';
+import { CellType, useMetadataController, EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata';
 import { getCellValueByColumn } from '@/sea-metadata/utils/cell';
 import { getColumnByName, getColumnOptions, getOption } from '@/sea-metadata/utils/column';
 import { convertRowToKeyValue } from '@/sea-metadata/utils/row';
@@ -42,6 +42,7 @@ const initColumns = [
 ];
 
 const Record = ({ projectUuid, permission }) => {
+  const controller = useMetadataController();
   const { isLoading: isConnectionsPageLoading, pageSlugId, childrenPageSlugId, toggleChildrenPageSlugId } = useConnectionsPage();
   const { getRow, modifyRow, modifyLocalRow, deleteRows } = useData();
   const { connections } = useConnections();
@@ -98,8 +99,8 @@ const Record = ({ projectUuid, permission }) => {
     deleteRows(connectionTableName, [rowId], () =>
       connectionsAPI.deleteConnectionEmail(projectUuid, connection.id, { thread_ids: [rowId] })
     ).then(() => {
-      seaMetadataContext.eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.DELETE_ROWS, [rowId]);
-      seaMetadataContext.eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.SELECT_NONE);
+      controller.events.dispatch(SEA_METADATA_EVENT_BUS_TYPE.DELETE_ROWS, [rowId]);
+      controller.events.dispatch(SEA_METADATA_EVENT_BUS_TYPE.SELECT_NONE);
       toaster.closeAll();
       toaster.success(gettext('Email thread has been moved to trash.'));
       toggleChildrenPageSlugId('');
@@ -107,7 +108,7 @@ const Record = ({ projectUuid, permission }) => {
       toaster.closeAll();
       toaster.danger(Utils.getErrorMsg(error));
     });
-  }, [connection, childrenPageSlugId, connectionTableName, projectUuid, deleteRows, toggleChildrenPageSlugId]);
+  }, [connection, childrenPageSlugId, connectionTableName, projectUuid, deleteRows, toggleChildrenPageSlugId, controller]);
 
   const tools = useMemo(() => {
     if (!record) return [];

@@ -2,19 +2,17 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import toaster from '@/components/toaster';
 import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
-import context from '@/sea-metadata/context';
+import { createMetadataContext } from '@/sea-metadata/context';
+import { SeaMetadataContextProvider } from '@/sea-metadata/context-provider';
 import { MetadataProvider } from '@/sea-metadata/hooks/metadata';
 
 let mockStore;
+const context = createMetadataContext();
 jest.mock('@/components/toaster', () => ({ success: jest.fn(), danger: jest.fn() }));
+jest.mock('@/constants', () => ({ gettext: text => text }));
 jest.mock('@/utils/hotkey', () => ({}));
 jest.mock('@/utils/utils', () => ({}));
 jest.mock('@/sea-metadata/constants', () => ({ EVENT_BUS_TYPE: new Proxy({}, { get: (_target, key) => key }) }));
-jest.mock('@/sea-metadata/context', () => ({
-  re_set: jest.fn(),
-  translate: text => text,
-  eventBus: jest.requireActual('@/utils/event-bus').default,
-}));
 jest.mock('@/sea-metadata/utils/row', () => ({ getRowById: (data, id) => data.id_row_map[id] }));
 jest.mock('@/sea-metadata/hooks/collaborators', () => ({ useCollaborators: () => ({ collaborators: [], collaboratorsCache: {} }) }));
 jest.mock('@/sea-metadata/hooks/selected-rows', () => ({ useSelectedRows: () => ({ selectedRowIds: [] }) }));
@@ -49,7 +47,7 @@ describe('Local metadata row events', () => {
     metadataRef = React.createRef();
     createContextMenuOptions = jest.fn();
     root = createRoot(document.createElement('div'));
-    await act(async () => { root.render(<MetadataProvider ref={metadataRef} createContextMenuOptions={createContextMenuOptions} />); });
+    await act(async () => { root.render(<SeaMetadataContextProvider context={context}><MetadataProvider ref={metadataRef} createContextMenuOptions={createContextMenuOptions} /></SeaMetadataContextProvider>); });
   });
   afterEach(() => { act(() => root.unmount()); });
 

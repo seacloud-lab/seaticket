@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { ticketsAPI } from '@/project/api';
 import { EVENT_BUS_TYPE } from '@/project/constants';
 import { useData } from '@/project/hooks';
+import { useResourceUpdate } from '@/project/hooks/resource-dialog';
 import TicketDetails from '@/project/main-panel/tickets/components/ticket-details';
 import eventBus from '@/utils/event-bus';
 
@@ -26,17 +27,17 @@ jest.mock('@/project/api', () => ({ ticketsAPI: {
   listProjectTicketActivities: jest.fn(),
   modifyProjectTicket: jest.fn(),
 } }));
-jest.mock('@/project/constants', () => ({ EVENT_BUS_TYPE: { TICKET_TASK_CREATED: 'task-created' } }));
+jest.mock('@/project/constants', () => ({ EVENT_BUS_TYPE: { TICKET_TASK_CREATED: 'task-created', RESOURCE_UPDATED: 'resource-updated' } }));
 jest.mock('@/project/hooks', () => ({
   useMetadata: () => ({}),
+  usePortalIssuesMetadata: () => ({}),
   useData: jest.fn(),
   useTags: () => ({}),
 }));
-jest.mock('@/project/main-panel/portal-issues/constants', () => ({}));
+jest.mock('@/project/main-panel/portal-issues/constants', () => ({ PORTAL_ISSUE_TABLE_NAME: 'portal_issues' }));
 jest.mock('@/project/main-panel/tags/tags-settings', () => () => null);
-jest.mock('@/sea-metadata', () => ({}));
+jest.mock('@/sea-metadata', () => jest.requireActual('@/sea-metadata/controller-provider'));
 jest.mock('@/sea-metadata/constants', () => ({}));
-jest.mock('@/sea-metadata/context', () => ({}));
 jest.mock('@/sea-metadata/utils/row', () => ({ convertRowToKeyValue: row => row }));
 jest.mock('@/utils/long-text', () => ({ __esModule: true, default: class {} }));
 jest.mock('@/utils/seafile-editor-browser', () => ({ canCheckSeafileEditorBrowser: () => false }));
@@ -95,6 +96,11 @@ const renderDetails = (ref, ticket, modifyTicket) => (
   />
 );
 
+const ResourceSubscriber = props => {
+  useResourceUpdate(props);
+  return null;
+};
+
 describe('Ticket detail and activity requests', () => {
   const originalResizeObserver = global.ResizeObserver;
   const originalActEnvironment = global.IS_REACT_ACT_ENVIRONMENT;
@@ -134,6 +140,40 @@ describe('Ticket detail and activity requests', () => {
   afterEach(() => {
     act(() => root.unmount());
     container.remove();
+  });
+
+  it.each(['ticket', 'portal_issue'])('updates matching lists when a %s detail is rendered outside their controller provider', async ticketType => {
+    const tableName = ticketType === 'ticket' ? 'tickets' : 'portal_issues';
+    const matching = jest.fn();
+    const otherProject = jest.fn();
+    const otherTable = jest.fn();
+    const modifyLocalRow = jest.fn();
+    useData.mockReturnValue({
+      getTableByName: () => ({ key_column_map: { priority: { key: 'priority', name: 'priority' } } }),
+      modifyLocalRow,
+    });
+    ticketsAPI.listProjectTicketActivities.mockResolvedValue({ data: { activities: [] } });
+    const ref = React.createRef();
+    const modifyTicket = jest.fn().mockResolvedValue({ data: { row: {} } });
+    await act(async () => render(
+      <>
+        <ResourceSubscriber projectUuid="project" tableName={tableName} onUpdate={matching} />
+        <ResourceSubscriber projectUuid="other-project" tableName={tableName} onUpdate={otherProject} />
+        <ResourceSubscriber projectUuid="project" tableName="other-table" onUpdate={otherTable} />
+        <TicketDetails ref={ref} projectUuid="project" ticketType={ticketType} ticket={createTicket(1)}
+          setTicket={jest.fn()} modifyTicket={modifyTicket} isShowOthersInfo={false} />
+      </>
+    ));
+
+    await act(async () => ref.current.onChange(1, { priority: 2 }));
+
+    expect(matching).toHaveBeenCalledTimes(1);
+    expect(matching).toHaveBeenCalledWith(expect.objectContaining({
+      projectUuid: 'project', tableName, rowId: '1', rowUpdateData: { priority: 2 },
+    }));
+    expect(modifyLocalRow).toHaveBeenCalledWith(tableName, 1, { priority: 2 });
+    expect(otherProject).not.toHaveBeenCalled();
+    expect(otherTable).not.toHaveBeenCalled();
   });
 
   it.each(['modification', 'linked task'])('keeps a new %s activity when an older list arrives later', async (source) => {

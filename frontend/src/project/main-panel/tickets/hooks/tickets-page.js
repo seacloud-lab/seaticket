@@ -2,8 +2,8 @@ import React, { useContext, useEffect, useState, useCallback, useRef } from 'rea
 import { siteRoot } from '@/constants';
 import { BAR_TYPE, EVENT_BUS_TYPE } from '@/project/constants';
 import { getMyTicketsScope, getMyTicketsURL } from '@/project/utils';
+import { useMetadataController } from '@/sea-metadata';
 import { EVENT_BUS_TYPE as SEAMETADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
-import context from '@/sea-metadata/context';
 import eventBus from '@/utils/event-bus';
 import { isNumber } from '@/utils/type-detection';
 import { Utils } from '@/utils/utils';
@@ -12,6 +12,7 @@ import { TICKET_PAGE_SLUG_ID, TICKET_CHILDREN_PAGE_SLUG_ID } from '../constants'
 const TicketsPageContext = React.createContext(null);
 
 export const TicketsPageProvider = ({ workspaceID, projectName, type, children }) => {
+  const controller = useMetadataController();
   const [isLoading, setLoading] = useState(true);
   const [pageSlugId, setPageSlugId] = useState(TICKET_PAGE_SLUG_ID.ALL);
   const [childrenPageSlugId, setChildrenPageSlugId] = useState(TICKET_CHILDREN_PAGE_SLUG_ID.ALL);
@@ -76,9 +77,9 @@ export const TicketsPageProvider = ({ workspaceID, projectName, type, children }
   }, [pageSlugId, childrenPageSlugId, resetURL]);
 
   const onRefresh = Utils.debounce(useCallback(() => {
-    const eventBus = context.eventBus;
+    const eventBus = controller.events;
     eventBus.dispatch(SEAMETADATA_EVENT_BUS_TYPE.RELOAD_DATA);
-  }, []), 300);
+  }, [controller]), 300);
 
   // init page
   useEffect(() => {

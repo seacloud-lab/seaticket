@@ -3,9 +3,7 @@ import deepCopy from 'deep-copy';
 import PropTypes from 'prop-types';
 import toaster from '@/components/toaster';
 import { gettext, KeyCodes } from '@/constants';
-import context from '@/sea-metadata/context';
 import { getEventClassName } from '@/utils/dom';
-import eventBus from '@/utils/event-bus';
 import { isSpace } from '@/utils/hotkey';
 import { isCtrlKeyHeldDown, isKeyPrintable } from '@/utils/keyboard-utils';
 import { isEmptyObject } from '@/utils/object-utils';
@@ -14,6 +12,7 @@ import {
   GRID_HEADER_DOUBLE_HEIGHT, GRID_HEADER_DEFAULT_HEIGHT, HEADER_HEIGHT_TYPE, PASTE_SOURCE, EDITOR_TYPE,
   TRANSFER_TYPES, GROUP_ROW_TYPE, EVENT_BUS_TYPE, NOT_SUPPORT_OPEN_EDITOR_COLUMN_TYPES,
 } from '../../../../constants';
+import { withSeaMetadataContext } from '../../../../context-provider';
 import { getCellValueByColumn, isValidCellValue, getFormatRowData } from '../../../../utils/cell';
 import { checkIsColumnSupportPreview, getColumnIndexByKey } from '../../../../utils/column';
 import getEventTransfer from '../../../../utils/get-event-transfer';
@@ -56,11 +55,10 @@ class InteractionMasks extends React.Component {
       isEditorEnabled: false,
       openEditorMode: '',
     };
-    this.eventBus = eventBus;
+    this.eventBus = props.metadataContext.eventBus;
     this.pasteSource = PASTE_SOURCE.COPY;
     this.cutPosition = null;
     this.selectionMask = null;
-    this.canModifyRows = context.canModifyRows();
   }
 
   componentDidMount() {
@@ -90,7 +88,9 @@ class InteractionMasks extends React.Component {
 
   componentWillUnmount() {
     this.unsubscribeSelectColumn();
+    this.unsubscribeDragEnter();
     this.unsubscribeSelectCell();
+    this.unsubscribeSelectNone();
     this.unsubscribeSelectStart();
     this.unsubscribeSelectUpdate();
     this.unsubscribeSelectEnd();
@@ -312,14 +312,14 @@ class InteractionMasks extends React.Component {
   checkIsSelectedCellEditable = () => {
     const { enableCellSelect = true, columns, isGroupView = false, rowGetterByIndex } = this.props;
     const { selectedPosition } = this.state;
-    return checkIsSelectedCellEditable({ enableCellSelect, columns, isGroupView, selectedPosition, rowGetterByIndex });
+    return checkIsSelectedCellEditable({ enableCellSelect, columns, isGroupView, selectedPosition, rowGetterByIndex, context: this.props.metadataContext });
   };
 
   checkIsSelectedCellsEditable = () => {
     const { enableCellSelect = true, columns, isGroupView = false, rowGetterByIndex } = this.props;
     const { selectedRange } = this.state;
-    const canModifyRows = context.canModifyRows();
-    return canModifyRows && checkIsSelectedCellsEditable({ enableCellSelect, columns, isGroupView, selectedRange, rowGetterByIndex });
+    const canModifyRows = this.props.metadataContext.canModifyRows();
+    return canModifyRows && checkIsSelectedCellsEditable({ enableCellSelect, columns, isGroupView, selectedRange, rowGetterByIndex, context: this.props.metadataContext });
   };
 
   checkIsDragEnabled = () => {
@@ -453,7 +453,7 @@ class InteractionMasks extends React.Component {
     e.nativeEvent.stopImmediatePropagation();
     const { selectedPosition } = this.state;
     const { isGroupView = false, rowGetterByIndex } = this.props;
-    const row = getSelectedRow({ selectedPosition, isGroupView, rowGetterByIndex });
+    const row = getSelectedRow({ selectedPosition, isGroupView, rowGetterByIndex, context: this.props.metadataContext });
     if (this.props.handleSpaceKeyDown) {
       this.props.handleSpaceKeyDown(row);
     }
@@ -485,8 +485,8 @@ class InteractionMasks extends React.Component {
   handleSelectCellsDelete = () => {
     const { isGroupView = false, rowGetterByIndex, columns } = this.props;
     const { selectedRange } = this.state;
-    const rowsFromSelectedRange = getRowsFromSelectedRange({ selectedRange, isGroupView, rowGetterByIndex });
-    const editableRows = rowsFromSelectedRange.filter(row => context.canModifyRow(row));
+    const rowsFromSelectedRange = getRowsFromSelectedRange({ selectedRange, isGroupView, rowGetterByIndex, context: this.props.metadataContext });
+    const editableRows = rowsFromSelectedRange.filter(row => this.props.metadataContext.canModifyRow(row));
     if (editableRows.length === 0) return;
     const editableColumns = getColumnsFromSelectedRange({ selectedRange, columns }, true);
     if (editableColumns.length === 0) return;
@@ -506,7 +506,7 @@ class InteractionMasks extends React.Component {
       return;
     }
 
-    if (!context.getSetting('canClearCells')) return;
+    if (!this.props.metadataContext.getSetting('canClearCells')) return;
 
     let updateRowIds = [];
     let idRowUpdates = {}; // row's id to modified original rows data: { [row_id]: { [column.key: null] } }
@@ -575,7 +575,7 @@ class InteractionMasks extends React.Component {
 
   onPaste = (e) => {
     // when activeElement is not cellMask or has no permission, can't paste cell
-    if (!this.isCellMaskActive() || !this.canModifyRows) return;
+    if (!this.isCellMaskActive() || !this.props.metadataContext.canModifyRows()) return;
     if (!isFunction(this.props.paste)) return;
 
     const { columns, isGroupView = false } = this.props;
@@ -621,16 +621,16 @@ class InteractionMasks extends React.Component {
       cutPosition: this.cutPosition,
       viewId: copiedViewId
     });
-    if (!multiplePaste && context.getSetting('canPasteCells')) {
+    if (!multiplePaste && this.props.metadataContext.getSetting('canPasteCells')) {
       this.setPasteRange(copiedRowsCount, copiedColumnsCount);
     }
   };
 
   onCut = (event) => {
-    if (!context.getSetting('canClearCells')) return;
+    if (!this.props.metadataContext.getSetting('canClearCells')) return;
 
     // when activeElement is not cellMask or has no permission, can't paste cell
-    if (!this.isCellMaskActive() || !this.canModifyRows) return;
+    if (!this.isCellMaskActive() || !this.props.metadataContext.canModifyRows()) return;
     const { selectedPosition, selectedRange } = this.state;
     const { idx, rowIdx } = selectedPosition;
     if (idx === -1 || rowIdx === -1) return; // prevent paste when no cell selected
@@ -1060,7 +1060,7 @@ class InteractionMasks extends React.Component {
   renderSingleCellSelectView = () => {
     const { isEditorEnabled, selectedPosition } = this.state;
     const isSelectedCellsEditable = this.checkIsSelectedCellEditable();
-    const showDragHandle = isSelectedCellsEditable && context.canModifyRows() && context.getSetting('canDragFillCells');
+    const showDragHandle = isSelectedCellsEditable && this.props.metadataContext.canModifyRows() && this.props.metadataContext.getSetting('canDragFillCells');
     if (isEditorEnabled) {
       return null;
     }
@@ -1082,7 +1082,7 @@ class InteractionMasks extends React.Component {
     const { selectedRange } = this.state;
     const { columns, rowHeight } = this.props;
     const isSelectedCellsEditable = this.checkIsSelectedCellsEditable();
-    const showDragHandle = isSelectedCellsEditable && context.canModifyRows() && context.getSetting('canDragFillCells');
+    const showDragHandle = isSelectedCellsEditable && this.props.metadataContext.canModifyRows() && this.props.metadataContext.getSetting('canDragFillCells');
     return [
       <SelectionRangeMask
         key="range-mask"
@@ -1214,4 +1214,4 @@ InteractionMasks.propTypes = {
   handleSpaceKeyDown: PropTypes.func,
 };
 
-export default InteractionMasks;
+export default withSeaMetadataContext(InteractionMasks);

@@ -2,6 +2,7 @@ import React, { forwardRef, useMemo, useImperativeHandle, useCallback, useRef, u
 import PropTypes from 'prop-types';
 import Container from '@/components/options-editor/static-options-editor/container';
 import { gettext } from '@/constants';
+import { useSeaMetadataContext } from '../../../context-provider';
 import { useTypesData } from '../../../hooks';
 import { getTypesOptions } from '../../../utils/column';
 
@@ -15,6 +16,7 @@ const TypeEditor = forwardRef(({
   onCommit,
   onPressTab,
 }, ref) => {
+  const context = useSeaMetadataContext();
   const editorRef = useRef(null);
   const optionEditorContainerRef = useRef(null);
 
@@ -63,6 +65,7 @@ const TypeEditor = forwardRef(({
   return (
     <div className="sea-metadata-single-select-editor options-editor-popover" style={style} ref={editorRef}>
       <Container
+        shouldHandleEvent={context.ownsEvent}
         ref={optionEditorContainerRef}
         isMultiple={false}
         isSearchEnabled={true}

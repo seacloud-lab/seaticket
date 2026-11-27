@@ -2,18 +2,19 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Dropdown, DropdownToggle } from 'reactstrap';
 import PropTypes from 'prop-types';
 import Icon from '@/components/icon';
-import { getEventClassName } from '@/utils/dom';
 import ColumnPopover from '../../../../../components/popover/column-popover';
 import CustomDropdownMenu from '../../../../../components/popover/column-popover/dropdown-menu';
+import { useSeaMetadataContext } from '../../../../../context-provider';
 
 import './index.css';
 
 const InsertColumn = ({ lastColumn, height, groupOffsetLeft, insertColumn: insertColumnAPI }) => {
+  const context = useSeaMetadataContext();
   const [isColumnMenuOpen, setColumnMenuOpen] = useState(false);
   const [isColumnPopoverShow, setColumnPopoverShow] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState(null);
 
-  const id = useMemo(() => 'sea-metadata-add-column', []);
+  const id = `${context.id}-add-column`;
 
   const style = useMemo(() => {
     return {
@@ -55,14 +56,12 @@ const InsertColumn = ({ lastColumn, height, groupOffsetLeft, insertColumn: inser
   const handleClickOutside = useCallback((event) => {
     if (!isColumnPopoverShow) return;
     if (!event.target) return;
-    const className = getEventClassName(event);
-    if (className.indexOf('column-type-item') > -1) return;
-    const popover = document.querySelector('.sea-metadata-column-popover');
-    if (popover && popover.contains(event.target)) return;
-    const dropdownMenu = document.querySelector('.sea-metadata-column-type-dropdown-menu');
-    if (dropdownMenu && event.target.closest('.sea-metadata-column-type-dropdown-menu')) return;
+    const target = event.target.nodeType === 1 ? event.target : event.target.parentElement;
+    const owner = target?.closest('[data-sea-metadata-instance]');
+    if (owner && !context.ownsEvent(event)) return;
+    if (context.ownsEvent(event) && target?.closest('.sea-metadata-column-popover, .sea-metadata-column-type-dropdown-menu')) return;
     setColumnPopoverShow(false);
-  }, [isColumnPopoverShow]);
+  }, [isColumnPopoverShow, context]);
 
   useEffect(() => {
     document.addEventListener('mousedown', handleClickOutside);
@@ -70,7 +69,7 @@ const InsertColumn = ({ lastColumn, height, groupOffsetLeft, insertColumn: inser
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  });
+  }, [handleClickOutside]);
 
   return (
     <>

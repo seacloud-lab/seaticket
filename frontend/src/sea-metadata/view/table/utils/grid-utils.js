@@ -4,7 +4,6 @@ import { getType } from '@/utils/type-detection';
 import { CellType, NOT_SUPPORT_DRAG_COPY_COLUMN_TYPES, TRANSFER_TYPES,
   REG_NUMBER_DIGIT, REG_STRING_NUMBER_PARTS, RATE_MAX_NUMBER, PASTE_SOURCE,
 } from '../../../constants';
-import context from '../../../context';
 import { getCellValueByColumn, isCellValueChanged, isValidCellValue } from '../../../utils/cell';
 import { getColumnByIndex, getColumnOriginName } from '../../../utils/column';
 import { convertCellValue } from '../../../utils/convert-utils';
@@ -19,7 +18,8 @@ const isCopyPaste = true;
 
 class GridUtils {
 
-  constructor(metadata, api, { tagsData }) {
+  constructor(metadata, api, { tagsData, context }) {
+    this.context = context;
     this.metadata = metadata;
     this.tagsData = tagsData;
     this.api = api;
@@ -74,7 +74,7 @@ class GridUtils {
       const cutRow = this.api.rowGetterByIndex({ isGroupView, groupRowIndex: groupRowIndex, rowIndex: cutRowIdx });
       groupRowIndex++;
       const cutRowId = getRowIdFromRow(cutRow);
-      const canModify = context.canModifyRow(cutRow);
+      const canModify = this.context.canModifyRow(cutRow);
       if (canModify) {
         updateRowIds.push(cutRowId);
         copiedColumns.forEach((copiedColumn, index) => {
@@ -106,7 +106,7 @@ class GridUtils {
     const renderRowsCount = renderRowIds.length;
 
     const isFromCut = pasteSource === PASTE_SOURCE.CUT && type === TRANSFER_TYPES.METADATA_FRAGMENT;
-    if (isFromCut && context.getSetting('canClearCells')) {
+    if (isFromCut && this.context.getSetting('canClearCells')) {
       const { search } = window.location;
       const urlParams = new URLSearchParams(search);
       const currentViewId = urlParams.has('view') && urlParams.get('view');
@@ -141,14 +141,14 @@ class GridUtils {
 
       for (let j = 0; j < pasteColumnsLen; j++) {
         const pasteColumn = getColumnByIndex(j + startColumnIndex, columns);
-        if (!pasteColumn || !context.canModifyRow(pasteRow) || !context.canModifyCell(pasteColumn, pasteRow)) {
+        if (!pasteColumn || !this.context.canModifyRow(pasteRow) || !this.context.canModifyCell(pasteColumn, pasteRow)) {
           continue;
         }
         const copiedColumnIndex = j % copiedColumnsLen;
         const copiedColumn = getColumnByIndex(copiedColumnIndex, copiedColumns);
         const pasteCellValue = getCellValueByColumn(pasteRow, pasteColumn, { tagsData: this.tagsData });
         const copiedCellValue = getCellValueByColumn(copiedRow, copiedColumn, { tagsData: this.tagsData });
-        let update = convertCellValue(copiedCellValue, pasteCellValue, pasteColumn, copiedColumn, { api: this.api, collaborators, tagsData });
+        let update = convertCellValue(copiedCellValue, pasteCellValue, pasteColumn, copiedColumn, { api: this.api, collaborators, tagsData, context: this.context });
         if (!isCellValueChanged(pasteCellValue, update, pasteColumn.type)) continue;
         if (!isValidCellValue(update, pasteColumn) && pasteColumn.is_required) continue;
         if (pasteColumn.type === CellType.LONG_TEXT && typeof update === 'string') {
@@ -173,7 +173,7 @@ class GridUtils {
       return;
     }
 
-    if (!context.getSetting('canPasteCells')) return;
+    if (!this.context.getSetting('canPasteCells')) return;
     this.api.modifyRows(updateRowIds, idRowUpdates, idOldRowOldData, isCopyPaste);
   }
 
@@ -204,14 +204,14 @@ class GridUtils {
       }
       const { _id: dragRowId } = dragRow;
       fillingIndex++;
-      if (!context.canModifyRow(dragRow)) continue;
+      if (!this.context.canModifyRow(dragRow)) continue;
       rowIds.push(dragRowId);
 
       const idx = (i - endRowIdx - 1) % selectedRowLength;
       for (let j = startColumnIdx; j <= endColumnIdx; j++) {
         let column = shownColumns[j];
         let { key: cellKey, type } = column;
-        if (context.canModifyCell(column, dragRow) && !NOT_SUPPORT_DRAG_COPY_COLUMN_TYPES.includes(type)) {
+        if (this.context.canModifyCell(column, dragRow) && !NOT_SUPPORT_DRAG_COPY_COLUMN_TYPES.includes(type)) {
           const value = draggedRangeMatrix[j - startColumnIdx][idx];
           const rule = rules[cellKey];
           let fillingValue = rule({ n: fillingIndex - 1, value });

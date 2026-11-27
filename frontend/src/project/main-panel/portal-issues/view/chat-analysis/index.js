@@ -3,9 +3,8 @@ import { gettext, PERMISSION_TYPES } from '@/constants';
 import { chatAPI } from '@/portal/api/chat-api';
 import { useData } from '@/project/hooks';
 import SidePanelChat from '@/project/main-panel/ask/side-panel-chat';
-import SeaMetadata, { CellType, VIEW_TOOL, EVENT_BUS_TYPE } from '@/sea-metadata';
+import SeaMetadata, { CellType, VIEW_TOOL, EVENT_BUS_TYPE, useMetadataController } from '@/sea-metadata';
 import { VIEW_TYPE, STATISTIC_TYPE } from '@/sea-metadata/constants';
-import context from '@/sea-metadata/context';
 import { Utils } from '@/utils/utils';
 import { PORTAL_CHAT_TABLE_NAME } from '../../constants';
 
@@ -46,6 +45,7 @@ const ChatAnalysis = ({
   workspaceID,
   isAdmin: isProjectAdmin,
 }) => {
+  const controller = useMetadataController();
   const { getMetadata } = useData();
 
   const viewsData = useMemo(() => ({
@@ -79,7 +79,7 @@ const ChatAnalysis = ({
         is_name_column: true,
         frozen: true,
         click: (row) => {
-          context.eventBus.dispatch(EVENT_BUS_TYPE.EXPAND_ROW, row);
+          controller.events.dispatch(EVENT_BUS_TYPE.EXPAND_ROW, row);
         },
       }, {
         name: gettext('User'),
@@ -107,7 +107,7 @@ const ChatAnalysis = ({
         type: CellType.CTIME,
       },
     ];
-  }, []);
+  }, [controller]);
 
   const userUsageColumns = useMemo(() => {
     return [
@@ -152,7 +152,7 @@ const ChatAnalysis = ({
     getMetadata: (...params) => getMetadata(PORTAL_CHAT_TABLE_NAME, params[0], () => {
       const { view_id = 'open', start = 0, limit = 1000 } = params[0];
       if (view_id === 'all_chat') {
-        const sorts = context.localStorage.getItem('sorts') || [];
+        const sorts = controller.storage.getItem('sorts') || [];
         return chatAPI.listAdminChatSessions(projectUuid, { start, limit, sorts }).then(res => {
           const sessions = res?.data?.sessions || [];
           const records = sessions.map(session => ({ ...session, _pk: session.id }));
@@ -162,7 +162,7 @@ const ChatAnalysis = ({
         });
       }
       if (view_id === 'user_usage') {
-        const sorts = context.localStorage.getItem('user_usage_sorts') || [];
+        const sorts = controller.storage.getItem('user_usage_sorts') || [];
         return chatAPI.getAdminChatUserUsage(projectUuid, { start, limit, sorts }).then(res => {
           const users = res?.data?.users || [];
           const records = users.map(user => ({ ...user, _pk: `${user.month}-${user.username}` }));
@@ -267,7 +267,7 @@ const ChatAnalysis = ({
         const view = viewsData.views.find(v => v._id === viewID);
         resolve({ data: { view: {
           ...view,
-          sorts: context.localStorage.getItem(getSortsKey(viewID)) || [],
+          sorts: controller.storage.getItem(getSortsKey(viewID)) || [],
         } } });
       });
     },
@@ -275,11 +275,11 @@ const ChatAnalysis = ({
     modifyView: (viewID, viewData) => new Promise((resolve, reject) => {
       Object.keys(viewData).forEach(key => {
         const storageKey = key === 'sorts' ? getSortsKey(viewID) : key;
-        context.localStorage.setItem(storageKey, viewData[key]);
+        controller.storage.setItem(storageKey, viewData[key]);
       });
       resolve({ data: { success: true } });
     }),
-  }), [projectUuid, viewsData, columns, userUsageColumns, getMetadata]);
+  }), [projectUuid, viewsData, columns, userUsageColumns, getMetadata, controller]);
 
   const t = useMemo(() => {
     return {
@@ -292,6 +292,8 @@ const ChatAnalysis = ({
 
   return (
     <SeaMetadata
+      controller={controller}
+      storageNamespace="primary"
       className="seaqa-issues-analysis-metadata"
       isShowViewInURL={true}
       api={api}

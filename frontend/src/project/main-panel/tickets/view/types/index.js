@@ -2,8 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { CenteredLoading } from '@/components';
 import { gettext } from '@/constants';
 import OptionDialog from '@/project/components/option-dialog';
-import SeaMetadata, { CellType, VIEW_TOOL } from '@/sea-metadata';
-import context from '@/sea-metadata/context';
+import SeaMetadata, { CellType, VIEW_TOOL, useMetadataController } from '@/sea-metadata';
 import eventBus from '@/utils/event-bus';
 import { EVENT_BUS_TYPE } from '../../../../constants';
 import { TICKET_TYPE } from '../../constants';
@@ -34,6 +33,7 @@ const AllTypes = ({
   useMetadataContext,
   type = TICKET_TYPE,
 }) => {
+  const controller = useMetadataController();
   const [isLoading, setIsLoading] = useState(true);
   const { typesData, createType, modifyType, deleteType, deleteTypes, loadTypes } = useMetadataContext();
 
@@ -70,7 +70,7 @@ const AllTypes = ({
 
         resolve({ data: { view: {
           ...view,
-          sorts: context.localStorage.getItem('sorts') || [],
+          sorts: controller.storage.getItem('sorts') || [],
         } } });
       });
     },
@@ -78,7 +78,7 @@ const AllTypes = ({
     modifyView: (viewID, viewData) => {
       return new Promise((resolve, reject) => {
         Object.keys(viewData).forEach(key => {
-          context.localStorage.setItem(key, viewData[key]);
+          controller.storage.setItem(key, viewData[key]);
         });
         resolve({ data: { success: true } });
       });
@@ -90,7 +90,7 @@ const AllTypes = ({
     deleteRow: (...params) => deleteType(...params),
     deleteRows: (...params) => deleteTypes(...params),
 
-  }), [columns, viewsData, createType, deleteType, deleteTypes, typesData, modifyType]);
+  }), [columns, viewsData, createType, deleteType, deleteTypes, typesData, modifyType, controller]);
 
   const createContextMenuOptions = useCallback(({
     isGroupView,
@@ -210,17 +210,19 @@ const AllTypes = ({
 
   useEffect(() => {
     const unsubscribeNewType = eventBus.subscribe(EVENT_BUS_TYPE.NEW_TYPE, () => {
-      context.eventBus.dispatch('expand_row', {});
+      controller.events.dispatch('expand_row', {});
     });
     return () => {
       unsubscribeNewType();
     };
-  }, []);
+  }, [controller]);
 
   if (isLoading) return (<CenteredLoading />);
 
   return (
     <SeaMetadata
+      controller={controller}
+      storageNamespace="primary"
       className="sea-types-metadata"
       api={api}
       isShowViewInURL={false}

@@ -7,6 +7,8 @@ import { useTagsData } from '@/sea-metadata/hooks';
 import { isCellValueChanged } from '@/sea-metadata/utils/cell';
 import { getTagsOptions } from '@/sea-metadata/utils/column';
 import { getRowById, getRowsByIds } from '@/sea-metadata/utils/row';
+import { useSeaMetadataContext } from '../../context-provider';
+import ScopedPopover from '../popover/scoped-popover';
 
 const TagSelector = ({
   isMultiple = true,
@@ -20,6 +22,7 @@ const TagSelector = ({
   onChange,
   onToggle,
 }) => {
+  const context = useSeaMetadataContext();
   const { tagsData } = useTagsData();
 
   const options = useMemo(() => {
@@ -45,6 +48,8 @@ const TagSelector = ({
 
   return (
     <OptionsEditor
+      PopoverComponent={ScopedPopover}
+      shouldHandleEvent={context.ownsEvent}
       className={classnames('sea-metadata-data-filter-popover', className)}
       target={target}
       modifiers={modifiers}

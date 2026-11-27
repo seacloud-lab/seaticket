@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { siteRoot } from '@/constants';
+import { useMetadataController } from '@/sea-metadata';
 import { EVENT_BUS_TYPE as SEA_METADATA_EVENT_BUS_TYPE } from '@/sea-metadata/constants';
-import context from '@/sea-metadata/context';
 import eventBus from '@/utils/event-bus';
 import { isNumber } from '@/utils/type-detection';
 import { BAR_TYPE, EVENT_BUS_TYPE } from '../../../constants';
@@ -11,6 +11,7 @@ import { isConnectionRecordsView } from '../utils';
 const ConnectionsPageContext = React.createContext(null);
 
 export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) => {
+  const controller = useMetadataController();
   const [isLoading, setLoading] = useState(true);
   const [pageSlugId, setPageSlugId] = useState(CONNECTION_PAGE_SLUG_ID.ALL);
   const [childrenPageSlugId, setChildrenPageSlugId] = useState('');
@@ -54,9 +55,9 @@ export const ConnectionsPageProvider = ({ workspaceID, projectName, children }) 
   }, [pageSlugId, childrenPageSlugId, resetURL]);
 
   const onRefresh = useCallback(() => {
-    const eventBus = context.eventBus;
+    const eventBus = controller.events;
     eventBus.dispatch(SEA_METADATA_EVENT_BUS_TYPE.RELOAD_DATA);
-  }, []);
+  }, [controller]);
 
   // init page
   useEffect(() => {

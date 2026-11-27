@@ -77,3 +77,5 @@ export const KNOWLEDGE_CHILDREN_PAGE_SLUG_ID = {
 export const KNOWLEDGE_BASE_TYPE = 'knowledge_base';
 
 export const KB_TABLE_NAME = 'kb';
+
+export const KB_MAIN_METADATA_ID_PREFIX = 'project-knowledge-main';

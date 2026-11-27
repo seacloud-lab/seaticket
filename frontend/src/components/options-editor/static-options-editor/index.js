@@ -33,6 +33,8 @@ const StaticOptionsEditor = ({
   defaultHighlightIndex,
   isShowSearchIcon = false,
   searchHeight,
+  PopoverComponent = CustomizePopover,
+  shouldHandleEvent,
 }) => {
   const containerRef = useRef(null);
 
@@ -55,7 +57,7 @@ const StaticOptionsEditor = ({
   }, [isMultiple, isCloseSubmit, value, onChange, onToggle]);
 
   return (
-    <CustomizePopover
+    <PopoverComponent
       target={target}
       className={classnames('options-editor-popover', className)}
       placement={placement}
@@ -63,10 +65,12 @@ const StaticOptionsEditor = ({
       sameWidthWithTarget={sameWidthWithTarget}
       hidePopover={handleClose}
       hidePopoverWithEsc={handleClose}
+      shouldHandleEvent={shouldHandleEvent}
     >
       <Container
         id={id}
         ref={containerRef}
+        shouldHandleEvent={shouldHandleEvent}
         isMultiple={isMultiple}
         placeholder={placeholder}
         isAsyncSearch={isAsyncSearch}
@@ -87,7 +91,7 @@ const StaticOptionsEditor = ({
       >
         {children}
       </Container>
-    </CustomizePopover>
+    </PopoverComponent>
   );
 };
 

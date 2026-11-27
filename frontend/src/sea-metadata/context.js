@@ -1,4 +1,4 @@
-import eventBus from '@/utils/event-bus';
+import { EventBus } from '@/utils/event-bus';
 import LocalStorage from '@/utils/local-storage';
 import { isFunction } from '@/utils/type-detection';
 import { CellType } from './constants';
@@ -17,9 +17,22 @@ const SETTINGS = {
   canDragFillCells: true,
 };
 
-class Context {
+const isVisibleElement = (element) => {
+  for (let node = element; node; node = node.parentElement) {
+    const style = node.ownerDocument.defaultView.getComputedStyle(node);
+    if (node.hidden || node.getAttribute('aria-hidden') === 'true' || style.display === 'none' || style.visibility === 'hidden') return false;
+  }
+  return true;
+};
 
-  constructor() {
+export class Context {
+
+  constructor(eventBus = new EventBus()) {
+    this.listeners = new Set();
+    this.version = 0;
+    this.overrides = {};
+    this.body = null;
+    this.root = null;
     this.username = '';
     this.settings = { ...SETTINGS };
     this.api = null;
@@ -38,24 +51,22 @@ class Context {
     localStorageName,
     t,
   }, callback) => {
-    this.username = username;
-    this.settings = {
-      ...this.settings,
-      ...settings,
-    };
-    this.api = api;
-    this.permission = permission;
-    this.collaboratorsCache = {};
-    const translate = new Translate(t);
-    this.translate = translate.translate;
-
+    this.configure({ username, settings, permission, api, t });
     this.re_set({ localStorageName });
     callback && callback();
   };
 
-  re_set = ({ localStorageName, t, api }) => {
+  re_set = ({ localStorageName, legacyLocalStorageName, t, api }) => {
     if (localStorageName) {
       this.localStorage = new LocalStorage(localStorageName);
+      if (legacyLocalStorageName) {
+        const storage = this.localStorage;
+        const read = storage.getStorage.bind(storage);
+        storage.getStorage = () => {
+          if (window.localStorage.getItem(localStorageName) !== null) return read();
+          return new LocalStorage(legacyLocalStorageName).getStorage();
+        };
+      }
     }
     if (t) {
       const translate = new Translate(t);
@@ -66,24 +77,68 @@ class Context {
     }
   };
 
+  subscribe = (listener) => {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  };
+
+  getVersion = () => this.version;
+
+  configure = ({ username = '', settings = {}, permission = 'r', api, t }) => {
+    this.username = username;
+    this.settings = { ...SETTINGS, ...settings, ...this.overrides };
+    this.api = api;
+    this.permission = permission;
+    this.translate = new Translate(t).translate;
+    this.version += 1;
+    this.listeners.forEach(listener => listener());
+  };
+
+  ownsEvent = (event, { allowOutside = false } = {}) => {
+    const target = event.target?.nodeType === 1 ? event.target : event.target?.parentElement;
+    const owner = target?.closest('[data-sea-metadata-instance]');
+    return Boolean(this.root && target && (owner ? owner.getAttribute('data-sea-metadata-instance') === this.id : allowOutside));
+  };
+
+  ownsSearchShortcut = (event) => {
+    if (this.ownsEvent(event)) return true;
+    const root = this.root;
+    if (!root?.isConnected || root.getAttribute('data-sea-metadata-primary') !== 'true') return false;
+    const doc = root.ownerDocument;
+    const isPage = node => node === doc.body || node === doc.documentElement;
+    if (!isPage(event.target) || !isPage(doc.activeElement)) return false;
+    const dialogSelector = '[role="dialog"], [aria-modal="true"], .modal';
+    if (Array.from(doc.querySelectorAll(dialogSelector)).some(isVisibleElement)) return false;
+    const primaryTables = Array.from(doc.querySelectorAll('[data-sea-metadata-primary="true"]')).filter(node => !node.closest(dialogSelector) && isVisibleElement(node));
+    // Ambiguous pages must receive focus before a table can own a shortcut.
+    return primaryTables.length === 1 && primaryTables[0] === root;
+  };
+
+  storageName = (prefix, viewID) => {
+    return `${prefix || 'sea-metadata'}-${this.storageNamespace}-${viewID}`;
+  };
+
   destroy = () => {
-    this.username = '';
-    this.settings = { ...SETTINGS };
     this.api = null;
     this.localStorage = null;
-    this.permission = 'r';
+    this.body = null;
+    this.root = null;
     this.collaboratorsCache = {};
-    this.translate = (key) => key;
-    this.eventBus = eventBus;
+    this.overrides = {};
+    this.listeners.clear();
+    this.eventBus.destroy();
   };
 
   getSetting = (key, defaultValue = '') => {
-    if (this.settings[key] === false) return this.settings[key];
-    return this.settings[key] || defaultValue;
+    return this.settings[key] ?? defaultValue;
   };
 
   setSetting = (key, value) => {
+    this.overrides[key] = value;
+    if (this.settings[key] === value) return;
     this.settings[key] = value;
+    this.version += 1;
+    this.listeners.forEach(listener => listener());
   };
 
   getUsername = () => {
@@ -333,6 +388,4 @@ class Context {
 
 }
 
-const context = new Context();
-
-export default context;
+export const createMetadataContext = (eventBus) => new Context(eventBus);

@@ -5,7 +5,7 @@ import weekOfYear from 'dayjs/plugin/weekOfYear';
 import PropTypes from 'prop-types';
 import { DatePicker } from '@/components';
 import { gettext } from '@/constants';
-import context from '../../../../context';
+import { withSeaMetadataContext } from '../../../../context-provider';
 import { getDateColumnFormat } from '../../../../utils/column';
 import dayjs from '../../../../utils/dayjs';
 
@@ -31,7 +31,7 @@ class FilterCalendar extends Component {
     const columnFormat = getDateColumnFormat(props.filterColumn).trim();
     this.format = columnFormat.split(' ')[0];
     this.calendarContainerRef = React.createRef();
-    this.lang = context.getSetting('lang') || 'zh-cn';
+    this.lang = props.metadataContext.getSetting('lang') || 'zh-cn';
     const isZhcn = this.lang === 'zh-cn';
     if (isZhcn) {
       now = now.locale('zh-cn');
@@ -133,4 +133,4 @@ FilterCalendar.propTypes = {
   onChange: PropTypes.func.isRequired,
 };
 
-export default FilterCalendar;
+export default withSeaMetadataContext(FilterCalendar);
