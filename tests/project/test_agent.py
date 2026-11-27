@@ -810,27 +810,11 @@ def test_validate_materialize_suggestions_preserves_and_validates_email_reply_to
         'owner_source_type': 'email',
         'owner_source_id': '3_9',
     }
-    sanitized = validate_materialize_suggestions(
-        Mock(),
-        'project-1',
-        run,
-        [],
-        [{
-            'tool_name': 'suggest_reply',
-            'target_item_type': 'email',
-            'target_item_id': '3_9',
-            'target_item_title': 'Fwd: Help',
-            'suggestion_reason': 'Reply to original customer',
-            'suggestion_content': 'Hello!',
-            'suggestion_payload': {'reply_to': ['Customer <customer@example.com>']},
-        }],
-    )
-    assert sanitized[0]['suggestion_payload'] == {
-        'reply_to': ['Customer <customer@example.com>'],
-    }
-
-    with pytest.raises(RegenerationValidationError):
-        validate_materialize_suggestions(
+    with patch(
+        'seahub.project.agent.utils.ProjectConnections.objects.get_connection_in_project_by_id',
+        return_value=None,
+    ):
+        sanitized = validate_materialize_suggestions(
             Mock(),
             'project-1',
             run,
@@ -839,11 +823,31 @@ def test_validate_materialize_suggestions_preserves_and_validates_email_reply_to
                 'tool_name': 'suggest_reply',
                 'target_item_type': 'email',
                 'target_item_id': '3_9',
-                'suggestion_reason': 'Bad recipient',
+                'target_item_title': 'Fwd: Help',
+                'suggestion_reason': 'Reply to original customer',
                 'suggestion_content': 'Hello!',
-                'suggestion_payload': {'reply_to': ['not-an-email']},
+                'suggestion_payload': {'reply_to': ['Customer <customer@example.com>']},
             }],
         )
+        assert sanitized[0]['suggestion_payload'] == {
+            'reply_to': ['Customer <customer@example.com>'],
+        }
+
+        with pytest.raises(RegenerationValidationError):
+            validate_materialize_suggestions(
+                Mock(),
+                'project-1',
+                run,
+                [],
+                [{
+                    'tool_name': 'suggest_reply',
+                    'target_item_type': 'email',
+                    'target_item_id': '3_9',
+                    'suggestion_reason': 'Bad recipient',
+                    'suggestion_content': 'Hello!',
+                    'suggestion_payload': {'reply_to': ['not-an-email']},
+                }],
+            )
 
 
 def test_cancel_agent_log_pending_actions_selects_pending_actions_and_failed_suggestions():
