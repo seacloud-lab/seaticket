@@ -326,17 +326,20 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
   const deleteEmailRows = useCallback((rows) => {
     if (!rows || rows.length === 0) return;
     const metadataInstance = seaMetaDataRef.current;
-    // The shared controller may bind to another connection while deleting.
-    const updateOriginalTable = (...args) => {
-      if (metadataInstance && seaMetaDataRef.current === metadataInstance) controller.events.dispatch(...args);
-    };
+    const tableName = getTableName(connection);
     const threadIds = rows.map(row => row._id);
     toaster.notify(gettext('It may take some time, please wait.'));
-    return deleteRows(getTableName(connection), threadIds, () =>
+    return deleteRows(tableName, threadIds, () =>
       connectionsAPI.deleteConnectionEmail(projectUuid, connectionID, { thread_ids: threadIds })
     ).then(() => {
-      updateOriginalTable(SEA_METADATA_EVENT_BUS_TYPE.DELETE_ROWS, threadIds);
-      updateOriginalTable(SEA_METADATA_EVENT_BUS_TYPE.SELECT_NONE);
+      // Update matching lists even if they remounted while the request ran.
+      threadIds.forEach(rowId => eventBus.dispatch(EVENT_BUS_TYPE.RESOURCE_UPDATED, {
+        projectUuid, tableName, rowId: String(rowId), deleted: true,
+      }));
+      // A replacement table keeps its selections for rows that still exist.
+      if (metadataInstance && seaMetaDataRef.current === metadataInstance) {
+        controller.events.dispatch(SEA_METADATA_EVENT_BUS_TYPE.SELECT_NONE);
+      }
       const successMessage = rows.length === 1
         ? gettext('Email thread has been moved to trash.')
         : gettext('Email threads have been moved to trash.');
