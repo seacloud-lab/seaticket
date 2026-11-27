@@ -325,13 +325,18 @@ const Records = ({ projectUuid, permission, connectionID, toggleBar }) => {
 
   const deleteEmailRows = useCallback((rows) => {
     if (!rows || rows.length === 0) return;
+    const metadataInstance = seaMetaDataRef.current;
+    // The shared controller may bind to another connection while deleting.
+    const updateOriginalTable = (...args) => {
+      if (metadataInstance && seaMetaDataRef.current === metadataInstance) controller.events.dispatch(...args);
+    };
     const threadIds = rows.map(row => row._id);
     toaster.notify(gettext('It may take some time, please wait.'));
     return deleteRows(getTableName(connection), threadIds, () =>
       connectionsAPI.deleteConnectionEmail(projectUuid, connectionID, { thread_ids: threadIds })
     ).then(() => {
-      controller.events.dispatch(SEA_METADATA_EVENT_BUS_TYPE.DELETE_ROWS, threadIds);
-      controller.events.dispatch(SEA_METADATA_EVENT_BUS_TYPE.SELECT_NONE);
+      updateOriginalTable(SEA_METADATA_EVENT_BUS_TYPE.DELETE_ROWS, threadIds);
+      updateOriginalTable(SEA_METADATA_EVENT_BUS_TYPE.SELECT_NONE);
       const successMessage = rows.length === 1
         ? gettext('Email thread has been moved to trash.')
         : gettext('Email threads have been moved to trash.');
