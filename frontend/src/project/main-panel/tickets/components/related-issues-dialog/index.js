@@ -103,8 +103,10 @@ const RelatedIssuesDialog = ({ projectUuid, ticketId, onClose }) => {
                         </div>
                         <div className='issues-list-item-content'>
                           <div className='issues-list-item-title'>
-                            <div>
-                              <span className='text-truncate issues-list-item-title-content'>{issue.title || gettext('No title')}</span>
+                            <div className="issues-list-item-title-content-container">
+                              <span className='text-truncate issues-list-item-title-content' title={issue.title || gettext('No title')}>
+                                {issue.title || gettext('No title')}
+                              </span>
                             </div>
                             <div className='issues-list-item-time' title={formatWithTimezone(issue.modified_time)}>
                               {dayjs(issue.modified_time || '').format('YYYY-MM-DD HH:mm:ss')}

@@ -1,19 +1,49 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { RelatedIssuesContext } from '@/project/hooks/related-issues';
 import ConnectionRelatedIssuesDialog from '@/project/main-panel/connections/components/related-issues-dialog';
 import TicketRelatedIssuesDialog from '@/project/main-panel/tickets/components/related-issues-dialog';
 
+const restoreFocus = ({ trigger, parentDialog }) => {
+  if (trigger?.isConnected && (!parentDialog || parentDialog.contains(trigger))) {
+    let element = trigger;
+    while (element) {
+      const style = window.getComputedStyle(element);
+      if (element.hidden || element.getAttribute('aria-hidden') === 'true' || style.display === 'none' || style.visibility === 'hidden') break;
+      element = element.parentElement;
+    }
+    if (!element) {
+      trigger.focus();
+      if (document.activeElement === trigger) return;
+    }
+  }
+  if (parentDialog?.isConnected) parentDialog.focus();
+};
+
 export const useRelatedIssuesWorkflow = ({ projectUuid }) => {
   const [targets, setTargets] = useState([]);
   const operationId = useRef(0);
+  const previousTargets = useRef(targets);
+
+  useLayoutEffect(() => {
+    const previous = previousTargets.current;
+    previousTargets.current = targets;
+    // Restore only after a pop has unmounted the child Modal and its focus handling.
+    if (targets.length === previous.length - 1 && targets.every((target, index) => target === previous[index])) {
+      restoreFocus(previous[previous.length - 1]);
+    }
+  }, [targets]);
 
   const openDialog = useCallback(({ row, connection }, parentOperationId) => {
     const rowId = row?._pk ?? row?._id ?? row?.id;
     if (rowId == null || (connection && connection.id == null)) return;
+    const trigger = document.activeElement;
+    const dialogs = document.querySelectorAll('[role="dialog"]');
     const target = {
       operationId: ++operationId.current,
       row: { _id: String(rowId) },
       connectionId: connection?.id,
+      trigger,
+      parentDialog: trigger?.closest('[role="dialog"]') || (parentOperationId != null ? dialogs[dialogs.length - 1] : null),
     };
     setTargets(current => {
       if (parentOperationId == null) return [target];
