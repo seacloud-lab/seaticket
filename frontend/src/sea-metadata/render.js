@@ -46,6 +46,7 @@ const Main = forwardRef(({
   useImperativeHandle(ref, () => ({
     getData: () => metadataRef.current.getData(),
     getSelectedRowIds: () => metadataRef.current.getSelectedRowIds(),
+    createMoreOptions: (...args) => metadataRef.current?.createMoreOptions(...args) || [],
   }), []);
 
   useEffect(() => {
@@ -125,6 +126,7 @@ const SeaMetadata = forwardRef(({
   }, [t, api]);
 
   useImperativeHandle(ref, () => ({
+    createMoreOptions: (...args) => mainRef.current?.createMoreOptions(...args) || [],
     getData: () => {
       const viewsData = viewsDataRef.current.getData();
       const metadata = mainRef.current.getData();

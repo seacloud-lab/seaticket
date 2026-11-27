@@ -5,11 +5,12 @@ import { DIALOG_SIZE, DIALOG_SIZE_VALUE, gettext, PERMISSION_TYPES, username } f
 import { portalAPI } from '@/portal/api';
 import { ticketsAPI } from '@/project/api';
 import { EVENT_BUS_TYPE as GLOBAL_EVENT_BUS_TYPE } from '@/project/constants';
+import { useLinkedTicketUpdate } from '@/project/hooks/link-ticket';
 import { Issus as IssueModel } from '@/project/main-panel/portal-issues/models';
 import eventBus from '@/utils/event-bus';
 import { isFunction } from '@/utils/type-detection';
 import { Utils } from '@/utils/utils';
-import { TICKET_TYPE } from '../../constants';
+import { TICKET_TABLE_NAME, TICKET_TYPE } from '../../constants';
 import { Ticket as TicketModel } from '../../models';
 import TicketDetails from '../ticket-details';
 
@@ -30,6 +31,7 @@ const TicketInDialog = forwardRef(({
   const [isLoading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
   const [ticket, setTicket] = useState(null);
+  const [columns, setColumns] = useState([]);
 
   const [linkedRecords, setLinkedRecords] = useState({});
 
@@ -48,9 +50,11 @@ const TicketInDialog = forwardRef(({
     setErrorMessage(null);
     setTicket(null);
     setLinkedRecords({});
+    setColumns([]);
     getTicket(projectUuid, ticketID).then(res => {
       if (requestId !== requestIdRef.current) return;
       const ticket = ticketType === TICKET_TYPE ? new TicketModel(res.data.ticket) : new IssueModel(res.data.issue);
+      setColumns(res.data.columns || []);
       const linkedRecords = ticketType === TICKET_TYPE
         ? res.data?.linked_records_info
         : ticket.linked_ticket ? { [ticket.linked_ticket]: { title: res.data?.linked_ticket_title || '' } } : {};
@@ -80,25 +84,33 @@ const TicketInDialog = forwardRef(({
   }, [projectUuid, ticketID, ticketType]);
 
   useEffect(() => {
-    updateTicket(ticket);
+    updateTicket(isLoading ? null : ticket, { columns });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ticket]);
+  }, [ticket, columns, isLoading]);
+
+  const applyTicketUpdate = useCallback((ticketUpdate, linkedRecords = {}) => {
+    setTicket(current => {
+      const update = isFunction(ticketUpdate) ? ticketUpdate(current) : ticketUpdate;
+      return current?._update ? deepCopy(current._update(update)) : { ...current, ...update };
+    });
+    setLinkedRecords(cur => ({ ...cur, ...linkedRecords }));
+  }, []);
+
+  useLinkedTicketUpdate({ projectUuid, tableName: TICKET_TABLE_NAME, rowId: ticketID, onUpdate: ({ updateTicket, linkedRecordsInfo }) => {
+    if (ticketType === TICKET_TYPE) applyTicketUpdate(updateTicket, linkedRecordsInfo);
+  } });
 
   useEffect(() => {
     const localChanged = (key, ticketUpdate, linkedRecords = {}) => {
       if (key !== resourceKey) return;
-      setTicket(current => {
-        const update = isFunction(ticketUpdate) ? ticketUpdate(current) : ticketUpdate;
-        return current?._update ? deepCopy(current._update(update)) : { ...current, ...update };
-      });
-      setLinkedRecords(cur => ({ ...cur, ...linkedRecords }));
+      applyTicketUpdate(ticketUpdate, linkedRecords);
     };
 
     const unsubscribeLocalChanged = eventBus.subscribe(GLOBAL_EVENT_BUS_TYPE.MODIFY_LOCAL_RECORD_IN_DIALOG, localChanged);
     return () => {
       unsubscribeLocalChanged();
     };
-  }, [resourceKey]);
+  }, [resourceKey, applyTicketUpdate]);
 
   useImperativeHandle(ref, () => ({
     setActivities: (...args) => detailsRef.current?.setActivities(...args),

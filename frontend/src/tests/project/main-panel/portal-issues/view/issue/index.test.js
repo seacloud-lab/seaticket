@@ -2,7 +2,9 @@ import React, { act } from 'react';
 import { screen } from '@testing-library/react';
 import { createRoot } from 'react-dom/client';
 import { portalAPI } from '@/portal/api';
+import { EVENT_BUS_TYPE } from '@/project/constants';
 import { useData } from '@/project/hooks';
+import eventBus from '@/utils/event-bus';
 
 jest.mock('reactstrap', () => ({ Button: () => null }));
 jest.mock('@seafile/seafile-editor', () => ({ LongTextInlineEditor: () => null }));
@@ -22,12 +24,16 @@ jest.mock('@/constants', () => ({
 }));
 jest.mock('@/portal/api', () => ({ portalAPI: { getPortalIssue: jest.fn(), modifyPortalIssue: jest.fn() } }));
 jest.mock('@/project/api', () => ({ ticketsAPI: {} }));
-jest.mock('@/project/constants', () => ({ EVENT_BUS_TYPE: {} }));
+jest.mock('@/project/constants', () => ({ EVENT_BUS_TYPE: { TICKET_LINKED: 'ticket-linked', MODIFY_LOCAL_RECORD_IN_DIALOG: 'modify-dialog', RESOURCE_UPDATED: 'resource-updated' } }));
 jest.mock('@/project/hooks', () => ({
   useData: jest.fn(),
   useTags: () => ({}),
+  useMetadata: () => ({}),
   usePortalIssuesMetadata: () => ({}),
 }));
+jest.mock('@/project/hooks/related-issues', () => ({ useRelatedIssues: () => ({}) }));
+jest.mock('@/project/hooks/data-context', () => ({ useData: () => require('@/project/hooks').useData() }));
+jest.mock('@/project/hooks/ticket-creation', () => ({ useTicketCreation: () => ({}) }));
 jest.mock('@/project/main-panel/ask/hooks', () => ({ useAIChatTools: () => ({}) }));
 jest.mock('@/project/main-panel/connections/hooks', () => ({ useConnections: () => ({ connections: [] }) }));
 jest.mock('@/project/main-panel/connections/utils', () => ({}));
@@ -35,15 +41,10 @@ jest.mock('@/project/main-panel/portal-issues/constants', () => ({
   PORTAL_ISSUE_TYPE: 'portal_issue',
   PORTAL_ISSUE_TABLE_NAME: 'portal_issues',
   PORTAL_ISSUE_STATE_CONFIG: {},
+  PORTAL_ISSUE_CHILDREN_PAGE_SLUG_ID: { ALL: 'all' },
   PREDEFINED_PORTAL_ISSUE_COLUMN_NAME: { LINKED_TICKET: 'linked_ticket' },
 }));
 jest.mock('@/project/main-panel/portal-issues/hooks', () => ({ usePortalIssuesMetadata: () => ({}) }));
-jest.mock('@/project/main-panel/portal-issues/utils', () => ({
-  generatorIssuesContextMenuOptions: ({ createTicket, linkAnExistingTicket }) => [
-    { key: 'create_ticket', callback: createTicket },
-    { key: 'link_an_existing_ticket', callback: linkAnExistingTicket },
-  ],
-}));
 jest.mock('@/project/main-panel/tags/tags-settings', () => () => null);
 jest.mock('@/project/main-panel/tickets/constants', () => ({
   TICKET_TYPE: 'ticket',
@@ -72,7 +73,8 @@ jest.mock('@/sea-metadata', () => ({}));
 jest.mock('@/sea-metadata/constants', () => ({}));
 jest.mock('@/sea-metadata/context', () => ({}));
 jest.mock('@/sea-metadata/utils/column', () => ({ getColumnByName: (columns, name) => columns.find(column => column.name === name) }));
-jest.mock('@/sea-metadata/utils/row', () => ({ convertRowToKeyValue: row => row, getRowById: () => null }));
+jest.mock('@/sea-metadata/utils/row', () => ({ convertRowToKeyValue: row => row, getRowById: () => null, generateRowKey: (table, id) => `${table}_${id}` }));
+jest.mock('@/sea-metadata/utils/cell', () => ({ getCellValueByColumn: (row, column) => column ? row[column.key] ?? row[column.name] : null }));
 jest.mock('@/utils/long-text', () => ({ __esModule: true, default: class {} }));
 jest.mock('@/utils/seafile-editor-browser', () => ({ canCheckSeafileEditorBrowser: () => false }));
 jest.mock('@/utils/utils', () => ({ Utils: { getErrorMsg: error => error.message } }));
@@ -107,12 +109,13 @@ describe('Issue linked Ticket details', () => {
   const originalResizeObserver = global.ResizeObserver;
   const originalActEnvironment = global.IS_REACT_ACT_ENVIRONMENT;
   let Issue;
+  let LinkTicketProvider;
   let TicketInDialog;
   let root;
   let container;
   let data;
 
-  const render = async element => act(async () => { root.render(element); });
+  const render = async element => act(async () => { root.render(element && <LinkTicketProvider projectUuid="project">{element}</LinkTicketProvider>); });
   const renderPage = () => render(<Issue projectUuid="project" issueID={5} permission="rw" />);
   const renderDialog = () => render(
     <TicketInDialog
@@ -135,6 +138,7 @@ describe('Issue linked Ticket details', () => {
     global.IS_REACT_ACT_ENVIRONMENT = true;
     global.ResizeObserver = class { observe() {} unobserve() {} };
     Issue = require('@/project/main-panel/portal-issues/view/issue').default;
+    LinkTicketProvider = require('@/project/components/link-ticket-provider').LinkTicketProvider;
     TicketInDialog = require('@/project/main-panel/tickets/components/ticket-in-dialog').default;
   });
 
@@ -185,15 +189,32 @@ describe('Issue linked Ticket details', () => {
 
     await openLinkedTicket();
     if (operation === 'creation') {
-      expect(data.insertRowByLink).toHaveBeenCalledWith('tickets', 'portal_issues', { 73: 'Linked Ticket' }, 5, { ticket: [73] }, expect.any(Function));
+      expect(data.insertRowByLink).toHaveBeenCalledWith('tickets', 'portal_issues', { 73: 'Linked Ticket' }, '5', { ticket: [73] }, expect.any(Function));
     } else {
       expect(data.modifyRowLink.mock.calls[0][1].linkedRecords).toEqual({ 73: 'Linked Ticket' });
-      expect(portalAPI.modifyPortalIssue).toHaveBeenCalledWith('project', 5, { linked_ticket: 73 });
+      expect(portalAPI.modifyPortalIssue).toHaveBeenCalledWith('project', '5', { linked_ticket: 73 });
     }
 
     await render(null);
     portalAPI.getPortalIssue.mockResolvedValue(issueResponse(73));
     await renderDialog();
     await openLinkedTicket();
+  });
+
+  it('leaves the page when its issue is deleted from a nested dialog', async () => {
+    const togglePageSlugId = jest.fn();
+    await render(<Issue projectUuid="project" issueID={5} permission="rw" togglePageSlugId={togglePageSlugId} />);
+    const deletion = { projectUuid: 'project', tableName: 'portal_issues', rowId: '5', deleted: true };
+    for (const update of [
+      { ...deletion, projectUuid: 'other-project' },
+      { ...deletion, tableName: 'tickets' },
+      { ...deletion, rowId: '6' },
+    ]) act(() => eventBus.dispatch(EVENT_BUS_TYPE.RESOURCE_UPDATED, update));
+    expect(togglePageSlugId).not.toHaveBeenCalled();
+
+    act(() => eventBus.dispatch(EVENT_BUS_TYPE.RESOURCE_UPDATED, deletion));
+
+    expect(togglePageSlugId).toHaveBeenCalledTimes(1);
+    expect(togglePageSlugId).toHaveBeenCalledWith('all');
   });
 });

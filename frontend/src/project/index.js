@@ -9,6 +9,7 @@ import i18n from '../_i18n/i18n-seafile-editor';
 import { CenteredLoading, toaster } from '../components';
 import eventBus from '../utils/event-bus';
 import projectAPI from './api/project-api';
+import ResourceDialogsProvider from './components/resource-dialogs-provider';
 import { BAR_TYPE, EVENT_BUS_TYPE, PROJECT_DEFAULT_SETTINGS } from './constants';
 import { DataProvider } from './hooks';
 import MainPanel from './main-panel';
@@ -242,16 +243,18 @@ const Project = () => {
       useNotification={true}
     >
       <I18nextProvider i18n={i18n}>
-        <div className="seaqa-project">
-          {isLoading ? (
-            <CenteredLoading />
-          ) : (
-            <PortalSettingsProvider projectUuid={projectUuid} isActive={activeBar[0] === BAR_TYPE.PORTAL_SETTINGS}>
-              <SidePanel activeBar={activeBar} toggleBar={toggleBar} settings={settings} />
-              <MainPanel activeBar={activeBar} settings={settings} modifySettings={modifySettings} toggleBar={toggleBar} modifyLocalBar={modifyLocalBar} />
-            </PortalSettingsProvider>
-          )}
-        </div>
+        <ResourceDialogsProvider projectUuid={projectUuid} workspaceID={workspaceID} projectName={projectName}>
+          <div className="seaqa-project">
+            {isLoading ? (
+              <CenteredLoading />
+            ) : (
+              <PortalSettingsProvider projectUuid={projectUuid} isActive={activeBar[0] === BAR_TYPE.PORTAL_SETTINGS}>
+                <SidePanel activeBar={activeBar} toggleBar={toggleBar} settings={settings} />
+                <MainPanel activeBar={activeBar} settings={settings} modifySettings={modifySettings} toggleBar={toggleBar} modifyLocalBar={modifyLocalBar} />
+              </PortalSettingsProvider>
+            )}
+          </div>
+        </ResourceDialogsProvider>
       </I18nextProvider>
     </DataProvider>
   );

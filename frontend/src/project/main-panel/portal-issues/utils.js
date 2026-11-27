@@ -69,7 +69,7 @@ export const generateCreateTicketOption = ({ row, columns }, callback) => {
   return {
     key: 'create_ticket',
     label: gettext('Create related ticket'),
-    callback: () => callback && callback(row),
+    callback: () => callback && callback({ row, columns }),
   };
 };
 
@@ -83,7 +83,7 @@ export const generateLinkAnExistingTicketOption = ({ row, columns }, callback) =
   return {
     key: 'link_an_existing_ticket',
     label: gettext('Link an existing ticket'),
-    callback: () => callback && callback(row),
+    callback: () => callback && callback({ row, columns }),
   };
 };
 

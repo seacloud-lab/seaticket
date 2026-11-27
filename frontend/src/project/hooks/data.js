@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import deepcopy from 'deep-copy';
 import _ from 'lodash';
 import userAPI from '@/api/user-api';
@@ -21,8 +21,9 @@ import { PortalIssuesMetadataProvider } from '../main-panel/portal-issues/hooks'
 import { TagsProvider } from '../main-panel/tags/hooks/tags';
 import { MetadataProvider, CloseLinkedIssuesProvider } from '../main-panel/tickets/hooks';
 import { shouldReload } from '../utils';
+import { DataContext } from './data-context';
 
-const DataContext = React.createContext(null);
+export { useData } from './data-context';
 
 const { ASSIGNEES, CREATOR, MODIFIED_TIME, STATE } = PREDEFINED_TICKET_COLUMN_NAME;
 const myTicketViews = [
@@ -131,6 +132,13 @@ export const DataProvider = ({
   children
 }) => {
   const [data, setData] = useState({ version: 0 });
+  const rowLinkVersionsRef = useRef({});
+
+  const invalidateRowLinkReads = useCallback((tableNames) => {
+    new Set(tableNames.filter(Boolean)).forEach(tableName => {
+      rowLinkVersionsRef.current[tableName] = (rowLinkVersionsRef.current[tableName] || 0) + 1;
+    });
+  }, []);
 
   const updateData = useCallback((data) => {
     data.version = data.version + 1;
@@ -372,7 +380,15 @@ export const DataProvider = ({
       recordsName = TICKET_TABLE_NAME;
     }
 
-    let func = () => api().then(res => {
+    let func = async () => {
+      let res;
+      let rowLinkVersion;
+      do {
+        rowLinkVersion = rowLinkVersionsRef.current[tableName];
+        res = await api();
+        // Retry reads that overlap a confirmed link write, for both the cache
+        // and the returned list data. Later reads remain authoritative.
+      } while (rowLinkVersionsRef.current[tableName] !== rowLinkVersion);
       const records = res.data[recordsName];
       const rows = Array.isArray(records) ? records : [];
       const linkedRecords = res?.data?.linked_records || {};
@@ -429,7 +445,7 @@ export const DataProvider = ({
         });
       }
       return _.merge(res, { data: { has_more: rows.length >= limit } });
-    });
+    };
 
     if (!use_cache) {
       return func();
@@ -569,29 +585,31 @@ export const DataProvider = ({
 
   const modifyRowLink = useCallback((table1Update, table2Update, api) => {
     const _updateTableData = (data, tableUpdate) => {
-      const { tableName = '', rowId = '', rowUpdate = {}, linkedRecords = {} } = tableUpdate || {};
+      const { tableName = '', rowId = '', rowUpdate = {}, linkedRecords = {}, linkedGithubIssueStateMap = {} } = tableUpdate || {};
 
       let table = data[tableName];
       if (table) {
         const idRowMap = table.id_row_map || {};
         const oldRow = idRowMap[rowId];
-        let rowData = rowUpdate;
+        let rowData = { ...rowUpdate };
         if (tableName === TICKET_TABLE_NAME && oldRow) {
           const key = Object.keys(rowUpdate)[0];
           const oldValue = oldRow[key] || [];
           const addedValue = rowUpdate[key] || [];
-          const newValue = [...oldValue, ...addedValue];
+          const newValue = Array.from(new Set([...oldValue, ...addedValue]));
           rowData[key] = newValue;
         }
         data[tableName] = {
           ...table,
           id_row_map: { ...idRowMap, [rowId]: { ...oldRow, ...rowData } },
           linked_records: { ...table.linked_records, ...linkedRecords },
+          linked_github_issue_state_map: { ...table.linked_github_issue_state_map, ...linkedGithubIssueStateMap },
         };
       }
     };
 
     return api().then(res => {
+      invalidateRowLinkReads([table1Update?.tableName, table2Update?.tableName]);
       setData(data => {
         const newData = deepcopy(data);
         _updateTableData(newData, table1Update);
@@ -601,7 +619,7 @@ export const DataProvider = ({
       });
       return res;
     });
-  }, []);
+  }, [invalidateRowLinkReads]);
 
   const modifyRows = useCallback((tableName, rowsUpdate = [], api) => {
     return api().then(res => {
@@ -716,6 +734,7 @@ export const DataProvider = ({
 
   const insertRowByLink = useCallback((linkedTableName, tableName, linkedRecord, rowId, rowData, callback) => {
     if (!linkedTableName || !tableName) return;
+    invalidateRowLinkReads([linkedTableName, tableName]);
     setData(data => {
       const newData = initDataWithInsertRow(data, linkedTableName);
       const table = newData[tableName];
@@ -731,7 +750,7 @@ export const DataProvider = ({
         version: data.version + 1,
       };
     });
-  }, [initDataWithInsertRow]);
+  }, [initDataWithInsertRow, invalidateRowLinkReads]);
 
   const restoreRows = useCallback((tableName, rowIds = []) => {
     if (!tableName) return;
@@ -839,12 +858,4 @@ export const DataProvider = ({
       </AIChatToolsProvider>
     </DataContext.Provider>
   );
-};
-
-export const useData = () => {
-  const context = useContext(DataContext);
-  if (!context) {
-    throw new Error('\'DataContext\' is null');
-  }
-  return context;
 };

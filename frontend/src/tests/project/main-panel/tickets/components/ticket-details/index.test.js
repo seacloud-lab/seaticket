@@ -2,8 +2,10 @@ import React, { act } from 'react';
 import { screen } from '@testing-library/react';
 import { createRoot } from 'react-dom/client';
 import { ticketsAPI } from '@/project/api';
+import { EVENT_BUS_TYPE } from '@/project/constants';
 import { useData } from '@/project/hooks';
 import TicketDetails from '@/project/main-panel/tickets/components/ticket-details';
+import eventBus from '@/utils/event-bus';
 
 jest.mock('reactstrap', () => ({ Button: () => null }));
 jest.mock('@seafile/seafile-editor', () => ({}));
@@ -24,7 +26,7 @@ jest.mock('@/project/api', () => ({ ticketsAPI: {
   listProjectTicketActivities: jest.fn(),
   modifyProjectTicket: jest.fn(),
 } }));
-jest.mock('@/project/constants', () => ({ EVENT_BUS_TYPE: {} }));
+jest.mock('@/project/constants', () => ({ EVENT_BUS_TYPE: { TICKET_TASK_CREATED: 'task-created' } }));
 jest.mock('@/project/hooks', () => ({
   useMetadata: () => ({}),
   useData: jest.fn(),
@@ -146,7 +148,7 @@ describe('Ticket detail and activity requests', () => {
       if (source === 'modification') {
         await ref.current.onChange(ticket.id, { priority: 1 });
       } else {
-        ref.current.setActivities(`ticket_${ticket.id}`, previous => [...previous, newActivity]);
+        eventBus.dispatch(EVENT_BUS_TYPE.TICKET_TASK_CREATED, { projectUuid: 'project', rowId: String(ticket.id), activities: [newActivity] });
       }
     });
     expect(screen.getAllByTestId('activity-2')).toHaveLength(1);
@@ -176,7 +178,7 @@ describe('Ticket detail and activity requests', () => {
       if (source === 'modification') {
         await ref.current.onChange(ticket.id, { priority: 1 });
       } else {
-        ref.current.setActivities(`ticket_${ticket.id}`, previous => [...previous, newActivity]);
+        eventBus.dispatch(EVENT_BUS_TYPE.TICKET_TASK_CREATED, { projectUuid: 'project', rowId: String(ticket.id), activities: [newActivity] });
       }
     });
 
@@ -285,7 +287,7 @@ describe('Ticket detail and activity requests', () => {
       expect(screen.queryByTestId('activity-A')).toBeNull();
       expect(screen.queryByRole('alert')).toBeNull();
       expect(updateTicket.mock.calls).toEqual(publishedDetails);
-      expect(updateTicket).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'B' }));
+      expect(updateTicket).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'B' }), { columns: [] });
       expect(ticketsAPI.listProjectTicketActivities).toHaveBeenCalledTimes(1);
       expect(ticketsAPI.listProjectTicketActivities.mock.calls[0][1]).toBe('B');
     });
@@ -371,7 +373,7 @@ describe('Ticket detail and activity requests', () => {
       expect(screen.queryByTestId('activity-saved-A')).toBeNull();
       expect(ticketsAPI.listProjectTicketActivities.mock.calls.map(call => call[1])).toEqual(['A', 'B']);
       expect(updateTicket.mock.calls).toEqual(publishedDetails);
-      expect(updateTicket).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'B' }));
+      expect(updateTicket).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'B' }), { columns: [] });
     });
   });
 });

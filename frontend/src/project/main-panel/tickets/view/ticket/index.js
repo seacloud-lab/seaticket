@@ -8,19 +8,18 @@ import {
   PERMISSION_TYPES
 } from '@/constants';
 import { useData, useTags, useMetadata } from '@/project/hooks';
+import { useLinkedTicketUpdate } from '@/project/hooks/link-ticket';
+import { useRelatedIssues } from '@/project/hooks/related-issues';
+import { useResourceUpdate } from '@/project/hooks/resource-dialog';
+import { useTicketCreation } from '@/project/hooks/ticket-creation';
+import { useTicketTaskCreated } from '@/project/hooks/ticket-task-created';
 import { useAIChatTools } from '@/project/main-panel/ask/hooks';
-import { CONNECTION_TYPE } from '@/project/main-panel/connections/constants';
 import { useConnections } from '@/project/main-panel/connections/hooks';
-import { getTableName } from '@/project/main-panel/connections/utils';
-import { getColumnByName } from '@/sea-metadata/utils/column';
 import { convertRowToKeyValue, getRowById } from '@/sea-metadata/utils/row';
 import { isFunction } from '@/utils/type-detection';
 import { Utils } from '@/utils/utils';
 import { ticketsAPI } from '../../../../api';
 import { KeyboardShortcuts } from '../../components';
-import CreateKBRecordDialog from '../../components/create-kb-record-dialog';
-import CreateTaskDialog from '../../components/create-task-dialog';
-import RelatedIssuesDialog from '../../components/related-issues-dialog';
 import TicketDetails from '../../components/ticket-details';
 import {
   TICKET_STATE_CONFIG, PREDEFINED_TICKET_COLUMN_NAME, TICKET_TABLE_NAME, TICKET_CHILDREN_PAGE_SLUG_ID,
@@ -28,7 +27,7 @@ import {
 } from '../../constants';
 import { Ticket as TicketModel } from '../../models';
 import {
-  convertTicketToKb, generatorTicketsContextMenuOptions,
+  generatorTicketsContextMenuOptions,
 } from '../../utils';
 import Header from './header';
 
@@ -44,19 +43,15 @@ const Ticket = ({
   const [isShowStickyHeader, setIsShowStickyHeader] = useState(false);
   const [isShowKeyboardShortcuts, setIsShowKeyboardShortcuts] = useState(false);
   const [linkedRecords, setLinkedRecords] = useState({});
-  const [isShowRelatedIssuesDialog, setIsShowRelatedIssuesDialog] = useState(false);
-  const [isShowCreateKBRecordDialog, setIsShowCreateKBRecordDialog] = useState(false);
-  const [isShowCreateTaskDialog, setIsShowCreateTaskDialog] = useState(false);
-  const [createTaskConnectionType, setCreateTaskConnectionType] = useState(CONNECTION_TYPE.GENERAL_TASK);
 
   const { typesData } = useMetadata();
   const { connections } = useConnections();
-  const { modifyLocalRow, getTableByName, deleteRow, insertRowByLink } = useData();
+  const { modifyLocalRow, getTableByName, deleteRow } = useData();
   const { tagsData } = useTags();
   const { handleResolveAttachmentsByAI } = useAIChatTools();
+  const { openRelatedIssues } = useRelatedIssues();
+  const { createKnowledgeBaseRecord: openCreateKB, createTask: openCreateTask } = useTicketCreation();
   const { loading: isLoadingNotifications, markProjectNoticeAsReadByTicket } = useNotification();
-
-  const lastTicketID = useRef('');
 
   const user = useMemo(() => {
     return {
@@ -69,6 +64,7 @@ const Ticket = ({
   const ticketRef = useRef(null);
   const headerRef = useRef(null);
   const detailsRef = useRef(null);
+  const pendingTicketUpdatesRef = useRef([]);
 
   const handleScroll = useCallback((event) => {
     if (!event) return;
@@ -101,65 +97,38 @@ const Ticket = ({
     return ticketsAPI.deleteProjectTicketComment(projectUuid, ticketID, commentID);
   }, []);
 
+  useResourceUpdate({ projectUuid, tableName: TICKET_TABLE_NAME, rowId: ticketID, onUpdate: ({ deleted }) => {
+    if (deleted) togglePageSlugId(TICKET_CHILDREN_PAGE_SLUG_ID.ALL);
+  } });
+
   const findRelatedIssues = useCallback(() => {
-    setIsShowRelatedIssuesDialog(true);
-  }, []);
+    openRelatedIssues({ row: ticket });
+  }, [openRelatedIssues, ticket]);
 
   const createKnowledgeBaseRecord = useCallback(() => {
-    setIsShowCreateKBRecordDialog(true);
-  }, []);
+    openCreateKB({ ticket });
+  }, [openCreateKB, ticket]);
 
-  const createTask = useCallback((_, connectionType = CONNECTION_TYPE.GENERAL_TASK) => {
-    setCreateTaskConnectionType(connectionType);
-    setIsShowCreateTaskDialog(true);
-  }, []);
+  const createTask = useCallback((_, connectionType) => {
+    openCreateTask({ ticket, connectionType });
+  }, [openCreateTask, ticket]);
 
-  const handleTaskCreated = useCallback(({ task, connection, activities = [], ticket: ticketUpdate = null }) => {
-    if (!ticket) return;
+  const applyTicketUpdate = useCallback((updateTicket, linkedRecords) => {
+    if (isLoading) pendingTicketUpdatesRef.current.push(updateTicket);
+    setTicket(current => {
+      const update = updateTicket(current);
+      return current?._update ? deepCopy(current._update(update)) : { ...current, ...update };
+    });
+    setLinkedRecords(previous => ({ ...previous, ...linkedRecords }));
+  }, [isLoading]);
 
-    const newValueKey = `${connection.id}_${task._pk}`;
-    const oldValue = ticket.linked_connection_records || [];
-    const newValue = Array.isArray(oldValue) ? Array.from(new Set([...oldValue, newValueKey])) : [newValueKey];
+  useTicketTaskCreated({ projectUuid, rowId: ticketID, onUpdate: ({ updateTicket, linkedRecords }) => {
+    applyTicketUpdate(updateTicket, linkedRecords);
+  } });
 
-    // update cache
-    const table = getTableByName(TICKET_TABLE_NAME, null);
-    if (table) {
-      const columns = Object.values(table.key_column_map);
-      const linkedConnectionRecordsColumn = getColumnByName(columns, PREDEFINED_TICKET_COLUMN_NAME.LINKED_CONNECTION_RECORDS);
-      const update = { [linkedConnectionRecordsColumn.key]: newValue };
-      if (ticketUpdate) {
-        const stateColumn = getColumnByName(columns, PREDEFINED_TICKET_COLUMN_NAME.STATE);
-        const substateColumn = getColumnByName(columns, PREDEFINED_TICKET_COLUMN_NAME.SUB_STATE);
-        const modifiedTimeColumn = getColumnByName(columns, PREDEFINED_TICKET_COLUMN_NAME.MODIFIED_TIME);
-        const closedTimeColumn = getColumnByName(columns, PREDEFINED_TICKET_COLUMN_NAME.CLOSED_TIME);
-        if (ticketUpdate.state !== undefined && stateColumn) update[stateColumn.key] = ticketUpdate.state;
-        if (ticketUpdate.substate !== undefined && substateColumn) update[substateColumn.key] = ticketUpdate.substate;
-        if (ticketUpdate.modified_time !== undefined && modifiedTimeColumn) update[modifiedTimeColumn.key] = ticketUpdate.modified_time;
-        if (ticketUpdate.closed_time !== undefined && closedTimeColumn) update[closedTimeColumn.key] = ticketUpdate.closed_time;
-      }
-      const connectionTableName = getTableName(connection);
-      const linked_records = { [newValueKey]: task.title };
-      insertRowByLink(connectionTableName, TICKET_TABLE_NAME, linked_records, ticketID, update, () => {
-        // nothing todo
-      });
-    }
-
-    const update = { linked_connection_records: newValue };
-    if (ticketUpdate) {
-      if (ticketUpdate.state !== undefined) update.state = ticketUpdate.state;
-      if (ticketUpdate.substate !== undefined) update.substate = ticketUpdate.substate;
-      if (ticketUpdate.closed_time !== undefined) update.closed_time = ticketUpdate.closed_time;
-    }
-    const newTicket = ticket._update(update);
-
-    setTicket(deepCopy(newTicket));
-    setLinkedRecords((prev) => ({ ...prev, [newValueKey]: { _pk: task._pk, title: task.title, connection_type: connection.type } }));
-
-    if (Array.isArray(activities) && activities.length > 0 && isFunction(detailsRef?.current?.setActivities)) {
-      detailsRef.current.setActivities(`${TICKET_TYPE}_${ticketID}`, prevActivities => [...prevActivities, ...activities]);
-    }
-    return;
-  }, [ticket, ticketID, getTableByName, insertRowByLink]);
+  useLinkedTicketUpdate({ projectUuid, tableName: TICKET_TABLE_NAME, rowId: ticketID, onUpdate: ({ updateTicket, linkedRecordsInfo }) => {
+    applyTicketUpdate(updateTicket, linkedRecordsInfo);
+  } });
 
   const createMoreOptions = useCallback(() => {
     if (!ticket) return [];
@@ -222,27 +191,44 @@ const Ticket = ({
     });
   }, [ticket]);
 
+  const updateRowsCacheRef = useRef(handleUpdateRowsCacheData);
+  updateRowsCacheRef.current = handleUpdateRowsCacheData;
   useEffect(() => {
-    if (lastTicketID.current === ticketID) return;
-    lastTicketID.current = ticketID;
+    let isCurrentRequest = true;
     setLoading(true);
     setTicket(null);
+    setLinkedRecords({});
     setLoadError('');
+    pendingTicketUpdatesRef.current = [];
 
-    // Load ticket data
     ticketsAPI.getProjectTicket(projectUuid, ticketID).then(res => {
-      handleUpdateRowsCacheData(ticketID, res.data.ticket);
-      const ticket = new TicketModel(res.data.ticket);
+      if (!isCurrentRequest) return;
+      // Preserve local updates received while the detail request was in flight.
+      const ticketData = pendingTicketUpdatesRef.current.reduce((current, updateTicket) => ({
+        ...current, ...updateTicket(current),
+      }), res.data.ticket);
+      pendingTicketUpdatesRef.current = [];
+      updateRowsCacheRef.current(ticketID, ticketData);
+      const loadedTicket = new TicketModel(ticketData);
       setLoadError(res.data?.error_msg || '');
-      setTicket(ticket);
-      setLinkedRecords(res.data?.linked_records_info || {});
+      setTicket(current => {
+        if (!current) return loadedTicket;
+        return deepCopy(loadedTicket._update({
+          ...current,
+          linked_connection_records: Array.from(new Set([
+            ...loadedTicket.linked_connection_records, ...(current.linked_connection_records || []),
+          ])),
+        }));
+      });
+      setLinkedRecords(current => ({ ...(res.data?.linked_records_info || {}), ...current }));
       setLoading(false);
     }).catch(error => {
-      const errorMessage = Utils.getErrorMsg(error);
-      toaster.danger(errorMessage);
+      if (!isCurrentRequest) return;
+      toaster.danger(Utils.getErrorMsg(error));
       setLoading(false);
     });
-  }, [projectUuid, ticketID, handleUpdateRowsCacheData, markProjectNoticeAsReadByTicket]);
+    return () => { isCurrentRequest = false; };
+  }, [projectUuid, ticketID]);
 
   useEffect(() => {
     if (isLoading || isLoadingNotifications || !ticket) return;
@@ -307,33 +293,6 @@ const Ticket = ({
       />
       {isShowKeyboardShortcuts && (
         <KeyboardShortcuts toggle={() => setIsShowKeyboardShortcuts(false)} />
-      )}
-      {isShowRelatedIssuesDialog && (
-        <RelatedIssuesDialog
-          projectUuid={projectUuid}
-          ticketId={ticket._id || ticket.id}
-          workspaceID={workspaceID}
-          projectName={projectName}
-          onClose={() => setIsShowRelatedIssuesDialog(false)}
-        />
-      )}
-      {isShowCreateKBRecordDialog && (
-        <CreateKBRecordDialog
-          projectUuid={projectUuid}
-          ticket={convertTicketToKb(ticket)}
-          onClose={() => setIsShowCreateKBRecordDialog(false)}
-        />
-      )}
-      {isShowCreateTaskDialog && (
-        <CreateTaskDialog
-          projectUuid={projectUuid}
-          workspaceID={workspaceID}
-          projectName={projectName}
-          ticket={ticket}
-          connectionType={createTaskConnectionType}
-          onClose={() => setIsShowCreateTaskDialog(false)}
-          onSubmitCallback={handleTaskCreated}
-        />
       )}
     </div>
   );

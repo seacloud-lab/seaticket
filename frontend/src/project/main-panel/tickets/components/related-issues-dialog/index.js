@@ -13,8 +13,8 @@ import { Utils } from '@/utils/utils';
 
 import './index.css';
 
-const RelatedIssuesDialog = ({ projectUuid, ticketId, workspaceID, projectName, onClose }) => {
-  const [status, setStatus] = useState(''); // 'loading', 'error', 'loaded'
+const RelatedIssuesDialog = ({ projectUuid, ticketId, onClose }) => {
+  const [status, setStatus] = useState('loading'); // 'loading', 'error', 'loaded'
   const [relatedIssues, setRelatedIssues] = useState([]);
   const [errMessage, setErrMessage] = useState('');
   const [activeResultIndex, setActiveResultIndex] = useState(-1);
@@ -49,23 +49,26 @@ const RelatedIssuesDialog = ({ projectUuid, ticketId, workspaceID, projectName, 
     setActiveResultIndex(nextActiveResultIndex);
   }, [activeResultIndex, relatedIssues]);
 
-  const getDetails = useCallback(() => {
+  useEffect(() => {
+    let isCurrentRequest = true;
     setStatus('loading');
+    setErrMessage('');
+    setRelatedIssues([]);
+    setActiveResultIndex(-1);
     ticketsAPI.findRelatedIssues(projectUuid, ticketId)
       .then(res => {
-        const relatedRecords = res.data.related_records || [];
+        if (!isCurrentRequest) return;
+        const relatedRecords = Array.isArray(res.data.related_records) ? res.data.related_records : [];
         setRelatedIssues(relatedRecords);
         setStatus('loaded');
       }).catch((error) => {
+        if (!isCurrentRequest) return;
         const errMessage = Utils.getErrorMsg(error);
         setErrMessage(errMessage);
         setStatus('error');
       });
+    return () => { isCurrentRequest = false; };
   }, [projectUuid, ticketId]);
-
-  useEffect(() => {
-    getDetails();
-  }, [getDetails]);
 
   const getTypeName = (issue) => {
     const connectionType = issue.type;
@@ -94,14 +97,16 @@ const RelatedIssuesDialog = ({ projectUuid, ticketId, workspaceID, projectName, 
                 <div className='issues-list-container'>
                   {relatedIssues.map((issue, index) => {
                     return (
-                      <div className='issues-list-item' key={`${issue._id}-${issue.type}`} onClick={() => expandItem(index)}>
+                      <div className='issues-list-item' key={`${issue.type}_${issue.connection_id}_${issue._id}`} onClick={() => expandItem(index)}>
                         <div className='issues-list-item-icon'>
                           <img src={getResourceIconURL(issue.type)} alt={getTypeName(issue)} className='seaqa-project-connection-type-icon' />
                         </div>
                         <div className='issues-list-item-content'>
                           <div className='issues-list-item-title'>
-                            <div>
-                              <span className='text-truncate issues-list-item-title-content'>{issue.title || gettext('No title')}</span>
+                            <div className="issues-list-item-title-content-container">
+                              <span className='text-truncate issues-list-item-title-content' title={issue.title || gettext('No title')}>
+                                {issue.title || gettext('No title')}
+                              </span>
                             </div>
                             <div className='issues-list-item-time' title={formatWithTimezone(issue.modified_time)}>
                               {dayjs(issue.modified_time || '').format('YYYY-MM-DD HH:mm:ss')}

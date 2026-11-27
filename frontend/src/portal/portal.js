@@ -6,6 +6,7 @@ import { name, username, avatarURL } from '@/constants';
 import User from '@/models/user';
 import { normalizeHomePageStyle } from '@/portal/main-panel/home/utils';
 import SettingPanel from '@/portal/setting-panel';
+import ResourceDialogsProvider from '@/project/components/resource-dialogs-provider';
 import { DataProvider } from '@/project/hooks';
 import { portalAPI } from './api';
 import { PORTAL_PAGE } from './constants';
@@ -155,57 +156,59 @@ const Portal = () => {
             isSubscribeConnectionsSyncStatus={false}
             useNotification={false}
           >
-            {isEditMode && <LeftBar isShowEditPanel={isShowEditPanel} openEditPanel={openEditPanel} />}
-            <div className="seaqa-portal-body" style={portalThemeStyle}>
-              <TopBar
-                isEditMode={isEditMode}
-                activePage={activePage}
-                onPageChange={onPageChange}
-                isAnonymous={isAnonymous}
-                isExternalUser={isExternalUser}
-                canAccessIssues={canAccessIssues}
-                canAccessEmails={canAccessEmails}
-                portalName={currentPortalName}
-                portalLogo={currentPortalLogo}
-              />
-              <MainPanel
-                isEditMode={isEditMode}
-                activePage={activePage}
-                projectUuid={projectUuid}
-                projectName={projectName}
-                workspaceID={workspaceID}
-                isAnonymous={isAnonymous}
-                onPageChange={onPageChange}
-                onHomeChatSend={onHomeChatSend}
-                canAccessIssues={canAccessIssues}
-                canAccessEmails={canAccessEmails}
-                isExternalUser={isExternalUser}
-                portalThemeColor={portalThemeColor}
-                updateHomeSetting={updateHomeSetting}
-                setIsShowEditPanel={setIsShowEditPanel}
-                homePageStyle={homePageStyle}
-                setHomePageStyle={setHomePageStyle}
-                activeCard={activeCard}
-                setActiveCard={setActiveCard}
-              />
-            </div>
-            {isEditMode && isShowEditPanel && (
-              <SettingPanel
-                homePageStyle={homePageStyle}
-                activeCard={activeCard}
-                setActiveCard={setActiveCard}
-                setHomePageStyle={setHomePageStyle}
-                updateHomeSetting={updateHomeSetting}
-                portalName={currentPortalName}
-                portalLogo={currentPortalLogo}
-                portalThemeColor={portalThemeColor}
-                setPortalName={setCurrentPortalName}
-                setPortalLogo={setCurrentPortalLogo}
-                setPortalThemeColor={setPortalThemeColor}
-                onClose={closeEditPanel}
-                activePage={activePage}
-              />
-            )}
+            <ResourceDialogsProvider projectUuid={projectUuid} workspaceID={workspaceID} projectName={projectName} isSupportPortal={true}>
+              {isEditMode && <LeftBar isShowEditPanel={isShowEditPanel} openEditPanel={openEditPanel} />}
+              <div className="seaqa-portal-body" style={portalThemeStyle}>
+                <TopBar
+                  isEditMode={isEditMode}
+                  activePage={activePage}
+                  onPageChange={onPageChange}
+                  isAnonymous={isAnonymous}
+                  isExternalUser={isExternalUser}
+                  canAccessIssues={canAccessIssues}
+                  canAccessEmails={canAccessEmails}
+                  portalName={currentPortalName}
+                  portalLogo={currentPortalLogo}
+                />
+                <MainPanel
+                  isEditMode={isEditMode}
+                  activePage={activePage}
+                  projectUuid={projectUuid}
+                  projectName={projectName}
+                  workspaceID={workspaceID}
+                  isAnonymous={isAnonymous}
+                  onPageChange={onPageChange}
+                  onHomeChatSend={onHomeChatSend}
+                  canAccessIssues={canAccessIssues}
+                  canAccessEmails={canAccessEmails}
+                  isExternalUser={isExternalUser}
+                  portalThemeColor={portalThemeColor}
+                  updateHomeSetting={updateHomeSetting}
+                  setIsShowEditPanel={setIsShowEditPanel}
+                  homePageStyle={homePageStyle}
+                  setHomePageStyle={setHomePageStyle}
+                  activeCard={activeCard}
+                  setActiveCard={setActiveCard}
+                />
+              </div>
+              {isEditMode && isShowEditPanel && (
+                <SettingPanel
+                  homePageStyle={homePageStyle}
+                  activeCard={activeCard}
+                  setActiveCard={setActiveCard}
+                  setHomePageStyle={setHomePageStyle}
+                  updateHomeSetting={updateHomeSetting}
+                  portalName={currentPortalName}
+                  portalLogo={currentPortalLogo}
+                  portalThemeColor={portalThemeColor}
+                  setPortalName={setCurrentPortalName}
+                  setPortalLogo={setCurrentPortalLogo}
+                  setPortalThemeColor={setPortalThemeColor}
+                  onClose={closeEditPanel}
+                  activePage={activePage}
+                />
+              )}
+            </ResourceDialogsProvider>
           </DataProvider>
         )}
       </div>

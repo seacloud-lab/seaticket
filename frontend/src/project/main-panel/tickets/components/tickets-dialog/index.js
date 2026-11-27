@@ -67,7 +67,7 @@ const Main = ({
     const linkedConnectionRecordsColumn = getColumnByName(metadata.current.columns, PREDEFINED_TICKET_COLUMN_NAME.LINKED_CONNECTION_RECORDS);
     const titleColumn = getColumnByName(metadata.current.columns, PREDEFINED_TICKET_COLUMN_NAME.TITLE);
     const title = getCellValueByColumn(ticket, titleColumn);
-    onSubmit({ id: ticket._pk, title }, linkedConnectionRecordsColumn, (error) => {
+    onSubmit({ _pk: ticket._pk, title }, linkedConnectionRecordsColumn, (error) => {
       if (error) {
         setIsSubmitting(false);
         return;

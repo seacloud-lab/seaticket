@@ -1,5 +1,7 @@
 /* eslint-disable react/prop-types */
 import React, { useContext, useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle } from 'react';
+import deepCopy from 'deep-copy';
+import { isEqual } from 'lodash';
 import toaster from '@/components/toaster';
 import { isModF } from '@/utils/hotkey';
 import { isFunction } from '@/utils/type-detection';
@@ -172,8 +174,9 @@ export const MetadataProvider = forwardRef(({
     });
   }, [metadata, storeRef, cascadeUpdateCells]);
 
-  const deleteRow = useCallback((rowId, { success_callback, fail_callback } = {}) => {
+  const deleteRow = useCallback((rowId, { success_callback, fail_callback, row_data } = {}) => {
     storeRef.current.deleteRow(rowId, {
+      row_data,
       fail_callback: (error) => {
         fail_callback && fail_callback(error);
         error && toaster.danger(error);
@@ -241,6 +244,65 @@ export const MetadataProvider = forwardRef(({
     });
     modifyRow(rowId, rowUpdate, oldRowData, false, { success_callback, fail_callback });
   }, [metadata, modifyRow]);
+
+  const createMoreOptions = useCallback((row, { onRowChange } = {}) => {
+    const store = storeRef.current;
+    if (!row || !store?.data || !isFunction(createContextMenuOptions)) return [];
+    const rowId = row._id;
+    let previousRow = deepCopy(getRowById(store.data, rowId));
+    const notifyRowChange = () => {
+      if (!store.data) return;
+      const currentRow = getRowById(store.data, rowId);
+      const rowUpdate = {};
+      Object.keys(currentRow || {}).forEach(key => {
+        if (!isEqual(previousRow?.[key], currentRow[key])) rowUpdate[key] = currentRow[key];
+      });
+      previousRow = deepCopy(currentRow);
+      if (isFunction(onRowChange) && (!currentRow || Object.keys(rowUpdate).length > 0)) {
+        onRowChange({ rowUpdate, deleted: !currentRow, columns: store.data.columns });
+      }
+    };
+    const run = callback => (...args) => {
+      if (storeRef.current !== store) return;
+      return callback(...args);
+    };
+    const withNotify = (callbacks = {}) => {
+      let notified = false;
+      return {
+        ...callbacks,
+        success_callback: (...args) => {
+          // Store reuses success callbacks for undo/redo; notify only for the initial operation.
+          if (!notified) {
+            notified = true;
+            notifyRowChange();
+          }
+          callbacks.success_callback && callbacks.success_callback(...args);
+        },
+      };
+    };
+    const options = createContextMenuOptions({
+      isGroupView: false,
+      selectedPosition: { groupRowIndex: 0, rowIdx: 0 },
+      rowMetrics: { idSelectedRowMap: {} },
+      table: { ...store.data, id_row_map: { ...store.data.id_row_map, [rowId]: row } },
+      rowGetterByIndex: () => row,
+      context,
+      hideMenu: () => {},
+      modifyRow: run((id, update, oldData, isCopyPaste, callbacks) => modifyRow(id, update, oldData, isCopyPaste, withNotify(callbacks))),
+      modifyRows: run((ids, updates, oldData, isCopyPaste, callbacks) => modifyRows(ids, updates, oldData, isCopyPaste, withNotify(callbacks))),
+      deleteRow: run((id, callbacks) => deleteRow(id, { ...withNotify(callbacks), row_data: row })),
+      deleteRows: run((ids, callbacks) => deleteRows(ids, withNotify(callbacks))),
+      updateLocalRow: run((id, update) => { updateLocalRow(id, update); notifyRowChange(); }),
+    }) || [];
+    return options.map(option => !option?.callback ? option : {
+      ...option,
+      callback: run((...args) => {
+        const result = option.callback(...args);
+        // Some lists have their own asynchronous operations, such as mail trash.
+        return result?.then ? result.then(value => { notifyRowChange(); return value; }) : result;
+      }),
+    });
+  }, [createContextMenuOptions, modifyRow, modifyRows, deleteRow, deleteRows, updateLocalRow]);
 
   const moveRow = useCallback(() => {
     // todo
@@ -386,7 +448,8 @@ export const MetadataProvider = forwardRef(({
   useImperativeHandle(ref, () => ({
     getData: () => metadata,
     getSelectedRowIds: () => selectedRowIds,
-  }), [metadata, selectedRowIds]);
+    createMoreOptions,
+  }), [metadata, selectedRowIds, createMoreOptions]);
 
   return (
     <MetadataContext.Provider
