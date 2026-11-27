@@ -7,6 +7,7 @@ import pytest
 import pytz
 from django.contrib.auth.models import AnonymousUser
 from django.core.cache import cache
+from requests.exceptions import ReadTimeout
 
 from seahub.portal.apis import PortalCustomerMemberView, PortalCustomerMembersView, PortalCustomerView, PortalCustomersView, PortalCustomerEmailsView, PortalExternalInvitationsView, \
     PortalExternalLoginSendCodeView, PortalExternalUsersView, PortalIssueCommentsView, PortalIssueView, PortalIssuesView, PortalMyIssuesView, \
@@ -906,7 +907,14 @@ class TestPortalCustomerIssueAccess:
             'tickets.due_date': '2026-02-01',
         }]}
 
-        def query_rows(_project_uuid, sql, *args, **kwargs):
+        def query_rows(_project_uuid, sql, params=None, **_kwargs):
+            if 'FROM `agent_runs`' in sql:
+                assert params == ['email', f'{connection.id}_11']
+                return {'results': [{
+                    'owner_source_id': f'{connection.id}_11',
+                    'status': 'completed',
+                    'latest_run_id': 1,
+                }]}
             if 'SELECT `thread_id`, `email_from`, `modified_time`' in sql:
                 return {'results': [{
                     'thread_id': 11,
@@ -931,7 +939,11 @@ class TestPortalCustomerIssueAccess:
         assert 'unread' not in response.data['records'][0]
         assert 'is_replied' not in response.data['records'][0]
         assert response.data['records'][0]['modified_time'] == '2026-01-01'
+        assert response.data['records'][0]['title'] == 'A question'
         assert response.data['records'][0]['ticket_pk'] == 23
+        assert 'ticket_title' not in response.data['records'][0]
+        assert response.data['records'][0]['processing_status'] == 'processed'
+        assert 'owner_source_id' not in response.data['records'][0]
         assert response.data['records'][0]['state'] == '0001'
         assert response.data['records'][0]['assignees'] == [{
             'email': 'assignee@example.com',
@@ -957,7 +969,16 @@ class TestPortalCustomerIssueAccess:
         assert 'ticket.`assignees` AS' not in sql
         assert 'ticket.`due_date` AS' not in sql
 
-    def test_team_emails_loads_participants_only_for_page_by_connection(self, factory, real_project):
+    @pytest.mark.parametrize('run_status, run_query_error, expected_statuses', [
+        ('completed', None, ['unprocessed', 'processed']),
+        ('failed', None, ['unprocessed', 'unprocessed']),
+        (None, None, ['unprocessed', 'unprocessed']),
+        pytest.param(None, ConnectionError('no such table: agent_runs'), ['unavailable', 'unavailable'], id='missing-run-table'),
+        pytest.param(None, ReadTimeout('Run query timed out'), ['unavailable', 'unavailable'], id='run-query-timeout'),
+    ])
+    def test_team_emails_loads_participants_and_statuses_only_for_page(
+        self, factory, real_project, run_status, run_query_error, expected_statuses,
+    ):
         customer = PortalCustomer.objects.create(project_uuid=str(real_project.uuid), name='Acme')
         member = self._create_external_member(real_project, customer)
         connections = []
@@ -979,7 +1000,17 @@ class TestPortalCustomerIssueAccess:
         _set_external_session(request, real_project.uuid, member.username)
         participant_thread_ids = {}
 
-        def query_rows(_project_uuid, sql, *args, **kwargs):
+        def query_rows(_project_uuid, sql, params=None, **_kwargs):
+            if 'FROM `agent_runs`' in sql:
+                if run_query_error is not None:
+                    raise run_query_error
+                if run_status is None:
+                    return {'results': []}
+                return {'results': [{
+                    'owner_source_id': f'{connections[1].id}_11',
+                    'status': run_status,
+                    'latest_run_id': 1,
+                }]}
             for index, connection in enumerate(connections):
                 if f'FROM `email_thread_{connection.id}` AS email_thread' in sql:
                     return {'results': [
@@ -1007,6 +1038,9 @@ class TestPortalCustomerIssueAccess:
         assert response.status_code == 200
         assert response.data['has_more'] is True
         assert participant_thread_ids == {connections[0].id: [12], connections[1].id: [11]}
+        run_query = next(call for call in seadb_api.query_rows.call_args_list if 'FROM `agent_runs`' in call.args[1])
+        assert run_query.kwargs['params'] == ['email', f'{connections[0].id}_12', f'{connections[1].id}_11']
+        assert [record['processing_status'] for record in response.data['records']] == expected_statuses
         assert [
             (record['connection_id'], record['_pk'], record['participants'])
             for record in response.data['records']
@@ -1074,6 +1108,8 @@ class TestPortalCustomerIssueAccess:
         participant_thread_ids = []
 
         def query_rows(_project_uuid, sql, *args, **kwargs):
+            if 'FROM `agent_runs`' in sql:
+                return {'results': []}
             if 'SELECT `thread_id`, `email_from`, `modified_time`' in sql:
                 assert f'FROM `email_{connection.id}` ' in sql
                 thread_ids_sql = sql.split(' IN (', 1)[1].split(')', 1)[0]
@@ -1128,7 +1164,7 @@ class TestPortalCustomerIssueAccess:
         } for record_id in range(1, 2001)]}
 
         def query_rows(_project_uuid, sql, *args, **kwargs):
-            if 'SELECT `thread_id`, `email_from`, `modified_time`' in sql:
+            if 'FROM `agent_runs`' in sql or 'SELECT `thread_id`, `email_from`, `modified_time`' in sql:
                 return {'results': []}
             return thread_results
 

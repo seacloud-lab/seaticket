@@ -19,6 +19,7 @@ class Store {
     this.viewId = props.viewId;
     this.data = null;
     this.startIndex = 0;
+    this.pendingPage = null;
     this.redos = [];
     this.undo = [];
     this.pendingOperations = [];
@@ -42,7 +43,7 @@ class Store {
   destroy = () => {
     this.viewId = '';
     this.data = null;
-    this.startIndex = 0;
+    this.initStartIndex();
     this.redos = [];
     this.undo = [];
     this.pendingOperations = [];
@@ -58,6 +59,7 @@ class Store {
 
   initStartIndex = () => {
     this.startIndex = 0;
+    this.pendingPage = null;
   };
 
   async recalculate() {
@@ -70,12 +72,28 @@ class Store {
     });
   }
 
+  async recalculateView() {
+    while (this.shouldLoadRemainingRows()) {
+      try {
+        if (!await this.appendNextPage(PER_LOAD_NUMBER)) break;
+      } catch {
+        if (this.data) this.data.hasIncompleteResults = true;
+        break;
+      }
+    }
+    if (this.data?.hasIncompleteResults && !this.shouldLoadRemainingRows()) {
+      this.data.hasIncompleteResults = false;
+    }
+    return this.recalculate();
+  }
+
   async loadMetadata(view, limit, isForceReload = false) {
     if (!view) {
       throw Error('View_not_exist');
     }
     if (!this.mounted) return;
     return context.getMetadata({ view_id: this.viewId, start: this.startIndex, limit, is_reload: isForceReload })?.then(res => {
+      if (!this.mounted) return;
       const rows = res?.data?.rows || [];
       const columnsWidth = context.localStorage.getItem('columns_width') || {};
       const columns = normalizeColumns(res?.data?.columns || [], columnsWidth, this.columnOrderRules);
@@ -98,7 +116,7 @@ class Store {
       if (isFunction(this.dataDidMount)) {
         this.dataDidMount(this.data);
       }
-      this.recalculate();
+      return this.recalculateView();
     });
   }
 
@@ -110,20 +128,47 @@ class Store {
   }
 
   async reload(limit = PER_LOAD_NUMBER) {
-    this.startIndex = 0;
+    this.initStartIndex();
     return this.loadMetadata(this.data.view, limit, true);
   }
 
   async loadMore(limit) {
-    if (!this.data || !this.mounted) return;
+    const appended = await this.appendNextPage(limit);
+    const completedPartialView = this.data?.hasIncompleteResults && !this.data.hasMore;
+    if (!appended && !completedPartialView) return;
+    if (completedPartialView) this.data = { ...this.data, hasIncompleteResults: false };
+    this.recalculate();
+    context.eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_DATA_CHANGED);
+    context.eventBus.dispatch(EVENT_BUS_TYPE.RE_SEARCH_ROWS);
+  }
+
+  async appendNextPage(limit) {
+    if (!this.data || !this.mounted) return false;
     const start = this.startIndex;
+    if (this.pendingPage?.start === start) return this.pendingPage.promise;
+
+    const page = { start };
+    this.pendingPage = page;
+    page.promise = this.appendPage(page, limit).catch(error => {
+      if (this.pendingPage === page && this.startIndex === start) throw error;
+      return false;
+    });
+    try {
+      return await page.promise;
+    } finally {
+      if (this.pendingPage === page) this.pendingPage = null;
+    }
+  }
+
+  async appendPage(page, limit) {
+    const { start } = page;
     const res = await context.getMetadata({ view_id: this.viewId, start, limit });
-    if (!this.data || !this.mounted || this.startIndex !== start) return;
+    if (!this.data || !this.mounted || this.pendingPage !== page || this.startIndex !== start) return false;
     const linked_records = res?.data?.linked_records || {};
     let rows = res?.data?.rows || [];
     if (!Array.isArray(rows) || rows.length === 0) {
       this.data.hasMore = false;
-      return;
+      return false;
     }
     rows = rows.map(r => new Row(r));
 
@@ -139,9 +184,7 @@ class Store {
     this.data.rowsCount = this.data.row_ids.length;
     this.data.linked_records = { ...this.data.linked_records, ...linked_records };
     this.startIndex = this.startIndex + loadedCount;
-    this.recalculate();
-    context.eventBus.dispatch(EVENT_BUS_TYPE.LOCAL_DATA_CHANGED);
-    context.eventBus.dispatch(EVENT_BUS_TYPE.RE_SEARCH_ROWS);
+    return true;
   }
 
   async updateRowData(newRowId) {
@@ -595,6 +638,12 @@ class Store {
   }
 
   // view
+  shouldLoadRemainingRows() {
+    if (!this.data?.hasMore || !context.getSetting('loadAllRowsOnViewChange', false)) return false;
+    const { filters, basic_filters, sorts, groupbys } = this.data.view;
+    return Boolean(filters?.length || basic_filters?.length || sorts?.length || groupbys?.length);
+  }
+
   modifyFilters(filterConjunction, filters, basicFilters = []) {
     const type = OPERATION_TYPE.MODIFY_FILTERS;
     const operation = this.createOperation({
@@ -641,7 +690,10 @@ class Store {
   modifyGroupbys(groupbys) {
     const type = OPERATION_TYPE.MODIFY_GROUPBYS;
     const operation = this.createOperation({
-      type, groupbys, view_id: this.viewId
+      type, groupbys, view_id: this.viewId,
+      success_callback: () => {
+        if (this.shouldLoadRemainingRows()) context.eventBus.dispatch(EVENT_BUS_TYPE.RECALCULATE_DATA);
+      },
     });
     this.applyOperation(operation);
   }

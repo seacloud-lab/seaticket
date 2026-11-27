@@ -4,6 +4,7 @@ from unittest.mock import Mock, patch
 
 from django.core import signing
 import pytest
+from requests.exceptions import ReadTimeout
 
 from seahub.project.agent.utils import (
     RegenerationValidationError,
@@ -15,6 +16,7 @@ from seahub.project.agent.utils import (
     _refresh_run_suggestions_status,
     cancel_agent_log_pending_actions,
     get_agent_log_runs,
+    get_portal_email_processing_statuses,
     list_agent_logs,
     populate_email_reply_defaults,
     validate_materialize_suggestions,
@@ -340,6 +342,64 @@ def test_query_run_status_counts_buckets_incomplete_runs_first():
         'open_suggestion_runs': 0,
         'resolved_runs': 3,
     }
+
+
+def test_portal_email_processing_status_uses_only_the_latest_email_run(limited_seadb):
+    api, connection = limited_seadb
+    runs_table = SchemaTables.AGENT_RUNS.table_name()
+    connection.execute(f'DELETE FROM `{runs_table}`')
+    connection.executemany(
+        f'INSERT INTO `{runs_table}` '
+        '(`_pk`, `owner_source_id`, `owner_source_type`, `status`, `suggestions_status`) '
+        'VALUES (?, ?, ?, ?, ?)',
+        [
+            (1, '2_9', 'email', 'completed', 'resolved'),
+            (2, '3_9', 'email', 'running', 'none'),
+            (3, '2_10', 'email', 'completed', 'pending'),
+            (4, '2_11', 'email', 'completed', 'none'),
+            (5, '2_12', 'email', 'failed', 'pending'),
+            (6, '2_13', 'github_issue', 'completed', 'resolved'),
+            (7, '2_12', 'email', 'completed', 'resolved'),
+            (8, '2_11', 'email', 'failed', 'none'),
+            (9, '3_9', 'email', 'completed', 'none'),
+            (10, '3_9', 'email', 'running', 'none'),
+        ],
+    )
+    statuses = get_portal_email_processing_statuses(api, 'project-1', [
+        '2_9', '3_9', '2_10', '2_11', '2_12', '2_13', '2_14',
+    ])
+    assert statuses == {
+        '2_9': 'processed',
+        '3_9': 'unprocessed',
+        '2_10': 'processed',
+        '2_11': 'unprocessed',
+        '2_12': 'processed',
+        '2_13': 'unprocessed',
+        '2_14': 'unprocessed',
+    }
+    assert api.query_rows.call_count == 1
+    assert api.update_rows.call_count == 0
+
+
+def test_portal_email_processing_status_keeps_successful_batches_on_timeout():
+    source_ids = [f'2_{thread_id}' for thread_id in range(1, 202)]
+    api = Mock()
+    api.query_rows.side_effect = [
+        {'results': [{'owner_source_id': source_ids[0], 'status': 'completed', 'latest_run_id': 1}]},
+        ReadTimeout('Run query timed out'),
+        {'results': [{'owner_source_id': source_ids[200], 'status': 'completed', 'latest_run_id': 2}]},
+    ]
+
+    statuses = get_portal_email_processing_statuses(api, 'project-1', source_ids)
+
+    assert [statuses[source_id] for source_id in source_ids] == (
+        ['processed'] + ['unprocessed'] * 99 + ['unavailable'] * 100 + ['processed']
+    )
+    assert [call.kwargs['params'] for call in api.query_rows.call_args_list] == [
+        ['email', *source_ids[:100]],
+        ['email', *source_ids[100:200]],
+        ['email', *source_ids[200:]],
+    ]
 
 
 @pytest.mark.parametrize('completed_runs', [0, 1])

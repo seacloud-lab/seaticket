@@ -7,6 +7,7 @@ class Column {
     this.name = object.name || '';
     this.display_name = object.display_name || this.name || '';
     this.type = object.type || '';
+    this.header_icon_only = object.header_icon_only || '';
     this.data = object.data || null;
     this.width = object.width || (columnWidthRules ? (columnWidthRules[this.name] || 200) : 200);
     this.is_width_fixed = object.is_width_fixed || false;

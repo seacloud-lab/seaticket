@@ -204,7 +204,7 @@ class Context {
   };
 
   canModifyView = (view) => {
-    if (!this.canModify()) return false;
+    if (!this.canModify() && !this.getSetting('canModifyLocalView', false)) return false;
     return Boolean(this.api?.modifyView);
   };
 

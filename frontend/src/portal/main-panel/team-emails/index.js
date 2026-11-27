@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CenteredError, CenteredLoading, IconButton } from '@/components';
 import { gettext, PERMISSION_TYPES } from '@/constants';
 import { EmailThreadDetails } from '@/project/main-panel/connections/components/connection-resource-details';
-import SeaMetadata from '@/sea-metadata';
+import SeaMetadata, { VIEW_TOOL } from '@/sea-metadata';
 import { EVENT_BUS_TYPE } from '@/sea-metadata/constants';
 import { CANVAS_RIGHT_INTERVAL, SEQUENCE_COLUMN_WIDTH } from '@/sea-metadata/constants/view/table';
 import context from '@/sea-metadata/context';
@@ -12,6 +12,8 @@ import {
   EMAIL_COLUMN_WIDTHS, EMAIL_COLUMNS, EMAIL_VIEWS_DATA, EMAIL_VIEW_DATA, EMAIL_TABLE_NAME,
   EMAIL_LOCAL_STORAGE_PREFIX, EMAIL_COLUMN_ORDER,
 } from './constants';
+
+const VIEW_TOOLS = [VIEW_TOOL.FILTERS, VIEW_TOOL.SORTS, VIEW_TOOL.GROUPBYS];
 
 const TeamEmails = ({ projectUuid }) => {
   const metadataContainerRef = useRef(null);
@@ -48,10 +50,12 @@ const TeamEmails = ({ projectUuid }) => {
       const otherColumnsWidth = data.columns
         .filter(column => column !== subjectColumn)
         .reduce((total, column) => total + column.width, 0);
-      subjectColumn.width = Math.max(
+      const availableWidth = metadataContentWidthRef.current;
+      const minSubjectWidth = availableWidth ? Math.min(
         EMAIL_COLUMN_WIDTHS.title,
-        metadataContentWidthRef.current - otherColumnsWidth
-      );
+        Math.max(120, availableWidth - EMAIL_COLUMN_WIDTHS.processing_status - EMAIL_COLUMN_WIDTHS.ticket_pk),
+      ) : EMAIL_COLUMN_WIDTHS.title;
+      subjectColumn.width = Math.max(minSubjectWidth, availableWidth - otherColumnsWidth);
       subjectColumn.click = openThread;
     }
   }, [openThread]);
@@ -74,25 +78,32 @@ const TeamEmails = ({ projectUuid }) => {
     return () => observer.disconnect();
   }, []);
 
-  const listAPI = useMemo(() => ({
-    getMetadata: ({ start = 0, limit = 1000 } = {}) => portalAPI.listTeamEmails(projectUuid, { start, limit }).then((response) => {
-      const records = response.data.records || [];
-      return {
-        data: {
-          rows: records.map(record => ({
-            ...record,
-            thread_id: record._pk,
-            _pk: `${record.connection_id}:${record._pk}`,
-          })),
-          columns: EMAIL_COLUMNS,
-          has_more: response.data.has_more,
-          error_msg: records.length === 0 ? gettext('No emails.\nSupport emails from your team will appear here.') : '',
-        },
-      };
-    }),
-    getViews: () => Promise.resolve({ data: EMAIL_VIEWS_DATA }),
-    getView: () => Promise.resolve({ data: { view: EMAIL_VIEW_DATA } }),
-  }), [projectUuid]);
+  const listAPI = useMemo(() => {
+    let viewOptions = {};
+    return {
+      getMetadata: async ({ start = 0, limit = 1000 } = {}) => {
+        const { data } = await portalAPI.listTeamEmails(projectUuid, { start, limit });
+        const records = data.records || [];
+        return {
+          data: {
+            rows: records.map(record => ({
+              ...record,
+              thread_id: record._pk,
+              _pk: `${record.connection_id}:${record._pk}`,
+            })),
+            columns: EMAIL_COLUMNS,
+            has_more: data.has_more,
+            error_msg: records.length === 0 ? gettext('No emails.\nSupport emails from your team will appear here.') : '',
+          },
+        };
+      },
+      getViews: () => Promise.resolve({ data: EMAIL_VIEWS_DATA }),
+      getView: async () => ({ data: { view: { ...EMAIL_VIEW_DATA, ...viewOptions } } }),
+      modifyView: async (_viewId, update) => {
+        viewOptions = { ...viewOptions, ...update };
+      },
+    };
+  }, [projectUuid]);
 
   const closeThread = () => {
     history.replaceState(null, null, buildPortalPath('emails'));
@@ -164,16 +175,19 @@ const TeamEmails = ({ projectUuid }) => {
         api={listAPI}
         permission={PERMISSION_TYPES.READ_ONLY}
         localStorageNamePrefix={`${EMAIL_LOCAL_STORAGE_PREFIX}-${projectUuid}`}
-        viewTools={[]}
+        viewTools={VIEW_TOOLS}
         isShowViewInURL={false}
         dataDidMount={dataDidMount}
-        fixedColumnCount={1}
+        fixedColumnCount={2}
         settings={{
           canManageView: false,
+          canModifyLocalView: true,
           canClearCells: false,
           canPasteCells: false,
           canDragFillCells: false,
-          isShowViews: false,
+          isFilterComputedOnServer: false,
+          isSortComputedOnServer: false,
+          loadAllRowsOnViewChange: true,
         }}
         columnOrderRules={EMAIL_COLUMN_ORDER}
         columnWidthRules={EMAIL_COLUMN_WIDTHS}

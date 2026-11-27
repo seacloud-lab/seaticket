@@ -1,0 +1,17 @@
+.seaqa-portal-email-processing-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: var(--bs-icon-secondary-color);
+}
+
+.seaqa-portal-email-processing-status > span {
+  display: inline-flex;
+}
+
+.seaqa-portal-email-processing-status .seaqa-icon-svg {
+  width: 12px;
+  height: 12px;
+}
